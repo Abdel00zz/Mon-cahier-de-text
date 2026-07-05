@@ -32,7 +32,7 @@ interface SyncPushBody {
 const EMPTY_BLOB: ClassesBlob = { classes: [], schedules: [], timetable: [], settings: {}, classMeta: {}, updatedAt: '' };
 
 const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
-    const redis = getRedis();
+    const redis = await getRedis();
     const classId = getQueryParam(req, 'classId');
 
     if (classId) {
@@ -55,7 +55,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         throw new HttpError(400, 'Liste des classes manquante.');
     }
 
-    const redis = getRedis();
+    const redis = await getRedis();
     const now = new Date().toISOString();
     const existing = (await redis.get<ClassesBlob>(KEYS.classes(phone))) ?? EMPTY_BLOB;
 

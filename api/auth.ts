@@ -68,7 +68,7 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
   const cycles = normalizeCycles(body.cycles);
   const subjects = normalizeSubjects(body.subjects);
 
-  const redis = getRedis();
+  const redis = await getRedis();
   const user: StoredUser = {
     phone,
     nom,
@@ -99,7 +99,7 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
     throw new HttpError(400, 'Mot de passe manquant.');
   }
 
-  const redis = getRedis();
+  const redis = await getRedis();
   const rateKey = KEYS.loginRateLimit(phone);
   const attempts = await redis.incr(rateKey);
   if (attempts === 1) {
@@ -124,7 +124,7 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
 
 const handleMe = async (req: ApiRequest, res: ApiResponse) => {
   const { phone } = await requireUser(req);
-  const user = await getRedis().get<StoredUser>(KEYS.user(phone));
+  const user = await (await getRedis()).get<StoredUser>(KEYS.user(phone));
   if (!user) {
     clearCookie(res, SESSION_COOKIE);
     throw new HttpError(401, 'Compte introuvable. Veuillez vous reconnecter.');

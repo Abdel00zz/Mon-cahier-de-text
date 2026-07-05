@@ -51,7 +51,7 @@ const handleAdminLogin = async (body: AdminBody, res: ApiResponse) => {
 };
 
 const handleOverview = async (res: ApiResponse) => {
-    const redis = getRedis();
+    const redis = await getRedis();
     const snapshots = (await redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots)) ?? {};
     const teachers = Object.values(snapshots).sort((a, b) => {
         const aTime = a.lastSyncAt ?? '';
@@ -65,7 +65,7 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     const phone = getQueryParam(req, 'phone');
     if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
 
-    const redis = getRedis();
+    const redis = await getRedis();
     const pipeline = redis.pipeline();
     pipeline.get(KEYS.user(phone));
     pipeline.get(KEYS.classes(phone));
@@ -99,7 +99,7 @@ const requirePhone = (body: AdminBody): string => {
 /** Bloque ou débloque un compte : le login est refusé tant que blocked=true. */
 const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
-    const redis = getRedis();
+    const redis = await getRedis();
     const user = await redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone));
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
     const blocked = body.blocked !== false;
@@ -110,7 +110,7 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
 /** Suppression définitive : compte + classes + tous les cahiers + snapshot + push. */
 const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
-    const redis = getRedis();
+    const redis = await getRedis();
     const classesBlob = await redis.get<ClassesBlob>(KEYS.classes(phone));
 
     const pipeline = redis.pipeline();
@@ -132,7 +132,7 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     if (!message) throw new HttpError(400, 'Message manquant.');
     if (!configureVapid()) throw new HttpError(500, 'Clés VAPID non configurées sur le serveur.');
 
-    const redis = getRedis();
+    const redis = await getRedis();
     const entry = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
     if (!entry || entry.subs.length === 0) {
         throw new HttpError(400, "Cet enseignant n'a activé les notifications sur aucun appareil.");

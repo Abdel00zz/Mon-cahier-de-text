@@ -1,16 +1,19 @@
-import { Redis } from '@upstash/redis';
 import { HttpError } from './http';
 
-let client: Redis | null = null;
+type RedisClient = import('@upstash/redis').Redis;
+
+let client: RedisClient | null = null;
+let redisCtor: Promise<typeof import('@upstash/redis').Redis> | null = null;
 
 // L'intégration Marketplace Vercel injecte parfois KV_REST_API_* au lieu d'UPSTASH_*.
-export const getRedis = (): Redis => {
+export const getRedis = async (): Promise<RedisClient> => {
   if (client) return client;
   const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!url || !token) {
     throw new HttpError(500, 'Base de données non configurée. Ajoutez UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN sur Vercel.');
   }
+  const Redis = await (redisCtor ??= import('@upstash/redis').then(module => module.Redis));
   client = new Redis({ url, token });
   return client;
 };

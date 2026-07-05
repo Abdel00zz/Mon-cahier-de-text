@@ -28,7 +28,7 @@ const handleSubscribe = async (body: NotifyBody, res: ApiResponse, phone: string
     if (!body.subscription?.endpoint || !body.subscription.keys) {
         throw new HttpError(400, 'Abonnement push invalide.');
     }
-    const redis = getRedis();
+    const redis = await getRedis();
     const existing = (await redis.hget<PushEntry>(KEYS.pushSubs, phone)) ?? { subs: [] };
     const subs = dedupeSubs([
         ...existing.subs.filter(s => s.endpoint !== body.subscription!.endpoint),
@@ -39,7 +39,7 @@ const handleSubscribe = async (body: NotifyBody, res: ApiResponse, phone: string
 };
 
 const handleUnsubscribe = async (body: NotifyBody, res: ApiResponse, phone: string) => {
-    const redis = getRedis();
+    const redis = await getRedis();
     const existing = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
     if (existing) {
         const subs = existing.subs.filter(s => s.endpoint !== body.endpoint);
@@ -54,7 +54,7 @@ const handleUnsubscribe = async (body: NotifyBody, res: ApiResponse, phone: stri
 
 const handleTest = async (res: ApiResponse, phone: string) => {
     if (!configureVapid()) throw new HttpError(500, 'Clés VAPID non configurées sur le serveur.');
-    const redis = getRedis();
+    const redis = await getRedis();
     const entry = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
     if (!entry || entry.subs.length === 0) throw new HttpError(400, 'Aucun appareil abonné.');
     const { survivingSubs, sent } = await sendToEntry(entry, {
@@ -83,7 +83,7 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
     }
 
     const vapidReady = configureVapid();
-    const redis = getRedis();
+    const redis = await getRedis();
     const [snapshots, subsMap] = await Promise.all([
         redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots),
         redis.hgetall<Record<string, PushEntry>>(KEYS.pushSubs),
