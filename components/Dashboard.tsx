@@ -8,8 +8,8 @@ import { Card, CardContent } from './ui/card';
 import { ClassCard } from './ClassCard';
 import { LatenessBanner } from './LatenessBanner';
 import { AssessmentBanner } from './AssessmentBanner';
+import { OnboardingGuide } from './OnboardingGuide';
 import { CreateClassModal } from './modals/CreateClassModal';
-import { ConfigModal } from './modals/ConfigModal';
 import { ImportPlatformModal } from './modals/ImportPlatformModal';
 import { WelcomeModal } from './modals/WelcomeModal';
 import { ClassInfo, Cycle } from '../types';
@@ -17,12 +17,13 @@ import { logger } from '../utils/logger';
 import { getBundledCalendar, nextSchoolDay, todayInMorocco, weekdayLabel } from '../utils/calendar';
 import { Plus, CircleHelp, Settings } from './ui/icons';
 import { AUTH_REQUIRED } from '../config/features';
-import { downloadBackup, restoreBackup } from '../utils/backup';
+import { restoreBackup } from '../utils/backup';
 
 const GuideModal = lazy(() => import('./modals/GuideModal').then(module => ({ default: module.GuideModal })));
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
+    onOpenSettings: () => void;
 }
 
 const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
@@ -31,6 +32,7 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
         tabIndex={0}
         onClick={onClick}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+        data-guide="create-class"
         className="group flex min-h-[8.5rem] w-full cursor-pointer items-center justify-center border border-dashed border-slate-300 bg-slate-50/20 text-slate-500 shadow-none transition-all duration-150 hover:border-slate-500 hover:bg-slate-50 hover:text-slate-800"
         aria-label="Créer une nouvelle classe"
     >
@@ -74,11 +76,10 @@ const findLatestDate = (data: any): string | null => {
     return latestDate;
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSettings }) => {
     const { classes, addClass, deleteClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-    const [isConfigModalOpen, setConfigModalOpen] = useState(false);
     const [isImportModalOpen, setImportModalOpen] = useState(false);
     const [isGuideOpen, setGuideOpen] = useState(false);
     const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(false);
@@ -138,16 +139,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass }) => {
         }
         setCreateModalOpen(false);
     };
-
-    const handleExportPlatform = useCallback(() => {
-        try {
-            // Sauvegarde COMPLÈTE : config + classes + cahiers + journaux + impression + profil.
-            downloadBackup();
-        } catch (error) {
-            logger.error("Export failed", error);
-            alert("L'exportation a échoué.");
-        }
-    }, []);
 
     const handleImportPlatform = useCallback((fileContent: string) => {
         try {
@@ -230,15 +221,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass }) => {
                         onClick={() => setGuideOpen(true)}
                         data-tippy-content="Aide"
                         aria-label="Ouvrir l'aide"
+                        data-guide="help"
                     >
                         <CircleHelp className="h-6 w-6" />
                     </Button>
                     <Button
                         variant="icon"
                         size="lg"
-                        onClick={() => setConfigModalOpen(true)}
-                        data-tippy-content="Configuration"
-                        aria-label="Ouvrir la configuration"
+                        onClick={onOpenSettings}
+                        data-tippy-content="Paramètres"
+                        aria-label="Ouvrir les paramètres"
+                        data-guide="settings"
                         className={needsConfiguration ? 'animate-pulse-glow' : ''}
                     >
                         <Settings className="h-6 w-6" />
@@ -308,16 +301,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass }) => {
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
             />
-            <ConfigModal
-                isOpen={isConfigModalOpen}
-                onClose={() => setConfigModalOpen(false)}
-                config={config}
-                onConfigChange={updateConfig}
-                onExportPlatform={handleExportPlatform}
-                onOpenImport={() => setImportModalOpen(true)}
-                onOpenWelcome={() => setWelcomeModalOpen(true)}
-                classes={classes}
-            />
             {isGuideOpen && (
                 <Suspense fallback={null}>
                     <GuideModal isOpen onClose={() => setGuideOpen(false)} />
@@ -339,6 +322,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass }) => {
                 config={config}
                 onConfigChange={updateConfig}
             />
+
+            {/* Guide d'accueil interactif — pas pendant l'écran de config initial */}
+            <OnboardingGuide enabled={!isWelcomeModalOpen && !isCreateModalOpen} />
         </div>
     );
 };

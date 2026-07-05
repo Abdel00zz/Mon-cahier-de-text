@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { ScheduleTab } from '../config/ScheduleTab';
 import { NotificationsTab } from '../config/NotificationsTab';
 import { AccountTab } from '../config/AccountTab';
-import { Eye, CalendarRange, Bell, Database, User, ChevronUp, ChevronDown, Download, Upload } from '../ui/icons';
+import { Eye, CalendarRange, Bell, Database, User, ChevronUp, ChevronDown, Download, Upload, ArrowLeft } from '../ui/icons';
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -17,6 +17,8 @@ interface ConfigModalProps {
   onOpenImport: () => void;
   onOpenWelcome?: () => void;
   classes?: ClassInfo[];
+  /** rendu en PAGE plein écran (au lieu d'une modale) */
+  asPage?: boolean;
 }
 
 type ConfigTab = 'affichage' | 'emploi' | 'notifications' | 'donnees' | 'compte';
@@ -38,6 +40,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onOpenImport,
   onOpenWelcome,
   classes = [],
+  asPage = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
   const [activeTab, setActiveTab] = useState<ConfigTab>('affichage');
@@ -99,38 +102,34 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     onClose();
   };
 
-  return (
-    <Dialog
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Configuration"
-      description="Préférences d'affichage et gestion des données"
-      maxWidth="3xl"
-      footer={
-        <div className="flex justify-between w-full">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              if (onOpenWelcome) {
-                onClose();
-                onOpenWelcome();
-              }
-            }}
-          >
-            Modifier mes informations
-          </Button>
-          <div className="flex gap-2.5">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Annuler
-            </Button>
-            <Button type="button" onClick={handleSave}>
-              Enregistrer
-            </Button>
-          </div>
-        </div>
-      }
-    >
+  if (!asPage && !isOpen) return null;
+
+  const footer = (
+    <div className="flex justify-between w-full">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          if (onOpenWelcome) {
+            onClose();
+            onOpenWelcome();
+          }
+        }}
+      >
+        Modifier mes informations
+      </Button>
+      <div className="flex gap-2.5">
+        <Button type="button" variant="secondary" onClick={onClose}>
+          {asPage ? 'Retour' : 'Annuler'}
+        </Button>
+        <Button type="button" onClick={handleSave}>
+          Enregistrer
+        </Button>
+      </div>
+    </div>
+  );
+
+  const body = (
       <div ref={modalRef} className="py-1">
         {/* Barre d'onglets */}
         <div className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
@@ -427,6 +426,50 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         </div>
         )}
       </div>
+  );
+
+  // ── Rendu en PAGE plein écran ──────────────────────────────────────────
+  if (asPage) {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,hsl(var(--accent)),transparent_34rem)] safe-bottom">
+        <header className="sticky top-0 z-20 border-b border-border bg-card/80 backdrop-blur">
+          <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent"
+              aria-label="Retour"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold text-foreground" style={{ fontFamily: "'Roboto Slab', serif" }}>
+                Paramètres
+              </h1>
+              <p className="text-xs text-muted-foreground">Préférences, emploi du temps, notifications et compte</p>
+            </div>
+          </div>
+        </header>
+        <div className="mx-auto max-w-4xl px-4 pb-28 pt-4">{body}</div>
+        {/* Barre d'actions collante */}
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/90 px-4 py-3 backdrop-blur pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-4xl">{footer}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Rendu en MODALE (rétro-compatibilité) ──────────────────────────────
+  return (
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Configuration"
+      description="Préférences d'affichage et gestion des données"
+      maxWidth="3xl"
+      footer={footer}
+    >
+      {body}
     </Dialog>
   );
 };

@@ -240,6 +240,9 @@ vercel deploy --prod      # ou push sur la branche principale (déploiement auto
 - Le **cron** `/api/notify` est enregistré via [`vercel.json`](vercel.json) (`0 17 * * *`, soit 18 h à Casablanca).
 - `/admin.html` est buildé comme seconde page (accès via `{url}/admin.html` + `ADMIN_SECRET`).
 
+### Accès au tableau de bord administrateur
+Une fois déployé, l'admin se rend sur **`https://VOTRE-URL/admin.html`** (page séparée, non liée depuis l'app enseignant). Il saisit le **code secret** défini dans `ADMIN_SECRET` → il voit tous les enseignants, leur progression, et peut **notifier / bloquer / supprimer** un compte. La page est en `noindex` et hors périmètre du service worker. Pour changer le code, mettez à jour `ADMIN_SECRET` et redéployez.
+
 ### Étape 6 — Vérifications post-déploiement
 - [ ] Inscription d'un compte test → connexion → création d'une classe → synchro (badge « Synchronisé »).
 - [ ] `/admin.html` → code secret → l'enseignant test apparaît.

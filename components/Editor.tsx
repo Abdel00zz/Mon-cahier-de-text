@@ -19,7 +19,7 @@ import { validateSessionDate, summarizeWarnings } from '../utils/dateValidation'
 import { appendJournal, opLabel, readJournal, timeAgoFr } from '../utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '../utils/predefinedContent';
 import { BookOpen } from './ui/icons';
-import { PrintModal, PrintMode } from './modals/PrintModal';
+import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { HistoryModal } from './modals/HistoryModal';
 import { printDocument } from '../utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '../types';
@@ -79,6 +79,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     searchQuery: '',
     newlyAddedIds: [] as string[],
     printSelection: null as LessonsData | null, // sous-ensemble à imprimer (nouveautés seulement)
+    printPageNumbers: true, // numérotation des pages à l'impression
   });
 
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
@@ -94,6 +95,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     searchQuery,
     newlyAddedIds,
     printSelection,
+    printPageNumbers,
   } = editorState;
 
   useEffect(() => {
@@ -397,7 +399,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setEditorState(draft => { draft.activeModal = 'print'; });
   }, [setEditorState]);
 
-  const handleExecutePrint = useCallback((mode: PrintMode) => {
+  const handleExecutePrint = useCallback((mode: PrintMode, options: PrintOptions) => {
       const classId = classInfo.id;
       const allDates = collectSessionDates(lessonsData);
       const newDates = getNewDates(lessonsData, classId);
@@ -407,7 +409,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           : null;
       const datesToRecord = mode === 'new' ? newDates : allDates;
 
-      setEditorState(draft => { draft.activeModal = null; });
+      setEditorState(draft => {
+          draft.activeModal = null;
+          draft.printPageNumbers = options.pageNumbers;
+      });
 
       const launchPrint = () => {
           printDocument('cahier-de-textes');
@@ -759,7 +764,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           </main>
         </div>
 
-        <PrintView lessonsData={printSelection ?? filteredData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} />
+        <PrintView lessonsData={printSelection ?? filteredData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} />
       </div>
 
       {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}

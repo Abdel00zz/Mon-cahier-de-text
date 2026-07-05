@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
 import { Dashboard } from './components/Dashboard';
 import { Editor } from './components/Editor';
+import { SettingsPage } from './components/SettingsPage';
 import { AppBootSkeleton } from './components/ui/PageSkeleton';
 import { ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
@@ -39,7 +40,7 @@ const mathJaxConfig = {
   },
 };
 
-type View = 'dashboard' | 'editor';
+type View = 'dashboard' | 'editor' | 'settings';
 
 interface RouteSnapshot {
   view: View;
@@ -47,6 +48,7 @@ interface RouteSnapshot {
 }
 
 const DASHBOARD_HASH = '#/';
+const SETTINGS_HASH = '#/parametres';
 
 const getClassRoute = (classId: string) => `#/classe/${encodeURIComponent(classId)}`;
 
@@ -60,6 +62,7 @@ const readStoredClass = (classId: string): ClassInfo | null => {
 };
 
 const readRouteSnapshot = (): RouteSnapshot => {
+  if (window.location.hash === SETTINGS_HASH) return { view: 'settings', activeClass: null };
   const match = window.location.hash.match(/^#\/classe\/([^/]+)$/);
   if (!match) return { view: 'dashboard', activeClass: null };
 
@@ -177,6 +180,12 @@ const App: React.FC = () => {
     window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
   }, [saveCurrentScroll]);
 
+  const handleOpenSettings = useCallback(() => {
+    saveCurrentScroll();
+    setView('settings');
+    window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
+  }, [saveCurrentScroll]);
+
   // Handle browser back / forward buttons
   useEffect(() => {
     if (!window.location.hash) {
@@ -215,13 +224,16 @@ const App: React.FC = () => {
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage />;
     }
+    if (view === 'settings') {
+      return <SettingsPage onBack={handleBackToDashboard} />;
+    }
     if (view === 'editor' && activeClass) {
       return <Editor classInfo={activeClass} onBack={handleBackToDashboard} />;
     }
-    return <Dashboard onSelectClass={handleSelectClass} />;
+    return <Dashboard onSelectClass={handleSelectClass} onOpenSettings={handleOpenSettings} />;
   };
 
-  const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : 'dashboard';
+  const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : view;
 
     return (
       <MathJaxContext config={mathJaxConfig}>

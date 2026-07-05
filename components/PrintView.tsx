@@ -23,6 +23,8 @@ interface PrintViewProps {
     classInfo: ClassInfo;
     config: AppConfig;
     newlyAddedIds: string[];
+    /** numéroter les pages en bas (Chrome : nécessite « En-têtes et pieds de page » dans le dialogue d'impression) */
+    pageNumbers?: boolean;
 }
 
 interface FlatDataItem {
@@ -32,7 +34,7 @@ interface FlatDataItem {
 }
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, newlyAddedIds }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, newlyAddedIds, pageNumbers = true }) => {
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
     
@@ -130,11 +132,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     @page {
                         size: A4;
                         margin: 1.5cm 1cm;
-                        @bottom-center {
-                            content: "Page " counter(page);
+                        ${pageNumbers ? `@bottom-center {
+                            content: "Page " counter(page) " / " counter(pages);
                             font-size: 8pt;
                             color: #6b7280;
-                        }
+                        }` : ''}
                     }
 
                     .print-hidden { display: none !important; }

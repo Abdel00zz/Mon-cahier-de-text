@@ -5,6 +5,7 @@ import { Printer, CalendarCheck, FileText } from '../ui/icons';
 import { formatDateDDMMYYYY } from '../../utils/dataUtils';
 
 export type PrintMode = 'new' | 'all';
+export interface PrintOptions { pageNumbers: boolean }
 
 interface PrintModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface PrintModalProps {
   newDates: string[];
   /** dernière impression enregistrée (ISO) ou null */
   lastPrintedAt: string | null;
-  onPrint: (mode: PrintMode) => void;
+  onPrint: (mode: PrintMode, options: PrintOptions) => void;
 }
 
 /**
@@ -34,6 +35,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const hasHistory = lastPrintedAt !== null;
   const recommendNew = hasHistory && newDates.length > 0;
   const [mode, setMode] = useState<PrintMode>(recommendNew ? 'new' : 'all');
+  const [pageNumbers, setPageNumbers] = useState(true);
 
   // resynchronise le choix recommandé à chaque ouverture
   React.useEffect(() => {
@@ -89,7 +91,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       footer={
         <>
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="button" variant="primary" onClick={() => onPrint(mode)}>
+          <Button type="button" variant="primary" onClick={() => onPrint(mode, { pageNumbers })}>
             <Printer className="mr-2 h-3.5 w-3.5" />
             Imprimer {mode === 'new' ? `(${newDates.length} séance${newDates.length > 1 ? 's' : ''})` : '(complet)'}
           </Button>
@@ -156,6 +158,25 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             )}
           </div>
         )}
+
+        {/* Options d'impression */}
+        <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-slate-50 p-3">
+          <span>
+            <span className="block text-xs font-semibold text-slate-700">Numéroter les pages</span>
+            <span className="mt-0.5 block text-[10px] leading-snug text-slate-400">
+              Affiche « Page X / N » en bas. Dans Chrome, cochez aussi « En-têtes et pieds de page » du dialogue d'impression.
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={pageNumbers}
+            onClick={() => setPageNumbers(v => !v)}
+            className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${pageNumbers ? 'bg-primary' : 'bg-slate-300'}`}
+          >
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${pageNumbers ? 'left-[22px]' : 'left-0.5'}`} />
+          </button>
+        </label>
       </div>
     </Dialog>
   );
