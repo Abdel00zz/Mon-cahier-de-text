@@ -1,0 +1,167 @@
+{
+  "_commentaire": "Planning OFFICIEL des devoirs de mathématiques (transcrit des documents ministériels). Les semaines sont relatives au début de chaque semestre (semaine 1 = semaine de la rentrée / de la reprise). type: 'controle' = فرض محروس (devoir surveillé), 'maison' = فرض منزلي (devoir maison). Dates indicatives — le professeur reste libre de les adapter. Modifiable sans rebuild.",
+  "version": 1,
+  "matiere": "Mathématiques",
+  "plans": [
+    {
+      "niveaux": ["1AC", "2AC"],
+      "libelle": "1re/2e année du secondaire collégial",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "1h" },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "1h" },
+          { "type": "controle", "num": 3, "semaine": 16, "duree": "1h", "fenetre": "entre le 10 et le 18 janvier" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "1h" },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "1h" },
+          { "type": "controle", "num": 3, "semaine": 16, "duree": "1h", "fenetre": "entre le 13 et le 18 juin" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["3AC"],
+      "libelle": "3e année du secondaire collégial (+ examen unifié local fin S1)",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "1h" },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "1h" },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h", "fenetre": "entre le 10 et le 18 janvier" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "1h" },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "1h" },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h", "fenetre": "entre le 6 et le 11 juin" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["TC Sciences", "TC Technologique"],
+      "libelle": "Tronc commun scientifique et technologique",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 7 },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 12 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 7 },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 12 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["TC Lettres"],
+      "libelle": "Tronc commun lettres / enseignement originel",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 4 },
+          { "type": "controle", "num": 1, "semaine": 8,  "duree": "1h" },
+          { "type": "maison",   "num": 2, "semaine": 11 },
+          { "type": "controle", "num": 2, "semaine": 15, "duree": "1h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 4 },
+          { "type": "controle", "num": 1, "semaine": 8,  "duree": "1h" },
+          { "type": "maison",   "num": 2, "semaine": 11 },
+          { "type": "controle", "num": 2, "semaine": 15, "duree": "1h" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["1BAC Lettres"],
+      "libelle": "1re Bac lettres et sciences humaines",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 4 },
+          { "type": "controle", "num": 1, "semaine": 8,  "duree": "1h" },
+          { "type": "maison",   "num": 2, "semaine": 11 },
+          { "type": "controle", "num": 2, "semaine": 15, "duree": "1h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 4 },
+          { "type": "controle", "num": 1, "semaine": 8,  "duree": "1h" },
+          { "type": "maison",   "num": 2, "semaine": 11 },
+          { "type": "controle", "num": 2, "semaine": 15, "duree": "1h" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["1BAC Sc. Expérimentales"],
+      "libelle": "1re Bac sciences expérimentales et technologies",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 7 },
+          { "type": "controle", "num": 2, "semaine": 10, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 12 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 5,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 8 },
+          { "type": "controle", "num": 2, "semaine": 11, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 12 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["1BAC Sc. Mathématiques"],
+      "libelle": "1re Bac sciences mathématiques",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 4,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 6 },
+          { "type": "controle", "num": 2, "semaine": 8,  "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 10 },
+          { "type": "controle", "num": 3, "semaine": 12, "duree": "2h" },
+          { "type": "maison",   "num": 4, "semaine": 13 },
+          { "type": "controle", "num": 4, "semaine": 15, "duree": "2h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 2 },
+          { "type": "controle", "num": 1, "semaine": 4,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 6 },
+          { "type": "controle", "num": 2, "semaine": 8,  "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 10 },
+          { "type": "controle", "num": 3, "semaine": 12, "duree": "2h" },
+          { "type": "maison",   "num": 4, "semaine": 14 },
+          { "type": "controle", "num": 4, "semaine": 15, "duree": "2h" }
+        ]}
+      ]
+    },
+    {
+      "niveaux": ["1BAC Sc. Économiques"],
+      "libelle": "1re Bac sciences économiques et gestion",
+      "semestres": [
+        { "n": 1, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 3 },
+          { "type": "controle", "num": 1, "semaine": 6,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 8 },
+          { "type": "controle", "num": 2, "semaine": 11, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 12 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]},
+        { "n": 2, "devoirs": [
+          { "type": "maison",   "num": 1, "semaine": 3 },
+          { "type": "controle", "num": 1, "semaine": 6,  "duree": "2h" },
+          { "type": "maison",   "num": 2, "semaine": 9 },
+          { "type": "controle", "num": 2, "semaine": 12, "duree": "2h" },
+          { "type": "maison",   "num": 3, "semaine": 13 },
+          { "type": "controle", "num": 3, "semaine": 15, "duree": "2h" }
+        ]}
+      ]
+    }
+  ]
+}

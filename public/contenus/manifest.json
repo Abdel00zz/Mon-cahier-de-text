@@ -1,0 +1,18 @@
+{
+  "_commentaire": "Bibliothèque de contenus prédéfinis. Ajouter un fichier JSON (même format qu'un export de classe) puis le référencer ici : il sera proposé automatiquement à la création d'un cahier correspondant (niveau + matière). Modifiable sans rebuild.",
+  "version": 1,
+  "contenus": [
+    {
+      "niveau": "2BAC PC",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 2BAC PC · Mathématiques",
+      "fichier": "2bac-pc-mathematiques.json"
+    },
+    {
+      "niveau": "TC Sciences",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — Tronc Commun Sciences · Mathématiques",
+      "fichier": "tc-sciences-mathematiques.json"
+    }
+  ]
+}

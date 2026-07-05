@@ -1,0 +1,273 @@
+    @import "tailwindcss";
+
+    /* ===== Tailwind v4 — mapping des tokens sémantiques existants ===== */
+    @theme inline {
+      --color-border: hsl(var(--border));
+      --color-input: hsl(var(--input));
+      --color-ring: hsl(var(--ring));
+      --color-background: hsl(var(--background));
+      --color-foreground: hsl(var(--foreground));
+      --color-card: hsl(var(--card));
+      --color-card-foreground: hsl(var(--card-foreground));
+      --color-primary: hsl(var(--primary));
+      --color-primary-foreground: hsl(var(--primary-foreground));
+      --color-secondary: hsl(var(--secondary));
+      --color-secondary-foreground: hsl(var(--secondary-foreground));
+      --color-destructive: hsl(var(--destructive));
+      --color-destructive-foreground: hsl(var(--destructive-foreground));
+      --color-muted: hsl(var(--muted));
+      --color-muted-foreground: hsl(var(--muted-foreground));
+      --color-accent: hsl(var(--accent));
+      --color-accent-foreground: hsl(var(--accent-foreground));
+
+      /* Palette signature conservée telle quelle */
+      --color-sand-50: #FDFCFA;
+      --color-sand-100: #FAF8F5;
+      --color-sand-200: #F5EDE8;
+      --color-sand-300: #EDE5DC;
+      --color-sand-400: #DDD0C4;
+      --color-clay-50: #FDF2ED;
+      --color-clay-100: #FAE0D3;
+      --color-clay-400: #E17649;
+      --color-clay-500: #C96442;
+      --color-clay-600: #A8522F;
+      --color-clay-700: #87411F;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-slab: 'Roboto Slab', Georgia, serif;
+    }
+
+    :root {
+      --background: 24 33% 97%;
+      --foreground: 20 9% 10%;
+      --card: 0 0% 100%;
+      --card-foreground: 20 9% 10%;
+      --primary: 15 55% 52%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 26 32% 94%;
+      --secondary-foreground: 20 9% 10%;
+      --muted: 26 32% 94%;
+      --muted-foreground: 18 7% 45%;
+      --accent: 17 78% 96%;
+      --accent-foreground: 15 55% 36%;
+      --destructive: 0 72% 51%;
+      --destructive-foreground: 0 0% 100%;
+      --border: 29 28% 88%;
+      --input: 29 28% 88%;
+      --ring: 15 55% 52%;
+      --clr-bg:           hsl(var(--background));
+      --clr-surface:      hsl(var(--card));
+      --clr-elevated:     hsl(var(--secondary));
+      --clr-accent:       hsl(var(--primary));
+      --clr-accent-hover: hsl(15 56% 42%);
+      --clr-accent-soft:  hsl(var(--accent));
+      --clr-text:         hsl(var(--foreground));
+      --clr-text-2:       hsl(var(--muted-foreground));
+      --clr-text-3:       hsl(18 5% 59%);
+      --clr-border:       hsl(var(--border));
+      --clr-border-soft:  hsl(30 25% 92%);
+      --shadow-xs: 0 1px 2px rgba(26,24,23,.05);
+      --shadow-sm: 0 1px 4px rgba(26,24,23,.07), 0 1px 2px rgba(26,24,23,.04);
+      --shadow-md: 0 4px 14px rgba(26,24,23,.08), 0 2px 4px rgba(26,24,23,.05);
+      --shadow-lg: 0 8px 28px rgba(26,24,23,.10), 0 4px 8px rgba(26,24,23,.06);
+    }
+
+    /* Typography */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--clr-bg);
+      color: var(--clr-text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, h4, h5, h6, .font-slab { font-family: 'Roboto Slab', Georgia, serif; }
+    h3 { font-family: 'Inter', sans-serif; }
+    .font-ar, :lang(ar) { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+    p { color: var(--clr-text); }
+    
+    /* Tooltip maison (remplace Tippy.js) */
+    @keyframes tooltip-in {
+      from { opacity: 0; transform: translate(-50%, 4px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .app-tooltip {
+      animation: tooltip-in 120ms ease-out;
+    }
+
+    /* Animations */
+    @keyframes slide-in-up {
+      from { transform: translateY(14px) scale(0.99); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .animate-slide-in-up { animation: slide-in-up 0.24s cubic-bezier(.4,0,.2,1) forwards; }
+
+    @keyframes slide-in-down {
+      from { transform: translateY(-14px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-in-down { animation: slide-in-down 0.2s ease-out forwards; }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .animate-fade-in { animation: fade-in 0.18s ease-out; }
+
+    /* Scrollbars */
+    .scrollbar-hide, .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Touch */
+    .touch-manipulation { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+
+
+    /* Date cell animation */
+    .date-cell-filled::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 2px;
+      background-color: var(--clr-accent);
+      transform-origin: left;
+      animation: draw-line-across 0.4s ease-out forwards;
+    }
+    @keyframes draw-line-across {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+
+    /* New item highlight */
+    @keyframes highlight-fade-out {
+      from { background-color: var(--clr-accent-soft); }
+      to   { background-color: transparent; }
+    }
+    .new-item-highlight { animation: highlight-fade-out 2.5s ease-out forwards; }
+
+    /* Elevation */
+    .elevation-1 { box-shadow: var(--shadow-sm); }
+    .elevation-2 { box-shadow: var(--shadow-md); }
+    .elevation-3 { box-shadow: var(--shadow-lg); }
+
+    /* Focus */
+    .material-focus:focus { outline: 2px solid var(--clr-accent); outline-offset: 2px; }
+
+    /* Safe areas */
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
+    .fab-safe { bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+
+    /* Glow pulse */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(201,100,66,.35); }
+      50%       { box-shadow: 0 0 0 7px rgba(201,100,66,0); }
+    }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+    /* Print-specific styles */
+    @media screen {
+      .print-hidden { display: block !important; }
+      .print-only { display: none !important; }
+    }
+    
+    @media print {
+      @page {
+        size: A4;
+        margin: 0.7cm;
+      }
+      
+      /* Hide screen content */
+      .print-hidden { 
+        display: none !important; 
+      }
+      
+      /* Show print content */
+      .print-only { 
+        display: block !important; 
+      }
+      
+      /* Hide notifications and all interactive elements */
+      .notification,
+      [class*="notification"],
+      .modal,
+      [class*="modal"],
+      .tooltip,
+      [class*="tooltip"],
+      .dropdown,
+      [class*="dropdown"],
+      button,
+      input[type="button"],
+      input[type="submit"] {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      
+      body {
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 9pt !important;
+        line-height: 1.3 !important;
+        background-color: white !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* S'assurer que les paragraphes s'impriment en noir */
+      p { color: black !important; }
+      
+      /* Minimal global resets for print */
+      *, *::before, *::after {
+        box-shadow: none !important;
+        outline: none !important;
+        transform: none !important;
+      }
+      
+      /* Reduce bottom margins and padding for compactness */
+      div, p, h1, h2, h3, h4, h5, h6 {
+        margin-bottom: 3px !important;
+        padding-bottom: 2px !important;
+      }
+      
+      /* Table styling */
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      
+      th, td {
+        border: none !important;
+        padding: 3px 6px !important;
+        vertical-align: top !important;
+        text-align: left !important;
+        margin: 0 !important;
+      }
+      
+      /* Ensure badges print properly with background colors */
+      .bg-sky-200, [class*="bg-sky-200"] { background-color: #bae6fd !important; }
+      .bg-emerald-100, [class*="bg-emerald-100"] { background-color: #d1fae5 !important; }
+      .bg-amber-100, [class*="bg-amber-100"] { background-color: #fef3c7 !important; }
+      .bg-indigo-100, [class*="bg-indigo-100"] { background-color: #e0e7ff !important; }
+      .bg-purple-100, [class*="bg-purple-100"] { background-color: #f3e8ff !important; }
+      .bg-yellow-100, [class*="bg-yellow-100"] { background-color: #fef9c3 !important; }
+      .bg-slate-200, [class*="bg-slate-200"] { background-color: #e2e8f0 !important; }
+      .bg-teal-100, [class*="bg-teal-100"] { background-color: #ccfbf1 !important; }
+      .bg-orange-100, [class*="bg-orange-100"] { background-color: #ffedd5 !important; }
+      .bg-cyan-100, [class*="bg-cyan-100"] { background-color: #cffafe !important; }
+      .bg-blue-100, [class*="bg-blue-100"] { background-color: #dbeafe !important; }
+      .bg-green-100, [class*="bg-green-100"] { background-color: #dcfce7 !important; }
+      
+      /* Content indentation with reduced spacing */
+      .pl-4 { padding-left: 0.8rem !important; }
+      .pl-8 { padding-left: 1.5rem !important; }
+      .pl-12 { padding-left: 2.2rem !important; }
+      
+      /* Font styles */
+      .text-sm { font-size: 8pt !important; }
+      .font-bold { font-weight: bold !important; }
+      .font-semibold { font-weight: 600 !important; }
+      .italic { font-style: italic !important; }
+
+      /* Highlight for newly added items in print */
+      .new-item-print-highlight > td { background-color: #FDF2ED !important; }
+    }

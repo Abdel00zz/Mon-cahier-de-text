@@ -1,0 +1,204 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { TopLevelItem } from '../../types';
+import { Dialog } from '../ui/dialog';
+import { Check, TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderOpen } from '../ui/icons';
+import { Button } from '../ui/button';
+import { TOP_LEVEL_TYPE_CONFIG } from '../../constants';
+
+interface ManageLessonsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (lessons: TopLevelItem[]) => void;
+  lessons: TopLevelItem[];
+}
+
+export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons }) => {
+  const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalLessons([...lessons]);
+    }
+  }, [isOpen, lessons]);
+
+  const handleDelete = (index: number) => {
+    setLocalLessons(current => current.filter((_, i) => i !== index));
+  };
+
+  const moveUp = (index: number) => {
+    if (index === 0) return;
+    setLocalLessons(current => {
+      const copy = [...current];
+      const temp = copy[index];
+      copy[index] = copy[index - 1];
+      copy[index - 1] = temp;
+      return copy;
+    });
+  };
+
+  const moveDown = (index: number) => {
+    if (index === localLessons.length - 1) return;
+    setLocalLessons(current => {
+      const copy = [...current];
+      const temp = copy[index];
+      copy[index] = copy[index + 1];
+      copy[index + 1] = temp;
+      return copy;
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent<HTMLLIElement>, index: number) => {
+    dragItem.current = index;
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnter = (index: number) => {
+    dragOverItem.current = index;
+    const newList = [...localLessons];
+    if (dragItem.current === null) return;
+    const draggedItemContent = newList.splice(dragItem.current, 1)[0];
+    newList.splice(dragOverItem.current, 0, draggedItemContent);
+    dragItem.current = dragOverItem.current;
+    setLocalLessons(newList);
+  };
+  
+  const handleDragEnd = () => {
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+
+  const handleSubmit = () => {
+    onUpdate(localLessons);
+    onClose();
+  };
+
+  return (
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Gérer les chapitres & devoirs"
+      description="Réorganisez vos contenus principaux ou supprimez-les. Utilisez les flèches sur mobile ou le glisser-déposer."
+      maxWidth="xl"
+      footer={
+        <>
+          <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
+            Annuler
+          </Button>
+          <Button 
+            type="button" 
+            onClick={handleSubmit} 
+            className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm"
+          >
+            <Check className="mr-2 h-3.5 w-3.5" /> Enregistrer
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {localLessons.length > 0 ? (
+          <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+            {localLessons.map((item, index) => {
+              const config = TOP_LEVEL_TYPE_CONFIG[item.type];
+
+              // Defensive check for corrupted data
+              if (!config) {
+                return (
+                  <li 
+                    key={index} 
+                    className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-200"
+                  >
+                    <TriangleAlert className="mr-2 h-4 w-4 flex-shrink-0 text-red-500" />
+                    <span className="flex-grow text-red-700 text-xs font-semibold truncate">Contenu corrompu: "{item.title}"</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(index)}
+                      className="w-7 h-7 p-0 flex items-center justify-center rounded-lg"
+                      title="Supprimer cet élément corrompu"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </li>
+                );
+              }
+
+              return (
+                <li 
+                  key={index} 
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragEnter={() => handleDragEnter(index)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => e.preventDefault()}
+                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-slate-200 cursor-grab active:cursor-grabbing hover:bg-slate-50/50 hover:border-slate-300 transition-all duration-150 select-none shadow-sm"
+                >
+                  {/* Left drag handle and title */}
+                  <div className="flex items-center min-w-0 flex-1 gap-2.5">
+                    <div className="hidden sm:flex items-center text-slate-400 cursor-grab px-1 py-1 hover:text-slate-600">
+                      <GripVertical className="h-3 w-3" />
+                    </div>
+                    <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center w-8 h-8">
+                      <config.icon className={`${config.color} h-4 w-4`} />
+                    </div>
+                    <span className="flex-grow text-slate-800 text-xs font-semibold truncate pr-1">
+                      {item.title || 'Sans titre'}
+                    </span>
+                  </div>
+
+                  {/* Right actions: Reorder buttons & delete */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {/* Up button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={index === 0}
+                      onClick={() => moveUp(index)}
+                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-white"
+                      title="Monter"
+                    >
+                      <ArrowUp className="h-3 w-3 text-slate-600" />
+                    </Button>
+
+                    {/* Down button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={index === localLessons.length - 1}
+                      onClick={() => moveDown(index)}
+                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-white"
+                      title="Descendre"
+                    >
+                      <ArrowDown className="h-3 w-3 text-slate-600" />
+                    </Button>
+
+                    <div className="h-4 w-[1px] bg-slate-200 mx-0.5"></div>
+
+                    {/* Delete button */}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(index)}
+                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg shadow-sm hover:brightness-105"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="text-center text-slate-400 font-medium italic py-12 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+            <FolderOpen className="mx-auto mb-2 h-5 w-5 text-slate-300" />
+            Aucun contenu principal à organiser.
+          </div>
+        )}
+      </div>
+    </Dialog>
+  );
+};

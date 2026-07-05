@@ -1,0 +1,26 @@
+{
+  "lessonsData": [
+    {
+      "type": "chapter",
+      "title": "Chapitre 1 : Ensembles de nombres — N, Z, Q, D, R",
+      "sections": [
+        { "name": "I. Les ensembles de nombres", "items": [
+          { "type": "activité", "title": "Activité : classer des nombres" },
+          { "type": "définition", "number": "1", "title": "Ensembles $\\mathbb{N}, \\mathbb{Z}, \\mathbb{Q}, \\mathbb{D}, \\mathbb{R}$" },
+          { "type": "exercice", "number": "1", "title": "Appartenance et inclusion" }
+        ]}
+      ]
+    },
+    {
+      "type": "chapter",
+      "title": "Chapitre 2 : Ordre dans R",
+      "sections": [
+        { "name": "I. Comparaison et encadrement", "items": [
+          { "type": "définition", "number": "1", "title": "Intervalles de $\\mathbb{R}$" },
+          { "type": "proposition", "number": "1", "title": "Valeur absolue et distance" },
+          { "type": "exercice", "number": "1", "title": "Encadrements et inégalités" }
+        ]}
+      ]
+    }
+  ]
+}
