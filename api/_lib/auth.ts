@@ -1,6 +1,5 @@
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { SignJWT, jwtVerify } from 'jose';
 import { ApiRequest, ApiResponse, HttpError } from './http';
 
 const scrypt = promisify(scryptCallback) as (
@@ -42,12 +41,12 @@ export const verifyPassword = async (password: string, stored: string): Promise<
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 };
 
-const getAuthSecret = (): Uint8Array => {
+const getAuthSecret = (): string => {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 32) {
     throw new HttpError(500, 'AUTH_SECRET non configuré (32 caractères minimum requis).');
   }
-  return new TextEncoder().encode(secret);
+  return secret;
 };
 
 export interface SessionPayload {
@@ -55,17 +54,34 @@ export interface SessionPayload {
   role?: 'teacher' | 'admin';
 }
 
-export const signSession = async (payload: SessionPayload, maxAgeSeconds: number): Promise<string> =>
-  new SignJWT({ ...payload })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime(Math.floor(Date.now() / 1000) + maxAgeSeconds)
-    .sign(getAuthSecret());
+const base64url = (value: Buffer | string): string =>
+  Buffer.from(value).toString('base64url');
+
+const signJwtPart = (value: string): string =>
+  createHmac('sha256', getAuthSecret()).update(value).digest('base64url');
+
+export const signSession = async (payload: SessionPayload, maxAgeSeconds: number): Promise<string> => {
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = base64url(JSON.stringify({ ...payload, iat: now, exp: now + maxAgeSeconds }));
+  const unsigned = `${header}.${body}`;
+  return `${unsigned}.${signJwtPart(unsigned)}`;
+};
 
 export const verifySession = async (token: string): Promise<SessionPayload | null> => {
   try {
-    const { payload } = await jwtVerify(token, getAuthSecret());
-    return payload as SessionPayload;
+    const [header, body, signature] = token.split('.');
+    if (!header || !body || !signature) return null;
+    const unsigned = `${header}.${body}`;
+    const expected = signJwtPart(unsigned);
+    const actualBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expected);
+    if (actualBuffer.length !== expectedBuffer.length || !timingSafeEqual(actualBuffer, expectedBuffer)) {
+      return null;
+    }
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as SessionPayload & { exp?: number };
+    if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return { phone: payload.phone, role: payload.role };
   } catch {
     return null;
   }
