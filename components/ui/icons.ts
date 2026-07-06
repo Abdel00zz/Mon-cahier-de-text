@@ -67,4 +67,5 @@ export {
   Database,
   User,
   Loader2,
+  TrendingUp,
 } from 'lucide-react';

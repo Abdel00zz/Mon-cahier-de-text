@@ -1,24 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Cycle } from '../../types';
+import { Cycle, ClassInfo } from '../../types';
 import { Dialog } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
-import { Plus } from '../ui/icons';
+import { Plus, Settings } from '../ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS } from '../../constants';
 
 interface CreateClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (details: { name: string; subject: string; cycle?: Cycle; }) => void;
+  onCreate: (details: { name: string; subject: string; cycle?: Cycle; color?: string; }) => void;
   defaultTeacherName?: string;
   /** cycle actif du tableau de bord — pré-sélectionné */
   defaultCycle?: Cycle;
   /** matières de l'enseignant (choisies à l'inscription) — filtrent le choix */
   teacherSubjects?: string[];
+  editingClass?: ClassInfo | null;
+  onUpdate?: (classId: string, updates: Partial<ClassInfo>) => void;
 }
 
 const CYCLE_LABELS: Record<Cycle, string> = { college: 'Collège', lycee: 'Lycée', prepa: 'Classe préparatoire' };
+
+const PREMIUM_COLORS = [
+  '#C96442', // Terracotta (par défaut)
+  '#E17649', // Clay
+  '#B8935A', // Gold / Ochre
+  '#2E7D32', // Forest Green
+  '#0D9488', // Teal
+  '#1565C0', // Cobalt Blue
+  '#6366f1', // Indigo
+  '#8b5cf6', // Deep Purple
+  '#ec4899', // Premium Pink
+  '#455A64', // Elegant Slate
+];
 
 export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   isOpen,
@@ -26,6 +41,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   onCreate,
   defaultCycle = 'lycee',
   teacherSubjects = [],
+  editingClass = null,
+  onUpdate,
 }) => {
   const [cycle, setCycle] = useState<Cycle>(defaultCycle);
   const [level, setLevel] = useState('');
@@ -35,24 +52,46 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [customMode, setCustomMode] = useState(false);
   const [customLevel, setCustomLevel] = useState('');
   const [customSubject, setCustomSubject] = useState('');
+  const [customColor, setCustomColor] = useState('#C96442');
 
   // Matières proposées : celles du prof en priorité, sinon la liste complète.
   const subjectOptions = teacherSubjects.length > 0 ? teacherSubjects : [...SUBJECTS];
 
   useEffect(() => {
     if (isOpen) {
-      setCycle(defaultCycle);
-      const firstLevel = CLASS_LEVELS_BY_CYCLE[defaultCycle][0] ?? '';
-      setLevel(firstLevel);
-      setGroup('');
-      setSubject(teacherSubjects[0] ?? '');
-      setCustomMode(false);
-      setCustomLevel('');
-      setCustomSubject('');
+      if (editingClass) {
+        const classCycle = editingClass.cycle || 'lycee';
+        setCycle(classCycle);
+        const classLevels = CLASS_LEVELS_BY_CYCLE[classCycle] || [];
+        const matchedLevel = classLevels.find(l => editingClass.name.startsWith(l));
+        
+        if (matchedLevel) {
+          setCustomMode(false);
+          setLevel(matchedLevel);
+          setGroup(editingClass.name.slice(matchedLevel.length).trim());
+        } else {
+          setCustomMode(true);
+          setCustomLevel(editingClass.name);
+          setGroup('');
+        }
+        setSubject(editingClass.subject || '');
+        setCustomSubject(editingClass.subject || '');
+        setCustomColor(editingClass.color || '#C96442');
+      } else {
+        setCycle(defaultCycle);
+        const firstLevel = CLASS_LEVELS_BY_CYCLE[defaultCycle][0] ?? '';
+        setLevel(firstLevel);
+        setGroup('');
+        setSubject(teacherSubjects[0] ?? '');
+        setCustomMode(false);
+        setCustomLevel('');
+        setCustomSubject('');
+        setCustomColor('#C96442');
+      }
     }
-  }, [isOpen, defaultCycle, teacherSubjects]);
+  }, [isOpen, defaultCycle, teacherSubjects, editingClass]);
 
-  const levels = CLASS_LEVELS_BY_CYCLE[cycle];
+  const levels = CLASS_LEVELS_BY_CYCLE[cycle] || [];
   const effectiveLevel = customMode ? customLevel.trim() : level;
   const effectiveSubject = customMode ? customSubject.trim() : subject;
   const composedName = `${effectiveLevel}${group.trim() ? ` ${group.trim()}` : ''}`.trim();
@@ -61,7 +100,17 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isFormValid) {
-      onCreate({ name: composedName, subject: effectiveSubject, cycle });
+      if (editingClass && onUpdate) {
+        onUpdate(editingClass.id, {
+          name: composedName,
+          subject: effectiveSubject,
+          cycle,
+          color: customColor,
+        });
+        onClose();
+      } else {
+        onCreate({ name: composedName, subject: effectiveSubject, cycle, color: customColor });
+      }
     }
   };
 
@@ -69,8 +118,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Créer une nouvelle classe"
-      description="Choisissez le niveau et la matière — le nom est composé automatiquement"
+      title={editingClass ? "Configurer la classe" : "Créer une nouvelle classe"}
+      description={editingClass ? "Modifiez les paramètres, la matière ou la couleur de la classe" : "Choisissez le niveau et la matière — le nom est composé automatiquement"}
       maxWidth="md"
       footer={
         <>
@@ -78,7 +127,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
             Annuler
           </Button>
           <Button type="submit" form="create-class-form" variant="primary" disabled={!isFormValid}>
-            <Plus className="mr-2 h-3.5 w-3.5" /> Créer la classe
+            {editingClass ? (
+              <>
+                <Settings className="mr-2 h-3.5 w-3.5" /> Enregistrer les modifications
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-3.5 w-3.5" /> Créer la classe
+              </>
+            )}
           </Button>
         </>
       }
@@ -164,12 +221,39 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           )}
         </div>
 
+        {/* Personnalisation de la couleur de la carte et du fond */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Couleur de la classe
+          </label>
+          <div className="flex flex-wrap gap-2 py-1">
+            {PREMIUM_COLORS.map(c => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCustomColor(c)}
+                className={`h-7 w-7 rounded-full border transition-all relative ${customColor === c ? 'scale-110 border-slate-700 shadow-md ring-2 ring-slate-300 ring-offset-1' : 'border-slate-200 hover:scale-105'}`}
+                style={{ backgroundColor: c }}
+                aria-label={`Couleur ${c}`}
+              >
+                {customColor === c && (
+                  <span className="absolute inset-0 m-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Aperçu du nom composé */}
         {effectiveLevel && (
-          <div className="rounded-xl border border-dashed border-border bg-slate-50 px-3 py-2 text-xs">
-            <span className="font-semibold text-slate-400">Nom de la classe : </span>
-            <span className="font-bold text-slate-700">{composedName}</span>
-            {effectiveSubject && <span className="text-slate-400"> · {effectiveSubject}</span>}
+          <div className="rounded-xl border border-dashed border-border bg-slate-50 px-3 py-2 text-xs flex justify-between items-center">
+            <div>
+              <span className="font-semibold text-slate-400">Nom de la classe : </span>
+              <span className="font-bold text-slate-700">{composedName}</span>
+              {effectiveSubject && <span className="text-slate-400"> · {effectiveSubject}</span>}
+            </div>
+            {/* Visual indicator tag */}
+            <span className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0" style={{ backgroundColor: customColor }} />
           </div>
         )}
 

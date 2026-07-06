@@ -190,7 +190,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     if (!date) return;
     const message = summarizeWarnings(getDateWarnings(date));
     if (message) {
-      toast.warning(message, { duration: 6000 });
+      toast.warning(message, { duration: 15000 });
     }
   }, [getDateWarnings]);
 
@@ -681,8 +681,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }
 
   return (
-    <div className="relative p-1 sm:p-5 bg-slate-50 safe-bottom" data-editor-root>
-      <div className="container mx-auto max-w-7xl bg-white shadow-2xl p-1.5 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:shadow-none print:border-none print:p-0">
+    <div className="relative p-1.5 sm:p-5 bg-[#F5EDE8] safe-bottom" data-editor-root>
+      <div className="container mx-auto max-w-7xl bg-[#FFFDF7] rounded-[24px] border border-[#E4D3AC]/60 shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:shadow-none print:border-none print:p-0">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -690,7 +690,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          <div className="sticky bottom-0 sm:static z-30 bg-white/70 sm:bg-transparent backdrop-blur supports-[backdrop-filter]:backdrop-blur print:hidden">
+          <div className="sticky bottom-0 sm:static z-30 bg-[#FFFDF7]/70 sm:bg-transparent backdrop-blur supports-[backdrop-filter]:backdrop-blur print:hidden">
             <Toolbar
               onUndo={undo}
               onRedo={redo}
@@ -713,7 +713,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             <button
               type="button"
               onClick={() => setEditorState(draft => { draft.activeModal = 'history'; })}
-              className="mx-auto mb-2 flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600 print:hidden"
+              className="mx-auto mb-2 flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold text-[#A79C87] transition-colors hover:bg-[#FCF6EA] hover:text-[#2B241D] border border-[#E4D3AC]/40 print:hidden"
               title="Voir l'historique détaillé des actions"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
@@ -724,13 +724,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           )}
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
-            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-[#B8935A]/30 bg-[#FBF6EE] p-4 text-center sm:flex-row sm:text-left print:hidden">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B8935A]/15 text-[#8a6b3d]">
+            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FCF6EA] text-[#B8935A]">
                 <BookOpen className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-slate-800">{predefinedOffer.titre}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm font-bold text-[#2B241D] font-display">{predefinedOffer.titre}</p>
+                <p className="text-xs text-[#69604F]">
                   Un programme prêt à l'emploi existe pour cette classe — chargez-le puis adaptez-le, ou ignorez-le.
                 </p>
               </div>

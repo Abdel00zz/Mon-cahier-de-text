@@ -8,10 +8,41 @@ interface AnalysisModalProps {
   isOpen: boolean;
   onClose: () => void;
   lessonsData: LessonsData;
+  getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
 
-export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, lessonsData }) => {
+const getWarningItems = (lessons: LessonsData, getWarnings: (date: string) => any[]) => {
+  const warningsList: Array<{ title: string; date: string; messages: string[] }> = [];
+  
+  const process = (item: any) => {
+    if (!item) return;
+    if (item.date && typeof item.date === 'string' && item.date.trim()) {
+      const msgs = getWarnings(item.date).map(w => w.message);
+      if (msgs.length > 0) {
+        warningsList.push({
+          title: item.title || item.name || 'Élément',
+          date: item.date,
+          messages: msgs
+        });
+      }
+    }
+    if (item.sections) item.sections.forEach(process);
+    if (item.subsections) item.subsections.forEach(process);
+    if (item.subsubsections) item.subsubsections.forEach(process);
+    if (item.items) item.items.forEach(process);
+  };
+  
+  lessons.forEach(process);
+  return warningsList;
+};
+
+export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, lessonsData, getDateWarnings }) => {
   const stats = useMemo(() => computeProgressionStats(lessonsData), [lessonsData]);
+
+  const warningItems = useMemo(() => {
+    if (!getDateWarnings) return [];
+    return getWarningItems(lessonsData, getDateWarnings);
+  }, [lessonsData, getDateWarnings]);
 
   return (
     <Dialog
@@ -46,7 +77,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
 
         <div>
           <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Progression par Chapitre</h3>
-          <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
+          <div className="space-y-4 max-h-[30vh] overflow-y-auto pr-1">
             {stats.perChapter.map((chapter, i) => {
               if (chapter.total === 0) return null;
               return (
@@ -68,7 +99,36 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
             })}
           </div>
         </div>
+
+        {warningItems.length > 0 && (
+          <div className="border-t border-[#E4D3AC]/40 pt-4">
+            <h3 className="text-xs font-bold text-[#C96442] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#C96442] animate-ping" />
+              Alertes de Calendrier & Dates Insolites ({warningItems.length})
+            </h3>
+            <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
+              {warningItems.map((item, idx) => (
+                <div key={idx} className="bg-[#FDF2ED] p-3 rounded-xl border border-[#C96442]/20 text-xs flex flex-col gap-1">
+                  <div className="flex justify-between items-center font-bold text-[#2B241D]">
+                    <span className="truncate pr-2">{item.title}</span>
+                    <span className="font-mono text-[10px] text-[#C96442] bg-white px-2 py-0.5 rounded-full border border-[#C96442]/10 shrink-0">
+                      {item.date.split('-').reverse().join('/')}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5 mt-0.5">
+                    {item.messages.map((m, i) => (
+                      <p key={i} className="text-[#69604F]/90 pl-2 border-l border-[#C96442]/30">
+                        ⚠ {m}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Dialog>
   );
 };
+

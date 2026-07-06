@@ -29,6 +29,15 @@ if "%COMMIT_MESSAGE%"=="" (
   set "COMMIT_MESSAGE=Update project !TODAY! !NOW!"
 )
 
+echo Recuperation des dernieres mises a jour...
+git pull --rebase origin main
+if errorlevel 1 (
+  echo.
+  echo Erreur pendant git pull --rebase. Corrige le conflit puis relance ce fichier.
+  pause
+  exit /b 1
+)
+
 echo.
 echo Ajout des fichiers modifies...
 git add -A
@@ -41,18 +50,7 @@ if errorlevel 1 (
 git diff --cached --quiet
 if not errorlevel 1 (
   echo.
-  echo Aucun changement local a commit.
-  echo.
-  echo Recuperation des dernieres mises a jour...
-  git pull --rebase origin main
-  if errorlevel 1 (
-    echo.
-    echo Erreur pendant git pull --rebase. Corrige le conflit puis relance ce fichier.
-    pause
-    exit /b 1
-  )
-  echo.
-  echo Termine: aucun changement local a envoyer.
+  echo Aucun changement a commit.
   pause
   exit /b 0
 )
@@ -63,16 +61,6 @@ echo "%COMMIT_MESSAGE%"
 git commit -m "%COMMIT_MESSAGE%"
 if errorlevel 1 (
   echo Erreur pendant git commit.
-  pause
-  exit /b 1
-)
-
-echo.
-echo Recuperation des dernieres mises a jour...
-git pull --rebase origin main
-if errorlevel 1 (
-  echo.
-  echo Erreur pendant git pull --rebase. Corrige le conflit puis relance ce fichier.
   pause
   exit /b 1
 )

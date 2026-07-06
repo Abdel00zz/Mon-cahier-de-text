@@ -87,16 +87,16 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
 
 export const formatLatenessMessage = (result: LatenessResult, className: string): string => {
     if (result.severity === 'critical') {
-        return `${className} a besoin de vous : environ ${result.gapSessions} séances de retard depuis la dernière mise à jour.`;
+        return `${className} : environ ${result.gapSessions} séances de décalage par rapport à l'emploi du temps. Vous pouvez tout de même rattraper la saisie à votre rythme.`;
     }
     if (result.severity === 'warning') {
         if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
-            return `Dernière saisie il y a ${result.daysSinceLastEntry} jour(s) de classe en ${className}. Un petit rattrapage ?`;
+            return `Dernière saisie il y a ${result.daysSinceLastEntry} jour(s) de classe en ${className}. Un petit rattrapage quand vous avez le temps ?`;
         }
-        return `Attention : environ ${result.gapSessions} séances de retard en ${className}.`;
+        return `Attention : environ ${result.gapSessions} séances de décalage en ${className}. L'application conseille une mise à jour, mais vous décidez du rythme.`;
     }
     if (result.severity === 'notice') {
-        return `Pensez à mettre à jour votre cahier : environ ${result.gapSessions} séance(s) de retard en ${className}.`;
+        return `Pensez à mettre à jour ${className} (${result.gapSessions} séance(s) en attente).`;
     }
     return `${className} est à jour. Continuez ainsi !`;
 };
@@ -123,8 +123,8 @@ export const summarizeForTeacher = (results: ClassLateness[]): { title: string; 
     }
     const names = flagged.slice(0, 3).map(r => r.className).join(', ');
     return {
-        title: `${flagged.length} classes à mettre à jour`,
-        body: `${names}${flagged.length > 3 ? '…' : ''} ont besoin d'une mise à jour de leur cahier.`,
+        title: `${flagged.length} classes attendent une mise à jour`,
+        body: `Un décalage a été détecté pour ${names}${flagged.length > 3 ? '…' : ''}. Vous pouvez rattraper la saisie à votre rythme.`,
         severity,
     };
 };

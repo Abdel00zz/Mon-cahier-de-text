@@ -34,7 +34,7 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
       suppressContentEditableWarning
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`inline-block px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-[#F5EDE8] focus:outline-none focus:ring-2 focus:ring-[#C96442]/30 ${isArabic ? 'font-ar' : 'font-slab'}`}
+      className={`inline-block px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-[#F1DED2]/60 focus:outline-none focus:ring-2 focus:ring-[#C96442]/30 ${isArabic ? 'font-ar' : 'font-display'}`}
     >
       {value}
     </span>
@@ -44,29 +44,17 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
   return (
     <div className="flex items-center justify-center relative mb-5 pb-4 group">
-      {onBack && (
-        <div className="absolute left-0">
-          <Button 
-            variant="icon" 
-            size="md" 
-            onClick={onBack} 
-            data-tippy-content="Retour au tableau de bord"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
       <div className="absolute right-0 top-0">
         <SyncStatusBadge />
       </div>
       <header className="text-center">
         {establishmentName && (
-          <p className="text-xs font-medium text-[#9D9490] tracking-widest uppercase mb-1.5">{establishmentName}</p>
+          <p className="text-xs font-medium text-[#69604F] tracking-widest uppercase mb-1.5 font-mono">{establishmentName}</p>
         )}
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1A1817] font-slab">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#2B241D] font-display">
           <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
         </h1>
-        <p className="text-sm text-[#9D9490] mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <p className="text-sm text-[#A79C87] mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           Cliquez sur le nom pour modifier
         </p>
       </header>

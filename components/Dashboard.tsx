@@ -15,7 +15,7 @@ import { WelcomeModal } from './modals/WelcomeModal';
 import { ClassInfo, Cycle } from '../types';
 import { logger } from '../utils/logger';
 import { getBundledCalendar, nextSchoolDay, todayInMorocco, weekdayLabel } from '../utils/calendar';
-import { Plus, CircleHelp, Settings } from './ui/icons';
+import { Plus, CircleHelp, Settings, TrendingUp } from './ui/icons';
 import { AUTH_REQUIRED } from '../config/features';
 import { restoreBackup } from '../utils/backup';
 
@@ -26,6 +26,14 @@ interface DashboardProps {
     onOpenSettings: () => void;
 }
 
+const getInitials = (name: string): string => {
+    if (!name) return "PE";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 0 || !parts[0]) return "PE";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <Card
         role="button"
@@ -33,15 +41,15 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
         onClick={onClick}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
         data-guide="create-class"
-        className="group flex min-h-[8.5rem] w-full cursor-pointer items-center justify-center border border-dashed border-slate-300 bg-slate-50/20 text-slate-500 shadow-none transition-all duration-150 hover:border-slate-500 hover:bg-slate-50 hover:text-slate-800"
+        className="group flex min-h-[140px] flex-col w-full cursor-pointer items-center justify-center rounded-[20px] border-2 border-dashed border-[#E4D3AC]/80 bg-[#FFFDF7]/50 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#B8935A]/60 hover:bg-[#FFFDF7] hover:shadow-md active:translate-y-0 select-none will-change-transform"
         aria-label="Créer une nouvelle classe"
     >
-        <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded bg-slate-100 text-slate-600 transition-colors duration-150 group-hover:bg-slate-900 group-hover:text-white">
-                <Plus className="h-3.5 w-3.5" />
+        <CardContent className="flex flex-col items-center justify-center p-4 text-center gap-1">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FCF6EA] text-[#B8935A] border border-[#E4D3AC]/40 shadow-sm transition-all duration-300 group-hover:bg-[#B8935A] group-hover:text-white group-hover:scale-105 mb-1">
+                <Plus className="h-4 w-4" />
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider">Nouvelle classe</span>
-            <span className="mt-0.5 text-[10px] text-slate-400 font-medium">Créer un nouveau cahier</span>
+            <h3 className="text-sm font-bold text-[#2B241D] font-display group-hover:text-[#B8935A] transition-colors">Nouvelle classe</h3>
+            <p className="text-[11px] text-[#69604F]/70 font-semibold font-sans">Créer un nouveau cahier</p>
         </CardContent>
     </Card>
 );
@@ -77,9 +85,10 @@ const findLatestDate = (data: any): string | null => {
 };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSettings }) => {
-    const { classes, addClass, deleteClass, isLoading: isClassesLoading } = useClassManager();
+    const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+    const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [isImportModalOpen, setImportModalOpen] = useState(false);
     const [isGuideOpen, setGuideOpen] = useState(false);
     const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(false);
@@ -166,6 +175,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
     const calendar = getBundledCalendar();
     const today = todayInMorocco();
+    const formattedDate = (() => {
+        try {
+            const [y, m, d] = today.split('-').map(Number);
+            const date = new Date(Date.UTC(y, m - 1, d));
+            return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        } catch {
+            return '';
+        }
+    })();
+
     const nextSessionLabel = (classId: string): string | null => {
         const schedule = config.schedules?.find(s => s.classId === classId);
         if (!schedule || schedule.slots.length === 0) return null;
@@ -180,62 +199,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         return weekdayLabel(new Date(Date.UTC(ny, nm - 1, nd)).getUTCDay());
     };
 
+    const initials = getInitials(teacherName);
+
     return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,hsl(var(--accent)),transparent_34rem)] p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
-            <header className="relative mx-auto mb-8 max-w-5xl rounded-3xl border border-border bg-card/75 p-6 text-center shadow-sm backdrop-blur sm:mb-10 sm:p-8">
-                {teacherName ? (
-                    <>
-                        {/* Mobile: court */}
-                        <h1 className="sm:hidden text-2xl font-extrabold text-foreground font-slab">
-                            Bienvenue M. {teacherName}
-                        </h1>
-                        <p className="sm:hidden mt-1 text-muted-foreground text-sm font-medium">
-                            Inspirez, simplifiez, progressez — visons +110% d’impact aujourd’hui.
-                        </p>
-                        {/* Desktop: concis */}
-                        <h1 className="hidden sm:block text-3xl sm:text-4xl font-extrabold text-foreground font-slab">
-                            Bienvenue M. {teacherName} — Espace pédagogique
-                        </h1>
-                        <p className="hidden sm:block mt-2 text-muted-foreground text-base font-medium">
-                            Objectif du jour: inspirer vos élèves et gagner en efficacité — +110% d’impact.
-                        </p>
-                    </>
-                ) : (
-                    <>
-                        {/* Mobile: très court */}
-                        <h1 className="sm:hidden text-2xl font-extrabold text-foreground font-slab">Espace pédagogique</h1>
-                        <p className="sm:hidden mt-1 text-muted-foreground text-sm font-medium">
-                            Inspirez vos élèves, simplifiez vos cours, visez +110%.
-                        </p>
-                        {/* Desktop */}
-                        <h1 className="hidden sm:block text-3xl sm:text-4xl font-extrabold text-foreground font-slab">Votre Espace Pédagogique</h1>
-                        <p className="hidden sm:block mt-2 text-muted-foreground text-base font-medium">
-                            Enseignez avec clarté et impact — allons au-delà de 110% aujourd’hui.
-                        </p>
-                    </>
-                )}
-                <div className="absolute top-0 right-0 flex items-center gap-2">
-                    <Button
-                        variant="icon"
-                        size="lg"
-                        onClick={() => setGuideOpen(true)}
-                        data-tippy-content="Aide"
-                        aria-label="Ouvrir l'aide"
-                        data-guide="help"
-                    >
-                        <CircleHelp className="h-6 w-6" />
-                    </Button>
-                    <Button
-                        variant="icon"
-                        size="lg"
-                        onClick={onOpenSettings}
-                        data-tippy-content="Paramètres"
-                        aria-label="Ouvrir les paramètres"
-                        data-guide="settings"
-                        className={needsConfiguration ? 'animate-pulse-glow' : ''}
-                    >
-                        <Settings className="h-6 w-6" />
-                    </Button>
+            <header className="relative mx-auto mb-6 sm:mb-8 max-w-5xl px-3 sm:px-4" id="dashboard-header">
+                <div className="flex items-center justify-between border-b border-[#E4D3AC]/30 pb-5 gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                        {/* Elegant Circular Avatar */}
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#B8935A]/10 border border-[#B8935A]/30 text-[#B8935A] font-extrabold text-sm shadow-inner font-sans tracking-wide">
+                            {initials}
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className="text-lg sm:text-2xl font-extrabold text-[#2B241D] font-display tracking-tight leading-none truncate">
+                                {teacherName ? teacherName : "Mon Espace"}
+                            </h1>
+                            <div className="flex items-center gap-x-2 text-[11px] text-[#69604F]/90 font-semibold font-sans mt-1">
+                                {config.establishmentName && config.establishmentName.trim() !== teacherName ? (
+                                    <span className="text-[#B8935A] font-bold truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
+                                ) : (
+                                    <span>Cahier de Textes</span>
+                                )}
+                                {formattedDate && (
+                                    <>
+                                        <span className="text-[#E4D3AC]/60 select-none">•</span>
+                                        <span className="text-[#69604F]/70 capitalize truncate">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Compact actions - circular buttons on mobile, pill buttons on desktop */}
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button 
+                            onClick={() => setGuideOpen(true)} 
+                            className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full bg-[#FFFDF7] border border-[#E4D3AC]/70 text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] transition-all shadow-sm active:scale-95 cursor-pointer font-sans text-xs font-bold"
+                            title="Consulter le guide d'utilisation"
+                        >
+                            <CircleHelp className="h-4 w-4 text-[#B8935A]" />
+                            <span className="hidden sm:inline">Guide</span>
+                        </button>
+                        <button 
+                            onClick={onOpenSettings} 
+                            className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full bg-[#FFFDF7] border border-[#E4D3AC]/70 text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] transition-all shadow-sm active:scale-95 cursor-pointer font-sans text-xs font-bold"
+                            title="Accéder aux réglages"
+                        >
+                            <Settings className="h-4 w-4 text-[#69604F]" />
+                            <span className="hidden sm:inline">Réglages</span>
+                        </button>
+                    </div>
                 </div>
             </header>
             <main>
@@ -245,7 +258,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 l'inscription) ; en local sans compte, affiché si plusieurs cycles. */}
             {!showAllClasses && (
             <div className={`w-full flex justify-center mb-5 sm:mb-6 ${((config.selectedCycles?.length ?? 0) === 1 && !config.showAllCycles) ? 'hidden' : ''}`}>
-                <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-card p-1 shadow-sm">
+                <div className="inline-flex items-center gap-1 rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-1 shadow-sm">
                 {([
                     { key: 'college', label: 'Collège' },
                     { key: 'lycee', label: 'Lycée' },
@@ -258,8 +271,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                         onClick={() => !isClassesLoading && setSelectedCycle(opt.key)}
                         className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                             selectedCycle === opt.key
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                ? 'bg-primary text-primary-foreground shadow-sm font-sans'
+                                : 'text-[#69604F] hover:bg-accent hover:text-accent-foreground font-sans'
                         }`}
                         aria-pressed={selectedCycle === opt.key}
                         disabled={isClassesLoading}
@@ -271,8 +284,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             </div>
             )}
 
-
-            <div className="mx-auto mt-4 grid max-w-5xl grid-cols-1 gap-4 px-1 sm:mt-8 sm:grid-cols-2 sm:px-2 md:grid-cols-3">
+            <div className="mx-auto max-w-5xl px-3 sm:px-4">
+                <h2 className="text-lg font-bold font-display text-[#2B241D] mb-3.5">Mes Classes</h2>
+                <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-2 md:grid-cols-3">
                         {/* Create new class first */}
                         <AddClassCard onClick={() => setCreateModalOpen(true)} />
                         {/* Classes affichées : toutes (production) ou du cycle actif (local sans onglets) */}
@@ -287,19 +301,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                     nextSessionLabel={nextSessionLabel(classInfo.id)}
                                     onSelect={() => onSelectClass(classInfo)}
                                     onDelete={() => deleteClass(classInfo.id)}
+                                    onConfigure={() => setEditingClass(classInfo)}
                                 />
                             ))
                         }
-
-                    </div>
+                </div>
+            </div>
             </main>
             <CreateClassModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setCreateModalOpen(false)}
+                isOpen={isCreateModalOpen || !!editingClass}
+                onClose={() => {
+                    setCreateModalOpen(false);
+                    setEditingClass(null);
+                }}
                 onCreate={handleCreateClass}
                 defaultTeacherName={config.defaultTeacherName}
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
+                editingClass={editingClass}
+                onUpdate={(classId, updates) => {
+                    updateClass(classId, updates);
+                    setEditingClass(null);
+                }}
             />
             {isGuideOpen && (
                 <Suspense fallback={null}>

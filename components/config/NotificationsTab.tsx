@@ -17,10 +17,10 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     hint,
     disabled,
 }) => (
-    <label className={`flex items-start justify-between gap-3 rounded-xl border border-border bg-white p-3 ${disabled ? 'opacity-60' : ''}`}>
+    <label className={`flex items-start justify-between gap-3 rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 ${disabled ? 'opacity-60' : ''}`}>
         <span>
-            <span className="block text-xs font-semibold text-slate-700">{label}</span>
-            {hint && <span className="mt-0.5 block text-[11px] text-slate-400">{hint}</span>}
+            <span className="block text-xs font-semibold text-[#2B241D] font-sans">{label}</span>
+            {hint && <span className="mt-0.5 block text-[11px] text-[#69604F] font-sans">{hint}</span>}
         </span>
         <button
             type="button"
@@ -28,7 +28,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
             aria-checked={checked}
             disabled={disabled}
             onClick={() => onChange(!checked)}
-            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-slate-300'}`}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${checked ? 'bg-[#B8935A]' : 'bg-[#E4D3AC]'}`}
         >
             <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'left-[22px]' : 'left-0.5'}`} />
         </button>
@@ -71,7 +71,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
     return (
         <div className="space-y-3">
-            <p className="text-xs leading-relaxed text-slate-500">
+            <p className="text-xs leading-relaxed text-[#69604F]">
                 Recevez des rappels intelligents lorsque votre cahier prend du retard — jamais pendant les vacances, les
                 jours fériés ou le week-end.
             </p>
@@ -98,24 +98,24 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="rounded-xl border border-border bg-white p-3">
-                    <span className="block text-xs font-semibold text-slate-700">Seuil de retard</span>
+                <label className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
+                    <span className="block text-xs font-semibold text-[#2B241D] font-sans">Seuil de retard</span>
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
+                        className="mt-1.5 h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-white text-[#2B241D] px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={1}>1 séance de retard</option>
                         <option value={2}>2 séances de retard</option>
                         <option value={3}>3 séances de retard</option>
                     </select>
                 </label>
-                <label className="rounded-xl border border-border bg-white p-3">
-                    <span className="block text-xs font-semibold text-slate-700">Inactivité</span>
+                <label className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
+                    <span className="block text-xs font-semibold text-[#2B241D] font-sans">Inactivité</span>
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
+                        className="mt-1.5 h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-white text-[#2B241D] px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={3}>Après 3 jours de classe</option>
                         <option value={5}>Après 5 jours de classe</option>
@@ -141,13 +141,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         setBusy(false);
                     }}
                     disabled={busy}
-                    className="h-9 w-full rounded-md border border-border bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    className="h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-[#FFFDF7] text-xs font-semibold text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] disabled:opacity-50 transition-colors"
                 >
                     Envoyer une notification de test
                 </button>
             )}
 
-            {message && <p className="rounded-lg bg-slate-100 px-3 py-2 text-[11px] font-medium text-slate-600">{message}</p>}
+            {message && <p className="rounded-lg bg-[#FCF6EA] border border-[#E4D3AC]/60 px-3 py-2 text-[11px] font-medium text-[#2B241D]">{message}</p>}
 
             <AbsencesSection
                 absences={config.absences ?? []}
@@ -181,9 +181,9 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="rounded-xl border border-border bg-white p-3">
-            <h4 className="text-xs font-semibold text-slate-700">Absences justifiées</h4>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-slate-400">
+        <div className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
+            <h4 className="text-xs font-semibold text-[#2B241D] font-display">Absences justifiées</h4>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[#69604F] font-sans">
                 Certificat de maladie, congé... Ces périodes sont exclues du calcul de retard et aucune alerte
                 n'est envoyée pendant.
             </p>
@@ -193,17 +193,17 @@ const AbsencesSection: React.FC<{
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px]"
+                            className="flex items-center justify-between gap-2 rounded-lg bg-[#FCF6EA] border border-[#E4D3AC]/30 px-2.5 py-1.5 text-[11px]"
                         >
-                            <span className="font-semibold text-slate-600">
+                            <span className="font-semibold text-[#2B241D] font-sans">
                                 {formatDateDDMMYYYY(absence.debut)}
                                 {absence.fin !== absence.debut && ` → ${formatDateDDMMYYYY(absence.fin)}`}
-                                {absence.motif && <span className="ml-1.5 font-normal text-slate-400">· {absence.motif}</span>}
+                                {absence.motif && <span className="ml-1.5 font-normal text-[#69604F] font-mono">· {absence.motif}</span>}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => removeAbsence(index)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-600"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#69604F] hover:bg-red-50 hover:text-red-600 transition-colors"
                                 aria-label="Supprimer cette absence"
                             >
                                 <X className="h-2.5 w-2.5" />
@@ -218,7 +218,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-2 text-xs"
+                    className="h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Début de l'absence"
                 />
                 <input
@@ -226,7 +226,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-2 text-xs"
+                    className="h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Fin de l'absence"
                 />
                 <input
@@ -234,13 +234,13 @@ const AbsencesSection: React.FC<{
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder="Motif (optionnel)"
-                    className="col-span-2 h-10 rounded-md border border-border bg-background px-2 text-xs sm:col-span-1"
+                    className="col-span-2 h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <button
                     type="button"
                     onClick={addAbsence}
                     disabled={!debut}
-                    className="col-span-2 h-10 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-40 sm:col-span-1"
+                    className="col-span-2 h-10 rounded-md bg-[#B8935A] text-white hover:bg-[#9E7A46] disabled:opacity-40 sm:col-span-1 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                     Ajouter
                 </button>

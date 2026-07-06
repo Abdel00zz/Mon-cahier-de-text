@@ -411,14 +411,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Book}
                 label="Chapitre"
                 description="Ajoute un grand chapitre de cours à la racine"
-                colorClass="text-red-700 bg-red-50/50 border-red-100"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
                 label="Section"
                 description="Ajoute une sous-partie (I, II, A...) dans le chapitre"
-                colorClass="text-teal-600 bg-teal-50/50 border-teal-100"
+                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip="Sélectionnez un chapitre pour ajouter une Section"
@@ -427,7 +427,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={ListTree}
                 label="Élément"
                 description="Ajoute un exercice, cours, méthode, application..."
-                colorClass="text-blue-600 bg-blue-50/50 border-blue-100"
+                colorClass="text-slate-600 bg-slate-100 border-slate-200"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
                 tooltip="Sélectionnez une section ou un chapitre pour insérer un élément"
@@ -436,7 +436,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={GripHorizontal}
                 label="Séparateur"
                 description="Insère une démarcation chronologique de séance"
-                colorClass="text-slate-500 bg-slate-100/50 border-slate-200"
+                colorClass="text-slate-400 bg-slate-50 border-slate-100"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
                 tooltip="Sélectionnez un élément pour ajouter un séparateur après"
@@ -454,21 +454,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={TestTube}
                 label="Évaluation diagnostique"
                 description="Évaluer les prérequis en début de chapitre"
-                colorClass="text-purple-700 bg-purple-50/50 border-purple-100"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
                 label="Devoir maison"
                 description="Planifier un travail personnel hors-classe"
-                colorClass="text-blue-700 bg-blue-50/50 border-blue-100"
+                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
                 label="Contrôle continu"
                 description="Ajouter un devoir surveillé ou un quiz régulier"
-                colorClass="text-green-700 bg-green-50/50 border-green-100"
+                colorClass="text-slate-600 bg-slate-100 border-slate-200"
                 onClick={() => handleSelectType('controle_continu')}
               />
             </div>
@@ -484,14 +484,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckCheck}
                 label="Correction Devoir maison"
                 description="Ajouter le corrigé complet d'un DM"
-                colorClass="text-blue-600 bg-blue-50/50 border-blue-100"
+                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
                 icon={CheckSquare}
                 label="Correction Contrôle continu"
                 description="Ajouter le barème et corrigé d'un contrôle"
-                colorClass="text-green-600 bg-green-50/50 border-green-100"
+                colorClass="text-slate-600 bg-slate-100 border-slate-200"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
             </div>

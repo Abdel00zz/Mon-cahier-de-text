@@ -2,6 +2,26 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // Polyfill/Override to make window.fetch writable and configurable,
+    // avoiding "Cannot set property fetch of #<Window> which has only a getter" errors.
+    (function() {
+      try {
+        var originalFetch = window.fetch;
+        if (originalFetch) {
+          var currentFetch = originalFetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return currentFetch; },
+            set: function(val) { currentFetch = val; },
+            configurable: true,
+            enumerable: true
+          });
+        }
+      } catch (e) {
+        console.warn('Unable to redefine window.fetch:', e);
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Cahier de Textes Interactif</title>
 
@@ -12,12 +32,10 @@
   <meta name="apple-mobile-web-app-title" content="Cahier" />
   <link rel="apple-touch-icon" href="/icons/icon.svg" />
 
-  <!-- Google Fonts — Inter · Roboto Slab · Arabic -->
+  <!-- Google Fonts — Fraunces, Public Sans, IBM Plex Mono, and Arabic -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="root"></div>

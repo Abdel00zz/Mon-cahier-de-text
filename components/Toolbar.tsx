@@ -96,7 +96,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery, isSearchVisible]);
   
   return (
-    <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card/80 p-2 shadow-lg shadow-slate-950/5 backdrop-blur print:hidden">
+    <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7]/90 p-2 shadow-lg shadow-[#2B241D]/5 backdrop-blur print:hidden">
       <div className="flex items-center gap-2">
         {/* Add content button is now replaced by the FAB */}
       </div>
@@ -127,7 +127,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
-            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 bg-card/95 backdrop-blur border-b border-border shadow-md animate-slide-in-down" id="toolbar-search-panel">
+            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 bg-[#FFFDF7]/95 backdrop-blur border-b border-[#E4D3AC] shadow-md animate-slide-in-down" id="toolbar-search-panel">
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
@@ -142,19 +142,19 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                   <button 
                     type="button" 
                     onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-all duration-200 material-focus"
+                    className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-all duration-200 material-focus"
                     aria-label="Effacer la recherche"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setIsSearchVisible(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700 transition-all duration-200 material-focus"
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary transition-all duration-200 material-focus"
                   aria-label="Fermer la recherche"
                 >
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="h-5 w-5" />
                 </button>
               </div>
             </div>

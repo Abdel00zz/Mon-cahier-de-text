@@ -100,7 +100,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
       );
       break;
     case 'analyse':
-      modal = <AnalysisModal isOpen onClose={handleModalClose} lessonsData={lessonsData} />;
+      modal = <AnalysisModal isOpen onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDateWarnings} />;
       break;
     default:
       return null;

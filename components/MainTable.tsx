@@ -75,7 +75,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
     return (
         <form
             ref={rootRef}
-            className="relative my-2.5 grid gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-card p-3 pl-4 shadow-[0_8px_24px_rgba(31,36,48,0.08)] animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative my-2.5 grid gap-3 overflow-hidden rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 pl-4 shadow-lg shadow-[#2B241D]/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
             onKeyDown={(event) => {
@@ -86,42 +86,42 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
             {/* Liseré signature indiquant le mode édition */}
             <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: GOLD }} />
 
-            <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border md:pr-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center" />
+            <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-[#E4D3AC]/40 md:pr-3">
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-[#E4D3AC] bg-white text-[#2B241D] focus:ring-[#B8935A]/30 font-mono" />
                 {formData.date && (
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
-                        className="text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors"
+                        className="text-[10px] font-bold text-[#A79C87] hover:text-rose-600 transition-colors font-sans"
                     >
                         Dissocier la date
                     </button>
                 )}
             </div>
-            <div className="min-w-0 space-y-2 md:border-r md:border-border md:pr-3">
+            <div className="min-w-0 space-y-2 md:border-r md:border-[#E4D3AC]/40 md:pr-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr]">
-                    <Select name="type" value={formData.type} onChange={handleChange} required className="min-h-11">
+                    <Select name="type" value={formData.type} onChange={handleChange} required className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] focus:ring-[#B8935A]/30">
                         {LESSON_TYPE_OPTIONS.map(type => <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>)}
                     </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11" />
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y" placeholder="Description / contenu..." />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30 font-bold" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" placeholder="Description / contenu..." />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
-                    <div className="space-y-0.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5" role="alert">
+                    <div className="space-y-0.5 rounded-lg border border-[#E4D3AC] bg-[#FCF6EA] px-2.5 py-1.5" role="alert">
                         {dateWarnings.map((warning, i) => (
-                            <p key={i} className="text-[11px] font-medium leading-snug text-amber-800">⚠ {warning.message}</p>
+                            <p key={i} className="text-[11px] font-semibold leading-snug text-[#B8935A]">⚠ {warning.message}</p>
                         ))}
                     </div>
                 )}
 
-                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
-                    <span className="hidden items-center gap-1.5 sm:inline-flex">
-                        <kbd className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5 font-mono text-[10px]">Échap</kbd> annule
-                        <kbd className="ml-2 rounded border border-slate-200 bg-slate-50 px-1 py-0.5 font-mono text-[10px]">⌘/Ctrl+Entrée</kbd> sauvegarde
+                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-[#69604F]">
+                    <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
+                        <kbd className="rounded border border-[#E4D3AC] bg-[#FCF6EA] px-1 py-0.5 font-mono text-[10px] text-[#69604F]">Échap</kbd> annule
+                        <kbd className="ml-2 rounded border border-[#E4D3AC] bg-[#FCF6EA] px-1 py-0.5 font-mono text-[10px] text-[#69604F]">⌘/Ctrl+Entrée</kbd> sauvegarde
                     </span>
                     <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
                         <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">Annuler</Button>
@@ -132,7 +132,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y" placeholder="Remarque..." />
+                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" placeholder="Remarque..." />
             </div>
         </form>
     );
@@ -172,15 +172,15 @@ const ESTIMATED_ROW_HEIGHT = 72;
 const VIRTUAL_OVERSCAN = 16;
 
 const TableHeader: React.FC = React.memo(() => (
-  <div className="sticky top-0 z-10 hidden border-b border-slate-100 bg-white/95 backdrop-blur-md print:static md:block px-3 sm:px-4">
+  <div className="sticky top-0 z-10 hidden border-b border-[#E4D3AC] bg-[#FCF6EA]/90 backdrop-blur-md print:static md:block px-3 sm:px-4">
     <div className="flex">
-      <div className="w-[15%] sm:w-[13%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+      <div className="w-[19%] sm:w-[13%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
         Date
       </div>
-      <div className="flex-1 p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+      <div className="flex-1 p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
         Contenu
       </div>
-      <div className="hidden w-[16%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 md:block">
+      <div className="hidden w-[16%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] md:block font-mono">
         Remarque
       </div>
     </div>
@@ -244,18 +244,18 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
 
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 px-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#E4D3AC] bg-[#FFFDF7] px-6 py-16 text-center shadow-sm">
         <div
             className="flex h-14 w-14 items-center justify-center rounded-full"
             style={{ backgroundColor: `${GOLD}1A`, color: GOLD }}
         >
             <BookOpen className="h-5 w-5" />
         </div>
-        <h3 className="text-base font-bold text-slate-700">Le cahier de textes est vide</h3>
-        <p className="max-w-sm text-sm text-slate-500">
+        <h3 className="text-base font-bold text-[#2B241D] font-display">Le cahier de textes est vide</h3>
+        <p className="max-w-sm text-sm text-[#69604F]">
             Ajoutez un premier chapitre pour commencer à construire la progression.
         </p>
-        <Button onClick={() => onOpenAddContentModal()} className="mt-1" style={{ backgroundColor: GOLD, borderColor: GOLD }}>
+        <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="primary">
             <Plus className="mr-2 h-4 w-4" /> Créer un chapitre
         </Button>
     </div>
@@ -371,7 +371,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-border bg-card/95 shadow-xl shadow-slate-950/5">
+    <Card className="overflow-hidden rounded-2xl border-[#E4D3AC] bg-[#FFFDF7]/95 shadow-xl shadow-[#2B241D]/5">
       <TableHeader />
       <CardContent className="p-0">
         <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize } : undefined}>
@@ -430,6 +430,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               showDescriptions={showDescriptions}
                               descriptionTypes={descriptionTypes}
                               searchQuery={searchQuery}
+                              getDateWarnings={getDateWarnings}
                           />
                       </VirtualListRow>
                   );

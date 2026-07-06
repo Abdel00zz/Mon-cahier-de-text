@@ -19,6 +19,13 @@
       --color-muted-foreground: hsl(var(--muted-foreground));
       --color-accent: hsl(var(--accent));
       --color-accent-foreground: hsl(var(--accent-foreground));
+      --color-signature-gold: hsl(var(--signature-gold));
+
+      --shadow-xs: 0 1px 2px rgba(43,36,29,.05);
+      --shadow-sm: 0 1px 4px rgba(43,36,29,.07), 0 1px 2px rgba(43,36,29,.04);
+      --shadow-md: 0 4px 14px rgba(43,36,29,.08), 0 2px 4px rgba(43,36,29,.05);
+      --shadow-lg: 0 20px 40px -12px rgba(43,36,29,.08), 0 1px 3px rgba(43,36,29,.01);
+      --shadow-hover: 0 30px 60px -15px rgba(201,100,66,.12), 0 4px 12px rgba(43,36,29,.02);
 
       /* Palette signature conservée telle quelle */
       --color-sand-50: #FDFCFA;
@@ -33,58 +40,65 @@
       --color-clay-600: #A8522F;
       --color-clay-700: #87411F;
 
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-slab: 'Roboto Slab', Georgia, serif;
+      --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
+      --font-display: 'Fraunces', serif;
+      --font-slab: 'Fraunces', Georgia, serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
     }
 
     :root {
-      --background: 24 33% 97%;
-      --foreground: 20 9% 10%;
-      --card: 0 0% 100%;
-      --card-foreground: 20 9% 10%;
-      --primary: 15 55% 52%;
-      --primary-foreground: 0 0% 100%;
-      --secondary: 26 32% 94%;
-      --secondary-foreground: 20 9% 10%;
-      --muted: 26 32% 94%;
-      --muted-foreground: 18 7% 45%;
-      --accent: 17 78% 96%;
-      --accent-foreground: 15 55% 36%;
-      --destructive: 0 72% 51%;
-      --destructive-foreground: 0 0% 100%;
-      --border: 29 28% 88%;
-      --input: 29 28% 88%;
-      --ring: 15 55% 52%;
+      --background: 39 45% 88%;      /* Sable #F1E6D2 */
+      --foreground: 29 19% 14%;      /* Encre #2B241D */
+      --card: 45 100% 98%;          /* Papier #FFFDF7 */
+      --card-foreground: 29 19% 14%; /* Encre #2B241D */
+      --primary: 15 56% 52%;         /* Terracotta #C96442 */
+      --primary-foreground: 45 100% 98%; /* Papier #FFFDF7 */
+      --secondary: 40 64% 95%;       /* Papier 2 #FCF6EA */
+      --secondary-foreground: 39 14% 36%; /* Encre douce #69604F */
+      --muted: 40 64% 95%;           /* Papier 2 #FCF6EA */
+      --muted-foreground: 39 14% 36%; /* Encre douce #69604F */
+      --accent: 22 49% 91%;          /* Terracotta clair #F1DED2 */
+      --accent-foreground: 15 54% 42%; /* Terracotta foncé #A44E31 */
+      --destructive: 11 56% 42%;     /* Retard critique #A8462F */
+      --destructive-foreground: 45 100% 98%; /* Papier #FFFDF7 */
+      --border: 42 52% 78%;          /* Sable foncé #E4D3AC */
+      --input: 42 52% 78%;           /* Sable foncé #E4D3AC */
+      --ring: 15 56% 52%;            /* Terracotta #C96442 */
+      --signature-gold: 36 39% 54%;  /* Or #B8935A */
+
       --clr-bg:           hsl(var(--background));
       --clr-surface:      hsl(var(--card));
       --clr-elevated:     hsl(var(--secondary));
       --clr-accent:       hsl(var(--primary));
-      --clr-accent-hover: hsl(15 56% 42%);
-      --clr-accent-soft:  hsl(var(--accent));
-      --clr-text:         hsl(var(--foreground));
-      --clr-text-2:       hsl(var(--muted-foreground));
-      --clr-text-3:       hsl(18 5% 59%);
-      --clr-border:       hsl(var(--border));
-      --clr-border-soft:  hsl(30 25% 92%);
-      --shadow-xs: 0 1px 2px rgba(26,24,23,.05);
-      --shadow-sm: 0 1px 4px rgba(26,24,23,.07), 0 1px 2px rgba(26,24,23,.04);
-      --shadow-md: 0 4px 14px rgba(26,24,23,.08), 0 2px 4px rgba(26,24,23,.05);
-      --shadow-lg: 0 8px 28px rgba(26,24,23,.10), 0 4px 8px rgba(26,24,23,.06);
+      --clr-accent-hover: #A44E31;
+      --clr-accent-soft:  #F1DED2;
+      --clr-signature-gold: #B8935A;
+      --clr-text:         #2B241D;
+      --clr-text-2:       #69604F;
+      --clr-text-3:       #A79C87;
+      --clr-border:       #E4D3AC;
+      --clr-border-soft:  rgba(228, 211, 172, 0.4);
+      --shadow-xs: 0 1px 2px rgba(43,36,29,.05);
+      --shadow-sm: 0 1px 4px rgba(43,36,29,.07), 0 1px 2px rgba(43,36,29,.04);
+      --shadow-md: 0 4px 14px rgba(43,36,29,.08), 0 2px 4px rgba(43,36,29,.05);
+      --shadow-lg: 0 8px 28px rgba(43,36,29,.10), 0 4px 8px rgba(43,36,29,.06);
     }
 
     /* Typography */
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--clr-bg);
       color: var(--clr-text);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-    h1, h2, h4, h5, h6, .font-slab { font-family: 'Roboto Slab', Georgia, serif; }
-    h3 { font-family: 'Inter', sans-serif; }
+    h1, h2, h4, h5, h6, .font-slab, .font-display { font-family: 'Fraunces', Georgia, serif; }
+    h3 { font-family: 'Public Sans', sans-serif; }
+    .font-sans { font-family: 'Public Sans', sans-serif; }
+    .font-mono { font-family: 'IBM Plex Mono', monospace; }
     .font-ar, :lang(ar) { font-family: 'IBM Plex Sans Arabic', sans-serif; }
     p { color: var(--clr-text); }
-    
+
     /* Tooltip maison (remplace Tippy.js) */
     @keyframes tooltip-in {
       from { opacity: 0; transform: translate(-50%, 4px); }
@@ -166,23 +180,23 @@
       .print-hidden { display: block !important; }
       .print-only { display: none !important; }
     }
-    
+
     @media print {
       @page {
         size: A4;
         margin: 0.7cm;
       }
-      
+
       /* Hide screen content */
-      .print-hidden { 
-        display: none !important; 
+      .print-hidden {
+        display: none !important;
       }
-      
+
       /* Show print content */
-      .print-only { 
-        display: block !important; 
+      .print-only {
+        display: block !important;
       }
-      
+
       /* Hide notifications and all interactive elements */
       .notification,
       [class*="notification"],
@@ -198,7 +212,7 @@
         display: none !important;
         visibility: hidden !important;
       }
-      
+
       body {
         padding: 0 !important;
         margin: 0 !important;
@@ -212,20 +226,20 @@
 
       /* S'assurer que les paragraphes s'impriment en noir */
       p { color: black !important; }
-      
+
       /* Minimal global resets for print */
       *, *::before, *::after {
         box-shadow: none !important;
         outline: none !important;
         transform: none !important;
       }
-      
+
       /* Reduce bottom margins and padding for compactness */
       div, p, h1, h2, h3, h4, h5, h6 {
         margin-bottom: 3px !important;
         padding-bottom: 2px !important;
       }
-      
+
       /* Table styling */
       table {
         width: 100% !important;
@@ -234,7 +248,7 @@
         padding: 0 !important;
         margin-bottom: 0 !important;
       }
-      
+
       th, td {
         border: none !important;
         padding: 3px 6px !important;
@@ -242,7 +256,7 @@
         text-align: left !important;
         margin: 0 !important;
       }
-      
+
       /* Ensure badges print properly with background colors */
       .bg-sky-200, [class*="bg-sky-200"] { background-color: #bae6fd !important; }
       .bg-emerald-100, [class*="bg-emerald-100"] { background-color: #d1fae5 !important; }
@@ -256,12 +270,12 @@
       .bg-cyan-100, [class*="bg-cyan-100"] { background-color: #cffafe !important; }
       .bg-blue-100, [class*="bg-blue-100"] { background-color: #dbeafe !important; }
       .bg-green-100, [class*="bg-green-100"] { background-color: #dcfce7 !important; }
-      
+
       /* Content indentation with reduced spacing */
       .pl-4 { padding-left: 0.8rem !important; }
       .pl-8 { padding-left: 1.5rem !important; }
       .pl-12 { padding-left: 2.2rem !important; }
-      
+
       /* Font styles */
       .text-sm { font-size: 8pt !important; }
       .font-bold { font-weight: bold !important; }
@@ -270,4 +284,22 @@
 
       /* Highlight for newly added items in print */
       .new-item-print-highlight > td { background-color: #FDF2ED !important; }
+    }
+
+    @keyframes warning-blink {
+      0%, 100% {
+        color: #C96442;
+        background-color: rgba(201, 100, 66, 0.1);
+        transform: scale(1);
+      }
+      50% {
+        color: #EF4444;
+        background-color: rgba(239, 68, 68, 0.2);
+        transform: scale(1.03);
+      }
+    }
+    .animate-warning-blink {
+      animation: warning-blink 1s infinite ease-in-out;
+      border-radius: 8px;
+      padding: 4px 8px;
     }

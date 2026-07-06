@@ -25,17 +25,33 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
   const toHtml = (markdown: string) => {
     return markdown
-      .replace(/^# (.+)/gm, (_, t) => `<h1 id="${slugify(t)}" class="text-2xl font-bold font-slab mb-6 text-teal-700 text-center">${t}</h1>`)
-      .replace(/^## (.+)/gm, (_, t) => `<h2 id="${slugify(t)}" class="text-xl font-semibold font-slab mt-8 mb-4 pb-2 border-b border-slate-200 text-teal-600 flex items-center gap-2">${t}</h2>`)
-      .replace(/^### (.+)/gm, (_, t) => `<h3 id="${slugify(t)}" class="text-lg font-semibold mt-6 mb-3">${t}</h3>`)
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`(.+?)`/g, '<code class="bg-slate-100 text-red-600 px-1.5 py-0.5 rounded-md text-sm">$1</code>')
-      .replace(/^---$/gm, '<hr class="my-6 border-slate-200">')
-      .replace(/\[(.+?)\]\(mailto:(.+?)\)/g, '<a href="mailto:$2" class="text-teal-600 hover:underline">$1</a>')
-      .replace(/<i class="(.+?)"><\/i>/g, '<i class="$1"></i>')
-      .split('\n').map(p => p.trim() ? `<p class="mb-3 leading-relaxed">${p}</p>` : '').join('')
-      .replace(/<p><(h[1-3]|hr)>/g, (match) => match.replace('<p>', ''))
-      .replace(/<\/(h[1-3]|hr)><\/p>/g, (match) => match.replace('</p>', ''));
+      .replace(/^# (.+)/gm, (_, t) => `<h1 id="${slugify(t)}" class="text-3xl font-bold font-display mb-8 text-[#B8935A] text-center tracking-tight">${t}</h1>`)
+      .replace(/^## (.+)/gm, (_, t) => `<h2 id="${slugify(t)}" class="text-xl font-bold font-display mt-10 mb-5 pb-2 border-b border-[#E4D3AC]/60 text-[#2B241D] flex items-center gap-2">${t}</h2>`)
+      .replace(/^### (.+)/gm, (_, t) => `<h3 id="${slugify(t)}" class="text-lg font-semibold font-display mt-6 mb-3 text-[#2B241D]">${t}</h3>`)
+      
+      // Convert numbered lists to cards with numbers
+      .replace(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out flex gap-4 items-start"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#FCF6EA] text-[#B8935A] font-bold flex items-center justify-center font-mono mt-0.5 group-hover:bg-primary group-hover:text-[#FFFDF7] transition-colors">$1</div><div><div class="font-bold text-[#2B241D] font-display mb-1.5 text-base group-hover:text-primary transition-colors">$2</div><div class="text-[#69604F] text-[15px] leading-relaxed">$3</div></div></div>')
+      
+      // Convert standard bold bullet lists to cards
+      .replace(/^- \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out relative overflow-hidden"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-[#E4D3AC] group-hover:bg-primary transition-colors"></div><div class="font-bold text-[#2B241D] font-display mb-1.5 text-base group-hover:text-primary transition-colors">$1</div><div class="text-[#69604F] text-[15px] leading-relaxed">$2</div></div>')
+      
+      // Convert unbolded bullet lists to smaller cards
+      .replace(/^- (.+?) : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-xl p-4 shadow-sm mb-3 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-300 ease-out"><div class="font-bold text-[#2B241D] font-display mb-1 text-[15px] group-hover:text-primary transition-colors">$1</div><div class="text-[#69604F] text-[14px] leading-relaxed">$2</div></div>')
+      
+      // Fallback for any other standard lists
+      .replace(/^- (.+)$/gm, '<div class="flex gap-2 mb-2"><span class="text-primary mt-1">•</span><span class="text-[#69604F] text-[15px] leading-relaxed">$1</span></div>')
+      
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-[#2B241D]">$1</strong>')
+      .replace(/`([^`]+)`/g, '<code class="bg-[#FCF6EA] text-[#B8935A] px-1.5 py-0.5 rounded-md text-sm font-mono border border-[#E4D3AC]/40">$1</code>')
+      .replace(/^---$/gm, '<hr class="my-8 border-[#E4D3AC]/40">')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-medium hover:underline transition-colors">$1</a>')
+      .split('\n')
+      .map(p => {
+         if (!p.trim()) return '';
+         if (p.startsWith('<div') || p.startsWith('<h') || p.startsWith('<hr') || p.startsWith('<ul') || p.startsWith('<ol')) return p;
+         return `<p class="mb-4 text-[15px] text-[#69604F] leading-relaxed">${p}</p>`;
+      })
+      .join('');
   };
 
   const htmlFr = useMemo(() => toHtml(GUIDE_FR), []);
@@ -67,24 +83,24 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       maxWidth="5xl"
       className="max-w-6xl sm:max-w-6xl h-[92vh] sm:h-[86vh]"
     >
-      <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] -mx-4 sm:-mx-5 -my-4 sm:-my-5 bg-slate-50 overflow-hidden">
+      <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] -mx-4 sm:-mx-5 -my-4 sm:-my-5 bg-[#FCF6EA] overflow-hidden">
         <div
           ref={leftRef}
-          className="relative overflow-y-auto overscroll-contain bg-white"
+          className="relative overflow-y-auto overscroll-contain bg-[#FCF6EA]/40"
           style={{ scrollbarGutter: 'stable', height: '100%' }}
         >
-          <div className="p-4 sm:p-6 pb-12">
+          <div className="p-4 sm:p-8 pb-16">
             <div className="prose max-w-none text-black" dangerouslySetInnerHTML={{ __html: htmlFr }} />
           </div>
         </div>
-        <div className="hidden lg:block bg-gradient-to-b from-gray-200 to-gray-300" aria-hidden="true"></div>
+        <div className="hidden lg:block bg-gradient-to-b from-[#E4D3AC]/60 to-[#E4D3AC]/20" aria-hidden="true"></div>
         <div
           ref={rightRef}
-          className="relative overflow-y-auto overscroll-contain bg-[#FFFBEA]"
+          className="relative overflow-y-auto overscroll-contain bg-[#FFFDF7]"
           style={{ scrollbarGutter: 'stable', height: '100%' }}
           dir="rtl" lang="ar"
         >
-          <div className="p-4 sm:p-6 pb-12">
+          <div className="p-4 sm:p-8 pb-16">
             <div className="prose max-w-none text-right font-ar text-base sm:text-lg leading-relaxed text-black" dangerouslySetInnerHTML={{ __html: htmlAr }} />
           </div>
         </div>

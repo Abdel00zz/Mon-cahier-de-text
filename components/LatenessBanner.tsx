@@ -8,9 +8,9 @@ import { Bell, X } from './ui/icons';
 const SNOOZE_KEY = 'latenessSnooze_v1';
 
 const SEVERITY_STYLE: Record<string, { bg: string; border: string; icon: string }> = {
-    notice: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-500' },
-    warning: { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-500' },
-    critical: { bg: 'bg-red-50', border: 'border-red-200', icon: 'text-red-500' },
+    notice: { bg: 'bg-[#FCF6EA]/80', border: 'border-[#E4D3AC]/70', icon: 'text-[#B8935A]' },
+    warning: { bg: 'bg-[#FCF6EA]', border: 'border-[#B8935A]/50', icon: 'text-[#C96442]' },
+    critical: { bg: 'bg-[#FDF2ED]', border: 'border-[#C96442]/40', icon: 'text-[#C96442]' },
 };
 
 interface LatenessBannerProps {
@@ -59,12 +59,12 @@ export const LatenessBanner: React.FC<LatenessBannerProps> = ({ classes, config 
                     <Bell className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-slate-800">{summary.title}</p>
-                    <p className="text-sm text-slate-600">{summary.body}</p>
+                    <p className="text-sm font-bold text-[#2B241D]">{summary.title}</p>
+                    <p className="text-sm text-[#69604F]">{summary.body}</p>
                 </div>
                 <button
                     onClick={handleDismiss}
-                    className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
+                    className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#A79C87] transition-all hover:bg-white hover:text-[#2B241D] cursor-pointer"
                     aria-label="Masquer jusqu'au prochain jour de classe"
                 >
                     <X className="h-4 w-4" />

@@ -78,7 +78,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
     onBlur: handleSave,
     onKeyDown: handleKeyDown,
     placeholder: placeholder,
-    className: `w-full h-full p-2 bg-white border-2 border-teal-500 rounded-md shadow-inner z-10 focus:outline-none ${className}`
+    className: `w-full h-full p-2 bg-white border-2 border-primary rounded-md shadow-inner z-10 focus:outline-none focus:ring-2 focus:ring-primary/20 ${className}`
   };
 
   if (isEditing) {

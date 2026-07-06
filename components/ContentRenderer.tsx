@@ -127,7 +127,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-base font-semibold font-slab text-slate-800 py-1.5 flex items-baseline gap-2">
+            <div className="text-base font-bold font-display text-[#2B241D] py-1.5 flex items-baseline gap-2">
                 <span>{sectionLetter}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -136,7 +136,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm font-semibold font-slab text-slate-700 pl-2 sm:pl-4 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm font-bold font-sans text-[#2B241D] pl-2 sm:pl-4 py-0.5 flex items-baseline gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -146,7 +146,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm italic font-slab text-teal-800 pl-4 sm:pl-8 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm italic font-sans text-[#69604F] pl-4 sm:pl-8 py-0.5 flex items-baseline gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -161,16 +161,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-slate-200 text-slate-800';
 
       const content = (
-        <div className="prose prose-sm max-w-none text-sm text-slate-700 space-y-1">
+        <div className="prose prose-sm max-w-none text-sm text-[#69604F] space-y-1">
           {/* Titre */}
-          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-slate-800 p-0" placeholder="Titre..." highlight={highlight} />
+          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-[#2B241D] p-0" placeholder="Titre..." highlight={highlight} />
 
           {/* Description : encadré doux sous le titre — contenu TOUJOURS affiché
               en entier (aucune barre de défilement) ; texte enrichi (gras,
               italique, listes) + LaTeX (les longues formules passent à la
               ligne via displayOverflow: linebreak). */}
           {allowDescription && (
-            <div className="mt-1.5 rounded-lg border border-[#B8935A]/20 bg-[#FBF6EE]/70 px-3 py-2 text-xs md:text-[12px] leading-relaxed text-slate-700 font-normal whitespace-pre-wrap break-words animate-fade-in">
+            <div className="mt-1.5 rounded-lg border border-[#E4D3AC] bg-[#FFFDF7] px-3 py-2 text-xs md:text-[12px] leading-relaxed text-[#69604F] font-normal whitespace-pre-wrap break-words animate-fade-in shadow-sm">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
@@ -195,7 +195,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className="flex flex-col items-start gap-1 pl-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:pl-8">
           <Badge
             variant="outline"
-            className={`flex-shrink-0 select-none rounded-md border-transparent text-[10px] font-bold uppercase tracking-wider ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`flex-shrink-0 select-none rounded-lg border-transparent text-[10px] font-bold tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={BADGE_TOOLTIP_MAP[normalizedType] || normalizedType}
           >
             {badgeText} {item.number || ''}

@@ -49,7 +49,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     type="date"
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="bg-transparent text-slate-400 text-[11px] font-semibold rounded-md border border-dashed border-slate-200 px-1.5 py-1 transition-colors focus:outline-none focus:ring-1 hover:border-slate-300 cursor-pointer text-center w-full max-w-[100px]"
+                    className="bg-transparent text-[#A79C87] text-[11px] font-bold rounded-md border border-dashed border-[#E4D3AC]/80 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
                     style={{ ['--tw-ring-color' as string]: GOLD }}
                     title="Modifier la date du séparateur"
                 />
@@ -65,7 +65,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="relative text-center text-[11px] font-bold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full bg-white border transition-colors focus:outline-none focus:ring-1 min-w-[120px] max-w-[80%] shadow-[0_1px_2px_rgba(31,36,48,0.06)]"
+                    className="relative text-center text-[11px] font-bold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full bg-[#FFFDF7] border transition-colors focus:outline-none focus:ring-1 min-w-[120px] max-w-[80%] shadow-sm font-sans"
                     style={{
                         color: GOLD,
                         borderColor: GOLD_SOFT,
@@ -86,7 +86,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                         size="sm"
                         onClick={() => onDelete(separatorIndices)}
                         data-tippy-content="Supprimer le séparateur"
-                        className="h-9 w-9 text-xs text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors lg:h-7 lg:w-7"
+                        className="h-9 w-9 text-xs text-[#A79C87] hover:text-red-600 hover:bg-rose-500/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>
