@@ -80,6 +80,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     newlyAddedIds: [] as string[],
     printSelection: null as LessonsData | null, // sous-ensemble à imprimer (nouveautés seulement)
     printPageNumbers: true, // numérotation des pages à l'impression
+    printTextSize: 'm' as 's' | 'm' | 'l', // taille du texte imprimé
+    printLineSpacing: 'normal' as 'compact' | 'normal' | 'aere', // aération des lignes
   });
 
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
@@ -96,6 +98,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     newlyAddedIds,
     printSelection,
     printPageNumbers,
+    printTextSize,
+    printLineSpacing,
   } = editorState;
 
   useEffect(() => {
@@ -431,9 +435,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setEditorState(draft => {
           draft.activeModal = null;
           draft.printPageNumbers = options.pageNumbers;
+          draft.printTextSize = options.textSize;
+          draft.printLineSpacing = options.lineSpacing;
       });
 
-      const launchPrint = () => {
+      const launchPrint = async () => {
+          // garantir que TOUTES les formules LaTeX sont compilées avant
+          // l'ouverture du dialogue d'impression (sinon syntaxe $...$ brute)
+          try {
+              await (window as unknown as { MathJax?: { typesetPromise?: () => Promise<void> } }).MathJax?.typesetPromise?.();
+          } catch {
+              // MathJax indisponible : on imprime tel quel
+          }
           printDocument('cahier-de-textes');
           recordPrint(classId, datesToRecord);
       };
@@ -442,12 +455,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           // rendre le sous-ensemble dans PrintView avant de lancer l'impression
           setEditorState(draft => { draft.printSelection = selection; });
           setTimeout(() => {
-              launchPrint();
-              // restaurer le rendu complet après le cycle d'impression
-              setTimeout(() => setEditorState(draft => { draft.printSelection = null; }), 500);
+              void launchPrint().then(() => {
+                  // restaurer le rendu complet après le cycle d'impression
+                  setTimeout(() => setEditorState(draft => { draft.printSelection = null; }), 500);
+              });
           }, 120);
       } else {
-          setTimeout(launchPrint, 60);
+          setTimeout(() => void launchPrint(), 60);
       }
   }, [classInfo.id, lessonsData, setEditorState]);
 
@@ -773,7 +787,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           </main>
         </div>
 
-        <PrintView lessonsData={printSelection ?? filteredData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} />
+        <PrintView lessonsData={printSelection ?? filteredData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} textSize={printTextSize} lineSpacing={printLineSpacing} />
       </div>
 
       {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}

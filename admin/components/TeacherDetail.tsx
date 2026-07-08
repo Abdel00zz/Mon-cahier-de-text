@@ -102,7 +102,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             {data && (
                 <>
                     <header className="mb-6">
-                        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Roboto Slab', serif" }}>
+                        <h1 className="text-2xl font-bold text-foreground font-display">
                             {data.user?.prenom ?? data.snapshot?.prenom} {data.user?.nom ?? data.snapshot?.nom}
                             {isBlocked && (
                                 <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-red-700">

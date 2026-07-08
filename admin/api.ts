@@ -31,8 +31,15 @@ export const adminLogout = (): Promise<void> =>
         body: JSON.stringify({ action: 'logout' }),
     }).then(() => undefined);
 
-export const fetchOverview = (): Promise<{ teachers: TeacherSnapshot[] }> =>
-    request('/api/admin?action=overview');
+export const fetchOverview = async (): Promise<{ teachers: TeacherSnapshot[] }> => {
+    const data = await request('/api/admin?action=overview');
+    // validation de frontière : une réponse inattendue (proxy, dev sans API,
+    // hash corrompu) ne doit jamais propager `undefined` dans l'interface
+    if (!Array.isArray(data?.teachers)) {
+        throw new Error('Réponse du serveur invalide (vue d\'ensemble indisponible).');
+    }
+    return { teachers: data.teachers as TeacherSnapshot[] };
+};
 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>
     request(`/api/admin?action=teacher&phone=${encodeURIComponent(phone)}`);

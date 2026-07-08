@@ -35,13 +35,13 @@ const SEVERITY_RANK: Record<LatenessSeverity, number> = { ok: 0, notice: 1, warn
  */
 const teacherSeverity = (teacher: TeacherSnapshot): LatenessSeverity =>
     worstSeverity(
-        teacher.classes.map(cls => ({
+        (teacher.classes ?? []).map(cls => ({
             classId: cls.id,
             className: cls.name,
             ...computeLateness({
-                slots: cls.weekdays.map(weekday => ({ weekday })),
+                slots: (cls.weekdays ?? []).map(weekday => ({ weekday })),
                 calendar,
-                sessionsCount: cls.sessionsCount,
+                sessionsCount: cls.sessionsCount ?? 0,
                 lastDate: cls.lastDate,
                 settings: teacher.notifyPrefs,
                 absences: teacher.absences,
@@ -57,7 +57,9 @@ const isInactive = (teacher: TeacherSnapshot): boolean => {
 
 type SortKey = 'severity' | 'completion' | 'activity' | 'name';
 
-export const TeacherList: React.FC<TeacherListProps> = ({ teachers, isLoading, onRefresh, onSelect, onLogout }) => {
+export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp, isLoading, onRefresh, onSelect, onLogout }) => {
+    // tolère une liste absente/mal formée : la console ne doit jamais écran-blanchir
+    const teachers = Array.isArray(teachersProp) ? teachersProp : [];
     const [query, setQuery] = useState('');
     const [cycleFilter, setCycleFilter] = useState<string>('all');
     const [severityFilter, setSeverityFilter] = useState<LatenessSeverity | 'all' | 'inactive'>('all');
@@ -65,7 +67,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, isLoading, o
 
     const subjects = useMemo(() => {
         const set = new Set<string>();
-        teachers.forEach(t => t.classes.forEach(c => c.subject && set.add(c.subject)));
+        teachers.forEach(t => (t.classes ?? []).forEach(c => c.subject && set.add(c.subject)));
         return Array.from(set).sort();
     }, [teachers]);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
@@ -100,8 +102,8 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, isLoading, o
                 !q ||
                 `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
                 teacher.phone.includes(q);
-            const matchesCycle = cycleFilter === 'all' || teacher.classes.some(c => c.cycle === cycleFilter);
-            const matchesSubject = subjectFilter === 'all' || teacher.classes.some(c => c.subject === subjectFilter);
+            const matchesCycle = cycleFilter === 'all' || (teacher.classes ?? []).some(c => c.cycle === cycleFilter);
+            const matchesSubject = subjectFilter === 'all' || (teacher.classes ?? []).some(c => c.subject === subjectFilter);
             const matchesSeverity =
                 severityFilter === 'all' || (severityFilter === 'inactive' ? inactive : severity === severityFilter);
             return matchesQuery && matchesCycle && matchesSubject && matchesSeverity;
@@ -134,7 +136,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, isLoading, o
         <div className="mx-auto max-w-5xl p-4 sm:p-8">
             <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Roboto Slab', serif" }}>
+                    <h1 className="text-2xl font-bold text-foreground font-display">
                         Tableau de bord — Enseignants
                     </h1>
                     <p className="text-sm text-muted-foreground">
@@ -256,7 +258,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, isLoading, o
                             </div>
                             <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
                                 <span>
-                                    {Array.from(new Set(teacher.classes.map(c => c.cycle).filter(Boolean)))
+                                    {Array.from(new Set((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)))
                                         .map(c => CYCLE_LABEL[c as string] ?? c)
                                         .join(' · ') || '—'}
                                 </span>

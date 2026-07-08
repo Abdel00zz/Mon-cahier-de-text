@@ -5,6 +5,7 @@ import { ConfigModal } from './modals/ConfigModal';
 import { ImportPlatformModal } from './modals/ImportPlatformModal';
 import { WelcomeModal } from './modals/WelcomeModal';
 import { downloadBackup, restoreBackup } from '../utils/backup';
+import { toast } from 'sonner';
 import { logger } from '../utils/logger';
 import { DashboardSkeleton } from './ui/PageSkeleton';
 
@@ -29,11 +30,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     const handleImport = (fileContent: string) => {
         try {
             const count = restoreBackup(JSON.parse(fileContent));
-            alert(`Importation réussie (${count} classe(s)) ! L'application va se recharger.`);
-            window.location.reload();
+            toast.success(`Importation réussie (${count} classe(s)). Rechargement…`);
+            setTimeout(() => window.location.reload(), 900);
         } catch (error) {
             logger.error('Import failed', error);
-            alert(`L'importation a échoué: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+            toast.error(`L'importation a échoué : ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
         }
         setImportOpen(false);
     };
@@ -49,9 +50,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 onExportPlatform={() => {
                     try {
                         downloadBackup();
+                        toast.success('Sauvegarde téléchargée.');
                     } catch (error) {
                         logger.error('Export failed', error);
-                        alert("L'exportation a échoué.");
+                        toast.error("L'exportation a échoué.");
                     }
                 }}
                 onOpenImport={() => setImportOpen(true)}

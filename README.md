@@ -320,6 +320,13 @@ Pour forcer un comportement (ex. tester la page d'auth en local), remplacez la v
 - **Couleur de classe = accent officiel** : la couleur choisie dans la modale devient l'accent de la carte (rail latéral, matière, CTA, survol — jamais de fond plein) et se retrouve dans l'en-tête de l'éditeur (pastille + filet).
 - **Circuit Paramètres étanche** : toute clé synchronisée (établissement, cycles/matières, préférences d'affichage…) déclenche désormais le push cloud — la liste des clés (`SYNCABLE_KEYS`) est partagée entre le circuit de saisie et le moteur de synchro.
 - **Nettoyage** : suppression du barrel `utils/engine.ts` (jamais importé), de `printContent` (mort), de `metadata.json` (résidu AI Studio) et du log `vite-dev.log` ; hook `useDebouncedCallback` dédupliqué.
+- **Synchronisation par lots** ([`contexts/SyncContext.tsx`](contexts/SyncContext.tsx)) : le push est découpé en requêtes < 700 Ko (un gros cahier part seul) — correction de l'« Erreur de synchro » permanente quand plusieurs programmes officiels dépassaient la limite serveur de 950 Ko en une seule requête. Nettoyage partiel (les lots partis ne repartent pas), messages précis par cause (401 session expirée / 413 cahier trop volumineux / 5xx avec retry automatique 1 min).
+- **PWA & icônes** : icônes PNG générées ([`scripts/generate-icons.mjs`](scripts/generate-icons.mjs)) — 192/512, maskable (zone sûre 80 %), apple-touch 180 (iOS ne supporte pas le SVG), favicons ; polices Google mises en cache par le service worker (rendu hors ligne complet) ; installation via l'**invite native du navigateur** (aucune bannière applicative, `beforeinstallprompt` non intercepté).
+- **Rappels de séance — triple couche** : vibration + toast + **notification système locale** via le service worker (volet du téléphone, écran verrouillé), sans aller-retour serveur.
+- **Impression paramétrable** : taille du texte (Petit/Normal/Grand) et espacement des lignes (Compact/Normal/Aéré) dans la modale ; compilation **MathJax garantie** avant l'ouverture du dialogue (plus de `$...$` brut sur papier) ; toasts exclus du rendu imprimé.
+- **Cartes statistiques « esprit direction »** : Suis-je à jour ? (séances en attente, distinguant « moteur en pause » pendant les vacances) · Progression du programme · Aujourd'hui (séances du jour, calendrier prioritaire sur la grille, **détection de la séance en cours** avec heure de fin) — compteurs animés, rafraîchies par les événements de synchro et un tic minute.
+- **Archives des années scolaires** ([`utils/archives.ts`](utils/archives.ts)) : Paramètres ▸ Données permet de figer l'année complète (config + cahiers + journaux) sous son étiquette (« 2025-2026 »), puis de consulter, télécharger (fichier ré-importable) ou supprimer chaque année passée.
+- **Progression** : les séparateurs datés comptent comme séances ; les sections ne polluent plus la complétion. **Carte de classe** épurée : nom en haut, actions discrètes, séance à venir, dernière mise à jour — teinte douce de la couleur du prof.
 
 **Optimisation mobile/tablette A→Z**
 - **Remarque enfin visible sur téléphone** : affichée en italique sous le contenu (< 768px), éditable au tap — la donnée n'était ni visible ni modifiable sur mobile.
@@ -375,6 +382,52 @@ Pour forcer un comportement (ex. tester la page d'auth en local), remplacez la v
 - **Emploi du temps** : import depuis une photo/PDF, gestion des salles par créneau (le champ `room` existe déjà dans le modèle).
 - **Compression** des gros blobs de leçons (gzip) avant envoi Redis, si nécessaire.
 - **Mode sombre** via variables CSS existantes.
+
+---
+
+## 🧭 Mémento — rebâtir cette application de A à Z (vision d'ensemble, sans noms de fichiers)
+
+*Version « light » : l'idée complète de l'application, ses pages et ses mécanismes, exprimée en langage neutre. Suffisante pour reconstruire le produit sur n'importe quelle stack.*
+
+### L'idée en une phrase
+Un cahier de textes numérique pour enseignants : on structure son **programme** (chapitres → sections → contenus typés), on **date** ce qui a été fait en classe, et l'application en déduit **la progression, les retards et les rappels** — le tout fonctionnant d'abord **hors connexion**, avec un nuage qui suit.
+
+### Les cinq pages
+1. **Tableau de bord** — cartes des classes (couleur choisie par le prof), trois indicateurs de pilotage (suis-je à jour ? / où en suis-je ? / qu'est-ce qui m'attend aujourd'hui ?), bannières d'alerte (retard, devoir proche), création de classe guidée par le profil.
+2. **Éditeur d'une classe** — table à trois colonnes Date | Contenu | Remarque, bord à bord ; édition en ligne, sélection multiple, réordonnancement, séparateurs de séance, recherche, annuler/rétablir, journal des actions dans la barre d'outils.
+3. **Paramètres** — affichage des types, grille d'emploi du temps (jours × heures), notifications et absences, sauvegarde/restauration/archives, compte.
+4. **Connexion/Inscription** (production seulement) — téléphone + mot de passe, choix des cycles et matières qui pilotent ensuite tout le reste.
+5. **Console d'administration** — page séparée à code secret : liste des enseignants, distribution des retards, détail par classe, actions (notifier, bloquer, supprimer).
+
+### Le modèle de données
+Une classe possède un arbre : blocs de premier niveau (chapitre, devoir maison, contrôle, correction, évaluation diagnostique) → sections → contenus typés (définition, théorème, exercice, activité…), chacun pouvant recevoir une **date de séance**, une remarque, et un **séparateur** de fin de séance daté. Titres et descriptions acceptent du texte enrichi et des mathématiques LaTeX rendues à l'écran comme à l'impression.
+
+### Les six moteurs (logique pure, partagée entre navigateur et serveur)
+1. **Progression** : complétion = contenus datés / contenus totaux (les titres structurels ne comptent pas) ; séances = dates distinctes des contenus ET des séparateurs.
+2. **Calendrier scolaire** : années, vacances et fériés officiels dans un fichier éditable sans recompilation ; toute notion d'« aujourd'hui » côté serveur passe par le fuseau du pays.
+3. **Emploi du temps** : grille jours × heures ; deux heures consécutives avec la même classe = **une** séance ; la grille est la source de vérité, tout le reste s'en dérive.
+4. **Retard** : séances attendues (emploi du temps − vacances − fériés − absences justifiées) moins séances saisies → quatre niveaux de sévérité et des messages bienveillants.
+5. **Garde des dates** : chaque date saisie est confrontée à l'emploi du temps, aux fériés, aux vacances, aux absences et à l'année scolaire — alertes **jamais bloquantes**.
+6. **Planning des devoirs** : le calendrier ministériel des devoirs par niveau × matière produit des dates indicatives, ajustables, qui déclenchent des rappels à l'approche.
+
+### La synchronisation (hors-ligne d'abord)
+Le stockage local de l'appareil est la vérité pendant l'édition. Un bus d'événements marque ce qui a changé ; un moteur pousse au nuage par lots limités en taille, avec temporisation, et vide la file à la fermeture de la page. Au démarrage, l'application tire du nuage et applique la règle « la version la plus récente gagne, classe par classe » — mais si les deux côtés ont divergé depuis leur dernier point commun, la version perdante est **archivée localement** avant tout remplacement et l'utilisateur en est informé. Les réglages voyagent dans un blob unique ; les états propres à l'appareil (notifications push, vibration) ne voyagent jamais. Toute restauration de sauvegarde est datée « maintenant » pour gagner sur le nuage.
+
+### Les notifications (trois couches)
+1. **Bannière dans l'application** : retard calculé à l'ouverture, silencieuse pendant vacances/fériés/absences.
+2. **Rappels locaux de séance** : une minute avant la fin de chaque séance du jour, vibration + toast + notification système ; à la fin, alerte si aucune date n'a été posée — regroupées si simultanées, débrayables par appareil.
+3. **Push quotidien serveur** : une tâche planifiée lit des instantanés compacts (jamais les cahiers complets), recalcule le retard avec les mêmes moteurs, et notifie — anti-spam de deux jours, purge des abonnements morts.
+
+### Le serveur (minimal, consolidé)
+Quatre fonctions : authentification (inscription/connexion/session, hachage moderne du mot de passe, jeton signé en cookie httpOnly, anti-force-brute), synchronisation (pousser/tirer), administration (code secret comparé en temps constant, lecture d'instantanés uniquement), notifications (abonnement + tâche planifiée). Le stockage est un simple magasin clé-valeur : une clé par compte, une clé par cahier de classe (pour rester sous la limite de taille par requête), un tableau d'instantanés que l'administrateur lit en une seule commande.
+
+### Les règles d'or
+- Hors-ligne d'abord : le nuage est une copie, jamais une condition.
+- Une seule implémentation de chaque règle métier, partagée écran/serveur/admin.
+- Alerter sans jamais bloquer : le professeur décide toujours.
+- Aucune donnée détruite en silence : toute version écrasée est d'abord archivée.
+- Ce que l'utilisateur voit (fusion de séances, progression) est exactement ce que les moteurs mesurent.
+- L'impression est un document officiel : mise en page paramétrable, formules compilées, signatures, rien d'autre sur le papier.
 
 ---
 

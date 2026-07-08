@@ -30,7 +30,7 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-xl font-black text-primary-foreground">
                         A
                     </div>
-                    <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Roboto Slab', serif" }}>
+                    <h1 className="text-xl font-bold text-foreground font-display">
                         Administration
                     </h1>
                     <p className="mt-1 text-sm text-muted-foreground">Accès réservé — saisissez le code.</p>

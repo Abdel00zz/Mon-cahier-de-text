@@ -5,7 +5,15 @@ import { Printer, CalendarCheck, FileText } from '../ui/icons';
 import { formatDateDDMMYYYY } from '../../utils/dataUtils';
 
 export type PrintMode = 'new' | 'all';
-export interface PrintOptions { pageNumbers: boolean }
+export type PrintTextSize = 's' | 'm' | 'l';
+export type PrintLineSpacing = 'compact' | 'normal' | 'aere';
+export interface PrintOptions {
+  pageNumbers: boolean;
+  /** taille du texte du document imprimé */
+  textSize: PrintTextSize;
+  /** espacement entre les lignes (aération) */
+  lineSpacing: PrintLineSpacing;
+}
 
 interface PrintModalProps {
   isOpen: boolean;
@@ -36,6 +44,31 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const recommendNew = hasHistory && newDates.length > 0;
   const [mode, setMode] = useState<PrintMode>(recommendNew ? 'new' : 'all');
   const [pageNumbers, setPageNumbers] = useState(true);
+  const [textSize, setTextSize] = useState<PrintTextSize>('m');
+  const [lineSpacing, setLineSpacing] = useState<PrintLineSpacing>('normal');
+
+  /** petit sélecteur segmenté réutilisé pour la taille et l'aération */
+  const Segmented = <T extends string>({ value, onChange, options }: {
+    value: T;
+    onChange: (v: T) => void;
+    options: { value: T; label: string }[];
+  }) => (
+    <div className="inline-flex rounded-lg border border-border bg-white p-0.5">
+      {options.map(opt => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          aria-pressed={value === opt.value}
+          className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
+            value === opt.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 
   // resynchronise le choix recommandé à chaque ouverture
   React.useEffect(() => {
@@ -91,7 +124,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       footer={
         <>
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="button" variant="primary" onClick={() => onPrint(mode, { pageNumbers })}>
+          <Button type="button" variant="primary" onClick={() => onPrint(mode, { pageNumbers, textSize, lineSpacing })}>
             <Printer className="mr-2 h-3.5 w-3.5" />
             Imprimer {mode === 'new' ? `(${newDates.length} séance${newDates.length > 1 ? 's' : ''})` : '(complet)'}
           </Button>
@@ -158,6 +191,37 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             )}
           </div>
         )}
+
+        {/* Mise en page : taille du texte et aération des lignes */}
+        <div className="space-y-2 rounded-xl border border-border bg-slate-50 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-slate-700">Taille du texte</span>
+            <Segmented
+              value={textSize}
+              onChange={setTextSize}
+              options={[
+                { value: 's', label: 'Petit' },
+                { value: 'm', label: 'Normal' },
+                { value: 'l', label: 'Grand' },
+              ]}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-slate-700">Espacement des lignes</span>
+            <Segmented
+              value={lineSpacing}
+              onChange={setLineSpacing}
+              options={[
+                { value: 'compact', label: 'Compact' },
+                { value: 'normal', label: 'Normal' },
+                { value: 'aere', label: 'Aéré' },
+              ]}
+            />
+          </div>
+          <p className="text-[10px] leading-snug text-slate-400">
+            « Compact » économise le papier ; « Aéré » facilite les annotations manuscrites.
+          </p>
+        </div>
 
         {/* Options d'impression */}
         <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-slate-50 p-3">

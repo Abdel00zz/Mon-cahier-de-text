@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { ScheduleTab } from '../config/ScheduleTab';
 import { NotificationsTab } from '../config/NotificationsTab';
 import { AccountTab } from '../config/AccountTab';
+import { ArchivesSection } from '../config/ArchivesSection';
 import { 
   Eye, 
   CalendarRange, 
@@ -461,6 +462,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   </Button>
                 </div>
               </div>
+
+              {/* Années scolaires passées : archivage, consultation, téléchargement */}
+              <ArchivesSection />
             </div>
           </div>
         </div>

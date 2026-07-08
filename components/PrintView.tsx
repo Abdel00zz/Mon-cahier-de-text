@@ -25,7 +25,24 @@ interface PrintViewProps {
     newlyAddedIds: string[];
     /** numéroter les pages en bas (Chrome : nécessite « En-têtes et pieds de page » dans le dialogue d'impression) */
     pageNumbers?: boolean;
+    /** taille du texte imprimé (modale d'impression) */
+    textSize?: 's' | 'm' | 'l';
+    /** aération des lignes (modale d'impression) */
+    lineSpacing?: 'compact' | 'normal' | 'aere';
 }
+
+/** Réglages typographiques du document imprimé, pilotés par la modale. */
+const TEXT_SIZES: Record<'s' | 'm' | 'l', { body: string; cell: string; description: string; chapter: string }> = {
+    s: { body: '9pt', cell: '7.8pt', description: '7.3pt', chapter: '11.5pt' },
+    m: { body: '10pt', cell: '8.5pt', description: '8pt', chapter: '13pt' },
+    l: { body: '11pt', cell: '9.6pt', description: '9pt', chapter: '14.5pt' },
+};
+
+const LINE_SPACINGS: Record<'compact' | 'normal' | 'aere', { line: number; cellPad: string; itemGap: string }> = {
+    compact: { line: 1.12, cellPad: '1px 5px', itemGap: '1px' },
+    normal: { line: 1.22, cellPad: '2px 5px', itemGap: '2px' },
+    aere: { line: 1.45, cellPad: '5px 6px', itemGap: '5px' },
+};
 
 interface FlatDataItem {
     data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem | Separator;
@@ -39,9 +56,11 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, newlyAddedIds, pageNumbers = true }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, newlyAddedIds, pageNumbers = true, textSize = 'm', lineSpacing = 'normal' }) => {
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
+    const sizes = TEXT_SIZES[textSize];
+    const spacing = LINE_SPACINGS[lineSpacing];
     
     const flatData = useMemo(() => {
         const result: FlatDataItem[] = [];
@@ -217,12 +236,14 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
 
                     .print-hidden { display: none !important; }
                     .print-only { display: block !important; }
-                    body { 
-                        font-size: 10pt;
+                    /* aucune notification (toast) ne doit apparaître sur le papier */
+                    [data-sonner-toaster] { display: none !important; }
+                    body {
+                        font-size: ${sizes.body};
                         margin: 0;
                         padding: 0;
                         background: white !important;
-                        line-height: 1.22;
+                        line-height: ${spacing.line};
                     }
                     .print-only,
                     .print-only * {
@@ -258,11 +279,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     .print-table th,
                     .print-table td {
                         border: none !important;
-                        padding: 2px 5px;
+                        padding: ${spacing.cellPad};
                         vertical-align: top;
                         text-align: left;
-                        font-size: 8.5pt;
-                        line-height: 1.22;
+                        font-size: ${sizes.cell};
+                        line-height: ${spacing.line};
                         border-right: 1px solid #e0e0e0 !important;
                     }
                     .print-table th:last-child, 
@@ -337,14 +358,14 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         padding: 1px 0;
                     }
                     .print-session-item + .print-session-item {
-                        margin-top: 2px;
+                        margin-top: ${spacing.itemGap};
                     }
                     .print-session-chapter-item {
                         padding-top: 4px;
                         text-align: center;
                     }
                     .print-session-chapter-item .font-slab {
-                        font-size: 12.5pt !important;
+                        font-size: ${sizes.chapter} !important;
                         font-weight: bold !important;
                         color: var(--print-ink) !important;
                     }
@@ -404,7 +425,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         text-align: center !important;
                     }
                     .print-chapter-row .font-slab {
-                        font-size: 13pt !important;
+                        font-size: ${sizes.chapter} !important;
                         font-weight: bold !important;
                         color: var(--print-ink) !important;
                         letter-spacing: 0.01em;

@@ -31,6 +31,8 @@ interface SyncContextValue {
 const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: () => {} });
 
 const PUSH_DEBOUNCE_MS = 20_000;
+/** budget par requête de push — marge confortable sous la limite serveur (~950 Ko) */
+const MAX_PUSH_BYTES = 700_000;
 
 const readLocalClasses = (): ClassInfo[] => {
     try {
@@ -111,6 +113,24 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const pushingRef = useRef(false);
     const userRef = useRef(user);
     userRef.current = user;
+    // dernière cause d'erreur notifiée : un toast par cause, pas par tentative
+    const lastErrorKeyRef = useRef<string | null>(null);
+
+    const notifySyncError = useCallback((status: number, message?: string) => {
+        const key = String(status);
+        if (lastErrorKeyRef.current === key) return;
+        lastErrorKeyRef.current = key;
+        if (status === 401) {
+            toast.error('Session expirée : reconnectez-vous pour reprendre la synchronisation.', { duration: 10_000 });
+        } else if (status === 413) {
+            toast.error(message ?? 'Un cahier dépasse la taille maximale de synchronisation (~950 Ko).', { duration: 10_000 });
+        } else {
+            toast.error(
+                message ? `Synchronisation impossible : ${message}` : 'Synchronisation impossible (erreur serveur). Nouvel essai automatique dans une minute.',
+                { duration: 8_000 }
+            );
+        }
+    }, []);
 
     const push = useCallback(async (options?: { keepalive?: boolean }) => {
         const currentUser = userRef.current;
@@ -142,13 +162,39 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return data;
             };
 
-            const lessons = work.dirtyClassIds
+            const entries = work.dirtyClassIds
                 .filter(id => classes.some(c => c.id === id))
-                .map(id => ({
-                    classId: id,
-                    lessonsData: readLessonsCached(id),
-                    updatedAt: syncMeta[id]?.localUpdatedAt ?? now,
-                }));
+                .map(id => {
+                    const lessonsData = readLessonsCached(id);
+                    return {
+                        classId: id,
+                        lessonsData,
+                        updatedAt: syncMeta[id]?.localUpdatedAt ?? now,
+                        bytes: JSON.stringify(lessonsData).length,
+                    };
+                });
+
+            /*
+             * DÉCOUPAGE EN LOTS : le serveur refuse les corps > ~950 Ko (413).
+             * Un push monolithique avec plusieurs gros cahiers (programmes
+             * officiels) échouait alors À CHAQUE tentative — c'est la cause
+             * du badge « Erreur de synchro » permanent. Chaque lot reste sous
+             * ~700 Ko ; un cahier volumineux part seul dans son propre lot.
+             */
+            const batches: (typeof entries)[] = [];
+            let current: typeof entries = [];
+            let currentBytes = 0;
+            for (const entry of entries) {
+                if (current.length > 0 && currentBytes + entry.bytes > MAX_PUSH_BYTES) {
+                    batches.push(current);
+                    current = [];
+                    currentBytes = 0;
+                }
+                current.push(entry);
+                currentBytes += entry.bytes;
+            }
+            if (current.length > 0) batches.push(current);
+            if (batches.length === 0) batches.push([]); // métadonnées seules (liste/settings)
 
             const snapshot = computeTeacherSnapshot(
                 currentUser,
@@ -159,38 +205,85 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 config.absences
             );
 
-            const response = await fetch('/api/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
-                // keepalive : la requête survit à la fermeture de la page (flush
-                // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
-                // travail en attente sera resynchronisé au prochain démarrage.
-                keepalive: options?.keepalive === true,
-                body: JSON.stringify({
-                    classes,
-                    schedules,
-                    timetable: config.timetable ?? [],
-                    settings: extractSyncableSettings(config),
-                    deletedClassIds: work.deletedClassIds,
-                    lessons,
-                    snapshot,
-                }),
-            });
+            const pushedIds: string[] = [];
+            let serverTime: string | null = null;
+            let failure: { status: number; message?: string; firstBatch: boolean } | null = null;
 
-            if (!response.ok) {
-                setSyncStatus('error');
+            for (let i = 0; i < batches.length; i++) {
+                const isFirst = i === 0;
+                const response = await fetch('/api/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    // keepalive : la requête survit à la fermeture de la page (flush
+                    // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
+                    // travail en attente sera resynchronisé au prochain démarrage.
+                    keepalive: options?.keepalive === true,
+                    body: JSON.stringify({
+                        classes,
+                        schedules,
+                        timetable: config.timetable ?? [],
+                        // métadonnées portées par le premier lot uniquement
+                        settings: isFirst ? extractSyncableSettings(config) : undefined,
+                        deletedClassIds: isFirst ? work.deletedClassIds : [],
+                        lessons: batches[i].map(({ classId, lessonsData, updatedAt }) => ({ classId, lessonsData, updatedAt })),
+                        snapshot: isFirst ? snapshot : undefined,
+                    }),
+                });
+
+                if (!response.ok) {
+                    let message: string | undefined;
+                    try {
+                        message = ((await response.json()) as { error?: string }).error;
+                    } catch { /* corps non JSON */ }
+                    failure = { status: response.status, message, firstBatch: isFirst };
+                    break;
+                }
+
+                const data = (await response.json()) as { serverTime?: string };
+                if (typeof data.serverTime === 'string') serverTime = data.serverTime;
+                for (const entry of batches[i]) {
+                    pushedIds.push(entry.classId);
+                    // point de synchro commun local/cloud (détection de conflit)
+                    markClassSynced(entry.classId, entry.updatedAt);
+                }
+            }
+
+            if (!failure) {
+                clearPendingWork(work);
+                lastErrorKeyRef.current = null;
+                setLastSyncAt(serverTime ?? new Date().toISOString());
+                setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
                 return;
             }
 
-            const data = await response.json();
-            clearPendingWork(work);
-            // point de synchro commun local/cloud, base de la détection de conflit
-            for (const entry of lessons) {
-                markClassSynced(entry.classId, entry.updatedAt);
+            // échec partiel : ne nettoyer QUE ce qui est réellement parti
+            if (!failure.firstBatch || pushedIds.length > 0) {
+                const pushedVersions: Record<string, number> = {};
+                for (const id of pushedIds) {
+                    const version = work.dirtyClassVersions[id];
+                    if (version !== undefined) pushedVersions[id] = version;
+                }
+                clearPendingWork({
+                    ...work,
+                    dirtyClassIds: pushedIds,
+                    dirtyClassVersions: pushedVersions,
+                    // liste/settings/suppressions portées par le 1er lot
+                    listVersion: failure.firstBatch ? 0 : work.listVersion,
+                    deletedClassIds: failure.firstBatch ? [] : work.deletedClassIds,
+                });
             }
-            setLastSyncAt(typeof data.serverTime === 'string' ? data.serverTime : new Date().toISOString());
-            setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
+            setSyncStatus('error');
+            notifySyncError(failure.status, failure.message);
+            // 5xx / 429 : panne passagère → nouvel essai automatique dans 1 min.
+            // 401 (reconnexion) et 413 (cahier trop gros) : inutile d'insister.
+            if (failure.status >= 500 || failure.status === 429) {
+                if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+                debounceRef.current = window.setTimeout(() => {
+                    debounceRef.current = null;
+                    void push();
+                }, 60_000);
+            }
         } catch (error) {
             logger.error('Sync push failed (offline?)', error);
             setSyncStatus('offline');
@@ -228,7 +321,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
                 const response = await fetch('/api/sync', { credentials: 'same-origin' });
                 if (!response.ok) {
-                    if (!cancelled) setSyncStatus('error');
+                    if (!cancelled) {
+                        setSyncStatus('error');
+                        notifySyncError(response.status);
+                    }
                     return;
                 }
                 const server = (await response.json()) as ServerClassesBlob;
