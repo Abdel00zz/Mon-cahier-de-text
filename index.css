@@ -184,7 +184,7 @@
     @media print {
       @page {
         size: A4;
-        margin: 0.7cm;
+        margin: 0.72cm 0.9cm 1.05cm;
       }
 
       /* Hide screen content */
@@ -195,6 +195,18 @@
       /* Show print content */
       .print-only {
         display: block !important;
+      }
+
+      [data-editor-root],
+      [data-editor-root] > div {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: white !important;
       }
 
       /* Hide notifications and all interactive elements */
@@ -284,22 +296,4 @@
 
       /* Highlight for newly added items in print */
       .new-item-print-highlight > td { background-color: #FDF2ED !important; }
-    }
-
-    @keyframes warning-blink {
-      0%, 100% {
-        color: #C96442;
-        background-color: rgba(201, 100, 66, 0.1);
-        transform: scale(1);
-      }
-      50% {
-        color: #EF4444;
-        background-color: rgba(239, 68, 68, 0.2);
-        transform: scale(1.03);
-      }
-    }
-    .animate-warning-blink {
-      animation: warning-blink 1s infinite ease-in-out;
-      border-radius: 8px;
-      padding: 4px 8px;
     }

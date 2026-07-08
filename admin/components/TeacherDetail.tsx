@@ -3,16 +3,19 @@ import { blockTeacher, deleteTeacher, fetchTeacher, notifyTeacher, TeacherDetail
 import { getBundledCalendar } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { completionColor, timeAgo } from '../utils';
-import type { ClassSnapshot } from '../../types';
+import type { ClassSnapshot, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
 
-const latenessBadge = (snapshot: ClassSnapshot) =>
+// mêmes paramètres que la liste : absences justifiées + seuils du prof
+const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null) =>
     computeLateness({
         slots: snapshot.weekdays.map(weekday => ({ weekday })),
         calendar,
         sessionsCount: snapshot.sessionsCount,
         lastDate: snapshot.lastDate,
+        settings: teacher?.notifyPrefs,
+        absences: teacher?.absences,
     });
 
 export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({ phone, onBack }) => {
@@ -147,7 +150,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                     ) : (
                         <div className="space-y-3">
                             {snapshotClasses.map(cls => {
-                                const lateness = latenessBadge(cls);
+                                const lateness = latenessBadge(cls, data?.snapshot);
                                 return (
                                     <div key={cls.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                                         <div className="flex flex-wrap items-start justify-between gap-2">

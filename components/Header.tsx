@@ -42,6 +42,8 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
 };
 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
+  // même accent que la carte du tableau de bord : la couleur officielle de la classe
+  const accent = classInfo.color || '#B8935A';
   return (
     <div className="flex items-center justify-center relative mb-5 pb-4 group">
       <div className="absolute right-0 top-0">
@@ -51,9 +53,16 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
         {establishmentName && (
           <p className="text-xs font-medium text-[#69604F] tracking-widest uppercase mb-1.5 font-mono">{establishmentName}</p>
         )}
-        <h1 className="text-xl sm:text-2xl font-bold text-[#2B241D] font-display">
+        <h1 className="flex items-center justify-center gap-2 text-xl sm:text-2xl font-bold text-[#2B241D] font-display">
+          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full shadow-sm" style={{ backgroundColor: accent }} />
           <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
         </h1>
+        {/* filet d'accent : rappel discret de la couleur de la classe */}
+        <div
+          aria-hidden
+          className="mx-auto mt-1.5 h-[2px] w-16 rounded-full"
+          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
+        />
         <p className="text-sm text-[#A79C87] mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           Cliquez sur le nom pour modifier
         </p>

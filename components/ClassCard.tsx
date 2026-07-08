@@ -1,9 +1,8 @@
 import { memo, MouseEvent, FC } from 'react';
 import { ClassInfo } from '../types';
-import { SUBJECT_ABBREV_MAP } from '../constants';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
-import { Trash2, Clock, Bell, ArrowRight, Settings } from './ui/icons';
+import { Trash2, Clock, Bell, Settings } from './ui/icons';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -54,29 +53,37 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     };
 
     const isArabic = containsArabic(classInfo.name);
-    const displaySubject = SUBJECT_ABBREV_MAP[classInfo.subject] || classInfo.subject;
+    /*
+     * La couleur choisie dans la modale EST la couleur officielle de la carte :
+     * accent pur (rail, matière, CTA, survol) — jamais de fond plein.
+     */
+    const accent = classInfo.color || '#B8935A';
 
     return (
         <Card
-            className="group relative w-full cursor-pointer overflow-hidden rounded-[20px] border border-[#E4D3AC]/70 bg-[#FFFDF7] p-0 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#B8935A] hover:shadow-lg active:translate-y-0 active:scale-[0.98] active:shadow-sm select-none will-change-transform"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-[20px] border p-0 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] active:shadow-sm select-none will-change-transform"
+            style={{
+                ['--accent' as string]: accent,
+                // carte ENTIÈREMENT colorée dans la palette choisie par le prof :
+                // lavis dégradé de sa couleur, texte sombre toujours lisible
+                background: `linear-gradient(150deg, ${accent}38 0%, ${accent}1A 45%, ${accent}0A 100%), #FFFDF7`,
+                borderColor: `${accent}66`,
+            }}
             onClick={() => onSelect()}
         >
-            {/* Soft, premium dynamic colored ambient glow in the top-right corner on hover */}
-            <div 
-                className="absolute -right-12 -top-12 h-32 w-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none" 
-                style={{ backgroundColor: classInfo.color || '#B8935A' }}
+            {/* Halo coloré renforcé au survol */}
+            <div
+                className="absolute -right-12 -top-12 h-32 w-32 rounded-full blur-[40px] opacity-15 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none"
+                style={{ backgroundColor: accent }}
             />
 
             <CardContent className="relative flex min-h-[140px] flex-col justify-between p-4 sm:p-4.5">
-                {/* Header: Dynamic Color Dot & Actions */}
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        {/* Dynamic color pill */}
-                        <span 
-                            className="h-2 w-2 rounded-full shadow-sm shrink-0" 
-                            style={{ backgroundColor: classInfo.color || '#B8935A' }}
-                        />
-                    </div>
+                <div className="flex items-start justify-between gap-3">
+                    <h3
+                        className={`min-w-0 pr-2 text-xl sm:text-2xl font-extrabold text-[#2B241D] font-display tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors duration-300 ${isArabic ? 'font-ar text-2xl' : ''}`}
+                    >
+                        {formatSuperscript(classInfo.name)}
+                    </h3>
                     <div className="flex items-center gap-1 z-10">
                         <Button
                             variant="ghost"
@@ -102,24 +109,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                 </div>
 
                 {/* Body Content */}
-                <div className="my-2.5 flex flex-col justify-center">
-                    <h3
-                        className={`text-xl sm:text-2xl font-extrabold text-[#2B241D] font-display tracking-tight leading-tight group-hover:text-[#B8935A] transition-colors duration-300 ${isArabic ? 'font-ar text-2xl' : ''}`}
-                    >
-                        {formatSuperscript(classInfo.name)}
-                    </h3>
-                    
-                    <span 
-                        className="text-[10px] font-extrabold tracking-widest text-[#B8935A] uppercase font-mono mt-1"
-                    >
-                        {displaySubject}
-                    </span>
-
+                <div className="my-2 flex min-h-[34px] flex-col justify-center">
                     {nextSessionLabel && (
-                        <div 
-                            className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#FCF6EA]/60 px-3 py-0.5 text-[11px] font-extrabold text-[#69604F] border border-[#E4D3AC]/25 w-max shadow-sm"
+                        <div
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#FCF6EA]/60 px-3 py-0.5 text-[11px] font-extrabold text-[#69604F] border border-[#E4D3AC]/25 w-max shadow-sm"
                         >
-                            <Bell className="h-3 w-3 text-[#B8935A]" />
+                            <Bell className="h-3 w-3" style={{ color: accent }} />
                             <span>Séance : {nextSessionLabel}</span>
                         </div>
                     )}
@@ -130,13 +125,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                     <span className="flex items-center gap-1.5 text-[11px] text-[#69604F]/70 font-semibold font-sans">
                         <Clock className="h-3.5 w-3.5 text-[#A79C87]/80" />
                         {formatDate(lastModified)}
-                    </span>
-                    
-                    <span 
-                        className="inline-flex items-center gap-1 text-[11px] font-extrabold tracking-wider text-[#B8935A] transition-all duration-300 group-hover:gap-2"
-                    >
-                        OUVRIR 
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
                     </span>
                 </div>
             </CardContent>

@@ -71,6 +71,11 @@ export interface NotificationSettings {
     /** jours DE CLASSE sans saisie avant alerte */
     inactivityThresholdDays: number;
     quietDuringVacations: boolean;
+    /**
+     * rappels locaux de fin de séance (vibration + toast) — spécifique à
+     * l'appareil, comme `pushEnabled` : exclu de la synchronisation cloud
+     */
+    sessionVibration?: boolean;
 }
 
 /** Période d'absence justifiée (certificat de maladie, congé...) : exclue du calcul de retard. */

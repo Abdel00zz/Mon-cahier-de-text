@@ -24,11 +24,13 @@ export type SyncableSettings = Pick<
     | 'assessmentDates'
     | 'schoolYearStart'
 > & {
-    /** préférences de notification hors état push local */
-    notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled'>;
+    /** préférences de notification hors états locaux à l'appareil (push, vibration) */
+    notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled' | 'sessionVibration'>;
 };
 
-const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
+/** Clés de configuration synchronisées cloud — toute modification de l'une
+ *  d'elles doit marquer le blob classes comme sale (markClassesListDirty). */
+export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'establishmentName',
     'defaultTeacherName',
     'selectedCycles',
@@ -52,7 +54,7 @@ export const extractSyncableSettings = (config: Partial<AppConfig>): SyncableSet
         if (config[key as keyof AppConfig] !== undefined) out[key] = config[key as keyof AppConfig];
     }
     if (config.notificationSettings) {
-        const { pushEnabled: _ignored, ...rest } = config.notificationSettings;
+        const { pushEnabled: _ignored, sessionVibration: _ignored2, ...rest } = config.notificationSettings;
         out.notify = rest;
     }
     return out as SyncableSettings;
@@ -71,8 +73,9 @@ export const mergeSyncableSettings = (local: Partial<AppConfig>, remote: Syncabl
         merged.notificationSettings = {
             ...(local.notificationSettings ?? ({} as NonNullable<AppConfig['notificationSettings']>)),
             ...remote.notify,
-            // l'état push reste celui de CET appareil
+            // les états push et vibration restent ceux de CET appareil
             pushEnabled: local.notificationSettings?.pushEnabled ?? false,
+            sessionVibration: local.notificationSettings?.sessionVibration ?? false,
         };
     }
     return merged;

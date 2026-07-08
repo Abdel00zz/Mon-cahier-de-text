@@ -10,6 +10,8 @@ interface TableRowProps {
   indices: Indices;
   elementType: ElementType;
   dateMerge?: DateMergeMeta;
+  layout?: 'full' | 'content-only';
+  lineClassOverride?: string;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onToggleSelect: (indices: Indices) => void;
   onDoubleClickEdit?: (indices: Indices) => void;
@@ -85,19 +87,17 @@ const parseDate = (dateStr?: string) => {
  * Grand jour, mois en petites capitales, année discrète. Le jour courant
  * est signalé par la couleur primaire et un point, rien d'autre.
  */
-const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => {
+export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => {
   const parsed = parseDate(dateStr);
 
   if (!parsed) {
     return (
-      <div className="flex items-center justify-center w-full py-1.5 select-none">
-        <span className="text-[#E4D3AC] text-[10px] select-none tracking-widest">·</span>
-      </div>
+      <div className="flex min-h-[18px] w-full items-center justify-center py-1.5 select-none" aria-hidden />
     );
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center select-none leading-none animate-fade-in ${hasWarning ? 'animate-warning-blink' : ''}`}>
+    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-fade-in">
       <span
         className={`font-display text-xl font-bold tabular-nums tracking-tight transition-colors ${
           hasWarning ? 'text-[#EF4444]' : parsed.isToday ? 'text-primary' : 'text-[#2B241D]'
@@ -119,11 +119,9 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
   const isMerged = !!merge?.isMerged;
   const bgClass = isSelected 
     ? 'bg-primary/[0.08]' 
-    : hasWarning
-      ? 'bg-red-50/50'
-      : hasAssignedDate 
-        ? 'bg-[#FCF6EA]/40' 
-        : 'bg-[#FFFDF7]';
+    : hasAssignedDate
+      ? 'bg-[#FFEBC2]/45'
+      : 'bg-[#FFFDF7]';
 
   if (isMerged) {
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
@@ -145,6 +143,8 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
 DateCell.displayName = 'DateCell';
 
+const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
+
 const RemarkCell: FC<{
   value?: string;
   merge?: DateMergeMeta;
@@ -158,21 +158,16 @@ const RemarkCell: FC<{
   const bgClass = isSelected 
     ? 'bg-primary/[0.04]' 
     : hasAssignedDate 
-      ? 'bg-[#FCF6EA]/15' 
+      ? 'bg-[#FFF4DF]/35'
       : 'bg-[#FFFDF7]';
 
-  const borderClass = isSelected
-    ? 'md:border-l md:border-primary/20'
-    : hasAssignedDate
-      ? 'md:border-l md:border-[#E4D3AC]/45'
-      : 'md:border-l md:border-[#E4D3AC]/25';
+  const borderClass = '';
 
   if (shouldMerge) {
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
-    const bottomBorder = merge.isEnd ? lineClass : '';
 
     return (
-      <div className={`hidden w-[16%] p-1.5 md:block relative ${borderClass} ${bottomBorder} ${bgClass}`} onClick={event => event.stopPropagation()}>
+      <div className={`relative hidden min-w-0 p-1.5 md:block ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
         {isMiddle && (
           <div className="relative z-10 h-full flex flex-col justify-center">
             <EditableCell
@@ -189,7 +184,7 @@ const RemarkCell: FC<{
   }
 
   return (
-    <div className={`hidden w-[16%] p-1.5 md:block ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
+    <div className={`hidden min-w-0 p-1.5 md:block ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
       <div className="h-full">
         <EditableCell
           value={value || ''}
@@ -231,6 +226,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   indices,
   elementType,
   dateMerge,
+  layout = 'full',
+  lineClassOverride,
   onCellUpdate,
   onToggleSelect,
   onDoubleClickEdit,
@@ -260,39 +257,51 @@ const TableRowComponent: FC<TableRowProps> = ({
   const hasWarning = warnings.length > 0;
 
   /*
-   * Rangées plates et continues (pas de « box » encadrée) :
-   * — filets horizontaux entre rangées, mais PAS à l'intérieur d'un groupe
-   *   de dates fusionnées (le groupe se lit comme un seul bloc) ;
-   * — séparations VERTICALES visibles entre les 3 colonnes Date|Contenu|Remarque ;
-   * — les rangées datées se distinguent par un lavis chaud + rail doré,
-   *   et un filet plus marqué clôt chaque groupe daté.
+   * Ligne horizontale intelligente :
+   * - les elements non dates ne dessinent pas de traits entre les textes ;
+   * - une seance datee, seule ou fusionnee sur plusieurs lignes, est marquee
+   *   par une entree/sortie visuelle, sans couper l'interieur du groupe.
    */
-  const isInsideMergedGroup = !!dateMerge?.isMerged && !dateMerge.isEnd;
-  const isGroupEnd = hasAssignedDate && (!dateMerge?.isMerged || dateMerge.isEnd);
-  
-  const cellBottomBorder = isGroupEnd
-    ? 'border-b-2 border-[#B8935A]/25' // fin d'un bloc daté : démarcation nette
-    : 'border-b border-[#E4D3AC]/30';
+  const isMergedDateGroup = !!dateMerge?.isMerged;
+  const isDatedGroupStart = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isStart);
+  const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
-  const dateBottomBorder = isInsideMergedGroup ? '' : cellBottomBorder;
-  const contentBottomBorder = cellBottomBorder;
+  const datedLineClass = [
+    isDatedGroupStart ? 'border-t border-[#B8935A]/25' : '',
+    isDatedGroupEnd ? 'border-b-2 border-[#B8935A]/40' : '',
+  ].filter(Boolean).join(' ');
+  const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
+  const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
+
+  const dateBottomBorder = rowLineClass;
+  const contentBottomBorder = lineClassOverride ?? rowLineClass;
 
   /*
    * SÉLECTION PLEINE LIGNE : l'état sélectionné s'applique à la rangée
    * entière (date + contenu + remarque), pas à une seule cellule —
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
-  const datedWash = hasAssignedDate ? 'bg-[#FCF6EA]/20' : 'bg-[#FFFDF7]';
+  const datedWash = hasAssignedDate ? 'bg-[#FFF4DF]/60' : 'bg-[#FFFDF7]';
   const rowWash = isSelected ? 'bg-primary/[0.06]' : datedWash;
-  const hoverWash = isSelected ? '' : 'hover:bg-[#FCF6EA]/15';
-  const frameClasses = `group relative px-1.5 sm:px-4 ${rowWash} ${hoverWash} transition-colors duration-150`;
+  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-[#FFEFD0]/70' : 'hover:bg-[#FCF6EA]/15';
+  // §G tableau serré : AUCUN padding de cadre — les filets verticaux
+  // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
+  // reste porté par les cellules internes.
+  const frameClasses = `group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
   
-  // Séparateurs verticaux entre colonnes — visibles, ton chaud sur les rangées datées.
+  // Séparateurs verticaux entre colonnes — nettement visibles, ton chaud sur les rangées datées.
   const dividerClass = isSelected
-    ? 'border-r border-primary/20'
+    ? 'border-r border-primary/25'
     : hasAssignedDate
-      ? 'border-r border-[#E4D3AC]/40'
-      : 'border-r border-[#E4D3AC]/20';
+      ? 'border-r border-[#E4D3AC]/70'
+      : 'border-r border-[#E4D3AC]/50';
+  const contentDividerClass = layout === 'content-only'
+    ? ''
+    : isSelected
+      ? 'md:border-r md:border-primary/25'
+      : hasAssignedDate
+        ? 'md:border-r md:border-[#E4D3AC]/70'
+        : 'md:border-r md:border-[#E4D3AC]/50';
 
   /* Rail latéral : primaire quand sélectionné (prioritaire), doré si daté. */
   const goldRail = isSelected ? (
@@ -311,67 +320,9 @@ const TableRowComponent: FC<TableRowProps> = ({
   if (isTopLevelBlock) {
     const item = data as TopLevelItem;
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
-    const bg = cfg?.badgeColor?.split(' ').find(c => c.startsWith('bg-')) ?? 'bg-slate-50';
-
-    return (
+    const contentCell = (
       <div
-        className={[
-          'flex transition-colors duration-100',
-          frameClasses,
-          isNew ? 'new-item-highlight' : '',
-        ].filter(Boolean).join(' ')}
-        onDoubleClickCapture={handleContentDoubleClickCapture}
-        onDoubleClick={event => event.stopPropagation()}
-      >
-        {goldRail}
-        <div className={`w-[19%] sm:w-[13%] flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
-          <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
-        </div>
-        <div
-          className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${isSelected ? 'md:border-r md:border-primary/20' : hasAssignedDate ? 'md:border-r md:border-[#E4D3AC]/40' : 'md:border-r md:border-[#E4D3AC]/20'} ${isSelected ? '' : bg} hover:brightness-98 transition-colors ${contentBottomBorder}`}
-          data-row-content="true"
-          onClick={event => {
-            const target = event.target as HTMLElement | null;
-            if (target?.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) {
-              return;
-            }
-            event.stopPropagation();
-            if (event.detail > 1) return;
-            handleToggle();
-          }}
-        >
-          <div className="min-w-0">
-            <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold tracking-tight ${cfg?.color ?? 'text-slate-800'}`}>
-              {cfg?.icon && <cfg.icon className="h-3.5 w-3.5 shrink-0" />}
-              <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} />
-            </div>
-            <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
-          </div>
-        </div>
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} />
-      </div>
-    );
-  }
-
-  const rowClasses = [
-    'flex touch-manipulation transition-colors duration-100',
-    frameClasses,
-    isNew ? 'new-item-highlight' : '',
-  ].filter(Boolean).join(' ');
-
-  return (
-    <div
-      className={rowClasses}
-      onDoubleClickCapture={handleContentDoubleClickCapture}
-      onDoubleClick={event => event.stopPropagation()}
-    >
-      {goldRail}
-      <div className={`w-[19%] sm:w-[13%] flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
-        <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
-      </div>
-
-      <div
-        className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${isSelected ? 'md:border-r md:border-primary/20' : hasAssignedDate ? 'md:border-r md:border-[#E4D3AC]/40' : 'md:border-r md:border-[#E4D3AC]/20'} ${isSelected ? '' : 'hover:bg-[#FCF6EA]/20'} transition-all duration-150 ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} hover:brightness-98 transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -383,17 +334,113 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
-        <ContentRenderer
-          data={data}
-          indices={indices}
-          elementType={elementType}
-          showDescriptions={showDescriptions}
-          descriptionTypes={descriptionTypes}
-          onCellUpdate={onCellUpdate}
-          highlight={searchQuery}
-        />
-        <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
+        <div className="min-w-0">
+          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold tracking-tight ${cfg?.color ?? 'text-slate-800'}`}>
+            {cfg?.icon && <cfg.icon className="h-3.5 w-3.5 shrink-0" />}
+            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} />
+          </div>
+          <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
+        </div>
       </div>
+    );
+
+    if (layout === 'content-only') {
+      return (
+        <div
+          className={[
+            'relative transition-colors duration-100',
+            frameClasses,
+            isNew ? 'new-item-highlight' : '',
+          ].filter(Boolean).join(' ')}
+          onDoubleClickCapture={handleContentDoubleClickCapture}
+          onDoubleClick={event => event.stopPropagation()}
+        >
+          {contentCell}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={[
+          `grid ${TABLE_GRID_CLASS} transition-colors duration-100`,
+          frameClasses,
+          isNew ? 'new-item-highlight' : '',
+        ].filter(Boolean).join(' ')}
+        onDoubleClickCapture={handleContentDoubleClickCapture}
+        onDoubleClick={event => event.stopPropagation()}
+      >
+        {goldRail}
+        <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+          <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
+        </div>
+        {contentCell}
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} />
+      </div>
+    );
+  }
+
+  const contentCell = (
+    <div
+      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : 'hover:bg-[#FCF6EA]/20'} transition-all duration-150 ${contentBottomBorder}`}
+      data-row-content="true"
+      onClick={event => {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest('button,input,textarea,select,a,[contenteditable="true"],.cursor-text')) {
+          return;
+        }
+        event.stopPropagation();
+        if (event.detail > 1) return;
+        handleToggle();
+      }}
+    >
+      <ContentRenderer
+        data={data}
+        indices={indices}
+        elementType={elementType}
+        showDescriptions={showDescriptions}
+        descriptionTypes={descriptionTypes}
+        onCellUpdate={onCellUpdate}
+        highlight={searchQuery}
+      />
+      <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
+    </div>
+  );
+
+  if (layout === 'content-only') {
+    return (
+      <div
+        className={[
+          'relative touch-manipulation transition-colors duration-100',
+          frameClasses,
+          isNew ? 'new-item-highlight' : '',
+        ].filter(Boolean).join(' ')}
+        onDoubleClickCapture={handleContentDoubleClickCapture}
+        onDoubleClick={event => event.stopPropagation()}
+      >
+        {contentCell}
+      </div>
+    );
+  }
+
+  const rowClasses = [
+    `grid ${TABLE_GRID_CLASS} touch-manipulation transition-colors duration-100`,
+    frameClasses,
+    isNew ? 'new-item-highlight' : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div
+      className={rowClasses}
+      onDoubleClickCapture={handleContentDoubleClickCapture}
+      onDoubleClick={event => event.stopPropagation()}
+    >
+      {goldRail}
+      <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+        <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
+      </div>
+
+      {contentCell}
 
       <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} />
     </div>
@@ -407,6 +454,8 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.showDescriptions !== next.showDescriptions) return false;
   if (prev.elementType !== next.elementType) return false;
   if (prev.searchQuery !== next.searchQuery) return false;
+  if (prev.layout !== next.layout) return false;
+  if (prev.lineClassOverride !== next.lineClassOverride) return false;
 
   const pIdx = prev.indices;
   const nIdx = next.indices;

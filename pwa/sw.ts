@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> };
 
@@ -12,6 +14,23 @@ const navigationHandler = createHandlerBoundToURL('/index.html');
 registerRoute(
     new NavigationRoute(navigationHandler, {
         denylist: [/^\/admin/, /^\/api\//],
+    })
+);
+
+/*
+ * Polices Google (Fraunces, Public Sans, IBM Plex…) : indispensables au rendu
+ * hors ligne sur mobile/tablette. La feuille CSS est revalidée en arrière-plan,
+ * les fichiers de police (immuables) sont servis cache-first un an.
+ */
+registerRoute(
+    ({ url }) => url.origin === 'https://fonts.googleapis.com',
+    new StaleWhileRevalidate({ cacheName: 'google-fonts-css' })
+);
+registerRoute(
+    ({ url }) => url.origin === 'https://fonts.gstatic.com',
+    new CacheFirst({
+        cacheName: 'google-fonts-files',
+        plugins: [new ExpirationPlugin({ maxEntries: 24, maxAgeSeconds: 365 * 24 * 3600 })],
     })
 );
 
@@ -34,8 +53,8 @@ self.addEventListener('push', event => {
     event.waitUntil(
         self.registration.showNotification(title, {
             body: payload.body || 'Vous avez une mise à jour à faire.',
-            icon: '/icons/icon.svg',
-            badge: '/icons/icon.svg',
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
             tag: 'cdt-lateness',
             data: { url: payload.url || '/' },
         })

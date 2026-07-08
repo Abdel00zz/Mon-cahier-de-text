@@ -6,6 +6,7 @@ import {
     HOUR_SLOTS,
     TIMETABLE_DAYS,
     deriveSchedules,
+    getDaySlotRuns,
     getTimetableEntry,
     setTimetableEntry,
 } from '../../utils/timetable';
@@ -32,6 +33,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
     };
 
+    // séances continues par jour : deux créneaux consécutifs de la même classe
+    // s'affichent soudés (badge « 2 h ») et comptent pour UNE séance
+    const runsByDay = React.useMemo(() => {
+        const map = new Map<number, ReturnType<typeof getDaySlotRuns>>();
+        TIMETABLE_DAYS.forEach(day => map.set(day.value, getDaySlotRuns(timetable, day.value)));
+        return map;
+    }, [timetable]);
+
     const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
 
     if (classes.length === 0) {
@@ -42,14 +51,26 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         );
     }
 
-    const sessionsPerWeek = (classId: string) => timetable.filter(e => e.classId === classId).length;
+    // heures = cases cochées ; séances = blocs continus (ce que compte le
+    // moteur de retard : une séance de 2 h = une seule date attendue)
+    const weeklyStats = (classId: string) => {
+        const hours = timetable.filter(e => e.classId === classId).length;
+        let sessions = 0;
+        for (const runs of runsByDay.values()) {
+            for (const run of runs.values()) {
+                if (run.classId === classId && run.isStart) sessions += 1;
+            }
+        }
+        return { hours, sessions };
+    };
 
     return (
         <div className="space-y-4">
             <p className="text-xs leading-relaxed text-[#69604F]">
                 Composez votre emploi du temps : pour chaque créneau, choisissez la classe que vous enseignez. La grille
                 s'enregistre automatiquement et se synchronise ; elle alimente le calcul de votre progression et les
-                alertes de retard (vacances et jours fériés exclus).
+                alertes de retard (vacances et jours fériés exclus). Deux heures consécutives avec la même classe sont
+                automatiquement lues comme <b>une seule séance de 2 h</b> — une seule date attendue dans le cahier.
             </p>
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
@@ -81,21 +102,40 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 {HOUR_SLOTS.map(hour => {
                                     const entry = getTimetableEntry(timetable, day.value, hour.index);
                                     const classInfo = entry ? classById.get(entry.classId) : undefined;
+                                    const run = runsByDay.get(day.value)?.get(hour.index);
+                                    const merged = !!run && run.hours > 1;
+                                    // cases d'une même séance continue : soudées entre
+                                    // elles (padding et arrondis fusionnés), chaque
+                                    // heure restant individuellement modifiable
+                                    const cellPadding = merged
+                                        ? run.isStart
+                                            ? 'py-1 pl-1 pr-0'
+                                            : run.isEnd
+                                                ? 'py-1 pl-0 pr-1'
+                                                : 'py-1 px-0'
+                                        : 'p-1';
+                                    const rounding = merged
+                                        ? run.isStart
+                                            ? 'rounded-l-lg rounded-r-none'
+                                            : run.isEnd
+                                                ? 'rounded-r-lg rounded-l-none'
+                                                : 'rounded-none'
+                                        : 'rounded-lg';
                                     return (
                                         <td
                                             key={hour.index}
-                                            className={`p-1 align-top ${hour.lunchBefore ? 'border-l-4 border-l-[#E4D3AC]/60' : ''}`}
+                                            className={`relative align-top ${cellPadding} ${hour.lunchBefore ? 'border-l-4 border-l-[#E4D3AC]/60' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
                                                 onChange={e => assign(day.value, hour.index, e.target.value || null)}
-                                                className={`h-11 w-full cursor-pointer rounded-lg border px-1 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8935A] ${
+                                                className={`h-11 w-full cursor-pointer border px-1 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8935A] ${rounding} ${
                                                     classInfo
-                                                        ? 'border-transparent text-white shadow-sm hover:scale-[1.02]'
+                                                        ? `border-transparent text-white shadow-sm ${merged ? '' : 'hover:scale-[1.02]'}`
                                                         : 'border-dashed border-[#E4D3AC] bg-[#FFFDF7] text-[#A79C87] hover:border-[#B8935A]/60 hover:text-[#2B241D]'
                                                 }`}
                                                 style={classInfo ? { backgroundColor: classInfo.color } : undefined}
-                                                aria-label={`${day.label} ${hour.label}`}
+                                                aria-label={`${day.label} ${hour.label}${merged ? ` (séance continue de ${run.hours} h)` : ''}`}
                                             >
                                                 <option value="">—</option>
                                                 {classes.map(c => (
@@ -104,6 +144,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     </option>
                                                 ))}
                                             </select>
+                                            {merged && run.isStart && (
+                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-white/30 px-1.5 text-[9px] font-bold leading-4 text-white shadow-sm font-mono">
+                                                    {run.hours} h
+                                                </span>
+                                            )}
                                         </td>
                                     );
                                 })}
@@ -113,10 +158,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </table>
             </div>
 
-            {/* Récapitulatif séances/semaine par classe */}
+            {/* Récapitulatif par classe : séances (blocs continus) et heures */}
             <div className="flex flex-wrap gap-2">
                 {classes.map(c => {
-                    const count = sessionsPerWeek(c.id);
+                    const { hours, sessions } = weeklyStats(c.id);
                     return (
                         <span
                             key={c.id}
@@ -124,7 +169,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         >
                             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
                             {c.name}
-                            <span className="text-[#A79C87] font-mono">· {count}/sem</span>
+                            <span className="text-[#A79C87] font-mono">
+                                · {sessions} séance{sessions > 1 ? 's' : ''}
+                                {hours !== sessions ? ` (${hours} h)` : ''}/sem
+                            </span>
                         </span>
                     );
                 })}

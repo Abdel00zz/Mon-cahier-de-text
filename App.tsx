@@ -1,18 +1,20 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 'react';
 import { MathJaxContext } from 'better-react-mathjax';
 import { Toaster } from 'sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
-import { Dashboard } from './components/Dashboard';
-import { Editor } from './components/Editor';
-import { SettingsPage } from './components/SettingsPage';
 import { AppBootSkeleton } from './components/ui/PageSkeleton';
 import { ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
+import { useSessionAlerts } from './hooks/useSessionAlerts';
 import { useAuth } from './contexts/AuthContext';
-import { AuthPage } from './components/auth/AuthPage';
 import { AUTH_REQUIRED } from './config/features';
 import { Analytics } from '@vercel/analytics/react';
 import { OrientationAlertModal } from './components/modals/OrientationAlertModal';
+
+const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
+const Editor = lazy(() => import('./components/Editor').then(module => ({ default: module.Editor })));
+const SettingsPage = lazy(() => import('./components/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const AuthPage = lazy(() => import('./components/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 
 const mathJaxConfig = {
   loader: { load: ["input/tex", "output/chtml"] },
@@ -85,6 +87,8 @@ const App: React.FC = () => {
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
   const { isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
+  // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
+  useSessionAlerts();
   const [showOrientationModal, setShowOrientationModal] = useState(false);
   const orientationTimerRef = useRef<number | null>(null);
   const scrollPositionsRef = useRef<Record<string, number>>({});
@@ -239,7 +243,9 @@ const App: React.FC = () => {
       <MathJaxContext config={mathJaxConfig}>
         <div className="min-h-screen" style={{ backgroundColor: 'var(--clr-bg)', color: 'var(--clr-text)' }}>
           <div key={routeKey} className="min-h-screen">
-            {renderContent()}
+            <Suspense fallback={<AppBootSkeleton />}>
+              {renderContent()}
+            </Suspense>
           </div>
           {view === 'editor' && (
             <OrientationAlertModal isOpen={showOrientationModal} onClose={handleCloseOrientationModal} />
@@ -250,6 +256,11 @@ const App: React.FC = () => {
           position="bottom-right"
           richColors
           closeButton
+          // règles d'empilement : 3 toasts visibles max (les suivants en file) ;
+          // sur mobile, décalés au-dessus du FAB « + » (56 px + safe-area) pour
+          // ne jamais le recouvrir
+          visibleToasts={3}
+          mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
           toastOptions={{
             className: 'print:hidden',
             style: { fontFamily: "'Inter', sans-serif", borderRadius: '0.75rem' },

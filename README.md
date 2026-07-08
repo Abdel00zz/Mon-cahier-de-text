@@ -106,7 +106,9 @@ L'application est **offline-first** : tout fonctionne en local (localStorage), e
 
 1. `utils/dateValidation.ts` : chaque date affectée est croisée avec l'emploi du temps (*« vous n'enseignez pas cette classe le mardi »*), les fériés, les vacances, les absences et l'année scolaire.
 2. Brancher sur **tous** les circuits de saisie : modale d'affectation (alerte **live** pendant le choix), édition en ligne (alerte dans le formulaire), cellule date, séparateur (toasts).
-3. **Impression intelligente** (`utils/printMeta.ts`) : mémoriser les dates déjà imprimées par classe et proposer de n'imprimer que les nouveautés.
+3. Dans le tableau, une date problématique ne doit pas devenir un badge, une boîte ou un effet spécial : elle reste une **date typographique rouge**, simple et lisible. Le rouge suffit comme alerte pédagogique, sans déformer la grille.
+4. **Impression intelligente** (`utils/printMeta.ts`) : mémoriser les dates déjà imprimées par classe et proposer de n'imprimer que les nouveautés.
+5. **Impression officielle par séances** : le papier ne doit pas simuler une fusion ligne par ligne. Les éléments consécutifs portant la même date sont rendus comme **une seule séance administrative** : une cellule Date commune, un contenu empilé, des remarques regroupées, peu de couleur, traits nets, pagination souple.
 
 > 💡 **Principe** : alertes **non bloquantes** — le logiciel conseille, le prof décide (rattrapage, exception).
 
@@ -143,9 +145,11 @@ Helpers partagés dans [`api/_lib/`](api/_lib/) : `http` (types req/res + erreur
 
 **Sessions 100 % stateless** (JWT en cookie httpOnly) — aucune clé de session en base. La vue admin lit tous les profs en **une commande** (`HGETALL admin:snapshots`).
 
-### 3.4 Synchronisation (offline-first, dernière-écriture-gagne par classe)
-- [`utils/syncBus.ts`](utils/syncBus.ts) : bus d'événements « dirty » découplant les producteurs (éditeur, gestion des classes) du moteur.
-- [`contexts/SyncContext.tsx`](contexts/SyncContext.tsx) : push débounced (20 s), flush à la fermeture (`pagehide`), pull au démarrage comparant les horodatages serveur vs `syncMeta_v1` local.
+### 3.4 Synchronisation (offline-first, dernière-écriture-gagne par classe + garde anti-conflit)
+- [`utils/syncBus.ts`](utils/syncBus.ts) : bus d'événements « dirty » découplant les producteurs (éditeur, gestion des classes) du moteur ; **version par classe** (une édition arrivée pendant un push en vol n'est jamais perdue).
+- [`contexts/SyncContext.tsx`](contexts/SyncContext.tsx) : push débounced (20 s), flush à la fermeture (`pagehide` + **`fetch keepalive`**, la requête survit à la fermeture de l'onglet), pull au démarrage **en parallèle** (une requête par classe, `Promise.all`).
+- **Détection de conflit multi-appareils** : `syncMeta_v1` mémorise `lastSyncedAt` (dernier point commun local/cloud). Si local ET cloud ont divergé depuis, la version perdante est **archivée** (`classDataConflict_v1_{classId}`) avant tout écrasement — aucune donnée n'est détruite en silence — et un toast en informe le professeur.
+- **Restauration de sauvegarde** ([`utils/backup.ts`](utils/backup.ts)) : traitée comme une modification locale datée de maintenant → elle est repoussée au cloud au redémarrage au lieu d'être écrasée par lui.
 
 ### 3.5 PWA & notifications
 - [`vite-plugin-pwa`](vite.config.ts) en `injectManifest` ; service worker [`pwa/sw.ts`](pwa/sw.ts) (precache, `push`, `notificationclick`, `/admin` et `/api` exclus du périmètre).
@@ -296,6 +300,26 @@ Pour forcer un comportement (ex. tester la page d'auth en local), remplacez la v
 ---
 
 ## 7. Journal des évolutions
+
+**Fiabilité des mécanismes & intelligence de l'emploi du temps (juillet 2026)**
+- **Tableau rendu par vrais blocs de séance** : les éléments consécutifs qui partagent une même date ne simulent plus une fusion ligne par ligne ; ils sont rendus comme une seule séance logique avec une cellule Date commune, un contenu empilé et une colonne Remarque cohérente. Résultat : centrage vertical exact, filets continus jusqu'à la remarque, meilleure base pour l'impression et la virtualisation.
+- **Impression refondue par séances** : `PrintView` regroupe désormais les contenus datés avant rendu. Le PDF imprime une séance comme une unité officielle (date commune, contenu empilé, remarques dédupliquées), avec une feuille blanche sans carte d'application, marges A4 homogènes et style administratif sobre.
+- **Dates en alerte simples** : une date signalée par la garde intelligente reste une date normale, seulement colorée en rouge. Aucun badge, aucune boîte, aucun effet lumineux : le signal doit alerter le professeur sans parasiter la lecture du cahier.
+- **Grille Date · Contenu · Remarque unifiée** : en-tête, lignes simples, séparateurs et séances groupées partagent la même définition de colonnes (`--cdt-table-cols`) ; le corps du tableau annule explicitement le padding hérité de `CardContent` (`!p-0`) pour éviter les décalages entre l'en-tête et les lignes.
+- **Séance de 2 h = 1 séance** : deux créneaux consécutifs de la même classe (même jour, sans pause déjeuner entre eux) sont fusionnés par [`deriveSchedules`](utils/timetable.ts) — le moteur de retard n'attend plus qu'**une** date pour une séance double (fin des fausses alertes). Visuel assorti dans `ScheduleTab` : cases soudées + badge « 2 h », récapitulatif « N séances (M h)/sem ». Les `schedules` sont **re-dérivés de la grille à chaque chargement** (source de vérité unique), y compris dans l'instantané poussé au cron.
+- **Conflits multi-appareils enfin visibles** : détection de divergence via `lastSyncedAt`, **archivage de la version perdante** avant écrasement, toast d'information ; flush de fermeture en `fetch keepalive` ; pull parallèle ; une édition pendant un push en vol n'est plus perdue (version par classe dans le syncBus) ; la **restauration de sauvegarde** gagne toujours sur le cloud (horodatée comme modification locale).
+- **Rappels locaux de fin de séance** ([`hooks/useSessionAlerts.ts`](hooks/useSessionAlerts.ts)) : vibration + toast 1 min avant la fin réelle de chaque séance du jour, et alerte si aucune date n'a été affectée à la fin — silence total fériés/vacances/absences, alertes simultanées regroupées, opt-in par appareil (Configuration ▸ Notifications, jamais synchronisé).
+- **Auto-numérotation** : « Contrôle continu N » / « Devoir maison N » suggéré à la création (comptage réel de l'arbre, [`countOccurrencesOfType`](utils/dataUtils.ts)), champ librement modifiable.
+- **Création de classe héritée du profil** : un seul cycle / une seule matière au profil → champs masqués et hérités ; plusieurs → choix restreint. Modifiable dans les Paramètres, répercuté partout (tableau de bord, création, synchro).
+- **Table « serrée »** : le tableau court de bord à bord de la carte (aucun padding de cadre), filets verticaux et horizontaux renforcés, en-tête nettement démarqué (fond plein + filet doré pleine largeur), **fond de ligne coloré par type de bloc** (`rowColor` dans `TOP_LEVEL_TYPE_CONFIG`).
+- **Journal compact dans la barre d'outils** (à gauche, cliquable) ; modale Historique regroupée par jour avec compactage des opérations répétées (« ×5 »).
+- **Toasts disciplinés** : 3 visibles maximum, décalés au-dessus du FAB sur mobile (safe-area) ; l'association des cahiers locaux au compte est proposée par toast **non bloquant** (plus de `window.confirm`).
+- **Admin enrichi** : distribution globale des sévérités (chips cliquables = filtres), tri (retard / complétion / activité / nom), comptes **inactifs** signalés ; le calcul de retard admin intègre désormais les absences justifiées et les seuils du prof (mêmes modules purs).
+- **Progression corrigée** ([`utils/progression.ts`](utils/progression.ts)) : les **sections** (conteneurs structurels) ne comptent plus dans la complétion — on date des travaux, pas des titres ; les **dates des séparateurs** (démarcations de fin de séance) comptent désormais comme séances pour le moteur de retard — un prof qui clôture ses séances au séparateur n'est plus faussement « en retard ».
+- **Impression — finition document officiel** : blocs de séance insécables entre deux pages, mention « Imprimé le … », **zone de signatures** (professeur + visa de la direction) en pied, fond d'en-tête garanti à l'impression.
+- **Couleur de classe = accent officiel** : la couleur choisie dans la modale devient l'accent de la carte (rail latéral, matière, CTA, survol — jamais de fond plein) et se retrouve dans l'en-tête de l'éditeur (pastille + filet).
+- **Circuit Paramètres étanche** : toute clé synchronisée (établissement, cycles/matières, préférences d'affichage…) déclenche désormais le push cloud — la liste des clés (`SYNCABLE_KEYS`) est partagée entre le circuit de saisie et le moteur de synchro.
+- **Nettoyage** : suppression du barrel `utils/engine.ts` (jamais importé), de `printContent` (mort), de `metadata.json` (résidu AI Studio) et du log `vite-dev.log` ; hook `useDebouncedCallback` dédupliqué.
 
 **Optimisation mobile/tablette A→Z**
 - **Remarque enfin visible sur téléphone** : affichée en italique sous le contenu (< 768px), éditable au tap — la donnée n'était ni visible ni modifiable sur mobile.

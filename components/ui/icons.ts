@@ -26,6 +26,7 @@ export {
   Undo2,
   Redo2,
   Save,
+  History,
   Search,
   ChevronUp,
   ChevronDown,

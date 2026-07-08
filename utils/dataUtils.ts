@@ -5,6 +5,35 @@ import { memoize } from './performance';
 
 type DataItem = TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
 
+/**
+ * Nombre d'occurrences d'un type récurrent (devoir_maison, controle_continu…)
+ * dans tout le cahier : blocs de premier niveau ET éléments imbriqués
+ * (EmbeddableTopLevelItem dans les items d'une section). Sert à
+ * l'auto-numérotation des titres (« Contrôle continu 2 ») — comptage de
+ * l'arbre réel plutôt qu'un compteur séparé à synchroniser.
+ */
+export const countOccurrencesOfType = (data: LessonsData, type: string): number => {
+    let count = 0;
+    const countItems = (items?: (LessonItem | EmbeddableTopLevelItem)[]): void => {
+        for (const item of items ?? []) {
+            if (item.type === type) count += 1;
+        }
+    };
+    for (const block of data) {
+        if (block.type === type) count += 1;
+        for (const section of block.sections ?? []) {
+            countItems(section.items);
+            for (const subsection of section.subsections ?? []) {
+                countItems(subsection.items);
+                for (const subsubsection of subsection.subsubsections ?? []) {
+                    countItems(subsubsection.items);
+                }
+            }
+        }
+    }
+    return count;
+};
+
 export const findItem = (data: LessonsData | any, indices: Indices): { item: DataItem | null, parent: DataItem | any[] | null, targetIndex: number | string | null } => {
     if (indices.chapterIndex === undefined || !data[indices.chapterIndex]) {
         return { item: null, parent: null, targetIndex: null };
@@ -77,6 +106,35 @@ export const addSection = (draft: Draft<LessonsData>, chapterIndices: Indices, n
         }
         const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : topLevelItem.sections.length;
         topLevelItem.sections.splice(index, 0, newSection);
+    }
+};
+
+export const addSubSection = (draft: Draft<LessonsData>, sectionIndices: Indices, newSubSection: SubSection, insertAfterIndex?: number): void => {
+    const { item: section } = findItem(draft, {
+        chapterIndex: sectionIndices.chapterIndex,
+        sectionIndex: sectionIndices.sectionIndex,
+    });
+    if (section && sectionIndices.sectionIndex !== undefined) {
+        const target = section as Section;
+        if (!target.subsections) target.subsections = [];
+        if (!newSubSection.items) newSubSection.items = [];
+        const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : target.subsections.length;
+        target.subsections.splice(index, 0, newSubSection);
+    }
+};
+
+export const addSubSubSection = (draft: Draft<LessonsData>, subSectionIndices: Indices, newSubSubSection: SubSubSection, insertAfterIndex?: number): void => {
+    const { item: subSection } = findItem(draft, {
+        chapterIndex: subSectionIndices.chapterIndex,
+        sectionIndex: subSectionIndices.sectionIndex,
+        subsectionIndex: subSectionIndices.subsectionIndex,
+    });
+    if (subSection && subSectionIndices.subsectionIndex !== undefined) {
+        const target = subSection as SubSection;
+        if (!target.subsubsections) target.subsubsections = [];
+        if (!newSubSubSection.items) newSubSubSection.items = [];
+        const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : target.subsubsections.length;
+        target.subsubsections.splice(index, 0, newSubSubSection);
     }
 };
 

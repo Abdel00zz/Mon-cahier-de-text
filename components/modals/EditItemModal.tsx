@@ -8,7 +8,7 @@ import { Badge } from '../ui/badge';
 import { MathJax } from 'better-react-mathjax';
 import { Indices, LessonsData, TopLevelItem } from '../../types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../../constants';
-import { findItem } from '../../utils/dataUtils';
+import { countOccurrencesOfType, findItem } from '../../utils/dataUtils';
 import {
   ArrowLeft, Plus, MapPin, Book, Network, ListTree, GripHorizontal,
   TestTube, Home, FileSignature, CheckCheck, CheckSquare, Sigma, CircleAlert,
@@ -145,6 +145,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       modalTitle = `Ajouter : ${config.name}`;
     } else if (selectedType === 'section') {
       modalTitle = "Ajouter : Section";
+    } else if (selectedType === 'subsection') {
+      modalTitle = "Ajouter : Sous-section";
+    } else if (selectedType === 'subsubsection') {
+      modalTitle = "Ajouter : Sous-sous-section";
     } else if (selectedType === 'item') {
       modalTitle = "Ajouter : Élément";
     } else if (selectedType === 'separator') {
@@ -158,7 +162,12 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     let initialData: any = {};
 
     if (config) {
-      initialData.title = config.name;
+      // Types récurrents : titre auto-suggéré « Contrôle continu N » (N =
+      // occurrences existantes dans le cahier + 1). Simple suggestion — le
+      // champ reste librement modifiable par le professeur.
+      initialData.title = config.autoNumber
+        ? `${config.name} ${countOccurrencesOfType(lessonsData, type) + 1}`
+        : config.name;
     } else if (type === 'item') {
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.
       const anchorType = selectedElementType === 'item' && selectedItem && (selectedItem as any).type;
@@ -215,10 +224,18 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     }
     switch (selectedType) {
       case 'section':
+      case 'subsection':
+      case 'subsubsection':
+        const structureLabel =
+          selectedType === 'section'
+            ? 'Nom de la section'
+            : selectedType === 'subsection'
+              ? 'Nom de la sous-section'
+              : 'Nom de la sous-sous-section';
         return (
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
-              <label htmlFor="name" className={labelClasses}>Nom de la Section</label>
+              <label htmlFor="name" className={labelClasses}>{structureLabel}</label>
               <Input
                 ref={initialFocusRef}
                 type="text"
@@ -226,7 +243,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                placeholder="Ex: I. Définitions et propriétés"
+                placeholder="Ex: Définitions et propriétés"
                 className="rounded-xl border-slate-200 h-11"
               />
             </div>
@@ -325,12 +342,16 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   // Check constraints
   const canAddSection = useMemo(() => {
     return selectedElementType === 'chapter' ||
+      selectedElementType === 'section' ||
       (selectedElementType &&
         (selectedElementType.startsWith('evaluation_') ||
           selectedElementType.startsWith('devoir_') ||
           selectedElementType.startsWith('controle_') ||
           selectedElementType.startsWith('correction_')));
   }, [selectedElementType]);
+
+  const canAddSubsection = selectedElementType === 'section' || selectedElementType === 'subsection';
+  const canAddSubsubsection = selectedElementType === 'subsection' || selectedElementType === 'subsubsection';
 
   const canAddItem = useMemo(() => {
     return !!selectedItem && 'items' in selectedItem;
@@ -417,11 +438,29 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={Network}
                 label="Section"
-                description="Ajoute une sous-partie (I, II, A...) dans le chapitre"
+                description="Ajoute une partie au chapitre ou bloc sélectionné"
                 colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
-                tooltip="Sélectionnez un chapitre pour ajouter une Section"
+                tooltip="Sélectionnez un chapitre ou une section"
+              />
+              <CategoryCard
+                icon={Network}
+                label="Sous-section"
+                description="Ajoute un niveau sous la section sélectionnée"
+                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                onClick={() => handleSelectType('subsection')}
+                disabled={!canAddSubsection}
+                tooltip="Sélectionnez une section"
+              />
+              <CategoryCard
+                icon={Network}
+                label="Sous-sous-section"
+                description="Ajoute un niveau sous la sous-section sélectionnée"
+                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                onClick={() => handleSelectType('subsubsection')}
+                disabled={!canAddSubsubsection}
+                tooltip="Sélectionnez une sous-section"
               />
               <CategoryCard
                 icon={ListTree}
@@ -430,7 +469,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 colorClass="text-slate-600 bg-slate-100 border-slate-200"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
-                tooltip="Sélectionnez une section ou un chapitre pour insérer un élément"
+                tooltip="Sélectionnez une section pour insérer un élément"
               />
               <CategoryCard
                 icon={GripHorizontal}

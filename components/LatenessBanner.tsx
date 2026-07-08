@@ -33,7 +33,8 @@ export const LatenessBanner: React.FC<LatenessBannerProps> = ({ classes, config 
         }
     }, [summary]);
 
-    if (!summary || dismissed) return null;
+    // 'ok' = tout est à jour : le détail alimente les cartes stats, pas de bannière
+    if (!summary || summary.severity === 'ok' || dismissed) return null;
 
     const style = SEVERITY_STYLE[summary.severity] ?? SEVERITY_STYLE.notice;
 

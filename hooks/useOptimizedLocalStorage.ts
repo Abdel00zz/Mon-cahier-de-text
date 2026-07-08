@@ -1,29 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { logger } from '../utils/logger';
-
-function useDebouncedCallback<T extends (...args: any[]) => void>(callback: T, delay: number) {
-  const callbackRef = useRef(callback);
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  return useCallback((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      callbackRef.current(...args);
-    }, delay);
-  }, [delay]);
-}
+import { useDebouncedCallback } from '../utils/performance';
 
 export function useOptimizedLocalStorage<T>(
   key: string,
@@ -40,8 +17,18 @@ export function useOptimizedLocalStorage<T>(
     try {
       const storedValue = localStorage.getItem(key);
       if (storedValue) {
-        const parsed = JSON.parse(storedValue);
-        setValue(parsed);
+        try {
+          const parsed = JSON.parse(storedValue);
+          setValue(parsed);
+        } catch (parseErr) {
+          if (typeof defaultValue === 'string') {
+            // Ancien format possible: valeur texte brute au lieu de JSON ("college").
+            setValue(storedValue as T);
+            localStorage.setItem(key, JSON.stringify(storedValue));
+          } else {
+            throw parseErr;
+          }
+        }
       }
       setError(null);
     } catch (err) {

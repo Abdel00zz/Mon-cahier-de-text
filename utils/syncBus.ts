@@ -6,7 +6,11 @@ export type SyncEvent = 'dirty' | 'pull-applied';
 
 const listeners = new Map<SyncEvent, Set<() => void>>();
 
-const dirtyClassIds = new Set<string>();
+// version par classe plutôt qu'un simple Set : une modification arrivée
+// pendant un push en vol ne doit pas être effacée par le clear de ce push
+// (même principe que le compteur de version de la liste, ci-dessous).
+const dirtyClassVersions = new Map<string, number>();
+let dirtySeq = 0;
 const deletedClassIds = new Set<string>();
 // version plutôt que booléen : une modification arrivée pendant un push en vol
 // ne doit pas être effacée par le clear de ce push.
@@ -16,7 +20,15 @@ let classesListSyncedVersion = 0;
 const SYNC_META_KEY = 'syncMeta_v1';
 
 export interface SyncMeta {
-    [classId: string]: { localUpdatedAt: string };
+    [classId: string]: {
+        localUpdatedAt: string;
+        /**
+         * Dernier horodatage où local et cloud étaient identiques (push réussi
+         * ou pull appliqué). Sert à détecter un vrai conflit multi-appareils :
+         * local ET serveur ont tous deux avancé depuis ce point commun.
+         */
+        lastSyncedAt?: string;
+    };
 }
 
 export const readSyncMeta = (): SyncMeta => {
@@ -38,7 +50,14 @@ export const writeSyncMeta = (meta: SyncMeta): void => {
 
 export const touchClassSyncMeta = (classId: string): void => {
     const meta = readSyncMeta();
-    meta[classId] = { localUpdatedAt: new Date().toISOString() };
+    meta[classId] = { ...meta[classId], localUpdatedAt: new Date().toISOString() };
+    writeSyncMeta(meta);
+};
+
+/** Marque local et cloud comme identiques à cet horodatage (push réussi / pull appliqué). */
+export const markClassSynced = (classId: string, syncedAt: string): void => {
+    const meta = readSyncMeta();
+    meta[classId] = { localUpdatedAt: meta[classId]?.localUpdatedAt ?? syncedAt, lastSyncedAt: syncedAt };
     writeSyncMeta(meta);
 };
 
@@ -61,7 +80,7 @@ export const subscribe = (event: SyncEvent, listener: () => void): (() => void) 
 };
 
 export const markClassDirty = (classId: string): void => {
-    dirtyClassIds.add(classId);
+    dirtyClassVersions.set(classId, ++dirtySeq);
     deletedClassIds.delete(classId);
     emit('dirty');
 };
@@ -73,7 +92,7 @@ export const markClassesListDirty = (): void => {
 
 export const markClassDeleted = (classId: string): void => {
     deletedClassIds.add(classId);
-    dirtyClassIds.delete(classId);
+    dirtyClassVersions.delete(classId);
     removeClassSyncMeta(classId);
     classesListVersion += 1;
     emit('dirty');
@@ -86,23 +105,29 @@ export const notifyPullApplied = (): void => {
 
 export interface PendingWork {
     dirtyClassIds: string[];
+    /** version capturée par classe : ne nettoyer que si inchangée depuis */
+    dirtyClassVersions: Record<string, number>;
     deletedClassIds: string[];
     classesListDirty: boolean;
     listVersion: number;
 }
 
 export const getPendingWork = (): PendingWork => ({
-    dirtyClassIds: Array.from(dirtyClassIds),
+    dirtyClassIds: Array.from(dirtyClassVersions.keys()),
+    dirtyClassVersions: Object.fromEntries(dirtyClassVersions),
     deletedClassIds: Array.from(deletedClassIds),
     classesListDirty: classesListVersion > classesListSyncedVersion,
     listVersion: classesListVersion,
 });
 
 export const hasPendingWork = (): boolean =>
-    classesListVersion > classesListSyncedVersion || dirtyClassIds.size > 0 || deletedClassIds.size > 0;
+    classesListVersion > classesListSyncedVersion || dirtyClassVersions.size > 0 || deletedClassIds.size > 0;
 
 export const clearPendingWork = (work: PendingWork): void => {
-    work.dirtyClassIds.forEach(id => dirtyClassIds.delete(id));
+    // une classe re-modifiée pendant le push (version avancée) reste sale
+    for (const [id, version] of Object.entries(work.dirtyClassVersions)) {
+        if (dirtyClassVersions.get(id) === version) dirtyClassVersions.delete(id);
+    }
     work.deletedClassIds.forEach(id => deletedClassIds.delete(id));
     classesListSyncedVersion = Math.max(classesListSyncedVersion, work.listVersion);
 };

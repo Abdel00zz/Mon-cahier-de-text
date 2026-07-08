@@ -1,12 +1,16 @@
 import { AbsencePeriod, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, TeacherSnapshot } from '../types';
 import { flattenLessons } from './dataUtils';
 
-// Réplique exacte du filtre historique d'AnalysisModal : un « élément de contenu »
-// est tout nœud aplati dont le type n'est pas un conteneur nommé.
-const isContentEntry = (entry: { data: any }): boolean => {
-    const type = entry.data?.type;
-    return type !== 'chapter' && type !== 'section' && type !== 'subsection' && type !== 'subsubsection';
-};
+/*
+ * Un « élément de contenu » est un travail effectué en classe (item, devoir,
+ * contrôle…), jamais un conteneur structurel. Le filtre s'appuie sur
+ * l'elementType du parcours (fiable) et non sur `data.type` : les Sections
+ * n'ont pas de champ `type` et passaient l'ancien filtre — les titres
+ * structurels gonflaient le dénominateur de complétion.
+ */
+const CONTAINER_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
+const isContentEntry = (entry: { data: any; elementType: string }): boolean =>
+    !CONTAINER_TYPES.has(entry.elementType) && !CONTAINER_TYPES.has(entry.data?.type);
 
 export interface ChapterProgress {
     title: string;
@@ -26,13 +30,25 @@ export interface ProgressionStats {
 }
 
 export const computeProgressionStats = (lessonsData: LessonsData): ProgressionStats => {
-    const contentItems = flattenLessons(lessonsData).filter(isContentEntry);
+    const allEntries = flattenLessons(lessonsData);
+    const contentItems = allEntries.filter(isContentEntry);
 
     const totalItems = contentItems.length;
     const plannedItems = contentItems.filter(entry => !!entry.data?.date);
     const plannedCount = plannedItems.length;
 
+    /*
+     * Séances = dates distinctes des éléments datés + dates des SÉPARATEURS
+     * (démarcations de fin de séance : le geste cahier-de-textes par
+     * excellence). Sans elles, un prof qui clôture ses séances au séparateur
+     * était compté « en retard » par le moteur. Les séparateurs n'entrent en
+     * revanche jamais dans la complétion (ce ne sont pas des contenus).
+     */
     const uniqueDates = new Set(plannedItems.map(entry => entry.data.date as string).filter(Boolean));
+    for (const entry of allEntries) {
+        const separatorDate = entry.data?.separatorAfter?.date;
+        if (typeof separatorDate === 'string' && separatorDate.trim()) uniqueDates.add(separatorDate.trim());
+    }
     const sessionsCount = uniqueDates.size;
 
     const completionRate = totalItems === 0 ? 0 : Math.round((plannedCount / totalItems) * 100);

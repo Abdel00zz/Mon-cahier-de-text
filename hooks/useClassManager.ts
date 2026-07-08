@@ -41,7 +41,10 @@ export const useClassManager = () => {
             // ① Normal case: classes already stored and non-empty
             if (hadLaunched && storedRaw) {
                 try {
-                    const stored: ClassInfo[] = JSON.parse(storedRaw);
+                    const stored = JSON.parse(storedRaw);
+                    if (!Array.isArray(stored)) {
+                        throw new Error('Stored classes are not an array');
+                    }
                     if (!cancelled) {
                         setClasses(stored);
                         setIsLoading(false);
@@ -87,7 +90,10 @@ export const useClassManager = () => {
     useEffect(() => {
         return subscribe('pull-applied', () => {
             try {
-                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as ClassInfo[];
+                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                if (!Array.isArray(stored)) {
+                    throw new Error('Stored classes are not an array');
+                }
                 skipFirstPersistRef.current = true; // ne pas re-marquer dirty ce rechargement
                 setClasses(() => stored);
             } catch (err) {

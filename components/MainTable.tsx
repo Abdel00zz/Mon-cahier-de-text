@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem } from '../types';
-import { DateMergeMeta, TableRow } from './TableRow';
+import { DateCard, DateMergeMeta, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
+import { EditableCell } from './ui/EditableCell';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
 import { logger } from '../utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from './ui/virtual-list';
@@ -14,6 +15,8 @@ import { BookOpen, Plus } from './ui/icons';
 
 /* Accent partagé avec TableRow / SeparatorRow */
 const GOLD = '#B8935A';
+const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
+const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
 
 interface InlineEditRowProps {
     data: LessonItem;
@@ -75,7 +78,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
     return (
         <form
             ref={rootRef}
-            className="relative my-2.5 grid gap-3 overflow-hidden rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 pl-4 shadow-lg shadow-[#2B241D]/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 pl-4 shadow-lg shadow-[#2B241D]/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
             onKeyDown={(event) => {
@@ -166,26 +169,33 @@ interface FlatDataItem {
     dateMerge?: DateMergeMeta;
 }
 
+type RenderRow =
+    | { kind: 'single'; item: FlatDataItem; key: string; flatIndex: number }
+    | { kind: 'session'; items: FlatDataItem[]; key: string; flatIndex: number };
+
 
 const VIRTUALIZATION_THRESHOLD = 140;
 const ESTIMATED_ROW_HEIGHT = 72;
 const VIRTUAL_OVERSCAN = 16;
 
 const TableHeader: React.FC = React.memo(() => (
-  <div className="sticky top-0 z-10 hidden border-b border-[#E4D3AC] bg-[#FCF6EA]/90 backdrop-blur-md print:static md:block px-3 sm:px-4">
-    <div className="flex">
-      <div className="w-[19%] sm:w-[13%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
+  /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
+     avec celles des rangées (elles aussi sans padding de cadre). En-tête
+     nettement démarqué : fond plein + double filet (or + trait). */
+  <div className="sticky top-0 z-10 hidden border-b border-[#D8C79E] bg-[#FCF6EA] backdrop-blur-md print:static md:block">
+    <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-r border-[#E4D3AC] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
         Date
       </div>
-      <div className="flex-1 p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
+      <div className="flex items-center justify-center border-r border-[#E4D3AC] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
         Contenu
       </div>
-      <div className="hidden w-[16%] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] md:block font-mono">
+      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
         Remarque
       </div>
     </div>
-    {/* filet signature discret sous l'en-tête */}
-    <div aria-hidden className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}55, transparent)` }} />
+    {/* filet signature sous l'en-tête — pleine largeur, bord à bord */}
+    <div aria-hidden className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, ${GOLD}66, ${GOLD}AA, ${GOLD}66)` }} />
   </div>
 ));
 TableHeader.displayName = 'TableHeader';
@@ -242,9 +252,125 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
     return items;
 };
 
+interface SessionGroupRowProps {
+    items: FlatDataItem[];
+    selectedKeys: ReadonlySet<string>;
+    newlyAddedIds: string[];
+    onCellUpdate: (indices: Indices, field: string, value: any) => void;
+    onToggleSelect: (indices: Indices) => void;
+    onDoubleClickEdit?: (indices: Indices) => void;
+    showDescriptions?: boolean;
+    descriptionTypes?: string[];
+    searchQuery?: string;
+    getDateWarnings?: (date: string) => { type: string; message: string }[];
+}
+
+const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
+    items,
+    selectedKeys,
+    newlyAddedIds,
+    onCellUpdate,
+    onToggleSelect,
+    onDoubleClickEdit,
+    showDescriptions,
+    descriptionTypes = [],
+    searchQuery,
+    getDateWarnings,
+}) => {
+    const first = items[0];
+    const date = getMergeableDate(first) ?? '';
+    const warnings = date && getDateWarnings ? getDateWarnings(date) : [];
+    const hasWarning = warnings.length > 0;
+    const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(first));
+    const groupIsSelected = items.some(item => selectedKeys.has(item.key));
+    const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
+    const sharedRemark = getMergeableRemark(first);
+    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-[#E4D3AC]/70';
+
+    const saveSharedRemark = (value: string) => {
+        items.forEach(item => onCellUpdate(item.indices, 'remark', value));
+    };
+
+    return (
+        <div
+            className={[
+                `group relative grid ${TABLE_GRID_CLASS} border-t border-[#B8935A]/25 border-b-2 border-[#B8935A]/40 bg-[#FFF4DF]/60 transition-colors duration-150`,
+                groupIsSelected ? 'bg-primary/[0.06]' : '',
+                groupIsNew ? 'new-item-highlight' : '',
+            ].filter(Boolean).join(' ')}
+        >
+            <span
+                aria-hidden
+                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-[#B8935A]/60'}`}
+            />
+
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-[#FFEBC2]/45`}>
+                <DateCard dateStr={date} hasWarning={hasWarning} />
+            </div>
+
+            <div className={`min-w-0 self-stretch ${dividerClass}`}>
+                {items.map((item, index) => {
+                    const isSelected = selectedKeys.has(item.key);
+                    const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
+                    return (
+                        <TableRow
+                            key={item.key}
+                            data={item.data}
+                            indices={item.indices}
+                            elementType={item.elementType}
+                            layout="content-only"
+                            lineClassOverride={index < items.length - 1 ? 'border-b border-[#E4D3AC]/35' : ''}
+                            onCellUpdate={onCellUpdate}
+                            onToggleSelect={onToggleSelect}
+                            onDoubleClickEdit={onDoubleClickEdit}
+                            isSelected={isSelected}
+                            isNew={isNew}
+                            showDescriptions={showDescriptions}
+                            descriptionTypes={descriptionTypes}
+                            searchQuery={searchQuery}
+                            getDateWarnings={getDateWarnings}
+                        />
+                    );
+                })}
+            </div>
+
+            <div className="hidden min-w-0 self-stretch bg-[#FFF4DF]/35 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+                {sameRemark ? (
+                    <div className="flex min-h-full w-full flex-col justify-center">
+                        <EditableCell
+                            value={sharedRemark}
+                            onSave={saveSharedRemark}
+                            className="h-full p-1 text-[11px] text-[#69604F] font-semibold font-sans"
+                            multiline
+                            placeholder=""
+                        />
+                    </div>
+                ) : (
+                    <div className="flex w-full flex-col">
+                        {items.map((item, index) => (
+                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-[#E4D3AC]/35' : ''}`}>
+                                <EditableCell
+                                    value={getMergeableRemark(item)}
+                                    onSave={value => onCellUpdate(item.indices, 'remark', value)}
+                                    className="h-full p-1 text-[11px] text-[#69604F] font-semibold font-sans"
+                                    multiline
+                                    placeholder=""
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+SessionGroupRow.displayName = 'SessionGroupRow';
+
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#E4D3AC] bg-[#FFFDF7] px-6 py-16 text-center shadow-sm">
+    /* carte arrondie : compense le conteneur plein-bord (§G) du tableau */
+    <div className="mx-2 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#E4D3AC] bg-[#FFFDF7] px-6 py-16 text-center shadow-sm sm:mx-6">
         <div
             className="flex h-14 w-14 items-center justify-center rounded-full"
             style={{ backgroundColor: `${GOLD}1A`, color: GOLD }}
@@ -334,19 +460,56 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     return applyDateMerges(result);
   }, [lessonsData]);
 
+  const renderRows = useMemo<RenderRow[]>(() => {
+    const rows: RenderRow[] = [];
+
+    for (let index = 0; index < flatData.length; index += 1) {
+        const item = flatData[index];
+
+        if (item.dateMerge?.isMerged && item.dateMerge.isStart) {
+            const group = flatData.slice(index, index + item.dateMerge.count);
+            const containsEditedRow = editingKey !== null && group.some(groupItem => groupItem.key === editingKey);
+
+            if (!containsEditedRow) {
+                rows.push({
+                    kind: 'session',
+                    items: group,
+                    key: `session-${item.key}`,
+                    flatIndex: index,
+                });
+                index += item.dateMerge.count - 1;
+                continue;
+            }
+        }
+
+        rows.push({
+            kind: 'single',
+            item,
+            key: item.key,
+            flatIndex: index,
+        });
+    }
+
+    return rows;
+  }, [flatData, editingKey]);
+
   // La virtualisation reste ACTIVE pendant l'édition : la ligne éditée est
   // simplement « épinglée » (keepIndices) pour ne jamais être démontée.
   // Avant, éditer dans un gros cahier désactivait la virtualisation et
   // re-rendait toutes les lignes d'un coup.
   const editingIndex = useMemo(
-    () => (editingKey === null ? -1 : flatData.findIndex(item => item.key === editingKey)),
-    [editingKey, flatData]
+    () => (editingKey === null ? -1 : renderRows.findIndex(row => (
+        row.kind === 'single'
+            ? row.item.key === editingKey
+            : row.items.some(item => item.key === editingKey)
+    ))),
+    [editingKey, renderRows]
   );
   const keepIndices = useMemo(() => (editingIndex >= 0 ? [editingIndex] : []), [editingIndex]);
 
-  const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
+  const shouldVirtualize = renderRows.length > VIRTUALIZATION_THRESHOLD;
   const { scrollRef, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
-    count: flatData.length,
+    count: renderRows.length,
     enabled: shouldVirtualize,
     estimateSize: ESTIMATED_ROW_HEIGHT,
     overscan: VIRTUAL_OVERSCAN,
@@ -355,32 +518,59 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   useEffect(() => {
     logger.debug('MainTable profile', {
       totalRowsInMemory: flatData.length,
+      renderedLogicalRows: renderRows.length,
       renderedRows: renderedCount,
       virtualized: shouldVirtualize,
       virtualWindow: shouldVirtualize && virtualItems.length > 0 ? `${virtualItems[0].index}-${virtualItems[virtualItems.length - 1].index}` : 'full',
-      measuredCanvasHeight: shouldVirtualize ? Math.round(totalSize) : flatData.length * ESTIMATED_ROW_HEIGHT,
-      estimatedRowsSkipped: shouldVirtualize ? Math.max(0, flatData.length - renderedCount) : 0,
+      measuredCanvasHeight: shouldVirtualize ? Math.round(totalSize) : renderRows.length * ESTIMATED_ROW_HEIGHT,
+      estimatedRowsSkipped: shouldVirtualize ? Math.max(0, renderRows.length - renderedCount) : 0,
       estimatedDomReductionPercent: shouldVirtualize
-        ? Math.round((1 - renderedCount / Math.max(1, flatData.length)) * 100)
+        ? Math.round((1 - renderedCount / Math.max(1, renderRows.length)) * 100)
         : 0,
     });
-  }, [flatData.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
+  }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
 
   if (!lessonsData || lessonsData.length === 0) {
       return <EmptyState onOpenAddContentModal={onOpenAddContentModal} />;
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-[#E4D3AC] bg-[#FFFDF7]/95 shadow-xl shadow-[#2B241D]/5">
+    /* §G : tableau dense bord à bord — pas d'arrondi ni de bordure latérale,
+       la table épouse les bords de la carte parente */
+    <Card
+      className="overflow-hidden rounded-none border border-[#E4D3AC] bg-[#FFFDF7]/95 shadow-xl shadow-[#2B241D]/5"
+      style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
+    >
       <TableHeader />
-      <CardContent className="p-0">
+      <CardContent className="!p-0">
         <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize } : undefined}>
           {(() => {
-              const rows: Array<{ item: typeof flatData[number]; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
-                ? virtualItems.map(virtualItem => ({ item: flatData[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(row => !!row.item)
-                : flatData.map((item, absoluteIndex) => ({ item, absoluteIndex }));
+              const rows: Array<{ row: RenderRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
+                ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
+                : renderRows.map((row, absoluteIndex) => ({ row, absoluteIndex }));
 
-              return rows.map(({ item, virtualItem, absoluteIndex }) => {
+              return rows.map(({ row, virtualItem, absoluteIndex }) => {
+                  if (row.kind === 'session') {
+                      return (
+                          <VirtualListRow key={row.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement}>
+                              <SessionGroupRow
+                                  items={row.items}
+                                  selectedKeys={selectedKeys}
+                                  newlyAddedIds={newlyAddedIds}
+                                  onCellUpdate={onCellUpdate}
+                                  onToggleSelect={onToggleSelect}
+                                  onDoubleClickEdit={onInitiateInlineEdit}
+                                  showDescriptions={showDescriptions}
+                                  descriptionTypes={descriptionTypes}
+                                  searchQuery={searchQuery}
+                                  getDateWarnings={getDateWarnings}
+                              />
+                          </VirtualListRow>
+                      );
+                  }
+
+                  const { item } = row;
+
                   if (item.elementType === 'separator') {
                       const originalItemIndices = item.indices;
                       const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));

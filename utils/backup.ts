@@ -1,4 +1,5 @@
 import { AppConfig, ClassInfo, LessonsData } from '../types';
+import { SyncMeta } from './syncBus';
 
 /**
  * Sauvegarde COMPLÈTE de toutes les données de l'utilisateur sur cet appareil :
@@ -90,7 +91,22 @@ export const restoreBackup = (data: any): number => {
         if (c.printMeta !== undefined) localStorage.setItem(`printMeta_v1_${id}`, JSON.stringify(c.printMeta));
     }
 
-    if (data.syncMeta !== undefined) localStorage.setItem('syncMeta_v1', JSON.stringify(data.syncMeta));
+    /*
+     * 4) Métadonnées de synchro — la restauration EST une modification locale
+     * datée de maintenant. Sans cet horodatage, un cloud plus « récent » que la
+     * sauvegarde écraserait les données fraîchement restaurées au pull suivant
+     * (et l'ancien format v1, sans syncMeta, laisserait toutes les classes
+     * paraître plus anciennes que le cloud). Le `lastSyncedAt` de la sauvegarde
+     * est conservé : si le cloud a divergé depuis, le conflit sera détecté et
+     * la version cloud archivée avant d'être remplacée.
+     */
+    const restoredMeta: SyncMeta =
+        data.syncMeta && typeof data.syncMeta === 'object' ? { ...(data.syncMeta as SyncMeta) } : {};
+    const now = new Date().toISOString();
+    for (const info of allClassInfo) {
+        restoredMeta[info.id] = { ...restoredMeta[info.id], localUpdatedAt: now };
+    }
+    localStorage.setItem('syncMeta_v1', JSON.stringify(restoredMeta));
 
     return allClassInfo.length;
 };

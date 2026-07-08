@@ -166,13 +166,17 @@ export const SUBJECTS = [
 // The previous weak key type (`string`) caused `keyof typeof` to resolve to `string | number`,
 // which broke type narrowing for discriminated unions in `App.tsx`. This change ensures
 // the keys are correctly typed, fixing errors related to `NewContentContext`.
-export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; }> = {
-    'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700' },
-    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-purple-700', badgeColor: 'bg-purple-100 text-purple-800' },
-    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-700', badgeColor: 'bg-blue-100 text-blue-800' },
-    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-green-700', badgeColor: 'bg-green-100 text-green-800' },
-    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-blue-600', badgeColor: 'bg-blue-100 text-blue-800' },
-    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-green-600', badgeColor: 'bg-green-100 text-green-800' },
+export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
+    // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
+    // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
+    'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700', rowColor: 'bg-red-50/50' },
+    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-purple-700', badgeColor: 'bg-purple-100 text-purple-800', rowColor: 'bg-purple-50/60' },
+    // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
+    // type dans le cahier + 1) — réservé aux types récurrents.
+    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-700', badgeColor: 'bg-blue-100 text-blue-800', rowColor: 'bg-blue-50/60', autoNumber: true },
+    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-green-700', badgeColor: 'bg-green-100 text-green-800', rowColor: 'bg-green-50/60', autoNumber: true },
+    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-blue-600', badgeColor: 'bg-blue-100 text-blue-800', rowColor: 'bg-blue-50/40', autoNumber: true },
+    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-green-600', badgeColor: 'bg-green-100 text-green-800', rowColor: 'bg-green-50/40', autoNumber: true },
 };
 
 

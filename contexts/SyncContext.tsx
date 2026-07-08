@@ -2,12 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppConfig, ClassInfo, LessonsData } from '../types';
 import { computeTeacherSnapshot } from '../utils/progression';
 import { migrateLessonsData } from '../utils/dataUtils';
+import { toast } from 'sonner';
 import {
     clearPendingWork,
     getPendingWork,
     hasPendingWork,
     markClassDirty,
     markClassesListDirty,
+    markClassSynced,
     notifyPullApplied,
     readSyncMeta,
     subscribe,
@@ -16,6 +18,7 @@ import {
 import { useAuth } from './AuthContext';
 import { logger } from '../utils/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../utils/syncSettings';
+import { effectiveSchedules } from '../utils/timetable';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -57,6 +60,40 @@ const readLocalConfig = (): Partial<AppConfig> => {
     }
 };
 
+interface RemoteLessonsBlob {
+    lessonsData?: LessonsData;
+    updatedAt?: string;
+}
+
+const fetchLessonsBlob = async (classId: string): Promise<RemoteLessonsBlob | null> => {
+    try {
+        const response = await fetch(`/api/sync?classId=${encodeURIComponent(classId)}`, {
+            credentials: 'same-origin',
+        });
+        return response.ok ? ((await response.json()) as RemoteLessonsBlob) : null;
+    } catch (error) {
+        logger.error('Pull d\'une classe impossible', error);
+        return null;
+    }
+};
+
+/**
+ * Conflit multi-appareils : la version perdante (locale ou cloud) est
+ * archivée avant écrasement — aucune donnée n'est jamais détruite en silence.
+ * Une seule copie par classe (la plus récente), récupérable via
+ * `classDataConflict_v1_{classId}`.
+ */
+const backupConflictVersion = (classId: string, lessonsData: unknown, source: 'local' | 'cloud'): void => {
+    try {
+        localStorage.setItem(
+            `classDataConflict_v1_${classId}`,
+            JSON.stringify({ savedAt: new Date().toISOString(), source, lessonsData })
+        );
+    } catch {
+        // stockage plein : on privilégie les données vivantes
+    }
+};
+
 interface ServerClassesBlob {
     classes: ClassInfo[];
     schedules: AppConfig['schedules'];
@@ -75,7 +112,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userRef = useRef(user);
     userRef.current = user;
 
-    const push = useCallback(async () => {
+    const push = useCallback(async (options?: { keepalive?: boolean }) => {
         const currentUser = userRef.current;
         if (!currentUser || pushingRef.current || !hasPendingWork()) return;
 
@@ -86,23 +123,39 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const classes = readLocalClasses();
             const config = readLocalConfig();
+            // schedules toujours re-dérivés de la grille : l'instantané poussé au
+            // cron reflète la règle de fusion des créneaux consécutifs, même si
+            // le localStorage porte encore d'anciens schedules non normalisés.
+            const schedules = effectiveSchedules(config);
             const syncMeta = readSyncMeta();
             const now = new Date().toISOString();
+
+            // une seule lecture/migration par classe et par push : le corps du
+            // push ET l'instantané réutilisent le même résultat
+            const lessonsCache = new Map<string, LessonsData>();
+            const readLessonsCached = (classId: string): LessonsData => {
+                let data = lessonsCache.get(classId);
+                if (!data) {
+                    data = readLocalLessons(classId);
+                    lessonsCache.set(classId, data);
+                }
+                return data;
+            };
 
             const lessons = work.dirtyClassIds
                 .filter(id => classes.some(c => c.id === id))
                 .map(id => ({
                     classId: id,
-                    lessonsData: readLocalLessons(id),
+                    lessonsData: readLessonsCached(id),
                     updatedAt: syncMeta[id]?.localUpdatedAt ?? now,
                 }));
 
             const snapshot = computeTeacherSnapshot(
                 currentUser,
                 classes,
-                config.schedules,
+                schedules,
                 config.notificationSettings,
-                readLocalLessons,
+                readLessonsCached,
                 config.absences
             );
 
@@ -110,9 +163,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
+                // keepalive : la requête survit à la fermeture de la page (flush
+                // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
+                // travail en attente sera resynchronisé au prochain démarrage.
+                keepalive: options?.keepalive === true,
                 body: JSON.stringify({
                     classes,
-                    schedules: config.schedules ?? [],
+                    schedules,
                     timetable: config.timetable ?? [],
                     settings: extractSyncableSettings(config),
                     deletedClassIds: work.deletedClassIds,
@@ -128,6 +185,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             const data = await response.json();
             clearPendingWork(work);
+            // point de synchro commun local/cloud, base de la détection de conflit
+            for (const entry of lessons) {
+                markClassSynced(entry.classId, entry.updatedAt);
+            }
             setLastSyncAt(typeof data.serverTime === 'string' ? data.serverTime : new Date().toISOString());
             setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
         } catch (error) {
@@ -177,61 +238,108 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const syncMeta = readSyncMeta();
 
                 if ((server.classes?.length ?? 0) === 0 && localClasses.length > 0) {
-                    // Première association : des cahiers locaux existent mais le cloud est vide.
-                    const associate = window.confirm(
-                        `Associer les ${localClasses.length} cahier(s) présents sur cet appareil à votre compte ?\n` +
-                            'Ils seront synchronisés en ligne et suivis dans votre progression.'
+                    // Première association : des cahiers locaux existent mais le
+                    // cloud est vide. Proposition NON bloquante (toast avec action)
+                    // — l'app conseille, le prof décide, rien n'est interrompu.
+                    setSyncStatus('synced');
+                    toast.info(
+                        `${localClasses.length} cahier(s) présents sur cet appareil ne sont pas encore associés à votre compte.`,
+                        {
+                            duration: 15_000,
+                            action: {
+                                label: 'Associer',
+                                onClick: () => {
+                                    localClasses.forEach(c => markClassDirty(c.id));
+                                    markClassesListDirty();
+                                    schedulePush(500);
+                                },
+                            },
+                        }
                     );
-                    if (associate) {
-                        localClasses.forEach(c => markClassDirty(c.id));
-                        markClassesListDirty();
-                        schedulePush(500);
-                    } else {
-                        setSyncStatus('synced');
-                    }
                     return;
                 }
 
                 const mergedClasses = [...localClasses];
                 let localChanged = false;
+                const conflictNames: string[] = [];
 
-                for (const serverClass of server.classes ?? []) {
+                // ── Phase 1 : décisions (synchrone, LWW + détection de conflit) ──
+                interface PullDecision {
+                    serverClass: ClassInfo;
+                    serverUpdatedAt?: string;
+                    localIndex: number;
+                    action: 'apply' | 'requeue' | 'none';
+                    conflict: boolean;
+                }
+                const decisions: PullDecision[] = (server.classes ?? []).map(serverClass => {
                     const serverUpdatedAt = server.classMeta?.[serverClass.id]?.updatedAt;
-                    const localUpdatedAt = syncMeta[serverClass.id]?.localUpdatedAt;
+                    const meta = syncMeta[serverClass.id];
+                    const localUpdatedAt = meta?.localUpdatedAt;
+                    const lastSyncedAt = meta?.lastSyncedAt;
                     const localIndex = mergedClasses.findIndex(c => c.id === serverClass.id);
 
                     const serverIsNewer =
                         !!serverUpdatedAt && (!localUpdatedAt || serverUpdatedAt > localUpdatedAt);
 
-                    if (localIndex === -1 || serverIsNewer) {
-                        try {
-                            const blobResponse = await fetch(
-                                `/api/sync?classId=${encodeURIComponent(serverClass.id)}`,
-                                { credentials: 'same-origin' }
+                    // vrai conflit : local ET cloud ont chacun avancé depuis leur
+                    // dernier point commun (édition sur deux appareils hors-ligne)
+                    const conflict =
+                        localIndex !== -1 &&
+                        !!serverUpdatedAt && !!localUpdatedAt && !!lastSyncedAt &&
+                        serverUpdatedAt > lastSyncedAt && localUpdatedAt > lastSyncedAt &&
+                        serverUpdatedAt !== localUpdatedAt;
+
+                    const action: PullDecision['action'] =
+                        localIndex === -1 || serverIsNewer
+                            ? 'apply'
+                            : localUpdatedAt && (!serverUpdatedAt || localUpdatedAt > serverUpdatedAt)
+                                ? 'requeue' // modifications locales jamais poussées : on les remet en file
+                                : 'none';
+
+                    return { serverClass, serverUpdatedAt, localIndex, action, conflict };
+                });
+
+                // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
+                await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict }) => {
+                    if (action === 'apply') {
+                        // le cloud va remplacer le local : archiver la version locale perdante
+                        if (conflict) {
+                            backupConflictVersion(serverClass.id, readLocalLessons(serverClass.id), 'local');
+                            conflictNames.push(serverClass.name);
+                        }
+                        const blob = await fetchLessonsBlob(serverClass.id);
+                        if (blob) {
+                            localStorage.setItem(
+                                `classData_v1_${serverClass.id}`,
+                                JSON.stringify(blob.lessonsData ?? [])
                             );
-                            if (blobResponse.ok) {
-                                const blob = await blobResponse.json();
-                                localStorage.setItem(
-                                    `classData_v1_${serverClass.id}`,
-                                    JSON.stringify(blob.lessonsData ?? [])
-                                );
-                                syncMeta[serverClass.id] = {
-                                    localUpdatedAt: blob.updatedAt ?? serverUpdatedAt ?? new Date().toISOString(),
-                                };
-                                localChanged = true;
-                            }
-                        } catch (error) {
-                            logger.error('Pull d\'une classe impossible', error);
+                            const syncedAt = blob.updatedAt ?? serverUpdatedAt ?? new Date().toISOString();
+                            syncMeta[serverClass.id] = { localUpdatedAt: syncedAt, lastSyncedAt: syncedAt };
+                            localChanged = true;
                         }
                         if (localIndex === -1) {
                             mergedClasses.push(serverClass);
                         } else {
                             mergedClasses[localIndex] = { ...mergedClasses[localIndex], ...serverClass };
                         }
-                    } else if (localUpdatedAt && (!serverUpdatedAt || localUpdatedAt > serverUpdatedAt)) {
-                        // modifications locales jamais poussées (fermeture avant flush) : on les remet en file
+                    } else if (action === 'requeue') {
+                        // le local va écraser le cloud au prochain push : archiver la version cloud perdante
+                        if (conflict) {
+                            const blob = await fetchLessonsBlob(serverClass.id);
+                            if (blob) backupConflictVersion(serverClass.id, blob.lessonsData ?? [], 'cloud');
+                            conflictNames.push(serverClass.name);
+                        }
                         markClassDirty(serverClass.id);
                     }
+                }));
+
+                if (conflictNames.length > 0) {
+                    toast.warning(
+                        conflictNames.length === 1
+                            ? `« ${conflictNames[0]} » a été modifié sur un autre appareil. La version la plus récente a été conservée ; l'autre est archivée sur cet appareil.`
+                            : `${conflictNames.length} cahiers modifiés sur un autre appareil (${conflictNames.slice(0, 3).join(', ')}${conflictNames.length > 3 ? '…' : ''}). Les versions les plus récentes ont été conservées ; les autres sont archivées.`,
+                        { duration: 10000 }
+                    );
                 }
 
                 // classes locales inconnues du serveur → à pousser
@@ -307,7 +415,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!hasPendingWork() || document.visibilityState !== 'hidden') return;
             // best-effort : keepalive est limité à ~64 Ko, un gros cahier sera
             // resynchronisé au prochain démarrage grâce à syncMeta_v1 (LWW).
-            void push();
+            void push({ keepalive: true });
         };
 
         window.addEventListener('online', handleOnline);

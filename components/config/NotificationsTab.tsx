@@ -46,6 +46,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const supported = pushSupported();
     const standalone = isStandalone();
     const iosNeedsInstall = /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone;
+    const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
 
     const handlePushToggle = async (enable: boolean) => {
         setBusy(true);
@@ -95,6 +96,18 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 checked={settings.pushEnabled}
                 onChange={handlePushToggle}
                 disabled={busy || !supported || iosNeedsInstall}
+            />
+
+            <Toggle
+                label="Rappels de fin de séance sur cet appareil"
+                hint={
+                    vibrationSupported
+                        ? 'Vibration une minute avant la fin de chaque séance, et alerte si aucune date n\'a été affectée.'
+                        : 'Cet appareil ne prend pas en charge la vibration — les rappels s\'affichent en notification visuelle.'
+                }
+                checked={settings.sessionVibration ?? false}
+                onChange={v => patch({ sessionVibration: v })}
+                disabled={!settings.enabled}
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

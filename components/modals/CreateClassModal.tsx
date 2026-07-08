@@ -16,6 +16,12 @@ interface CreateClassModalProps {
   defaultCycle?: Cycle;
   /** matières de l'enseignant (choisies à l'inscription) — filtrent le choix */
   teacherSubjects?: string[];
+  /**
+   * cycles de l'enseignant (choisis à l'inscription, modifiables dans les
+   * Paramètres) — un seul cycle : le champ disparaît, il est hérité ;
+   * plusieurs : le choix est restreint à ces cycles
+   */
+  teacherCycles?: Cycle[];
   editingClass?: ClassInfo | null;
   onUpdate?: (classId: string, updates: Partial<ClassInfo>) => void;
 }
@@ -41,6 +47,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   onCreate,
   defaultCycle = 'lycee',
   teacherSubjects = [],
+  teacherCycles = [],
   editingClass = null,
   onUpdate,
 }) => {
@@ -54,8 +61,27 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [customSubject, setCustomSubject] = useState('');
   const [customColor, setCustomColor] = useState('#C96442');
 
-  // Matières proposées : celles du prof en priorité, sinon la liste complète.
-  const subjectOptions = teacherSubjects.length > 0 ? teacherSubjects : [...SUBJECTS];
+  /*
+   * Héritage du profil d'inscription (modifiable dans les Paramètres) :
+   * — une seule matière / un seul cycle → champ masqué, valeur héritée ;
+   * — plusieurs → choix restreint aux valeurs du prof.
+   * En édition, la valeur actuelle de la classe reste toujours proposée
+   * (même si le prof a depuis retiré ce cycle/cette matière de son profil).
+   */
+  const subjectOptions = React.useMemo(() => {
+    const base = teacherSubjects.length > 0 ? [...teacherSubjects] : [...SUBJECTS];
+    if (editingClass?.subject && !base.includes(editingClass.subject)) base.unshift(editingClass.subject);
+    return base;
+  }, [teacherSubjects, editingClass]);
+
+  const cycleOptions = React.useMemo(() => {
+    const base: Cycle[] = teacherCycles.length > 0 ? [...teacherCycles] : (Object.keys(CYCLE_LABELS) as Cycle[]);
+    if (editingClass?.cycle && !base.includes(editingClass.cycle)) base.unshift(editingClass.cycle);
+    return base;
+  }, [teacherCycles, editingClass]);
+
+  const singleSubject = !editingClass && subjectOptions.length === 1 && teacherSubjects.length === 1;
+  const singleCycle = !editingClass && cycleOptions.length === 1 && teacherCycles.length === 1;
 
   useEffect(() => {
     if (isOpen) {
@@ -78,8 +104,14 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         setCustomSubject(editingClass.subject || '');
         setCustomColor(editingClass.color || '#C96442');
       } else {
-        setCycle(defaultCycle);
-        const firstLevel = CLASS_LEVELS_BY_CYCLE[defaultCycle][0] ?? '';
+        // cycle initial : celui du tableau de bord s'il appartient au profil,
+        // sinon le premier cycle du prof
+        const initialCycle: Cycle =
+          teacherCycles.length === 0 || teacherCycles.includes(defaultCycle)
+            ? defaultCycle
+            : teacherCycles[0];
+        setCycle(initialCycle);
+        const firstLevel = CLASS_LEVELS_BY_CYCLE[initialCycle][0] ?? '';
         setLevel(firstLevel);
         setGroup('');
         setSubject(teacherSubjects[0] ?? '');
@@ -141,24 +173,27 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       }
     >
       <form id="create-class-form" onSubmit={handleSubmit} className="space-y-4 py-1">
-        <div className="space-y-1.5">
-          <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Cycle *
-          </label>
-          <Select
-            id="cycle"
-            value={cycle}
-            onChange={(e) => {
-              const nextCycle = e.target.value as Cycle;
-              setCycle(nextCycle);
-              setLevel(CLASS_LEVELS_BY_CYCLE[nextCycle][0] ?? '');
-            }}
-          >
-            {(Object.keys(CYCLE_LABELS) as Cycle[]).map(c => (
-              <option key={c} value={c}>{CYCLE_LABELS[c]}</option>
-            ))}
-          </Select>
-        </div>
+        {/* Cycle : masqué si le prof n'enseigne qu'un cycle (hérité du profil) */}
+        {!singleCycle && (
+          <div className="space-y-1.5">
+            <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Cycle *
+            </label>
+            <Select
+              id="cycle"
+              value={cycle}
+              onChange={(e) => {
+                const nextCycle = e.target.value as Cycle;
+                setCycle(nextCycle);
+                setLevel(CLASS_LEVELS_BY_CYCLE[nextCycle][0] ?? '');
+              }}
+            >
+              {cycleOptions.map(c => (
+                <option key={c} value={c}>{CYCLE_LABELS[c]}</option>
+              ))}
+            </Select>
+          </div>
+        )}
 
         <div className="grid grid-cols-[1fr_auto] gap-3">
           <div className="space-y-1.5">
@@ -198,28 +233,31 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Matière *
-          </label>
-          {customMode ? (
-            <Input
-              id="subject"
-              type="text"
-              value={customSubject}
-              onChange={(e) => setCustomSubject(e.target.value)}
-              placeholder="Saisir une matière…"
-              required
-            />
-          ) : (
-            <Select id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} required>
-              <option value="" disabled>Choisir une matière…</option>
-              {subjectOptions.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </Select>
-          )}
-        </div>
+        {/* Matière : masquée si le prof n'en enseigne qu'une (héritée du profil) */}
+        {!(singleSubject && !customMode) && (
+          <div className="space-y-1.5">
+            <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Matière *
+            </label>
+            {customMode ? (
+              <Input
+                id="subject"
+                type="text"
+                value={customSubject}
+                onChange={(e) => setCustomSubject(e.target.value)}
+                placeholder="Saisir une matière…"
+                required
+              />
+            ) : (
+              <Select id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} required>
+                <option value="" disabled>Choisir une matière…</option>
+                {subjectOptions.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </Select>
+            )}
+          </div>
+        )}
 
         {/* Personnalisation de la couleur de la carte et du fond */}
         <div className="space-y-1.5">

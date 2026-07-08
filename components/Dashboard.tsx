@@ -6,6 +6,7 @@ import { DashboardSkeleton } from './ui/PageSkeleton';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ClassCard } from './ClassCard';
+import { DashboardStats } from './DashboardStats';
 import { LatenessBanner } from './LatenessBanner';
 import { AssessmentBanner } from './AssessmentBanner';
 import { OnboardingGuide } from './OnboardingGuide';
@@ -252,6 +253,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 </div>
             </header>
             <main>
+            {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
+                n'est pas intercepté, le navigateur affiche sa propre invite native
+                (mini-infobar Android, icône d'installation dans l'omnibox). */}
             <LatenessBanner classes={classes} config={config} />
             <AssessmentBanner classes={classes} config={config} />
             {/* Sélecteur de cycle — MASQUÉ en production (les cycles viennent de
@@ -283,6 +287,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 </div>
             </div>
             )}
+
+            {/* Cartes statistiques : branchées aux mêmes classes que la grille */}
+            <DashboardStats
+                classes={classes.filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)}
+                config={config}
+            />
 
             <div className="mx-auto max-w-5xl px-3 sm:px-4">
                 <h2 className="text-lg font-bold font-display text-[#2B241D] mb-3.5">Mes Classes</h2>
@@ -318,6 +328,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 defaultTeacherName={config.defaultTeacherName}
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
+                teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
                 editingClass={editingClass}
                 onUpdate={(classId, updates) => {
                     updateClass(classId, updates);

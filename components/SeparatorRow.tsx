@@ -14,6 +14,7 @@ interface SeparatorRowProps {
 /* Palette partagée avec TableRow — un seul accent signature (or mat) */
 const GOLD = '#B8935A';
 const GOLD_SOFT = '#B8935A33';
+const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
 
 const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onCellUpdate, onDelete, isNew = false }) => {
     const separatorIndices: Indices = { ...indices, isSeparator: true };
@@ -37,14 +38,14 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
     };
 
     const rowClasses = [
-        'group relative flex items-center w-full transition-colors duration-150 my-1',
+        `group relative my-1 grid w-full ${TABLE_GRID_CLASS} transition-colors duration-150`,
         isNew ? 'new-item-highlight' : '',
     ].filter(Boolean).join(' ');
 
     return (
         <div className={rowClasses}>
             {/* Colonne Date */}
-            <div className="w-[17%] sm:w-[15%] flex flex-col items-center justify-center px-1 py-1.5 self-stretch select-none">
+            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-r border-[#E4D3AC]/50 px-1 py-1.5 select-none">
                 <input
                     type="date"
                     value={data.date || ''}
@@ -56,7 +57,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
             </div>
 
             {/* Colonne Contenu — le "signature moment" : un jalon net entre deux périodes */}
-            <div className="min-w-0 flex-1 px-4 py-2.5 flex items-center justify-center gap-3 relative self-stretch">
+            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-r border-[#E4D3AC]/50 px-4 py-2.5">
                 <div className="flex-grow border-t border-dashed" style={{ borderColor: GOLD_SOFT }} />
 
                 <div
@@ -78,7 +79,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
             </div>
 
             {/* Colonne Action */}
-            <div className="w-[15%] flex items-center justify-center self-stretch p-1" onClick={event => event.stopPropagation()}>
+            <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center justify-center p-1 md:static md:translate-y-0 md:self-stretch" onClick={event => event.stopPropagation()}>
                 {/* visible en permanence en tactile (< lg) ; hover-reveal sur desktop seulement */}
                 <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <Button

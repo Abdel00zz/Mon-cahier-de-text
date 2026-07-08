@@ -79,8 +79,17 @@ export const useLateness = (classes: ClassInfo[], config: AppConfig): LatenessSu
             perClass.push({ ...result, classId: classInfo.id, className: classInfo.name });
         }
 
+        if (perClass.length === 0) return null;
+
+        /*
+         * Contrat : null = moteur muet (vacances, férié, absence, désactivé,
+         * aucun emploi du temps). Sinon le détail perClass est TOUJOURS
+         * retourné, même quand tout est à jour (severity 'ok') — les cartes
+         * statistiques distinguent ainsi « à jour » de « moteur en pause ».
+         * La bannière, elle, ne s'affiche que si severity ≠ 'ok'.
+         */
         const summary = summarizeForTeacher(perClass);
-        if (!summary) return null;
+        if (!summary) return { title: '', body: '', severity: 'ok' as const, perClass };
         return { ...summary, perClass };
     }, [calendar, classes, config.schedules, config.notificationSettings, config.schoolYearStart, config.absences]);
 };

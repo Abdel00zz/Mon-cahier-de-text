@@ -160,6 +160,24 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
       const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-slate-200 text-slate-800';
 
+      if (isPrint) {
+        const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
+        return (
+          <MaybeMathJax mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
+            <div className="print-lesson-item">
+              <span className="print-item-kind">{badgeText}{item.number ? ` ${item.number}` : ''}</span>
+              <span className="print-item-title">{item.title || ''}</span>
+              {item.page && <span className="print-item-page"> p. {item.page}</span>}
+              {allowDescription && (
+                <div className="print-item-description">
+                  {renderDescriptionWithBold(item.description)}
+                </div>
+              )}
+            </div>
+          </MaybeMathJax>
+        );
+      }
+
       const content = (
         <div className="prose prose-sm max-w-none text-sm text-[#69604F] space-y-1">
           {/* Titre */}

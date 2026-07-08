@@ -11,7 +11,7 @@ import { useHistoryState } from '../hooks/useHistoryState';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useLessonSearch } from '../hooks/useLessonSearch';
 import { useSelectionData } from '../hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '../utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '../utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint } from '../utils/printMeta';
@@ -22,7 +22,7 @@ import { BookOpen } from './ui/icons';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { HistoryModal } from './modals/HistoryModal';
 import { printDocument } from '../utils/printUtils';
-import { LessonsData, Indices, TopLevelItem, LessonItem, Section, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '../types';
+import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '../types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
@@ -320,8 +320,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       let notificationMessage = '';
       const newId = crypto.randomUUID();
       const anchor = selectedIndices[selectedIndices.length - 1];
+      const anchorCanReceiveEmbeddedBlock =
+          !!anchor &&
+          (anchor.sectionIndex !== undefined ||
+           anchor.subsectionIndex !== undefined ||
+           anchor.subsubsectionIndex !== undefined);
 
-      if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchor) {
+      if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchorCanReceiveEmbeddedBlock) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
           if (anchor.sectionIndex !== undefined) parentLevelIndices.sectionIndex = anchor.sectionIndex;
           if (anchor.subsectionIndex !== undefined) parentLevelIndices.subsectionIndex = anchor.subsectionIndex;
@@ -343,6 +348,20 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           const newSection: Section = { name: data.name, items: [], _tempId: newId };
           setState(draft => addSection(draft, parentIndices, newSection, insertAfterIndex), 'add-section');
           notificationMessage = "Section ajoutee.";
+          addNewItemHighlight(newId);
+      } else if (type === 'subsection' && anchor && anchor.sectionIndex !== undefined) {
+          const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex };
+          const insertAfterIndex = anchor.subsectionIndex;
+          const newSubSection: SubSection = { name: data.name, items: [], _tempId: newId };
+          setState(draft => addSubSection(draft, parentIndices, newSubSection, insertAfterIndex), 'add-subsection');
+          notificationMessage = "Sous-section ajoutee.";
+          addNewItemHighlight(newId);
+      } else if (type === 'subsubsection' && anchor && anchor.sectionIndex !== undefined && anchor.subsectionIndex !== undefined) {
+          const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex, subsectionIndex: anchor.subsectionIndex };
+          const insertAfterIndex = anchor.subsubsectionIndex;
+          const newSubSubSection: SubSubSection = { name: data.name, items: [], _tempId: newId };
+          setState(draft => addSubSubSection(draft, parentIndices, newSubSubSection, insertAfterIndex), 'add-subsubsection');
+          notificationMessage = "Sous-sous-section ajoutee.";
           addNewItemHighlight(newId);
       } else if (type === 'item' && anchor) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
@@ -681,8 +700,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }
 
   return (
-    <div className="relative p-1.5 sm:p-5 bg-[#F5EDE8] safe-bottom" data-editor-root>
-      <div className="container mx-auto max-w-7xl bg-[#FFFDF7] rounded-[24px] border border-[#E4D3AC]/60 shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:shadow-none print:border-none print:p-0">
+    <div className="relative p-1.5 sm:p-5 bg-[#F5EDE8] safe-bottom print:bg-white print:p-0" data-editor-root>
+      <div className="container mx-auto max-w-7xl bg-[#FFFDF7] rounded-[24px] border border-[#E4D3AC]/60 shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-white print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -706,22 +725,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
               onPrint={handleSmartPrint}
               searchQuery={searchQuery}
               setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
+              lastModifiedLabel={lastJournalEntry ? `${opLabel(lastJournalEntry.op)} · ${timeAgoFr(lastJournalEntry.at)}` : null}
+              onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
             />
           </div>
-          {/* Ligne « Dernière modification » — clic : historique détaillé */}
-          {lastJournalEntry && (
-            <button
-              type="button"
-              onClick={() => setEditorState(draft => { draft.activeModal = 'history'; })}
-              className="mx-auto mb-2 flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold text-[#A79C87] transition-colors hover:bg-[#FCF6EA] hover:text-[#2B241D] border border-[#E4D3AC]/40 print:hidden"
-              title="Voir l'historique détaillé des actions"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-              <span className="truncate">
-                Dernière modification : {opLabel(lastJournalEntry.op)} · {timeAgoFr(lastJournalEntry.at)}
-              </span>
-            </button>
-          )}
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
             <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
@@ -743,7 +750,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
               </button>
             </div>
           )}
-          <main className="flex-1 pb-24 sm:pb-20" onClick={handleDeselectAll}>
+          {/* §G tableau serré : annule le padding horizontal de la carte parente
+              (p-2 sm:p-6) pour que la table coure de bord à bord */}
+          <main className="-mx-2 flex-1 pb-24 sm:-mx-6 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               lessonsData={filteredData}
               onCellUpdate={handleCellUpdate}

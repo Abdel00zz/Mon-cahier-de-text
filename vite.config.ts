@@ -41,15 +41,16 @@ export default defineConfig(({ mode }) => {
                 filename: 'sw.ts',
                 registerType: 'prompt',
                 injectRegister: null, // enregistrement manuel dans registerSW.ts
-                includeAssets: ['icons/icon.svg', 'vacances-jourferie.json'],
+                includeAssets: ['icons/*.png', 'icons/icon.svg', 'vacances-jourferie.json'],
                 injectManifest: {
                     globPatterns: ['**/*.{js,css,html,woff2}'],
                     globIgnores: ['**/admin*'],
                 },
                 manifest: {
+                    id: '/',
                     name: 'Cahier de Textes Interactif',
                     short_name: 'Cahier',
-                    description: 'Le hub de suivi du programme pour les enseignants.',
+                    description: 'Le hub de suivi du programme pour les enseignants : cahier, progression, alertes — même hors connexion.',
                     lang: 'fr',
                     dir: 'ltr',
                     display: 'standalone',
@@ -58,9 +59,13 @@ export default defineConfig(({ mode }) => {
                     scope: '/',
                     theme_color: '#C96442',
                     background_color: '#FDFCFA',
+                    categories: ['education', 'productivity'],
                     icons: [
+                        // PNG d'abord (compatibilité launchers Android/iOS), SVG en complément
+                        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+                        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+                        { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
                         { src: '/icons/icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
-                        { src: '/icons/icon.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' },
                     ],
                 },
             }),

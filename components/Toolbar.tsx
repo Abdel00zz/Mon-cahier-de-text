@@ -5,7 +5,7 @@ import { Dropdown, DropdownItem, DropdownDivider, DropdownLabel } from './ui/Dro
 import { printDocument } from '../utils/printUtils';
 import {
   Undo2, Redo2, Save, Search, X, ChevronUp, MoreVertical,
-  FileInput, FileOutput, ListChecks, PieChart, Printer, CircleHelp,
+  FileInput, FileOutput, ListChecks, PieChart, Printer, CircleHelp, History,
 } from './ui/icons';
 
 interface ToolbarProps {
@@ -23,13 +23,17 @@ interface ToolbarProps {
   onPrint?: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  /** journal : dernière opération, format compact « op · il y a X » */
+  lastModifiedLabel?: string | null;
+  onOpenHistory?: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   onUndo, onRedo, canUndo, canRedo, onSave, saveStatus,
   onOpenImport, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onExportData,
   onPrint,
-  searchQuery, setSearchQuery
+  searchQuery, setSearchQuery,
+  lastModifiedLabel, onOpenHistory,
 }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchQuery);
@@ -97,8 +101,20 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   
   return (
     <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7]/90 p-2 shadow-lg shadow-[#2B241D]/5 backdrop-blur print:hidden">
-      <div className="flex items-center gap-2">
-        {/* Add content button is now replaced by the FAB */}
+      <div className="flex min-w-0 items-center gap-2">
+        {/* Journal compact : dernière opération, clic → historique détaillé */}
+        {lastModifiedLabel && (
+          <button
+            type="button"
+            onClick={onOpenHistory}
+            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold text-[#A79C87] transition-colors hover:bg-[#FCF6EA] hover:text-[#2B241D] sm:max-w-56"
+            data-tippy-content="Voir l'historique des actions"
+            aria-label="Historique des modifications"
+          >
+            <History className="h-3 w-3 shrink-0" />
+            <span className="truncate">{lastModifiedLabel}</span>
+          </button>
+        )}
       </div>
       
       <div className="flex-1 flex justify-center items-center gap-2">

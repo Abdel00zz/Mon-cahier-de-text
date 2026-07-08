@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useImmer } from 'use-immer';
 import { AppConfig } from '../types';
 import { logger } from '../utils/logger';
+import { effectiveSchedules } from '../utils/timetable';
+import { SYNCABLE_KEYS } from '../utils/syncSettings';
 import { markClassesListDirty, subscribe } from '../utils/syncBus';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
@@ -12,6 +14,8 @@ export const defaultNotificationSettings = {
     gapThreshold: 2,
     inactivityThresholdDays: 5,
     quietDuringVacations: true,
+    // rappels locaux de fin de séance : opt-in, spécifique à l'appareil
+    sessionVibration: false,
 } as const;
 
 const defaultConfig: AppConfig = {
@@ -57,7 +61,8 @@ export const useConfigManager = () => {
                     showAllCycles: loadedConfig.showAllCycles ?? true,
                     showAllSubjects: loadedConfig.showAllSubjects ?? true,
                     hasCompletedWelcome: loadedConfig.hasCompletedWelcome ?? false,
-                    schedules: loadedConfig.schedules ?? [],
+                    // toujours re-dérivé de la grille (source de vérité, règle évolutive)
+                    schedules: effectiveSchedules(loadedConfig),
                     timetable: loadedConfig.timetable ?? [],
                     notificationSettings: { ...defaultNotificationSettings, ...(loadedConfig.notificationSettings ?? {}) },
                     absences: loadedConfig.absences ?? [],
@@ -93,7 +98,10 @@ export const useConfigManager = () => {
                 const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
                 if (stored) {
                     const loaded = JSON.parse(stored);
-                    setConfig(draft => { Object.assign(draft, loaded); });
+                    setConfig(draft => {
+                        Object.assign(draft, loaded);
+                        draft.schedules = effectiveSchedules(loaded);
+                    });
                 }
             } catch (error) {
                 logger.error('Failed to reload config after cloud pull', error);
@@ -110,9 +118,16 @@ export const useConfigManager = () => {
                 logger.error("Failed to save config to localStorage", error);
             }
         });
-        // l'emploi du temps, les absences, les dates de devoirs et les préférences
-        // de notification voyagent avec le blob classes (synchro cloud)
-        if (newConfig.schedules || newConfig.timetable || newConfig.notificationSettings || newConfig.absences || newConfig.assessmentDates || newConfig.schoolYearStart) {
+        /*
+         * TOUT réglage synchronisé (emploi du temps, absences, devoirs,
+         * établissement, cycles/matières, préférences d'affichage, notifications)
+         * voyage avec le blob classes : la liste des clés vient de syncSettings
+         * (source de vérité unique) — plus aucune clé oubliée du circuit.
+         */
+        const touchesSyncable =
+            newConfig.notificationSettings !== undefined ||
+            SYNCABLE_KEYS.some(key => newConfig[key as keyof AppConfig] !== undefined);
+        if (touchesSyncable) {
             markClassesListDirty();
         }
     }, [setConfig]);

@@ -71,6 +71,35 @@ export const unsubscribeFromPush = async (): Promise<void> => {
     await subscription.unsubscribe().catch(() => undefined);
 };
 
+/**
+ * Notification système LOCALE (sans serveur) via le service worker : visible
+ * dans le volet de notifications du téléphone, même app en arrière-plan ou
+ * écran verrouillé — tant que la page vit (rappels de fin de séance).
+ * Silencieuse si la permission n'a pas été accordée : les couches vibration
+ * et toast restent le signal de base.
+ */
+export const showLocalNotification = async (
+    title: string,
+    body: string,
+    tag: string
+): Promise<boolean> => {
+    try {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
+        if (!('serviceWorker' in navigator)) return false;
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, {
+            body,
+            tag, // remplace une notification du même créneau au lieu d'empiler
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
+            data: { url: '/' },
+        });
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 export const sendTestNotification = async (): Promise<boolean> => {
     const response = await fetch('/api/notify', {
         method: 'POST',
