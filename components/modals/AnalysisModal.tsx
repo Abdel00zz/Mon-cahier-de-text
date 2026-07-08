@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { LessonsData } from '../../types';
 import { computeProgressionStats } from '../../utils/progression';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
+import { MathText } from '../ui/math-text';
 import { PieChart } from '../ui/icons';
 
 interface AnalysisModalProps {
@@ -45,7 +46,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
   }, [lessonsData, getDateWarnings]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
@@ -84,7 +85,9 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                 <div key={i} className="space-y-1.5">
                   <div className="flex justify-between items-end">
                     <div className="text-xs font-semibold text-slate-800 truncate pr-4">
-                      {chapter.title}
+                      <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
+                        {chapter.title}
+                      </MathText>
                     </div>
                     <div className="text-xs font-bold text-slate-500 whitespace-nowrap">{chapter.rate}%</div>
                   </div>
@@ -101,23 +104,25 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </div>
 
         {warningItems.length > 0 && (
-          <div className="border-t border-[#E4D3AC]/40 pt-4">
-            <h3 className="text-xs font-bold text-[#C96442] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[#C96442] animate-ping" />
+          <div className="border-t border-border/40 pt-4">
+            <h3 className="text-xs font-bold text-destructive uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-destructive animate-ping" />
               Alertes de Calendrier & Dates Insolites ({warningItems.length})
             </h3>
             <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
               {warningItems.map((item, idx) => (
-                <div key={idx} className="bg-[#FDF2ED] p-3 rounded-xl border border-[#C96442]/20 text-xs flex flex-col gap-1">
-                  <div className="flex justify-between items-center font-bold text-[#2B241D]">
-                    <span className="truncate pr-2">{item.title}</span>
-                    <span className="font-mono text-[10px] text-[#C96442] bg-white px-2 py-0.5 rounded-full border border-[#C96442]/10 shrink-0">
+                <div key={idx} className="bg-destructive/10 p-3 rounded-xl border border-destructive/20 text-xs flex flex-col gap-1">
+                  <div className="flex justify-between items-center font-bold text-foreground">
+                    <span className="truncate pr-2">
+                      <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
+                    </span>
+                    <span className="font-mono text-[10px] text-destructive bg-white px-2 py-0.5 rounded-full border border-destructive/10 shrink-0">
                       {item.date.split('-').reverse().join('/')}
                     </span>
                   </div>
                   <div className="space-y-0.5 mt-0.5">
                     {item.messages.map((m, i) => (
-                      <p key={i} className="text-[#69604F]/90 pl-2 border-l border-[#C96442]/30">
+                      <p key={i} className="text-muted-foreground/90 pl-2 border-l border-destructive/30">
                         ⚠ {m}
                       </p>
                     ))}
@@ -128,7 +133,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
           </div>
         )}
       </div>
-    </Dialog>
+    </Modal>
   );
 };
 

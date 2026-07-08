@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { JournalEntry, opLabel, timeAgoFr } from '../../utils/journal';
 import { Clock } from '../ui/icons';
 
@@ -58,7 +58,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, ent
   }, [entries]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
@@ -112,6 +112,6 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, ent
           ))}
         </div>
       )}
-    </Dialog>
+    </Modal>
   );
 };

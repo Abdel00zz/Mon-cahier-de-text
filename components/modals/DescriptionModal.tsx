@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState, useMemo } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Trash2, Save, Sigma } from '../ui/icons';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -39,7 +39,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
   }, [value]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
@@ -101,6 +101,6 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
           </div>
         )}
       </div>
-    </Dialog>
+    </Modal>
   );
 };

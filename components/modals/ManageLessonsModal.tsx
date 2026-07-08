@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TopLevelItem } from '../../types';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Check, TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderOpen } from '../ui/icons';
 import { Button } from '../ui/button';
+import { MathText } from '../ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '../../constants';
 
 interface ManageLessonsModalProps {
@@ -75,7 +76,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Gérer les chapitres & devoirs"
@@ -143,7 +144,9 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                       <config.icon className={`${config.color} h-4 w-4`} />
                     </div>
                     <span className="flex-grow text-slate-800 text-xs font-semibold truncate pr-1">
-                      {item.title || 'Sans titre'}
+                      <MathText source={item.title} cacheKey={`manage-${item.title}`} inline>
+                        {item.title || 'Sans titre'}
+                      </MathText>
                     </span>
                   </div>
 
@@ -199,6 +202,6 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
           </div>
         )}
       </div>
-    </Dialog>
+    </Modal>
   );
 };

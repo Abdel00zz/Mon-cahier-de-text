@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
@@ -30,7 +30,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onCon
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
@@ -40,7 +40,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onCon
           <Button type="button" onClick={onClose} variant="secondary">
             Annuler
           </Button>
-          <Button type="submit" form="prompt-form" variant="primary" disabled={!value.trim()}>
+          <Button type="submit" form="prompt-form" variant="default" disabled={!value.trim()}>
             Confirmer
           </Button>
         </>
@@ -62,6 +62,6 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onCon
           />
         </div>
       </form>
-    </Dialog>
+    </Modal>
   );
 };

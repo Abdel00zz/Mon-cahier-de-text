@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Smartphone } from '../ui/icons';
 import { Button } from '../ui/button';
 
@@ -21,7 +21,7 @@ export const OrientationAlertModal: React.FC<OrientationAlertModalProps> = ({ is
   }, [isOpen, onClose]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Mode paysage conseillé"
@@ -37,12 +37,12 @@ export const OrientationAlertModal: React.FC<OrientationAlertModalProps> = ({ is
         </p>
         <Button
           onClick={onClose}
-          variant="primary"
+          variant="default"
           className="w-full mt-4"
         >
           D'accord
         </Button>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

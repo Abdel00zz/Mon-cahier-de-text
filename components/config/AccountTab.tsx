@@ -29,24 +29,24 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className="space-y-3">
-            <div className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#69604F] font-mono">Mon compte</h4>
-                <p className="mt-2 text-lg font-bold text-[#2B241D] font-display">
+            <div className="rounded-xl border border-border bg-card p-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">Mon compte</h4>
+                <p className="mt-2 text-lg font-bold text-foreground font-display">
                     {user ? `${user.prenom} ${user.nom}` : 'Non connecté'}
                 </p>
-                {user && <p className="text-sm text-[#69604F] font-sans">{user.phone}</p>}
+                {user && <p className="text-sm text-muted-foreground font-sans">{user.phone}</p>}
             </div>
 
-            <div className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-4">
+            <div className="rounded-xl border border-border bg-card p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#69604F] font-mono">Synchronisation</h4>
-                        <p className="mt-1 text-sm font-semibold text-[#2B241D] font-sans">{STATUS_LABEL[syncStatus] ?? '—'}</p>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">Synchronisation</h4>
+                        <p className="mt-1 text-sm font-semibold text-foreground font-sans">{STATUS_LABEL[syncStatus] ?? '—'}</p>
                         {lastSyncAt && (
-                            <p className="text-[11px] text-[#A79C87] font-mono">Dernière synchro {timeAgoFr(lastSyncAt)}</p>
+                            <p className="text-[11px] text-muted-foreground/60 font-mono">Dernière synchro {timeAgoFr(lastSyncAt)}</p>
                         )}
                     </div>
-                    <Button type="button" variant="outline" onClick={syncNow} className="h-9 text-xs border-[#E4D3AC]/80 text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D]">
+                    <Button type="button" variant="outline" onClick={syncNow} className="h-9 text-xs border-border/80 text-muted-foreground hover:bg-secondary hover:text-foreground">
                         Synchroniser
                     </Button>
                 </div>
@@ -56,7 +56,7 @@ export const AccountTab: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={() => logout()}
-                className="h-10 w-full text-sm font-semibold text-red-600 hover:bg-red-50 border-[#E4D3AC]/40"
+                className="h-10 w-full text-sm font-semibold text-red-600 hover:bg-red-50 border-border/40"
             >
                 Se déconnecter
             </Button>

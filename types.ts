@@ -76,6 +76,8 @@ export interface NotificationSettings {
      * l'appareil, comme `pushEnabled` : exclu de la synchronisation cloud
      */
     sessionVibration?: boolean;
+    sessionEndReminderEnabled?: boolean;
+    sessionEndReminderTime?: string;
 }
 
 /** Période d'absence justifiée (certificat de maladie, congé...) : exclue du calcul de retard. */

@@ -1,10 +1,12 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useClassManager } from '../hooks/useClassManager';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '../hooks/useOptimizedLocalStorage';
 import { DashboardSkeleton } from './ui/PageSkeleton';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import { ClassCard } from './ClassCard';
 import { DashboardStats } from './DashboardStats';
 import { LatenessBanner } from './LatenessBanner';
@@ -16,7 +18,8 @@ import { WelcomeModal } from './modals/WelcomeModal';
 import { ClassInfo, Cycle } from '../types';
 import { logger } from '../utils/logger';
 import { getBundledCalendar, nextSchoolDay, todayInMorocco, weekdayLabel } from '../utils/calendar';
-import { Plus, CircleHelp, Settings, TrendingUp } from './ui/icons';
+import { Badge } from './ui/badge';
+import { Plus, CircleHelp, Settings } from './ui/icons';
 import { AUTH_REQUIRED } from '../config/features';
 import { restoreBackup } from '../utils/backup';
 
@@ -27,6 +30,21 @@ interface DashboardProps {
     onOpenSettings: () => void;
 }
 
+/** Salutation selon l'heure — petite touche vivante, esprit app mobile. */
+const getGreeting = (): string => {
+    const hour = new Date().getHours();
+    if (hour < 5) return 'Bonsoir';
+    if (hour < 13) return 'Bonjour';
+    if (hour < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+};
+
+/** Prénom probable : premier mot du nom, en ignorant les civilités. */
+const getFirstName = (name: string): string => {
+    const parts = name.trim().split(/\s+/).filter(p => !/^(m\.?|mme\.?|mlle\.?|dr\.?|pr\.?)$/i.test(p));
+    return parts[0] ?? '';
+};
+
 const getInitials = (name: string): string => {
     if (!name) return "PE";
     const parts = name.trim().split(/\s+/);
@@ -35,25 +53,47 @@ const getInitials = (name: string): string => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
-const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-    <Card
-        role="button"
-        tabIndex={0}
-        onClick={onClick}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
-        data-guide="create-class"
-        className="group flex min-h-[140px] flex-col w-full cursor-pointer items-center justify-center rounded-[20px] border-2 border-dashed border-[#E4D3AC]/80 bg-[#FFFDF7]/50 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#B8935A]/60 hover:bg-[#FFFDF7] hover:shadow-md active:translate-y-0 select-none will-change-transform"
-        aria-label="Créer une nouvelle classe"
-    >
-        <CardContent className="flex flex-col items-center justify-center p-4 text-center gap-1">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FCF6EA] text-[#B8935A] border border-[#E4D3AC]/40 shadow-sm transition-all duration-300 group-hover:bg-[#B8935A] group-hover:text-white group-hover:scale-105 mb-1">
-                <Plus className="h-4 w-4" />
-            </div>
-            <h3 className="text-sm font-bold text-[#2B241D] font-display group-hover:text-[#B8935A] transition-colors">Nouvelle classe</h3>
-            <p className="text-[11px] text-[#69604F]/70 font-semibold font-sans">Créer un nouveau cahier</p>
-        </CardContent>
-    </Card>
-);
+const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+    const [hovered, setHovered] = useState(false);
+    return (
+        <Card
+            role="button"
+            tabIndex={0}
+            onClick={onClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            data-guide="create-class"
+            className="group flex flex-col justify-between w-full h-full min-h-[160px] cursor-pointer rounded-[24px] border-2 border-dashed shadow-sm transition-all duration-300 ease-out active:scale-[0.985] select-none will-change-transform relative overflow-hidden"
+            style={{
+                borderColor: hovered
+                    ? 'color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--border)))'
+                    : 'hsl(var(--border))',
+                backgroundColor: hovered
+                    ? 'color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--card)))'
+                    : 'color-mix(in srgb, hsl(var(--primary)) 3%, hsl(var(--card)))',
+            }}
+            aria-label="Créer une nouvelle classe"
+        >
+            <CardContent className="flex flex-col items-center justify-center p-6 text-center gap-3.5 flex-1">
+                <div 
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary border border-border/40 shadow-sm transition-all duration-300"
+                    style={{
+                        backgroundColor: hovered ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                        color: hovered ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                        transform: hovered ? 'scale(1.05)' : 'scale(1)',
+                    }}
+                >
+                    <Plus className="h-5 w-5" />
+                </div>
+                <div>
+                    <h3 className="text-sm font-extrabold text-card-foreground font-display transition-colors">Nouvelle classe</h3>
+                    <p className="text-[11px] text-muted-foreground font-semibold font-sans mt-0.5">Créer un nouveau cahier</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
 
 const findLatestDate = (data: any): string | null => {
     let latestDate: string | null = null;
@@ -153,12 +193,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const handleImportPlatform = useCallback((fileContent: string) => {
         try {
             const count = restoreBackup(JSON.parse(fileContent));
-            alert(`Importation réussie (${count} classe(s)) ! L'application va se recharger.`);
-            window.location.reload();
+            toast.success(`Importation réussie (${count} classe(s)) — rechargement…`);
+            window.setTimeout(() => window.location.reload(), 900);
         } catch (error) {
             logger.error("Import failed", error);
             const message = error instanceof Error ? error.message : 'Erreur inconnue';
-            alert(`L'importation a échoué: ${message}`);
+            toast.error(`L'importation a échoué : ${message}`);
         }
         setImportModalOpen(false);
     }, []);
@@ -203,28 +243,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const initials = getInitials(teacherName);
 
     return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,hsl(var(--accent)),transparent_34rem)] p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
+    <div className="min-h-screen bg-background p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
             <header className="relative mx-auto mb-6 sm:mb-8 max-w-5xl px-3 sm:px-4" id="dashboard-header">
-                <div className="flex items-center justify-between border-b border-[#E4D3AC]/30 pb-5 gap-3">
+                <div className="flex items-center justify-between border-b border-border/50 pb-5 gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         {/* Elegant Circular Avatar */}
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#B8935A]/10 border border-[#B8935A]/30 text-[#B8935A] font-extrabold text-sm shadow-inner font-sans tracking-wide">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-sm shadow-inner font-sans tracking-wide">
                             {initials}
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg sm:text-2xl font-extrabold text-[#2B241D] font-display tracking-tight leading-none truncate">
-                                {teacherName ? teacherName : "Mon Espace"}
+                            <h1 className="text-base sm:text-2xl font-extrabold text-foreground font-display tracking-tight leading-none truncate">
+                                {teacherName ? (
+                                    <>
+                                        {getGreeting()}, {getFirstName(teacherName)}
+                                        <span className="ml-1 inline-block text-[0.85em] animate-fade-in" aria-hidden>👋</span>
+                                    </>
+                                ) : 'Mon Espace'}
                             </h1>
-                            <div className="flex items-center gap-x-2 text-[11px] text-[#69604F]/90 font-semibold font-sans mt-1">
+                            <div className="flex items-center gap-x-2 text-[11px] text-muted-foreground font-semibold font-sans mt-1">
                                 {config.establishmentName && config.establishmentName.trim() !== teacherName ? (
-                                    <span className="text-[#B8935A] font-bold truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
+                                    <span className="text-primary font-bold truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
                                 ) : (
                                     <span>Cahier de Textes</span>
                                 )}
                                 {formattedDate && (
                                     <>
-                                        <span className="text-[#E4D3AC]/60 select-none">•</span>
-                                        <span className="text-[#69604F]/70 capitalize truncate">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
+                                        <span className="text-muted-foreground/50 select-none">•</span>
+                                        <span className="text-muted-foreground capitalize truncate">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
                                     </>
                                 )}
                             </div>
@@ -233,22 +278,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                     
                     {/* Compact actions - circular buttons on mobile, pill buttons on desktop */}
                     <div className="flex items-center gap-2 shrink-0">
-                        <button 
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setGuideOpen(true)} 
-                            className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full bg-[#FFFDF7] border border-[#E4D3AC]/70 text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] transition-all shadow-sm active:scale-95 cursor-pointer font-sans text-xs font-bold"
+                            className="rounded-full flex items-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3.5"
                             title="Consulter le guide d'utilisation"
                         >
-                            <CircleHelp className="h-4 w-4 text-[#B8935A]" />
+                            <CircleHelp className="h-4 w-4 text-primary" />
                             <span className="hidden sm:inline">Guide</span>
-                        </button>
-                        <button 
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={onOpenSettings} 
-                            className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 sm:px-3.5 sm:py-1.5 rounded-full bg-[#FFFDF7] border border-[#E4D3AC]/70 text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] transition-all shadow-sm active:scale-95 cursor-pointer font-sans text-xs font-bold"
+                            className="rounded-full flex items-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3.5"
                             title="Accéder aux réglages"
                         >
-                            <Settings className="h-4 w-4 text-[#69604F]" />
+                            <Settings className="h-4 w-4 text-muted-foreground" />
                             <span className="hidden sm:inline">Réglages</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -262,29 +311,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 l'inscription) ; en local sans compte, affiché si plusieurs cycles. */}
             {!showAllClasses && (
             <div className={`w-full flex justify-center mb-5 sm:mb-6 ${((config.selectedCycles?.length ?? 0) === 1 && !config.showAllCycles) ? 'hidden' : ''}`}>
-                <div className="inline-flex items-center gap-1 rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-1 shadow-sm">
-                {([
-                    { key: 'college', label: 'Collège' },
-                    { key: 'lycee', label: 'Lycée' },
-                    { key: 'prepa', label: 'Prépa' },
-                ] as {key: Cycle; label: string;}[])
-                    .filter(opt => config.showAllCycles || !config.selectedCycles?.length || config.selectedCycles.includes(opt.key))
-                    .map(opt => (
-                    <button
-                        key={opt.key}
-                        onClick={() => !isClassesLoading && setSelectedCycle(opt.key)}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                            selectedCycle === opt.key
-                                ? 'bg-primary text-primary-foreground shadow-sm font-sans'
-                                : 'text-[#69604F] hover:bg-accent hover:text-accent-foreground font-sans'
-                        }`}
-                        aria-pressed={selectedCycle === opt.key}
-                        disabled={isClassesLoading}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-                </div>
+                <Tabs value={selectedCycle} onValueChange={(val) => !isClassesLoading && setSelectedCycle(val as Cycle)}>
+                    <TabsList className="rounded-xl border border-border bg-card shadow-sm p-1">
+                        {([
+                            { key: 'college', label: 'Collège' },
+                            { key: 'lycee', label: 'Lycée' },
+                            { key: 'prepa', label: 'Prépa' },
+                        ] as {key: Cycle; label: string;}[])
+                            .filter(opt => config.showAllCycles || !config.selectedCycles?.length || config.selectedCycles.includes(opt.key))
+                            .map(opt => (
+                                <TabsTrigger
+                                    key={opt.key}
+                                    value={opt.key}
+                                    disabled={isClassesLoading}
+                                    className="px-4 py-1.5 text-xs font-semibold font-sans transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                                >
+                                    {opt.label}
+                                </TabsTrigger>
+                            ))
+                        }
+                    </TabsList>
+                </Tabs>
             </div>
             )}
 
@@ -295,29 +342,83 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             />
 
             <div className="mx-auto max-w-5xl px-3 sm:px-4">
-                <h2 className="text-lg font-bold font-display text-[#2B241D] mb-3.5">Mes Classes</h2>
-                <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-2 md:grid-cols-3">
-                        {/* Create new class first */}
-                        <AddClassCard onClick={() => setCreateModalOpen(true)} />
-                        {/* Classes affichées : toutes (production) ou du cycle actif (local sans onglets) */}
-                        {classes
-                            .filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)
-                            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                            .map(classInfo => (
-                                <ClassCard
-                                    key={classInfo.id}
-                                    classInfo={classInfo}
-                                    lastModified={lastModifiedDates[classInfo.id]}
-                                    nextSessionLabel={nextSessionLabel(classInfo.id)}
-                                    onSelect={() => onSelectClass(classInfo)}
-                                    onDelete={() => deleteClass(classInfo.id)}
-                                    onConfigure={() => setEditingClass(classInfo)}
-                                />
-                            ))
-                        }
-                </div>
+                {(() => {
+                    const visibleClasses = classes
+                        .filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+                    return (
+                        <>
+                            <div className="mb-3.5 flex items-center gap-2">
+                                <h2 className="text-lg font-bold font-display text-foreground">Mes Classes</h2>
+                                {visibleClasses.length > 0 && (
+                                    <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[11px] font-extrabold tabular-nums">
+                                        {visibleClasses.length}
+                                    </Badge>
+                                )}
+                            </div>
+
+                            {visibleClasses.length === 0 ? (
+                                /* État vide motivant : premier pas guidé */
+                                <div className="flex flex-col items-center gap-3 rounded-[24px] border-2 border-dashed border-border bg-card/50 px-6 py-10 text-center animate-slide-in-up">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                        <Plus className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-extrabold font-display text-foreground">Créez votre première classe</h3>
+                                        <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                                            Votre cahier de textes numérique commence ici.
+                                        </p>
+                                    </div>
+                                    <Button onClick={() => setCreateModalOpen(true)} data-guide="create-class" className="mt-1 h-11 rounded-full px-6 font-bold shadow-md shadow-primary/20">
+                                        <Plus className="mr-1.5 h-4 w-4" />
+                                        Nouvelle classe
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-2 md:grid-cols-3">
+                                    {/* Entrée en cascade : les cartes montent l'une après l'autre */}
+                                    {visibleClasses.map((classInfo, index) => (
+                                        <div
+                                            key={classInfo.id}
+                                            className="h-full animate-slide-in-up opacity-0"
+                                            style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+                                        >
+                                            <ClassCard
+                                                classInfo={classInfo}
+                                                lastModified={lastModifiedDates[classInfo.id]}
+                                                nextSessionLabel={nextSessionLabel(classInfo.id)}
+                                                onSelect={() => onSelectClass(classInfo)}
+                                                onDelete={() => deleteClass(classInfo.id)}
+                                                onConfigure={() => setEditingClass(classInfo)}
+                                            />
+                                        </div>
+                                    ))}
+                                    {/* Carte « nouvelle classe » : desktop/tablette ; sur mobile le FAB prend le relais */}
+                                    <div
+                                        className="hidden h-full sm:block animate-slide-in-up opacity-0"
+                                        style={{ animationDelay: `${Math.min(visibleClasses.length, 9) * 45}ms` }}
+                                    >
+                                        <AddClassCard onClick={() => setCreateModalOpen(true)} />
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    );
+                })()}
             </div>
             </main>
+
+            {/* FAB mobile — geste app native : créer une classe depuis le pouce */}
+            <Button
+                onClick={() => setCreateModalOpen(true)}
+                size="icon"
+                className="fab-safe fixed right-4 z-50 h-14 w-14 rounded-full shadow-xl shadow-primary/30 transition-transform active:scale-90 sm:hidden print:hidden"
+                aria-label="Créer une nouvelle classe"
+                data-guide="create-class-fab"
+            >
+                <Plus className="h-6 w-6" />
+            </Button>
             <CreateClassModal
                 isOpen={isCreateModalOpen || !!editingClass}
                 onClose={() => {

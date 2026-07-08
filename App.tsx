@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 'react';
 import { MathJaxContext } from 'better-react-mathjax';
-import { Toaster } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
 import { AppBootSkeleton } from './components/ui/PageSkeleton';
 import { ClassInfo } from './types';
@@ -10,6 +10,7 @@ import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { Analytics } from '@vercel/analytics/react';
 import { OrientationAlertModal } from './components/modals/OrientationAlertModal';
+import { normalizeOfficialClassName } from './constants';
 
 const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./components/Editor').then(module => ({ default: module.Editor })));
@@ -57,7 +58,10 @@ const getClassRoute = (classId: string) => `#/classe/${encodeURIComponent(classI
 const readStoredClass = (classId: string): ClassInfo | null => {
   try {
     const classes = JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[];
-    return classes.find(classInfo => classInfo.id === classId) ?? null;
+    const classInfo = classes.find(item => item.id === classId) ?? null;
+    if (!classInfo) return null;
+    const normalizedName = normalizeOfficialClassName(classInfo.name);
+    return normalizedName === classInfo.name ? classInfo : { ...classInfo, name: normalizedName };
   } catch {
     return null;
   }
@@ -241,12 +245,13 @@ const App: React.FC = () => {
 
     return (
       <MathJaxContext config={mathJaxConfig}>
-        <div className="min-h-screen" style={{ backgroundColor: 'var(--clr-bg)', color: 'var(--clr-text)' }}>
+        <div className="min-h-screen bg-background text-foreground">
           <div key={routeKey} className="min-h-screen">
             <Suspense fallback={<AppBootSkeleton />}>
               {renderContent()}
             </Suspense>
           </div>
+
           {view === 'editor' && (
             <OrientationAlertModal isOpen={showOrientationModal} onClose={handleCloseOrientationModal} />
           )}
@@ -261,10 +266,7 @@ const App: React.FC = () => {
           // ne jamais le recouvrir
           visibleToasts={3}
           mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
-          toastOptions={{
-            className: 'print:hidden',
-            style: { fontFamily: "'Inter', sans-serif", borderRadius: '0.75rem' },
-          }}
+          className="print:hidden"
         />
         <Analytics />
       </MathJaxContext>

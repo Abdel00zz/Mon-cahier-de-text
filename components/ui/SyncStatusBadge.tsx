@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSync, SyncStatus } from '../../contexts/SyncContext';
+import { Button } from './button';
 
 const STATUS_CONFIG: Record<SyncStatus, { label: string; dotClass: string; pulse?: boolean }> = {
     idle: { label: '', dotClass: '' },
@@ -16,15 +17,16 @@ export const SyncStatusBadge: React.FC = () => {
     if (!config.label) return null;
 
     return (
-        <button
+        <Button
             type="button"
             onClick={syncNow}
-            className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-accent"
+            variant="outline"
+            className="h-8 rounded-full bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-accent flex items-center gap-1.5 cursor-pointer shadow-sm border border-border"
             title="Cliquer pour synchroniser maintenant"
             aria-label={`État de synchronisation : ${config.label}`}
         >
             <span className={`h-2 w-2 rounded-full ${config.dotClass} ${config.pulse ? 'animate-pulse' : ''}`} />
             <span className="hidden sm:inline">{config.label}</span>
-        </button>
+        </Button>
     );
 };

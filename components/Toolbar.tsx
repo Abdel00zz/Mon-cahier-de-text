@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Dropdown, DropdownItem, DropdownDivider, DropdownLabel } from './ui/Dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 import { printDocument } from '../utils/printUtils';
 import {
   Undo2, Redo2, Save, Search, X, ChevronUp, MoreVertical,
@@ -100,14 +107,14 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery, isSearchVisible]);
   
   return (
-    <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7]/90 p-2 shadow-lg shadow-[#2B241D]/5 backdrop-blur print:hidden">
+    <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card/90 p-2 shadow-lg shadow-foreground/5 backdrop-blur print:hidden">
       <div className="flex min-w-0 items-center gap-2">
         {/* Journal compact : dernière opération, clic → historique détaillé */}
         {lastModifiedLabel && (
           <button
             type="button"
             onClick={onOpenHistory}
-            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold text-[#A79C87] transition-colors hover:bg-[#FCF6EA] hover:text-[#2B241D] sm:max-w-56"
+            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold text-muted-foreground/60 transition-colors hover:bg-secondary hover:text-foreground sm:max-w-56"
             data-tippy-content="Voir l'historique des actions"
             aria-label="Historique des modifications"
           >
@@ -118,13 +125,13 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
       </div>
       
       <div className="flex-1 flex justify-center items-center gap-2">
-        <Button variant="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" className="h-10 w-10 rounded-xl">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" className="h-10 w-10 rounded-xl">
           <Undo2 className="h-[18px] w-[18px] text-primary" />
         </Button>
-        <Button variant="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)">
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button variant="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle">
           <Save className="h-4 w-4" />
         </Button>
       </div>
@@ -132,7 +139,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
       <div className="flex items-center gap-2">
         <div ref={searchContainerRef} className="relative flex items-center" role="search">
           <Button
-            variant="icon"
+            variant="ghost" size="icon"
             onClick={() => setIsSearchVisible(v => !v)}
             data-tippy-content="Rechercher (/ ou Ctrl+K)"
             aria-label="Rechercher"
@@ -143,7 +150,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
-            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 bg-[#FFFDF7]/95 backdrop-blur border-b border-[#E4D3AC] shadow-md animate-slide-in-down" id="toolbar-search-panel">
+            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 bg-card/95 backdrop-blur border-b border-border shadow-md animate-slide-in-down" id="toolbar-search-panel">
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
@@ -193,52 +200,70 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </div>
         </div>
 
-        <Dropdown buttonContent={<MoreVertical className="h-4 w-4" />} buttonProps={{ 'aria-label': "Menu d'actions" }}>
-          <DropdownLabel>Actions rapides</DropdownLabel>
-          <div className="sm:hidden">
-            <DropdownItem onClick={onUndo} disabled={!canUndo}>
-              <Undo2 className="h-4 w-4 text-primary" />
-              <span>Annuler</span>
-            </DropdownItem>
-            <DropdownItem onClick={onRedo} disabled={!canRedo}>
-              <Redo2 className="h-4 w-4 text-primary" />
-              <span>Rétablir</span>
-            </DropdownItem>
-            <DropdownItem onClick={onSave} disabled={saveStatus === 'saving'}>
-              <Save className="h-4 w-4 text-primary" />
-              <span>Sauvegarder</span>
-            </DropdownItem>
-            <DropdownDivider />
-          </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-accent active:bg-accent/80 cursor-pointer"
+              aria-label="Menu d'actions"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 z-[70]">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Actions rapides
+            </DropdownMenuLabel>
+            
+            {/* On mobile screens, show undo/redo/save inside the menu */}
+            <div className="sm:hidden">
+              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex items-center gap-3 py-2.5 cursor-pointer">
+                <Undo2 className="h-4 w-4 text-primary" />
+                <span>Annuler</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex items-center gap-3 py-2.5 cursor-pointer">
+                <Redo2 className="h-4 w-4 text-primary" />
+                <span>Rétablir</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex items-center gap-3 py-2.5 cursor-pointer">
+                <Save className="h-4 w-4 text-primary" />
+                <span>Sauvegarder</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </div>
 
-          <DropdownItem onClick={onOpenImport}>
-            <FileInput className="h-4 w-4 text-muted-foreground" />
-            <span>Importer JSON</span>
-          </DropdownItem>
-          <DropdownItem onClick={onExportData}>
-            <FileOutput className="h-4 w-4 text-muted-foreground" />
-            <span>Exporter JSON</span>
-          </DropdownItem>
-          <DropdownItem onClick={onOpenManageLessons}>
-            <ListChecks className="h-4 w-4 text-muted-foreground" />
-            <span>Gérer mes leçons</span>
-          </DropdownItem>
-          <DropdownItem onClick={onOpenAnalyse}>
-            <PieChart className="h-4 w-4 text-muted-foreground" />
-            <span>Analyse & progression</span>
-          </DropdownItem>
+            <DropdownMenuItem onClick={onOpenImport} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <FileInput className="h-4 w-4 text-muted-foreground" />
+              <span>Importer JSON</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onExportData} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <FileOutput className="h-4 w-4 text-muted-foreground" />
+              <span>Exporter JSON</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onOpenManageLessons} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <ListChecks className="h-4 w-4 text-muted-foreground" />
+              <span>Gérer mes leçons</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onOpenAnalyse} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <PieChart className="h-4 w-4 text-muted-foreground" />
+              <span>Analyse & progression</span>
+            </DropdownMenuItem>
 
-          <DropdownDivider />
-          <DropdownLabel>Sortie</DropdownLabel>
-          <DropdownItem onClick={() => (onPrint ? onPrint() : printDocument('cahier-de-textes'))}>
-            <Printer className="h-4 w-4 text-muted-foreground" />
-            <span>Imprimer</span>
-          </DropdownItem>
-          <DropdownItem onClick={onOpenGuide}>
-            <CircleHelp className="h-4 w-4 text-muted-foreground" />
-            <span>Aide</span>
-          </DropdownItem>
-        </Dropdown>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Sortie
+            </DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => (onPrint ? onPrint() : printDocument('cahier-de-textes'))} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <Printer className="h-4 w-4 text-muted-foreground" />
+              <span>Imprimer</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onOpenGuide} className="flex items-center gap-3 py-2.5 cursor-pointer">
+              <CircleHelp className="h-4 w-4 text-muted-foreground" />
+              <span>Aide</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

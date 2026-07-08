@@ -34,7 +34,7 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
       suppressContentEditableWarning
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`inline-block px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-[#F1DED2]/60 focus:outline-none focus:ring-2 focus:ring-[#C96442]/30 ${isArabic ? 'font-ar' : 'font-display'}`}
+      className={`inline-block px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-destructive/30 ${isArabic ? 'font-ar' : 'font-display'}`}
     >
       {value}
     </span>
@@ -51,10 +51,9 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
       </div>
       <header className="text-center">
         {establishmentName && (
-          <p className="text-xs font-medium text-[#69604F] tracking-widest uppercase mb-1.5 font-mono">{establishmentName}</p>
+          <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase mb-1.5 font-mono">{establishmentName}</p>
         )}
-        <h1 className="flex items-center justify-center gap-2 text-xl sm:text-2xl font-bold text-[#2B241D] font-display">
-          <span aria-hidden className="h-2 w-2 shrink-0 rounded-full shadow-sm" style={{ backgroundColor: accent }} />
+        <h1 className="flex items-center justify-center gap-2 text-xl sm:text-2xl font-bold text-foreground font-display">
           <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
         </h1>
         {/* filet d'accent : rappel discret de la couleur de la classe */}
@@ -63,7 +62,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
           className="mx-auto mt-1.5 h-[2px] w-16 rounded-full"
           style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
         />
-        <p className="text-sm text-[#A79C87] mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <p className="text-sm text-muted-foreground/60 mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           Cliquez sur le nom pour modifier
         </p>
       </header>

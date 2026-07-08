@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import { Button } from './ui/button';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
   FileText, Pencil, Trash2, X,
@@ -48,27 +49,29 @@ const ActionButton: FC<{
   accent?: boolean;
   disabled?: boolean;
 }> = ({ icon: Icon, onClick, title, danger = false, accent = false, disabled = false }) => (
-  <button
+  <Button
+    variant="ghost"
+    size="icon"
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-150 active:scale-95 disabled:pointer-events-none disabled:opacity-25 ${
+    className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 ${
       danger
-        ? 'text-rose-400 hover:bg-rose-500/20'
+        ? 'text-rose-400 hover:bg-rose-500/20 hover:text-rose-300'
         : accent
-          ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
-          : 'text-[#E4D3AC] hover:bg-[#FFFDF7]/10 hover:text-[#FFFDF7]'
+          ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
+          : 'text-zinc-400 hover:bg-white/10 hover:text-white'
     }`}
     aria-label={title}
   >
     <Icon className="h-5 w-5" />
-    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-[#2B241D] border border-[#E4D3AC]/30 px-2 py-1 text-[10px] font-semibold text-[#FFFDF7] opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
+    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground border border-border/30 px-2 py-1 text-[10px] font-semibold text-card opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
       {title}
     </span>
-  </button>
+  </Button>
 );
 
-const Divider: FC = () => <span aria-hidden className="mx-0.5 h-7 w-px shrink-0 bg-[#E4D3AC]/20" />;
+const Divider: FC = () => <span aria-hidden className="mx-0.5 h-7 w-px shrink-0 bg-border/20" />;
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
@@ -100,32 +103,34 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-3xl border border-[#E4D3AC]/50 bg-[#2B241D]/95 shadow-2xl shadow-[#1E1914]/40 backdrop-blur-md sm:bottom-6 print:hidden"
+      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-3xl border border-border/50 bg-foreground/95 shadow-2xl shadow-foreground/40 backdrop-blur-md sm:bottom-6 print:hidden"
       style={{ animation: 'slide-in-up 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
       aria-label="Actions sur la sélection"
     >
       {/* En-tête contextuel : QUOI est sélectionné */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#E4D3AC]/20 px-4 pb-1.5 pt-2">
+      <div className="flex items-center justify-between gap-2 border-b border-border/20 px-4 pb-1.5 pt-2">
         <div className="min-w-0 flex items-baseline gap-2">
           {count === 1 && selectionLabel ? (
-            <span className="max-w-[16rem] truncate text-xs font-bold text-[#FFFDF7] font-display">{selectionLabel}</span>
+            <span className="max-w-[16rem] truncate text-xs font-bold text-card font-display">{selectionLabel}</span>
           ) : (
-            <span className="text-xs font-bold text-[#FFFDF7] font-display">{count} éléments sélectionnés</span>
+            <span className="text-xs font-bold text-card font-display">{count} éléments sélectionnés</span>
           )}
           {hasDate && sharedDate && (
-            <span className="shrink-0 text-[10px] font-semibold text-[#B8935A] font-mono">· {sharedDate}</span>
+            <span className="shrink-0 text-[10px] font-semibold text-primary font-mono">· {sharedDate}</span>
           )}
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClear}
           title="Fermer (Échap)"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#A79C87] transition-colors hover:bg-[#FFFDF7]/10 hover:text-[#FFFDF7] active:scale-95"
+          className="h-7 w-7 shrink-0 rounded-full text-muted-foreground/60 hover:bg-white/10 hover:text-white cursor-pointer"
           aria-label="Effacer la sélection"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
 
       {/* Actions groupées par intention — défilement horizontal sur très petit écran */}

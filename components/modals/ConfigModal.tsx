@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, FC } from 'react';
 import { motion } from 'framer-motion';
 import { AppConfig, ClassInfo } from '../../types';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, BADGE_TOOLTIP_MAP } from '../../constants';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScheduleTab } from '../config/ScheduleTab';
 import { NotificationsTab } from '../config/NotificationsTab';
 import { AccountTab } from '../config/AccountTab';
@@ -130,7 +131,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             onOpenWelcome();
           }
         }}
-        className="w-full sm:w-auto h-10 text-xs font-bold border-[#E4D3AC] text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] rounded-full"
+        className="w-full sm:w-auto h-10 text-xs font-bold border-border text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full"
       >
         Modifier mes informations d'accueil
       </Button>
@@ -146,7 +147,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <Button 
           type="button" 
           onClick={handleSave} 
-          className="flex-1 sm:flex-initial h-10 text-xs font-bold bg-[#B8935A] text-white hover:bg-[#9E7A46] rounded-full"
+          className="flex-1 sm:flex-initial h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-full"
         >
           Enregistrer les modifications
         </Button>
@@ -159,12 +160,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const tabContent = (
     <div className="space-y-6">
       {/* Tab Header for Context */}
-      <div className="border-b border-[#E4D3AC]/40 pb-4">
-        <h2 className="text-xl font-extrabold text-[#2B241D] font-display flex items-center gap-2">
-          {activeTabDetails && <activeTabDetails.icon className="h-5 w-5 text-[#B8935A]" />}
+      <div className="border-b border-border/40 pb-4">
+        <h2 className="text-xl font-extrabold text-foreground font-display flex items-center gap-2">
+          {activeTabDetails && <activeTabDetails.icon className="h-5 w-5 text-primary" />}
           {activeTabDetails?.label}
         </h2>
-        <p className="text-xs text-[#69604F] font-sans mt-1">{activeTabDetails?.description}</p>
+        <p className="text-xs text-muted-foreground font-sans mt-1">{activeTabDetails?.description}</p>
       </div>
 
       {activeTab === 'emploi' && (
@@ -178,12 +179,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       {activeTab === 'affichage' && (
         <div className="space-y-6">
           {/* Section Configuration Générale */}
-          <div className="relative overflow-hidden rounded-[20px] border border-[#E4D3AC]/60 bg-[#FCF6EA]/40 p-5 shadow-sm">
+          <div className="relative overflow-hidden rounded-[20px] border border-border/60 bg-secondary/40 p-5 shadow-sm">
             <div className="relative flex gap-3">
-              <Info className="h-5 w-5 text-[#B8935A] shrink-0 mt-0.5" />
+              <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-sm font-bold text-[#2B241D] font-display mb-1">Configuration Générale</h3>
-                <p className="text-xs text-[#69604F] leading-relaxed font-medium">
+                <h3 className="text-sm font-bold text-foreground font-display mb-1">Configuration Générale</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                   Les préférences d'affichage globales telles que le nom de votre établissement, l'académie et votre nom d'enseignant sont gérées via l'écran d'accueil en cliquant sur le bouton ci-dessous ou sur "Modifier mes informations d'accueil".
                 </p>
               </div>
@@ -191,20 +192,20 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           </div>
 
           {/* Section Contenu visible */}
-          <div className="rounded-[24px] border border-[#E4D3AC]/60 bg-[#FFFDF7] p-6 shadow-sm space-y-5 relative">
+          <div className="rounded-[24px] border border-border/60 bg-card p-6 shadow-sm space-y-5 relative">
             <div className="relative">
-              <h3 className="text-base font-bold text-[#2B241D] font-display mb-4">Contenu visible par contexte</h3>
+              <h3 className="text-base font-bold text-foreground font-display mb-4">Contenu visible par contexte</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Application Context */}
-                <div className="rounded-xl p-4 border border-[#E4D3AC]/80 bg-[#FCF6EA]/30 space-y-4">
-                  <h4 className="text-xs font-bold text-[#69604F] font-mono uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#B8935A]" />
+                <div className="rounded-xl p-4 border border-border/80 bg-secondary/30 space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground font-mono uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Application (à l'écran)
                   </h4>
 
                   <div className="space-y-3">
-                    <div className="flex gap-1 bg-[#FFFDF7] p-1 rounded-lg border border-[#E4D3AC]/60">
+                    <div className="flex gap-1 bg-card p-1 rounded-lg border border-border/60">
                       {(['all', 'none', 'custom'] as const).map(mode => (
                         <button
                           key={mode}
@@ -216,8 +217,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           }}
                           className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${
                             (localConfig.screenDescriptionMode || 'all') === mode
-                              ? 'bg-[#B8935A] text-white shadow-sm'
-                              : 'text-[#69604F] hover:bg-[#FCF6EA]/40'
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'text-muted-foreground hover:bg-secondary/40'
                           }`}
                         >
                           {mode === 'all' && 'Tout'}
@@ -233,17 +234,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setShowScreenTypes(!showScreenTypes)}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-[#E4D3AC] bg-[#FFFDF7] text-left hover:bg-[#FCF6EA]/40 transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-card text-left hover:bg-secondary/40 transition-colors"
                         >
-                          <span className="text-xs font-bold text-[#69604F] font-sans">
+                          <span className="text-xs font-bold text-muted-foreground font-sans">
                             Types sélectionnés ({(localConfig.screenDescriptionTypes || []).length})
                           </span>
-                          {showScreenTypes ? <ChevronUp className="h-4 w-4 text-[#B8935A]" /> : <ChevronDown className="h-4 w-4 text-[#B8935A]" />}
+                          {showScreenTypes ? <ChevronUp className="h-4 w-4 text-primary" /> : <ChevronDown className="h-4 w-4 text-primary" />}
                         </button>
 
                         {showScreenTypes && (
                           <div className="space-y-2.5 mt-2 animate-in fade-in duration-200">
-                            <div className="flex flex-wrap gap-1.5 p-2 bg-[#FFFDF7] rounded-xl border border-[#E4D3AC]">
+                            <div className="flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border border-border">
                               {getUniqueTypes().map(type => {
                                 const isSelected = (localConfig.screenDescriptionTypes || []).includes(type);
                                 return (
@@ -254,7 +255,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                                     className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
                                       isSelected
                                         ? `${BADGE_COLOR_MAP[type] || 'bg-slate-200 text-slate-800'} ring-1 ring-slate-300`
-                                        : 'bg-[#FCF6EA]/40 text-[#69604F] hover:bg-[#FCF6EA] border border-[#E4D3AC]/60'
+                                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
                                     }`}
                                     title={BADGE_TOOLTIP_MAP[type] || type}
                                   >
@@ -264,7 +265,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                               })}
                             </div>
                             
-                            <div className="flex justify-between text-[10px] font-bold text-[#B8935A] px-1">
+                            <div className="flex justify-between text-[10px] font-bold text-primary px-1">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -301,14 +302,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
 
                 {/* Print Context */}
-                <div className="rounded-xl p-4 border border-[#E4D3AC]/80 bg-[#FCF6EA]/30 space-y-4">
-                  <h4 className="text-xs font-bold text-[#69604F] font-mono uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#B8935A]" />
+                <div className="rounded-xl p-4 border border-border/80 bg-secondary/30 space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground font-mono uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                     Impression (Export PDF)
                   </h4>
 
                   <div className="space-y-3">
-                    <div className="flex gap-1 bg-[#FFFDF7] p-1 rounded-lg border border-[#E4D3AC]/60">
+                    <div className="flex gap-1 bg-card p-1 rounded-lg border border-border/60">
                       {(['all', 'none', 'custom'] as const).map(mode => (
                         <button
                           key={mode}
@@ -320,8 +321,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           }}
                           className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${
                             (localConfig.printDescriptionMode || 'all') === mode
-                              ? 'bg-[#B8935A] text-white shadow-sm'
-                              : 'text-[#69604F] hover:bg-[#FCF6EA]/40'
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'text-muted-foreground hover:bg-secondary/40'
                           }`}
                         >
                           {mode === 'all' && 'Tout'}
@@ -337,17 +338,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setShowPrintTypes(!showPrintTypes)}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-[#E4D3AC] bg-[#FFFDF7] text-left hover:bg-[#FCF6EA]/40 transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-card text-left hover:bg-secondary/40 transition-colors"
                         >
-                          <span className="text-xs font-bold text-[#69604F] font-sans">
+                          <span className="text-xs font-bold text-muted-foreground font-sans">
                             Types sélectionnés ({(localConfig.printDescriptionTypes || []).length})
                           </span>
-                          {showPrintTypes ? <ChevronUp className="h-4 w-4 text-[#B8935A]" /> : <ChevronDown className="h-4 w-4 text-[#B8935A]" />}
+                          {showPrintTypes ? <ChevronUp className="h-4 w-4 text-primary" /> : <ChevronDown className="h-4 w-4 text-primary" />}
                         </button>
 
                         {showPrintTypes && (
                           <div className="space-y-2.5 mt-2 animate-in fade-in duration-200">
-                            <div className="flex flex-wrap gap-1.5 p-2 bg-[#FFFDF7] rounded-xl border border-[#E4D3AC]">
+                            <div className="flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border border-border">
                               {getUniqueTypes().map(type => {
                                 const isSelected = (localConfig.printDescriptionTypes || []).includes(type);
                                 return (
@@ -358,12 +359,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
                                       isSelected
                                         ? `${BADGE_COLOR_MAP[type] || 'bg-slate-200 text-slate-800'} ring-1 ring-slate-300`
-                                        : 'bg-[#FCF6EA]/40 text-[#69604F] hover:bg-[#FCF6EA] border border-[#E4D3AC]/60'
+                                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
                                     }`}
                                     title={BADGE_TOOLTIP_MAP[type] || type}
                                   >
                                     <span className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded text-[8px] font-extrabold ${
-                                      isSelected ? 'bg-white/30 text-white' : 'bg-[#E4D3AC] text-[#69604F]'
+                                      isSelected ? 'bg-white/30 text-white' : 'bg-border text-muted-foreground'
                                     }`}>
                                       {BADGE_TEXT_MAP[type]?.charAt(0) || type.charAt(0).toUpperCase()}
                                     </span>
@@ -373,7 +374,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                               })}
                             </div>
                             
-                            <div className="flex justify-between text-[10px] font-bold text-[#B8935A] px-1">
+                            <div className="flex justify-between text-[10px] font-bold text-primary px-1">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -417,18 +418,18 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       {activeTab === 'donnees' && (
         <div className="space-y-6">
           {/* Section Gestion des données */}
-          <div className="rounded-[24px] border border-[#E4D3AC]/60 bg-[#FFFDF7] p-6 shadow-sm space-y-4 relative">
+          <div className="rounded-[24px] border border-border/60 bg-card p-6 shadow-sm space-y-4 relative">
             <div className="relative">
-              <h3 className="text-base font-bold text-[#2B241D] font-display mb-2">Sauvegarde & Restauration</h3>
-              <p className="text-xs text-[#69604F] mb-6 leading-relaxed">
+              <h3 className="text-base font-bold text-foreground font-display mb-2">Sauvegarde & Restauration</h3>
+              <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
                 Protégez votre travail en exportant périodiquement vos cahiers de textes. Vous pourrez restaurer l'intégralité de vos cours sur n'importe quel appareil.
               </p>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="bg-[#FCF6EA]/40 rounded-2xl p-4 border border-[#E4D3AC]/80 flex flex-col justify-between">
+                <div className="bg-secondary/40 rounded-2xl p-4 border border-border/80 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-[#2B241D] font-display mb-1.5">Exporter mon cahier</h4>
-                    <p className="text-[11px] text-[#69604F] font-medium mb-4 leading-relaxed">
+                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Exporter mon cahier</h4>
+                    <p className="text-[11px] text-muted-foreground font-medium mb-4 leading-relaxed">
                       Téléchargez un fichier de sauvegarde crypté contenant toutes vos classes, leçons et configurations.
                     </p>
                   </div>
@@ -436,16 +437,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     type="button" 
                     variant="outline" 
                     onClick={onExportPlatform} 
-                    className="w-full text-xs h-10 border-[#E4D3AC] text-[#B8935A] hover:bg-[#B8935A] hover:text-white rounded-full transition-all"
+                    className="w-full text-xs h-10 border-border text-primary hover:bg-primary hover:text-white rounded-full transition-all"
                   >
                     <Download className="mr-1.5 h-4 w-4" /> Sauvegarder localement
                   </Button>
                 </div>
                 
-                <div className="bg-[#FCF6EA]/40 rounded-2xl p-4 border border-[#E4D3AC]/80 flex flex-col justify-between">
+                <div className="bg-secondary/40 rounded-2xl p-4 border border-border/80 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-[#2B241D] font-display mb-1.5">Restaurer des données</h4>
-                    <p className="text-[11px] text-[#69604F] font-medium mb-4 leading-relaxed">
+                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Restaurer des données</h4>
+                    <p className="text-[11px] text-muted-foreground font-medium mb-4 leading-relaxed">
                       Remplacez les données actuelles de cet appareil par celles d'un fichier de sauvegarde préexistant.
                     </p>
                   </div>
@@ -456,7 +457,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       onClose();
                       onOpenImport();
                     }}
-                    className="w-full text-xs h-10 border-[#E4D3AC] text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] rounded-full transition-all"
+                    className="w-full text-xs h-10 border-border text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full transition-all"
                   >
                     <Upload className="mr-1.5 h-4 w-4" /> Choisir une sauvegarde
                   </Button>
@@ -475,17 +476,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   // ── Rendu en PAGE plein écran ──────────────────────────────────────────
   if (asPage) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,hsl(var(--accent)),transparent_34rem)] safe-bottom bg-[#FFFDF7]/10">
-        <header className="sticky top-0 z-20 border-b border-[#E4D3AC]/60 bg-[#FFFDF7]/95 backdrop-blur shadow-sm">
+      <div className="min-h-screen bg-background safe-bottom">
+        <header className="sticky top-0 z-20 border-b border-border/60 bg-card/95 backdrop-blur shadow-sm">
           <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-[#B8935A]" />
-                <h1 className="text-xl font-extrabold text-[#2B241D] font-display tracking-tight">
+                <Settings className="h-5 w-5 text-primary" />
+                <h1 className="text-xl font-extrabold text-foreground font-display tracking-tight">
                   Paramètres de l'application
                 </h1>
               </div>
-              <p className="text-xs text-[#69604F] font-sans truncate">Gérez votre emploi du temps, vos notifications, affichages et données</p>
+              <p className="text-xs text-muted-foreground font-sans truncate">Gérez votre emploi du temps, vos notifications, affichages et données</p>
             </div>
           </div>
         </header>
@@ -495,55 +496,49 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           <div className="flex flex-col md:flex-row gap-6 items-start">
             
             {/* Left navigation sidebar for md+ screens */}
-            <aside className="w-full md:w-64 shrink-0 hidden md:block space-y-1">
-              <div className="rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-2 shadow-sm space-y-1">
-                {TABS.map(tab => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all text-left ${
-                        isActive
-                          ? 'bg-[#B8935A] text-white shadow-md'
-                          : 'text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D]'
-                      }`}
-                    >
-                      <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-[#B8935A]'}`} />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            <aside className="w-full md:w-64 shrink-0 hidden md:block">
+              <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)}>
+                <TabsList className="flex flex-col h-auto w-full border border-border bg-card p-2 shadow-sm gap-1 rounded-2xl items-stretch">
+                  {TABS.map(tab => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all text-left cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                        <span>{tab.label}</span>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
             </aside>
 
             {/* Top segment control for mobile screens */}
             <div className="w-full md:hidden overflow-x-auto no-scrollbar py-1">
-              <div className="flex gap-1 bg-[#FCF6EA]/60 border border-[#E4D3AC]/80 p-1 rounded-2xl w-max">
-                {TABS.map(tab => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                        isActive
-                          ? 'bg-[#B8935A] text-white shadow-sm'
-                          : 'text-[#69604F] hover:bg-white'
-                      }`}
-                    >
-                      <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-[#B8935A]'}`} />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)} className="w-max">
+                <TabsList className="flex gap-1 bg-secondary/60 border border-border/80 p-1 rounded-2xl">
+                  {TABS.map(tab => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      >
+                        <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                        <span>{tab.label}</span>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* Core Settings Content Container */}
-            <div className="flex-1 w-full bg-[#FFFDF7] rounded-[28px] border border-[#E4D3AC]/60 p-6 md:p-8 shadow-sm relative min-h-[480px]">
+            <div className="flex-1 w-full bg-card rounded-[28px] border border-border/60 p-6 md:p-8 shadow-sm relative min-h-[480px]">
               <div className="relative">
                 {tabContent}
               </div>
@@ -553,7 +548,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         </div>
 
         {/* Fixed Sticky Footer for Actions */}
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#E4D3AC] bg-[#FFFDF7]/95 px-4 py-4 backdrop-blur shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 px-4 py-4 backdrop-blur shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto max-w-6xl px-2 sm:px-4">{footer}</div>
         </div>
       </div>
@@ -562,7 +557,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   // ── Rendu en MODALE (rétro-compatibilité) ──────────────────────────────
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Configuration"
@@ -570,29 +565,26 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       maxWidth="3xl"
       footer={footer}
     >
-      <div className="flex flex-col gap-1 bg-[#FCF6EA] border border-[#E4D3AC]/60 p-1 rounded-xl mb-4 overflow-x-auto md:flex-row md:flex-wrap">
-        {TABS.map(tab => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                isActive
-                  ? 'bg-[#B8935A] text-white shadow-sm'
-                  : 'text-[#69604F] hover:bg-white'
-              }`}
-            >
-              <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-[#B8935A]'}`} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)} className="mb-4">
+        <TabsList className="flex flex-col gap-1 bg-secondary border border-border/60 p-1 rounded-xl overflow-x-auto md:flex-row md:flex-wrap h-auto w-full">
+          {TABS.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                <span>{tab.label}</span>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </Tabs>
       <div className="py-2">
         {tabContent}
       </div>
-    </Dialog>
+    </Modal>
   );
 };

@@ -171,7 +171,7 @@ interface VirtualListRowProps {
 }
 
 export const VirtualListRow = React.memo(({ index, start, measureElement, className, children }: VirtualListRowProps) => {
-  const cleanupRef = React.useRef<void | (() => void)>();
+  const cleanupRef = React.useRef<void | (() => void) | null>(null);
   const ref = React.useCallback((node: HTMLDivElement | null) => {
     if (cleanupRef.current) cleanupRef.current();
     cleanupRef.current = measureElement(index, node);

@@ -1,8 +1,9 @@
-import { memo, MouseEvent, FC } from 'react';
+import { memo, MouseEvent, FC, useState } from 'react';
 import { ClassInfo } from '../types';
-import { Card, CardContent } from './ui/card';
+import { Card, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Trash2, Clock, Bell, Settings } from './ui/icons';
+import { ConfirmDialog } from './ui/confirm-dialog';
+import { Trash2, Clock, Bell, Settings, ChevronRight } from './ui/icons';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -15,15 +16,15 @@ interface ClassCardProps {
 
 const containsArabic = (text: string): boolean => {
     if (!text) return false;
-    return /[\u0600-\u06FF]/.test(text);
+    return /[؀-ۿ]/.test(text);
 };
 
 const formatSuperscript = (text: string) => {
     const parts = text.split(/(\d+(?:er|ère|ème))/);
     return parts.map((part, idx) => {
         if (part.endsWith('er'))   return <span key={idx}>{part.slice(0, -2)}<sup>er</sup></span>;
-        if (part.endsWith('\u00e8re')) return <span key={idx}>{part.slice(0, -3)}<sup>\u00e8re</sup></span>;
-        if (part.endsWith('\u00e8me')) return <span key={idx}>{part.slice(0, -3)}<sup>\u00e8me</sup></span>;
+        if (part.endsWith('ère')) return <span key={idx}>{part.slice(0, -3)}<sup>ère</sup></span>;
+        if (part.endsWith('ème')) return <span key={idx}>{part.slice(0, -3)}<sup>ème</sup></span>;
         return part;
     });
 };
@@ -40,11 +41,12 @@ const formatDate = (dateString: string | null | undefined): string => {
 };
 
 const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSessionLabel, onSelect, onDelete, onConfigure }) => {
+    const [hovered, setHovered] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
     const handleDeleteClick = (e: MouseEvent) => {
         e.stopPropagation();
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer la classe "${classInfo.name}" ?\n\nCette action est irréversible et supprimera définitivement tous ses cours.`)) {
-            onDelete();
-        }
+        setConfirmDelete(true);
     };
 
     const handleConfigureClick = (e: MouseEvent) => {
@@ -53,37 +55,54 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     };
 
     const isArabic = containsArabic(classInfo.name);
-    /*
-     * La couleur choisie dans la modale EST la couleur officielle de la carte :
-     * accent pur (rail, matière, CTA, survol) — jamais de fond plein.
-     */
-    const accent = classInfo.color || '#B8935A';
+    const accent = classInfo.color || 'hsl(var(--primary))';
+    /** teinte lisible de l'accent sur fond clair */
+    const accentInk = `color-mix(in srgb, ${accent} 72%, hsl(var(--foreground)))`;
 
     return (
         <Card
-            className="group relative w-full cursor-pointer overflow-hidden rounded-[20px] border p-0 shadow-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.98] active:shadow-sm select-none will-change-transform"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
+            className="group relative h-full w-full min-h-[124px] cursor-pointer overflow-hidden rounded-[22px] border-2 transition-all duration-300 ease-out active:scale-[0.98] select-none will-change-transform"
             style={{
-                ['--accent' as string]: accent,
-                // carte ENTIÈREMENT colorée dans la palette choisie par le prof :
-                // lavis dégradé de sa couleur, texte sombre toujours lisible
-                background: `linear-gradient(150deg, ${accent}38 0%, ${accent}1A 45%, ${accent}0A 100%), #FFFDF7`,
-                borderColor: `${accent}66`,
+                // contour complet à la couleur de la classe, qui s'intensifie au survol/tap
+                borderColor: hovered
+                    ? `color-mix(in srgb, ${accent} 85%, hsl(var(--border)))`
+                    : `color-mix(in srgb, ${accent} 55%, hsl(var(--border)))`,
+                backgroundColor: hovered
+                    ? `color-mix(in srgb, ${accent} 10%, hsl(var(--card)))`
+                    : `color-mix(in srgb, ${accent} 4%, hsl(var(--card)))`,
+                boxShadow: hovered
+                    ? `0 4px 18px color-mix(in srgb, ${accent} 30%, transparent)`
+                    : `0 1px 4px color-mix(in srgb, ${accent} 14%, transparent)`,
             }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
             onClick={() => onSelect()}
+            aria-label={`Ouvrir la classe ${classInfo.name}`}
         >
-            {/* Halo coloré renforcé au survol */}
+            {/* Halo doux dans l'angle */}
             <div
-                className="absolute -right-12 -top-12 h-32 w-32 rounded-full blur-[40px] opacity-15 group-hover:opacity-30 transition-opacity duration-700 pointer-events-none"
+                className="absolute -right-12 -top-12 h-32 w-32 rounded-full blur-[40px] opacity-10 group-hover:opacity-25 transition-opacity duration-500 pointer-events-none"
                 style={{ backgroundColor: accent }}
             />
 
-            <CardContent className="relative flex min-h-[140px] flex-col p-4 sm:p-4.5">
-                    <div className="absolute right-3 top-3 z-10 flex items-center gap-1">
+            <div className="relative flex h-full flex-col p-4">
+                {/* Nom de la classe + actions discrètes */}
+                <div className="flex items-start justify-between gap-1.5">
+                    <CardTitle
+                        className={`min-w-0 flex-1 pt-0.5 text-[1.1rem] sm:text-[1.22rem] font-extrabold font-display tracking-tight leading-tight ${isArabic ? 'font-ar text-[1.28rem]' : ''}`}
+                        style={{ color: `color-mix(in srgb, ${accent} 18%, hsl(var(--foreground)))` }}
+                    >
+                        {formatSuperscript(classInfo.name)}
+                    </CardTitle>
+                    <div className="-mr-1.5 -mt-1.5 flex shrink-0 items-center">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleConfigureClick}
-                            className="h-7 w-7 rounded-full text-[#A79C87] hover:bg-[#FCF6EA] hover:text-[#B8935A] transition-all duration-200"
+                            className="h-9 w-9 rounded-full text-muted-foreground/50 hover:bg-secondary hover:text-primary transition-all duration-200"
                             title="Configurer la classe"
                             aria-label="Configurer la classe"
                         >
@@ -93,39 +112,63 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                             variant="ghost"
                             size="icon"
                             onClick={handleDeleteClick}
-                            className="h-7 w-7 rounded-full text-[#A79C87] hover:bg-rose-50/80 hover:text-rose-600 transition-all duration-200"
+                            className="h-9 w-9 rounded-full text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
                             title="Supprimer la classe"
                             aria-label="Supprimer la classe"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
+                </div>
 
-                {/* Body Content */}
-                <div className="flex flex-1 flex-col items-center justify-center px-8 py-4 text-center">
-                    <h3
-                        className={`max-w-full text-[1.06rem] sm:text-[1.28rem] font-extrabold text-[#2B241D] font-display tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors duration-300 ${isArabic ? 'font-ar text-[1.28rem]' : ''}`}
-                    >
-                        {formatSuperscript(classInfo.name)}
-                    </h3>
-                    {nextSessionLabel && (
-                        <div
-                            className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#FCF6EA]/60 px-3 py-0.5 text-[11px] font-extrabold text-[#69604F] border border-[#E4D3AC]/25 shadow-sm"
+                {/* Prochaine séance — badge teinté à la couleur de la classe */}
+                <div className="mt-2 flex-1">
+                    {nextSessionLabel ? (
+                        <span
+                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold shadow-sm"
+                            style={{
+                                backgroundColor: `color-mix(in srgb, ${accent} 12%, hsl(var(--card)))`,
+                                border: `1px solid color-mix(in srgb, ${accent} 30%, transparent)`,
+                                color: accentInk,
+                            }}
                         >
-                            <Bell className="h-3 w-3" style={{ color: accent }} />
+                            <Bell className="h-3 w-3 animate-pulse" style={{ color: accent }} />
                             <span>Séance : {nextSessionLabel}</span>
-                        </div>
+                        </span>
+                    ) : (
+                        <span className="text-[11px] font-semibold text-muted-foreground/55 italic">
+                            Aucune séance aujourd'hui
+                        </span>
                     )}
                 </div>
 
-                {/* Footer: Date modified & Ouvrir CTA */}
-                <div className="flex items-center justify-center border-t border-[#E4D3AC]/20 pt-3">
-                    <span className="flex items-center gap-1.5 text-[11px] text-[#69604F]/70 font-semibold font-sans">
-                        <Clock className="h-3.5 w-3.5 text-[#A79C87]/80" />
+                {/* Pied : dernière mise à jour + pastille d'ouverture */}
+                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2.5">
+                    <span className="flex items-center gap-1.5 text-[10.5px] font-semibold text-muted-foreground font-sans">
+                        <Clock className="h-3.5 w-3.5 opacity-60" />
                         {formatDate(lastModified)}
                     </span>
+                    <span
+                        className="inline-flex items-center gap-0.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold transition-all duration-300 group-hover:gap-1.5 group-hover:shadow-sm"
+                        style={{
+                            backgroundColor: `color-mix(in srgb, ${accent} ${hovered ? 18 : 10}%, hsl(var(--card)))`,
+                            color: accentInk,
+                        }}
+                    >
+                        Ouvrir
+                        <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
                 </div>
-            </CardContent>
+            </div>
+
+            <ConfirmDialog
+                open={confirmDelete}
+                onOpenChange={setConfirmDelete}
+                title={`Supprimer « ${classInfo.name} » ?`}
+                description="Cette action est irréversible : tous les cours de cette classe seront définitivement supprimés."
+                confirmLabel="Supprimer"
+                onConfirm={onDelete}
+            />
         </Card>
     );
 };

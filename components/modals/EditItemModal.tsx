@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Select } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
 import { MathJax } from 'better-react-mathjax';
@@ -256,18 +256,20 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <div className="space-y-1.5">
                 <label htmlFor="itemType" className={labelClasses}>Type de contenu *</label>
                 <Select
-                  ref={selectFocusRef as any}
-                  id="itemType"
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  onValueChange={(value) => setFormData({ ...formData, type: value })}
                   required
-                  className="rounded-xl border-slate-200 h-11 shadow-none"
                 >
-                  {UNIQUE_LESSON_ITEM_TYPES.map(type => (
-                    <option key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </option>
-                  ))}
+                  <SelectTrigger id="itemType" ref={selectFocusRef as any} className="rounded-xl border-slate-200 h-11 shadow-none">
+                    <SelectValue placeholder="Choisir..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNIQUE_LESSON_ITEM_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
@@ -378,7 +380,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   );
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={titleNode}
@@ -439,7 +441,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Section"
                 description="Ajoute une partie au chapitre ou bloc sélectionné"
-                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                colorClass="text-signature-gold bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip="Sélectionnez un chapitre ou une section"
@@ -448,7 +450,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-section"
                 description="Ajoute un niveau sous la section sélectionnée"
-                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                colorClass="text-signature-gold bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
                 tooltip="Sélectionnez une section"
@@ -457,7 +459,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-sous-section"
                 description="Ajoute un niveau sous la sous-section sélectionnée"
-                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                colorClass="text-signature-gold bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
                 tooltip="Sélectionnez une sous-section"
@@ -500,7 +502,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Home}
                 label="Devoir maison"
                 description="Planifier un travail personnel hors-classe"
-                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                colorClass="text-signature-gold bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
@@ -523,7 +525,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckCheck}
                 label="Correction Devoir maison"
                 description="Ajouter le corrigé complet d'un DM"
-                colorClass="text-signature-gold bg-[#B8935A]/10 border-[#B8935A]/20"
+                colorClass="text-signature-gold bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
@@ -570,6 +572,6 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           )}
         </div>
       )}
-    </Dialog>
+    </Modal>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MathText } from './math-text';
 
 interface EditableTitleProps {
   value: string;
@@ -70,7 +71,8 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({ value, onSave, cla
       className={`px-2 py-1 -mx-2 -my-1 rounded-md break-words ${className}`}
       title="Double-cliquez pour modifier"
     >
-      {value}
+      {/* le LaTeX du titre est rendu à l'affichage ; la source brute reste éditable */}
+      <MathText source={value} cacheKey={value} inline>{value}</MathText>
     </span>
   );
 };

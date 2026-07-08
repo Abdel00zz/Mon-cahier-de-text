@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Cycle, ClassInfo } from '../../types';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Select } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Plus, Settings } from '../ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS } from '../../constants';
 
@@ -147,7 +147,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={editingClass ? "Configurer la classe" : "Créer une nouvelle classe"}
@@ -158,7 +158,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           <Button type="button" onClick={onClose} variant="secondary">
             Annuler
           </Button>
-          <Button type="submit" form="create-class-form" variant="primary" disabled={!isFormValid}>
+          <Button type="submit" form="create-class-form" variant="default" disabled={!isFormValid}>
             {editingClass ? (
               <>
                 <Settings className="mr-2 h-3.5 w-3.5" /> Enregistrer les modifications
@@ -180,17 +180,21 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               Cycle *
             </label>
             <Select
-              id="cycle"
               value={cycle}
-              onChange={(e) => {
-                const nextCycle = e.target.value as Cycle;
+              onValueChange={(value) => {
+                const nextCycle = value as Cycle;
                 setCycle(nextCycle);
                 setLevel(CLASS_LEVELS_BY_CYCLE[nextCycle][0] ?? '');
               }}
             >
-              {cycleOptions.map(c => (
-                <option key={c} value={c}>{CYCLE_LABELS[c]}</option>
-              ))}
+              <SelectTrigger id="cycle">
+                <SelectValue placeholder="Choisir un cycle..." />
+              </SelectTrigger>
+              <SelectContent>
+                {cycleOptions.map(c => (
+                  <SelectItem key={c} value={c}>{CYCLE_LABELS[c]}</SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         )}
@@ -210,10 +214,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 required
               />
             ) : (
-              <Select id="level" value={level} onChange={(e) => setLevel(e.target.value)} required>
-                {levels.map(l => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
+              <Select value={level} onValueChange={setLevel} required>
+                <SelectTrigger id="level">
+                  <SelectValue placeholder="Choisir un niveau..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {levels.map(l => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             )}
           </div>
@@ -249,11 +258,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 required
               />
             ) : (
-              <Select id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} required>
-                <option value="" disabled>Choisir une matière…</option>
-                {subjectOptions.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+              <Select value={subject} onValueChange={setSubject} required>
+                <SelectTrigger id="subject">
+                  <SelectValue placeholder="Choisir une matière…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjectOptions.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             )}
           </div>
@@ -306,6 +319,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
             : 'Niveau non listé ? Créer une classe personnalisée'}
         </button>
       </form>
-    </Dialog>
+    </Modal>
   );
 };

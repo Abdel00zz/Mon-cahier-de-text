@@ -6,6 +6,7 @@ import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
 import { EditorSkeleton } from './ui/PageSkeleton';
+import { ConfirmDialog } from './ui/confirm-dialog';
 import { Plus } from './ui/icons';
 import { useHistoryState } from '../hooks/useHistoryState';
 import { useConfigManager } from '../hooks/useConfigManager';
@@ -25,7 +26,7 @@ import { printDocument } from '../utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '../types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '../constants';
 import { logger } from '../utils/logger';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
@@ -112,6 +113,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
    * puis modifier librement — ou l'ignorer et créer son propre contenu).
    */
   const [predefinedOffer, setPredefinedOffer] = useState<PredefinedEntry | null>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   useEffect(() => {
       let cancelled = false;
       if (isClassLoading || lessonsData.length > 0) {
@@ -255,8 +257,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }, [classInfo, lessonsData, showNotification]);
 
   const handleClassInfoChange = useCallback((newInfo: Partial<ClassInfo>) => {
+    const normalizedInfo = newInfo.name !== undefined
+      ? { ...newInfo, name: normalizeOfficialClassName(newInfo.name) }
+      : newInfo;
     setEditorState(draft => {
-        Object.assign(draft.classInfo, newInfo);
+        Object.assign(draft.classInfo, normalizedInfo);
         try {
             const allClasses: ClassInfo[] = JSON.parse(localStorage.getItem('classManager_v1') || '[]');
             const updatedClasses = allClasses.map(c =>
@@ -566,7 +571,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
 
   const handleBulkDelete = useCallback(() => {
       if (selectedIndices.length === 0) return;
-      if (!window.confirm(`Supprimer ${selectedIndices.length} element(s) selectionne(s) ?`)) return;
+      setConfirmBulkDelete(true);
+  }, [selectedIndices]);
+
+  const executeBulkDelete = useCallback(() => {
+      if (selectedIndices.length === 0) return;
       const sorted = [...selectedIndices].sort((a, b) => {
           if (a.chapterIndex !== b.chapterIndex) return b.chapterIndex - a.chapterIndex;
           if ((a.sectionIndex ?? -1) !== (b.sectionIndex ?? -1)) return (b.sectionIndex ?? -1) - (a.sectionIndex ?? -1);
@@ -713,9 +722,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     return <EditorSkeleton />;
   }
 
+  const classAccent = classInfo.color || '#B8935A';
+
   return (
-    <div className="relative p-1.5 sm:p-5 bg-[#F5EDE8] safe-bottom print:bg-white print:p-0" data-editor-root>
-      <div className="container mx-auto max-w-7xl bg-[#FFFDF7] rounded-[24px] border border-[#E4D3AC]/60 shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-white print:p-0 print:shadow-none">
+    <div className="relative p-1.5 sm:p-5 bg-background safe-bottom print:bg-white print:p-0" data-editor-root style={{ backgroundImage: `radial-gradient(circle at top, ${classAccent}18, transparent 34rem)` }}>
+      <div className="container mx-auto max-w-7xl bg-card rounded-[24px] border shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-white print:p-0 print:shadow-none" style={{ borderColor: `${classAccent}40` }}>
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -723,7 +734,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          <div className="sticky bottom-0 sm:static z-30 bg-[#FFFDF7]/70 sm:bg-transparent backdrop-blur supports-[backdrop-filter]:backdrop-blur print:hidden">
+          <div className="sticky bottom-0 sm:static z-30 bg-card/70 sm:bg-transparent backdrop-blur supports-[backdrop-filter]:backdrop-blur print:hidden">
             <Toolbar
               onUndo={undo}
               onRedo={redo}
@@ -745,13 +756,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           </div>
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
-            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FCF6EA] text-[#B8935A]">
+            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-border bg-card p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
                 <BookOpen className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-[#2B241D] font-display">{predefinedOffer.titre}</p>
-                <p className="text-xs text-[#69604F]">
+                <p className="text-sm font-bold text-foreground font-display">{predefinedOffer.titre}</p>
+                <p className="text-xs text-muted-foreground">
                   Un programme prêt à l'emploi existe pour cette classe — chargez-le puis adaptez-le, ou ignorez-le.
                 </p>
               </div>
@@ -769,6 +780,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           <main className="-mx-2 flex-1 pb-24 sm:-mx-6 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               lessonsData={filteredData}
+              
               onCellUpdate={handleCellUpdate}
               onDeleteSeparator={handleDeleteSeparator}
               onOpenAddContentModal={handleOpenAddContentModal}
@@ -858,6 +870,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
+      />
+
+      <ConfirmDialog
+        open={confirmBulkDelete}
+        onOpenChange={setConfirmBulkDelete}
+        title={`Supprimer ${selectedIndices.length} élément(s) ?`}
+        description="Les éléments sélectionnés seront retirés du cahier (annulable via Annuler/Ctrl+Z)."
+        confirmLabel="Supprimer"
+        onConfirm={executeBulkDelete}
       />
     </div>
   );

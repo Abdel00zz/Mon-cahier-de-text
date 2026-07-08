@@ -1,0 +1,18 @@
+[
+    {
+      "type": "chapter",
+      "title": "Consommation de la matière organique et flux d'énergie",
+      "items": [
+        {
+          "type": "cours",
+          "title": "Les réactions métaboliques",
+          "description": "La glycolyse et la respiration cellulaire."
+        },
+        {
+          "type": "exercice",
+          "title": "Exercices sur la glycolyse",
+          "description": "Bilan énergétique de la glycolyse."
+        }
+      ]
+    }
+]

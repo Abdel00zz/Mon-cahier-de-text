@@ -4,6 +4,8 @@ import { defaultNotificationSettings } from '../../hooks/useConfigManager';
 import { isStandalone, pushSupported, sendTestNotification, subscribeToPush, unsubscribeFromPush } from '../../utils/push';
 import { formatDateDDMMYYYY } from '../../utils/dataUtils';
 import { X } from '../ui/icons';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 
 interface NotificationsTabProps {
     config: AppConfig;
@@ -17,22 +19,17 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     hint,
     disabled,
 }) => (
-    <label className={`flex items-start justify-between gap-3 rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 ${disabled ? 'opacity-60' : ''}`}>
-        <span>
-            <span className="block text-xs font-semibold text-[#2B241D] font-sans">{label}</span>
-            {hint && <span className="mt-0.5 block text-[11px] text-[#69604F] font-sans">{hint}</span>}
-        </span>
-        <button
-            type="button"
-            role="switch"
-            aria-checked={checked}
+    <div className={`flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-3 ${disabled ? 'opacity-60' : ''}`}>
+        <div className="flex flex-col text-left">
+            <Label className="text-xs font-bold text-foreground font-sans leading-none">{label}</Label>
+            {hint && <span className="mt-1.5 block text-[11px] text-muted-foreground font-sans leading-normal">{hint}</span>}
+        </div>
+        <Switch
+            checked={checked}
+            onCheckedChange={onChange}
             disabled={disabled}
-            onClick={() => onChange(!checked)}
-            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${checked ? 'bg-[#B8935A]' : 'bg-[#E4D3AC]'}`}
-        >
-            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'left-[22px]' : 'left-0.5'}`} />
-        </button>
-    </label>
+        />
+    </div>
 );
 
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onChange }) => {
@@ -72,7 +69,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
     return (
         <div className="space-y-3">
-            <p className="text-xs leading-relaxed text-[#69604F]">
+            <p className="text-xs leading-relaxed text-muted-foreground">
                 Recevez des rappels intelligents lorsque votre cahier prend du retard — jamais pendant les vacances, les
                 jours fériés ou le week-end.
             </p>
@@ -111,24 +108,24 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
-                    <span className="block text-xs font-semibold text-[#2B241D] font-sans">Seuil de retard</span>
+                <label className="rounded-xl border border-border bg-card p-3">
+                    <span className="block text-xs font-semibold text-foreground font-sans">Seuil de retard</span>
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-white text-[#2B241D] px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-white text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={1}>1 séance de retard</option>
                         <option value={2}>2 séances de retard</option>
                         <option value={3}>3 séances de retard</option>
                     </select>
                 </label>
-                <label className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
-                    <span className="block text-xs font-semibold text-[#2B241D] font-sans">Inactivité</span>
+                <label className="rounded-xl border border-border bg-card p-3">
+                    <span className="block text-xs font-semibold text-foreground font-sans">Inactivité</span>
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-white text-[#2B241D] px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-white text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={3}>Après 3 jours de classe</option>
                         <option value={5}>Après 5 jours de classe</option>
@@ -154,13 +151,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         setBusy(false);
                     }}
                     disabled={busy}
-                    className="h-9 w-full rounded-md border border-[#E4D3AC]/80 bg-[#FFFDF7] text-xs font-semibold text-[#69604F] hover:bg-[#FCF6EA] hover:text-[#2B241D] disabled:opacity-50 transition-colors"
+                    className="h-9 w-full rounded-md border border-border/80 bg-card text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-50 transition-colors"
                 >
                     Envoyer une notification de test
                 </button>
             )}
 
-            {message && <p className="rounded-lg bg-[#FCF6EA] border border-[#E4D3AC]/60 px-3 py-2 text-[11px] font-medium text-[#2B241D]">{message}</p>}
+            {message && <p className="rounded-lg bg-secondary border border-border/60 px-3 py-2 text-[11px] font-medium text-foreground">{message}</p>}
 
             <AbsencesSection
                 absences={config.absences ?? []}
@@ -194,9 +191,9 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="rounded-xl border border-[#E4D3AC] bg-[#FFFDF7] p-3">
-            <h4 className="text-xs font-semibold text-[#2B241D] font-display">Absences justifiées</h4>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-[#69604F] font-sans">
+        <div className="rounded-xl border border-border bg-card p-3">
+            <h4 className="text-xs font-semibold text-foreground font-display">Absences justifiées</h4>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground font-sans">
                 Certificat de maladie, congé... Ces périodes sont exclues du calcul de retard et aucune alerte
                 n'est envoyée pendant.
             </p>
@@ -206,17 +203,17 @@ const AbsencesSection: React.FC<{
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-lg bg-[#FCF6EA] border border-[#E4D3AC]/30 px-2.5 py-1.5 text-[11px]"
+                            className="flex items-center justify-between gap-2 rounded-lg bg-secondary border border-border/30 px-2.5 py-1.5 text-[11px]"
                         >
-                            <span className="font-semibold text-[#2B241D] font-sans">
+                            <span className="font-semibold text-foreground font-sans">
                                 {formatDateDDMMYYYY(absence.debut)}
                                 {absence.fin !== absence.debut && ` → ${formatDateDDMMYYYY(absence.fin)}`}
-                                {absence.motif && <span className="ml-1.5 font-normal text-[#69604F] font-mono">· {absence.motif}</span>}
+                                {absence.motif && <span className="ml-1.5 font-normal text-muted-foreground font-mono">· {absence.motif}</span>}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => removeAbsence(index)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#69604F] hover:bg-red-50 hover:text-red-600 transition-colors"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
                                 aria-label="Supprimer cette absence"
                             >
                                 <X className="h-2.5 w-2.5" />
@@ -231,7 +228,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Début de l'absence"
                 />
                 <input
@@ -239,7 +236,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Fin de l'absence"
                 />
                 <input
@@ -247,13 +244,13 @@ const AbsencesSection: React.FC<{
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder="Motif (optionnel)"
-                    className="col-span-2 h-10 rounded-md border border-[#E4D3AC]/80 bg-white px-2 text-xs text-[#2B241D] sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="col-span-2 h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <button
                     type="button"
                     onClick={addAbsence}
                     disabled={!debut}
-                    className="col-span-2 h-10 rounded-md bg-[#B8935A] text-white hover:bg-[#9E7A46] disabled:opacity-40 sm:col-span-1 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
+                    className="col-span-2 h-10 rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-40 sm:col-span-1 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                     Ajouter
                 </button>

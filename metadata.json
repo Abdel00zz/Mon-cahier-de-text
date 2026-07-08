@@ -1,0 +1,6 @@
+{
+  "name": "Cahier de Textes Interactif",
+  "description": "An interactive digital notebook system for teachers. This application features a central dashboard to create and manage multiple class notebooks. Each notebook allows for dynamic lesson planning, exercise tracking, data import/export, and robust state management with undo/redo functionality.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

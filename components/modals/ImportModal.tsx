@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Dialog } from '../ui/dialog';
+import { toast } from 'sonner';
+import { Modal } from '../ui/modal';
 import { FileUp } from '../ui/icons';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -33,12 +34,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
       onImport(parsed, importMode);
     } catch (error) {
         const message = error instanceof Error ? error.message : "Format JSON invalide.";
-        alert(`Erreur d'importation: ${message}`);
+        toast.error(`Erreur d'importation : ${message}`);
     }
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Importer des cours ou une classe"
@@ -49,7 +50,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
           <Button type="button" onClick={onClose} variant="secondary">
             Annuler
           </Button>
-          <Button type="button" onClick={handleImport} variant="primary" disabled={!jsonText}>
+          <Button type="button" onClick={handleImport} variant="default" disabled={!jsonText}>
             Importer
           </Button>
         </>
@@ -108,6 +109,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
           </div>
         </div>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

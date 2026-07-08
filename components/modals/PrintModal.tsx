@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Printer, CalendarCheck, FileText } from '../ui/icons';
 import { formatDateDDMMYYYY } from '../../utils/dataUtils';
@@ -110,7 +110,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   );
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
@@ -124,7 +124,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       footer={
         <>
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="button" variant="primary" onClick={() => onPrint(mode, { pageNumbers, textSize, lineSpacing })}>
+          <Button type="button" variant="default" onClick={() => onPrint(mode, { pageNumbers, textSize, lineSpacing })}>
             <Printer className="mr-2 h-3.5 w-3.5" />
             Imprimer {mode === 'new' ? `(${newDates.length} séance${newDates.length > 1 ? 's' : ''})` : '(complet)'}
           </Button>
@@ -180,7 +180,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         {mode === 'new' && newDates.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {newDates.slice(0, 12).map(date => (
-              <span key={date} className="rounded-full bg-[#B8935A]/15 px-2 py-0.5 text-[10px] font-bold text-[#8a6b3d]">
+              <span key={date} className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                 {formatDateDDMMYYYY(date)}
               </span>
             ))}
@@ -198,7 +198,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <span className="text-xs font-semibold text-slate-700">Taille du texte</span>
             <Segmented
               value={textSize}
-              onChange={setTextSize}
+              onChange={(v) => setTextSize(v as any)}
               options={[
                 { value: 's', label: 'Petit' },
                 { value: 'm', label: 'Normal' },
@@ -210,7 +210,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <span className="text-xs font-semibold text-slate-700">Espacement des lignes</span>
             <Segmented
               value={lineSpacing}
-              onChange={setLineSpacing}
+              onChange={(v) => setLineSpacing(v as any)}
               options={[
                 { value: 'compact', label: 'Compact' },
                 { value: 'normal', label: 'Normal' },
@@ -242,6 +242,6 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           </button>
         </label>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MathText } from './math-text';
 
 interface EditableCellProps {
   value: string;
@@ -22,7 +23,7 @@ export const highlightMatches = (text: string, query?: string): React.ReactNode 
   while (hit !== -1) {
     if (hit > cursor) parts.push(text.slice(cursor, hit));
     parts.push(
-      <mark key={hit} className="rounded-sm bg-[#B8935A]/30 px-0.5 text-inherit">
+      <mark key={hit} className="rounded-sm bg-primary/30 px-0.5 text-inherit">
         {text.slice(hit, hit + needle.length)}
       </mark>
     );
@@ -95,7 +96,13 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
       className={`min-h-[1.5rem] focus:bg-white rounded break-words whitespace-pre-wrap ${className}`}
       title="Double-cliquez pour modifier"
     >
-      {value ? highlightMatches(value, highlight) : <span className="text-slate-400 italic">{placeholder}</span>}
+      {value ? (
+        // surlignage de recherche prioritaire (les <mark> casseraient le typeset) ;
+        // sinon le LaTeX de la cellule est rendu à l'affichage
+        (highlight || '').trim()
+          ? highlightMatches(value, highlight)
+          : <MathText source={value} cacheKey={value} inline>{value}</MathText>
+      ) : <span className="text-slate-400 italic">{placeholder}</span>}
     </div>
   );
 };

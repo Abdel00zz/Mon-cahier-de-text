@@ -5,7 +5,7 @@ import { SeparatorRow } from './SeparatorRow';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
-import { Select } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { EditableCell } from './ui/EditableCell';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
@@ -22,6 +22,7 @@ interface InlineEditRowProps {
     data: LessonItem;
     onSave: (updatedData: Partial<LessonItem>) => void;
     onCancel: () => void;
+    accentColor?: string;
     /** garde intelligente : alertes live sur la date saisie (emploi du temps, fériés, vacances, absences) */
     getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
@@ -30,7 +31,7 @@ const LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) =>
 
 const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
 
-const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, getDateWarnings }) => {
+const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = GOLD, getDateWarnings }) => {
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
     const titleRef = useRef<HTMLInputElement>(null);
     const rootRef = useRef<HTMLFormElement>(null);
@@ -78,7 +79,8 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
     return (
         <form
             ref={rootRef}
-            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-2xl border border-[#E4D3AC] bg-[#FFFDF7] p-3 pl-4 shadow-lg shadow-[#2B241D]/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-2xl border bg-card p-3 pl-4 shadow-lg shadow-foreground/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
             onKeyDown={(event) => {
@@ -87,55 +89,60 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, g
             }}
         >
             {/* Liseré signature indiquant le mode édition */}
-            <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: GOLD }} />
+            <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
 
-            <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-[#E4D3AC]/40 md:pr-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-[#E4D3AC] bg-white text-[#2B241D] focus:ring-[#B8935A]/30 font-mono" />
+            <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border/40 md:pr-3">
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-white text-foreground focus:ring-primary/30 font-mono" />
                 {formData.date && (
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
-                        className="text-[10px] font-bold text-[#A79C87] hover:text-rose-600 transition-colors font-sans"
+                        className="text-[10px] font-bold text-muted-foreground/60 hover:text-rose-600 transition-colors font-sans"
                     >
                         Dissocier la date
                     </button>
                 )}
             </div>
-            <div className="min-w-0 space-y-2 md:border-r md:border-[#E4D3AC]/40 md:pr-3">
+            <div className="min-w-0 space-y-2 md:border-r md:border-border/40 md:pr-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr]">
-                    <Select name="type" value={formData.type} onChange={handleChange} required className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] focus:ring-[#B8935A]/30">
-                        {LESSON_TYPE_OPTIONS.map(type => <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>)}
+                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
+                      <SelectTrigger className="min-h-11 border-border bg-card text-foreground">
+                        <SelectValue placeholder="Type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</SelectItem>)}
+                      </SelectContent>
                     </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" />
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30 font-bold" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" placeholder="Description / contenu..." />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
-                    <div className="space-y-0.5 rounded-lg border border-[#E4D3AC] bg-[#FCF6EA] px-2.5 py-1.5" role="alert">
+                    <div className="space-y-0.5 rounded-lg border border-border bg-secondary px-2.5 py-1.5" role="alert">
                         {dateWarnings.map((warning, i) => (
-                            <p key={i} className="text-[11px] font-semibold leading-snug text-[#B8935A]">⚠ {warning.message}</p>
+                            <p key={i} className="text-[11px] font-semibold leading-snug text-primary">⚠ {warning.message}</p>
                         ))}
                     </div>
                 )}
 
-                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-[#69604F]">
+                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
                     <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
-                        <kbd className="rounded border border-[#E4D3AC] bg-[#FCF6EA] px-1 py-0.5 font-mono text-[10px] text-[#69604F]">Échap</kbd> annule
-                        <kbd className="ml-2 rounded border border-[#E4D3AC] bg-[#FCF6EA] px-1 py-0.5 font-mono text-[10px] text-[#69604F]">⌘/Ctrl+Entrée</kbd> sauvegarde
+                        <kbd className="rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">Échap</kbd> annule
+                        <kbd className="ml-2 rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">⌘/Ctrl+Entrée</kbd> sauvegarde
                     </span>
                     <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
                         <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">Annuler</Button>
-                        <Button type="submit" variant="primary" size="sm" className="min-h-10" disabled={!isDirty}>
+                        <Button type="submit" variant="default" size="sm" className="min-h-10" disabled={!isDirty}>
                             {isDirty ? 'Enregistrer' : 'Aucun changement'}
                         </Button>
                     </div>
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-[#E4D3AC] bg-white text-[#2B241D] placeholder-[#A79C87] focus-visible:ring-[#B8935A]/30" placeholder="Remarque..." />
+                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
             </div>
         </form>
     );
@@ -182,15 +189,15 @@ const TableHeader: React.FC = React.memo(() => (
   /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      nettement démarqué : fond plein + double filet (or + trait). */
-  <div className="sticky top-0 z-10 hidden border-b border-[#D8C79E] bg-[#FCF6EA] backdrop-blur-md print:static md:block">
+  <div className="sticky top-0 z-10 hidden border-b border-border bg-secondary backdrop-blur-md print:static md:block">
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-[#E4D3AC] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
+      <div className="flex items-center justify-center border-r border-border p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
         Date
       </div>
-      <div className="flex items-center justify-center border-r border-[#E4D3AC] p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
+      <div className="flex items-center justify-center border-r border-border p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
         Contenu
       </div>
-      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#69604F] font-mono">
+      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
         Remarque
       </div>
     </div>
@@ -285,7 +292,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
     const sharedRemark = getMergeableRemark(first);
-    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-[#E4D3AC]/70';
+    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-border/70';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -294,17 +301,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-t border-[#B8935A]/25 border-b-2 border-[#B8935A]/40 bg-[#FFF4DF]/60 transition-colors duration-150`,
+                `group relative grid ${TABLE_GRID_CLASS} border-t border-primary/25 border-b-2 border-primary/40 bg-primary/10/60 transition-colors duration-150`,
                 groupIsSelected ? 'bg-primary/[0.06]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
             <span
                 aria-hidden
-                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-[#B8935A]/60'}`}
+                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-primary/60'}`}
             />
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-[#FFEBC2]/45`}>
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-primary/20/45`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -319,7 +326,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             indices={item.indices}
                             elementType={item.elementType}
                             layout="content-only"
-                            lineClassOverride={index < items.length - 1 ? 'border-b border-[#E4D3AC]/35' : ''}
+                            lineClassOverride={index < items.length - 1 ? 'border-b border-border/35' : ''}
                             onCellUpdate={onCellUpdate}
                             onToggleSelect={onToggleSelect}
                             onDoubleClickEdit={onDoubleClickEdit}
@@ -334,13 +341,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className="hidden min-w-0 self-stretch bg-[#FFF4DF]/35 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+            <div className="hidden min-w-0 self-stretch bg-primary/10/35 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
                             value={sharedRemark}
                             onSave={saveSharedRemark}
-                            className="h-full p-1 text-[11px] text-[#69604F] font-semibold font-sans"
+                            className="h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
                             multiline
                             placeholder=""
                         />
@@ -348,11 +355,11 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map((item, index) => (
-                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-[#E4D3AC]/35' : ''}`}>
+                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-border/35' : ''}`}>
                                 <EditableCell
                                     value={getMergeableRemark(item)}
                                     onSave={value => onCellUpdate(item.indices, 'remark', value)}
-                                    className="h-full p-1 text-[11px] text-[#69604F] font-semibold font-sans"
+                                    className="h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
                                     multiline
                                     placeholder=""
                                 />
@@ -370,18 +377,18 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
     /* carte arrondie : compense le conteneur plein-bord (§G) du tableau */
-    <div className="mx-2 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#E4D3AC] bg-[#FFFDF7] px-6 py-16 text-center shadow-sm sm:mx-6">
+    <div className="mx-2 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center shadow-sm sm:mx-6">
         <div
             className="flex h-14 w-14 items-center justify-center rounded-full"
             style={{ backgroundColor: `${GOLD}1A`, color: GOLD }}
         >
             <BookOpen className="h-5 w-5" />
         </div>
-        <h3 className="text-base font-bold text-[#2B241D] font-display">Le cahier de textes est vide</h3>
-        <p className="max-w-sm text-sm text-[#69604F]">
+        <h3 className="text-base font-bold text-foreground font-display">Le cahier de textes est vide</h3>
+        <p className="max-w-sm text-sm text-muted-foreground">
             Ajoutez un premier chapitre pour commencer à construire la progression.
         </p>
-        <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="primary">
+        <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="default">
             <Plus className="mr-2 h-4 w-4" /> Créer un chapitre
         </Button>
     </div>
@@ -538,7 +545,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     /* §G : tableau dense bord à bord — pas d'arrondi ni de bordure latérale,
        la table épouse les bords de la carte parente */
     <Card
-      className="overflow-hidden rounded-none border border-[#E4D3AC] bg-[#FFFDF7]/95 shadow-xl shadow-[#2B241D]/5"
+      className="overflow-hidden rounded-none border border-border bg-card/95 shadow-xl shadow-foreground/5"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MathJax } from 'better-react-mathjax';
+import { MathText } from './ui/math-text';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '../types';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '../constants';
 import { EditableTitle } from './ui/EditableTitle';
@@ -21,15 +21,9 @@ interface ContentRendererProps {
   highlight?: string;
 }
 
-const hasMathSyntax = (value: unknown): boolean => {
-  if (!value || typeof value !== 'string') return false;
-  return /\$\$?[^$]+\$\$?|\\\(|\\\[|\\begin\{/.test(value);
-};
-
-const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => {
-  if (!hasMathSyntax(mathSource)) return <>{children}</>;
-  return <MathJax hideUntilTypeset="first" key={cacheKey}>{children}</MathJax>;
-};
+const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
+  <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
+);
 
 export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, onCellUpdate, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
   const handleUpdate = (field: string) => (value: string) => {
@@ -127,7 +121,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-base font-bold font-display text-[#2B241D] py-1.5 flex items-baseline gap-2">
+            <div className="text-base font-bold font-display text-foreground py-1.5 flex items-baseline gap-2">
                 <span>{sectionLetter}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -136,7 +130,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm font-bold font-sans text-[#2B241D] pl-2 sm:pl-4 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm font-bold font-sans text-foreground pl-2 sm:pl-4 py-0.5 flex items-baseline gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -146,7 +140,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm italic font-sans text-[#69604F] pl-4 sm:pl-8 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm italic font-sans text-muted-foreground pl-4 sm:pl-8 py-0.5 flex items-baseline gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -179,16 +173,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const content = (
-        <div className="prose prose-sm max-w-none text-sm text-[#69604F] space-y-1">
+        <div className="prose prose-sm max-w-none text-sm text-muted-foreground space-y-1">
           {/* Titre */}
-          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-[#2B241D] p-0" placeholder="Titre..." highlight={highlight} />
+          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-foreground p-0" placeholder="Titre..." highlight={highlight} />
 
           {/* Description : encadré doux sous le titre — contenu TOUJOURS affiché
               en entier (aucune barre de défilement) ; texte enrichi (gras,
               italique, listes) + LaTeX (les longues formules passent à la
               ligne via displayOverflow: linebreak). */}
           {allowDescription && (
-            <div className="mt-1.5 rounded-lg border border-[#E4D3AC] bg-[#FFFDF7] px-3 py-2 text-xs md:text-[12px] leading-relaxed text-[#69604F] font-normal whitespace-pre-wrap break-words animate-fade-in shadow-sm">
+            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-normal whitespace-pre-wrap break-words animate-fade-in shadow-sm">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

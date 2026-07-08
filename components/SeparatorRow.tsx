@@ -45,19 +45,19 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
     return (
         <div className={rowClasses}>
             {/* Colonne Date */}
-            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-r border-[#E4D3AC]/50 px-1 py-1.5 select-none">
+            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-r border-border/50 px-1 py-1.5 select-none">
                 <input
                     type="date"
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="bg-transparent text-[#A79C87] text-[11px] font-bold rounded-md border border-dashed border-[#E4D3AC]/80 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
+                    className="bg-transparent text-muted-foreground/60 text-[11px] font-bold rounded-md border border-dashed border-border/80 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
                     style={{ ['--tw-ring-color' as string]: GOLD }}
                     title="Modifier la date du séparateur"
                 />
             </div>
 
             {/* Colonne Contenu — le "signature moment" : un jalon net entre deux périodes */}
-            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-r border-[#E4D3AC]/50 px-4 py-2.5">
+            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-r border-border/50 px-4 py-2.5">
                 <div className="flex-grow border-t border-dashed" style={{ borderColor: GOLD_SOFT }} />
 
                 <div
@@ -66,7 +66,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="relative text-center text-[11px] font-bold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full bg-[#FFFDF7] border transition-colors focus:outline-none focus:ring-1 min-w-[120px] max-w-[80%] shadow-sm font-sans"
+                    className="relative text-center text-[11px] font-bold uppercase tracking-[0.12em] px-3.5 py-1.5 rounded-full bg-card border transition-colors focus:outline-none focus:ring-1 min-w-[120px] max-w-[80%] shadow-sm font-sans"
                     style={{
                         color: GOLD,
                         borderColor: GOLD_SOFT,
@@ -83,11 +83,11 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                 {/* visible en permanence en tactile (< lg) ; hover-reveal sur desktop seulement */}
                 <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <Button
-                        variant="icon"
-                        size="sm"
+                        variant="ghost" size="icon"
+                        
                         onClick={() => onDelete(separatorIndices)}
                         data-tippy-content="Supprimer le séparateur"
-                        className="h-9 w-9 text-xs text-[#A79C87] hover:text-red-600 hover:bg-rose-500/10 rounded-full transition-colors lg:h-7 lg:w-7"
+                        className="h-9 w-9 text-xs text-muted-foreground/60 hover:text-red-600 hover:bg-rose-500/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>

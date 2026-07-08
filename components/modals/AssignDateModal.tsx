@@ -1,5 +1,5 @@
 import React, { FC, useMemo, useState } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { CalendarCheck, CalendarX, CalendarPlus, CalendarMinus, ChevronRight } from '../ui/icons';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -133,7 +133,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   }, [selectedItems]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Planification & Affectation"
@@ -348,6 +348,6 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           </div>
         </div>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

@@ -42,9 +42,23 @@ const STORAGE_KEY = 'onboardingDone_v1';
 
 interface Rect { top: number; left: number; width: number; height: number }
 
-const readRect = (target: string): Rect | null => {
+/**
+ * Premier élément VISIBLE portant le data-guide demandé — certains éléments
+ * desktop sont masqués sur mobile et remplacés par un équivalent suffixé
+ * `-fab` (ex. la carte « create-class » devient le bouton flottant).
+ */
+const findTarget = (target: string): HTMLElement | null => {
     if (!target) return null;
-    const el = document.querySelector<HTMLElement>(`[data-guide="${target}"]`);
+    const candidates = document.querySelectorAll<HTMLElement>(`[data-guide="${target}"], [data-guide="${target}-fab"]`);
+    for (const el of Array.from(candidates)) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) return el;
+    }
+    return null;
+};
+
+const readRect = (target: string): Rect | null => {
+    const el = findTarget(target);
     if (!el) return null;
     const r = el.getBoundingClientRect();
     return { top: r.top, left: r.left, width: r.width, height: r.height };
@@ -72,8 +86,7 @@ export const OnboardingGuide: React.FC<{ enabled?: boolean }> = ({ enabled = tru
             const target = STEPS[step]?.target ?? '';
             const r = readRect(target);
             setRect(r);
-            const el = target ? document.querySelector(`[data-guide="${target}"]`) : null;
-            el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            findTarget(target)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
         };
         update();
         window.addEventListener('resize', update);

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { GUIDE_FR, GUIDE_AR } from '../../constants';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 
 interface GuideModalProps {
   isOpen: boolean;
@@ -25,31 +25,31 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
 
   const toHtml = (markdown: string) => {
     return markdown
-      .replace(/^# (.+)/gm, (_, t) => `<h1 id="${slugify(t)}" class="text-3xl font-bold font-display mb-8 text-[#B8935A] text-center tracking-tight">${t}</h1>`)
-      .replace(/^## (.+)/gm, (_, t) => `<h2 id="${slugify(t)}" class="text-xl font-bold font-display mt-10 mb-5 pb-2 border-b border-[#E4D3AC]/60 text-[#2B241D] flex items-center gap-2">${t}</h2>`)
-      .replace(/^### (.+)/gm, (_, t) => `<h3 id="${slugify(t)}" class="text-lg font-semibold font-display mt-6 mb-3 text-[#2B241D]">${t}</h3>`)
+      .replace(/^# (.+)/gm, (_, t) => `<h1 id="${slugify(t)}" class="text-3xl font-bold font-display mb-8 text-primary text-center tracking-tight">${t}</h1>`)
+      .replace(/^## (.+)/gm, (_, t) => `<h2 id="${slugify(t)}" class="text-xl font-bold font-display mt-10 mb-5 pb-2 border-b border-border/60 text-foreground flex items-center gap-2">${t}</h2>`)
+      .replace(/^### (.+)/gm, (_, t) => `<h3 id="${slugify(t)}" class="text-lg font-semibold font-display mt-6 mb-3 text-foreground">${t}</h3>`)
       
       // Convert numbered lists to cards with numbers
-      .replace(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out flex gap-4 items-start"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#FCF6EA] text-[#B8935A] font-bold flex items-center justify-center font-mono mt-0.5 group-hover:bg-primary group-hover:text-[#FFFDF7] transition-colors">$1</div><div><div class="font-bold text-[#2B241D] font-display mb-1.5 text-base group-hover:text-primary transition-colors">$2</div><div class="text-[#69604F] text-[15px] leading-relaxed">$3</div></div></div>')
+      .replace(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-card border border-border/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out flex gap-4 items-start"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary text-primary font-bold flex items-center justify-center font-mono mt-0.5 group-hover:bg-primary group-hover:text-card transition-colors">$1</div><div><div class="font-bold text-foreground font-display mb-1.5 text-base group-hover:text-primary transition-colors">$2</div><div class="text-muted-foreground text-[15px] leading-relaxed">$3</div></div></div>')
       
       // Convert standard bold bullet lists to cards
-      .replace(/^- \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out relative overflow-hidden"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-[#E4D3AC] group-hover:bg-primary transition-colors"></div><div class="font-bold text-[#2B241D] font-display mb-1.5 text-base group-hover:text-primary transition-colors">$1</div><div class="text-[#69604F] text-[15px] leading-relaxed">$2</div></div>')
+      .replace(/^- \*\*(.+?)\*\* : (.+)$/gm, '<div class="group bg-card border border-border/60 rounded-2xl p-5 shadow-sm mb-4 hover:-translate-y-1 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out relative overflow-hidden"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-border group-hover:bg-primary transition-colors"></div><div class="font-bold text-foreground font-display mb-1.5 text-base group-hover:text-primary transition-colors">$1</div><div class="text-muted-foreground text-[15px] leading-relaxed">$2</div></div>')
       
       // Convert unbolded bullet lists to smaller cards
-      .replace(/^- (.+?) : (.+)$/gm, '<div class="group bg-[#FFFDF7] border border-[#E4D3AC]/60 rounded-xl p-4 shadow-sm mb-3 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-300 ease-out"><div class="font-bold text-[#2B241D] font-display mb-1 text-[15px] group-hover:text-primary transition-colors">$1</div><div class="text-[#69604F] text-[14px] leading-relaxed">$2</div></div>')
+      .replace(/^- (.+?) : (.+)$/gm, '<div class="group bg-card border border-border/60 rounded-xl p-4 shadow-sm mb-3 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-300 ease-out"><div class="font-bold text-foreground font-display mb-1 text-[15px] group-hover:text-primary transition-colors">$1</div><div class="text-muted-foreground text-[14px] leading-relaxed">$2</div></div>')
       
       // Fallback for any other standard lists
-      .replace(/^- (.+)$/gm, '<div class="flex gap-2 mb-2"><span class="text-primary mt-1">•</span><span class="text-[#69604F] text-[15px] leading-relaxed">$1</span></div>')
+      .replace(/^- (.+)$/gm, '<div class="flex gap-2 mb-2"><span class="text-primary mt-1">•</span><span class="text-muted-foreground text-[15px] leading-relaxed">$1</span></div>')
       
-      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-[#2B241D]">$1</strong>')
-      .replace(/`([^`]+)`/g, '<code class="bg-[#FCF6EA] text-[#B8935A] px-1.5 py-0.5 rounded-md text-sm font-mono border border-[#E4D3AC]/40">$1</code>')
-      .replace(/^---$/gm, '<hr class="my-8 border-[#E4D3AC]/40">')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-foreground">$1</strong>')
+      .replace(/`([^`]+)`/g, '<code class="bg-secondary text-primary px-1.5 py-0.5 rounded-md text-sm font-mono border border-border/40">$1</code>')
+      .replace(/^---$/gm, '<hr class="my-8 border-border/40">')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-medium hover:underline transition-colors">$1</a>')
       .split('\n')
       .map(p => {
          if (!p.trim()) return '';
          if (p.startsWith('<div') || p.startsWith('<h') || p.startsWith('<hr') || p.startsWith('<ul') || p.startsWith('<ol')) return p;
-         return `<p class="mb-4 text-[15px] text-[#69604F] leading-relaxed">${p}</p>`;
+         return `<p class="mb-4 text-[15px] text-muted-foreground leading-relaxed">${p}</p>`;
       })
       .join('');
   };
@@ -75,7 +75,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Guide d'utilisation"
@@ -83,10 +83,10 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       maxWidth="5xl"
       className="max-w-6xl sm:max-w-6xl h-[92vh] sm:h-[86vh]"
     >
-      <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] -mx-4 sm:-mx-5 -my-4 sm:-my-5 bg-[#FCF6EA] overflow-hidden">
+      <div className="h-full grid grid-cols-1 lg:grid-cols-[1fr_2px_1fr] -mx-4 sm:-mx-5 -my-4 sm:-my-5 bg-secondary overflow-hidden">
         <div
           ref={leftRef}
-          className="relative overflow-y-auto overscroll-contain bg-[#FCF6EA]/40"
+          className="relative overflow-y-auto overscroll-contain bg-secondary/40"
           style={{ scrollbarGutter: 'stable', height: '100%' }}
         >
           <div className="p-4 sm:p-8 pb-16">
@@ -96,7 +96,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         <div className="hidden lg:block bg-gradient-to-b from-[#E4D3AC]/60 to-[#E4D3AC]/20" aria-hidden="true"></div>
         <div
           ref={rightRef}
-          className="relative overflow-y-auto overscroll-contain bg-[#FFFDF7]"
+          className="relative overflow-y-auto overscroll-contain bg-card"
           style={{ scrollbarGutter: 'stable', height: '100%' }}
           dir="rtl" lang="ar"
         >
@@ -105,6 +105,6 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
-    </Dialog>
+    </Modal>
   );
 };

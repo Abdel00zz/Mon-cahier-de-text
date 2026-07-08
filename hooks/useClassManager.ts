@@ -3,6 +3,7 @@ import { useImmer } from 'use-immer';
 import { ClassInfo } from '../types';
 import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, subscribe, touchClassSyncMeta } from '../utils/syncBus';
+import { normalizeOfficialClassName } from '../constants';
 
 const STORAGE_KEY  = 'classManager_v1';
 const DATA_PREFIX  = 'classData_v1_';
@@ -45,8 +46,17 @@ export const useClassManager = () => {
                     if (!Array.isArray(stored)) {
                         throw new Error('Stored classes are not an array');
                     }
+                    const normalized = stored.map((classInfo: ClassInfo) => ({
+                        ...classInfo,
+                        name: normalizeOfficialClassName(classInfo.name),
+                    }));
+                    const changed = normalized.some((classInfo, index) => classInfo.name !== stored[index]?.name);
+                    if (changed) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+                        markClassesListDirty();
+                    }
                     if (!cancelled) {
-                        setClasses(stored);
+                        setClasses(normalized);
                         setIsLoading(false);
                         setReady(true);
                     }

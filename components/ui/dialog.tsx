@@ -1,128 +1,122 @@
-import React, { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
-import { X } from './icons';
+import * as React from "react"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { X } from "lucide-react"
 
-interface DialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: React.ReactNode;
-  description?: React.ReactNode;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
-  className?: string;
-}
+import { cn } from "@/lib/utils"
 
-const maxWidthMap = {
-  sm: 'sm:max-w-sm',
-  md: 'sm:max-w-md',
-  lg: 'sm:max-w-lg',
-  xl: 'sm:max-w-xl',
-  '2xl': 'sm:max-w-2xl',
-  '3xl': 'sm:max-w-3xl',
-  '4xl': 'sm:max-w-4xl',
-  '5xl': 'sm:max-w-5xl',
-};
+const Dialog = DialogPrimitive.Root
 
-export const Dialog: React.FC<DialogProps> = ({
-  isOpen,
-  onClose,
-  title,
-  description,
-  children,
-  footer,
-  maxWidth = 'md',
-  className,
-}) => {
-  const contentRef = useRef<HTMLDivElement>(null);
+const DialogTrigger = DialogPrimitive.Trigger
 
-  // Esc key behavior
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+const DialogPortal = DialogPrimitive.Portal
 
-  // Prevent background scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+const DialogClose = DialogPrimitive.Close
 
-  if (!isOpen) return null;
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+))
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 p-0 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-4"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay className="bg-slate-900/30 backdrop-blur-sm" />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        // Mobile-first : marge latérale préservée, hauteur bornée avec défilement
+        // interne, padding réduit — les longues modales restent utilisables au pouce.
+        "fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg max-h-[88dvh] overflow-y-auto overscroll-contain translate-x-[-50%] translate-y-[-50%] gap-4 sm:gap-5 border border-border/30 bg-card p-5 sm:p-7 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-[24px] sm:rounded-[28px]",
+        className
+      )}
+      {...props}
     >
-      <div
-        ref={contentRef}
-        className={cn(
-          // Bottom-sheet façon iOS : la feuille ne prend que la hauteur nécessaire (max 92vh), coins arrondis, poignée.
-          "bg-white rounded-t-3xl sm:rounded-2xl border border-border shadow-2xl w-full flex flex-col max-h-[92vh] sm:max-h-[88vh] animate-slide-in-up overflow-hidden",
-          maxWidthMap[maxWidth],
-          className
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Poignée iOS (mobile uniquement) */}
-        <div className="flex justify-center pt-2.5 pb-1 sm:hidden" aria-hidden="true">
-          <span className="h-1.5 w-10 rounded-full bg-slate-300" />
-        </div>
+      {children}
+      <DialogPrimitive.Close className="absolute right-5 top-5 rounded-full p-1.5 opacity-70 ring-offset-background transition-all hover:bg-secondary hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <X className="h-4.5 w-4.5" />
+        <span className="sr-only">Close</span>
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
+DialogContent.displayName = DialogPrimitive.Content.displayName
 
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-border flex items-start justify-between flex-shrink-0 bg-slate-50/50">
-          <div className="space-y-0.5 pr-4">
-            <h2 className="text-base font-semibold font-slab text-slate-900 leading-none">{title}</h2>
-            {description && (
-              <p className="text-xs text-slate-500 font-medium mt-1">{description}</p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-full w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-            aria-label="Fermer"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+const DialogHeader = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      className
+    )}
+    {...props}
+  />
+)
+DialogHeader.displayName = "DialogHeader"
 
-        {/* Content — au focus d'un champ (clavier virtuel mobile), on le garde visible */}
-        <div
-          className="p-4 sm:p-5 flex-grow overflow-y-auto overscroll-contain text-sm text-slate-700"
-          onFocusCapture={(e) => {
-            const target = e.target as HTMLElement;
-            if (target.matches('input, textarea, select, [contenteditable="true"]')) {
-              setTimeout(() => target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
-            }
-          }}
-        >
-          {children}
-        </div>
+const DialogFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      className
+    )}
+    {...props}
+  />
+)
+DialogFooter.displayName = "DialogFooter"
 
-        {/* Footer */}
-        {footer && (
-          <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-50 border-t border-border flex justify-end gap-2.5 flex-shrink-0">
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
-  );
-};
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+))
+DialogTitle.displayName = DialogPrimitive.Title.displayName
+
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+DialogDescription.displayName = DialogPrimitive.Description.displayName
+
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+}

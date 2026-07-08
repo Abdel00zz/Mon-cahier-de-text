@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog } from '../ui/dialog';
+import { Modal } from '../ui/modal';
 import { TriangleAlert, FileUp } from '../ui/icons';
 import { Button } from '../ui/button';
 
@@ -33,7 +33,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Importer une sauvegarde complète"
@@ -102,6 +102,6 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
           </div>
         )}
       </div>
-    </Dialog>
+    </Modal>
   );
 };

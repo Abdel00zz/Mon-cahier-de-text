@@ -119,9 +119,9 @@ export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
         '3AC',
     ],
     lycee: [
-        'TC Sciences',
-        'TC Lettres',
-        'TC Technologique',
+        'Tronc commun scientifique',
+        'Tronc commun lettres',
+        'Tronc commun technologique',
         '1BAC Sc. Expérimentales',
         '1BAC Sc. Mathématiques',
         '1BAC Lettres',
@@ -144,6 +144,23 @@ export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
         'ECS',
         'ECT',
     ],
+};
+
+const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
+    [/^(?:trc|tc\s*sciences?|tc\s*scientifique|tronc\s+commun\s+sciences?|tronc\s+commun\s+scientifique)\b/i, 'Tronc commun scientifique'],
+    [/^(?:tc\s*lettres?|tronc\s+commun\s+lettres?)\b/i, 'Tronc commun lettres'],
+    [/^(?:tc\s*technologique|tronc\s+commun\s+technologique)\b/i, 'Tronc commun technologique'],
+];
+
+export const normalizeOfficialClassName = (name: string): string => {
+    const trimmed = (name || '').trim().replace(/\s+/g, ' ');
+    for (const [pattern, replacement] of CLASS_LEVEL_RENAMES) {
+        const match = trimmed.match(pattern);
+        if (!match) continue;
+        const suffix = trimmed.slice(match[0].length).trim();
+        return suffix ? `${replacement} ${suffix}` : replacement;
+    }
+    return trimmed;
 };
 
 // Matières enseignées (proposées à l'inscription et à la création de classe)
