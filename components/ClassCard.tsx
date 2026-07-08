@@ -77,14 +77,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                 style={{ backgroundColor: accent }}
             />
 
-            <CardContent className="relative flex min-h-[140px] flex-col justify-between p-4 sm:p-4.5">
-                <div className="flex items-start justify-between gap-3">
-                    <h3
-                        className={`min-w-0 pr-2 text-xl sm:text-2xl font-extrabold text-[#2B241D] font-display tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors duration-300 ${isArabic ? 'font-ar text-2xl' : ''}`}
-                    >
-                        {formatSuperscript(classInfo.name)}
-                    </h3>
-                    <div className="flex items-center gap-1 z-10">
+            <CardContent className="relative flex min-h-[140px] flex-col p-4 sm:p-4.5">
+                    <div className="absolute right-3 top-3 z-10 flex items-center gap-1">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -106,13 +100,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
-                </div>
 
                 {/* Body Content */}
-                <div className="my-2 flex min-h-[34px] flex-col justify-center">
+                <div className="flex flex-1 flex-col items-center justify-center px-8 py-4 text-center">
+                    <h3
+                        className={`max-w-full text-[1.06rem] sm:text-[1.28rem] font-extrabold text-[#2B241D] font-display tracking-tight leading-tight group-hover:text-[var(--accent)] transition-colors duration-300 ${isArabic ? 'font-ar text-[1.28rem]' : ''}`}
+                    >
+                        {formatSuperscript(classInfo.name)}
+                    </h3>
                     {nextSessionLabel && (
                         <div
-                            className="inline-flex items-center gap-1.5 rounded-full bg-[#FCF6EA]/60 px-3 py-0.5 text-[11px] font-extrabold text-[#69604F] border border-[#E4D3AC]/25 w-max shadow-sm"
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#FCF6EA]/60 px-3 py-0.5 text-[11px] font-extrabold text-[#69604F] border border-[#E4D3AC]/25 shadow-sm"
                         >
                             <Bell className="h-3 w-3" style={{ color: accent }} />
                             <span>Séance : {nextSessionLabel}</span>
@@ -121,7 +119,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                 </div>
 
                 {/* Footer: Date modified & Ouvrir CTA */}
-                <div className="mt-2.5 flex items-center justify-between border-t border-[#E4D3AC]/20 pt-3">
+                <div className="flex items-center justify-center border-t border-[#E4D3AC]/20 pt-3">
                     <span className="flex items-center gap-1.5 text-[11px] text-[#69604F]/70 font-semibold font-sans">
                         <Clock className="h-3.5 w-3.5 text-[#A79C87]/80" />
                         {formatDate(lastModified)}
