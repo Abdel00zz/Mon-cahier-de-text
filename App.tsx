@@ -38,10 +38,10 @@ const mathJaxConfig = {
       dif: "\\mathrm{d}",
     },
   },
-  chtml: {
-    // évite les débordements des longues formules sur mobile
-    displayOverflow: "linebreak",
-  },
+  // NB : pas d'option `chtml.displayOverflow` — elle n'existe qu'en MathJax 4,
+  // or better-react-mathjax charge MathJax 3.2.2 (elle lèverait « Invalid
+  // option "displayOverflow" » et casserait le typeset). Le débordement des
+  // longues formules sur mobile est géré en CSS (conteneurs overflow-x:auto).
 };
 
 type View = 'dashboard' | 'editor' | 'settings';
