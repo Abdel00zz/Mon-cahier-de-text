@@ -70,7 +70,7 @@ const createSelectionState = (indices?: Indices): SelectionState => {
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack }) => {
   const { state: lessonsData, setState, undo, redo, canUndo, canRedo, operationType } = useHistoryState<LessonsData>([]);
-  const { config, isLoading: isConfigLoading } = useConfigManager();
+  const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
@@ -762,11 +762,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     return <EditorSkeleton />;
   }
 
-  const classAccent = classInfo.color || '#B8935A';
-
   return (
-    <div className="relative p-1.5 sm:p-5 bg-background safe-bottom print:bg-card print:p-0" data-editor-root style={{ backgroundImage: `radial-gradient(circle at top, ${classAccent}18, transparent 34rem)` }}>
-      <div className="container mx-auto max-w-7xl bg-card rounded-[24px] border shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none" style={{ borderColor: `${classAccent}40` }}>
+    <div className="relative p-1.5 sm:p-4 bg-background safe-bottom print:bg-card print:p-0" data-editor-root>
+      <div className="container mx-auto max-w-7xl rounded-[22px] border border-border/70 bg-card/95 p-2 shadow-sm sm:p-5 min-h-[calc(100vh-2rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -774,7 +772,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          <div className="sticky bottom-0 sm:static z-30 bg-card/70 sm:bg-transparent backdrop-blur supports-[backdrop-filter]:backdrop-blur print:hidden">
+          <div className="z-30 print:hidden">
             <Toolbar
               onUndo={undo}
               onRedo={redo}
@@ -815,9 +813,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
               </button>
             </div>
           )}
-          {/* §G tableau serré : annule le padding horizontal de la carte parente
-              (p-2 sm:p-6) pour que la table coure de bord à bord */}
-          <main className="-mx-2 flex-1 pb-24 sm:-mx-6 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
+          {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
+          <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               lessonsData={filteredData}
               
@@ -888,6 +885,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         totalDates={printStats.totalDates}
         newDates={printStats.newDates}
         lastPrintedAt={printStats.lastPrintedAt}
+        config={config}
+        onConfigChange={updateConfig}
         onPrint={handleExecutePrint}
       />
       <HistoryModal
@@ -902,6 +901,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         handleImport={handleImport}
         lessonsData={lessonsData}
         handleUpdateLessons={handleUpdateLessons}
+        config={config}
+        onConfigChange={updateConfig}
         handleAssignDates={handleAssignDates}
         selectedCount={selectedCount}
         selectedItemsData={selectedItemsData}

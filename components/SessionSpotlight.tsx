@@ -27,8 +27,6 @@ const PHASE_LABEL: Record<SessionAssistantSuggestion['phase'], string> = {
  * l'éditeur, même mécanisme que les notifications de fin de séance).
  */
 export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, onOpenClass }) => {
-    const accent = suggestion.classInfo.color || 'hsl(var(--primary))';
-    const accentInk = `color-mix(in srgb, ${accent} 72%, hsl(var(--foreground)))`;
     const period = `${formatHourLabel(suggestion.startMin)}–${formatHourLabel(suggestion.endMin)}`;
     const target = suggestion.target;
 
@@ -43,33 +41,21 @@ export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, 
             <button
                 type="button"
                 onClick={handleOpen}
-                className="group relative block w-full overflow-hidden rounded-[22px] border-2 p-4 text-left shadow-md transition-all duration-300 active:scale-[0.985] animate-slide-in-up"
-                style={{
-                    borderColor: `color-mix(in srgb, ${accent} 70%, hsl(var(--border)))`,
-                    backgroundColor: `color-mix(in srgb, ${accent} 8%, hsl(var(--card)))`,
-                    boxShadow: `0 6px 22px color-mix(in srgb, ${accent} 22%, transparent)`,
-                }}
+                className="group relative block w-full overflow-hidden rounded-[22px] border border-primary/20 bg-card p-4 text-left shadow-md shadow-foreground/5 transition-all duration-300 hover:border-primary/35 hover:bg-muted/30 active:scale-[0.985] animate-slide-in-up"
                 aria-label={`${PHASE_LABEL[suggestion.phase]} : ouvrir le cahier de ${suggestion.classInfo.name}`}
             >
                 {/* halo vivant */}
-                <div
-                    className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full blur-[46px] opacity-20"
-                    style={{ backgroundColor: accent }}
-                />
+                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-[46px] opacity-70" />
 
                 {/* Phase + horaire */}
                 <div className="relative flex items-center gap-2">
                     <span
-                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold uppercase tracking-wide"
-                        style={{
-                            backgroundColor: `color-mix(in srgb, ${accent} 16%, hsl(var(--card)))`,
-                            color: accentInk,
-                        }}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10.5px] font-extrabold uppercase text-primary"
                     >
                         {suggestion.phase === 'active' && (
                             <span className="relative flex h-2 w-2">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ backgroundColor: accent }} />
-                                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                             </span>
                         )}
                         {PHASE_LABEL[suggestion.phase]}
@@ -78,10 +64,7 @@ export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, 
                 </div>
 
                 {/* Classe */}
-                <h3
-                    className="relative mt-2 font-display text-lg font-extrabold tracking-tight leading-tight"
-                    style={{ color: `color-mix(in srgb, ${accent} 18%, hsl(var(--foreground)))` }}
-                >
+                <h3 className="relative mt-2 font-display text-lg font-extrabold leading-tight text-foreground">
                     {suggestion.classInfo.name}
                 </h3>
 
@@ -89,7 +72,7 @@ export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, 
                 <div className="relative mt-1.5 flex items-start gap-1.5 text-xs font-semibold text-muted-foreground">
                     {target?.status === 'missing-date' && (
                         <>
-                            <Pencil className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: accent }} />
+                            <Pencil className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                             <span className="min-w-0">
                                 À dater :{' '}
                                 <span className="font-extrabold text-foreground">
@@ -118,13 +101,7 @@ export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, 
                 </div>
 
                 {/* Appel à l'action */}
-                <div
-                    className="relative mt-3 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-extrabold transition-all duration-300 group-hover:gap-2"
-                    style={{
-                        backgroundColor: `color-mix(in srgb, ${accent} 88%, hsl(var(--foreground)))`,
-                        color: 'hsl(var(--primary-foreground))',
-                    }}
-                >
+                <div className="relative mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11.5px] font-extrabold text-primary-foreground transition-all duration-300 group-hover:gap-2">
                     Ouvrir le cahier
                     <ArrowRight className="h-3.5 w-3.5" />
                 </div>

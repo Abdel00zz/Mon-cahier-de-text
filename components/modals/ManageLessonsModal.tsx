@@ -1,19 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TopLevelItem } from '../../types';
+import { AppConfig, TopLevelItem } from '../../types';
 import { Modal } from '../ui/modal';
 import { Check, TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderOpen } from '../ui/icons';
 import { Button } from '../ui/button';
 import { MathText } from '../ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '../../constants';
+import { DescriptionVisibilityControl } from '../config/DescriptionVisibilityControl';
 
 interface ManageLessonsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (lessons: TopLevelItem[]) => void;
   lessons: TopLevelItem[];
+  config: AppConfig;
+  onConfigChange: (patch: Partial<AppConfig>) => void;
 }
 
-export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons }) => {
+export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons, config, onConfigChange }) => {
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
@@ -98,6 +101,14 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
       }
     >
       <div className="space-y-4">
+        <DescriptionVisibilityControl
+          config={config}
+          context="screen"
+          onChange={onConfigChange}
+          title="Affichage à l'écran"
+          compact
+        />
+
         {localLessons.length > 0 ? (
           <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
             {localLessons.map((item, index) => {

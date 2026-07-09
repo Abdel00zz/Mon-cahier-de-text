@@ -99,13 +99,13 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-none animate-fade-in">
       <span
-        className={`font-display text-xl font-bold tabular-nums tracking-tight transition-colors ${
+        className={`font-display text-xl font-bold tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
         }`}
       >
         {parsed.day}
       </span>
-      <span className={`mt-1 text-[9px] font-bold uppercase tracking-[0.18em] font-mono ${hasWarning ? 'text-destructive' : 'text-muted-foreground/60'}`}>
+      <span className={`mt-1 text-[9px] font-bold uppercase font-sans ${hasWarning ? 'text-destructive' : 'text-muted-foreground/60'}`}>
         {parsed.month} {parsed.year.slice(2)}
       </span>
       {!hasWarning && parsed.isToday && <span className="mt-1 h-1 w-1 rounded-full bg-primary" aria-hidden />}
@@ -120,7 +120,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
   const bgClass = isSelected 
     ? 'bg-primary/[0.08]' 
     : hasAssignedDate
-      ? 'bg-primary/20/45'
+      ? 'bg-success/10'
       : 'bg-card';
 
   if (isMerged) {
@@ -158,7 +158,7 @@ const RemarkCell: FC<{
   const bgClass = isSelected 
     ? 'bg-primary/[0.04]' 
     : hasAssignedDate 
-      ? 'bg-primary/10/35'
+      ? 'bg-success/5'
       : 'bg-card';
 
   const borderClass = '';
@@ -267,8 +267,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? 'border-t border-primary/25' : '',
-    isDatedGroupEnd ? 'border-b-2 border-primary/40' : '',
+    isDatedGroupStart ? 'border-t border-success/25' : '',
+    isDatedGroupEnd ? 'border-b-2 border-success/35' : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -281,9 +281,9 @@ const TableRowComponent: FC<TableRowProps> = ({
    * entière (date + contenu + remarque), pas à une seule cellule —
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
-  const datedWash = hasAssignedDate ? 'bg-primary/10/60' : 'bg-card';
+  const datedWash = hasAssignedDate ? 'bg-success/5' : 'bg-card';
   const rowWash = isSelected ? 'bg-primary/[0.06]' : datedWash;
-  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-primary/15/70' : 'hover:bg-secondary/15';
+  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-success/10' : 'hover:bg-muted/60';
   // §G tableau serré : AUCUN padding de cadre — les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
@@ -293,24 +293,23 @@ const TableRowComponent: FC<TableRowProps> = ({
   const dividerClass = isSelected
     ? 'border-r border-primary/25'
     : hasAssignedDate
-      ? 'border-r border-border/70'
+      ? 'border-r border-success/25'
       : 'border-r border-border/50';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
       ? 'md:border-r md:border-primary/25'
       : hasAssignedDate
-        ? 'md:border-r md:border-border/70'
+        ? 'md:border-r md:border-success/25'
         : 'md:border-r md:border-border/50';
 
   /* Rail latéral : primaire quand sélectionné (prioritaire), doré si daté. */
-  const goldRail = isSelected ? (
+  const stateRail = isSelected ? (
     <span aria-hidden className="absolute left-0 top-0 h-full w-[3px] bg-primary" />
   ) : hasAssignedDate ? (
     <span
       aria-hidden
-      className="absolute left-0 top-0 h-full w-[2.5px]"
-      style={{ backgroundColor: '#B8935A', opacity: 0.55 }}
+      className="absolute left-0 top-0 h-full w-[2.5px] bg-success/75"
     />
   ) : null;
 
@@ -322,7 +321,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} hover:brightness-98 transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} hover:bg-muted/60 transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -335,7 +334,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         }}
       >
         <div className="min-w-0">
-          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold tracking-tight ${cfg?.color ?? 'text-foreground'}`}>
+          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold ${cfg?.color ?? 'text-foreground'}`}>
             {cfg?.icon && <cfg.icon className="h-3.5 w-3.5 shrink-0" />}
             <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} />
           </div>
@@ -370,7 +369,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
       >
-        {goldRail}
+        {stateRail}
         <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </div>
@@ -382,7 +381,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : 'hover:bg-secondary/20'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;
@@ -435,7 +434,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       onDoubleClickCapture={handleContentDoubleClickCapture}
       onDoubleClick={event => event.stopPropagation()}
     >
-      {goldRail}
+      {stateRail}
       <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
         <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
       </div>

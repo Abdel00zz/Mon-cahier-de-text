@@ -65,6 +65,7 @@ export {
   Home,
   Sigma,
   Eye,
+  EyeOff,
   Database,
   User,
   Loader2,

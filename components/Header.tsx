@@ -34,7 +34,7 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
       suppressContentEditableWarning
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`inline-block px-2 py-1 -mx-2 -my-1 rounded-lg hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-destructive/30 ${isArabic ? 'font-ar' : 'font-display'}`}
+      className={`inline-block px-2 py-0.5 -mx-2 -my-0.5 rounded-xl bg-gradient-to-b from-destructive via-[#c9343f] to-[#8f1f2f] bg-clip-text text-transparent drop-shadow-[0_1px_0_rgba(255,255,255,0.7)] hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-destructive/25 ${isArabic ? 'font-ar' : 'font-display'}`}
     >
       {value}
     </span>
@@ -42,27 +42,21 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
 };
 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
-  // même accent que la carte du tableau de bord : la couleur officielle de la classe
-  const accent = classInfo.color || '#B8935A';
+  // Titre fixe en rouge moderne, independant de la couleur de classe.
   return (
-    <div className="flex items-center justify-center relative mb-5 pb-4 group">
+    <div className="relative mb-3 flex items-center justify-center pb-2 group">
       <div className="absolute right-0 top-0">
         <SyncStatusBadge />
       </div>
-      <header className="text-center">
+      <header className="relative w-full overflow-hidden text-center">
+        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-16 w-56 -translate-x-1/2 rounded-full bg-destructive/5 blur-2xl" />
         {establishmentName && (
-          <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase mb-1.5 font-mono">{establishmentName}</p>
+          <p className="relative mb-1 text-[11px] font-semibold uppercase text-muted-foreground/75 font-sans">{establishmentName}</p>
         )}
-        <h1 className="flex items-center justify-center gap-2 text-xl sm:text-2xl font-bold text-foreground font-display">
+        <h1 className="relative mx-auto flex max-w-4xl items-center justify-center text-center text-[1.75rem] font-black leading-tight sm:text-[2.2rem] font-display">
           <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
         </h1>
-        {/* filet d'accent : rappel discret de la couleur de la classe */}
-        <div
-          aria-hidden
-          className="mx-auto mt-1.5 h-[2px] w-16 rounded-full"
-          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
-        />
-        <p className="text-sm text-muted-foreground/60 mt-1 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <p className="relative mt-0.5 text-xs text-muted-foreground/55 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           Cliquez sur le nom pour modifier
         </p>
       </header>

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { LessonsData, Indices } from '../types';
+import { AppConfig, LessonsData, Indices } from '../types';
 
 const ImportModal = lazy(() => import('./modals/ImportModal').then(module => ({ default: module.ImportModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
@@ -15,6 +15,8 @@ interface EditorModalsProps {
   handleImport: (data: any, mode: 'replace' | 'append') => void;
   lessonsData: LessonsData;
   handleUpdateLessons: (newLessons: LessonsData) => void;
+  config: AppConfig;
+  onConfigChange: (patch: Partial<AppConfig>) => void;
   handleAssignDates: (date: string) => void;
   selectedCount: number;
   selectedItemsData: any[];
@@ -41,6 +43,8 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   handleImport,
   lessonsData,
   handleUpdateLessons,
+  config,
+  onConfigChange,
   handleAssignDates,
   selectedCount,
   selectedItemsData,
@@ -60,7 +64,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
       modal = <ImportModal isOpen onClose={handleModalClose} onImport={handleImport} />;
       break;
     case 'manageLessons':
-      modal = <ManageLessonsModal isOpen onClose={handleModalClose} lessons={lessonsData} onUpdate={handleUpdateLessons} />;
+      modal = <ManageLessonsModal isOpen onClose={handleModalClose} lessons={lessonsData} onUpdate={handleUpdateLessons} config={config} onConfigChange={onConfigChange} />;
       break;
     case 'guide':
       modal = <GuideModal isOpen onClose={handleModalClose} />;

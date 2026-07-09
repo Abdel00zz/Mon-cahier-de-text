@@ -173,7 +173,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const content = (
-        <div className="prose prose-sm max-w-none text-sm text-muted-foreground space-y-1">
+        <div className="max-w-none space-y-1 text-sm text-muted-foreground">
           {/* Titre */}
           <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-foreground p-0" placeholder="Titre..." highlight={highlight} />
 
@@ -207,7 +207,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className="flex flex-col items-start gap-1 pl-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:pl-8">
           <Badge
             variant="outline"
-            className={`flex-shrink-0 select-none rounded-lg text-[10px] font-bold tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`flex-shrink-0 select-none rounded-lg text-[10px] font-bold ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={BADGE_TOOLTIP_MAP[normalizedType] || normalizedType}
           >
             {badgeText} {item.number || ''}

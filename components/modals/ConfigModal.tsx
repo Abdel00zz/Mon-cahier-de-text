@@ -40,7 +40,6 @@ interface ConfigModalProps {
 type ConfigTab = 'affichage' | 'emploi' | 'notifications' | 'donnees' | 'compte';
 
 const TABS: { id: ConfigTab; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'affichage', label: 'Affichage', description: 'Visibilité des types sur écran et PDF', icon: Eye },
   { id: 'emploi', label: 'Emploi du temps', description: 'Compositions, heures et devoirs', icon: CalendarRange },
   { id: 'notifications', label: 'Notifications', description: 'Alertes de retard et absences', icon: Bell },
   { id: 'donnees', label: 'Données', description: 'Sauvegarde et restauration', icon: Database },
@@ -59,7 +58,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   asPage = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
-  const [activeTab, setActiveTab] = useState<ConfigTab>('affichage');
+  const [activeTab, setActiveTab] = useState<ConfigTab>('emploi');
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

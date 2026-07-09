@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { AppConfig } from '../../types';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Printer, CalendarCheck, FileText } from '../ui/icons';
 import { formatDateDDMMYYYY } from '../../utils/dataUtils';
+import { DescriptionVisibilityControl } from '../config/DescriptionVisibilityControl';
 
 export type PrintMode = 'new' | 'all';
 export type PrintTextSize = 's' | 'm' | 'l';
@@ -24,6 +26,8 @@ interface PrintModalProps {
   newDates: string[];
   /** dernière impression enregistrée (ISO) ou null */
   lastPrintedAt: string | null;
+  config: AppConfig;
+  onConfigChange: (patch: Partial<AppConfig>) => void;
   onPrint: (mode: PrintMode, options: PrintOptions) => void;
 }
 
@@ -37,6 +41,8 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   totalDates,
   newDates,
   lastPrintedAt,
+  config,
+  onConfigChange,
   onPrint,
 }) => {
   const printedCount = totalDates - newDates.length;
@@ -222,6 +228,14 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             « Compact » économise le papier ; « Aéré » facilite les annotations manuscrites.
           </p>
         </div>
+
+        <DescriptionVisibilityControl
+          config={config}
+          context="print"
+          onChange={onConfigChange}
+          title="Descriptions dans le PDF"
+          compact
+        />
 
         {/* Options d'impression */}
         <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-secondary/50 p-3">

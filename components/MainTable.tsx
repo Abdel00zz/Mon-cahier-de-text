@@ -13,8 +13,8 @@ import { logger } from '../utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from './ui/virtual-list';
 import { BookOpen, Plus } from './ui/icons';
 
-/* Accent partagé avec TableRow / SeparatorRow */
-const GOLD = '#B8935A';
+/* Accent sobre pour les interactions du tableau. */
+const TABLE_ACCENT = 'hsl(var(--primary))';
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
 
@@ -31,7 +31,7 @@ const LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) =>
 
 const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
 
-const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = GOLD, getDateWarnings }) => {
+const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, getDateWarnings }) => {
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
     const titleRef = useRef<HTMLInputElement>(null);
     const rootRef = useRef<HTMLFormElement>(null);
@@ -92,7 +92,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
             <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
 
             <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border/40 md:pr-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-card text-foreground focus:ring-primary/30 font-mono" />
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-background text-foreground focus:ring-primary/30 font-mono" />
                 {formData.date && (
                     <button
                         type="button"
@@ -113,17 +113,17 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                         {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
-                    <div className="space-y-0.5 rounded-lg border border-border bg-secondary px-2.5 py-1.5" role="alert">
+                    <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="alert">
                         {dateWarnings.map((warning, i) => (
-                            <p key={i} className="text-[11px] font-semibold leading-snug text-primary">⚠ {warning.message}</p>
+                            <p key={i} className="text-[11px] font-semibold leading-snug text-warning">⚠ {warning.message}</p>
                         ))}
                     </div>
                 )}
@@ -142,7 +142,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
+                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
             </div>
         </form>
     );
@@ -190,21 +190,21 @@ const VIRTUAL_OVERSCAN = 16;
 const TableHeader: React.FC = React.memo(() => (
   /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
-     nettement démarqué : fond plein + double filet (or + trait). */
-  <div className="sticky top-0 z-10 hidden border-b border-border bg-secondary backdrop-blur-md print:static md:block">
+     nettement demarque : fond neutre + traits reguliers. */
+  <div className="sticky top-0 z-10 hidden border-b border-border/80 bg-muted/80 backdrop-blur-md print:static md:block">
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-border p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
+      <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
         Date
       </div>
-      <div className="flex items-center justify-center border-r border-border p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
+      <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
         Contenu
       </div>
-      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground font-mono">
+      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
         Remarque
       </div>
     </div>
     {/* filet signature sous l'en-tête — pleine largeur, bord à bord */}
-    <div aria-hidden className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, ${GOLD}66, ${GOLD}AA, ${GOLD}66)` }} />
+    <div aria-hidden className="h-px w-full bg-border/80" />
   </div>
 ));
 TableHeader.displayName = 'TableHeader';
@@ -294,7 +294,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
     const sharedRemark = getMergeableRemark(first);
-    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-border/70';
+    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-success/25';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -303,17 +303,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-t border-primary/25 border-b-2 border-primary/40 bg-primary/10/60 transition-colors duration-150`,
+                `group relative grid ${TABLE_GRID_CLASS} border-t border-success/25 border-b-2 border-success/35 bg-success/10 transition-colors duration-150`,
                 groupIsSelected ? 'bg-primary/[0.06]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
             <span
                 aria-hidden
-                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-primary/60'}`}
+                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-success/75'}`}
             />
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-primary/20/45`}>
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-success/10`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -328,7 +328,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             indices={item.indices}
                             elementType={item.elementType}
                             layout="content-only"
-                            lineClassOverride={index < items.length - 1 ? 'border-b border-border/35' : ''}
+                            lineClassOverride={index < items.length - 1 ? 'border-b border-success/20' : ''}
                             onCellUpdate={onCellUpdate}
                             onToggleSelect={onToggleSelect}
                             onDoubleClickEdit={onDoubleClickEdit}
@@ -343,7 +343,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className="hidden min-w-0 self-stretch bg-primary/10/35 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+            <div className="hidden min-w-0 self-stretch bg-success/5 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -357,7 +357,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map((item, index) => (
-                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-border/35' : ''}`}>
+                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-success/20' : ''}`}>
                                 <EditableCell
                                     value={getMergeableRemark(item)}
                                     onSave={value => onCellUpdate(item.indices, 'remark', value)}
@@ -378,12 +378,8 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    /* carte arrondie : compense le conteneur plein-bord (§G) du tableau */
-    <div className="mx-2 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center shadow-sm sm:mx-6">
-        <div
-            className="flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ backgroundColor: `${GOLD}1A`, color: GOLD }}
-        >
+    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-2xl border border-t-0 border-dashed border-border bg-background px-6 py-16 text-center shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <BookOpen className="h-5 w-5" />
         </div>
         <h3 className="text-base font-bold text-foreground font-display">Le cahier de textes est vide</h3>
@@ -578,10 +574,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }
 
   return (
-    /* §G : tableau dense bord à bord — pas d'arrondi ni de bordure latérale,
-       la table épouse les bords de la carte parente */
+    /* Bloc tableau : la barre d'outils porte les coins hauts, la table les coins bas. */
     <Card
-      className="overflow-hidden rounded-none border border-border bg-card/95 shadow-xl shadow-foreground/5"
+      className="overflow-hidden rounded-t-none rounded-b-2xl border border-t-0 border-border/80 bg-card shadow-sm"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

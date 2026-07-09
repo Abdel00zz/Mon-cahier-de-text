@@ -31,7 +31,7 @@ export const AppBootSkeleton: React.FC = () => (
 export const DashboardSkeleton: React.FC = () => (
   <div className="min-h-screen bg-background p-3 pb-8 sm:p-8">
     <div className="mx-auto max-w-5xl px-3 sm:px-4">
-      <div className="mb-6 flex items-center justify-between border-b border-border/50 pb-5">
+      <div className="mb-6 flex items-center justify-between pb-3">
         <div className="flex items-center gap-3">
           <Skeleton className="h-11 w-11 rounded-full" />
           <div>

@@ -132,10 +132,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 onChange={e => assign(day.value, hour.index, e.target.value || null)}
                                                 className={`h-11 w-full cursor-pointer border px-1.5 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${rounding} ${
                                                     classInfo
-                                                        ? `border-transparent text-white shadow-sm shadow-foreground/10 ${merged ? '' : 'hover:brightness-105'}`
+                                                        ? `border-primary/20 bg-primary/10 text-primary shadow-sm shadow-foreground/5 ${merged ? '' : 'hover:bg-primary/15'}`
                                                         : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
-                                                style={classInfo ? { backgroundColor: classInfo.color } : undefined}
                                                 aria-label={`${day.label} ${hour.label}${merged ? ` (séance continue de ${run.hours} h)` : ''}`}
                                             >
                                                 <option value="">—</option>
@@ -146,7 +145,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 ))}
                                             </select>
                                             {merged && run.isStart && (
-                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-background/25 px-1.5 text-[9px] font-bold leading-4 text-white shadow-sm font-mono">
+                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-background/70 px-1.5 text-[9px] font-bold leading-4 text-primary shadow-sm font-mono">
                                                     {run.hours} h
                                                 </span>
                                             )}
@@ -169,7 +168,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             key={c.id}
                             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm font-sans"
                         >
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
+                            <span className="h-2 w-2 rounded-full bg-primary/45" />
                             {c.name}
                             <span className="text-muted-foreground/60 font-mono">
                                 · {sessions} séance{sessions > 1 ? 's' : ''}

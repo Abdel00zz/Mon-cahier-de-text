@@ -142,7 +142,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
             return {
                 id: classInfo.id,
                 name: classInfo.name,
-                color: classInfo.color || 'hsl(var(--primary))',
                 planned: s.plannedCount,
                 total: s.totalItems,
                 completion: s.totalItems === 0 ? 0 : Math.round((s.plannedCount / s.totalItems) * 100),
@@ -284,8 +283,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                         </div>
                                         <div className="h-2 overflow-hidden rounded-full bg-secondary">
                                             <div
-                                                className="h-full rounded-full transition-[width] duration-700 ease-out"
-                                                style={{ width: `${p.completion}%`, backgroundColor: p.color }}
+                                                className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+                                                style={{ width: `${p.completion}%` }}
                                             />
                                         </div>
                                     </div>

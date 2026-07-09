@@ -107,7 +107,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery, isSearchVisible]);
   
   return (
-    <div className="sticky top-2 z-[50] mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card/90 p-2 shadow-lg shadow-foreground/5 backdrop-blur print:hidden">
+    <div className="sticky top-2 z-[50] mb-0 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl rounded-b-none border border-border/80 bg-card/95 p-2 shadow-sm backdrop-blur print:hidden">
       <div className="flex min-w-0 items-center gap-2">
         {/* Journal compact : dernière opération, clic → historique détaillé */}
         {lastModifiedLabel && (
@@ -212,7 +212,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 z-[70]">
-            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
               Actions rapides
             </DropdownMenuLabel>
             
@@ -243,7 +243,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenManageLessons} className="flex items-center gap-3 py-2.5 cursor-pointer">
               <ListChecks className="h-4 w-4 text-muted-foreground" />
-              <span>Gérer mes leçons</span>
+              <span>Gérer les chapitres & devoirs</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenAnalyse} className="flex items-center gap-3 py-2.5 cursor-pointer">
               <PieChart className="h-4 w-4 text-muted-foreground" />
@@ -251,7 +251,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
               Sortie
             </DropdownMenuLabel>
             <DropdownMenuItem onClick={() => (onPrint ? onPrint() : printDocument('cahier-de-textes'))} className="flex items-center gap-3 py-2.5 cursor-pointer">

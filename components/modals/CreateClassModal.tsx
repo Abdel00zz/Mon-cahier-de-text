@@ -28,19 +28,6 @@ interface CreateClassModalProps {
 
 const CYCLE_LABELS: Record<Cycle, string> = { college: 'Collège', lycee: 'Lycée', prepa: 'Classe préparatoire' };
 
-const PREMIUM_COLORS = [
-  '#C96442', // Terracotta (par défaut)
-  '#E17649', // Clay
-  '#B8935A', // Gold / Ochre
-  '#2E7D32', // Forest Green
-  '#0D9488', // Teal
-  '#1565C0', // Cobalt Blue
-  '#6366f1', // Indigo
-  '#8b5cf6', // Deep Purple
-  '#ec4899', // Premium Pink
-  '#455A64', // Elegant Slate
-];
-
 export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   isOpen,
   onClose,
@@ -59,7 +46,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [customMode, setCustomMode] = useState(false);
   const [customLevel, setCustomLevel] = useState('');
   const [customSubject, setCustomSubject] = useState('');
-  const [customColor, setCustomColor] = useState('#C96442');
 
   /*
    * Héritage du profil d'inscription (modifiable dans les Paramètres) :
@@ -102,7 +88,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         }
         setSubject(editingClass.subject || '');
         setCustomSubject(editingClass.subject || '');
-        setCustomColor(editingClass.color || '#C96442');
       } else {
         // cycle initial : celui du tableau de bord s'il appartient au profil,
         // sinon le premier cycle du prof
@@ -118,7 +103,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         setCustomMode(false);
         setCustomLevel('');
         setCustomSubject('');
-        setCustomColor('#C96442');
       }
     }
   }, [isOpen, defaultCycle, teacherSubjects, editingClass]);
@@ -137,11 +121,11 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           name: composedName,
           subject: effectiveSubject,
           cycle,
-          color: customColor,
+          color: '',
         });
         onClose();
       } else {
-        onCreate({ name: composedName, subject: effectiveSubject, cycle, color: customColor });
+        onCreate({ name: composedName, subject: effectiveSubject, cycle });
       }
     }
   };
@@ -151,7 +135,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={editingClass ? "Configurer la classe" : "Créer une nouvelle classe"}
-      description={editingClass ? "Modifiez les paramètres, la matière ou la couleur de la classe" : "Choisissez le niveau et la matière — le nom est composé automatiquement"}
+      description={editingClass ? "Modifiez les paramètres et la matière de la classe" : "Choisissez le niveau et la matière — le nom est composé automatiquement"}
       maxWidth="md"
       footer={
         <>
@@ -272,29 +256,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           </div>
         )}
 
-        {/* Personnalisation de la couleur de la carte et du fond */}
-        <div className="space-y-1.5">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Couleur de la classe
-          </label>
-          <div className="flex flex-wrap gap-2 py-1">
-            {PREMIUM_COLORS.map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCustomColor(c)}
-                className={`h-7 w-7 rounded-full border transition-all relative ${customColor === c ? 'scale-110 border-foreground/50 shadow-md ring-2 ring-border ring-offset-1' : 'border-border hover:scale-105'}`}
-                style={{ backgroundColor: c }}
-                aria-label={`Couleur ${c}`}
-              >
-                {customColor === c && (
-                  <span className="absolute inset-0 m-auto h-1.5 w-1.5 rounded-full bg-card shadow-sm" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Aperçu du nom composé */}
         {effectiveLevel && (
           <div className="rounded-xl border border-dashed border-border bg-secondary/50 px-3 py-2 text-xs flex justify-between items-center">
@@ -303,8 +264,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               <span className="font-bold text-foreground/80">{composedName}</span>
               {effectiveSubject && <span className="text-muted-foreground/60"> · {effectiveSubject}</span>}
             </div>
-            {/* Visual indicator tag */}
-            <span className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0" style={{ backgroundColor: customColor }} />
+            <span className="h-3 w-3 rounded-full border border-primary/30 bg-primary/15 shadow-sm shrink-0" />
           </div>
         )}
 

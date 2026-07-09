@@ -16,15 +16,6 @@ const getUserConfig = () => {
     } catch { return {}; }
 };
 
-const generateColor = () => {
-    const palette = [
-        '#3b82f6', '#06b6d4', '#0d9488', '#10b981',
-        '#84cc16', '#eab308', '#f59e0b', '#f97316',
-        '#ef4444', '#ec4899', '#8b5cf6', '#6366f1'
-    ];
-    return palette[Math.floor(Math.random() * palette.length)];
-};
-
 export const useClassManager = () => {
     const [classes, setClasses] = useImmer<ClassInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +40,12 @@ export const useClassManager = () => {
                     const normalized = stored.map((classInfo: ClassInfo) => ({
                         ...classInfo,
                         name: normalizeOfficialClassName(classInfo.name),
+                        color: '',
                     }));
-                    const changed = normalized.some((classInfo, index) => classInfo.name !== stored[index]?.name);
+                    const changed = normalized.some((classInfo, index) => (
+                        classInfo.name !== stored[index]?.name ||
+                        stored[index]?.color !== ''
+                    ));
                     if (changed) {
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
                         markClassesListDirty();
@@ -120,7 +115,7 @@ export const useClassManager = () => {
                 cycle:     details.cycle ?? 'college',
                 id:        crypto.randomUUID(),
                 createdAt: new Date().toISOString(),
-                color:     generateColor(),
+                color:     '',
             };
             setClasses(d => { d.push(newClass); });
             localStorage.setItem(`${DATA_PREFIX}${newClass.id}`, JSON.stringify([]));
