@@ -765,8 +765,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   const classAccent = classInfo.color || '#B8935A';
 
   return (
-    <div className="relative p-1.5 sm:p-5 bg-background safe-bottom print:bg-white print:p-0" data-editor-root style={{ backgroundImage: `radial-gradient(circle at top, ${classAccent}18, transparent 34rem)` }}>
-      <div className="container mx-auto max-w-7xl bg-card rounded-[24px] border shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-white print:p-0 print:shadow-none" style={{ borderColor: `${classAccent}40` }}>
+    <div className="relative p-1.5 sm:p-5 bg-background safe-bottom print:bg-card print:p-0" data-editor-root style={{ backgroundImage: `radial-gradient(circle at top, ${classAccent}18, transparent 34rem)` }}>
+      <div className="container mx-auto max-w-7xl bg-card rounded-[24px] border shadow-md p-2 sm:p-6 min-h-[calc(100vh-2.5rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none" style={{ borderColor: `${classAccent}40` }}>
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}

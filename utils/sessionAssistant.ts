@@ -140,8 +140,12 @@ const pickTarget = (lessons: LessonsData, todayISO: string): SessionAssistantTar
     };
 };
 
-const phaseFor = (block: SessionBlock, nowMin: number): { phase: SessionPhase; distance: number } | null => {
-    if (nowMin >= block.startMin - 5 && nowMin < block.startMin) {
+const phaseFor = (
+    block: SessionBlock,
+    nowMin: number,
+    upcomingWindowMin = 5
+): { phase: SessionPhase; distance: number } | null => {
+    if (nowMin >= block.startMin - upcomingWindowMin && nowMin < block.startMin) {
         return { phase: 'upcoming', distance: block.startMin - nowMin };
     }
     if (nowMin >= block.startMin && nowMin <= block.endMin) {
@@ -166,23 +170,28 @@ const buildMessage = (
     phase: SessionPhase,
     target: SessionAssistantTarget | null
 ): { title: string; body: string } => {
-    const period = `${formatHour(block.startMin)}-${formatHour(block.endMin)}`;
+    const period = `${formatHour(block.startMin)}–${formatHour(block.endMin)}`;
     if (target?.status === 'missing-date') {
-        const action = phase === 'recently-ended' ? 'La seance vient de se terminer' : 'Seance en cours';
+        const action =
+            phase === 'recently-ended'
+                ? 'La séance vient de se terminer'
+                : phase === 'upcoming'
+                    ? `Séance à ${formatHour(block.startMin)}`
+                    : 'Séance en cours';
         return {
-            title: `${className} - ${period}`,
-            body: `${action}. Element propose : ${target.title}.`,
+            title: `${className} — ${period}`,
+            body: `${action}. Contenu proposé : ${target.title}.`,
         };
     }
     if (target?.status === 'already-dated') {
         return {
-            title: `${className} - deja datee`,
-            body: `La seance ${period} est deja rattachee a "${target.title}".`,
+            title: `${className} — déjà datée`,
+            body: `La séance ${period} est déjà rattachée à « ${target.title} ».`,
         };
     }
     return {
-        title: `${className} - ${period}`,
-        body: 'Aucun contenu a dater automatiquement pour cette seance.',
+        title: `${className} — ${period}`,
+        body: 'Aucun contenu à dater automatiquement pour cette séance.',
     };
 };
 
@@ -210,7 +219,12 @@ export const writeSessionFocusPayload = (payload: SessionAssistantFocusPayload):
 export const findSessionAssistantSuggestion = async (
     config: AppConfig,
     now: Date = new Date(),
-    classes: ClassInfo[] = readClasses()
+    classes: ClassInfo[] = readClasses(),
+    options?: {
+        /** minutes avant le début où la séance est déjà « à venir » (5 par défaut,
+         *  élargi par le tableau de bord pour préparer sa séance en avance) */
+        upcomingWindowMin?: number;
+    }
 ): Promise<SessionAssistantSuggestion | null> => {
     const timetable = config.timetable ?? [];
     if (timetable.length === 0 || classes.length === 0) return null;
@@ -229,7 +243,7 @@ export const findSessionAssistantSuggestion = async (
     for (const block of blocks) {
         const classInfo = classesById.get(block.classId);
         if (!classInfo) continue;
-        const phase = phaseFor(block, nowMin);
+        const phase = phaseFor(block, nowMin, options?.upcomingWindowMin);
         if (!phase) continue;
 
         const target = pickTarget(readLessons(block.classId), todayISO);

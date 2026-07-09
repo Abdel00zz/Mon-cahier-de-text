@@ -57,10 +57,10 @@ const ActionButton: FC<{
     disabled={disabled}
     className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 ${
       danger
-        ? 'text-rose-400 hover:bg-rose-500/20 hover:text-rose-300'
+        ? 'text-[color-mix(in_srgb,hsl(var(--destructive))_45%,white)] hover:bg-destructive hover:text-destructive-foreground'
         : accent
           ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
-          : 'text-zinc-400 hover:bg-white/10 hover:text-white'
+          : 'text-muted-foreground/60 hover:bg-card/10 hover:text-white'
     }`}
     aria-label={title}
   >
@@ -126,7 +126,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           size="icon"
           onClick={onClear}
           title="Fermer (Échap)"
-          className="h-7 w-7 shrink-0 rounded-full text-muted-foreground/60 hover:bg-white/10 hover:text-white cursor-pointer"
+          className="h-7 w-7 shrink-0 rounded-full text-muted-foreground/60 hover:bg-card/10 hover:text-white cursor-pointer"
           aria-label="Effacer la sélection"
         >
           <X className="h-4 w-4" />

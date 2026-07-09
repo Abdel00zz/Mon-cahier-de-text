@@ -53,7 +53,7 @@ export const GlobalTooltip: React.FC = () => {
   return createPortal(
     <span
       role="tooltip"
-      className="app-tooltip pointer-events-none fixed z-[200] -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-[11px] font-medium text-white shadow-lg"
+      className="app-tooltip pointer-events-none fixed z-[200] -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-white shadow-lg"
       style={{
         left: tooltip.left,
         top: tooltip.top,

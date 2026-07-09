@@ -97,7 +97,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             </button>
 
             {isLoading && <div className="text-muted-foreground">Chargement…</div>}
-            {error && <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+            {error && <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive">{error}</div>}
 
             {data && (
                 <>
@@ -105,7 +105,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         <h1 className="text-2xl font-bold text-foreground font-display">
                             {data.user?.prenom ?? data.snapshot?.prenom} {data.user?.nom ?? data.snapshot?.nom}
                             {isBlocked && (
-                                <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-red-700">
+                                <span className="ml-2 rounded-full bg-destructive/15 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-destructive">
                                     Bloqué
                                 </span>
                             )}
@@ -126,20 +126,20 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                             <button
                                 onClick={handleBlock}
                                 disabled={busy}
-                                className="h-9 rounded-md border border-border bg-card px-3 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+                                className="h-9 rounded-md border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
                             >
                                 {isBlocked ? '🔓 Débloquer' : '🔒 Bloquer'}
                             </button>
                             <button
                                 onClick={handleDelete}
                                 disabled={busy}
-                                className="h-9 rounded-md border border-red-200 bg-card px-3 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                className="h-9 rounded-md border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
                             >
                                 🗑 Supprimer le compte
                             </button>
                         </div>
                         {actionMessage && (
-                            <p className="mt-2 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">{actionMessage}</p>
+                            <p className="mt-2 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground">{actionMessage}</p>
                         )}
                     </header>
 
@@ -182,10 +182,10 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                 <span
                                                     className={`rounded-full px-2 py-0.5 font-semibold text-white ${
                                                         lateness.severity === 'critical'
-                                                            ? 'bg-red-500'
+                                                            ? 'bg-destructive'
                                                             : lateness.severity === 'warning'
-                                                              ? 'bg-amber-500'
-                                                              : 'bg-amber-400'
+                                                              ? 'bg-warning'
+                                                              : 'bg-warning/70'
                                                     }`}
                                                 >
                                                     {lateness.gapSessions > 0

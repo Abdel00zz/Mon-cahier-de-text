@@ -77,7 +77,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
           value={value}
           onChange={event => setValue(event.target.value)}
           rows={6}
-          className="w-full min-h-[140px] rounded-xl border-slate-200"
+          className="w-full min-h-[140px] rounded-xl border-border"
           placeholder="Saisissez la description détaillée de votre séance (LaTeX supporté)..."
         />
 
@@ -89,9 +89,9 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
                 <Sigma className="h-3 w-3" />
                 <span>Aperçu LaTeX en temps réel</span>
               </span>
-              <span className="text-[9px] text-slate-400 font-medium">Auto-généré</span>
+              <span className="text-[9px] text-muted-foreground/60 font-medium">Auto-généré</span>
             </div>
-            <div className="bg-white/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-slate-800 leading-relaxed overflow-x-auto min-h-[45px] max-h-[150px] overflow-y-auto">
+            <div className="bg-card/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[45px] max-h-[150px] overflow-y-auto">
               <MathJax hideUntilTypeset="first">
                 <div className="whitespace-pre-wrap break-words">
                   {value}

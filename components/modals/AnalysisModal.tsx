@@ -59,41 +59,41 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
     >
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-50 p-4 rounded-xl border border-border">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Complétion</div>
+          <div className="bg-secondary/50 p-4 rounded-xl border border-border">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Complétion</div>
             <div className="text-3xl font-black text-primary">{stats.completionRate}%</div>
-            <div className="text-[10px] text-slate-400 font-semibold mt-1">{stats.plannedCount} sur {stats.totalItems} éléments</div>
+            <div className="text-[10px] text-muted-foreground/60 font-semibold mt-1">{stats.plannedCount} sur {stats.totalItems} éléments</div>
           </div>
-          <div className="bg-slate-50 p-4 rounded-xl border border-border">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Séances</div>
+          <div className="bg-secondary/50 p-4 rounded-xl border border-border">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Séances</div>
             <div className="text-3xl font-black text-primary">{stats.sessionsCount}</div>
-            <div className="text-[10px] text-slate-400 font-semibold mt-1">Jours de cours distincts</div>
+            <div className="text-[10px] text-muted-foreground/60 font-semibold mt-1">Jours de cours distincts</div>
           </div>
-          <div className="bg-slate-50 p-4 rounded-xl border border-border">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">À planifier</div>
+          <div className="bg-secondary/50 p-4 rounded-xl border border-border">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">À planifier</div>
             <div className="text-3xl font-black text-primary">{stats.unplannedItems.length}</div>
-            <div className="text-[10px] text-slate-400 font-semibold mt-1">Éléments sans date</div>
+            <div className="text-[10px] text-muted-foreground/60 font-semibold mt-1">Éléments sans date</div>
           </div>
         </div>
 
         <div>
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Progression par Chapitre</h3>
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Progression par Chapitre</h3>
           <div className="space-y-4 max-h-[30vh] overflow-y-auto pr-1">
             {stats.perChapter.map((chapter, i) => {
               if (chapter.total === 0) return null;
               return (
                 <div key={i} className="space-y-1.5">
                   <div className="flex justify-between items-end">
-                    <div className="text-xs font-semibold text-slate-800 truncate pr-4">
+                    <div className="text-xs font-semibold text-foreground truncate pr-4">
                       <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
                         {chapter.title}
                       </MathText>
                     </div>
-                    <div className="text-xs font-bold text-slate-500 whitespace-nowrap">{chapter.rate}%</div>
+                    <div className="text-xs font-bold text-muted-foreground whitespace-nowrap">{chapter.rate}%</div>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-border/50">
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden border border-border/50">
                     <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      className="h-full bg-success rounded-full transition-all duration-500"
                       style={{ width: `${chapter.rate}%` }}
                     />
                   </div>
@@ -116,7 +116,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                     <span className="truncate pr-2">
                       <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
                     </span>
-                    <span className="font-mono text-[10px] text-destructive bg-white px-2 py-0.5 rounded-full border border-destructive/10 shrink-0">
+                    <span className="font-mono text-[10px] text-destructive bg-card px-2 py-0.5 rounded-full border border-destructive/10 shrink-0">
                       {item.date.split('-').reverse().join('/')}
                     </span>
                   </div>

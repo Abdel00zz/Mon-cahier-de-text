@@ -56,7 +56,7 @@ export const AccountTab: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={() => logout()}
-                className="h-10 w-full text-sm font-semibold text-red-600 hover:bg-red-50 border-border/40"
+                className="h-10 w-full text-sm font-semibold text-destructive hover:bg-destructive/10 border-border/40"
             >
                 Se déconnecter
             </Button>

@@ -68,21 +68,21 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       disabled={disabled}
       className={`relative flex items-start gap-3.5 p-3 rounded-2xl border text-left transition-all duration-150 select-none ${
         disabled
-          ? 'bg-slate-50/50 border-slate-150 opacity-40 cursor-not-allowed'
-          : 'bg-white hover:bg-slate-50/60 border-slate-200 hover:border-primary active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
+          ? 'bg-secondary/30 border-border/60 opacity-40 cursor-not-allowed'
+          : 'bg-card hover:bg-secondary/40 border-border hover:border-primary active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
       }`}
       title={tooltip}
     >
-      <div className={`p-2.5 rounded-xl ${disabled ? 'bg-slate-100 text-slate-400' : `${colorClass} bg-slate-50/50`} flex-shrink-0 flex items-center justify-center w-11 h-11`}>
+      <div className={`p-2.5 rounded-xl ${disabled ? 'bg-secondary text-muted-foreground/60' : `${colorClass} bg-secondary/30`} flex-shrink-0 flex items-center justify-center w-11 h-11`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-semibold text-xs text-slate-900 leading-snug">{label}</div>
+        <div className="font-semibold text-xs text-foreground leading-snug">{label}</div>
         {description && (
-          <div className="text-[10px] text-slate-400 mt-0.5 leading-normal truncate">{description}</div>
+          <div className="text-[10px] text-muted-foreground/60 mt-0.5 leading-normal truncate">{description}</div>
         )}
         {disabled && tooltip && (
-          <div className="text-[9px] text-red-500 font-medium mt-1 leading-tight flex items-center gap-1">
+          <div className="text-[9px] text-destructive font-medium mt-1 leading-tight flex items-center gap-1">
             <CircleAlert className="h-2 w-2" />
             <span className="truncate">{tooltip}</span>
           </div>
@@ -193,7 +193,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     }
   };
 
-  const labelClasses = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5";
+  const labelClasses = "block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5";
 
   // Math detected on currently edited form
   const hasMath = useMemo(() => {
@@ -216,7 +216,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
               placeholder={`Ex: ${config.name} de mathématiques`}
-              className="rounded-xl border-slate-200 h-11"
+              className="rounded-xl border-border h-11"
             />
           </div>
         </div>
@@ -244,7 +244,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Ex: Définitions et propriétés"
-                className="rounded-xl border-slate-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
           </div>
@@ -260,7 +260,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                   required
                 >
-                  <SelectTrigger id="itemType" ref={selectFocusRef as any} className="rounded-xl border-slate-200 h-11 shadow-none">
+                  <SelectTrigger id="itemType" ref={selectFocusRef as any} className="rounded-xl border-border h-11 shadow-none">
                     <SelectValue placeholder="Choisir..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -281,7 +281,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   value={formData.number || ''}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                   placeholder="Ex: 1, 1.2, A..."
-                  className="rounded-xl border-slate-200 h-11"
+                  className="rounded-xl border-border h-11"
                 />
               </div>
             </div>
@@ -293,7 +293,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Saisir un titre optionnel..."
-                className="rounded-xl border-slate-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
             <div className="space-y-1.5">
@@ -304,7 +304,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Ex: Établir que la fonction f est continue sur $$[0, +\infty[$$..."
-                className="rounded-xl border-slate-200"
+                className="rounded-xl border-border"
               />
             </div>
           </div>
@@ -321,7 +321,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.content || ''}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Ex: Travail effectué, Fin de séance, etc."
-                className="rounded-xl border-slate-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
             <div className="space-y-1.5">
@@ -331,7 +331,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 id="separatorDate"
                 value={formData.date || ''}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="rounded-xl border-slate-200 h-11"
+                className="rounded-xl border-border h-11"
               />
             </div>
           </div>
@@ -369,10 +369,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => setStage('select')}
-          className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-slate-100 flex-shrink-0"
+          className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-secondary flex-shrink-0"
           aria-label="Retour à la sélection"
         >
-          <ArrowLeft className="h-3.5 w-3.5 text-slate-600" />
+          <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
         </Button>
       )}
       <span className="truncate">{modalTitle}</span>
@@ -412,13 +412,13 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       }
     >
       {/* Context Target Banner */}
-      <div className="mb-4 p-3 bg-slate-50 border border-slate-150 rounded-xl text-xs text-slate-600 flex items-start gap-2.5 flex-shrink-0">
-        <div className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg flex-shrink-0">
+      <div className="mb-4 p-3 bg-secondary/50 border border-border/60 rounded-xl text-xs text-muted-foreground flex items-start gap-2.5 flex-shrink-0">
+        <div className="p-1.5 bg-card border border-border text-muted-foreground/60 rounded-lg flex-shrink-0">
           <MapPin className="h-3 w-3" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-slate-700">Point d'insertion ciblé</div>
-          <div className="truncate mt-0.5 text-slate-500 font-medium">{targetLocationLabel}</div>
+          <div className="font-bold text-foreground/80">Point d'insertion ciblé</div>
+          <div className="truncate mt-0.5 text-muted-foreground font-medium">{targetLocationLabel}</div>
         </div>
       </div>
 
@@ -426,7 +426,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
         <div className="space-y-5 py-1 overflow-y-auto max-h-[50vh] pr-1">
           {/* Group 1: Cours & Structures */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
               Structures & Cours
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -468,7 +468,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={ListTree}
                 label="Élément"
                 description="Ajoute un exercice, cours, méthode, application..."
-                colorClass="text-slate-600 bg-slate-100 border-slate-200"
+                colorClass="text-muted-foreground bg-secondary border-border"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
                 tooltip="Sélectionnez une section pour insérer un élément"
@@ -477,7 +477,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={GripHorizontal}
                 label="Séparateur"
                 description="Insère une démarcation chronologique de séance"
-                colorClass="text-slate-400 bg-slate-50 border-slate-100"
+                colorClass="text-muted-foreground/60 bg-secondary/50 border-border/50"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
                 tooltip="Sélectionnez un élément pour ajouter un séparateur après"
@@ -487,7 +487,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Group 2: Évaluations & Devoirs */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
               Évaluations & Devoirs
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -509,7 +509,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={FileSignature}
                 label="Contrôle continu"
                 description="Ajouter un devoir surveillé ou un quiz régulier"
-                colorClass="text-slate-600 bg-slate-100 border-slate-200"
+                colorClass="text-muted-foreground bg-secondary border-border"
                 onClick={() => handleSelectType('controle_continu')}
               />
             </div>
@@ -517,7 +517,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Group 3: Corrections */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
               Corrections d'épreuves
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -532,7 +532,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckSquare}
                 label="Correction Contrôle continu"
                 description="Ajouter le barème et corrigé d'un contrôle"
-                colorClass="text-slate-600 bg-slate-100 border-slate-200"
+                colorClass="text-muted-foreground bg-secondary border-border"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
             </div>
@@ -552,17 +552,17 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   <Sigma className="h-3 w-3" />
                   <span>Aperçu LaTeX en temps réel</span>
                 </span>
-                <span className="text-[9px] text-slate-400 font-medium">Auto-généré</span>
+                <span className="text-[9px] text-muted-foreground/60 font-medium">Auto-généré</span>
               </div>
-              <div className="bg-white/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-slate-800 leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
+              <div className="bg-card/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
                 <MathJax hideUntilTypeset="first">
                   {formData.title || formData.name || formData.content ? (
-                    <div className="font-semibold text-slate-900 break-words">
+                    <div className="font-semibold text-foreground break-words">
                       {formData.title || formData.name || formData.content}
                     </div>
                   ) : null}
                   {formData.description ? (
-                    <div className="text-slate-600 mt-1.5 whitespace-pre-wrap break-words">
+                    <div className="text-muted-foreground mt-1.5 whitespace-pre-wrap break-words">
                       {formData.description}
                     </div>
                   ) : null}

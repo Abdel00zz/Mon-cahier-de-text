@@ -29,10 +29,10 @@ export const OrientationAlertModal: React.FC<OrientationAlertModalProps> = ({ is
       className="max-w-[320px] mx-auto sm:max-w-[320px]"
     >
       <div className="text-center space-y-3 py-2">
-        <div className="mx-auto w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mb-2">
+        <div className="mx-auto w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning mb-2">
           <Smartphone className="h-5 w-5 rotate-90" />
         </div>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-muted-foreground">
           Tournez votre téléphone à l'horizontale pour une meilleure lisibilité du cahier de textes.
         </p>
         <Button

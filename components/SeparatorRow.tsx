@@ -87,7 +87,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                         
                         onClick={() => onDelete(separatorIndices)}
                         data-tippy-content="Supprimer le séparateur"
-                        className="h-9 w-9 text-xs text-muted-foreground/60 hover:text-red-600 hover:bg-rose-500/10 rounded-full transition-colors lg:h-7 lg:w-7"
+                        className="h-9 w-9 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>

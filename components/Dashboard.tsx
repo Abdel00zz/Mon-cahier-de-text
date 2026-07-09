@@ -17,7 +17,11 @@ import { ImportPlatformModal } from './modals/ImportPlatformModal';
 import { WelcomeModal } from './modals/WelcomeModal';
 import { ClassInfo, Cycle } from '../types';
 import { logger } from '../utils/logger';
-import { getBundledCalendar, nextSchoolDay, todayInMorocco, weekdayLabel } from '../utils/calendar';
+import { getBundledCalendar, todayInMorocco } from '../utils/calendar';
+import { withAbsences } from '../utils/lateness';
+import { nextSessionInfoForClass } from '../utils/timetable';
+import { useSessionAssistant } from '../hooks/useSessionAssistant';
+import { SessionSpotlight } from './SessionSpotlight';
 import { Badge } from './ui/badge';
 import { Plus, CircleHelp, Settings } from './ui/icons';
 import { AUTH_REQUIRED } from '../config/features';
@@ -135,6 +139,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
+    // séance du moment (en cours / imminente / qui vient de finir) — rafraîchie chaque minute
+    const liveSuggestion = useSessionAssistant(classes, config);
 
     const isLoading = isClassesLoading || isConfigLoading;
 
@@ -226,19 +232,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         }
     })();
 
-    const nextSessionLabel = (classId: string): string | null => {
-        const schedule = config.schedules?.find(s => s.classId === classId);
-        if (!schedule || schedule.slots.length === 0) return null;
-        const weekdays = schedule.slots.map(s => s.weekday);
-        // aujourd'hui est-il un jour de classe ?
-        const [y, m, d] = today.split('-').map(Number);
-        const todayWeekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-        if (weekdays.includes(todayWeekday)) return "aujourd'hui";
-        const next = nextSchoolDay(today, weekdays, calendar);
-        if (!next) return null;
-        const [ny, nm, nd] = next.split('-').map(Number);
-        return weekdayLabel(new Date(Date.UTC(ny, nm - 1, nd)).getUTCDay());
-    };
+    /*
+     * Prochaine séance par classe — moteur intelligent : respecte fériés,
+     * vacances et absences, tient compte de l'heure (séance en cours, plus
+     * tard aujourd'hui, toutes passées) et donne un horizon réel (demain,
+     * jour de semaine, ou date exacte au retour des vacances).
+     */
+    const calendarWithAbsences = withAbsences(calendar, config.absences);
+    const nextSession = (classId: string) =>
+        nextSessionInfoForClass(
+            classId,
+            config.timetable,
+            config.schedules?.find(s => s.classId === classId)?.slots.map(s => s.weekday) ?? [],
+            calendarWithAbsences,
+        );
 
     const initials = getInitials(teacherName);
 
@@ -305,6 +312,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
                 n'est pas intercepté, le navigateur affiche sa propre invite native
                 (mini-infobar Android, icône d'installation dans l'omnibox). */}
+            {/* Séance du moment : la classe concernée + le contenu à traiter,
+                affichés dès l'ouverture — un tap ouvre le cahier ET surligne
+                l'élément proposé dans l'éditeur. */}
+            {liveSuggestion && (
+                <SessionSpotlight suggestion={liveSuggestion} onOpenClass={onSelectClass} />
+            )}
             <LatenessBanner classes={classes} config={config} />
             <AssessmentBanner classes={classes} config={config} />
             {/* Sélecteur de cycle — MASQUÉ en production (les cycles viennent de
@@ -387,7 +400,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                             <ClassCard
                                                 classInfo={classInfo}
                                                 lastModified={lastModifiedDates[classInfo.id]}
-                                                nextSessionLabel={nextSessionLabel(classInfo.id)}
+                                                nextSession={nextSession(classInfo.id)}
                                                 onSelect={() => onSelectClass(classInfo)}
                                                 onDelete={() => deleteClass(classInfo.id)}
                                                 onConfigure={() => setEditingClass(classInfo)}

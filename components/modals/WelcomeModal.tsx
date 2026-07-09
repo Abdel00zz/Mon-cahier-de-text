@@ -92,7 +92,7 @@ export const WelcomeModal: FC<WelcomeModalProps> = ({ isOpen, onClose, config, o
             value={establishment}
             onChange={e => setEstablishment(e.target.value)}
             placeholder="Ex : Lycée Ibn al-Haytham"
-            className="w-full text-xs font-semibold rounded-2xl border-border bg-secondary/30 hover:bg-secondary/60 focus:bg-white transition-all h-10"
+            className="w-full text-xs font-semibold rounded-2xl border-border bg-secondary/30 hover:bg-secondary/60 focus:bg-card transition-all h-10"
             required
           />
         </div>
@@ -107,7 +107,7 @@ export const WelcomeModal: FC<WelcomeModalProps> = ({ isOpen, onClose, config, o
             value={teacherName}
             onChange={e => setTeacherName(e.target.value)}
             placeholder="Ex : M. Ahmed Benali"
-            className="w-full text-xs font-semibold rounded-2xl border-border bg-secondary/30 hover:bg-secondary/60 focus:bg-white transition-all h-10"
+            className="w-full text-xs font-semibold rounded-2xl border-border bg-secondary/30 hover:bg-secondary/60 focus:bg-card transition-all h-10"
             required
           />
         </div>

@@ -1,5 +1,6 @@
 import { memo, MouseEvent, FC, useState } from 'react';
 import { ClassInfo } from '../types';
+import { NextSessionInfo } from '../utils/timetable';
 import { Card, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { ConfirmDialog } from './ui/confirm-dialog';
@@ -8,7 +9,8 @@ import { Trash2, Clock, Bell, Settings, ChevronRight } from './ui/icons';
 interface ClassCardProps {
     classInfo: ClassInfo;
     lastModified: string | null | undefined;
-    nextSessionLabel?: string | null;
+    /** prochaine séance calculée par le moteur intelligent (fériés, vacances, heure) */
+    nextSession?: NextSessionInfo | null;
     onSelect: () => void;
     onDelete: () => void;
     onConfigure: () => void;
@@ -40,7 +42,7 @@ const formatDate = (dateString: string | null | undefined): string => {
     }
 };
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSessionLabel, onSelect, onDelete, onConfigure }) => {
+const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSession, onSelect, onDelete, onConfigure }) => {
     const [hovered, setHovered] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -121,9 +123,22 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                     </div>
                 </div>
 
-                {/* Prochaine séance — badge teinté à la couleur de la classe */}
+                {/* Prochaine séance — moteur intelligent : « en cours » (pastille
+                    vivante), « aujourd'hui · 14h », « demain », « lundi · 8h »,
+                    ou « le 12 sept. » au retour des vacances */}
                 <div className="mt-2 flex-1">
-                    {nextSessionLabel ? (
+                    {nextSession?.kind === 'now' ? (
+                        <span
+                            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold text-primary-foreground shadow-sm"
+                            style={{ backgroundColor: accent }}
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-foreground opacity-75" />
+                                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground" />
+                            </span>
+                            Séance en cours
+                        </span>
+                    ) : nextSession ? (
                         <span
                             className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold shadow-sm"
                             style={{
@@ -132,12 +147,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                                 color: accentInk,
                             }}
                         >
-                            <Bell className="h-3 w-3 animate-pulse" style={{ color: accent }} />
-                            <span>Séance : {nextSessionLabel}</span>
+                            <Bell className="h-3 w-3" style={{ color: accent }} />
+                            <span>Séance : {nextSession.label}</span>
                         </span>
                     ) : (
                         <span className="text-[11px] font-semibold text-muted-foreground/55 italic">
-                            Aucune séance aujourd'hui
+                            Emploi du temps non renseigné
                         </span>
                     )}
                 </div>

@@ -108,10 +108,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                 return (
                   <li 
                     key={index} 
-                    className="flex items-center gap-3 p-3 rounded-xl bg-red-50 border border-red-200"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/25"
                   >
-                    <TriangleAlert className="mr-2 h-4 w-4 flex-shrink-0 text-red-500" />
-                    <span className="flex-grow text-red-700 text-xs font-semibold truncate">Contenu corrompu: "{item.title}"</span>
+                    <TriangleAlert className="mr-2 h-4 w-4 flex-shrink-0 text-destructive" />
+                    <span className="flex-grow text-destructive text-xs font-semibold truncate">Contenu corrompu: "{item.title}"</span>
                     <Button
                       variant="destructive"
                       size="sm"
@@ -133,17 +133,17 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                   onDragEnter={() => handleDragEnter(index)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => e.preventDefault()}
-                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-slate-200 cursor-grab active:cursor-grabbing hover:bg-slate-50/50 hover:border-slate-300 transition-all duration-150 select-none shadow-sm"
+                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-card border border-border cursor-grab active:cursor-grabbing hover:bg-secondary/30 hover:border-input transition-all duration-150 select-none shadow-sm"
                 >
                   {/* Left drag handle and title */}
                   <div className="flex items-center min-w-0 flex-1 gap-2.5">
-                    <div className="hidden sm:flex items-center text-slate-400 cursor-grab px-1 py-1 hover:text-slate-600">
+                    <div className="hidden sm:flex items-center text-muted-foreground/60 cursor-grab px-1 py-1 hover:text-muted-foreground">
                       <GripVertical className="h-3 w-3" />
                     </div>
-                    <div className="p-2 bg-slate-50 border border-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center w-8 h-8">
+                    <div className="p-2 bg-secondary/50 border border-border/50 rounded-lg flex-shrink-0 flex items-center justify-center w-8 h-8">
                       <config.icon className={`${config.color} h-4 w-4`} />
                     </div>
-                    <span className="flex-grow text-slate-800 text-xs font-semibold truncate pr-1">
+                    <span className="flex-grow text-foreground text-xs font-semibold truncate pr-1">
                       <MathText source={item.title} cacheKey={`manage-${item.title}`} inline>
                         {item.title || 'Sans titre'}
                       </MathText>
@@ -159,10 +159,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                       size="sm"
                       disabled={index === 0}
                       onClick={() => moveUp(index)}
-                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-white"
+                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-border/50 bg-card hover:bg-secondary/50 disabled:opacity-30 disabled:hover:bg-card"
                       title="Monter"
                     >
-                      <ArrowUp className="h-3 w-3 text-slate-600" />
+                      <ArrowUp className="h-3 w-3 text-muted-foreground" />
                     </Button>
 
                     {/* Down button */}
@@ -172,13 +172,13 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                       size="sm"
                       disabled={index === localLessons.length - 1}
                       onClick={() => moveDown(index)}
-                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-white"
+                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-border/50 bg-card hover:bg-secondary/50 disabled:opacity-30 disabled:hover:bg-card"
                       title="Descendre"
                     >
-                      <ArrowDown className="h-3 w-3 text-slate-600" />
+                      <ArrowDown className="h-3 w-3 text-muted-foreground" />
                     </Button>
 
-                    <div className="h-4 w-[1px] bg-slate-200 mx-0.5"></div>
+                    <div className="h-4 w-[1px] bg-muted mx-0.5"></div>
 
                     {/* Delete button */}
                     <Button
@@ -196,8 +196,8 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
             })}
           </ul>
         ) : (
-          <div className="text-center text-slate-400 font-medium italic py-12 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
-            <FolderOpen className="mx-auto mb-2 h-5 w-5 text-slate-300" />
+          <div className="text-center text-muted-foreground/60 font-medium italic py-12 bg-secondary/50 border border-dashed border-border rounded-xl">
+            <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground/40" />
             Aucun contenu principal à organiser.
           </div>
         )}

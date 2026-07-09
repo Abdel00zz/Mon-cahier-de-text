@@ -92,12 +92,12 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
             <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
 
             <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border/40 md:pr-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-white text-foreground focus:ring-primary/30 font-mono" />
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-card text-foreground focus:ring-primary/30 font-mono" />
                 {formData.date && (
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
-                        className="text-[10px] font-bold text-muted-foreground/60 hover:text-rose-600 transition-colors font-sans"
+                        className="text-[10px] font-bold text-muted-foreground/60 hover:text-destructive transition-colors font-sans"
                     >
                         Dissocier la date
                     </button>
@@ -113,11 +113,11 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                         {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
@@ -142,7 +142,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-white text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
+                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-card text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
             </div>
         </form>
     );

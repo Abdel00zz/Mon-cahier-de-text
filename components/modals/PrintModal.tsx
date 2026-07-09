@@ -53,7 +53,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     onChange: (v: T) => void;
     options: { value: T; label: string }[];
   }) => (
-    <div className="inline-flex rounded-lg border border-border bg-white p-0.5">
+    <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
       {options.map(opt => (
         <button
           key={opt.value}
@@ -61,7 +61,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           onClick={() => onChange(opt.value)}
           aria-pressed={value === opt.value}
           className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
-            value === opt.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-500 hover:text-slate-800'
+            value === opt.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           {opt.label}
@@ -92,19 +92,19 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           ? 'cursor-not-allowed opacity-40'
           : mode === value
             ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
-            : 'border-border bg-white hover:border-primary/40'
+            : 'border-border bg-card hover:border-primary/40'
       }`}
       aria-pressed={mode === value}
     >
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${mode === value ? 'bg-primary text-primary-foreground' : 'bg-slate-100 text-slate-500'}`}>
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${mode === value ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
         <Icon className="h-5 w-5" />
       </span>
       <span className="min-w-0">
-        <span className="flex items-center gap-2 text-sm font-bold text-slate-800">
+        <span className="flex items-center gap-2 text-sm font-bold text-foreground">
           {title}
-          {badge && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">{badge}</span>}
+          {badge && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[9px] font-bold uppercase text-success">{badge}</span>}
         </span>
-        <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">{subtitle}</span>
+        <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{subtitle}</span>
       </span>
     </button>
   );
@@ -134,22 +134,22 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       <div className="space-y-4">
         {/* État de l'impression */}
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-slate-50 p-2.5">
-            <div className="text-lg font-black text-slate-700">{totalDates}</div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Séances datées</div>
+          <div className="rounded-xl bg-secondary/50 p-2.5">
+            <div className="text-lg font-black text-foreground/80">{totalDates}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Séances datées</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2.5">
-            <div className="text-lg font-black text-slate-500">{printedCount}</div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Déjà imprimées</div>
+          <div className="rounded-xl bg-secondary/50 p-2.5">
+            <div className="text-lg font-black text-muted-foreground">{printedCount}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Déjà imprimées</div>
           </div>
-          <div className="rounded-xl bg-emerald-50 p-2.5">
-            <div className="text-lg font-black text-emerald-600">{newDates.length}</div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600/70">Nouvelles</div>
+          <div className="rounded-xl bg-success/10 p-2.5">
+            <div className="text-lg font-black text-success">{newDates.length}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-success/70">Nouvelles</div>
           </div>
         </div>
 
         {lastPrintedAt && (
-          <p className="text-center text-[11px] text-slate-400">
+          <p className="text-center text-[11px] text-muted-foreground/60">
             Dernière impression : {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
           </p>
         )}
@@ -185,7 +185,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               </span>
             ))}
             {newDates.length > 12 && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                 +{newDates.length - 12} autres
               </span>
             )}
@@ -193,9 +193,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         )}
 
         {/* Mise en page : taille du texte et aération des lignes */}
-        <div className="space-y-2 rounded-xl border border-border bg-slate-50 p-3">
+        <div className="space-y-2 rounded-xl border border-border bg-secondary/50 p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-slate-700">Taille du texte</span>
+            <span className="text-xs font-semibold text-foreground/80">Taille du texte</span>
             <Segmented
               value={textSize}
               onChange={(v) => setTextSize(v as any)}
@@ -207,7 +207,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-slate-700">Espacement des lignes</span>
+            <span className="text-xs font-semibold text-foreground/80">Espacement des lignes</span>
             <Segmented
               value={lineSpacing}
               onChange={(v) => setLineSpacing(v as any)}
@@ -218,16 +218,16 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               ]}
             />
           </div>
-          <p className="text-[10px] leading-snug text-slate-400">
+          <p className="text-[10px] leading-snug text-muted-foreground/60">
             « Compact » économise le papier ; « Aéré » facilite les annotations manuscrites.
           </p>
         </div>
 
         {/* Options d'impression */}
-        <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-slate-50 p-3">
+        <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-border bg-secondary/50 p-3">
           <span>
-            <span className="block text-xs font-semibold text-slate-700">Numéroter les pages</span>
-            <span className="mt-0.5 block text-[10px] leading-snug text-slate-400">
+            <span className="block text-xs font-semibold text-foreground/80">Numéroter les pages</span>
+            <span className="mt-0.5 block text-[10px] leading-snug text-muted-foreground/60">
               Affiche « Page X / N » en bas. Dans Chrome, cochez aussi « En-têtes et pieds de page » du dialogue d'impression.
             </span>
           </span>
@@ -236,9 +236,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             role="switch"
             aria-checked={pageNumbers}
             onClick={() => setPageNumbers(v => !v)}
-            className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${pageNumbers ? 'bg-primary' : 'bg-slate-300'}`}
+            className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${pageNumbers ? 'bg-primary' : 'bg-border'}`}
           >
-            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${pageNumbers ? 'left-[22px]' : 'left-0.5'}`} />
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow transition-transform ${pageNumbers ? 'left-[22px]' : 'left-0.5'}`} />
           </button>
         </label>
       </div>

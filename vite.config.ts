@@ -57,8 +57,9 @@ export default defineConfig(({ mode }) => {
                     orientation: 'any',
                     start_url: '/',
                     scope: '/',
-                    theme_color: '#C96442',
-                    background_color: '#FDFCFA',
+                    // aligné sur les tokens du design system : --primary / --background
+                    theme_color: '#3969ef',
+                    background_color: '#f2f4f8',
                     categories: ['education', 'productivity'],
                     icons: [
                         // PNG d'abord (compatibilité launchers Android/iOS), SVG en complément

@@ -20,10 +20,10 @@ const calendar = getBundledCalendar();
 const INACTIVE_DAYS = 14;
 
 const SEVERITY_META: Record<LatenessSeverity, { label: string; chip: string; dot: string }> = {
-    ok: { label: 'À jour', chip: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-    notice: { label: 'À surveiller', chip: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-400' },
-    warning: { label: 'En retard', chip: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-500' },
-    critical: { label: 'Critique', chip: 'bg-red-50 text-red-700 border-red-200', dot: 'bg-red-500' },
+    ok: { label: 'À jour', chip: 'bg-success/10 text-success border-success/25', dot: 'bg-success' },
+    notice: { label: 'À surveiller', chip: 'bg-warning/10 text-warning border-warning/30', dot: 'bg-warning/70' },
+    warning: { label: 'En retard', chip: 'bg-warning/10 text-warning border-warning/30', dot: 'bg-warning' },
+    critical: { label: 'Critique', chip: 'bg-destructive/10 text-destructive border-destructive/25', dot: 'bg-destructive' },
 };
 
 const SEVERITY_RANK: Record<LatenessSeverity, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
@@ -178,12 +178,12 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 ))}
                 <button
                     onClick={() => toggleSeverityFilter('inactive')}
-                    className={`inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all ${
+                    className={`inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all ${
                         severityFilter === 'inactive' ? 'ring-2 ring-offset-1 ring-primary/40' : 'opacity-90 hover:opacity-100'
                     }`}
                     title={`Aucune synchronisation depuis ${INACTIVE_DAYS} jours`}
                 >
-                    <span className="h-2 w-2 rounded-full bg-slate-400" />
+                    <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
                     Inactifs <span className="font-black">{distribution.inactive}</span>
                 </button>
             </div>
@@ -262,7 +262,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                         .map(c => CYCLE_LABEL[c as string] ?? c)
                                         .join(' · ') || '—'}
                                 </span>
-                                <span className={inactive ? 'font-bold text-red-500' : ''}>{timeAgo(teacher.lastSyncAt)}</span>
+                                <span className={inactive ? 'font-bold text-destructive' : ''}>{timeAgo(teacher.lastSyncAt)}</span>
                             </div>
                         </button>
                     ))}

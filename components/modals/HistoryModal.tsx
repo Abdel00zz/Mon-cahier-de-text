@@ -71,14 +71,14 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, ent
       maxWidth="lg"
     >
       {entries.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-slate-50 p-8 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-border bg-secondary/50 p-8 text-center text-sm text-muted-foreground">
           Aucune action enregistrée pour l'instant.
         </div>
       ) : (
         <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-1">
           {byDay.map((day, dayIndex) => (
             <section key={`${day.label}-${dayIndex}`}>
-              <h4 className="sticky top-0 z-10 mb-1.5 bg-white/95 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 backdrop-blur">
+              <h4 className="sticky top-0 z-10 mb-1.5 bg-card/95 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 backdrop-blur">
                 {day.label}
               </h4>
               <ol className="relative space-y-0">
@@ -88,19 +88,19 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, ent
                     <li key={`${entry.at}-${index}`} className="relative flex gap-3 pb-3 last:pb-0">
                       {/* fil chronologique */}
                       <span className="flex flex-col items-center">
-                        <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${isLatest ? 'bg-primary' : 'bg-slate-300'}`} />
-                        {index < day.items.length - 1 && <span className="w-px flex-1 bg-slate-200" />}
+                        <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${isLatest ? 'bg-primary' : 'bg-border'}`} />
+                        {index < day.items.length - 1 && <span className="w-px flex-1 bg-muted" />}
                       </span>
                       <div className="min-w-0 flex-1 pb-1">
-                        <p className={`text-sm ${isLatest ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>
+                        <p className={`text-sm ${isLatest ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'}`}>
                           {opLabel(entry.op)}
                           {entry.count > 1 && (
-                            <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 align-middle text-[10px] font-bold text-slate-500">
+                            <span className="ml-1.5 rounded-full bg-secondary px-1.5 py-0.5 align-middle text-[10px] font-bold text-muted-foreground">
                               ×{entry.count}
                             </span>
                           )}
                         </p>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-muted-foreground/60">
                           {timeAgoFr(entry.at)} · {new Date(entry.at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>

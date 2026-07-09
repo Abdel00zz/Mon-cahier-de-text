@@ -335,7 +335,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         }}
       >
         <div className="min-w-0">
-          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold tracking-tight ${cfg?.color ?? 'text-slate-800'}`}>
+          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold tracking-tight ${cfg?.color ?? 'text-foreground'}`}>
             {cfg?.icon && <cfg.icon className="h-3.5 w-3.5 shrink-0" />}
             <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} />
           </div>

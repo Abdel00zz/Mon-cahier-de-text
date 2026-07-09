@@ -49,7 +49,7 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                     />
                 </label>
                 {error && (
-                    <p className="mt-3 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                    <p className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                         {error}
                     </p>
                 )}

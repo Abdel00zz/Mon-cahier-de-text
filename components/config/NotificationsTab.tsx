@@ -113,7 +113,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-white text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-card text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={1}>1 séance de retard</option>
                         <option value={2}>2 séances de retard</option>
@@ -125,7 +125,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-white text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-card text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <option value={3}>Après 3 jours de classe</option>
                         <option value={5}>Après 5 jours de classe</option>
@@ -213,7 +213,7 @@ const AbsencesSection: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => removeAbsence(index)}
-                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                                 aria-label="Supprimer cette absence"
                             >
                                 <X className="h-2.5 w-2.5" />
@@ -228,7 +228,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Début de l'absence"
                 />
                 <input
@@ -236,7 +236,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     aria-label="Fin de l'absence"
                 />
                 <input
@@ -244,7 +244,7 @@ const AbsencesSection: React.FC<{
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder="Motif (optionnel)"
-                    className="col-span-2 h-10 rounded-md border border-border/80 bg-white px-2 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="col-span-2 h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <button
                     type="button"

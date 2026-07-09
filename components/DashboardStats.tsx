@@ -241,7 +241,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                 <div className="mt-4 space-y-2">
                                     {lateClasses.map(c => (
                                         <div key={c.classId} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3">
-                                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${severityDotClass[c.severity] ?? 'bg-amber-500'}`} />
+                                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${severityDotClass[c.severity] ?? 'bg-warning'}`} />
                                             <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{c.className}</span>
                                             <Badge variant="secondary" className="shrink-0 text-[11px] font-extrabold">
                                                 {c.gapSessions} séance{c.gapSessions > 1 ? 's' : ''}
@@ -250,14 +250,14 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                     ))}
                                     {lateClasses.length < (lateness?.perClass.length ?? 0) && (
                                         <p className="pt-1 text-center text-[11px] font-semibold text-muted-foreground">
-                                            Les autres classes sont à jour <CircleCheck className="inline h-3.5 w-3.5 text-emerald-600" />
+                                            Les autres classes sont à jour <CircleCheck className="inline h-3.5 w-3.5 text-success" />
                                         </p>
                                     )}
                                 </div>
                             )}
                             {upToDate && (
                                 <div className="mt-4 flex flex-col items-center gap-2 rounded-2xl border border-success/25 bg-success/10 p-5 text-center">
-                                    <CircleCheck className="h-8 w-8 text-emerald-600" />
+                                    <CircleCheck className="h-8 w-8 text-success" />
                                     <p className="text-sm font-bold text-foreground">Bravo, votre cahier est à jour 🎉</p>
                                 </div>
                             )}

@@ -176,7 +176,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         {/* Cycle : masqué si le prof n'enseigne qu'un cycle (hérité du profil) */}
         {!singleCycle && (
           <div className="space-y-1.5">
-            <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Cycle *
             </label>
             <Select
@@ -201,7 +201,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
         <div className="grid grid-cols-[1fr_auto] gap-3">
           <div className="space-y-1.5">
-            <label htmlFor="level" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <label htmlFor="level" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Niveau / Classe *
             </label>
             {customMode ? (
@@ -227,7 +227,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
             )}
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="group" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <label htmlFor="group" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Groupe
             </label>
             <Input
@@ -245,7 +245,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         {/* Matière : masquée si le prof n'en enseigne qu'une (héritée du profil) */}
         {!(singleSubject && !customMode) && (
           <div className="space-y-1.5">
-            <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Matière *
             </label>
             {customMode ? (
@@ -274,7 +274,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
         {/* Personnalisation de la couleur de la carte et du fond */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Couleur de la classe
           </label>
           <div className="flex flex-wrap gap-2 py-1">
@@ -283,12 +283,12 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 key={c}
                 type="button"
                 onClick={() => setCustomColor(c)}
-                className={`h-7 w-7 rounded-full border transition-all relative ${customColor === c ? 'scale-110 border-slate-700 shadow-md ring-2 ring-slate-300 ring-offset-1' : 'border-slate-200 hover:scale-105'}`}
+                className={`h-7 w-7 rounded-full border transition-all relative ${customColor === c ? 'scale-110 border-foreground/50 shadow-md ring-2 ring-border ring-offset-1' : 'border-border hover:scale-105'}`}
                 style={{ backgroundColor: c }}
                 aria-label={`Couleur ${c}`}
               >
                 {customColor === c && (
-                  <span className="absolute inset-0 m-auto h-1.5 w-1.5 rounded-full bg-white shadow-sm" />
+                  <span className="absolute inset-0 m-auto h-1.5 w-1.5 rounded-full bg-card shadow-sm" />
                 )}
               </button>
             ))}
@@ -297,11 +297,11 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
         {/* Aperçu du nom composé */}
         {effectiveLevel && (
-          <div className="rounded-xl border border-dashed border-border bg-slate-50 px-3 py-2 text-xs flex justify-between items-center">
+          <div className="rounded-xl border border-dashed border-border bg-secondary/50 px-3 py-2 text-xs flex justify-between items-center">
             <div>
-              <span className="font-semibold text-slate-400">Nom de la classe : </span>
-              <span className="font-bold text-slate-700">{composedName}</span>
-              {effectiveSubject && <span className="text-slate-400"> · {effectiveSubject}</span>}
+              <span className="font-semibold text-muted-foreground/60">Nom de la classe : </span>
+              <span className="font-bold text-foreground/80">{composedName}</span>
+              {effectiveSubject && <span className="text-muted-foreground/60"> · {effectiveSubject}</span>}
             </div>
             {/* Visual indicator tag */}
             <span className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0" style={{ backgroundColor: customColor }} />
@@ -312,7 +312,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         <button
           type="button"
           onClick={() => setCustomMode(v => !v)}
-          className="text-[11px] font-medium text-slate-400 underline-offset-2 transition-colors hover:text-primary hover:underline"
+          className="text-[11px] font-medium text-muted-foreground/60 underline-offset-2 transition-colors hover:text-primary hover:underline"
         >
           {customMode
             ? '← Revenir à la liste officielle'

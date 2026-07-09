@@ -254,7 +254,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                                     onClick={() => handleDescriptionTypeToggle('screen', type)}
                                     className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
                                       isSelected
-                                        ? `${BADGE_COLOR_MAP[type] || 'bg-slate-200 text-slate-800'} ring-1 ring-slate-300`
+                                        ? `${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'} ring-1 ring-border`
                                         : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
                                     }`}
                                     title={BADGE_TOOLTIP_MAP[type] || type}
@@ -358,13 +358,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                                     onClick={() => handleDescriptionTypeToggle('print', type)}
                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
                                       isSelected
-                                        ? `${BADGE_COLOR_MAP[type] || 'bg-slate-200 text-slate-800'} ring-1 ring-slate-300`
+                                        ? `${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'} ring-1 ring-border`
                                         : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
                                     }`}
                                     title={BADGE_TOOLTIP_MAP[type] || type}
                                   >
                                     <span className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded text-[8px] font-extrabold ${
-                                      isSelected ? 'bg-white/30 text-white' : 'bg-border text-muted-foreground'
+                                      isSelected ? 'bg-card/30 text-white' : 'bg-border text-muted-foreground'
                                     }`}>
                                       {BADGE_TEXT_MAP[type]?.charAt(0) || type.charAt(0).toUpperCase()}
                                     </span>

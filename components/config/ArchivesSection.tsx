@@ -71,7 +71,7 @@ export const ArchivesSection: React.FC = () => {
                     {archives.map(meta => (
                         <li
                             key={meta.id}
-                            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/40 bg-white/70 px-3 py-2"
+                            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/40 bg-card/70 px-3 py-2"
                         >
                             <div className="min-w-0">
                                 <span className="text-xs font-bold text-foreground font-display">Année {meta.yearLabel}</span>

@@ -114,7 +114,7 @@ export const OnboardingGuide: React.FC<{ enabled?: boolean }> = ({ enabled = tru
     return createPortal(
         <div className="fixed inset-0 z-[300]">
             {/* Voile sombre + trou lumineux clignotant sur la cible */}
-            <div className="absolute inset-0 bg-slate-900/50 transition-opacity" onClick={finish} />
+            <div className="absolute inset-0 bg-foreground/50 transition-opacity" onClick={finish} />
             {rect && (
                 <motion.div
                     className="pointer-events-none absolute rounded-2xl"
@@ -123,9 +123,9 @@ export const OnboardingGuide: React.FC<{ enabled?: boolean }> = ({ enabled = tru
                         left: rect.left - 8,
                         width: rect.width + 16,
                         height: rect.height + 16,
-                        boxShadow: '0 0 0 9999px rgba(15,23,42,0.5)',
+                        boxShadow: '0 0 0 9999px hsl(220 25% 15% / 0.5)',
                     }}
-                    animate={{ boxShadow: ['0 0 0 4px rgba(201,100,66,0.9), 0 0 0 9999px rgba(15,23,42,0.5)', '0 0 0 10px rgba(201,100,66,0), 0 0 0 9999px rgba(15,23,42,0.5)'] }}
+                    animate={{ boxShadow: ['0 0 0 4px hsl(224 85% 58% / 0.9), 0 0 0 9999px hsl(220 25% 15% / 0.5)', '0 0 0 10px hsl(224 85% 58% / 0), 0 0 0 9999px hsl(220 25% 15% / 0.5)'] }}
                     transition={{ duration: 1.4, repeat: Infinity }}
                 />
             )}
@@ -144,16 +144,16 @@ export const OnboardingGuide: React.FC<{ enabled?: boolean }> = ({ enabled = tru
                         <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
                             {step === 0 ? 'Démarrage' : `Étape ${step} / ${STEPS.length - 1}`}
                         </span>
-                        <button onClick={finish} className="text-[11px] font-medium text-slate-400 hover:text-slate-700">
+                        <button onClick={finish} className="text-[11px] font-medium text-muted-foreground/60 hover:text-foreground/80">
                             Passer
                         </button>
                     </div>
-                    <h3 className="text-sm font-bold text-slate-800">{current.title}</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-600">{current.body}</p>
+                    <h3 className="text-sm font-bold text-foreground">{current.title}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{current.body}</p>
                     <div className="mt-3 flex items-center justify-between">
                         <div className="flex gap-1">
                             {STEPS.map((_, i) => (
-                                <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-4 bg-primary' : 'w-1.5 bg-slate-300'}`} />
+                                <span key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-4 bg-primary' : 'w-1.5 bg-border'}`} />
                             ))}
                         </div>
                         <button

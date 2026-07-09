@@ -60,19 +60,19 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
         <div>
           <label
             htmlFor="json-file-input"
-            className="w-full inline-flex flex-col items-center justify-center px-4 py-6 bg-slate-50 text-slate-600 rounded-xl border-2 border-dashed border-slate-300 hover:border-primary hover:bg-primary/5 hover:text-primary cursor-pointer transition-colors"
+            className="w-full inline-flex flex-col items-center justify-center px-4 py-6 bg-secondary/50 text-muted-foreground rounded-xl border-2 border-dashed border-input hover:border-primary hover:bg-primary/5 hover:text-primary cursor-pointer transition-colors"
           >
             <FileUp className="mx-auto mb-2 h-6 w-6" />
             <span className="font-semibold text-sm">
               {fileName || "Cliquer pour choisir un fichier de sauvegarde (.json)"}
             </span>
-            <span className="text-xs text-slate-400 mt-1">...ou collez le texte brut ci-dessous</span>
+            <span className="text-xs text-muted-foreground/60 mt-1">...ou collez le texte brut ci-dessous</span>
           </label>
           <input type="file" id="json-file-input" accept=".json" onChange={handleFileChange} className="sr-only" />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Contenu brut du JSON</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contenu brut du JSON</label>
           <Textarea
             value={jsonText}
             onChange={(e) => setJsonText(e.target.value)}
@@ -81,28 +81,28 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
           />
         </div>
 
-        <div className="p-3 bg-slate-100 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 border border-border">
-          <span className="font-medium text-slate-700 text-sm">Mode d'importation :</span>
+        <div className="p-3 bg-secondary rounded-xl flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 border border-border">
+          <span className="font-medium text-foreground/80 text-sm">Mode d'importation :</span>
           <div className="flex gap-6">
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-800">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-foreground">
               <input
                 type="radio"
                 name="importMode"
                 value="replace"
                 checked={importMode === 'replace'}
                 onChange={() => setImportMode('replace')}
-                className="form-radio h-4 w-4 text-primary focus:ring-primary border-slate-300"
+                className="form-radio h-4 w-4 text-primary focus:ring-primary border-input"
               />
               <span>Remplacer tout</span>
             </label>
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-800">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-foreground">
               <input
                 type="radio"
                 name="importMode"
                 value="append"
                 checked={importMode === 'append'}
                 onChange={() => setImportMode('append')}
-                className="form-radio h-4 w-4 text-primary focus:ring-primary border-slate-300"
+                className="form-radio h-4 w-4 text-primary focus:ring-primary border-input"
               />
               <span>Ajouter à la suite</span>
             </label>

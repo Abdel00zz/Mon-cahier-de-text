@@ -48,7 +48,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onCon
     >
       <form id="prompt-form" onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="prompt-input" className="text-sm font-medium text-slate-700 block">
+          <label htmlFor="prompt-input" className="text-sm font-medium text-foreground/80 block">
             {label}
           </label>
           <Input

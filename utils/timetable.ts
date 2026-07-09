@@ -227,3 +227,80 @@ export const effectiveSchedules = (
     config: { timetable?: TimetableEntry[]; schedules?: ClassSchedule[] }
 ): ClassSchedule[] =>
     (config.timetable?.length ?? 0) > 0 ? deriveSchedules(config.timetable) : (config.schedules ?? []);
+
+/* ── Prochaine séance d'une classe : temps réel + calendrier scolaire ─────────
+   Alimente le badge « Séance » des cartes du tableau de bord. Contrairement à
+   un simple test du jour de la semaine, cette fonction respecte :
+     • les jours fériés, vacances et absences (via le calendrier fourni) ;
+     • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
+     • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
+
+import { HolidayCalendar, isSchoolDay, nextSchoolDay, toISODate, weekdayLabel } from './calendar';
+
+export interface NextSessionInfo {
+    /** now = séance en cours à cet instant précis */
+    kind: 'now' | 'today' | 'tomorrow' | 'weekday' | 'date';
+    label: string;
+}
+
+export const formatHourLabel = (minutes: number): string => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${String(h).padStart(2, '0')}h${m ? String(m).padStart(2, '0') : ''}`;
+};
+
+export const nextSessionInfoForClass = (
+    classId: string,
+    timetable: TimetableEntry[] | undefined,
+    scheduleWeekdays: number[],
+    calendar: HolidayCalendar,
+    now: Date = new Date()
+): NextSessionInfo | null => {
+    const entries = (timetable ?? []).filter(e => e.classId === classId);
+    const weekdays = entries.length
+        ? Array.from(new Set(entries.map(e => e.day)))
+        : scheduleWeekdays;
+    if (weekdays.length === 0) return null;
+
+    const todayISO = toISODate(now);
+    const blocksFor = (weekday: number): SessionBlock[] =>
+        entries.length
+            ? getDaySessionBlocks(timetable, weekday).filter(b => b.classId === classId)
+            : [];
+
+    // Aujourd'hui — uniquement si c'est un vrai jour de classe (ni férié, ni vacances)
+    if (isSchoolDay(todayISO, weekdays, calendar)) {
+        const blocks = blocksFor(now.getDay());
+        if (blocks.length === 0) {
+            // emploi du temps sans horaires pour cette classe : pas de précision horaire
+            return { kind: 'today', label: "aujourd'hui" };
+        }
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const active = blocks.find(b => nowMin >= b.startMin && nowMin < b.endMin);
+        if (active) return { kind: 'now', label: 'en cours' };
+        const upcoming = blocks
+            .filter(b => b.startMin > nowMin)
+            .sort((a, b) => a.startMin - b.startMin)[0];
+        if (upcoming) return { kind: 'today', label: `aujourd'hui · ${formatHourLabel(upcoming.startMin)}` };
+        // toutes les séances du jour sont terminées → occurrence suivante
+    }
+
+    const next = nextSchoolDay(todayISO, weekdays, calendar);
+    if (!next) return null;
+
+    const [y, m, d] = next.split('-').map(Number);
+    const nextDate = new Date(y, m - 1, d);
+    const blocks = blocksFor(nextDate.getDay());
+    const time = blocks.length
+        ? ` · ${formatHourLabel(Math.min(...blocks.map(b => b.startMin)))}`
+        : '';
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((nextDate.getTime() - startOfToday.getTime()) / 86_400_000);
+
+    if (diffDays === 1) return { kind: 'tomorrow', label: `demain${time}` };
+    if (diffDays <= 6) return { kind: 'weekday', label: `${weekdayLabel(nextDate.getDay())}${time}` };
+    return {
+        kind: 'date',
+        label: `le ${nextDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`,
+    };
+};

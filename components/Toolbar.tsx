@@ -165,7 +165,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                   <button 
                     type="button" 
                     onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
-                    className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-all duration-200 material-focus"
+                    className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground/80 transition-all duration-200 material-focus"
                     aria-label="Effacer la recherche"
                   >
                     <X className="h-5 w-5" />
