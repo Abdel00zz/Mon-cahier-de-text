@@ -74,18 +74,19 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </p>
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
-            <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-                <table className="w-full min-w-[46rem] border-collapse text-xs">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[46rem] border-separate border-spacing-0 text-xs">
                     <thead>
-                        <tr className="bg-secondary">
-                            <th className="sticky left-0 z-10 border-b border-r border-border bg-secondary px-3 py-2 text-left font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+                        <tr>
+                            <th className="sticky left-0 z-20 border-b border-r border-border bg-secondary px-3 py-3 text-left font-semibold uppercase tracking-wider text-muted-foreground font-mono">
                                 Jour
                             </th>
                             {HOUR_SLOTS.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border px-1 py-2 text-center font-semibold text-muted-foreground font-mono ${
-                                        hour.lunchBefore ? 'border-l-4 border-l-primary/30' : ''
+                                    className={`border-b border-border bg-secondary px-2 py-3 text-center font-semibold text-muted-foreground font-mono ${
+                                        hour.lunchBefore ? 'border-l border-l-primary/25' : ''
                                     }`}
                                 >
                                     {hour.label}
@@ -94,9 +95,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         </tr>
                     </thead>
                     <tbody>
-                        {TIMETABLE_DAYS.map(day => (
-                            <tr key={day.value} className="border-b border-border/40 last:border-0 hover:bg-secondary/30 transition-colors">
-                                <td className="sticky left-0 z-10 border-r border-border bg-card px-3 py-2 font-bold text-foreground">
+                        {TIMETABLE_DAYS.map((day, dayIndex) => (
+                            <tr key={day.value} className="group transition-colors hover:bg-secondary/20">
+                                <td className={`sticky left-0 z-10 border-r border-border bg-card px-3 py-2.5 font-bold text-foreground transition-colors group-hover:bg-secondary/40 ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
                                     {day.label}
                                 </td>
                                 {HOUR_SLOTS.map(hour => {
@@ -124,15 +125,15 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     return (
                                         <td
                                             key={hour.index}
-                                            className={`relative align-top ${cellPadding} ${hour.lunchBefore ? 'border-l-4 border-l-primary/30/60' : ''}`}
+                                            className={`relative align-top ${cellPadding} ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
                                                 onChange={e => assign(day.value, hour.index, e.target.value || null)}
-                                                className={`h-11 w-full cursor-pointer border px-1 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${rounding} ${
+                                                className={`h-11 w-full cursor-pointer border px-1.5 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${rounding} ${
                                                     classInfo
-                                                        ? `border-transparent text-white shadow-sm ${merged ? '' : 'hover:scale-[1.02]'}`
-                                                        : 'border-dashed border-border bg-card text-muted-foreground/60 hover:border-primary/60 hover:text-foreground'
+                                                        ? `border-transparent text-white shadow-sm shadow-foreground/10 ${merged ? '' : 'hover:brightness-105'}`
+                                                        : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
                                                 style={classInfo ? { backgroundColor: classInfo.color } : undefined}
                                                 aria-label={`${day.label} ${hour.label}${merged ? ` (séance continue de ${run.hours} h)` : ''}`}
@@ -145,7 +146,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 ))}
                                             </select>
                                             {merged && run.isStart && (
-                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-white/30 px-1.5 text-[9px] font-bold leading-4 text-white shadow-sm font-mono">
+                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-background/25 px-1.5 text-[9px] font-bold leading-4 text-white shadow-sm font-mono">
                                                     {run.hours} h
                                                 </span>
                                             )}
@@ -156,6 +157,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             {/* Récapitulatif par classe : séances (blocs continus) et heures */}
@@ -184,7 +186,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     type="date"
                     value={config.schoolYearStart ?? calendar.anneeScolaire.debut}
                     onChange={e => setSchoolYearStart(e.target.value)}
-                    className="h-11 rounded-lg border border-border/80 bg-white text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <span className="text-[11px] text-muted-foreground/60 font-mono">Calendrier : {calendar.anneeScolaire.libelle} (Maroc)</span>
             </div>
@@ -228,7 +230,7 @@ const AssessmentsPlanner: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 <select
                     value={selectedClassId}
                     onChange={e => setSelectedClassId(e.target.value)}
-                    className="h-9 rounded-md border border-border/80 bg-white text-foreground px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 font-bold"
+                    className="h-9 rounded-md border border-border/80 bg-background text-foreground px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 font-bold"
                 >
                     {classes.map(c => (
                         <option key={c.id} value={c.id}>{c.name}</option>
@@ -252,7 +254,7 @@ const AssessmentsPlanner: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             const custom = !!config.assessmentDates?.[selectedClassId]?.[a.id];
                             return (
                                 <div key={a.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary/70 border border-border/20 px-2.5 py-1.5 hover:bg-secondary transition-colors">
-                                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase font-mono ${a.type === 'controle' ? 'bg-rose-100 text-rose-700' : 'bg-sky-100 text-sky-700'}`}>
+                                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase font-mono ${a.type === 'controle' ? 'border-success/20 bg-success/10 text-success' : 'border-primary/20 bg-primary/10 text-primary'}`}>
                                         {a.type === 'controle' ? `Surveillé ${a.num}` : `Maison ${a.num}`}
                                     </span>
                                     <span className="text-[11px] font-bold text-muted-foreground font-mono">S{a.semestre}</span>
@@ -261,14 +263,14 @@ const AssessmentsPlanner: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         type="date"
                                         value={a.dateISO}
                                         onChange={e => setAssessmentDate(a.id, e.target.value)}
-                                        className={`ml-auto h-8 rounded-md border px-2 text-xs text-foreground bg-white focus:outline-none focus:ring-2 focus:ring-primary/40 ${custom ? 'border-primary text-primary' : 'border-border/80'}`}
+                                        className={`ml-auto h-8 rounded-md border px-2 text-xs text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 ${custom ? 'border-primary text-primary' : 'border-border/80'}`}
                                         title={a.fenetre ? `Fenêtre officielle : ${a.fenetre}` : undefined}
                                     />
                                     {custom && (
                                         <button
                                             type="button"
                                             onClick={() => setAssessmentDate(a.id, '')}
-                                            className="text-[11px] font-semibold text-muted-foreground/60 hover:text-red-500"
+                                            className="text-[11px] font-semibold text-muted-foreground/60 hover:text-destructive"
                                             title="Revenir à la date officielle"
                                         >
                                             ↺

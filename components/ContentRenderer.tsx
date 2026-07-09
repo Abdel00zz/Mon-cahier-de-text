@@ -37,7 +37,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (!config) {
         logger.error("ContentRenderer Error: Invalid top-level item type encountered.", { data });
         return (
-            <div className="text-lg font-bold font-slab text-center py-3 text-red-500 flex items-center justify-center gap-3">
+            <div className="text-lg font-bold font-slab text-center py-3 text-destructive flex items-center justify-center gap-3">
                 <TriangleAlert className="h-5 w-5" />
                 <span>Erreur: Type de contenu inconnu</span>
             </div>
@@ -152,7 +152,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
-      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-slate-200 text-slate-800';
+      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-secondary text-secondary-foreground border-border';
 
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
@@ -189,7 +189,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
           {/* Info page */}
           {item.page && (
-            <div className="flex items-center gap-1 text-xs text-slate-500 italic">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground italic">
               <span>(p.</span>
               <EditableCell value={String(item.page || '')} onSave={handleUpdate('page')} className="p-0" placeholder="page" />
               <span>)</span>
@@ -207,7 +207,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className="flex flex-col items-start gap-1 pl-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:pl-8">
           <Badge
             variant="outline"
-            className={`flex-shrink-0 select-none rounded-lg border-transparent text-[10px] font-bold tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`flex-shrink-0 select-none rounded-lg text-[10px] font-bold tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={BADGE_TOOLTIP_MAP[normalizedType] || normalizedType}
           >
             {badgeText} {item.number || ''}

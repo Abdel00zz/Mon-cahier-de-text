@@ -7,6 +7,7 @@ import { isHoliday, isVacation, loadHolidayCalendar, toISODate } from '../utils/
 import { withAbsences } from '../utils/lateness';
 import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
+import { buildSessionFocusPayload, findSessionAssistantSuggestion, writeSessionFocusPayload } from '../utils/sessionAssistant';
 
 /**
  * Rappels locaux de fin de séance — client uniquement, temps réel, aucun
@@ -127,9 +128,10 @@ export const useSessionAlerts = (): void => {
                 if (reminderDelay > 0) {
                     timers.push(window.setTimeout(() => {
                         const message = `Fin de séance dans 1 minute (${names}). Pensez à dater le travail effectué.`;
+                        const url = group.length === 1 ? `/#/classe/${encodeURIComponent(group[0].classId)}` : '/';
                         vibrate([200, 100, 200]);
                         toast.info(message);
-                        void showLocalNotification('Fin de séance imminente', message, `cdt-session-end-${todayISO}-${endMin}`);
+                        void showLocalNotification('Fin de séance imminente', message, `cdt-session-end-${todayISO}-${endMin}`, url);
                     }, reminderDelay));
                 }
 
@@ -137,17 +139,24 @@ export const useSessionAlerts = (): void => {
                 const endDelay = (endMin - nowMin) * 60_000;
                 if (endDelay > 0) {
                     timers.push(window.setTimeout(() => {
-                        const missing = group
-                            .filter(g => !hasDateToday(g.classId, todayISO))
-                            .map(g => nameOf(g.classId));
+                        const missingBlocks = group.filter(g => !hasDateToday(g.classId, todayISO));
+                        const missing = missingBlocks.map(g => nameOf(g.classId));
                         if (missing.length === 0) return;
+                        const url = missingBlocks.length === 1 ? `/#/classe/${encodeURIComponent(missingBlocks[0].classId)}` : '/';
+                        if (missingBlocks.length === 1) {
+                            void findSessionAssistantSuggestion(readConfig() as AppConfig).then(suggestion => {
+                                if (suggestion?.classInfo.id !== missingBlocks[0].classId) return;
+                                const payload = buildSessionFocusPayload(suggestion);
+                                if (payload) writeSessionFocusPayload(payload);
+                            });
+                        }
                         const message =
                             missing.length === 1
                                 ? `Séance terminée : aucune date affectée aujourd'hui en ${missing[0]}. Vous pouvez la poser quand vous voulez.`
                                 : `${missing.length} séances terminées sans date affectée (${missing.join(', ')}).`;
                         vibrate([300, 120, 300, 120, 300]);
                         toast.warning(message);
-                        void showLocalNotification('Date de séance à poser', message, `cdt-session-missing-${todayISO}-${endMin}`);
+                        void showLocalNotification('Date de séance à poser', message, `cdt-session-missing-${todayISO}-${endMin}`, url);
                     }, endDelay));
                 }
             }

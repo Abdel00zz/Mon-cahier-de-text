@@ -10,9 +10,12 @@ import {
     markClassDirty,
     markClassesListDirty,
     markClassSynced,
+    markSettingsSynced,
     notifyPullApplied,
+    readSettingsSyncMeta,
     readSyncMeta,
     subscribe,
+    touchSettingsSyncMeta,
     writeSyncMeta,
 } from '../utils/syncBus';
 import { useAuth } from './AuthContext';
@@ -101,6 +104,7 @@ interface ServerClassesBlob {
     schedules: AppConfig['schedules'];
     timetable: AppConfig['timetable'];
     settings?: SyncableSettings;
+    settingsUpdatedAt?: string;
     classMeta: Record<string, { updatedAt: string }>;
     updatedAt: string;
 }
@@ -149,6 +153,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const schedules = effectiveSchedules(config);
             const syncMeta = readSyncMeta();
             const now = new Date().toISOString();
+            const settingsMeta = readSettingsSyncMeta();
+            const settingsUpdatedAt = settingsMeta.localUpdatedAt ?? now;
 
             // une seule lecture/migration par classe et par push : le corps du
             // push ET l'instantané réutilisent le même résultat
@@ -207,10 +213,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             const pushedIds: string[] = [];
             let serverTime: string | null = null;
+            let pushedSettingsAt: string | null = null;
             let failure: { status: number; message?: string; firstBatch: boolean } | null = null;
 
             for (let i = 0; i < batches.length; i++) {
                 const isFirst = i === 0;
+                const includeSettings = isFirst && work.classesListDirty;
                 const response = await fetch('/api/sync', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -224,7 +232,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         schedules,
                         timetable: config.timetable ?? [],
                         // métadonnées portées par le premier lot uniquement
-                        settings: isFirst ? extractSyncableSettings(config) : undefined,
+                        settings: includeSettings ? extractSyncableSettings(config) : undefined,
+                        settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
                         deletedClassIds: isFirst ? work.deletedClassIds : [],
                         lessons: batches[i].map(({ classId, lessonsData, updatedAt }) => ({ classId, lessonsData, updatedAt })),
                         snapshot: isFirst ? snapshot : undefined,
@@ -242,6 +251,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 const data = (await response.json()) as { serverTime?: string };
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
+                if (includeSettings) pushedSettingsAt = settingsUpdatedAt;
                 for (const entry of batches[i]) {
                     pushedIds.push(entry.classId);
                     // point de synchro commun local/cloud (détection de conflit)
@@ -250,6 +260,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             if (!failure) {
+                if (pushedSettingsAt) markSettingsSynced(pushedSettingsAt);
                 clearPendingWork(work);
                 lastErrorKeyRef.current = null;
                 setLastSyncAt(serverTime ?? new Date().toISOString());
@@ -458,16 +469,28 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     (server.schedules || server.timetable
                         ? ({ schedules: server.schedules, timetable: server.timetable } as SyncableSettings)
                         : undefined);
+                const settingsMeta = readSettingsSyncMeta();
+                const remoteSettingsAt = server.settingsUpdatedAt || server.updatedAt || '';
                 const localHasSettings =
                     (config.schedules?.length ?? 0) > 0 ||
                     (config.timetable?.length ?? 0) > 0 ||
                     !!config.establishmentName ||
-                    !!config.assessmentDates;
-                if (settings && !localHasSettings) {
+                    Object.keys(config.assessmentDates ?? {}).length > 0;
+                const shouldApplyRemoteSettings =
+                    !!settings &&
+                    (
+                        (!localHasSettings && !settingsMeta.localUpdatedAt) ||
+                        (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt)
+                    );
+                if (settings && shouldApplyRemoteSettings) {
                     try {
                         localStorage.setItem('appConfig_v1', JSON.stringify(mergeSyncableSettings(config, settings)));
+                        if (remoteSettingsAt) markSettingsSynced(remoteSettingsAt);
                         localChanged = true;
                     } catch { /* stockage plein */ }
+                } else if (settings && localHasSettings && !settingsMeta.localUpdatedAt && remoteSettingsAt) {
+                    touchSettingsSyncMeta();
+                    markClassesListDirty();
                 }
 
                 if (localChanged) {

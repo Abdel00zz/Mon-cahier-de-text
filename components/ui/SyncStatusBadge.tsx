@@ -4,11 +4,11 @@ import { Button } from './button';
 
 const STATUS_CONFIG: Record<SyncStatus, { label: string; dotClass: string; pulse?: boolean }> = {
     idle: { label: '', dotClass: '' },
-    synced: { label: 'Synchronisé', dotClass: 'bg-emerald-500' },
-    syncing: { label: 'Synchronisation…', dotClass: 'bg-amber-500', pulse: true },
-    pending: { label: 'En attente', dotClass: 'bg-amber-400' },
-    offline: { label: 'Hors ligne', dotClass: 'bg-slate-400' },
-    error: { label: 'Erreur de synchro', dotClass: 'bg-red-500' },
+    synced: { label: 'Synchronisé', dotClass: 'bg-success' },
+    syncing: { label: 'Synchronisation…', dotClass: 'bg-warning', pulse: true },
+    pending: { label: 'En attente', dotClass: 'bg-warning' },
+    offline: { label: 'Hors ligne', dotClass: 'bg-muted-foreground' },
+    error: { label: 'Erreur de synchro', dotClass: 'bg-destructive' },
 };
 
 export const SyncStatusBadge: React.FC = () => {

@@ -5,19 +5,58 @@
 export type SyncEvent = 'dirty' | 'pull-applied';
 
 const listeners = new Map<SyncEvent, Set<() => void>>();
+const SYNC_PENDING_KEY = 'syncPending_v1';
+const SYNC_META_KEY = 'syncMeta_v1';
+const SETTINGS_SYNC_META_KEY = 'settingsSyncMeta_v1';
+
+interface PersistedPendingState {
+    dirtySeq: number;
+    dirtyClassVersions: Record<string, number>;
+    deletedClassIds: string[];
+    classesListVersion: number;
+    classesListSyncedVersion: number;
+}
+
+interface SettingsSyncMeta {
+    localUpdatedAt?: string;
+    lastSyncedAt?: string;
+}
+
+const readPendingState = (): PersistedPendingState | null => {
+    try {
+        const raw = localStorage.getItem(SYNC_PENDING_KEY);
+        return raw ? (JSON.parse(raw) as PersistedPendingState) : null;
+    } catch {
+        return null;
+    }
+};
+
+const persistedPending = readPendingState();
 
 // version par classe plutôt qu'un simple Set : une modification arrivée
 // pendant un push en vol ne doit pas être effacée par le clear de ce push
 // (même principe que le compteur de version de la liste, ci-dessous).
-const dirtyClassVersions = new Map<string, number>();
-let dirtySeq = 0;
-const deletedClassIds = new Set<string>();
+const dirtyClassVersions = new Map<string, number>(Object.entries(persistedPending?.dirtyClassVersions ?? {}));
+let dirtySeq = persistedPending?.dirtySeq ?? 0;
+const deletedClassIds = new Set<string>(persistedPending?.deletedClassIds ?? []);
 // version plutôt que booléen : une modification arrivée pendant un push en vol
 // ne doit pas être effacée par le clear de ce push.
-let classesListVersion = 0;
-let classesListSyncedVersion = 0;
+let classesListVersion = persistedPending?.classesListVersion ?? 0;
+let classesListSyncedVersion = persistedPending?.classesListSyncedVersion ?? 0;
 
-const SYNC_META_KEY = 'syncMeta_v1';
+const persistPendingState = (): void => {
+    try {
+        localStorage.setItem(SYNC_PENDING_KEY, JSON.stringify({
+            dirtySeq,
+            dirtyClassVersions: Object.fromEntries(dirtyClassVersions),
+            deletedClassIds: Array.from(deletedClassIds),
+            classesListVersion,
+            classesListSyncedVersion,
+        } satisfies PersistedPendingState));
+    } catch {
+        // stockage indisponible : la file reste en mémoire pour cette session
+    }
+};
 
 export interface SyncMeta {
     [classId: string]: {
@@ -61,6 +100,38 @@ export const markClassSynced = (classId: string, syncedAt: string): void => {
     writeSyncMeta(meta);
 };
 
+export const readSettingsSyncMeta = (): SettingsSyncMeta => {
+    try {
+        const raw = localStorage.getItem(SETTINGS_SYNC_META_KEY);
+        return raw ? (JSON.parse(raw) as SettingsSyncMeta) : {};
+    } catch {
+        return {};
+    }
+};
+
+export const touchSettingsSyncMeta = (): string => {
+    const updatedAt = new Date().toISOString();
+    try {
+        const current = readSettingsSyncMeta();
+        localStorage.setItem(SETTINGS_SYNC_META_KEY, JSON.stringify({ ...current, localUpdatedAt: updatedAt }));
+    } catch {
+        // stockage indisponible : le serveur utilisera son heure si besoin
+    }
+    return updatedAt;
+};
+
+export const markSettingsSynced = (syncedAt: string): void => {
+    try {
+        const current = readSettingsSyncMeta();
+        localStorage.setItem(SETTINGS_SYNC_META_KEY, JSON.stringify({
+            localUpdatedAt: current.localUpdatedAt ?? syncedAt,
+            lastSyncedAt: syncedAt,
+        }));
+    } catch {
+        // non critique
+    }
+};
+
 export const removeClassSyncMeta = (classId: string): void => {
     const meta = readSyncMeta();
     if (meta[classId]) {
@@ -82,11 +153,13 @@ export const subscribe = (event: SyncEvent, listener: () => void): (() => void) 
 export const markClassDirty = (classId: string): void => {
     dirtyClassVersions.set(classId, ++dirtySeq);
     deletedClassIds.delete(classId);
+    persistPendingState();
     emit('dirty');
 };
 
 export const markClassesListDirty = (): void => {
     classesListVersion += 1;
+    persistPendingState();
     emit('dirty');
 };
 
@@ -95,6 +168,7 @@ export const markClassDeleted = (classId: string): void => {
     dirtyClassVersions.delete(classId);
     removeClassSyncMeta(classId);
     classesListVersion += 1;
+    persistPendingState();
     emit('dirty');
 };
 
@@ -130,4 +204,5 @@ export const clearPendingWork = (work: PendingWork): void => {
     }
     work.deletedClassIds.forEach(id => deletedClassIds.delete(id));
     classesListSyncedVersion = Math.max(classesListSyncedVersion, work.listVersion);
+    persistPendingState();
 };

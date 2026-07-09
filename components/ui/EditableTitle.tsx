@@ -60,7 +60,7 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({ value, onSave, cla
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white border-2 border-primary rounded-md shadow-inner z-10 focus:outline-none focus:ring-2 focus:ring-primary/20 text-center ${className}`}
+        className={`bg-background text-foreground border-2 border-primary rounded-md shadow-inner z-10 focus:outline-none focus:ring-2 focus:ring-primary/20 text-center ${className}`}
       />
     );
   }

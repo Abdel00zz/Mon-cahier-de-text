@@ -167,10 +167,11 @@ interface VirtualListRowProps {
   start?: number;
   measureElement: (index: number, node: HTMLElement | null) => void | (() => void);
   className?: string;
+  dataFocusKey?: string;
   children?: React.ReactNode;
 }
 
-export const VirtualListRow = React.memo(({ index, start, measureElement, className, children }: VirtualListRowProps) => {
+export const VirtualListRow = React.memo(({ index, start, measureElement, className, dataFocusKey, children }: VirtualListRowProps) => {
   const cleanupRef = React.useRef<void | (() => void) | null>(null);
   const ref = React.useCallback((node: HTMLDivElement | null) => {
     if (cleanupRef.current) cleanupRef.current();
@@ -184,6 +185,7 @@ export const VirtualListRow = React.memo(({ index, start, measureElement, classN
   return (
     <div
       ref={ref}
+      data-focus-key={dataFocusKey}
       className={cn(start === undefined ? 'relative' : 'absolute left-0 top-0 w-full [contain:layout_style_paint]', className)}
       style={start === undefined ? undefined : { transform: `translateY(${start}px)` }}
     >

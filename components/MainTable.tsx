@@ -166,6 +166,8 @@ interface MainTableProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   /** terme de recherche actif (surlignage dans les lignes) */
   searchQuery?: string;
+  /** rangée à rejoindre automatiquement après une suggestion de séance */
+  focusKey?: string | null;
 }
 
 interface FlatDataItem {
@@ -410,6 +412,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onCancelInlineEdit,
   getDateWarnings,
   searchQuery,
+  focusKey,
 }) => {
   const editingKey = editingIndices ? makeKey(editingIndices) : null;
   const flatData = useMemo(() => {
@@ -522,6 +525,39 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     overscan: VIRTUAL_OVERSCAN,
     keepIndices,
   });
+
+  useEffect(() => {
+    if (!focusKey) return;
+
+    const targetIndex = renderRows.findIndex(row => (
+        row.kind === 'single'
+            ? row.item.key === focusKey
+            : row.items.some(item => item.key === focusKey)
+    ));
+    if (targetIndex < 0) return;
+
+    const scrollNearTarget = () => {
+        const table = scrollRef.current;
+        if (!table) return;
+        const tableTop = table.getBoundingClientRect().top + window.scrollY;
+        const estimatedTop = tableTop + targetIndex * ESTIMATED_ROW_HEIGHT;
+        window.scrollTo({ top: Math.max(0, estimatedTop - 150), behavior: 'smooth' });
+    };
+
+    const refineToRenderedRow = () => {
+        const row = Array.from(document.querySelectorAll<HTMLElement>('[data-focus-key]'))
+            .find(element => element.dataset.focusKey === focusKey);
+        row?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    };
+
+    const frame = window.requestAnimationFrame(scrollNearTarget);
+    const refineTimer = window.setTimeout(refineToRenderedRow, shouldVirtualize ? 260 : 80);
+    return () => {
+        window.cancelAnimationFrame(frame);
+        window.clearTimeout(refineTimer);
+    };
+  }, [focusKey, renderRows, scrollRef, shouldVirtualize]);
+
   useEffect(() => {
     logger.debug('MainTable profile', {
       totalRowsInMemory: flatData.length,
@@ -558,8 +594,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
               return rows.map(({ row, virtualItem, absoluteIndex }) => {
                   if (row.kind === 'session') {
+                      const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
-                          <VirtualListRow key={row.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement}>
+                          <VirtualListRow key={row.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={rowFocusKey ?? undefined}>
                               <SessionGroupRow
                                   items={row.items}
                                   selectedKeys={selectedKeys}
@@ -582,7 +619,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       const originalItemIndices = item.indices;
                       const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
                       return (
-                          <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement}>
+                          <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined}>
                           <SeparatorRow
                               data={item.data as Separator}
                               indices={originalItemIndices}
@@ -598,7 +635,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
                   if (isEditing && item.elementType === 'item') {
                       return (
-                          <VirtualListRow key={`${item.key}-edit`} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement}>
+                          <VirtualListRow key={`${item.key}-edit`} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined}>
                           <InlineEditRow
                               data={item.data as LessonItem}
                               onSave={(updatedData) => onConfirmInlineEdit(item.indices, updatedData)}
@@ -613,7 +650,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
 
                   return (
-                      <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement}>
+                      <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined}>
                           <TableRow
                               data={item.data}
                               indices={item.indices}

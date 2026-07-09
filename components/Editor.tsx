@@ -28,6 +28,7 @@ import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '../constants';
 import { logger } from '../utils/logger';
+import { SESSION_ASSISTANT_FOCUS_KEY, SessionAssistantFocusPayload } from '../utils/sessionAssistant';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -88,6 +89,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
   const [isSelectionPending, startSelectionTransition] = useTransition();
   const editingIndicesRef = useRef<Indices | null>(null);
+  const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
+  const consumedSessionFocusRef = useRef<string | null>(null);
 
   const {
     classInfo,
@@ -287,6 +290,43 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (isClassLoading) return;
+
+    let payload: SessionAssistantFocusPayload | null = null;
+    try {
+      const raw = sessionStorage.getItem(SESSION_ASSISTANT_FOCUS_KEY);
+      payload = raw ? (JSON.parse(raw) as SessionAssistantFocusPayload) : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
+
+    const focusKey = indicesKey(payload.targetIndices);
+    if (consumedSessionFocusRef.current === focusKey) return;
+
+    const { item } = findItem(lessonsData, payload.targetIndices);
+    if (!item) return;
+
+    consumedSessionFocusRef.current = focusKey;
+    setSelectionState(createSelectionState(payload.targetIndices));
+    setSessionFocusKey(focusKey);
+    toast.info(payload.message, { id: 'session-assistant-focus', duration: 9000 });
+
+    try {
+      sessionStorage.removeItem(SESSION_ASSISTANT_FOCUS_KEY);
+    } catch {
+      // aucune consequence : la garde consumedSessionFocusRef evite les boucles
+    }
+
+    const clearTimer = window.setTimeout(() => {
+      setSessionFocusKey(current => (current === focusKey ? null : current));
+    }, 3500);
+
+    return () => window.clearTimeout(clearTimer);
+  }, [classInfo.id, isClassLoading, lessonsData]);
 
   useEffect(() => {
     if (config.defaultTeacherName && config.defaultTeacherName !== classInfo.teacherName) {
@@ -795,6 +835,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDateWarnings}
               searchQuery={searchQuery}
+              focusKey={sessionFocusKey}
             />
           </main>
         </div>

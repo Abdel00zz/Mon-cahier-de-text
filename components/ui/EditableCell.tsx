@@ -79,7 +79,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
     onBlur: handleSave,
     onKeyDown: handleKeyDown,
     placeholder: placeholder,
-    className: `w-full h-full p-2 bg-white border-2 border-primary rounded-md shadow-inner z-10 focus:outline-none focus:ring-2 focus:ring-primary/20 ${className}`
+    className: `w-full h-full p-2 bg-background text-foreground border-2 border-primary rounded-md shadow-inner z-10 focus:outline-none focus:ring-2 focus:ring-primary/20 ${className}`
   };
 
   if (isEditing) {
@@ -93,7 +93,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
   return (
     <div
       onDoubleClick={() => setIsEditing(true)}
-      className={`min-h-[1.5rem] focus:bg-white rounded break-words whitespace-pre-wrap ${className}`}
+      className={`min-h-[1.5rem] focus:bg-background rounded break-words whitespace-pre-wrap ${className}`}
       title="Double-cliquez pour modifier"
     >
       {value ? (
@@ -102,7 +102,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
         (highlight || '').trim()
           ? highlightMatches(value, highlight)
           : <MathText source={value} cacheKey={value} inline>{value}</MathText>
-      ) : <span className="text-slate-400 italic">{placeholder}</span>}
+      ) : <span className="text-muted-foreground/70 italic">{placeholder}</span>}
     </div>
   );
 };

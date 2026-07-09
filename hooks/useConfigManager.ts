@@ -4,7 +4,7 @@ import { AppConfig } from '../types';
 import { logger } from '../utils/logger';
 import { effectiveSchedules } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
-import { markClassesListDirty, subscribe } from '../utils/syncBus';
+import { markClassesListDirty, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
@@ -128,10 +128,10 @@ export const useConfigManager = () => {
             newConfig.notificationSettings !== undefined ||
             SYNCABLE_KEYS.some(key => newConfig[key as keyof AppConfig] !== undefined);
         if (touchesSyncable) {
+            touchSettingsSyncMeta();
             markClassesListDirty();
         }
     }, [setConfig]);
 
     return { config, updateConfig, isLoading };
 };
-

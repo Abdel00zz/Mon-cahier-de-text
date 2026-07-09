@@ -1,6 +1,6 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http';
 import { getRedis, KEYS } from './_lib/redis';
-import { assertBodySize } from './_lib/validate';
+import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidTimetable } from './_lib/validate';
 import { requireUser } from './_lib/auth';
 import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot, TimetableEntry } from '../types';
 
@@ -10,6 +10,7 @@ interface ClassesBlob {
     timetable: TimetableEntry[];
     /** réglages du professeur synchronisés (blob opaque, voir utils/syncSettings) */
     settings?: Record<string, unknown>;
+    settingsUpdatedAt?: string;
     classMeta: Record<string, { updatedAt: string }>;
     updatedAt: string;
 }
@@ -24,12 +25,13 @@ interface SyncPushBody {
     schedules?: ClassSchedule[];
     timetable?: TimetableEntry[];
     settings?: Record<string, unknown>;
+    settingsUpdatedAt?: string;
     deletedClassIds?: string[];
     lessons?: { classId: string; lessonsData: LessonsData; updatedAt: string }[];
     snapshot?: TeacherSnapshot;
 }
 
-const EMPTY_BLOB: ClassesBlob = { classes: [], schedules: [], timetable: [], settings: {}, classMeta: {}, updatedAt: '' };
+const EMPTY_BLOB: ClassesBlob = { classes: [], schedules: [], timetable: [], settings: {}, settingsUpdatedAt: '', classMeta: {}, updatedAt: '' };
 
 const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const redis = await getRedis();
@@ -51,18 +53,16 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     assertBodySize(req.body);
     const body = parseBody<SyncPushBody>(req.body);
 
-    if (!Array.isArray(body.classes)) {
-        throw new HttpError(400, 'Liste des classes manquante.');
-    }
-
     const redis = await getRedis();
     const now = new Date().toISOString();
     const existing = (await redis.get<ClassesBlob>(KEYS.classes(phone))) ?? EMPTY_BLOB;
+    const classes = assertValidClasses(body.classes);
 
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };
-    const validClassIds = new Set(body.classes.map(c => c.id));
+    const validClassIds = new Set(classes.map(c => c.id));
+    const timetable = assertValidTimetable(body.timetable, validClassIds);
 
-    const lessons = (body.lessons ?? []).filter(entry => entry.classId && validClassIds.has(entry.classId));
+    const lessons = assertValidLessonsPayload(body.lessons, validClassIds);
     for (const entry of lessons) {
         classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
     }
@@ -77,10 +77,13 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     }
 
     const nextBlob: ClassesBlob = {
-        classes: body.classes,
+        classes,
         schedules: Array.isArray(body.schedules) ? body.schedules : existing.schedules,
-        timetable: Array.isArray(body.timetable) ? body.timetable : (existing.timetable ?? []),
+        timetable: timetable ?? (existing.timetable ?? []),
         settings: body.settings && typeof body.settings === 'object' ? body.settings : (existing.settings ?? {}),
+        settingsUpdatedAt: body.settings && typeof body.settings === 'object'
+            ? (typeof body.settingsUpdatedAt === 'string' && body.settingsUpdatedAt ? body.settingsUpdatedAt : now)
+            : (existing.settingsUpdatedAt ?? ''),
         classMeta,
         updatedAt: now,
     };

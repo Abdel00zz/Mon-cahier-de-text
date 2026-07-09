@@ -31,17 +31,17 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 };
 
 export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-sky-100 text-sky-800', 
-    'définition': 'bg-emerald-100 text-emerald-800', 
-    'théorème': 'bg-amber-100 text-amber-800',
-    'proposition': 'bg-indigo-100 text-indigo-800', 
-    'lemme': 'bg-purple-100 text-purple-800', 
-    'corollaire': 'bg-yellow-100 text-yellow-800',
-    'remarque': 'bg-slate-100 text-slate-800', 
-    'preuve': 'bg-slate-100 text-slate-800', 
-    'exemple': 'bg-teal-100 text-teal-800',
-    'exercice': 'bg-orange-100 text-orange-800', 
-    'application': 'bg-cyan-100 text-cyan-800',
+    'activité': 'bg-primary/10 text-primary border-primary/20',
+    'définition': 'bg-success/10 text-success border-success/20',
+    'théorème': 'bg-warning/10 text-warning border-warning/20',
+    'proposition': 'bg-primary/10 text-primary border-primary/20',
+    'lemme': 'bg-primary/10 text-primary border-primary/20',
+    'corollaire': 'bg-warning/10 text-warning border-warning/20',
+    'remarque': 'bg-secondary text-secondary-foreground border-border',
+    'preuve': 'bg-secondary text-secondary-foreground border-border',
+    'exemple': 'bg-success/10 text-success border-success/20',
+    'exercice': 'bg-warning/10 text-warning border-warning/20',
+    'application': 'bg-primary/10 text-primary border-primary/20',
 };
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
@@ -186,14 +186,14 @@ export const SUBJECTS = [
 export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
     // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
-    'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700', rowColor: 'bg-red-50/50' },
-    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-purple-700', badgeColor: 'bg-purple-100 text-purple-800', rowColor: 'bg-purple-50/60' },
+    'chapter': { name: 'Chapitre', icon: Book, color: 'text-foreground', rowColor: 'bg-secondary/45' },
+    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-warning', badgeColor: 'bg-warning/10 text-warning border-warning/20', rowColor: 'bg-warning/5' },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
     // type dans le cahier + 1) — réservé aux types récurrents.
-    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-700', badgeColor: 'bg-blue-100 text-blue-800', rowColor: 'bg-blue-50/60', autoNumber: true },
-    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-green-700', badgeColor: 'bg-green-100 text-green-800', rowColor: 'bg-green-50/60', autoNumber: true },
-    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-blue-600', badgeColor: 'bg-blue-100 text-blue-800', rowColor: 'bg-blue-50/40', autoNumber: true },
-    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-green-600', badgeColor: 'bg-green-100 text-green-800', rowColor: 'bg-green-50/40', autoNumber: true },
+    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-primary', badgeColor: 'bg-primary/10 text-primary border-primary/20', rowColor: 'bg-primary/5', autoNumber: true },
+    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-success', badgeColor: 'bg-success/10 text-success border-success/20', rowColor: 'bg-success/5', autoNumber: true },
+    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-primary', badgeColor: 'bg-primary/10 text-primary border-primary/20', rowColor: 'bg-primary/5', autoNumber: true },
+    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-success', badgeColor: 'bg-success/10 text-success border-success/20', rowColor: 'bg-success/5', autoNumber: true },
 };
 
 
