@@ -401,7 +401,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               form="add-content-form" 
               className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm"
             >
-              <Plus className="mr-2 h-3.5 w-3.5" /> Insérer
+              Insérer
             </Button>
           </>
         ) : (
@@ -441,7 +441,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Section"
                 description="Ajoute une partie au chapitre ou bloc sélectionné"
-                colorClass="text-signature-gold bg-primary/10 border-primary/20"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip="Sélectionnez un chapitre ou une section"
@@ -450,7 +450,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-section"
                 description="Ajoute un niveau sous la section sélectionnée"
-                colorClass="text-signature-gold bg-primary/10 border-primary/20"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
                 tooltip="Sélectionnez une section"
@@ -459,7 +459,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-sous-section"
                 description="Ajoute un niveau sous la sous-section sélectionnée"
-                colorClass="text-signature-gold bg-primary/10 border-primary/20"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
                 tooltip="Sélectionnez une sous-section"
@@ -502,7 +502,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Home}
                 label="Devoir maison"
                 description="Planifier un travail personnel hors-classe"
-                colorClass="text-signature-gold bg-primary/10 border-primary/20"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
@@ -525,7 +525,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckCheck}
                 label="Correction Devoir maison"
                 description="Ajouter le corrigé complet d'un DM"
-                colorClass="text-signature-gold bg-primary/10 border-primary/20"
+                colorClass="text-primary bg-primary/10 border-primary/20"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard

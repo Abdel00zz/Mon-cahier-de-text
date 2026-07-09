@@ -72,7 +72,6 @@ export const WelcomeModal: FC<WelcomeModalProps> = ({ isOpen, onClose, config, o
             }`}
           >
             Découvrir l'espace
-            {canFinish && <ArrowRight className="ml-2 h-3.5 w-3.5" />}
           </Button>
           <p className="text-center text-[10px] text-muted-foreground/80 font-semibold font-sans">
             Ces informations sont stockées localement sur votre navigateur.

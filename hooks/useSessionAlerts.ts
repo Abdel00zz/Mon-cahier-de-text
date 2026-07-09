@@ -7,7 +7,7 @@ import { isHoliday, isVacation, loadHolidayCalendar, toISODate } from '../utils/
 import { withAbsences } from '../utils/lateness';
 import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
-import { buildSessionFocusPayload, findSessionAssistantSuggestion, writeSessionFocusPayload } from '../utils/sessionAssistant';
+// No imports needed here for sessionAssistant
 
 /**
  * Rappels locaux de fin de séance — client uniquement, temps réel, aucun
@@ -143,13 +143,7 @@ export const useSessionAlerts = (): void => {
                         const missing = missingBlocks.map(g => nameOf(g.classId));
                         if (missing.length === 0) return;
                         const url = missingBlocks.length === 1 ? `/#/classe/${encodeURIComponent(missingBlocks[0].classId)}` : '/';
-                        if (missingBlocks.length === 1) {
-                            void findSessionAssistantSuggestion(readConfig() as AppConfig).then(suggestion => {
-                                if (suggestion?.classInfo.id !== missingBlocks[0].classId) return;
-                                const payload = buildSessionFocusPayload(suggestion);
-                                if (payload) writeSessionFocusPayload(payload);
-                            });
-                        }
+                        // Session assistant suggestion auto-focus was cleaned up and removed
                         const message =
                             missing.length === 1
                                 ? `Séance terminée : aucune date affectée aujourd'hui en ${missing[0]}. Vous pouvez la poser quand vous voulez.`

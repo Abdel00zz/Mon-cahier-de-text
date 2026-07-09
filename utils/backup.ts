@@ -1,5 +1,11 @@
 import { AppConfig, ClassInfo, LessonsData } from '../types';
-import { SyncMeta } from './syncBus';
+import {
+    markClassDeleted,
+    markClassDirty,
+    markClassesListDirty,
+    touchSettingsSyncMeta,
+    SyncMeta,
+} from './syncBus';
 
 /**
  * Sauvegarde COMPLÈTE de toutes les données de l'utilisateur sur cet appareil :
@@ -74,6 +80,8 @@ export const restoreBackup = (data: any): number => {
     const classes = Array.isArray(data.classes) ? data.classes : null;
     if (!data.config || !classes) throw new Error('Fichier de sauvegarde invalide ou corrompu.');
 
+    const previousClasses = ((readJSON('classManager_v1') as ClassInfo[]) ?? []);
+
     // 1) Configuration
     localStorage.setItem('appConfig_v1', JSON.stringify(data.config));
 
@@ -107,6 +115,20 @@ export const restoreBackup = (data: any): number => {
         restoredMeta[info.id] = { ...restoredMeta[info.id], localUpdatedAt: now };
     }
     localStorage.setItem('syncMeta_v1', JSON.stringify(restoredMeta));
+
+    /*
+     * 5) Réinjecter explicitement la restauration dans le circuit cloud.
+     * Les horodatages seuls permettent de choisir une version au pull, mais ne
+     * créent pas de travail « dirty ». La liste, les réglages et chaque cahier
+     * doivent partir ensemble au prochain push.
+     */
+    const restoredIds = new Set(allClassInfo.map(info => info.id));
+    previousClasses
+        .filter(info => !restoredIds.has(info.id))
+        .forEach(info => markClassDeleted(info.id));
+    allClassInfo.forEach(info => markClassDirty(info.id));
+    touchSettingsSyncMeta();
+    markClassesListDirty();
 
     return allClassInfo.length;
 };

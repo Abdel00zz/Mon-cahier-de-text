@@ -1,4 +1,4 @@
-import React, { FC, useMemo, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { Modal } from '../ui/modal';
 import { CalendarCheck, CalendarX, CalendarPlus, CalendarMinus, ChevronRight } from '../ui/icons';
 import { Button } from '../ui/button';
@@ -93,6 +93,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
   const [selectedDate, setSelectedDate] = useState(() => isoFromOffset(0));
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setActionType('associate');
+    setSelectedDate(isoFromOffset(0));
+  }, [isOpen]);
+
   // Alertes live : recalculées à chaque changement de date choisie.
   const dateWarnings = useMemo(
     () => (actionType === 'associate' && getDateWarnings && selectedDate ? getDateWarnings(selectedDate) : []),
@@ -147,28 +153,22 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       maxWidth="md"
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
-          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl px-4 h-10 text-xs font-semibold">
+          <Button type="button" variant="secondary" onClick={onClose} className="h-11 rounded-xl px-4 text-xs font-semibold">
             Annuler
           </Button>
           <Button
             type="button"
             onClick={handleApply}
-            className={`rounded-xl h-10 text-xs font-bold px-5 shadow-sm transition-all duration-150 ${
+            className={`h-11 rounded-xl px-5 text-xs font-bold shadow-sm transition-all duration-150 ${
               actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/95 text-primary-foreground'
                 : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
             }`}
           >
             {actionType === 'associate' ? (
-              <span className="flex items-center gap-1.5">
-                <CalendarCheck className="h-3.5 w-3.5" />
-                Appliquer la date
-              </span>
+              <span>Appliquer la date</span>
             ) : (
-              <span className="flex items-center gap-1.5">
-                <CalendarX className="h-3.5 w-3.5" />
-                Dissocier les dates
-              </span>
+              <span>Dissocier les dates</span>
             )}
           </Button>
         </div>
@@ -180,7 +180,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <button
             type="button"
             onClick={() => setActionType('associate')}
-            className={`py-1.5 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 ${
+            className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 active:scale-95 ${
               actionType === 'associate'
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -191,7 +191,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <button
             type="button"
             onClick={() => setActionType('dissociate')}
-            className={`py-1.5 text-xs font-bold rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 ${
+            className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 active:scale-95 ${
               actionType === 'dissociate'
                 ? 'bg-card text-destructive shadow-sm'
                 : 'text-muted-foreground hover:text-destructive'
@@ -241,24 +241,36 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             <div className="grid grid-cols-3 gap-1.5 max-w-xs mx-auto pt-1">
               <Button
                 type="button"
-                variant="outline"
-                className="text-[11px] font-semibold py-1 h-8 rounded-lg border-border bg-card hover:bg-secondary/50 shadow-sm"
+                variant={selectedDate === isoFromOffset(-1) ? "default" : "outline"}
+                className={`h-11 rounded-lg border-border py-1 text-[11px] font-bold shadow-sm transition-all duration-150 active:scale-95 sm:h-10 ${
+                  selectedDate === isoFromOffset(-1)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card hover:bg-secondary/50 text-foreground'
+                }`}
                 onClick={() => setSelectedDate(isoFromOffset(-1))}
               >
                 Hier
               </Button>
               <Button
                 type="button"
-                variant="outline"
-                className="text-[11px] font-semibold py-1 h-8 rounded-lg border-border bg-card hover:bg-secondary/50 shadow-sm"
+                variant={selectedDate === isoFromOffset(0) ? "default" : "outline"}
+                className={`h-11 rounded-lg border-border py-1 text-[11px] font-bold shadow-sm transition-all duration-150 active:scale-95 sm:h-10 ${
+                  selectedDate === isoFromOffset(0)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card hover:bg-secondary/50 text-foreground'
+                }`}
                 onClick={() => setSelectedDate(isoFromOffset(0))}
               >
                 Aujourd'hui
               </Button>
               <Button
                 type="button"
-                variant="outline"
-                className="text-[11px] font-semibold py-1 h-8 rounded-lg border-border bg-card hover:bg-secondary/50 shadow-sm"
+                variant={selectedDate === isoFromOffset(1) ? "default" : "outline"}
+                className={`h-11 rounded-lg border-border py-1 text-[11px] font-bold shadow-sm transition-all duration-150 active:scale-95 sm:h-10 ${
+                  selectedDate === isoFromOffset(1)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card hover:bg-secondary/50 text-foreground'
+                }`}
                 onClick={() => setSelectedDate(isoFromOffset(1))}
               >
                 Demain

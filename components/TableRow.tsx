@@ -120,7 +120,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
   const bgClass = isSelected 
     ? 'bg-primary/[0.08]' 
     : hasAssignedDate
-      ? 'bg-success/10'
+      ? 'bg-scheduled/12'
       : 'bg-card';
 
   if (isMerged) {
@@ -158,7 +158,7 @@ const RemarkCell: FC<{
   const bgClass = isSelected 
     ? 'bg-primary/[0.04]' 
     : hasAssignedDate 
-      ? 'bg-success/5'
+      ? 'bg-scheduled/[0.07]'
       : 'bg-card';
 
   const borderClass = '';
@@ -267,8 +267,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? 'border-t border-success/25' : '',
-    isDatedGroupEnd ? 'border-b-2 border-success/35' : '',
+    isDatedGroupStart ? 'border-t border-scheduled/30' : '',
+    isDatedGroupEnd ? 'border-b-2 border-scheduled/45' : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -281,9 +281,9 @@ const TableRowComponent: FC<TableRowProps> = ({
    * entière (date + contenu + remarque), pas à une seule cellule —
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
-  const datedWash = hasAssignedDate ? 'bg-success/5' : 'bg-card';
+  const datedWash = hasAssignedDate ? 'bg-scheduled/[0.07]' : 'bg-card';
   const rowWash = isSelected ? 'bg-primary/[0.06]' : datedWash;
-  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-success/10' : 'hover:bg-muted/60';
+  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-scheduled/12' : 'hover:bg-muted/60';
   // §G tableau serré : AUCUN padding de cadre — les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
@@ -293,25 +293,22 @@ const TableRowComponent: FC<TableRowProps> = ({
   const dividerClass = isSelected
     ? 'border-r border-primary/25'
     : hasAssignedDate
-      ? 'border-r border-success/25'
+      ? 'border-r border-scheduled/35'
       : 'border-r border-border/50';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
       ? 'md:border-r md:border-primary/25'
       : hasAssignedDate
-        ? 'md:border-r md:border-success/25'
+        ? 'md:border-r md:border-scheduled/35'
         : 'md:border-r md:border-border/50';
 
-  /* Rail latéral : primaire quand sélectionné (prioritaire), doré si daté. */
-  const stateRail = isSelected ? (
-    <span aria-hidden className="absolute left-0 top-0 h-full w-[3px] bg-primary" />
-  ) : hasAssignedDate ? (
-    <span
-      aria-hidden
-      className="absolute left-0 top-0 h-full w-[2.5px] bg-success/75"
-    />
-  ) : null;
+  /* Rail latéral supprimé selon la demande. */
+  const stateRail = null;
+  const rowGridClass = hasAssignedDate
+    ? TABLE_GRID_CLASS
+    : 'grid-cols-1 md:grid-cols-[var(--cdt-table-cols)]';
+  const dateCellVisibility = hasAssignedDate ? 'flex' : 'hidden md:flex';
 
   const isCorrection = elementType.startsWith('correction_');
   const isTopLevelBlock = (elementType in TOP_LEVEL_TYPE_CONFIG && elementType !== 'chapter') || isCorrection;
@@ -362,7 +359,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     return (
       <div
         className={[
-          `grid ${TABLE_GRID_CLASS} transition-colors duration-100`,
+          `grid ${rowGridClass} transition-colors duration-100`,
           frameClasses,
           isNew ? 'new-item-highlight' : '',
         ].filter(Boolean).join(' ')}
@@ -370,7 +367,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         onDoubleClick={event => event.stopPropagation()}
       >
         {stateRail}
-        <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+        <div className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </div>
         {contentCell}
@@ -423,7 +420,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   }
 
   const rowClasses = [
-    `grid ${TABLE_GRID_CLASS} touch-manipulation transition-colors duration-100`,
+    `grid ${rowGridClass} touch-manipulation transition-colors duration-100`,
     frameClasses,
     isNew ? 'new-item-highlight' : '',
   ].filter(Boolean).join(' ');
@@ -435,7 +432,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       onDoubleClick={event => event.stopPropagation()}
     >
       {stateRail}
-      <div className={`min-w-0 flex flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+      <div className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
         <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
       </div>
 

@@ -301,6 +301,18 @@ Pour forcer un comportement (ex. tester la page d'auth en local), remplacez la v
 
 ## 7. Journal des évolutions
 
+**Refonte UI « app de haute valeur » & rectifications (juillet 2026 — dernière itération)**
+- **Identité visuelle unifiée (bleu)** : `--primary` bleu (Coursera Blue), `theme-color` et manifeste PWA alignés (`#0057D1`), retrait des **couleurs concurrentes** à l'écran (or `signature-gold` mort et marqueurs de liste `#B8935A` → `text-primary`) ; statuts sémantiques à **une seule teinte par famille** (`--success`, `--warning`, `--destructive`, [`index.css`](index.css)) repris par les bannières, cartes stat et pastilles de sévérité.
+- **Style Figma-pro** : arrondis des **cadres** réduits via l'échelle `--radius-*` unique (valeurs arbitraires `rounded-[Npx]` remappées sur les tokens) ; les **cercles/pastilles** (`rounded-full`) préservés.
+- **Icônes interactives +30% et flexibles** : dimensionnées en `rem` (suivent le zoom/accessibilité), par **paliers** (`h-4`→20,8px, `h-5`→25,6px) pour ne jamais rétrécir le FAB ni gonfler les micro-icônes.
+- **Mise à jour PWA automatique et silencieuse** : `registerType: 'autoUpdate'`, service worker `skipWaiting` + `clientsClaim` + `cleanupOutdatedCaches`, rechargement unique — **plus d'invite « Recharger »** ([`pwa/registerSW.ts`](pwa/registerSW.ts), [`pwa/sw.ts`](pwa/sw.ts)).
+- **Barre d'outils réellement collante** : rendue sans wrapper confinant → épinglée en haut au défilement (l'en-tête de colonnes défile) ; barre rectangulaire, sans arrondi.
+- **LaTeX partout** : composant partagé [`components/ui/math-text.tsx`](components/ui/math-text.tsx) — titres/cellules du tableau, modales (Gérer les leçons, Analyse) et **barre de sélection** rendent les formules `$…$` à l'affichage (source brute éditable).
+- **Barre de sélection retravaillée** : actions groupées par intention avec **séparateurs uniquement entre groupes présents** (fini le trait orphelin), type en **français** sans redondance, titre **tronqué (…)** et barre resserrée, boutons plus lisibles.
+- **Modales mobile-first** : `DialogContent` borné en hauteur (`max-h-88dvh` + défilement interne), marges latérales, coins nets ; `window.confirm`/`alert` remplacés par un **`ConfirmDialog` shadcn** et des toasts sonner.
+- **Datation des titres confirmée** : chapitres, sections et paragraphes reçoivent une **date même seuls** (bouton « Dater aujourd'hui », date écrite, affichée, gardée par la garde intelligente) — vérifié de bout en bout.
+- **Nouveau référentiel** : [`data_base.md`](data_base.md) documente **toutes** les données de base — cycles & niveaux, matières, types de contenus, jours fériés, vacances, planning des devoirs surveillés/maison, modèles de données et clés de stockage.
+
 **Fiabilité des mécanismes & intelligence de l'emploi du temps (juillet 2026)**
 - **Tableau rendu par vrais blocs de séance** : les éléments consécutifs qui partagent une même date ne simulent plus une fusion ligne par ligne ; ils sont rendus comme une seule séance logique avec une cellule Date commune, un contenu empilé et une colonne Remarque cohérente. Résultat : centrage vertical exact, filets continus jusqu'à la remarque, meilleure base pour l'impression et la virtualisation.
 - **Impression refondue par séances** : `PrintView` regroupe désormais les contenus datés avant rendu. Le PDF imprime une séance comme une unité officielle (date commune, contenu empilé, remarques dédupliquées), avec une feuille blanche sans carte d'application, marges A4 homogènes et style administratif sobre.
@@ -381,7 +393,7 @@ Pour forcer un comportement (ex. tester la page d'auth en local), remplacez la v
 - **Édition** : réordonnancement imbriqué par glisser-déposer, insertion « + » entre les lignes, surlignage des résultats de recherche.
 - **Emploi du temps** : import depuis une photo/PDF, gestion des salles par créneau (le champ `room` existe déjà dans le modèle).
 - **Compression** des gros blobs de leçons (gzip) avant envoi Redis, si nécessaire.
-- **Mode sombre** via variables CSS existantes.
+- **Thème clair unique** : le mode sombre a été retiré pour préserver une identité stable et réduire la maintenance visuelle.
 
 ---
 

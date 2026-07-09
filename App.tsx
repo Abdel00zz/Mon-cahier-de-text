@@ -11,12 +11,7 @@ import { AUTH_REQUIRED } from './config/features';
 import { Analytics } from '@vercel/analytics/react';
 import { OrientationAlertModal } from './components/modals/OrientationAlertModal';
 import { normalizeOfficialClassName } from './constants';
-import {
-  buildSessionFocusPayload,
-  findSessionAssistantSuggestion,
-  SESSION_ASSISTANT_AUTO_OPEN_PREFIX,
-  writeSessionFocusPayload,
-} from './utils/sessionAssistant';
+// No imports for deleted sessionAssistant
 
 const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./components/Editor').then(module => ({ default: module.Editor })));
@@ -187,34 +182,7 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
   }, [saveCurrentScroll]);
 
-  useEffect(() => {
-    if (isConfigLoading || (AUTH_REQUIRED && authStatus !== 'authenticated' && authStatus !== 'offline')) return;
-    if (view !== 'dashboard' || activeClass) return;
-    const hash = window.location.hash;
-    if (hash && hash !== DASHBOARD_HASH) return;
-
-    let cancelled = false;
-    void findSessionAssistantSuggestion(config).then(suggestion => {
-      if (cancelled || !suggestion) return;
-      if (suggestion.target?.status !== 'missing-date') return;
-
-      const seenKey = `${SESSION_ASSISTANT_AUTO_OPEN_PREFIX}${suggestion.storageKey}`;
-      try {
-        if (sessionStorage.getItem(seenKey)) return;
-        sessionStorage.setItem(seenKey, '1');
-      } catch {
-        // si sessionStorage est bloque, on garde l'aide sans memorisation
-      }
-
-      const payload = buildSessionFocusPayload(suggestion);
-      if (payload) writeSessionFocusPayload(payload);
-      handleSelectClass(suggestion.classInfo);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeClass, authStatus, config, handleSelectClass, isConfigLoading, view]);
+  // Session assistant suggestion auto-focus has been cleaned up and removed
 
   const handleBackToDashboard = useCallback(() => {
     saveCurrentScroll();

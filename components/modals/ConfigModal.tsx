@@ -40,6 +40,7 @@ interface ConfigModalProps {
 type ConfigTab = 'affichage' | 'emploi' | 'notifications' | 'donnees' | 'compte';
 
 const TABS: { id: ConfigTab; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: 'affichage', label: 'Affichage', description: 'Visibilité des descriptions et préférences de rendu', icon: Eye },
   { id: 'emploi', label: 'Emploi du temps', description: 'Compositions, heures et devoirs', icon: CalendarRange },
   { id: 'notifications', label: 'Notifications', description: 'Alertes de retard et absences', icon: Bell },
   { id: 'donnees', label: 'Données', description: 'Sauvegarde et restauration', icon: Database },
@@ -58,7 +59,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   asPage = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
-  const [activeTab, setActiveTab] = useState<ConfigTab>('emploi');
+  const [activeTab, setActiveTab] = useState<ConfigTab>('affichage');
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -438,7 +439,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     onClick={onExportPlatform} 
                     className="w-full text-xs h-10 border-border text-primary hover:bg-primary hover:text-white rounded-full transition-all"
                   >
-                    <Download className="mr-1.5 h-4 w-4" /> Sauvegarder localement
+                    Sauvegarder localement
                   </Button>
                 </div>
                 
@@ -458,7 +459,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     }}
                     className="w-full text-xs h-10 border-border text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full transition-all"
                   >
-                    <Upload className="mr-1.5 h-4 w-4" /> Choisir une sauvegarde
+                    Choisir une sauvegarde
                   </Button>
                 </div>
               </div>

@@ -4,7 +4,7 @@ import { computeProgressionStats } from '../utils/progression';
 import { getDaySessionBlocks } from '../utils/timetable';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { useLateness } from '../hooks/useLateness';
-import { TrendingUp, CircleCheck, TriangleAlert, CalendarDays, Clock } from './ui/icons';
+import { TrendingUp, CircleCheck, TriangleAlert, CalendarDays, Clock, Book, CalendarCheck } from './ui/icons';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import {
@@ -14,17 +14,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from './ui/sheet';
-
-/**
- * Bandeau statistique du tableau de bord — esprit app mobile : trois cartes
- * MINIMALES (icône + valeur + libellé), les réponses détaillées s'ouvrent au
- * tap dans une bottom-sheet. Les trois questions, dans l'ordre où le
- * professeur se les pose :
- *   1. « Suis-je à jour ? »        → séances en attente (moteur de retard)
- *   2. « Où en suis-je ? »         → complétion pondérée du programme
- *   3. « Qu'est-ce qui m'attend ? » → séances d'aujourd'hui (grille fusionnée)
- * Mêmes modules purs que la bannière d'alerte, l'admin et le cron.
- */
 
 /** Compteur animé : ease-out cubique via requestAnimationFrame. */
 const useCountUp = (target: number, durationMs = 800): number => {
@@ -72,23 +61,56 @@ const readLessons = (classId: string): LessonsData => {
 const formatMinutes = (min: number): string =>
     `${String(Math.floor(min / 60)).padStart(2, '0')}h${String(min % 60).padStart(2, '0')}`;
 
+const formatDateCompact = (dateStr: string | null): string => {
+    if (!dateStr) return '--';
+    try {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(Date.UTC(y, m - 1, d));
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).replace('.', '');
+    } catch {
+        return dateStr;
+    }
+};
+
 type StatKey = 'pending' | 'program' | 'today';
 
 interface StatCardProps {
     icon: React.ComponentType<{ className?: string }>;
-    toneClass: string;
-    bgClass: string;
-    value: number;
-    suffix?: string;
-    label: string;
-    /** rang d'apparition pour l'entrée en cascade */
+    title: string;
+    value: string | number;
+    subtext: string;
+    colorTheme: 'indigo' | 'emerald' | 'purple' | 'amber';
     index: number;
     onOpen: () => void;
 }
 
-/** Carte ultra-compacte : icône + valeur + libellé sur une ligne. Détail au tap. */
-const StatCard: React.FC<StatCardProps> = ({ icon: Icon, toneClass, bgClass, value, suffix, label, index, onOpen }) => {
-    const animated = useCountUp(value);
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtext, colorTheme, index, onOpen }) => {
+    const themeClasses = {
+        indigo: {
+            iconContainer: 'bg-indigo-50/80 text-indigo-600 group-hover:bg-indigo-100',
+            borderLeft: 'border-l-indigo-500',
+            hoverGlow: 'hover:shadow-indigo-100/40 hover:border-indigo-100/80',
+        },
+        emerald: {
+            iconContainer: 'bg-emerald-50/80 text-emerald-600 group-hover:bg-emerald-100',
+            borderLeft: 'border-l-emerald-500',
+            hoverGlow: 'hover:shadow-emerald-100/40 hover:border-emerald-100/80',
+        },
+        purple: {
+            iconContainer: 'bg-purple-50/80 text-purple-600 group-hover:bg-purple-100',
+            borderLeft: 'border-l-purple-500',
+            hoverGlow: 'hover:shadow-purple-100/40 hover:border-purple-100/80',
+        },
+        amber: {
+            iconContainer: 'bg-amber-50/80 text-amber-600 group-hover:bg-amber-100',
+            borderLeft: 'border-l-amber-500',
+            hoverGlow: 'hover:shadow-amber-100/40 hover:border-amber-100/80',
+        }
+    };
+
+    const classes = themeClasses[colorTheme];
+    const numericValue = typeof value === 'number' ? value : null;
+    const displayValue = numericValue !== null ? useCountUp(numericValue) : value;
 
     return (
         <Card
@@ -96,24 +118,22 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, toneClass, bgClass, val
             tabIndex={0}
             onClick={onOpen}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
-            className="group cursor-pointer select-none overflow-hidden rounded-lg border border-white/70 surface-glass shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/25 hover:shadow-md active:scale-[0.95] animate-slide-in-up opacity-0"
-            style={{ animationDelay: `${index * 60}ms` }}
-            aria-label={`${label} : voir le détail`}
+            className={`group flex cursor-pointer flex-row items-center justify-between rounded-2xl border border-l-4 border-border bg-card p-6 opacity-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md animate-slide-in-up ${classes.borderLeft} ${classes.hoverGlow}`}
+            style={{ animationDelay: `${index * 55}ms` }}
+            aria-label={`${title} : ${value}.`}
         >
-            <CardContent className="flex items-center gap-2 px-2.5 py-2 sm:gap-2.5 sm:px-3 sm:py-2.5">
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${bgClass} ${toneClass} transition-transform duration-300 group-hover:scale-110 group-active:scale-90 sm:h-8 sm:w-8`}>
-                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <div className="flex-1 min-w-0 pr-4 text-left">
+                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {title}
                 </span>
-                <span className="min-w-0 flex flex-col leading-none">
-                    <span className="flex items-baseline gap-0.5">
-                        <span className="text-lg font-black tabular-nums text-foreground font-display tracking-tight sm:text-xl">{animated}</span>
-                        {suffix && <span className="text-[10px] font-black text-muted-foreground">{suffix}</span>}
-                    </span>
-                    <span className="truncate text-[8.5px] font-extrabold uppercase tracking-normal text-muted-foreground/80 font-mono mt-0.5">
-                        {label}
-                    </span>
-                </span>
-            </CardContent>
+                <h3 className="mt-2.5 truncate text-3xl font-extrabold tracking-tight text-foreground">
+                    {displayValue}
+                    {colorTheme === 'indigo' && typeof value === 'number' && '%'}
+                </h3>
+            </div>
+            <div className={`p-4 rounded-2xl shrink-0 transition-all duration-300 group-hover:scale-110 ${classes.iconContainer}`}>
+                <Icon className="w-7 h-7" />
+            </div>
         </Card>
     );
 };
@@ -132,13 +152,40 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config }) => {
-    // même moteur que LatenessBanner : sévérité, séances en attente par classe
     const lateness = useLateness(classes, config);
     const [openSheet, setOpenSheet] = useState<StatKey | null>(null);
 
     const stats = useMemo(() => {
+        let totalItems = 0;
+        let plannedCount = 0;
+        let sessionsCount = 0;
+        let totalChapters = 0;
+        let inProgressChapters = 0;
+        let lastDate: string | null = null;
+        let lastDateClass: string | null = null;
+
         const perClassProgress = classes.map(classInfo => {
-            const s = computeProgressionStats(readLessons(classInfo.id));
+            const lessons = readLessons(classInfo.id);
+            const s = computeProgressionStats(lessons);
+
+            totalItems += s.totalItems;
+            plannedCount += s.plannedCount;
+            sessionsCount += s.sessionsCount;
+            totalChapters += lessons.length;
+
+            s.perChapter.forEach(ch => {
+                if (ch.planned > 0 && ch.planned < ch.total) {
+                    inProgressChapters++;
+                }
+            });
+
+            if (s.lastDate) {
+                if (!lastDate || s.lastDate > lastDate) {
+                    lastDate = s.lastDate;
+                    lastDateClass = classInfo.name;
+                }
+            }
+
             return {
                 id: classInfo.id,
                 name: classInfo.name,
@@ -147,11 +194,10 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                 completion: s.totalItems === 0 ? 0 : Math.round((s.plannedCount / s.totalItems) * 100),
             };
         });
-        const planned = perClassProgress.reduce((sum, p) => sum + p.planned, 0);
-        const total = perClassProgress.reduce((sum, p) => sum + p.total, 0);
-        const completion = total === 0 ? 0 : Math.round((planned / total) * 100);
 
-        // séances d'AUJOURD'HUI d'après la grille (blocs fusionnés : 2 h = 1 séance)
+        const completion = totalItems === 0 ? 0 : Math.round((plannedCount / totalItems) * 100);
+
+        // séances d'AUJOURD'HUI d'après la grille
         const todayBlocks = getDaySessionBlocks(config.timetable, new Date().getDay())
             .filter(block => classes.some(c => c.id === block.classId))
             .sort((a, b) => a.startMin - b.startMin)
@@ -160,18 +206,22 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                 className: classes.find(c => c.id === block.classId)?.name ?? '',
             }));
 
-        return { completion, planned, total, perClassProgress, todayBlocks };
+        return {
+            completion,
+            planned: plannedCount,
+            total: totalItems,
+            sessionsCount,
+            totalChapters,
+            inProgressChapters,
+            lastDate,
+            lastDateClass,
+            perClassProgress,
+            todayBlocks,
+        };
     }, [classes, config.timetable]);
 
     if (classes.length === 0) return null;
 
-    /*
-     * « Suis-je à jour ? » — trois états distincts :
-     *   lateness === null  → moteur en pause (vacances, férié, absence, pas
-     *                        d'emploi du temps) : ne JAMAIS afficher « à jour » ;
-     *   gapTotal === 0     → réellement à jour ;
-     *   sinon              → séances en attente, détail par classe dans la sheet.
-     */
     const enginePaused = lateness === null;
     const gapTotal = lateness?.perClass.reduce((sum, c) => sum + c.gapSessions, 0) ?? 0;
     const upToDate = !enginePaused && gapTotal === 0;
@@ -181,39 +231,46 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
 
     return (
         <>
-            <div className="mx-auto mb-5 grid max-w-5xl grid-cols-3 gap-1.5 px-3 sm:gap-2.5 sm:px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
                 <StatCard
-                    icon={upToDate ? CircleCheck : enginePaused ? CalendarDays : TriangleAlert}
-                    toneClass={upToDate ? 'text-success' : enginePaused ? 'text-muted-foreground' : 'text-warning'}
-                    bgClass={upToDate ? 'bg-success/15' : enginePaused ? 'bg-secondary' : 'bg-warning/15'}
-                    value={gapTotal}
-                    label={enginePaused ? 'pause' : upToDate ? 'à jour' : 'attente'}
-                    index={0}
-                    onOpen={() => setOpenSheet('pending')}
-                />
-                <StatCard
-                    icon={TrendingUp}
-                    toneClass="text-primary"
-                    bgClass="bg-primary/10"
+                    title="Progression"
                     value={stats.completion}
-                    suffix="%"
-                    label="programme"
-                    index={1}
+                    subtext={`${stats.planned}/${stats.total}`}
+                    icon={TrendingUp}
+                    colorTheme="indigo"
+                    index={0}
                     onOpen={() => setOpenSheet('program')}
                 />
                 <StatCard
-                    icon={CalendarDays}
-                    toneClass="text-primary"
-                    bgClass="bg-primary/10"
-                    value={stats.todayBlocks.length}
-                    label="ce jour"
-                    index={2}
+                    title="Séances"
+                    value={stats.sessionsCount}
+                    subtext="Total cours"
+                    icon={CalendarCheck}
+                    colorTheme="emerald"
+                    index={1}
                     onOpen={() => setOpenSheet('today')}
+                />
+                <StatCard
+                    title="Chapitres"
+                    value={stats.totalChapters}
+                    subtext={`${stats.inProgressChapters} actifs`}
+                    icon={Book}
+                    colorTheme="purple"
+                    index={2}
+                    onOpen={() => setOpenSheet('program')}
+                />
+                <StatCard
+                    title="Dernière séance"
+                    value={stats.lastDate ? formatDateCompact(stats.lastDate) : '--'}
+                    subtext={stats.lastDateClass || '--'}
+                    icon={Clock}
+                    colorTheme="amber"
+                    index={3}
+                    onOpen={() => setOpenSheet('pending')}
                 />
             </div>
 
-            {/* Détails en bottom-sheet — pattern app mobile : info minimale en
-                surface, précision complète à la demande. */}
+            {/* Détails en bottom-sheet */}
             <Sheet open={openSheet !== null} onOpenChange={(open) => { if (!open) setOpenSheet(null); }}>
                 <SheetContent
                     side="bottom"
@@ -228,7 +285,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                 <SheetTitle className="font-display text-lg font-extrabold">
                                     {enginePaused ? 'Alertes en pause' : upToDate ? 'Tout est à jour' : 'Séances en attente'}
                                 </SheetTitle>
-                                <SheetDescription className="text-xs font-semibold">
+                                <SheetDescription className="text-xs font-semibold text-muted-foreground/80">
                                     {enginePaused
                                         ? 'Vacances, jour férié, absence ou emploi du temps non renseigné : le moteur de retard est suspendu.'
                                         : upToDate
@@ -267,7 +324,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                         <>
                             <SheetHeader className="text-left">
                                 <SheetTitle className="font-display text-lg font-extrabold">Avancement du programme</SheetTitle>
-                                <SheetDescription className="text-xs font-semibold">
+                                <SheetDescription className="text-xs font-semibold text-muted-foreground/80">
                                     {stats.planned}/{stats.total} contenus datés — {stats.completion}% au global
                                 </SheetDescription>
                             </SheetHeader>
@@ -297,7 +354,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                         <>
                             <SheetHeader className="text-left">
                                 <SheetTitle className="font-display text-lg font-extrabold">Séances d'aujourd'hui</SheetTitle>
-                                <SheetDescription className="text-xs font-semibold">
+                                <SheetDescription className="text-xs font-semibold text-muted-foreground/80">
                                     {stats.todayBlocks.length > 0
                                         ? `${stats.todayBlocks.length} séance(s) d'après votre emploi du temps`
                                         : 'Aucune séance prévue ce jour.'}

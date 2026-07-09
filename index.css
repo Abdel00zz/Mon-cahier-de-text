@@ -19,6 +19,8 @@
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-success: hsl(var(--success));
   --color-warning: hsl(var(--warning));
+  --color-scheduled: hsl(var(--scheduled));
+  --color-scheduled-foreground: hsl(var(--scheduled-foreground));
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -32,12 +34,12 @@
 
   /* Style Figma-pro : arrondis des CADRES fortement réduits (~-90%, quasi nets).
      Les pastilles et cercles (rounded-full) ne sont pas concernés. */
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 3px;
-  --radius-xl: 4px;
-  --radius-2xl: 5px;
-  --radius-3xl: 6px;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
 
   --font-sans: 'Fira Sans', 'Roboto', system-ui, -apple-system, sans-serif;
   --font-display: 'Roboto Slab', 'Fira Sans Condensed', 'Fira Sans', serif;
@@ -46,38 +48,40 @@
 
 @layer base {
   :root {
-    --sky-wash: 194 240 255;
-    --sky-glass: 200 242 255;
-    --paper-wash: 255 241 208;
-    --mint-wash: 134 233 209;
-    --leaf-wash: 232 255 209;
-    --leaf-glass: 235 255 213;
-    --coral: 255 67 81;
+    --sky-wash: 235 242 255;
+    --sky-glass: 242 247 255;
+    --paper-wash: 254 252 246;
+    --mint-wash: 230 252 243;
+    --leaf-wash: 242 250 238;
+    --leaf-glass: 245 252 242;
+    --coral: 254 242 242;
 
-    --background: 42 100% 97%;
-    --foreground: 210 24% 16%;
+    --background: 210 15% 98%;
+    --foreground: 215 28% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 210 24% 16%;
-    --popover: 42 100% 98%;
-    --popover-foreground: 210 24% 16%;
-    --primary: 194 74% 38%;
+    --card-foreground: 215 28% 12%;
+    --popover: 210 15% 99%;
+    --popover-foreground: 215 28% 12%;
+    --primary: 215 100% 41%; /* Coursera Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 195 100% 94%;
-    --secondary-foreground: 194 52% 25%;
-    --muted: 42 100% 94%;
-    --muted-foreground: 210 12% 42%;
-    --accent: 195 100% 88%;
-    --accent-foreground: 194 70% 24%;
-    --destructive: 356 100% 63%;
+    --secondary: 210 15% 95%; /* Clean soft grey-blue secondary */
+    --secondary-foreground: 215 40% 20%;
+    --muted: 210 15% 94%;
+    --muted-foreground: 215 15% 42%;
+    --accent: 217 90% 95%;
+    --accent-foreground: 217 90% 25%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
     /* statuts sémantiques — UNE seule teinte par famille dans toute l'app :
        succès (à jour, confirmations) et avertissement (retards, échéances) */
-    --success: 165 48% 34%;
-    --warning: 37 88% 43%;
-    --border: 193 42% 86%;
-    --input: 193 42% 86%;
-    --ring: 194 74% 38%;
-    --radius: 4px;
+    --success: 142 70% 29%; /* AA on light surfaces */
+    --warning: 38 85% 32%; /* AA on light surfaces */
+    --scheduled: 38 72% 40%;
+    --scheduled-foreground: 32 55% 24%;
+    --border: 210 15% 90%;
+    --input: 210 15% 90%;
+    --ring: 215 100% 41%;
+    --radius: 0.875rem;
   }
 }
 
@@ -88,9 +92,9 @@
   body {
     @apply bg-background text-foreground;
     background:
-      radial-gradient(circle at 8% 0%, rgb(var(--sky-wash) / 0.38), transparent 28rem),
-      radial-gradient(circle at 92% 8%, rgb(var(--leaf-wash) / 0.45), transparent 24rem),
-      linear-gradient(180deg, rgb(var(--paper-wash) / 0.42), hsl(var(--background)) 18rem);
+      radial-gradient(circle at 10% 5%, rgb(var(--sky-wash) / 0.6), transparent 45rem),
+      radial-gradient(circle at 90% 15%, rgb(var(--leaf-wash) / 0.6), transparent 40rem),
+      linear-gradient(180deg, rgb(var(--sky-wash) / 0.4), hsl(var(--background)) 24rem);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -117,6 +121,12 @@
       hsl(var(--card) / 0.92);
   }
 
+  .surface-sky {
+    background:
+      linear-gradient(135deg, rgb(var(--sky-wash) / 0.40), rgb(var(--sky-glass) / 0.50)),
+      hsl(var(--card));
+  }
+
   .surface-mint {
     background:
       linear-gradient(135deg, rgb(var(--mint-wash) / 0.30), rgb(var(--leaf-wash) / 0.34)),
@@ -131,6 +141,22 @@
 
   .ink-primary {
     color: hsl(var(--primary));
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: hsl(var(--border) / 0.5);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--border) / 0.8);
   }
 }
 
@@ -182,6 +208,32 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
   to   { opacity: 1; }
 }
 .animate-fade-in { animation: fade-in 0.18s ease-out; }
+
+/* Dialog/Sheet motion is defined locally because Tailwind's animate-in
+   utilities are not part of the installed stack. */
+@keyframes dialog-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialog-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes dialog-sheet-in { from { opacity: 0; transform: translateY(1.5rem); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dialog-sheet-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(1.5rem); } }
+@keyframes dialog-pop-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes dialog-pop-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.96); } }
+
+.dialog-overlay[data-state="open"] { animation: dialog-overlay-in 180ms ease-out both; }
+.dialog-overlay[data-state="closed"] { animation: dialog-overlay-out 150ms ease-in both; }
+.dialog-content[data-state="open"] { animation: dialog-sheet-in 220ms cubic-bezier(.2,.8,.2,1) both; }
+.dialog-content[data-state="closed"] { animation: dialog-sheet-out 160ms ease-in both; }
+
+@media (min-width: 640px) {
+  .dialog-content[data-state="open"] { animation-name: dialog-pop-in; }
+  .dialog-content[data-state="closed"] { animation-name: dialog-pop-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-overlay[data-state], .dialog-content[data-state] {
+    animation-duration: 1ms !important;
+    transform: none !important;
+  }
+}
 
 /* Scrollbars */
 .scrollbar-hide, .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -18,7 +18,6 @@ export interface AppConfig {
   establishmentName: string;
   defaultTeacherName: string;
   printShowDescriptions: boolean;
-  theme: 'light' | 'dark' | 'system';
     // New flexible description visibility controls
     screenDescriptionMode?: 'all' | 'none' | 'custom';
     screenDescriptionTypes?: string[];

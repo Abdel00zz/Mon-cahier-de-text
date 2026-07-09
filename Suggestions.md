@@ -164,7 +164,7 @@ Avant toute amélioration visuelle ou fonctionnelle, la considérer sur **l'ense
 
 ## L. Refonte visuelle moderne « style iOS » — sur tous les axes
 
-L'identité de marque existante (primaire `#C96442` terracotta, accent `#B8935A` or, fonds sable — choix déjà actés en Phase 0) est **conservée** ; l'objectif est d'y superposer un langage d'interaction proche d'iOS, pas de repartir de zéro.
+L'identité de marque active est le bleu `#0057D1`, avec l'ambre `scheduled` réservé aux séances datées. L'objectif est d'y superposer un langage d'interaction proche d'iOS sans multiplier les couleurs décoratives.
 
 - **Typographie** : échelle de tailles cohérente et resserrée (esprit Human Interface Guidelines : ex. 11/13/15/17/22/28 px), hiérarchie nette entre titres, contenu et métadonnées (dates, remarques).
 - **Cartes & surfaces** : rayons d'arrondi harmonisés sur une échelle unique (ex. 12/16/20 px), ombres douces plutôt que bordures dures, effet de flou (`backdrop-blur`) pour les bottom-sheets et modales déjà en place.
@@ -176,7 +176,7 @@ L'identité de marque existante (primaire `#C96442` terracotta, accent `#B8935A`
   - Respecter `prefers-reduced-motion` : effet réduit à un simple fondu si l'utilisateur l'a activé au niveau système.
   - Fermeture symétrique (même durée/courbe en sortie qu'en entrée, pas juste un `display:none` brutal).
 - **Retour haptique** : cohérent avec la vibration déjà demandée (section F) — étendre `navigator.vibrate()` à de petits retours sur actions clés (validation, suppression), comme le Taptic Engine iOS.
-- **Mode sombre** : déjà identifié comme piste d'amélioration (README §8, variables CSS existantes) — à intégrer **dans** cette refonte dès la conception plutôt qu'en aparté, clair et sombre pensés ensemble.
+- **Thème** : thème clair unique. Les dépendances et variantes de mode sombre doivent rester absentes afin d'éviter deux systèmes visuels concurrents.
 - **Cohérence transversale** : appliquer cette direction sur les 6 surfaces de la section K, `admin.html` inclus.
 - **Discipline** : concentrer l'audace visuelle sur **un seul élément signature** (ex. la représentation des séances fusionnées de 2h, ou le badge de statut de synchro) plutôt que de tout réinventer d'un coup — cohérent avec le principe de livraison phase par phase déjà en place dans le projet.
 

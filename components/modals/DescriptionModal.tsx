@@ -54,7 +54,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
             disabled={!initialValue}
             className="rounded-xl"
           >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Effacer
+            Effacer
           </Button>
           <div className="flex gap-2">
             <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl">
@@ -65,7 +65,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
               onClick={() => onSave(value)}
               className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-4 shadow-sm"
             >
-              <Save className="mr-1.5 h-3.5 w-3.5" /> Enregistrer
+              Enregistrer
             </Button>
           </div>
         </div>

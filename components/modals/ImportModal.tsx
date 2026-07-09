@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Modal } from '../ui/modal';
 import { FileUp } from '../ui/icons';
@@ -15,6 +15,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   const [jsonText, setJsonText] = useState('');
   const [fileName, setFileName] = useState('');
   const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setJsonText('');
+    setFileName('');
+    setImportMode('replace');
+  }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

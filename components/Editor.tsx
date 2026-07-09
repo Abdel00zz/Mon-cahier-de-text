@@ -28,8 +28,15 @@ import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '../constants';
 import { logger } from '../utils/logger';
-import { SESSION_ASSISTANT_FOCUS_KEY, SessionAssistantFocusPayload } from '../utils/sessionAssistant';
 import { todayInMorocco } from '../utils/calendar';
+
+const SESSION_ASSISTANT_FOCUS_KEY = 'session_focus_v1';
+interface SessionAssistantFocusPayload {
+  classId: string;
+  targetIndices: Indices;
+  expiresAt: number;
+  message: string;
+}
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -74,7 +81,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack }) => {
-  const { state: lessonsData, setState, undo, redo, canUndo, canRedo, operationType } = useHistoryState<LessonsData>([]);
+  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
@@ -221,14 +228,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       const raw = localStorage.getItem(getStorageKey());
       const savedData = raw ? JSON.parse(raw) : [];
       const lessons = Array.isArray(savedData) ? savedData : (savedData.lessonsData ?? []);
-      setState(() => migrateLessonsData(lessons), 'initial-load');
+      resetState(migrateLessonsData(lessons), 'initial-load');
     } catch (error) {
       logger.error("Failed to load data from localStorage", error);
       showNotification("Erreur lors du chargement des donnees.", "error");
     } finally {
       setEditorState(draft => { draft.isClassLoading = false; });
     }
-  }, [setState, getStorageKey, showNotification, setEditorState]);
+  }, [resetState, getStorageKey, showNotification, setEditorState]);
 
   const saveData = useCallback(() => {
     setEditorState(draft => { draft.saveStatus = 'saving'; });
@@ -236,7 +243,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       localStorage.setItem(getStorageKey(), JSON.stringify(lessonsData));
       touchClassSyncMeta(classInfo.id);
       markClassDirty(classInfo.id);
-      setTimeout(() => setEditorState(draft => { draft.saveStatus = 'saved'; }), 500);
+      setTimeout(() => setEditorState(draft => {
+        // Une nouvelle édition peut arriver pendant le court retour visuel
+        // « sauvegarde en cours ». Ne jamais l'écraser par un faux « sauvegardé ».
+        if (draft.saveStatus === 'saving') draft.saveStatus = 'saved';
+      }), 500);
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);
       showNotification("Erreur de sauvegarde.", "error");
@@ -356,6 +367,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     }
   }, [setState, setEditorState, checkSessionDate]);
 
+  const handleUndo = useCallback(() => {
+    if (!canUndo) return;
+    undo();
+    setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+  }, [canUndo, undo, setEditorState]);
+
+  const handleRedo = useCallback(() => {
+    if (!canRedo) return;
+    redo();
+    setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+  }, [canRedo, redo, setEditorState]);
+
   const handleOpenAddContentModal = useCallback((indices?: Indices) => {
       setSelectionState(createSelectionState(indices));
       setEditorState(draft => {
@@ -364,7 +387,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }, [setEditorState]);
 
   const handleModalClose = useCallback(() => {
-    setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
     setEditorState(draft => {
       draft.activeModal = null;
     });
@@ -452,6 +474,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       if (type === 'separator' && typeof data?.date === 'string' && data.date) {
         checkSessionDate(data.date);
       }
+      setSelectionState(createSelectionState());
       handleModalClose();
   }, [selectedIndices, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, checkSessionDate]);
 
@@ -793,8 +816,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
               cette boîte et ne dépasserait pas). Elle reste ainsi visible tout
               au long du défilement, avec l'en-tête de colonnes calé dessous. */}
           <Toolbar
-            onUndo={undo}
-            onRedo={redo}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
             canUndo={canUndo}
             canRedo={canRedo}
             onSave={saveData}

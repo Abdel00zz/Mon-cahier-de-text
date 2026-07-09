@@ -50,6 +50,18 @@ export const useHistoryState = <T,>(
     });
   }, [options.capacity]);
 
+  /**
+   * Remplace l'historique par un nouvel état de référence.
+   * À utiliser pour les chargements/restaurations : ces opérations techniques
+   * ne doivent jamais être annulables comme une édition utilisateur.
+   */
+  const resetState = useCallback((nextState: T, operationType = 'initial-load') => {
+    setHistoryState({
+      history: [{ data: nextState, operationType }],
+      currentIndex: 0,
+    });
+  }, []);
+
   const undo = useCallback(() => {
     setHistoryState(prev => ({
       ...prev,
@@ -67,6 +79,7 @@ export const useHistoryState = <T,>(
   return {
     state,
     setState,
+    resetState,
     undo,
     redo,
     canUndo: currentIndex > 0,

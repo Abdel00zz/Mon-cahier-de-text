@@ -19,7 +19,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-foreground/20 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "dialog-overlay fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm",
       className
     )}
     {...props}
@@ -36,17 +36,16 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        // Mobile-first : marge latérale préservée, hauteur bornée avec défilement
-        // interne, padding réduit — les longues modales restent utilisables au pouce.
-        "fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg max-h-[88dvh] overflow-y-auto overscroll-contain translate-x-[-50%] translate-y-[-50%] gap-4 sm:gap-5 border border-white/70 surface-art p-5 sm:p-6 shadow-[0_24px_70px_rgba(31,45,60,0.18)] ring-1 ring-primary/10 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg sm:rounded-xl",
+        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[92dvh] w-full max-w-lg gap-4 overflow-hidden border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl rounded-t-2xl rounded-b-none sm:inset-0 sm:m-auto sm:w-[calc(100vw-1.5rem)] sm:rounded-2xl sm:p-6",
         className
       )}
       {...props}
     >
+      <div aria-hidden className="mx-auto -mt-1 h-1 w-10 rounded-full bg-border sm:hidden" />
       {children}
-      <DialogPrimitive.Close className="absolute right-5 top-5 rounded-full border border-transparent bg-white/40 p-1.5 opacity-70 ring-offset-background transition-all hover:border-border/50 hover:bg-white/80 hover:text-destructive hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4.5 w-4.5" />
-        <span className="sr-only">Close</span>
+      <DialogPrimitive.Close className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-transparent bg-muted/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:right-4 sm:top-4">
+        <X className="h-4 w-4" />
+        <span className="sr-only">Fermer la fenêtre</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
@@ -59,7 +58,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col space-y-1 border-b border-border pb-4 pr-12 text-left",
       className
     )}
     {...props}
@@ -73,7 +72,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end",
       className
     )}
     {...props}
@@ -88,7 +87,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "font-display text-xl font-extrabold leading-tight tracking-normal text-foreground",
+      "text-lg font-bold leading-tight tracking-normal text-foreground",
       className
     )}
     {...props}
@@ -102,7 +101,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm font-medium leading-relaxed text-muted-foreground", className)}
+    className={cn("mt-1 text-xs font-medium leading-relaxed text-muted-foreground", className)}
     {...props}
   />
 ))

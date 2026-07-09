@@ -21,12 +21,11 @@ export const defaultNotificationSettings = {
 const defaultConfig: AppConfig = {
     establishmentName: '',
     defaultTeacherName: '',
-    printShowDescriptions: false,
-    theme: 'system',
-    screenDescriptionMode: 'custom',
-    screenDescriptionTypes: ['exemple', 'application'],
-    printDescriptionMode: 'custom',
-    printDescriptionTypes: ['exemple', 'application'],
+    printShowDescriptions: true,
+    screenDescriptionMode: 'all',
+    screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+    printDescriptionMode: 'all',
+    printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
     selectedCycles: ['college'], // Un seul cycle par défaut
     selectedSubjects: [], // Aucune matière par défaut (toutes affichées)
     showAllCycles: false, // false car on a une sélection spécifique
@@ -51,11 +50,15 @@ export const useConfigManager = () => {
                 setConfig(() => ({
                     ...defaultConfig,
                     ...loadedConfig,
-                    printShowDescriptions: loadedConfig.printShowDescriptions ?? loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : (typeof loadedConfig.printShowDescriptions === 'boolean' ? loadedConfig.printShowDescriptions : false)),
+                    printShowDescriptions: loadedConfig.printShowDescriptions ?? (loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : true)),
                     screenDescriptionMode: loadedConfig.screenDescriptionMode ?? 'all',
-                    screenDescriptionTypes: loadedConfig.screenDescriptionTypes ?? [],
-                    printDescriptionMode: loadedConfig.printDescriptionMode ?? (typeof loadedConfig.printShowDescriptions === 'boolean' ? (loadedConfig.printShowDescriptions ? 'all' : 'none') : 'all'),
-                    printDescriptionTypes: loadedConfig.printDescriptionTypes ?? [],
+                    screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
+                        ? loadedConfig.screenDescriptionTypes
+                        : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+                    printDescriptionMode: loadedConfig.printDescriptionMode ?? 'all',
+                    printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
+                        ? loadedConfig.printDescriptionTypes
+                        : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
                     selectedCycles: loadedConfig.selectedCycles ?? ['college', 'lycee', 'prepa'],
                     selectedSubjects: loadedConfig.selectedSubjects ?? [],
                     showAllCycles: loadedConfig.showAllCycles ?? true,
@@ -72,11 +75,11 @@ export const useConfigManager = () => {
             } else {
                 setConfig(currentConfig => ({
                     ...currentConfig,
-                    printShowDescriptions: false,
-                    screenDescriptionMode: 'custom',
-                    screenDescriptionTypes: ['exemple', 'application'],
-                    printDescriptionMode: 'custom',
-                    printDescriptionTypes: ['exemple', 'application'],
+                    printShowDescriptions: true,
+                    screenDescriptionMode: 'all',
+                    screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+                    printDescriptionMode: 'all',
+                    printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
                     selectedCycles: ['college', 'lycee', 'prepa'],
                     selectedSubjects: [],
                     showAllCycles: true,

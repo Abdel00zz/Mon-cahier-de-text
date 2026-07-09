@@ -5,7 +5,7 @@ import { Check, TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderO
 import { Button } from '../ui/button';
 import { MathText } from '../ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '../../constants';
-import { DescriptionVisibilityControl } from '../config/DescriptionVisibilityControl';
+// DescriptionVisibilityControl import removed
 
 interface ManageLessonsModalProps {
   isOpen: boolean;
@@ -18,14 +18,16 @@ interface ManageLessonsModalProps {
 
 export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons, config, onConfigChange }) => {
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
+  const [localDescriptionMode, setLocalDescriptionMode] = useState<'all' | 'none'>('all');
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setLocalLessons([...lessons]);
+      setLocalDescriptionMode(config.screenDescriptionMode === 'none' ? 'none' : 'all');
     }
-  }, [isOpen, lessons]);
+  }, [isOpen, lessons, config.screenDescriptionMode]);
 
   const handleDelete = (index: number) => {
     setLocalLessons(current => current.filter((_, i) => i !== index));
@@ -74,8 +76,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
   };
 
   const handleSubmit = () => {
+    if (localDescriptionMode !== config.screenDescriptionMode) {
+      onConfigChange({ screenDescriptionMode: localDescriptionMode });
+    }
     onUpdate(localLessons);
-    onClose();
   };
 
   return (
@@ -95,19 +99,34 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
             onClick={handleSubmit} 
             className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm"
           >
-            <Check className="mr-2 h-3.5 w-3.5" /> Enregistrer
+            Enregistrer
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <DescriptionVisibilityControl
-          config={config}
-          context="screen"
-          onChange={onConfigChange}
-          title="Affichage à l'écran"
-          compact
-        />
+        <div className="space-y-2 rounded-xl border border-border bg-secondary/50 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-foreground/80">Descriptions à l'écran</span>
+            <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+              {(['all', 'none'] as const).map(mode => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setLocalDescriptionMode(mode)}
+                  className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                    localDescriptionMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {mode === 'all' ? 'Afficher' : 'Masquer'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-[10px] leading-snug text-muted-foreground/60">
+            Permet de masquer les descriptions de cours sur l'écran d'édition.
+          </p>
+        </div>
 
         {localLessons.length > 0 ? (
           <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">

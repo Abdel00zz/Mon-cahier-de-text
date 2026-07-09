@@ -8,7 +8,7 @@
 ## 0. Les 5 principes directeurs
 
 1. **Le professeur d'abord** — chaque écran répond à « qu'est-ce que le prof veut faire *maintenant* ? ». L'action la plus fréquente est la plus grosse, la plus proche du pouce.
-2. **Calme visuel** — un seul accent chaud (`#C96442`), un seul métal signature (or `#B8935A`). Le reste est neutre. On n'ajoute une couleur que si elle *signifie* quelque chose.
+2. **Calme visuel** — un seul accent principal bleu (`#0057D1`). L'ambre `scheduled` est réservé à la planification ; le reste est neutre. On n'ajoute une couleur que si elle *signifie* quelque chose.
 3. **La donnée respire** — pas de « boîtes dans des boîtes ». Des filets fins, de l'espace, un rythme régulier. Le contenu est le héros, pas les bordures.
 4. **Zéro surprise** — mêmes gestes partout : tap = sélectionner, double-tap = éditer, Échap = fermer. Les alertes conseillent, ne bloquent jamais.
 5. **Fluide et vivant** — micro-animations courtes (150–240 ms), jamais gratuites : elles confirment une action ou guident l'œil.
@@ -21,14 +21,14 @@ Source unique : [`index.css`](index.css) (`:root` + `@theme inline`). **Ne jamai
 
 | Rôle | Token | Usage |
 |---|---|---|
-| Accent principal | `primary` (#C96442) | boutons d'action, sélection, liens |
-| Métal signature | `#B8935A` (or) | rails de dates, séparateurs, filets d'en-tête |
-| Fond app | `background` (sable 24 33% 97%) | corps |
+| Accent principal | `primary` (`#0057D1`) | boutons d'action, sélection, liens |
+| Planification | `scheduled` | lavis et rails des séances datées uniquement |
+| Fond app | `background` (`#F9FAFB`) | corps |
 | Surface | `card` (blanc) | cartes, modales |
 | Texte | `foreground` / `muted-foreground` | primaire / secondaire |
 | Danger | `destructive` | suppression uniquement |
 
-**Typographie** : titres `Roboto Slab` (`.font-slab`), corps `Inter`, arabe `IBM Plex Sans Arabic` (`.font-ar`), dates en chiffres tabulaires.
+**Typographie** : titres `Roboto Slab` (`.font-display`), corps `Fira Sans`, arabe `IBM Plex Sans Arabic` (`.font-ar`), dates en chiffres tabulaires.
 
 **Rayons** : `rounded-lg` (éléments), `rounded-2xl` (cartes/modales), `rounded-full` (pastilles, FAB). **Ombres** : douces et chaudes (`--shadow-sm/md/lg`), jamais noires dures.
 
@@ -46,7 +46,7 @@ Source unique : [`index.css`](index.css) (`:root` + `@theme inline`). **Ne jamai
 ## 3. Couleur avec intention
 
 - **Une sélection** = teinte primaire à 6 % + rail primaire 3 px sur toute la ligne. Jamais un simple gris.
-- **Une date affectée** = lavis sable chaud (`#FBF6EE`) + rail doré. Le regard distingue instantanément « planifié » de « à planifier ».
+- **Une date affectée** = lavis `scheduled` + rail ambre. La sélection reste exclusivement bleue afin que les deux états ne puissent pas être confondus.
 - **Badges de type** (Déf./Th./Exo…) : la couleur code le type, pas la décoration. Palette douce (fonds `-100`, texte `-800`).
 - **Alertes** : ambre = conseil (retard, conflit de date), orange = urgent (devoir ≤ 3 j), rouge = danger destructif seulement.
 
@@ -65,7 +65,7 @@ Hiérarchie stricte par écran : **1 seule** action primaire (plein, accent), le
 
 ### Table de l'éditeur
 - 3 colonnes **Date | Contenu | Remarque**, filets verticaux fins et visibles.
-- Rangées **plates et continues** ; un groupe de dates fusionnées se lit comme **un seul bloc** longé d'un rail doré, clos par un filet doré plus marqué.
+- Rangées **plates et continues** ; un groupe de dates fusionnées se lit comme **un seul bloc** ambre, clos par un filet `scheduled` plus marqué.
 - La **date super-affichée** : grand jour, mois en petites capitales, année discrète — pas de badge encadré.
 - Sur mobile : le badge de type passe **au-dessus** du titre, la Remarque s'affiche **sous** le contenu (jamais cachée), un **FAB « + »** flotte en bas à droite.
 

@@ -125,13 +125,13 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
       </div>
       
       <div className="flex-1 flex justify-center items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" className="h-10 w-10 rounded-xl">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification" className="rounded-xl">
           <Undo2 className="h-[18px] w-[18px] text-primary" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)" aria-label="Rétablir la modification">
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle" aria-label="Sauvegarder maintenant">
           <Save className="h-4 w-4" />
         </Button>
       </div>

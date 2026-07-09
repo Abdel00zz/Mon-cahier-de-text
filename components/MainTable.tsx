@@ -192,7 +192,7 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-border/80 bg-[rgb(var(--sky-wash)_/_0.34)] md:block">
+  <div className="hidden border-b border-border/80 bg-muted/55 md:block">
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
         Date
@@ -295,7 +295,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
     const sharedRemark = getMergeableRemark(first);
-    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-success/25';
+    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-scheduled/35';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -304,17 +304,14 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-t border-success/25 border-b-2 border-success/35 surface-mint transition-colors duration-150`,
+                `group relative grid ${TABLE_GRID_CLASS} border-t border-scheduled/30 border-b-2 border-scheduled/45 bg-scheduled/[0.07] transition-colors duration-150`,
                 groupIsSelected ? 'bg-primary/[0.06]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
-            <span
-                aria-hidden
-                className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-success/75'}`}
-            />
+            {/* Rail latéral supprimé selon la demande */}
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-[rgb(var(--mint-wash)_/_0.18)]`}>
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-scheduled/10`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -344,7 +341,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className="hidden min-w-0 self-stretch bg-[rgb(var(--leaf-wash)_/_0.22)] p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+            <div className="hidden min-w-0 self-stretch bg-scheduled/[0.05] p-1.5 md:flex" onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -380,7 +377,7 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
     <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-lg border border-t-0 border-dashed border-primary/20 surface-art px-6 py-16 text-center shadow-sm">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--mint-wash)_/_0.45)] text-primary">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.65)] text-primary">
             <BookOpen className="h-5 w-5" />
         </div>
         <h3 className="text-base font-bold text-foreground font-display">Le cahier de textes est vide</h3>
@@ -388,7 +385,7 @@ const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void 
             Ajoutez un premier chapitre pour commencer à construire la progression.
         </p>
         <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="default">
-            <Plus className="mr-2 h-4 w-4" /> Créer un chapitre
+            Créer un chapitre
         </Button>
     </div>
 );

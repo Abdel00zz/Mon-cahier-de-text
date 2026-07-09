@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '../ui/modal';
 import { TriangleAlert, FileUp } from '../ui/icons';
 import { Button } from '../ui/button';
@@ -13,6 +13,15 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setFileContent(null);
+    setFileName('');
+    setIsConfirmed(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -50,7 +59,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
             variant="destructive"
             disabled={!fileContent || !isConfirmed}
           >
-            <TriangleAlert className="mr-2 h-3.5 w-3.5" /> Importer et remplacer
+            Importer et remplacer
           </Button>
         </>
       }
@@ -83,7 +92,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
             </span>
             <span className="text-xs text-muted-foreground/60 mt-1">Fichier .json uniquement</span>
           </label>
-          <input type="file" id="platform-json-file-input" accept=".json" onChange={handleFileChange} className="sr-only" />
+          <input ref={fileInputRef} type="file" id="platform-json-file-input" accept=".json" onChange={handleFileChange} className="sr-only" />
         </div>
 
         {fileContent && (

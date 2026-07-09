@@ -1,71 +1,78 @@
-import * as React from "react"
+import * as React from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./dialog"
-import { Button } from "./button"
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from './dialog';
+import { Button } from './button';
 
 interface ConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: React.ReactNode
-  description?: React.ReactNode
-  confirmLabel?: string
-  cancelLabel?: string
-  /** rouge destructif par défaut — c'est le cas d'usage principal (suppressions) */
-  destructive?: boolean
-  onConfirm: () => void
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    onConfirm: () => void;
+    variant?: 'default' | 'destructive';
 }
 
-/**
- * Confirmation shadcn — remplace window.confirm() : boutons tactiles pleine
- * largeur sur mobile, focus géré par Radix, Échap/overlay pour annuler.
- */
 export function ConfirmDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-  confirmLabel = "Confirmer",
-  cancelLabel = "Annuler",
-  destructive = true,
-  onConfirm,
+    open,
+    onOpenChange,
+    title,
+    description,
+    confirmLabel = 'Confirmer',
+    cancelLabel = 'Annuler',
+    onConfirm,
+    variant = 'destructive',
 }: ConfirmDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="font-display text-base font-extrabold">{title}</DialogTitle>
-          {description && (
-            <DialogDescription className="text-xs font-medium leading-relaxed">
-              {description}
-            </DialogDescription>
-          )}
-        </DialogHeader>
-        <DialogFooter className="mt-2 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            variant="outline"
-            className="h-11 w-full rounded-xl font-bold sm:h-9 sm:w-auto"
-            onClick={() => onOpenChange(false)}
-          >
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={destructive ? "destructive" : "default"}
-            className="h-11 w-full rounded-xl font-bold sm:h-9 sm:w-auto"
-            onClick={() => {
-              onOpenChange(false)
-              onConfirm()
-            }}
-          >
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
+    const handleConfirm = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onConfirm();
+        onOpenChange(false);
+    };
+
+    const handleCancel = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onOpenChange(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[420px] p-6 gap-6 rounded-xl border border-white/70 shadow-[0_24px_70px_rgba(31,45,60,0.18)] surface-art">
+                <DialogHeader className="gap-2">
+                    <DialogTitle className="text-lg font-extrabold font-display leading-tight tracking-normal text-foreground">
+                        {title}
+                    </DialogTitle>
+                    <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+                        {description}
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleCancel}
+                        className="w-full sm:w-auto rounded-full font-semibold transition-all duration-200"
+                    >
+                        {cancelLabel}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant={variant === 'destructive' ? 'destructive' : 'default'}
+                        onClick={handleConfirm}
+                        className="w-full sm:w-auto rounded-full font-semibold px-5 transition-all duration-200"
+                    >
+                        {confirmLabel}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
+
+export default ConfirmDialog;

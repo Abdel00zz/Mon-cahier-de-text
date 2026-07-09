@@ -143,15 +143,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
             Annuler
           </Button>
           <Button type="submit" form="create-class-form" variant="default" disabled={!isFormValid}>
-            {editingClass ? (
-              <>
-                <Settings className="mr-2 h-3.5 w-3.5" /> Enregistrer les modifications
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-3.5 w-3.5" /> Créer la classe
-              </>
-            )}
+            {editingClass ? "Enregistrer les modifications" : "Créer la classe"}
           </Button>
         </>
       }

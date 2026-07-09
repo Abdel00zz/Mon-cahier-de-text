@@ -34,7 +34,7 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
       suppressContentEditableWarning
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`inline-block px-2 py-0.5 -mx-2 -my-0.5 rounded-xl bg-gradient-to-b from-destructive via-[#c9343f] to-[#8f1f2f] bg-clip-text text-transparent drop-shadow-[0_1px_0_rgba(255,255,255,0.7)] hover:bg-secondary/60 focus:outline-none focus:ring-2 focus:ring-destructive/25 ${isArabic ? 'font-ar' : 'font-display'}`}
+      className={`inline-block px-2 py-0.5 -mx-2 -my-0.5 rounded-xl text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-ring/30 ${isArabic ? 'font-ar' : 'font-display'}`}
     >
       {value}
     </span>

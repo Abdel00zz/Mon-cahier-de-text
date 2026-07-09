@@ -20,8 +20,7 @@ import { logger } from '../utils/logger';
 import { getBundledCalendar, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
 import { nextSessionInfoForClass } from '../utils/timetable';
-import { useSessionAssistant } from '../hooks/useSessionAssistant';
-import { SessionSpotlight } from './SessionSpotlight';
+// Session assistant imports removed
 import { Badge } from './ui/badge';
 import { Plus, CircleHelp, Settings } from './ui/icons';
 import { AUTH_REQUIRED } from '../config/features';
@@ -58,44 +57,18 @@ const getInitials = (name: string): string => {
 };
 
 const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
-    const [hovered, setHovered] = useState(false);
     return (
-        <Card
-            role="button"
-            tabIndex={0}
+        <button
             onClick={onClick}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
             data-guide="create-class"
-            className="group flex flex-col justify-between w-full h-full min-h-[160px] cursor-pointer rounded-lg border-2 border-dashed surface-glass shadow-sm transition-all duration-300 ease-out active:scale-[0.985] select-none will-change-transform relative overflow-hidden"
-            style={{
-                borderColor: hovered
-                    ? 'color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--border)))'
-                    : 'hsl(var(--border))',
-                backgroundColor: hovered
-                    ? 'color-mix(in srgb, rgb(var(--mint-wash)) 32%, hsl(var(--card)))'
-                    : 'color-mix(in srgb, rgb(var(--sky-wash)) 32%, hsl(var(--card)))',
-            }}
-            aria-label="Créer une nouvelle classe"
+            className="group flex h-full min-h-[175px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/35 p-8 shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-card hover:shadow-md"
         >
-            <CardContent className="flex flex-col items-center justify-center p-6 text-center gap-3.5 flex-1">
-                <div 
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.68)] border border-white/70 shadow-sm transition-all duration-300"
-                    style={{
-                        backgroundColor: hovered ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                        color: hovered ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
-                        transform: hovered ? 'scale(1.05)' : 'scale(1)',
-                    }}
-                >
-                    <Plus className="h-5 w-5" />
-                </div>
-                <div>
-                    <h3 className="text-sm font-extrabold text-card-foreground font-display transition-colors">Nouvelle classe</h3>
-                    <p className="text-[11px] text-muted-foreground font-semibold font-sans mt-0.5">Créer un nouveau cahier</p>
-                </div>
-            </CardContent>
-        </Card>
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors duration-300 group-hover:bg-primary/10 group-hover:text-primary">
+                <Plus className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-bold text-foreground transition-colors duration-300 group-hover:text-primary">Nouvelle classe</span>
+            <span className="mt-1 text-xs font-medium text-muted-foreground">Créer un nouveau cahier</span>
+        </button>
     );
 };
 
@@ -139,8 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
-    // séance du moment (en cours / imminente / qui vient de finir) — rafraîchie chaque minute
-    const liveSuggestion = useSessionAssistant(classes, config);
+    // Session assistant features were cleaned up and removed
 
     const isLoading = isClassesLoading || isConfigLoading;
 
@@ -250,60 +222,54 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const initials = getInitials(teacherName);
 
     return (
-    <div className="min-h-screen p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
-            <header className="relative mx-auto mb-6 sm:mb-8 max-w-5xl px-3 sm:px-4" id="dashboard-header">
-                <div className="flex items-center justify-between pb-3 gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                        {/* Elegant Circular Avatar */}
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.72)] border border-white/70 text-primary font-extrabold text-sm shadow-inner font-sans tracking-wide">
-                            {initials}
-                        </div>
+        <div className="min-h-screen bg-background text-foreground antialiased" data-dashboard-root>
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                <header className="mb-10" id="dashboard-header">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
                         <div className="min-w-0">
-                            <h1 className="text-base sm:text-2xl font-extrabold text-foreground font-display tracking-tight leading-none truncate">
+                            <h1 className="flex items-center gap-2 truncate text-2xl font-bold tracking-tight text-foreground">
                                 {teacherName ? (
                                     <>
                                         {getGreeting()}, {getFirstName(teacherName)}
-                                        <span className="ml-1 inline-block text-[0.85em] animate-fade-in" aria-hidden>👋</span>
+                                        <span className="animate-pulse inline-block" aria-hidden>👋</span>
                                     </>
                                 ) : 'Mon Espace'}
                             </h1>
-                            <div className="flex items-center gap-x-2 text-[11px] text-muted-foreground font-semibold font-sans mt-1">
+                            <div className="flex items-center gap-2 text-xs font-semibold text-primary mt-1 uppercase tracking-wider">
                                 {config.establishmentName && config.establishmentName.trim() !== teacherName ? (
-                                    <span className="text-primary font-bold truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
+                                    <span className="truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
                                 ) : (
-                                    <span>Cahier de Textes</span>
+                                    <span>A</span>
                                 )}
                                 {formattedDate && (
                                     <>
-                                        <span className="text-muted-foreground/50 select-none">•</span>
-                                        <span className="text-muted-foreground capitalize truncate">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
+                                        <span className="select-none text-border">•</span>
+                                        <span className="truncate font-normal normal-case text-muted-foreground">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
                                     </>
                                 )}
                             </div>
                         </div>
                     </div>
                     
-                    {/* Compact actions - circular buttons on mobile, pill buttons on desktop */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
                         <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => setGuideOpen(true)} 
-                            className="rounded-full flex items-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3.5"
+                            className="flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground"
                             title="Consulter le guide d'utilisation"
                         >
-                            <CircleHelp className="h-4 w-4 text-primary" />
-                            <span className="hidden sm:inline">Guide</span>
+                            <CircleHelp className="h-4 w-4 text-muted-foreground" />
+                            Guide
                         </Button>
                         <Button
                             variant="outline"
-                            size="sm"
                             onClick={onOpenSettings} 
-                            className="rounded-full flex items-center gap-1.5 h-9 w-9 sm:w-auto sm:px-3.5"
+                            className="flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground"
                             title="Accéder aux réglages"
                         >
                             <Settings className="h-4 w-4 text-muted-foreground" />
-                            <span className="hidden sm:inline">Réglages</span>
+                            Réglages
                         </Button>
                     </div>
                 </div>
@@ -312,12 +278,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
                 n'est pas intercepté, le navigateur affiche sa propre invite native
                 (mini-infobar Android, icône d'installation dans l'omnibox). */}
-            {/* Séance du moment : la classe concernée + le contenu à traiter,
-                affichés dès l'ouverture — un tap ouvre le cahier ET surligne
-                l'élément proposé dans l'éditeur. */}
-            {liveSuggestion && (
-                <SessionSpotlight suggestion={liveSuggestion} onOpenClass={onSelectClass} />
-            )}
             <LatenessBanner classes={classes} config={config} />
             <AssessmentBanner classes={classes} config={config} />
             {/* Sélecteur de cycle — MASQUÉ en production (les cycles viennent de
@@ -354,7 +314,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 config={config}
             />
 
-            <div className="mx-auto max-w-5xl px-3 sm:px-4">
+            <div className="w-full">
                 {(() => {
                     const visibleClasses = classes
                         .filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)
@@ -362,12 +322,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
                     return (
                         <>
-                            <div className="mb-3.5 flex items-center gap-2">
-                                <h2 className="text-lg font-bold font-display text-foreground">Mes Classes</h2>
+                            <div className="flex items-center gap-3 mb-6">
+                                <h2 className="text-xl font-bold text-foreground">Mes Classes</h2>
                                 {visibleClasses.length > 0 && (
-                                    <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[11px] font-extrabold tabular-nums">
+                                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
                                         {visibleClasses.length}
-                                    </Badge>
+                                    </span>
                                 )}
                             </div>
 
@@ -384,12 +344,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                         </p>
                                     </div>
                                     <Button onClick={() => setCreateModalOpen(true)} data-guide="create-class" className="mt-1 h-11 rounded-full px-6 font-bold shadow-md shadow-primary/20">
-                                        <Plus className="mr-1.5 h-4 w-4" />
                                         Nouvelle classe
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-2 md:grid-cols-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {/* Entrée en cascade : les cartes montent l'une après l'autre */}
                                     {visibleClasses.map((classInfo, index) => (
                                         <div
@@ -421,6 +380,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 })()}
             </div>
             </main>
+            </div>
 
             {/* FAB mobile — geste app native : créer une classe depuis le pouce */}
             <Button
