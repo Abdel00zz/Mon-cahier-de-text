@@ -1,5 +1,5 @@
-import { FullBackup, buildFullBackup } from './backup';
-import { getBundledCalendar, getSchoolYearFor, todayInMorocco } from './calendar';
+import { FullBackup, buildFullBackup } from './backup.js';
+import { getBundledCalendar, getSchoolYearFor, todayInMorocco } from './calendar.js';
 
 /**
  * Archives des années scolaires PASSÉES.

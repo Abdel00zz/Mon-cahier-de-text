@@ -1,4 +1,4 @@
-import { ScheduleSlot } from '../types';
+import { ScheduleSlot } from '../types.js';
 import calendarJson from '../public/vacances-jourferie.json';
 
 export interface FerieEntry {

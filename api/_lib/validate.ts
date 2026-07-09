@@ -1,5 +1,5 @@
-import { HttpError } from './http';
-import type { ClassInfo, LessonsData, TimetableEntry } from '../../types';
+import { HttpError } from './http.js';
+import type { ClassInfo, LessonsData, TimetableEntry } from '../../types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);

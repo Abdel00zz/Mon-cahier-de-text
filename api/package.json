@@ -1,4 +1,0 @@
-{
-  "//": "Force les fonctions serverless Vercel en CommonJS. La racine du projet est en \"type\": \"module\" (requis par Vite), ce qui fait compiler les fonctions api/ en ESM natif — or l'ESM exige des extensions .js explicites dans les imports relatifs, absentes ici (import './_lib/http'), d'où le crash runtime ERR_MODULE_NOT_FOUND / FUNCTION_INVOCATION_FAILED. En déclarant CommonJS pour ce dossier, la résolution d'imports redevient tolérante aux extensions, pour toutes les fonctions et leurs imports transitifs (utils/), sans modifier le code.",
-  "type": "commonjs"
-}

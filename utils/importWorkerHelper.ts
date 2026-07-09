@@ -1,4 +1,4 @@
-import { ImportPreparationResult } from './importPipeline';
+import { ImportPreparationResult } from './importPipeline.js';
 
 const workerCode = `
 const normalizeDate = (value) => {

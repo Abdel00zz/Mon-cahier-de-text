@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { ApiRequest, ApiResponse, HttpError } from './http';
+import { ApiRequest, ApiResponse, HttpError } from './http.js';
 
 const scrypt = promisify(scryptCallback) as (
   password: string,

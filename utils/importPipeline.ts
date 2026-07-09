@@ -1,6 +1,6 @@
-import { LessonsData, TopLevelItem } from '../types';
-import { migrateLessonsData } from './dataUtils';
-import { logger } from './logger';
+import { LessonsData, TopLevelItem } from '../types.js';
+import { migrateLessonsData } from './dataUtils.js';
+import { logger } from './logger.js';
 
 interface ImportReport {
   topLevelCount: number;

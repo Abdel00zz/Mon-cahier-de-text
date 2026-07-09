@@ -1,4 +1,4 @@
-import { ClassSchedule, TimetableEntry } from '../types';
+import { ClassSchedule, TimetableEntry } from '../types.js';
 
 /** Créneaux horaires de la grille (sans la colonne « 24 h » du modèle papier). */
 export interface HourSlot {
@@ -235,7 +235,7 @@ export const effectiveSchedules = (
      • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
      • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
 
-import { HolidayCalendar, isSchoolDay, nextSchoolDay, toISODate, weekdayLabel } from './calendar';
+import { HolidayCalendar, isSchoolDay, nextSchoolDay, toISODate, weekdayLabel } from './calendar.js';
 
 export interface NextSessionInfo {
     /** now = séance en cours à cet instant précis */

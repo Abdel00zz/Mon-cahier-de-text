@@ -1,5 +1,5 @@
-import { ClassInfo, LessonsData } from '../types';
-import { prepareImportedLessons } from './importPipeline';
+import { ClassInfo, LessonsData } from '../types.js';
+import { prepareImportedLessons } from './importPipeline.js';
 
 /**
  * Bibliothèque de contenus prédéfinis (public/contenus/) : pour chaque

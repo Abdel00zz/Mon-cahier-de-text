@@ -1,8 +1,8 @@
-import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http';
-import { getRedis, KEYS } from './_lib/redis';
-import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidTimetable } from './_lib/validate';
-import { requireUser } from './_lib/auth';
-import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot, TimetableEntry } from '../types';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { getRedis, KEYS } from './_lib/redis.js';
+import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidTimetable } from './_lib/validate.js';
+import { requireUser } from './_lib/auth.js';
+import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];

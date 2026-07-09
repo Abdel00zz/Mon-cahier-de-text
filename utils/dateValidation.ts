@@ -1,10 +1,10 @@
-import { AppConfig, ClassInfo } from '../types';
+import { AppConfig, ClassInfo } from '../types.js';
 import {
     HolidayCalendar,
     getBundledCalendar,
     isWithinKnownSchoolYear,
     weekdayLabel,
-} from './calendar';
+} from './calendar.js';
 
 /**
  * Moteur de validation intelligente des dates de séance.

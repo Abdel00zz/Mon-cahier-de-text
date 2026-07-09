@@ -1,4 +1,4 @@
-import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE,
@@ -8,10 +8,10 @@ import {
   setCookie,
   signSession,
   verifyPassword,
-} from './_lib/auth';
-import { getRedis, KEYS } from './_lib/redis';
-import { assertName, assertPassword, normalizePhone } from './_lib/validate';
-import type { Cycle } from '../types';
+} from './_lib/auth.js';
+import { getRedis, KEYS } from './_lib/redis.js';
+import { assertName, assertPassword, normalizePhone } from './_lib/validate.js';
+import type { Cycle } from '../types.js';
 
 interface StoredUser {
   phone: string;

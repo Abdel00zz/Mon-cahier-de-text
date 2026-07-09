@@ -1,4 +1,4 @@
-import { AppConfig } from '../types';
+import { AppConfig } from '../types.js';
 
 /**
  * Sous-ensemble de la configuration qui appartient AU PROFESSEUR et doit

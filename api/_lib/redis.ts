@@ -1,4 +1,4 @@
-import { HttpError } from './http';
+import { HttpError } from './http.js';
 
 type RedisClient = import('@upstash/redis').Redis;
 

@@ -1,11 +1,11 @@
-import { AbsencePeriod, NotificationSettings, ScheduleSlot } from '../types';
+import { AbsencePeriod, NotificationSettings, ScheduleSlot } from '../types.js';
 import {
     HolidayCalendar,
     countExpectedSessions,
     countSchoolDaysBetween,
     getSchoolYearStart,
     todayInMorocco,
-} from './calendar';
+} from './calendar.js';
 
 /**
  * Les absences justifiées (certificat de maladie, congé) sont traitées comme

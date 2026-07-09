@@ -1,10 +1,10 @@
-import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http';
-import { PushEntry, PushSubscriptionJSON, configureVapid, sendToEntry } from './_lib/webpush';
-import { getRedis, KEYS } from './_lib/redis';
-import { requireUser } from './_lib/auth';
-import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar';
-import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness';
-import type { TeacherSnapshot } from '../types';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { PushEntry, PushSubscriptionJSON, configureVapid, sendToEntry } from './_lib/webpush.js';
+import { getRedis, KEYS } from './_lib/redis.js';
+import { requireUser } from './_lib/auth.js';
+import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar.js';
+import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness.js';
+import type { TeacherSnapshot } from '../types.js';
 
 interface NotifyBody {
     action?: string;

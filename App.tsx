@@ -18,8 +18,13 @@ const Editor = lazy(() => import('./components/Editor').then(module => ({ defaul
 const SettingsPage = lazy(() => import('./components/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const AuthPage = lazy(() => import('./components/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 
+// MathJax 4.1.3 (dernière version) — chargé depuis jsDelivr. L'API de démarrage
+// de la v4 reste compatible avec `version={3}` de better-react-mathjax (config
+// `window.MathJax`, `startup.promise`, `typesetPromise`). Le composant combiné
+// `tex-mml-chtml` inclut déjà entrée TeX/MathML + sortie CHTML (pas de `loader`).
+const MATHJAX_V4_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js';
+
 const mathJaxConfig = {
-  loader: { load: ["input/tex", "output/chtml"] },
   tex: {
     inlineMath: [["$", "$"], ["\\(", "\\)"]],
     displayMath: [["$$", "$$"], ["\\[", "\\]"]],
@@ -247,7 +252,7 @@ const App: React.FC = () => {
   const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : view;
 
     return (
-      <MathJaxContext config={mathJaxConfig}>
+      <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
         <div className="min-h-screen bg-background text-foreground">
           <div key={routeKey} className="min-h-screen">
             <Suspense fallback={<AppBootSkeleton />}>

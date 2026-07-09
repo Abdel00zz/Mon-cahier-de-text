@@ -1,7 +1,7 @@
 import { produce, Draft } from 'immer';
-import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, EmbeddableTopLevelItem } from '../types';
-import { logger } from './logger';
-import { memoize } from './performance';
+import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, EmbeddableTopLevelItem } from '../types.js';
+import { logger } from './logger.js';
+import { memoize } from './performance.js';
 
 type DataItem = TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
 

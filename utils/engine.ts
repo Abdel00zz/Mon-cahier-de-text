@@ -19,9 +19,9 @@
  * Utilisez ce barrel pour importer la logique métier :
  *   import { computeLateness, validateSessionDate } from '@/utils/engine';
  */
-export * from './progression';
-export * from './calendar';
-export * from './lateness';
-export * from './assessments';
-export * from './dateValidation';
-export * from './timetable';
+export * from './progression.js';
+export * from './calendar.js';
+export * from './lateness.js';
+export * from './assessments.js';
+export * from './dateValidation.js';
+export * from './timetable.js';

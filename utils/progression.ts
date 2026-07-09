@@ -1,5 +1,5 @@
-import { AbsencePeriod, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, TeacherSnapshot } from '../types';
-import { flattenLessons } from './dataUtils';
+import { AbsencePeriod, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, TeacherSnapshot } from '../types.js';
+import { flattenLessons } from './dataUtils.js';
 
 /*
  * Un « élément de contenu » est un travail effectué en classe (item, devoir,

@@ -1,6 +1,6 @@
-import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http';
-import { getRedis, KEYS } from './_lib/redis';
-import { PushEntry, configureVapid, sendToEntry } from './_lib/webpush';
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { getRedis, KEYS } from './_lib/redis.js';
+import { PushEntry, configureVapid, sendToEntry } from './_lib/webpush.js';
 import {
     ADMIN_COOKIE,
     ADMIN_MAX_AGE,
@@ -9,8 +9,8 @@ import {
     safeEqualStrings,
     setCookie,
     signSession,
-} from './_lib/auth';
-import type { ClassInfo, ClassSchedule, TeacherSnapshot } from '../types';
+} from './_lib/auth.js';
+import type { ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
 
 interface AdminBody {
     action?: string;

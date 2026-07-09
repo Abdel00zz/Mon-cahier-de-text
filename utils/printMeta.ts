@@ -1,5 +1,5 @@
-import { LessonsData } from '../types';
-import { flattenLessons } from './dataUtils';
+import { LessonsData } from '../types.js';
+import { flattenLessons } from './dataUtils.js';
 
 /**
  * Mémoire d'impression par classe : quelles dates de séances ont déjà été

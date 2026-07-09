@@ -1,5 +1,5 @@
-import { AppConfig, ClassInfo } from '../types';
-import { HolidayCalendar, getSchoolYearFor } from './calendar';
+import { AppConfig, ClassInfo } from '../types.js';
+import { HolidayCalendar, getSchoolYearFor } from './calendar.js';
 
 /**
  * Moteur du planning OFFICIEL des devoirs (فروض محروسة/منزلية).

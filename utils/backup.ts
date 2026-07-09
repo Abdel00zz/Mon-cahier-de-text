@@ -1,11 +1,11 @@
-import { AppConfig, ClassInfo, LessonsData } from '../types';
+import { AppConfig, ClassInfo, LessonsData } from '../types.js';
 import {
     markClassDeleted,
     markClassDirty,
     markClassesListDirty,
     touchSettingsSyncMeta,
     SyncMeta,
-} from './syncBus';
+} from './syncBus.js';
 
 /**
  * Sauvegarde COMPLÈTE de toutes les données de l'utilisateur sur cet appareil :
