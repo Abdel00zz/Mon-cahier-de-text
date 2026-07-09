@@ -221,7 +221,7 @@ export const AuthPage: React.FC = () => {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.08 }}
-          className="rounded-[24px] border border-border/60 bg-card/90 p-5 shadow-xl backdrop-blur-sm sm:p-8"
+          className="rounded-2xl border border-border/60 bg-card/90 p-5 shadow-xl backdrop-blur-sm sm:p-8"
         >
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(['login', 'register'] as const).map(value => (

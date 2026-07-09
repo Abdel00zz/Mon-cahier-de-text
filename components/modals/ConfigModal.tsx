@@ -178,7 +178,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       {activeTab === 'affichage' && (
         <div className="space-y-6">
           {/* Section Configuration Générale */}
-          <div className="relative overflow-hidden rounded-[20px] border border-border/60 bg-secondary/40 p-5 shadow-sm">
+          <div className="relative overflow-hidden rounded-xl border border-border/60 bg-secondary/40 p-5 shadow-sm">
             <div className="relative flex gap-3">
               <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
@@ -191,7 +191,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           </div>
 
           {/* Section Contenu visible */}
-          <div className="rounded-[24px] border border-border/60 bg-card p-6 shadow-sm space-y-5 relative">
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-5 relative">
             <div className="relative">
               <h3 className="text-base font-bold text-foreground font-display mb-4">Contenu visible par contexte</h3>
 
@@ -417,7 +417,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       {activeTab === 'donnees' && (
         <div className="space-y-6">
           {/* Section Gestion des données */}
-          <div className="rounded-[24px] border border-border/60 bg-card p-6 shadow-sm space-y-4 relative">
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4 relative">
             <div className="relative">
               <h3 className="text-base font-bold text-foreground font-display mb-2">Sauvegarde & Restauration</h3>
               <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
@@ -537,7 +537,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* Core Settings Content Container */}
-            <div className="flex-1 w-full bg-card rounded-[28px] border border-border/60 p-6 md:p-8 shadow-sm relative min-h-[480px]">
+            <div className="flex-1 w-full bg-card rounded-3xl border border-border/60 p-6 md:p-8 shadow-sm relative min-h-[480px]">
               <div className="relative">
                 {tabContent}
               </div>

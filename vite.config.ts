@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
                 strategies: 'injectManifest',
                 srcDir: 'pwa',
                 filename: 'sw.ts',
-                registerType: 'prompt',
+                registerType: 'autoUpdate',
                 injectRegister: null, // enregistrement manuel dans registerSW.ts
                 includeAssets: ['icons/*.png', 'icons/icon.svg', 'vacances-jourferie.json'],
                 injectManifest: {

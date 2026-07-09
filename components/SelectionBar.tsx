@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { Button } from './ui/button';
+import { MathText } from './ui/math-text';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
   FileText, Pencil, Trash2, X,
@@ -55,12 +56,12 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 ${
+    className={`group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-30 ${
       danger
-        ? 'text-[color-mix(in_srgb,hsl(var(--destructive))_45%,white)] hover:bg-destructive hover:text-destructive-foreground'
+        ? 'text-[color-mix(in_srgb,hsl(var(--destructive))_60%,white)] hover:bg-destructive hover:text-destructive-foreground'
         : accent
           ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
-          : 'text-muted-foreground/60 hover:bg-card/10 hover:text-white'
+          : 'text-card/75 hover:bg-card/15 hover:text-card'
     }`}
     aria-label={title}
   >
@@ -101,6 +102,41 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   const showMove = (canMoveUp || canMoveDown) && onMoveUp && onMoveDown;
 
+  /*
+   * Groupes d'actions par intention. Chaque groupe n'est rendu que s'il a au
+   * moins un bouton, et les séparateurs sont insérés UNIQUEMENT entre deux
+   * groupes présents — plus de trait orphelin (ex. sélection multiple non
+   * datable = seulement « Supprimer », sans divider avant).
+   */
+  const groups: React.ReactNode[] = [];
+
+  if (showMove) {
+    groups.push(
+      <React.Fragment key="move">
+        <ActionButton icon={ArrowUp} onClick={onMoveUp!} title="Monter" disabled={!canMoveUp} />
+        <ActionButton icon={ArrowDown} onClick={onMoveDown!} title="Descendre" disabled={!canMoveDown} />
+      </React.Fragment>
+    );
+  }
+
+  const contentActions: React.ReactNode[] = [];
+  if (canAdd) contentActions.push(<ActionButton key="add" icon={Plus} onClick={onAdd} title="Ajouter après" />);
+  if (canEdit && onEdit) contentActions.push(<ActionButton key="edit" icon={Pencil} onClick={onEdit} title="Modifier" />);
+  if (canDescription) contentActions.push(<ActionButton key="desc" icon={FileText} onClick={onDescription} title={descriptionLabel} />);
+  if (contentActions.length > 0) groups.push(<React.Fragment key="content">{contentActions}</React.Fragment>);
+
+  const dateActions: React.ReactNode[] = [];
+  if (canAssignDate && onAssignToday) dateActions.push(<ActionButton key="today" icon={CalendarCheck} onClick={onAssignToday} title="Dater aujourd'hui" accent />);
+  if (canAssignDate) dateActions.push(<ActionButton key="pick" icon={CalendarDays} onClick={onAssignDate} title="Choisir une date…" />);
+  if (hasDate) dateActions.push(<ActionButton key="clear" icon={CalendarX} onClick={onClearDate} title="Dissocier la date" />);
+  if (dateActions.length > 0) groups.push(<React.Fragment key="dates">{dateActions}</React.Fragment>);
+
+  groups.push(
+    <React.Fragment key="danger">
+      <ActionButton icon={Trash2} onClick={onDelete} title="Supprimer" danger />
+    </React.Fragment>
+  );
+
   return (
     <div
       className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-3xl border border-border/50 bg-foreground/95 shadow-2xl shadow-foreground/40 backdrop-blur-md sm:bottom-6 print:hidden"
@@ -113,7 +149,11 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       <div className="flex items-center justify-between gap-2 border-b border-border/20 px-4 pb-1.5 pt-2">
         <div className="min-w-0 flex items-baseline gap-2">
           {count === 1 && selectionLabel ? (
-            <span className="max-w-[16rem] truncate text-xs font-bold text-card font-display">{selectionLabel}</span>
+            /* barre resserrée : le titre est tronqué (…) et borné pour ne pas
+               étirer la barre — l'info complète reste dans le tableau/l'édition */
+            <span className="max-w-[9rem] sm:max-w-[11rem] truncate text-xs font-bold text-card font-display">
+              <MathText source={selectionLabel} cacheKey={selectionLabel} inline>{selectionLabel}</MathText>
+            </span>
           ) : (
             <span className="text-xs font-bold text-card font-display">{count} éléments sélectionnés</span>
           )}
@@ -133,31 +173,15 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         </Button>
       </div>
 
-      {/* Actions groupées par intention — défilement horizontal sur très petit écran */}
+      {/* Actions groupées par intention — dividers seulement entre groupes
+          présents ; défilement horizontal sur très petit écran */}
       <div className={`flex items-center gap-0.5 overflow-x-auto px-2 py-1.5 no-scrollbar ${isPending ? 'opacity-60' : ''}`}>
-        {showMove && (
-          <>
-            <ActionButton icon={ArrowUp} onClick={onMoveUp!} title="Monter" disabled={!canMoveUp} />
-            <ActionButton icon={ArrowDown} onClick={onMoveDown!} title="Descendre" disabled={!canMoveDown} />
-            <Divider />
-          </>
-        )}
-
-        {canAdd && <ActionButton icon={Plus} onClick={onAdd} title="Ajouter après" />}
-        {canEdit && onEdit && <ActionButton icon={Pencil} onClick={onEdit} title="Modifier" />}
-        {canDescription && <ActionButton icon={FileText} onClick={onDescription} title={descriptionLabel} />}
-
-        {(canAssignDate || hasDate) && <Divider />}
-
-        {/* L'action la plus fréquente en classe : dater à AUJOURD'HUI, un seul tap */}
-        {canAssignDate && onAssignToday && (
-          <ActionButton icon={CalendarCheck} onClick={onAssignToday} title="Dater aujourd'hui" accent />
-        )}
-        {canAssignDate && <ActionButton icon={CalendarDays} onClick={onAssignDate} title="Choisir une date…" />}
-        {hasDate && <ActionButton icon={CalendarX} onClick={onClearDate} title="Dissocier la date" />}
-
-        <Divider />
-        <ActionButton icon={Trash2} onClick={onDelete} title="Supprimer" danger />
+        {groups.map((group, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <Divider />}
+            {group}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );

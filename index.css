@@ -22,42 +22,62 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-sky-wash: rgb(var(--sky-wash));
+  --color-sky-glass: rgb(var(--sky-glass));
+  --color-paper-wash: rgb(var(--paper-wash));
+  --color-mint-wash: rgb(var(--mint-wash));
+  --color-leaf-wash: rgb(var(--leaf-wash));
+  --color-leaf-glass: rgb(var(--leaf-glass));
+  --color-coral: rgb(var(--coral));
 
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  /* Style Figma-pro : arrondis des CADRES fortement réduits (~-90%, quasi nets).
+     Les pastilles et cercles (rounded-full) ne sont pas concernés. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 5px;
+  --radius-3xl: 6px;
 
-  --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
-  --font-display: 'Fraunces', serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'Fira Sans', 'Roboto', system-ui, -apple-system, sans-serif;
+  --font-display: 'Roboto Slab', 'Fira Sans Condensed', 'Fira Sans', serif;
+  --font-mono: 'Roboto Mono', 'IBM Plex Mono', ui-monospace, monospace;
 }
 
 @layer base {
   :root {
-    --background: 220 30% 96%;
-    --foreground: 220 25% 15%;
+    --sky-wash: 194 240 255;
+    --sky-glass: 200 242 255;
+    --paper-wash: 255 241 208;
+    --mint-wash: 134 233 209;
+    --leaf-wash: 232 255 209;
+    --leaf-glass: 235 255 213;
+    --coral: 255 67 81;
+
+    --background: 42 100% 97%;
+    --foreground: 210 24% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 15%;
-    --primary: 224 85% 58%;
+    --card-foreground: 210 24% 16%;
+    --popover: 42 100% 98%;
+    --popover-foreground: 210 24% 16%;
+    --primary: 194 74% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 25% 94%;
-    --secondary-foreground: 220 20% 30%;
-    --muted: 220 20% 94%;
-    --muted-foreground: 220 12% 44%;
-    --accent: 217 90% 92%;
-    --accent-foreground: 224 80% 30%;
-    --destructive: 11 56% 42%;
-    --destructive-foreground: 45 100% 98%;
+    --secondary: 195 100% 94%;
+    --secondary-foreground: 194 52% 25%;
+    --muted: 42 100% 94%;
+    --muted-foreground: 210 12% 42%;
+    --accent: 195 100% 88%;
+    --accent-foreground: 194 70% 24%;
+    --destructive: 356 100% 63%;
+    --destructive-foreground: 0 0% 100%;
     /* statuts sémantiques — UNE seule teinte par famille dans toute l'app :
        succès (à jour, confirmations) et avertissement (retards, échéances) */
-    --success: 152 55% 34%;
-    --warning: 35 92% 42%;
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 224 85% 58%;
-    --radius: 1rem;
+    --success: 165 48% 34%;
+    --warning: 37 88% 43%;
+    --border: 193 42% 86%;
+    --input: 193 42% 86%;
+    --ring: 194 74% 38%;
+    --radius: 4px;
   }
 }
 
@@ -67,16 +87,72 @@
   }
   body {
     @apply bg-background text-foreground;
+    background:
+      radial-gradient(circle at 8% 0%, rgb(var(--sky-wash) / 0.38), transparent 28rem),
+      radial-gradient(circle at 92% 8%, rgb(var(--leaf-wash) / 0.45), transparent 24rem),
+      linear-gradient(180deg, rgb(var(--paper-wash) / 0.42), hsl(var(--background)) 18rem);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h4, h5, h6, .font-display {
     font-family: var(--font-display);
+    letter-spacing: 0;
   }
   .font-mono {
     font-family: var(--font-mono);
   }
+}
+
+@layer utilities {
+  .surface-art {
+    background:
+      linear-gradient(135deg, rgb(var(--paper-wash) / 0.72), rgb(var(--sky-glass) / 0.48)),
+      hsl(var(--card));
+  }
+
+  .surface-glass {
+    background:
+      linear-gradient(135deg, rgb(var(--sky-wash) / 0.34), rgb(var(--leaf-glass) / 0.28)),
+      hsl(var(--card) / 0.92);
+  }
+
+  .surface-mint {
+    background:
+      linear-gradient(135deg, rgb(var(--mint-wash) / 0.30), rgb(var(--leaf-wash) / 0.34)),
+      hsl(var(--card));
+  }
+
+  .surface-coral {
+    background:
+      linear-gradient(135deg, rgb(var(--coral) / 0.12), rgb(var(--paper-wash) / 0.54)),
+      hsl(var(--card));
+  }
+
+  .ink-primary {
+    color: hsl(var(--primary));
+  }
+}
+
+/*
+ * Icônes interactives (boutons, barres d'outils, barre de sélection) : +30%
+ * et FLEXIBLES (unités `rem` → suivent le zoom navigateur et l'accessibilité).
+ * Agrandissement PAR PALIER pour ne jamais RÉTRÉCIR une icône volontairement
+ * grande (FAB h-6 = 24px) ni gonfler les micro-icônes (h-3/h-3.5 décoratives) :
+ *   h-4 (16px) → 20.8px   |   h-5 (20px) → 25.6px
+ * `em` serait piégeux ici (les boutons icônes ont une font-size réduite).
+ * Les sélecteurs `svg.lucide.h-4/.h-5` (0,2,1) l'emportent sur h-4 seul (0,1,0)
+ * et sur [&_svg]:size-4 des boutons. Icônes décoratives hors boutons : intactes.
+ */
+button svg.lucide.h-4,  button svg.lucide.size-4,
+[role="toolbar"] svg.lucide.h-4,  [role="toolbar"] svg.lucide.size-4 {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+button svg.lucide.h-5,  button svg.lucide.size-5,
+[role="toolbar"] svg.lucide.h-5,  [role="toolbar"] svg.lucide.size-5 {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 /* Tooltip maison (remplace Tippy.js) */

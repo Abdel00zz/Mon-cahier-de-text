@@ -107,7 +107,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery, isSearchVisible]);
   
   return (
-    <div className="sticky top-2 z-[50] mb-0 flex flex-wrap items-center justify-between gap-2 rounded-t-2xl rounded-b-none border border-border/80 bg-card/95 p-2 shadow-sm backdrop-blur print:hidden">
+    <div className="sticky top-0 z-[50] mb-0 flex flex-wrap items-center justify-between gap-2 rounded-none border border-border/80 bg-card/95 p-2 shadow-sm backdrop-blur print:hidden">
       <div className="flex min-w-0 items-center gap-2">
         {/* Journal compact : dernière opération, clic → historique détaillé */}
         {lastModifiedLabel && (

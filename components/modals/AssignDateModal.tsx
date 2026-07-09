@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { MathJax } from 'better-react-mathjax';
 import { Indices } from '../../types';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG } from '../../constants';
+import { todayInMorocco } from '../../utils/calendar';
 
 interface SelectedItemPreview {
   indices: Indices;
@@ -27,10 +28,15 @@ interface AssignDateModalProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
 
+const addDaysISO = (iso: string, offset: number): string => {
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + offset);
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+};
+
 const isoFromOffset = (offset: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() + offset);
-  return date.toISOString().slice(0, 10);
+  return addDaysISO(todayInMorocco(), offset);
 };
 
 const formatDateFr = (dateStr?: string) => {

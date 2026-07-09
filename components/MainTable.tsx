@@ -79,7 +79,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-2xl border bg-card p-3 pl-4 shadow-lg shadow-foreground/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-lg border surface-art p-3 pl-4 shadow-lg shadow-foreground/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -190,8 +190,9 @@ const VIRTUAL_OVERSCAN = 16;
 const TableHeader: React.FC = React.memo(() => (
   /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
-     nettement demarque : fond neutre + traits reguliers. */
-  <div className="sticky top-0 z-10 hidden border-b border-border/80 bg-muted/80 backdrop-blur-md print:static md:block">
+     de colonnes NON collant : il défile avec le tableau (seule la barre
+     d'outils reste épinglée en haut). */
+  <div className="hidden border-b border-border/80 bg-[rgb(var(--sky-wash)_/_0.34)] md:block">
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
         Date
@@ -303,7 +304,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-t border-success/25 border-b-2 border-success/35 bg-success/10 transition-colors duration-150`,
+                `group relative grid ${TABLE_GRID_CLASS} border-t border-success/25 border-b-2 border-success/35 surface-mint transition-colors duration-150`,
                 groupIsSelected ? 'bg-primary/[0.06]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
@@ -313,7 +314,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 className={`absolute left-0 top-0 h-full ${groupIsSelected ? 'w-[3px] bg-primary' : 'w-[2.5px] bg-success/75'}`}
             />
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-success/10`}>
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-[rgb(var(--mint-wash)_/_0.18)]`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -328,7 +329,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             indices={item.indices}
                             elementType={item.elementType}
                             layout="content-only"
-                            lineClassOverride={index < items.length - 1 ? 'border-b border-success/20' : ''}
+                            lineClassOverride=""
                             onCellUpdate={onCellUpdate}
                             onToggleSelect={onToggleSelect}
                             onDoubleClickEdit={onDoubleClickEdit}
@@ -343,7 +344,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className="hidden min-w-0 self-stretch bg-success/5 p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+            <div className="hidden min-w-0 self-stretch bg-[rgb(var(--leaf-wash)_/_0.22)] p-1.5 md:flex" onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -357,7 +358,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map((item, index) => (
-                            <div key={item.key} className={`min-h-[44px] p-1 ${index < items.length - 1 ? 'border-b border-success/20' : ''}`}>
+                            <div key={item.key} className="min-h-[44px] p-1">
                                 <EditableCell
                                     value={getMergeableRemark(item)}
                                     onSave={value => onCellUpdate(item.indices, 'remark', value)}
@@ -378,8 +379,8 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-2xl border border-t-0 border-dashed border-border bg-background px-6 py-16 text-center shadow-sm">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-lg border border-t-0 border-dashed border-primary/20 surface-art px-6 py-16 text-center shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--mint-wash)_/_0.45)] text-primary">
             <BookOpen className="h-5 w-5" />
         </div>
         <h3 className="text-base font-bold text-foreground font-display">Le cahier de textes est vide</h3>
@@ -576,7 +577,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   return (
     /* Bloc tableau : la barre d'outils porte les coins hauts, la table les coins bas. */
     <Card
-      className="overflow-hidden rounded-t-none rounded-b-2xl border border-t-0 border-border/80 bg-card shadow-sm"
+      className="overflow-hidden rounded-none border border-t-0 border-border/80 bg-card/95 shadow-sm"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

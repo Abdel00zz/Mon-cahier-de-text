@@ -1,13 +1,26 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
+import { precacheAndRoute, createHandlerBoundToURL, cleanupOutdatedCaches } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { clientsClaim } from 'workbox-core';
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> };
 
 // Precache des assets buildés (injecté par vite-plugin-pwa / Workbox).
 precacheAndRoute(self.__WB_MANIFEST);
+// Purge les anciens precaches quand une nouvelle version est publiée.
+cleanupOutdatedCaches();
+
+/*
+ * Mise à jour AUTOMATIQUE et silencieuse : la nouvelle version s'active dès son
+ * installation (skipWaiting) et prend le contrôle des pages ouvertes
+ * (clientsClaim), sans invite ni clic. La page se recharge d'elle-même une
+ * seule fois (voir registerSW.ts). Les cahiers étant persistés en continu dans
+ * le localStorage, aucun risque de perte.
+ */
+self.skipWaiting();
+clientsClaim();
 
 // SPA : toute navigation retombe sur index.html, SAUF /admin et /api.
 const navigationHandler = createHandlerBoundToURL('/index.html');
@@ -33,13 +46,6 @@ registerRoute(
         plugins: [new ExpirationPlugin({ maxEntries: 24, maxAgeSeconds: 365 * 24 * 3600 })],
     })
 );
-
-// Applique tout de suite les nouvelles versions demandées par l'UI.
-self.addEventListener('message', event => {
-    if (event.data?.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-});
 
 // ── Web Push ────────────────────────────────────────────────────────────────
 self.addEventListener('push', event => {

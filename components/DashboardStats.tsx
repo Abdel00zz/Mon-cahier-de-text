@@ -96,7 +96,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, toneClass, bgClass, val
             tabIndex={0}
             onClick={onOpen}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
-            className="group cursor-pointer select-none overflow-hidden rounded-2xl border border-border/60 bg-card/70 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-border hover:shadow-md active:scale-[0.95] animate-slide-in-up opacity-0"
+            className="group cursor-pointer select-none overflow-hidden rounded-lg border border-white/70 surface-glass shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-primary/25 hover:shadow-md active:scale-[0.95] animate-slide-in-up opacity-0"
             style={{ animationDelay: `${index * 60}ms` }}
             aria-label={`${label} : voir le détail`}
         >
@@ -217,7 +217,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
             <Sheet open={openSheet !== null} onOpenChange={(open) => { if (!open) setOpenSheet(null); }}>
                 <SheetContent
                     side="bottom"
-                    className="max-h-[80dvh] overflow-y-auto rounded-t-[28px] border-t px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] pt-3 sm:mx-auto sm:max-w-lg sm:rounded-t-[28px]"
+                    className="max-h-[80dvh] overflow-y-auto rounded-t-3xl border-t px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] pt-3 sm:mx-auto sm:max-w-lg sm:rounded-t-3xl"
                 >
                     {/* Poignée de préhension */}
                     <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-muted-foreground/20" aria-hidden />

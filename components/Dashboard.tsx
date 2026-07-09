@@ -68,20 +68,20 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             data-guide="create-class"
-            className="group flex flex-col justify-between w-full h-full min-h-[160px] cursor-pointer rounded-[24px] border-2 border-dashed shadow-sm transition-all duration-300 ease-out active:scale-[0.985] select-none will-change-transform relative overflow-hidden"
+            className="group flex flex-col justify-between w-full h-full min-h-[160px] cursor-pointer rounded-lg border-2 border-dashed surface-glass shadow-sm transition-all duration-300 ease-out active:scale-[0.985] select-none will-change-transform relative overflow-hidden"
             style={{
                 borderColor: hovered
                     ? 'color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--border)))'
                     : 'hsl(var(--border))',
                 backgroundColor: hovered
-                    ? 'color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--card)))'
-                    : 'color-mix(in srgb, hsl(var(--primary)) 3%, hsl(var(--card)))',
+                    ? 'color-mix(in srgb, rgb(var(--mint-wash)) 32%, hsl(var(--card)))'
+                    : 'color-mix(in srgb, rgb(var(--sky-wash)) 32%, hsl(var(--card)))',
             }}
             aria-label="Créer une nouvelle classe"
         >
             <CardContent className="flex flex-col items-center justify-center p-6 text-center gap-3.5 flex-1">
                 <div 
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary border border-border/40 shadow-sm transition-all duration-300"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.68)] border border-white/70 shadow-sm transition-all duration-300"
                     style={{
                         backgroundColor: hovered ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
                         color: hovered ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
@@ -250,12 +250,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const initials = getInitials(teacherName);
 
     return (
-    <div className="min-h-screen bg-background p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
+    <div className="min-h-screen p-3 pb-8 touch-manipulation safe-bottom sm:p-8" data-dashboard-root>
             <header className="relative mx-auto mb-6 sm:mb-8 max-w-5xl px-3 sm:px-4" id="dashboard-header">
                 <div className="flex items-center justify-between pb-3 gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         {/* Elegant Circular Avatar */}
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary font-extrabold text-sm shadow-inner font-sans tracking-wide">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.72)] border border-white/70 text-primary font-extrabold text-sm shadow-inner font-sans tracking-wide">
                             {initials}
                         </div>
                         <div className="min-w-0">
@@ -325,7 +325,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             {!showAllClasses && (
             <div className={`w-full flex justify-center mb-5 sm:mb-6 ${((config.selectedCycles?.length ?? 0) === 1 && !config.showAllCycles) ? 'hidden' : ''}`}>
                 <Tabs value={selectedCycle} onValueChange={(val) => !isClassesLoading && setSelectedCycle(val as Cycle)}>
-                    <TabsList className="rounded-xl border border-border bg-card shadow-sm p-1">
+                    <TabsList className="rounded-lg border border-white/70 surface-glass shadow-sm p-1">
                         {([
                             { key: 'college', label: 'Collège' },
                             { key: 'lycee', label: 'Lycée' },
@@ -373,8 +373,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
                             {visibleClasses.length === 0 ? (
                                 /* État vide motivant : premier pas guidé */
-                                <div className="flex flex-col items-center gap-3 rounded-[24px] border-2 border-dashed border-border bg-card/50 px-6 py-10 text-center animate-slide-in-up">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-primary/20 surface-art px-6 py-10 text-center animate-slide-in-up">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(var(--mint-wash)_/_0.45)] text-primary">
                                         <Plus className="h-6 w-6" />
                                     </div>
                                     <div>

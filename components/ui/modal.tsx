@@ -52,13 +52,13 @@ export function Modal({
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className={`${mwClass} ${className || ""}`}>
         {(title || description) && (
-          <DialogHeader>
+          <DialogHeader className="border-b border-white/70 pb-3 pr-9">
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
         )}
-        <div className="py-2">{children}</div>
-        {footer && <DialogFooter>{footer}</DialogFooter>}
+        <div className="min-w-0 py-1">{children}</div>
+        {footer && <DialogFooter className="border-t border-white/70 pt-3">{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
   )

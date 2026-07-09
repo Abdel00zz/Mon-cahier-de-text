@@ -63,7 +63,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
-            className="group relative h-full w-full min-h-[124px] cursor-pointer overflow-hidden rounded-[22px] border border-border/80 bg-card shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/25 hover:bg-muted/30 hover:shadow-md active:scale-[0.98] select-none will-change-transform"
+            className="group relative h-full w-full min-h-[124px] cursor-pointer overflow-hidden rounded-lg border border-white/70 surface-glass shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:scale-[0.98] select-none will-change-transform"
             onClick={() => onSelect()}
             aria-label={`Ouvrir la classe ${classInfo.name}`}
         >
@@ -79,7 +79,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                             variant="ghost"
                             size="icon"
                             onClick={handleConfigureClick}
-                            className="h-9 w-9 rounded-full text-muted-foreground/50 hover:bg-secondary hover:text-primary transition-all duration-200"
+                            className="h-9 w-9 rounded-full text-muted-foreground/55 hover:bg-[rgb(var(--sky-wash)_/_0.62)] hover:text-primary transition-all duration-200"
                             title="Configurer la classe"
                             aria-label="Configurer la classe"
                         >
@@ -108,7 +108,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                             Séance en cours
                         </span>
                     ) : nextSession ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-extrabold text-primary shadow-sm">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-[rgb(var(--sky-wash)_/_0.58)] px-2.5 py-1 text-[11px] font-extrabold text-primary shadow-sm">
                             <Bell className="h-3 w-3" />
                             <span>Séance : {nextSession.label}</span>
                         </span>
@@ -119,7 +119,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                     )}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between rounded-2xl bg-secondary/35 px-2.5 py-2">
+                <div className="mt-3 flex items-center justify-between rounded-md border border-white/70 bg-[rgb(var(--paper-wash)_/_0.55)] px-2.5 py-2">
                     <span className="flex items-center gap-1.5 text-[10.5px] font-semibold text-muted-foreground font-sans">
                         <Clock className="h-3.5 w-3.5 opacity-60" />
                         {formatDate(lastModified)}

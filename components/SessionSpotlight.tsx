@@ -41,16 +41,16 @@ export const SessionSpotlight: React.FC<SessionSpotlightProps> = ({ suggestion, 
             <button
                 type="button"
                 onClick={handleOpen}
-                className="group relative block w-full overflow-hidden rounded-[22px] border border-primary/20 bg-card p-4 text-left shadow-md shadow-foreground/5 transition-all duration-300 hover:border-primary/35 hover:bg-muted/30 active:scale-[0.985] animate-slide-in-up"
+                className="group relative block w-full overflow-hidden rounded-lg border border-primary/20 surface-art p-4 text-left shadow-md shadow-foreground/5 transition-all duration-300 hover:border-primary/35 active:scale-[0.985] animate-slide-in-up"
                 aria-label={`${PHASE_LABEL[suggestion.phase]} : ouvrir le cahier de ${suggestion.classInfo.name}`}
             >
                 {/* halo vivant */}
-                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-primary/10 blur-[46px] opacity-70" />
+                <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[rgb(var(--mint-wash)_/_0.58)] blur-[46px] opacity-70" />
 
                 {/* Phase + horaire */}
                 <div className="relative flex items-center gap-2">
                     <span
-                        className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10.5px] font-extrabold uppercase text-primary"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-[rgb(var(--sky-wash)_/_0.58)] px-2.5 py-1 text-[10.5px] font-extrabold uppercase text-primary"
                     >
                         {suggestion.phase === 'active' && (
                             <span className="relative flex h-2 w-2">

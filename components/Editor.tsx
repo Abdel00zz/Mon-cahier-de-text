@@ -29,6 +29,7 @@ import { EditorModals } from './EditorModals';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '../constants';
 import { logger } from '../utils/logger';
 import { SESSION_ASSISTANT_FOCUS_KEY, SessionAssistantFocusPayload } from '../utils/sessionAssistant';
+import { todayInMorocco } from '../utils/calendar';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -66,6 +67,10 @@ const createSelectionState = (indices?: Indices): SelectionState => {
     items.set(key, indices);
   }
   return { keys, items };
+};
+
+const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
+  return !!item && !indices.isSeparator;
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack }) => {
@@ -572,12 +577,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           if (typeof dateOrAssignments === 'string') {
               selectedIndices.forEach(idx => {
                   const { item } = findItem(draft, idx);
-                  if (item) (item as any).date = dateOrAssignments;
+                  if (isDateableContentTarget(idx, item)) (item as any).date = dateOrAssignments;
               });
           } else {
               dateOrAssignments.forEach(assignment => {
                   const { item } = findItem(draft, assignment.indices);
-                  if (item) (item as any).date = assignment.date;
+                  if (isDateableContentTarget(assignment.indices, item)) (item as any).date = assignment.date;
               });
           }
       }, 'assign-date');
@@ -599,7 +604,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setState(draft => {
           selectedIndices.forEach(idx => {
               const { item } = findItem(draft, idx);
-              if (item) (item as any).date = '';
+              if (item && !idx.isSeparator && typeof (item as any).date === 'string') {
+                  (item as any).date = '';
+              }
           });
       }, 'clear-date');
       setSelectionState(createSelectionState());
@@ -699,7 +706,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
 
   const selectedItemsData = useSelectionData(selectedIndices, lessonsData);
 
-  const selectedDates = selectedItemsData.filter(item => item.canDate).map(item => item.date).filter(Boolean);
+  const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
   const hasSelectedDate = selectedDates.length > 0;
   const sharedSelectedDate = selectedDates.length > 0 && selectedDates.every(date => date === selectedDates[0])
       ? selectedDates[0]
@@ -716,23 +723,28 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
   const canMoveDown = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'down');
 
-  // En-tête contextuel de la barre de sélection : type + titre de l'élément.
+  // En-tête contextuel de la barre de sélection : type (en français) + titre.
   const selectionLabel = useMemo(() => {
     if (selectedCount !== 1 || !singleSelection?.item) return null;
     const item: any = singleSelection.item;
     const rawType: string = item.type || '';
-    const typeLabel = rawType ? rawType.charAt(0).toUpperCase() + rawType.slice(1) : '';
-    const title = item.title || item.name || '';
-    if (typeLabel && title) return `${typeLabel} — ${title}`;
-    return title || typeLabel || 'Élément sélectionné';
+    // libellé français : blocs de haut niveau via TOP_LEVEL_TYPE_CONFIG
+    // (chapter → « Chapitre »), sinon le type est déjà un mot français.
+    const typeLabel = rawType
+      ? (TOP_LEVEL_TYPE_CONFIG[rawType as keyof typeof TOP_LEVEL_TYPE_CONFIG]?.name
+          ?? rawType.charAt(0).toUpperCase() + rawType.slice(1))
+      : '';
+    const title = (item.title || item.name || '').trim();
+    if (!title) return typeLabel || 'Élément sélectionné';
+    // anti-redondance : si le titre commence déjà par le type, on n'ajoute pas le préfixe.
+    if (typeLabel && title.toLowerCase().startsWith(typeLabel.toLowerCase())) return title;
+    return typeLabel ? `${typeLabel} — ${title}` : title;
   }, [selectedCount, singleSelection]);
 
   // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
   // (donc aussi la garde intelligente sur la date du jour).
   const handleAssignToday = useCallback(() => {
-      const today = new Date();
-      const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      handleAssignDates(iso);
+      handleAssignDates(todayInMorocco());
   }, [handleAssignDates]);
 
   const handleSaveDescription = useCallback((description: string) => {
@@ -756,6 +768,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       showNotification(description.trim() ? "Description mise a jour." : "Description effacee.", "success");
   }, [selectedIndices, setState, setEditorState, showNotification]);
 
+  // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
+  // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
+  // varie (retour à la ligne sur mobile, ouverture de la recherche) — un
+  // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
   const isLoading = isClassLoading || isConfigLoading;
 
   if (isLoading) {
@@ -763,8 +779,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }
 
   return (
-    <div className="relative p-1.5 sm:p-4 bg-background safe-bottom print:bg-card print:p-0" data-editor-root>
-      <div className="container mx-auto max-w-7xl rounded-[22px] border border-border/70 bg-card/95 p-2 shadow-sm sm:p-5 min-h-[calc(100vh-2rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none">
+    <div className="relative p-1.5 sm:p-4 safe-bottom print:bg-card print:p-0" data-editor-root>
+      <div className="container mx-auto max-w-7xl rounded-lg border border-white/70 surface-glass p-2 shadow-sm sm:p-5 min-h-[calc(100vh-2rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -772,30 +788,32 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          <div className="z-30 print:hidden">
-            <Toolbar
-              onUndo={undo}
-              onRedo={redo}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onSave={saveData}
-              saveStatus={saveStatus}
-              onOpenImport={() => setEditorState(draft => { draft.activeModal = 'import'; })}
-              onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
-              onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
-              onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-              onExportData={handleExportData}
-              onPrint={handleSmartPrint}
-              searchQuery={searchQuery}
-              setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
-              lastModifiedLabel={lastJournalEntry ? `${opLabel(lastJournalEntry.op)} · ${timeAgoFr(lastJournalEntry.at)}` : null}
-              onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
-            />
-          </div>
+          {/* Barre d'outils COLLANTE : rendue en enfant direct de la colonne
+              flex (pas de wrapper à sa taille, sinon le sticky serait confiné à
+              cette boîte et ne dépasserait pas). Elle reste ainsi visible tout
+              au long du défilement, avec l'en-tête de colonnes calé dessous. */}
+          <Toolbar
+            onUndo={undo}
+            onRedo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onSave={saveData}
+            saveStatus={saveStatus}
+            onOpenImport={() => setEditorState(draft => { draft.activeModal = 'import'; })}
+            onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
+            onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
+            onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
+            onExportData={handleExportData}
+            onPrint={handleSmartPrint}
+            searchQuery={searchQuery}
+            setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
+            lastModifiedLabel={lastJournalEntry ? `${opLabel(lastJournalEntry.op)} · ${timeAgoFr(lastJournalEntry.at)}` : null}
+            onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
+          />
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
-            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-2xl border border-border bg-card p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-lg border border-white/70 surface-art p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[rgb(var(--sky-wash)_/_0.62)] text-primary">
                 <BookOpen className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">

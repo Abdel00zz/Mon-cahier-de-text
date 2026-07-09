@@ -16,12 +16,12 @@ export const AppBootSkeleton: React.FC = () => (
       </div>
       <div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-[92px] rounded-[20px]" />
+          <Skeleton key={index} className="h-[92px] rounded-xl" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <Skeleton key={index} className="h-[128px] rounded-[24px]" />
+          <Skeleton key={index} className="h-[128px] rounded-2xl" />
         ))}
       </div>
     </div>
@@ -46,13 +46,13 @@ export const DashboardSkeleton: React.FC = () => (
       </div>
       <div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-[92px] rounded-[20px]" />
+          <Skeleton key={index} className="h-[92px] rounded-xl" />
         ))}
       </div>
       <Skeleton className="mb-3.5 h-6 w-32" />
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
-          <Skeleton key={index} className="h-[128px] rounded-[24px]" />
+          <Skeleton key={index} className="h-[128px] rounded-2xl" />
         ))}
       </div>
     </div>

@@ -1,23 +1,21 @@
 import { useMemo } from 'react';
 import { Indices, LessonsData } from '../types';
 import { findItem } from '../utils/dataUtils';
-import { TOP_LEVEL_TYPE_CONFIG } from '../constants';
 
 export const useSelectionData = (selectedIndices: Indices[], lessonsData: LessonsData) => {
     return useMemo(() => {
         return selectedIndices.map(idx => {
             try {
                 const { item } = findItem(lessonsData as any, idx);
-                const itemType = (item as any)?.type;
-                const isTopLevelEmbedded = typeof itemType === 'string' && TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(itemType);
-                const isStandardContent = idx.itemIndex !== undefined && !idx.isSeparator && !isTopLevelEmbedded;
+                const isRealRow = !!item && !idx.isSeparator;
+                const isStandardContent = idx.itemIndex !== undefined && isRealRow;
                 return {
                     indices: idx,
                     item,
                     title: (item as any)?.title ?? (item as any)?.name ?? '',
                     date: (item as any)?.date ?? '',
                     description: (item as any)?.description ?? '',
-                    canDate: !!item && !idx.isSeparator,
+                    canDate: isRealRow,
                     canDescription: !!item && isStandardContent,
                     canInlineEdit: !!item && isStandardContent,
                     canAddAfter: !!item && !idx.isSeparator,
