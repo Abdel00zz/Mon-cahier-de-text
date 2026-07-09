@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, Cycle } from '../../contexts/AuthContext';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { BookOpen, CircleCheck, Eye, EyeOff, Loader2 } from '../ui/icons';
+import { BookOpen, CircleCheck, Eye, EyeOff, Loader2, TriangleAlert } from '../ui/icons';
 import { SUBJECTS } from '../../constants';
 
 type Mode = 'login' | 'register';
@@ -13,6 +13,37 @@ const CYCLES: { value: Cycle; label: string }[] = [
   { value: 'lycee', label: 'Lycée' },
   { value: 'prepa', label: 'Prépa' },
 ];
+
+/**
+ * Force du mot de passe — indicative (le serveur n'exige que 8 caractères, on
+ * ne bloque donc jamais un mot de passe valide, on encourage seulement mieux).
+ * Score 0→4 : longueur, casse mixte, chiffre, symbole.
+ */
+const passwordStrength = (pw: string): { score: number; label: string; barClass: string; textClass: string } => {
+  if (!pw) return { score: 0, label: '', barClass: '', textClass: '' };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const level = Math.min(score, 4);
+  const map = [
+    { label: 'Très faible', barClass: 'bg-destructive', textClass: 'text-destructive' },
+    { label: 'Faible', barClass: 'bg-destructive', textClass: 'text-destructive' },
+    { label: 'Moyen', barClass: 'bg-warning', textClass: 'text-warning' },
+    { label: 'Bon', barClass: 'bg-success', textClass: 'text-success' },
+    { label: 'Excellent', barClass: 'bg-success', textClass: 'text-success' },
+  ];
+  return { score: level, ...map[level] };
+};
+
+/** Formatage téléphone marocain à la saisie : « 06 12 34 56 78 ». Les espaces
+ *  n'affectent pas le backend (il ne garde que les chiffres). */
+const formatMoroccanPhone = (raw: string): string => {
+  const digits = raw.replace(/[^\d]/g, '').slice(0, 10);
+  return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+};
 
 const Field: React.FC<{
   label: string;
@@ -34,27 +65,52 @@ const PasswordInput: React.FC<{
   required?: boolean;
 }> = ({ value, onChange, autoComplete, placeholder = '••••••••', minLength, required }) => {
   const [visible, setVisible] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+
+  const detectCaps = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setCapsLock(e.getModifierState?.('CapsLock') ?? false);
+  };
+
   return (
-    <div className="relative">
-      <Input
-        type={visible ? 'text' : 'password'}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        required={required}
-        minLength={minLength}
-        className="min-h-11 rounded-xl pr-11"
-      />
-      <button
-        type="button"
-        onClick={() => setVisible(v => !v)}
-        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-muted-foreground/60 transition-colors hover:text-foreground"
-        aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-        tabIndex={-1}
-      >
-        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-      </button>
+    <div>
+      <div className="relative">
+        <Input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onKeyUp={detectCaps}
+          onKeyDown={detectCaps}
+          onBlur={() => setCapsLock(false)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          required={required}
+          minLength={minLength}
+          className="min-h-11 rounded-xl pr-11"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(v => !v)}
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-muted-foreground/60 transition-colors hover:text-foreground"
+          aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          tabIndex={-1}
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      {/* Alerte Verr. Maj — évite les échecs de connexion mystérieux */}
+      <AnimatePresence>
+        {capsLock && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-1.5 flex items-center gap-1 overflow-hidden text-[11px] font-semibold text-warning"
+          >
+            <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
+            Verrouillage majuscules activé
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -83,6 +139,7 @@ export const AuthPage: React.FC = () => {
   const passwordLongEnough = password.length >= 8;
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const phoneValid = phone.replace(/[^\d]/g, '').length >= 8;
+  const strength = passwordStrength(password);
 
   const toggleCycle = (value: Cycle) => {
     setCycles(prev => (prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]));
@@ -227,7 +284,7 @@ export const AuthPage: React.FC = () => {
                   type="tel"
                   inputMode="tel"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={e => setPhone(formatMoroccanPhone(e.target.value))}
                   autoComplete="tel"
                   placeholder="06 12 34 56 78"
                   required
@@ -268,7 +325,24 @@ export const AuthPage: React.FC = () => {
                     />
                   </Field>
 
-                  {/* Validation en direct : l'enseignant voit ce qui manque avant d'envoyer */}
+                  {/* Jauge de force (indicative) + validation en direct */}
+                  {password.length > 0 && (
+                    <div className="mt-2.5 animate-fade-in">
+                      <div className="flex gap-1" aria-hidden>
+                        {[0, 1, 2, 3].map(i => (
+                          <span
+                            key={i}
+                            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                              i < strength.score ? strength.barClass : 'bg-muted'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className={`mt-1 block text-[11px] font-bold ${strength.textClass}`}>
+                        Sécurité : {strength.label}
+                      </span>
+                    </div>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                     <LiveCheck ok={passwordLongEnough} label="8 caractères min." />
                     <LiveCheck ok={passwordsMatch} label="Mots de passe identiques" />
@@ -301,8 +375,13 @@ export const AuthPage: React.FC = () => {
                   </div>
 
                   <div className="mt-4 space-y-1.5">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
                       Matière(s) enseignée(s)
+                      {subjects.length > 0 && (
+                        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-black tabular-nums text-primary">
+                          {subjects.length}
+                        </span>
+                      )}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {SUBJECTS.map(s => {
