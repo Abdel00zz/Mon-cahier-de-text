@@ -70,4 +70,6 @@ export {
   User,
   Loader2,
   TrendingUp,
+  ArrowUpRight,
+  Sun,
 } from 'lucide-react';

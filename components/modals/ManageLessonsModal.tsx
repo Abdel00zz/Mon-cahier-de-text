@@ -5,7 +5,7 @@ import { Check, TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderO
 import { Button } from '../ui/button';
 import { MathText } from '../ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '../../constants';
-// DescriptionVisibilityControl import removed
+import { DescriptionVisibilityControl, DescriptionMode } from '../config/DescriptionVisibilityControl';
 
 interface ManageLessonsModalProps {
   isOpen: boolean;
@@ -18,16 +18,19 @@ interface ManageLessonsModalProps {
 
 export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons, config, onConfigChange }) => {
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
-  const [localDescriptionMode, setLocalDescriptionMode] = useState<'all' | 'none'>('all');
+  const [localDesc, setLocalDesc] = useState<{ mode: DescriptionMode; types: string[] }>({ mode: 'all', types: [] });
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setLocalLessons([...lessons]);
-      setLocalDescriptionMode(config.screenDescriptionMode === 'none' ? 'none' : 'all');
+      setLocalDesc({
+        mode: config.screenDescriptionMode ?? 'all',
+        types: config.screenDescriptionTypes ?? [],
+      });
     }
-  }, [isOpen, lessons, config.screenDescriptionMode]);
+  }, [isOpen, lessons, config.screenDescriptionMode, config.screenDescriptionTypes]);
 
   const handleDelete = (index: number) => {
     setLocalLessons(current => current.filter((_, i) => i !== index));
@@ -76,9 +79,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
   };
 
   const handleSubmit = () => {
-    if (localDescriptionMode !== config.screenDescriptionMode) {
-      onConfigChange({ screenDescriptionMode: localDescriptionMode });
-    }
+    onConfigChange({ screenDescriptionMode: localDesc.mode, screenDescriptionTypes: localDesc.types });
     onUpdate(localLessons);
   };
 
@@ -105,28 +106,12 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
       }
     >
       <div className="space-y-4">
-        <div className="space-y-2 rounded-xl border border-border bg-secondary/50 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-foreground/80">Descriptions à l'écran</span>
-            <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
-              {(['all', 'none'] as const).map(mode => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setLocalDescriptionMode(mode)}
-                  className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                    localDescriptionMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {mode === 'all' ? 'Afficher' : 'Masquer'}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-[10px] leading-snug text-muted-foreground/60">
-            Permet de masquer les descriptions de cours sur l'écran d'édition.
-          </p>
-        </div>
+        <DescriptionVisibilityControl
+          context="screen"
+          mode={localDesc.mode}
+          types={localDesc.types}
+          onChange={setLocalDesc}
+        />
 
         {localLessons.length > 0 ? (
           <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">

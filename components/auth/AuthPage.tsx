@@ -70,7 +70,7 @@ const PasswordInput: React.FC<{
           placeholder={placeholder}
           required={required}
           minLength={minLength}
-          className="h-11 rounded-xl pr-11"
+          className="h-12 rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] focus-visible:ring-[#84a98c]/30 text-[#2f3e46] font-bold pr-12"
         />
         <button
           type="button"
@@ -145,43 +145,50 @@ export const AuthPage: React.FC = () => {
     // min-h-dvh + justify-center : centré si ça tient, DÉFILABLE si c'est plus
     // haut que l'écran (fini les coupures haut/bas). overflow-x-hidden empêche
     // tout débordement latéral. Aucun halo décoratif (le fond du body suffit).
-    <div className="flex min-h-dvh w-full flex-col justify-center overflow-x-hidden px-4 py-5 safe-bottom">
-      <div className="mx-auto w-full max-w-sm">
+    <div className="flex min-h-dvh w-full flex-col justify-center overflow-x-hidden px-4 py-5 safe-bottom bg-[#fdfbf7] relative">
+      {/* Grid paper texture (Seyès / school notebook checkered format) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(132,169,140,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(132,169,140,0.06)_1px,transparent_1px)] bg-[size:18px_18px] pointer-events-none z-0" />
+
+      {/* Background Blob Effect */}
+      <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-gradient-to-br from-[#e8f0ec] to-[#f4f1ea] blur-3xl opacity-50 z-0"></div>
+      <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-gradient-to-tr from-[#fff3ec] to-[#fdfbf7] blur-3xl opacity-50 z-0"></div>
+
+      <div className="mx-auto w-full max-w-sm relative z-10">
         {/* En-tête compact */}
-        <div className="mb-4 flex items-center gap-2.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/25">
-            <BookOpen className="h-5 w-5" />
+        <div className="mb-6 flex flex-col items-center justify-center text-center">
+          <div className="flex h-16 w-16 mb-4 shrink-0 items-center justify-center rounded-2xl bg-[#f4f1ea] border-2 border-[#e8e4d9] text-[#52796f] shadow-sm transform transition-all duration-500 hover:scale-110 hover:rotate-6">
+            <BookOpen className="h-8 w-8" />
           </div>
           <div className="min-w-0">
-            <h1 className="truncate font-display text-lg font-extrabold leading-tight text-foreground">Cahier de Textes</h1>
-            <p className="truncate text-[11px] font-medium text-muted-foreground">Votre hub d'enseignant, partout.</p>
+            <h1 className="font-display text-2xl font-black leading-tight text-[#2f3e46]">Cahier de Textes</h1>
+            <p className="mt-1 text-[13px] font-semibold text-[#84a98c]">Votre hub d'enseignant, partout.</p>
           </div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="rounded-2xl border border-border/60 bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:p-5"
+          transition={{ duration: 0.4 }}
+          className="rounded-[2.5rem] border-2 border-[#e8e4d9] bg-white p-6 shadow-[0_20px_60px_-15px_rgba(82,121,111,0.15)] sm:p-8"
         >
           {/* Onglets */}
-          <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+          <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-[#f4f1ea] p-1.5 border border-[#e8e4d9]">
             {(['login', 'register'] as const).map(value => (
               <button
                 key={value}
                 type="button"
                 onClick={() => switchMode(value)}
-                className={`relative min-h-9 rounded-lg px-3 text-sm font-bold transition-colors ${mode === value ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`relative min-h-11 rounded-xl px-3 text-[13px] font-bold transition-colors ${mode === value ? 'text-white' : 'text-[#84a98c] hover:text-[#52796f]'}`}
               >
                 {mode === value && (
-                  <motion.span layoutId="auth-tab" className="absolute inset-0 rounded-lg bg-primary shadow" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
+                  <motion.span layoutId="auth-tab" className="absolute inset-0 rounded-xl bg-[#52796f] shadow-md" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                 )}
                 <span className="relative">{value === 'login' ? 'Connexion' : 'Créer un compte'}</span>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Nom + Prénom (inscription) */}
             <AnimatePresence initial={false}>
               {isRegister && (
@@ -194,12 +201,12 @@ export const AuthPage: React.FC = () => {
                   className="grid grid-cols-2 gap-3 overflow-hidden"
                 >
                   <label className="block">
-                    <Label>Nom</Label>
-                    <Input value={nom} onChange={e => setNom(e.target.value)} autoComplete="family-name" placeholder="Benali" className="h-11 rounded-xl" />
+                    <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-1">Nom</span>
+                    <Input value={nom} onChange={e => setNom(e.target.value)} autoComplete="family-name" placeholder="Benali" className="h-12 rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] focus-visible:ring-[#84a98c]/30 text-[#2f3e46] font-bold" />
                   </label>
                   <label className="block">
-                    <Label>Prénom</Label>
-                    <Input value={prenom} onChange={e => setPrenom(e.target.value)} autoComplete="given-name" placeholder="Malek" className="h-11 rounded-xl" />
+                    <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-1">Prénom</span>
+                    <Input value={prenom} onChange={e => setPrenom(e.target.value)} autoComplete="given-name" placeholder="Malek" className="h-12 rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] focus-visible:ring-[#84a98c]/30 text-[#2f3e46] font-bold" />
                   </label>
                 </motion.div>
               )}
@@ -207,7 +214,7 @@ export const AuthPage: React.FC = () => {
 
             {/* Téléphone */}
             <label className="block">
-              <Label>Téléphone portable</Label>
+              <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-1">Téléphone portable</span>
               <div className="relative">
                 <Input
                   type="tel"
@@ -217,15 +224,15 @@ export const AuthPage: React.FC = () => {
                   autoComplete="tel"
                   placeholder="06 12 34 56 78"
                   required
-                  className="h-11 rounded-xl pr-10"
+                  className="h-12 rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] focus-visible:ring-[#84a98c]/30 text-[#2f3e46] font-bold pr-10"
                 />
-                {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-success animate-fade-in" />}
+                {phoneValid && <CircleCheck className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#52796f] animate-fade-in" />}
               </div>
             </label>
 
             {/* Mot de passe */}
             <label className="block">
-              <Label>Mot de passe</Label>
+              <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-1">Mot de passe</span>
               <PasswordInput value={password} onChange={setPassword} autoComplete={isRegister ? 'new-password' : 'current-password'} required minLength={isRegister ? 8 : undefined} />
             </label>
 
@@ -238,33 +245,34 @@ export const AuthPage: React.FC = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="space-y-3 overflow-hidden"
+                  className="space-y-4 overflow-hidden"
                 >
                   <label className="block">
-                    <Label>Confirmer le mot de passe</Label>
+                    <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-1">Confirmer le mot de passe</span>
                     <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
                   </label>
 
                   {/* Jauge de force + validations, sur une ligne compacte */}
                   {password.length > 0 && (
-                    <div className="flex items-center gap-2 animate-fade-in">
+                    <div className="flex items-center gap-2 animate-fade-in bg-[#f4f1ea] p-3 rounded-2xl border border-[#e8e4d9]">
                       <div className="flex flex-1 gap-1" aria-hidden>
                         {[0, 1, 2, 3].map(i => (
-                          <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-muted'}`} />
+                          <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-[#e8e4d9]'}`} />
                         ))}
                       </div>
-                      <span className={`shrink-0 text-[10.5px] font-bold ${strength.textClass}`}>{strength.label}</span>
+                      <span className={`shrink-0 text-[11px] font-extrabold uppercase tracking-wider ${strength.textClass}`}>{strength.label}</span>
                     </div>
                   )}
-                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+
+                  <div className="flex flex-wrap gap-x-3 gap-y-2">
                     <LiveCheck ok={passwordLongEnough} label="8 car. min." />
                     <LiveCheck ok={passwordsMatch} label="Identiques" />
                   </div>
 
                   {/* Cycles */}
-                  <div>
-                    <Label>Cycle(s)</Label>
-                    <div className="grid grid-cols-3 gap-1.5">
+                  <div className="pt-2">
+                    <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5] mb-2">Cycle(s) enseigné(s)</span>
+                    <div className="grid grid-cols-3 gap-2">
                       {CYCLES.map(cycle => {
                         const active = cycles.includes(cycle.value);
                         return (
@@ -273,7 +281,7 @@ export const AuthPage: React.FC = () => {
                             type="button"
                             onClick={() => toggleCycle(cycle.value)}
                             aria-pressed={active}
-                            className={`min-h-10 rounded-lg border text-[13px] font-bold transition-all active:scale-95 ${active ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}
+                            className={`min-h-11 rounded-xl border-2 text-[13px] font-extrabold transition-all active:scale-95 ${active ? 'border-[#52796f] bg-[#52796f] text-white shadow-md' : 'border-[#e8e4d9] bg-[#fdfbf7] text-[#84a98c] hover:border-[#cad2c5] hover:text-[#52796f]'}`}
                           >
                             {cycle.label}
                           </button>
@@ -283,14 +291,14 @@ export const AuthPage: React.FC = () => {
                   </div>
 
                   {/* Matières — chips compactes */}
-                  <div>
-                    <span className="mb-1 flex items-center gap-1.5">
-                      <Label>Matière(s)</Label>
+                  <div className="pt-2">
+                    <span className="mb-2 flex items-center gap-1.5">
+                      <span className="block text-[12px] font-extrabold uppercase tracking-wider text-[#cad2c5]">Matière(s) enseignée(s)</span>
                       {subjects.length > 0 && (
-                        <span className="mb-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-black tabular-nums text-primary">{subjects.length}</span>
+                        <span className="rounded-full bg-[#f4f1ea] border border-[#e8e4d9] px-2 py-0.5 text-[10px] font-black tabular-nums text-[#52796f]">{subjects.length}</span>
                       )}
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {SUBJECTS.map(s => {
                         const active = subjects.includes(s);
                         return (
@@ -299,7 +307,7 @@ export const AuthPage: React.FC = () => {
                             type="button"
                             onClick={() => toggleSubject(s)}
                             aria-pressed={active}
-                            className={`min-h-8 rounded-full border px-2.5 text-[11px] font-bold transition-all active:scale-95 ${active ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}
+                            className={`min-h-9 rounded-full border-2 px-3 text-[12px] font-bold transition-all active:scale-95 ${active ? 'border-[#52796f] bg-[#52796f] text-white shadow-md' : 'border-[#e8e4d9] bg-[#fdfbf7] text-[#84a98c] hover:border-[#cad2c5] hover:text-[#52796f]'}`}
                           >
                             {s}
                           </button>
@@ -312,21 +320,22 @@ export const AuthPage: React.FC = () => {
             </AnimatePresence>
 
             {error && (
-              <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-[13px] font-semibold text-destructive animate-fade-in" role="alert">
+              <p className="rounded-xl border-2 border-[#ffd6c2] bg-[#fff3ec] px-4 py-3 text-[13px] font-bold text-[#e76f51] animate-fade-in" role="alert">
                 {error}
               </p>
             )}
 
-            <Button type="submit" disabled={isSubmitting} className="h-11 w-full rounded-xl text-[15px] font-bold shadow-md shadow-primary/20 transition-transform active:scale-[0.98]">
+            <button type="submit" disabled={isSubmitting} className="group relative w-full h-14 mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#52796f] text-white text-[16px] font-black transition-all hover:bg-[#2f3e46] active:scale-[0.98] shadow-lg shadow-[#52796f]/20 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden">
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               {isSubmitting ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Un instant…</>
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Un instant…</>
               ) : isRegister ? 'Créer mon compte' : 'Se connecter'}
-            </Button>
+            </button>
           </form>
         </motion.div>
-
-        <p className="mt-4 text-center text-[11px] font-medium text-muted-foreground">
-          Synchronisé en ligne, disponible hors connexion.
+        
+        <p className="mt-6 text-center text-[12px] font-bold text-[#cad2c5] tracking-wider uppercase">
+          Synchronisé en ligne · Disponible hors connexion
         </p>
       </div>
     </div>

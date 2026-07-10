@@ -15,7 +15,7 @@ import { useSelectionData } from '../hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '../utils/syncBus';
-import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint } from '../utils/printMeta';
+import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '../utils/printMeta';
 import { validateSessionDate, summarizeWarnings } from '../utils/dateValidation';
 import { appendJournal, opLabel, readJournal, timeAgoFr } from '../utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '../utils/predefinedContent';
@@ -484,10 +484,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
    */
   const printStats = useMemo(() => {
       const meta = readPrintMeta(classInfo.id);
+      const allDates = collectSessionDates(lessonsData);
       return {
-          totalDates: collectSessionDates(lessonsData).length,
+          totalDates: allDates.length,
+          allDates,
           newDates: getNewDates(lessonsData, classInfo.id),
+          printedDates: meta.printedDates,
           lastPrintedAt: meta.lastPrintedAt,
+          prefs: meta.prefs ?? null,
       };
   }, [classInfo.id, lessonsData]);
 
@@ -495,15 +499,28 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setEditorState(draft => { draft.activeModal = 'print'; });
   }, [setEditorState]);
 
-  const handleExecutePrint = useCallback((mode: PrintMode, options: PrintOptions) => {
+  const handleExecutePrint = useCallback((mode: PrintMode, options: PrintOptions, selectedDates?: string[]) => {
       const classId = classInfo.id;
       const allDates = collectSessionDates(lessonsData);
       const newDates = getNewDates(lessonsData, classId);
 
-      const selection = mode === 'new' && newDates.length > 0
-          ? filterLessonsByDates(lessonsData, newDates)
-          : null;
-      const datesToRecord = mode === 'new' ? newDates : allDates;
+      // sous-ensemble à imprimer selon le mode ; null = document complet
+      let selection: LessonsData | null = null;
+      let datesToRecord: string[] = allDates;
+      if (mode === 'new' && newDates.length > 0) {
+          selection = filterLessonsByDates(lessonsData, newDates);
+          datesToRecord = newDates;
+      } else if (mode === 'custom' && selectedDates && selectedDates.length > 0) {
+          selection = filterLessonsByDates(lessonsData, selectedDates);
+          datesToRecord = selectedDates;
+      }
+
+      // mémorise les préférences de mise en page pour la prochaine impression
+      savePrintPrefs(classId, {
+          textSize: options.textSize,
+          lineSpacing: options.lineSpacing,
+          pageNumbers: options.pageNumbers,
+      });
 
       setEditorState(draft => {
           draft.activeModal = null;
@@ -802,8 +819,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }
 
   return (
-    <div className="relative p-1.5 sm:p-4 safe-bottom print:bg-card print:p-0" data-editor-root>
-      <div className="container mx-auto max-w-7xl rounded-lg border border-white/70 surface-glass p-2 shadow-sm sm:p-5 min-h-[calc(100vh-2rem)] flex flex-col print:mx-0 print:w-full print:max-w-none print:min-h-0 print:rounded-none print:border-none print:bg-card print:p-0 print:shadow-none">
+    <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root>
+      <div className="max-w-screen-2xl mx-auto flex flex-col min-h-screen print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -925,7 +942,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         onClose={handleModalClose}
         totalDates={printStats.totalDates}
         newDates={printStats.newDates}
+        allDates={printStats.allDates}
+        printedDates={printStats.printedDates}
         lastPrintedAt={printStats.lastPrintedAt}
+        savedPrefs={printStats.prefs}
         config={config}
         onConfigChange={updateConfig}
         onPrint={handleExecutePrint}

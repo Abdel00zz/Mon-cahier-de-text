@@ -1,28 +1,30 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { motion } from 'framer-motion';
-import { AppConfig, ClassInfo } from '../../types';
-import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, BADGE_TOOLTIP_MAP } from '../../constants';
+import { AppConfig, ClassInfo, Cycle } from '../../types';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { ScheduleTab } from '../config/ScheduleTab';
 import { NotificationsTab } from '../config/NotificationsTab';
 import { AccountTab } from '../config/AccountTab';
 import { ArchivesSection } from '../config/ArchivesSection';
-import { 
-  Eye, 
-  CalendarRange, 
-  Bell, 
-  Database, 
-  User, 
-  ChevronUp, 
-  ChevronDown, 
-  Download, 
-  Upload, 
-  ArrowLeft,
+import {
+  CalendarRange,
+  Bell,
+  Database,
+  User,
+  School,
+  GraduationCap,
+  FlaskConical,
   Settings,
-  Info
 } from '../ui/icons';
+
+const CYCLES: { key: Cycle; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'college', label: 'Collège', icon: School },
+  { key: 'lycee', label: 'Lycée', icon: GraduationCap },
+  { key: 'prepa', label: 'Prépa', icon: FlaskConical },
+];
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -31,16 +33,15 @@ interface ConfigModalProps {
   onConfigChange: (newConfig: Partial<AppConfig>) => void;
   onExportPlatform: () => void;
   onOpenImport: () => void;
-  onOpenWelcome?: () => void;
   classes?: ClassInfo[];
   /** rendu en PAGE plein écran (au lieu d'une modale) */
   asPage?: boolean;
 }
 
-type ConfigTab = 'affichage' | 'emploi' | 'notifications' | 'donnees' | 'compte';
+type ConfigTab = 'profil' | 'emploi' | 'notifications' | 'donnees' | 'compte';
 
 const TABS: { id: ConfigTab; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'affichage', label: 'Affichage', description: 'Visibilité des descriptions et préférences de rendu', icon: Eye },
+  { id: 'profil', label: 'Profil', description: 'Établissement, enseignant et cycle', icon: GraduationCap },
   { id: 'emploi', label: 'Emploi du temps', description: 'Compositions, heures et devoirs', icon: CalendarRange },
   { id: 'notifications', label: 'Notifications', description: 'Alertes de retard et absences', icon: Bell },
   { id: 'donnees', label: 'Données', description: 'Sauvegarde et restauration', icon: Database },
@@ -54,12 +55,11 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onConfigChange,
   onExportPlatform,
   onOpenImport,
-  onOpenWelcome,
   classes = [],
   asPage = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
-  const [activeTab, setActiveTab] = useState<ConfigTab>('affichage');
+  const [activeTab, setActiveTab] = useState<ConfigTab>('profil');
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,45 +74,6 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     onConfigChange(patch);
   };
 
-  const [showScreenTypes, setShowScreenTypes] = useState(false);
-  const [showPrintTypes, setShowPrintTypes] = useState(false);
-
-  const getUniqueTypes = () => {
-    return Array.from(new Set(Object.values(TYPE_MAP)));
-  };
-
-  const defaultSelected = ['exemple', 'application'];
-
-  const handleDescriptionModeChange = (context: 'screen' | 'print', mode: 'all' | 'none' | 'custom') => {
-    setLocalConfig(prev => {
-      const prevTypes = prev[`${context}DescriptionTypes`] || [];
-      const nextTypes = mode === 'all' ? getUniqueTypes()
-        : mode === 'none' ? []
-        : (prevTypes.length > 0 ? prevTypes : defaultSelected);
-      return {
-        ...prev,
-        [`${context}DescriptionMode`]: mode,
-        [`${context}DescriptionTypes`]: nextTypes,
-      };
-    });
-  };
-
-  const handleDescriptionTypeToggle = (context: 'screen' | 'print', type: string) => {
-    setLocalConfig(prev => {
-      const currentTypes = prev[`${context}DescriptionTypes`] || [];
-      const newTypes = currentTypes.includes(type) 
-        ? currentTypes.filter(t => t !== type)
-        : [...currentTypes, type];
-      
-      return {
-        ...prev,
-        [`${context}DescriptionTypes`]: newTypes,
-        [`${context}DescriptionMode`]: newTypes.length === 0 ? 'none' : 
-                                       newTypes.length === getUniqueTypes().length ? 'all' : 'custom'
-      };
-    });
-  };
-
   const handleSave = () => {
     onConfigChange(localConfig);
     onClose();
@@ -121,37 +82,22 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   if (!asPage && !isOpen) return null;
 
   const footer = (
-    <div className="flex flex-col sm:flex-row gap-3 justify-between items-center w-full">
+    <div className="flex w-full justify-end gap-2.5">
       <Button
         type="button"
-        variant="outline"
-        onClick={() => {
-          if (onOpenWelcome) {
-            onClose();
-            onOpenWelcome();
-          }
-        }}
-        className="w-full sm:w-auto h-10 text-xs font-bold border-border text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full"
+        variant="secondary"
+        onClick={onClose}
+        className="flex-1 sm:flex-initial h-10 text-xs font-bold rounded-full"
       >
-        Modifier mes informations d'accueil
+        {asPage ? 'Retour' : 'Annuler'}
       </Button>
-      <div className="flex gap-2.5 w-full sm:w-auto">
-        <Button 
-          type="button" 
-          variant="secondary" 
-          onClick={onClose} 
-          className="flex-1 sm:flex-initial h-10 text-xs font-bold rounded-full"
-        >
-          {asPage ? 'Retour' : 'Annuler'}
-        </Button>
-        <Button 
-          type="button" 
-          onClick={handleSave} 
-          className="flex-1 sm:flex-initial h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-full"
-        >
-          Enregistrer les modifications
-        </Button>
-      </div>
+      <Button
+        type="button"
+        onClick={handleSave}
+        className="flex-1 sm:flex-initial h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-full"
+      >
+        Enregistrer les modifications
+      </Button>
     </div>
   );
 
@@ -176,241 +122,61 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       )}
       {activeTab === 'compte' && <AccountTab />}
 
-      {activeTab === 'affichage' && (
-        <div className="space-y-6">
-          {/* Section Configuration Générale */}
-          <div className="relative overflow-hidden rounded-xl border border-border/60 bg-secondary/40 p-5 shadow-sm">
-            <div className="relative flex gap-3">
-              <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-bold text-foreground font-display mb-1">Configuration Générale</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                  Les préférences d'affichage globales telles que le nom de votre établissement, l'académie et votre nom d'enseignant sont gérées via l'écran d'accueil en cliquant sur le bouton ci-dessous ou sur "Modifier mes informations d'accueil".
-                </p>
-              </div>
-            </div>
+      {activeTab === 'profil' && (
+        <div className="max-w-xl space-y-5">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Établissement d'enseignement
+            </label>
+            <Input
+              type="text"
+              value={localConfig.establishmentName || ''}
+              onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
+              placeholder="Ex : Lycée Ibn al-Haytham"
+              className="h-10 text-sm"
+            />
           </div>
 
-          {/* Section Contenu visible */}
-          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-5 relative">
-            <div className="relative">
-              <h3 className="text-base font-bold text-foreground font-display mb-4">Contenu visible par contexte</h3>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Nom de l'enseignant (M. ou Mme)
+            </label>
+            <Input
+              type="text"
+              value={localConfig.defaultTeacherName || ''}
+              onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
+              placeholder="Ex : M. Ahmed Benali"
+              className="h-10 text-sm"
+            />
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Application Context */}
-                <div className="rounded-xl p-4 border border-border/80 bg-secondary/30 space-y-4">
-                  <h4 className="text-xs font-bold text-muted-foreground font-mono uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Application (à l'écran)
-                  </h4>
-
-                  <div className="space-y-3">
-                    <div className="flex gap-1 bg-card p-1 rounded-lg border border-border/60">
-                      {(['all', 'none', 'custom'] as const).map(mode => (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => {
-                            handleDescriptionModeChange('screen', mode);
-                            if (mode === 'custom') setShowScreenTypes(true);
-                            else setShowScreenTypes(false);
-                          }}
-                          className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${
-                            (localConfig.screenDescriptionMode || 'all') === mode
-                              ? 'bg-primary text-white shadow-sm'
-                              : 'text-muted-foreground hover:bg-secondary/40'
-                          }`}
-                        >
-                          {mode === 'all' && 'Tout'}
-                          {mode === 'none' && 'Aucune'}
-                          {mode === 'custom' && 'Sélection'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Afficher/cacher liste des types */}
-                    {(localConfig.screenDescriptionMode || 'all') === 'custom' && (
-                      <div className="space-y-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setShowScreenTypes(!showScreenTypes)}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-card text-left hover:bg-secondary/40 transition-colors"
-                        >
-                          <span className="text-xs font-bold text-muted-foreground font-sans">
-                            Types sélectionnés ({(localConfig.screenDescriptionTypes || []).length})
-                          </span>
-                          {showScreenTypes ? <ChevronUp className="h-4 w-4 text-primary" /> : <ChevronDown className="h-4 w-4 text-primary" />}
-                        </button>
-
-                        {showScreenTypes && (
-                          <div className="space-y-2.5 mt-2 animate-in fade-in duration-200">
-                            <div className="flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border border-border">
-                              {getUniqueTypes().map(type => {
-                                const isSelected = (localConfig.screenDescriptionTypes || []).includes(type);
-                                return (
-                                  <button
-                                    key={type}
-                                    type="button"
-                                    onClick={() => handleDescriptionTypeToggle('screen', type)}
-                                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
-                                      isSelected
-                                        ? `${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'} ring-1 ring-border`
-                                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
-                                    }`}
-                                    title={BADGE_TOOLTIP_MAP[type] || type}
-                                  >
-                                    {BADGE_TEXT_MAP[type] || type}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            
-                            <div className="flex justify-between text-[10px] font-bold text-primary px-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLocalConfig(prev => ({
-                                    ...prev,
-                                    screenDescriptionTypes: getUniqueTypes(),
-                                    screenDescriptionMode: 'all'
-                                  }));
-                                }}
-                                className="hover:underline"
-                              >
-                                Tout sélectionner
-                              </button>
-                              <span>|</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLocalConfig(prev => ({
-                                    ...prev,
-                                    screenDescriptionTypes: [],
-                                    screenDescriptionMode: 'none'
-                                  }));
-                                }}
-                                className="hover:underline"
-                              >
-                                Tout désélectionner
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Print Context */}
-                <div className="rounded-xl p-4 border border-border/80 bg-secondary/30 space-y-4">
-                  <h4 className="text-xs font-bold text-muted-foreground font-mono uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Impression (Export PDF)
-                  </h4>
-
-                  <div className="space-y-3">
-                    <div className="flex gap-1 bg-card p-1 rounded-lg border border-border/60">
-                      {(['all', 'none', 'custom'] as const).map(mode => (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => {
-                            handleDescriptionModeChange('print', mode);
-                            if (mode === 'custom') setShowPrintTypes(true);
-                            else setShowPrintTypes(false);
-                          }}
-                          className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${
-                            (localConfig.printDescriptionMode || 'all') === mode
-                              ? 'bg-primary text-white shadow-sm'
-                              : 'text-muted-foreground hover:bg-secondary/40'
-                          }`}
-                        >
-                          {mode === 'all' && 'Tout'}
-                          {mode === 'none' && 'Aucune'}
-                          {mode === 'custom' && 'Sélection'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Afficher/cacher liste des types */}
-                    {(localConfig.printDescriptionMode || 'all') === 'custom' && (
-                      <div className="space-y-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setShowPrintTypes(!showPrintTypes)}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-card text-left hover:bg-secondary/40 transition-colors"
-                        >
-                          <span className="text-xs font-bold text-muted-foreground font-sans">
-                            Types sélectionnés ({(localConfig.printDescriptionTypes || []).length})
-                          </span>
-                          {showPrintTypes ? <ChevronUp className="h-4 w-4 text-primary" /> : <ChevronDown className="h-4 w-4 text-primary" />}
-                        </button>
-
-                        {showPrintTypes && (
-                          <div className="space-y-2.5 mt-2 animate-in fade-in duration-200">
-                            <div className="flex flex-wrap gap-1.5 p-2 bg-card rounded-xl border border-border">
-                              {getUniqueTypes().map(type => {
-                                const isSelected = (localConfig.printDescriptionTypes || []).includes(type);
-                                return (
-                                  <button
-                                    key={type}
-                                    type="button"
-                                    onClick={() => handleDescriptionTypeToggle('print', type)}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all ${
-                                      isSelected
-                                        ? `${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'} ring-1 ring-border`
-                                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary border border-border/60'
-                                    }`}
-                                    title={BADGE_TOOLTIP_MAP[type] || type}
-                                  >
-                                    <span className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded text-[8px] font-extrabold ${
-                                      isSelected ? 'bg-card/30 text-white' : 'bg-border text-muted-foreground'
-                                    }`}>
-                                      {BADGE_TEXT_MAP[type]?.charAt(0) || type.charAt(0).toUpperCase()}
-                                    </span>
-                                    {BADGE_TEXT_MAP[type] || type}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            
-                            <div className="flex justify-between text-[10px] font-bold text-primary px-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLocalConfig(prev => ({
-                                    ...prev,
-                                    printDescriptionTypes: getUniqueTypes(),
-                                    printDescriptionMode: 'all'
-                                  }));
-                                }}
-                                className="hover:underline"
-                              >
-                                Tout sélectionner
-                              </button>
-                              <span>|</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setLocalConfig(prev => ({
-                                    ...prev,
-                                    printDescriptionTypes: [],
-                                    printDescriptionMode: 'none'
-                                  }));
-                                }}
-                                className="hover:underline"
-                              >
-                                Tout désélectionner
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Cycle d'enseignement principal
+            </label>
+            <div className="grid max-w-sm grid-cols-3 gap-2">
+              {CYCLES.map(c => {
+                const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
+                    className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-3 text-[11px] font-bold transition-all ${
+                      active
+                        ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
+                        : 'border-border/60 bg-secondary/30 text-muted-foreground hover:border-border hover:bg-secondary/50 hover:text-foreground'
+                    }`}
+                  >
+                    <c.icon className="h-4 w-4" />
+                    {c.label}
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[10px] leading-snug text-muted-foreground/60">
+              Ces informations personnalisent l'accueil et pré-remplissent la création de vos classes. La matière se choisit par classe.
+            </p>
           </div>
         </div>
       )}

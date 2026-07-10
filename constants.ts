@@ -31,17 +31,17 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 };
 
 export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-primary/10 text-primary border-primary/20',
-    'définition': 'bg-success/10 text-success border-success/20',
-    'théorème': 'bg-warning/10 text-warning border-warning/20',
-    'proposition': 'bg-primary/10 text-primary border-primary/20',
-    'lemme': 'bg-primary/10 text-primary border-primary/20',
-    'corollaire': 'bg-warning/10 text-warning border-warning/20',
-    'remarque': 'bg-secondary text-secondary-foreground border-border',
-    'preuve': 'bg-secondary text-secondary-foreground border-border',
-    'exemple': 'bg-success/10 text-success border-success/20',
-    'exercice': 'bg-warning/10 text-warning border-warning/20',
-    'application': 'bg-primary/10 text-primary border-primary/20',
+    'activité': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
+    'définition': 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20',
+    'théorème': 'bg-[#eef3f0] text-[#2f3e46] border-[#2f3e46]/20',
+    'proposition': 'bg-[#f4f1ea] text-[#52796f] border-[#84a98c]/30',
+    'lemme': 'bg-[#fdfbf7] text-[#84a98c] border-[#cad2c5]',
+    'corollaire': 'bg-[#fff3ec] text-[#d45d40] border-[#d45d40]/20',
+    'remarque': 'bg-[#f4f1ea] text-[#84a98c] border-[#e8e4d9]',
+    'preuve': 'bg-[#fdfbf7] text-[#2f3e46] border-[#cad2c5]',
+    'exemple': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
+    'exercice': 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20',
+    'application': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
 };
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
@@ -77,7 +77,7 @@ export const SUBJECT_BAND_CLASS_MAP: Record<string, string> = {
   'maths': 'border-teal-500 ring-2 ring-inset ring-teal-100',
   'physique': 'border-indigo-500 ring-2 ring-inset ring-indigo-100',
   'physique-chimie': 'border-blue-500 ring-2 ring-inset ring-blue-100',
-  'francais': 'border-rose-500 ring-2 ring-inset ring-rose-100',
+  'francais': 'border-blue-600 ring-2 ring-inset ring-blue-100',
   'economie': 'border-amber-500 ring-2 ring-inset ring-amber-100',
   'svt': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
   'sciences de la vie': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
@@ -87,7 +87,7 @@ export const SUBJECT_BAND_CLASS_MAP: Record<string, string> = {
   // AR subjects
   'الرياضيات': 'border-teal-500 ring-2 ring-inset ring-teal-100',
   'علوم فيزيائية': 'border-indigo-500 ring-2 ring-inset ring-indigo-100',
-  'اللغة العربية': 'border-rose-500 ring-2 ring-inset ring-rose-100',
+  'اللغة العربية': 'border-blue-600 ring-2 ring-inset ring-blue-100',
   'علوم الحياة والأرض': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
 };
 
@@ -186,14 +186,14 @@ export const SUBJECTS = [
 export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
     // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
-    'chapter': { name: 'Chapitre', icon: Book, color: 'text-foreground', rowColor: 'bg-secondary/45' },
-    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-warning', badgeColor: 'bg-warning/10 text-warning border-warning/20', rowColor: 'bg-warning/5' },
+    'chapter': { name: 'Chapitre', icon: Book, color: 'text-[#2f3e46]', rowColor: 'bg-[#f4f1ea]' },
+    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-[#e76f51]', badgeColor: 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20', rowColor: 'bg-[#fff3ec]' },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
     // type dans le cahier + 1) — réservé aux types récurrents.
-    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-primary', badgeColor: 'bg-primary/10 text-primary border-primary/20', rowColor: 'bg-primary/5', autoNumber: true },
-    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-success', badgeColor: 'bg-success/10 text-success border-success/20', rowColor: 'bg-success/5', autoNumber: true },
-    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-primary', badgeColor: 'bg-primary/10 text-primary border-primary/20', rowColor: 'bg-primary/5', autoNumber: true },
-    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-success', badgeColor: 'bg-success/10 text-success border-success/20', rowColor: 'bg-success/5', autoNumber: true },
+    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-[#457b9d]', badgeColor: 'bg-[#f1faee] text-[#457b9d] border-[#457b9d]/20', rowColor: 'bg-[#f1faee]', autoNumber: true },
+    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-[#52796f]', badgeColor: 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20', rowColor: 'bg-[#e8f0ec]', autoNumber: true },
+    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-[#457b9d]', badgeColor: 'bg-[#f1faee] text-[#457b9d] border-[#457b9d]/20', rowColor: 'bg-[#f1faee]', autoNumber: true },
+    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-[#52796f]', badgeColor: 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20', rowColor: 'bg-[#e8f0ec]', autoNumber: true },
 };
 
 

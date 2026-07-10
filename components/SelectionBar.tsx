@@ -66,7 +66,7 @@ const ActionButton: FC<{
     aria-label={title}
   >
     <Icon className="h-4.5 w-4.5 transition-transform duration-200 group-hover:scale-105" />
-    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 border border-zinc-800 px-2 py-1 text-[10px] font-semibold text-zinc-50 opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
+    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground border border-foreground/10 px-2 py-1 text-[10px] font-semibold text-background opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
       {title}
     </span>
   </Button>

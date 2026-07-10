@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..1000;1,300..1000&family=Roboto+Slab:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -32,17 +33,17 @@
   --color-leaf-glass: rgb(var(--leaf-glass));
   --color-coral: rgb(var(--coral));
 
-  /* Style Figma-pro : arrondis des CADRES fortement réduits (~-90%, quasi nets).
-     Les pastilles et cercles (rounded-full) ne sont pas concernés. */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
+  /* Style Ghibli : arrondis des CADRES très généreux pour un look "galet/papier aquarelle" */
 
-  --font-sans: 'Fira Sans', 'Roboto', system-ui, -apple-system, sans-serif;
-  --font-display: 'Roboto Slab', 'Fira Sans Condensed', 'Fira Sans', serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
+
+  --font-sans: 'Nunito', 'Fira Sans', 'Roboto', system-ui, -apple-system, sans-serif;
+  --font-display: 'Nunito', 'Roboto Slab', serif;
   --font-mono: 'Roboto Mono', 'IBM Plex Mono', ui-monospace, monospace;
 }
 
@@ -56,32 +57,32 @@
     --leaf-glass: 245 252 242;
     --coral: 254 242 242;
 
-    --background: 210 15% 98%;
-    --foreground: 215 28% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 28% 12%;
-    --popover: 210 15% 99%;
-    --popover-foreground: 215 28% 12%;
-    --primary: 215 100% 41%; /* Coursera Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 15% 95%; /* Clean soft grey-blue secondary */
-    --secondary-foreground: 215 40% 20%;
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 42%;
-    --accent: 217 90% 95%;
-    --accent-foreground: 217 90% 25%;
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 0 0% 100%;
+    --background: 42 24% 94%;
+    --foreground: 201 20% 23%;
+    --card: 40 50% 98%;
+    --card-foreground: 201 20% 23%;
+    --popover: 40 50% 98%;
+    --popover-foreground: 201 20% 23%;
+    --primary: 167 19% 40%;
+    --primary-foreground: 40 50% 98%;
+    --secondary: 97 12% 80%;
+    --secondary-foreground: 201 20% 23%;
+    --muted: 44 20% 88%;
+    --muted-foreground: 167 19% 40%;
+    --accent: 12 76% 61%;
+    --accent-foreground: 40 50% 98%;
+    --destructive: 12 76% 61%;
+    --destructive-foreground: 40 50% 98%;
     /* statuts sémantiques — UNE seule teinte par famille dans toute l'app :
        succès (à jour, confirmations) et avertissement (retards, échéances) */
-    --success: 142 70% 29%; /* AA on light surfaces */
-    --warning: 38 85% 32%; /* AA on light surfaces */
-    --scheduled: 38 72% 40%;
-    --scheduled-foreground: 32 55% 24%;
-    --border: 210 15% 90%;
-    --input: 210 15% 90%;
-    --ring: 215 100% 41%;
-    --radius: 0.875rem;
+    --success: 133 19% 59%;
+    --warning: 27 87% 67%;
+    --scheduled: 254 54% 73%;
+    --scheduled-foreground: 254 32% 29%;
+    --border: 44 20% 88%;
+    --input: 44 20% 88%;
+    --ring: 133 19% 59%;
+    --radius: 1.5rem;
   }
 }
 
@@ -91,14 +92,13 @@
   }
   body {
     @apply bg-background text-foreground;
-    background:
-      radial-gradient(circle at 10% 5%, rgb(var(--sky-wash) / 0.6), transparent 45rem),
-      radial-gradient(circle at 90% 15%, rgb(var(--leaf-wash) / 0.6), transparent 40rem),
-      linear-gradient(180deg, rgb(var(--sky-wash) / 0.4), hsl(var(--background)) 24rem);
+    background-color: #f4f1ea;
+    background-image: radial-gradient(#e8e2d2 1px, transparent 1px); background-size: 32px 32px;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  
   h1, h2, h4, h5, h6, .font-display {
     font-family: var(--font-display);
     letter-spacing: 0;
@@ -107,6 +107,21 @@
     font-family: var(--font-mono);
   }
 }
+n/* Animation Lucioles */
+@keyframes float {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+    50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+}
+.firefly {
+    position: absolute;
+    border-radius: 50%;
+    background: #fcf6bd;
+    filter: blur(4px);
+    animation: float 6s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 1;
+}
+
 
 @layer utilities {
   .surface-art {

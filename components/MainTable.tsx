@@ -192,20 +192,18 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-border/80 bg-muted/55 md:block">
+  <div className="hidden border-b border-[#e8e4d9] bg-[#f4f1ea] md:block">
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
+      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
         Date
       </div>
-      <div className="flex items-center justify-center border-r border-border/80 p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
+      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
         Contenu
       </div>
-      <div className="flex items-center justify-center p-2.5 text-center text-[10px] font-bold uppercase text-muted-foreground font-sans">
+      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
         Remarque
       </div>
     </div>
-    {/* filet signature sous l'en-tête — pleine largeur, bord à bord */}
-    <div aria-hidden className="h-px w-full bg-border/80" />
   </div>
 ));
 TableHeader.displayName = 'TableHeader';
@@ -295,7 +293,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
     const sharedRemark = getMergeableRemark(first);
-    const dividerClass = groupIsSelected ? 'border-r border-primary/25' : 'border-r border-scheduled/35';
+    const dividerClass = '';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -574,7 +572,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   return (
     /* Bloc tableau : la barre d'outils porte les coins hauts, la table les coins bas. */
     <Card
-      className="overflow-hidden rounded-none border border-t-0 border-border/80 bg-card/95 shadow-sm"
+      className="overflow-hidden rounded-none border-none bg-transparent shadow-none"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

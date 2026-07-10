@@ -7,9 +7,18 @@ import { flattenLessons } from './dataUtils.js';
  * nouveautés (économie de papier, gain de temps).
  */
 
+/** Dernières préférences de mise en page choisies pour l'impression d'une classe. */
+export interface PrintPrefs {
+    textSize: 's' | 'm' | 'l';
+    lineSpacing: 'compact' | 'normal' | 'aere';
+    pageNumbers: boolean;
+}
+
 export interface PrintMeta {
     lastPrintedAt: string | null;
     printedDates: string[];
+    /** préférences d'impression mémorisées (taille, aération, pagination) */
+    prefs?: PrintPrefs;
 }
 
 const key = (classId: string) => `printMeta_v1_${classId}`;
@@ -19,7 +28,7 @@ export const readPrintMeta = (classId: string): PrintMeta => {
         const raw = localStorage.getItem(key(classId));
         if (raw) {
             const parsed = JSON.parse(raw) as PrintMeta;
-            return { lastPrintedAt: parsed.lastPrintedAt ?? null, printedDates: parsed.printedDates ?? [] };
+            return { lastPrintedAt: parsed.lastPrintedAt ?? null, printedDates: parsed.printedDates ?? [], prefs: parsed.prefs };
         }
     } catch {
         // corrompu : on repart de zéro
@@ -33,10 +42,24 @@ export const recordPrint = (classId: string, printedDates: string[]): void => {
     try {
         localStorage.setItem(
             key(classId),
-            JSON.stringify({ lastPrintedAt: new Date().toISOString(), printedDates: merged } satisfies PrintMeta)
+            // préserve les préférences déjà mémorisées
+            JSON.stringify({ lastPrintedAt: new Date().toISOString(), printedDates: merged, prefs: existing.prefs } satisfies PrintMeta)
         );
     } catch {
         // stockage plein : l'impression fonctionne quand même
+    }
+};
+
+/** Préférences d'impression mémorisées pour cette classe (ou null si aucune). */
+export const readPrintPrefs = (classId: string): PrintPrefs | null => readPrintMeta(classId).prefs ?? null;
+
+/** Mémorise les préférences d'impression sans toucher à l'historique des dates imprimées. */
+export const savePrintPrefs = (classId: string, prefs: PrintPrefs): void => {
+    const existing = readPrintMeta(classId);
+    try {
+        localStorage.setItem(key(classId), JSON.stringify({ ...existing, prefs } satisfies PrintMeta));
+    } catch {
+        // stockage plein : sans conséquence
     }
 };
 

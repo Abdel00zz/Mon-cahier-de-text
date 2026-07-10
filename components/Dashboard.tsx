@@ -9,8 +9,6 @@ import { Card, CardContent } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import { ClassCard } from './ClassCard';
 import { DashboardStats } from './DashboardStats';
-import { LatenessBanner } from './LatenessBanner';
-import { AssessmentBanner } from './AssessmentBanner';
 import { OnboardingGuide } from './OnboardingGuide';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { ImportPlatformModal } from './modals/ImportPlatformModal';
@@ -22,7 +20,8 @@ import { withAbsences } from '../utils/lateness';
 import { nextSessionInfoForClass } from '../utils/timetable';
 // Session assistant imports removed
 import { Badge } from './ui/badge';
-import { Plus, CircleHelp, Settings } from './ui/icons';
+import { Plus, BookOpen, Settings, CircleHelp } from './ui/icons';
+import { Leaf, Sun } from 'lucide-react';
 import { AUTH_REQUIRED } from '../config/features';
 import { restoreBackup } from '../utils/backup';
 
@@ -61,13 +60,17 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
         <button
             onClick={onClick}
             data-guide="create-class"
-            className="group flex h-full min-h-[175px] w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/35 p-8 shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-card hover:shadow-md"
+            className="group relative flex h-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2.5rem] bg-[#fdfbf7] p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_60px_-15px_rgba(82,121,111,0.15)] border-2 border-dashed border-[#cad2c5] hover:border-[#84a98c] hover:bg-white w-full focus:outline-none focus:ring-4 focus:ring-[#84a98c]/20 text-center"
         >
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors duration-300 group-hover:bg-primary/10 group-hover:text-primary">
-                <Plus className="w-5 h-5" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#e8f0ec]/0 to-[#f4f1ea]/0 transition-colors duration-700 group-hover:from-[#e8f0ec]/50 group-hover:to-[#f4f1ea]/50"></div>
+            
+            <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-[#f4f1ea] border-2 border-[#e8e4d9] text-[#84a98c] transition-all duration-500 group-hover:scale-110 group-hover:rotate-90 group-hover:bg-[#fff3ec] group-hover:text-[#e76f51] group-hover:border-[#ffd6c2] shadow-sm mb-6">
+                <Plus className="w-8 h-8" />
             </div>
-            <span className="text-sm font-bold text-foreground transition-colors duration-300 group-hover:text-primary">Nouvelle classe</span>
-            <span className="mt-1 text-xs font-medium text-muted-foreground">Créer un nouveau cahier</span>
+            <div className="relative z-10">
+                <span className="block text-2xl font-black text-[#52796f] transition-colors group-hover:text-[#2f3e46] font-display">Nouveau cahier</span>
+                <span className="block text-[15px] font-semibold text-[#84a98c] mt-2">Créer un cahier de textes</span>
+            </div>
         </button>
     );
 };
@@ -222,64 +225,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const initials = getInitials(teacherName);
 
     return (
-        <div className="min-h-screen bg-background text-foreground antialiased" data-dashboard-root>
-            <div className="max-w-7xl mx-auto px-6 py-8">
-                <header className="mb-10" id="dashboard-header">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                        <div className="min-w-0">
-                            <h1 className="flex items-center gap-2 truncate text-2xl font-bold tracking-tight text-foreground">
-                                {teacherName ? (
-                                    <>
-                                        {getGreeting()}, {getFirstName(teacherName)}
-                                        <span className="animate-pulse inline-block" aria-hidden>👋</span>
-                                    </>
-                                ) : 'Mon Espace'}
-                            </h1>
-                            <div className="flex items-center gap-2 text-xs font-semibold text-primary mt-1 uppercase tracking-wider">
-                                {config.establishmentName && config.establishmentName.trim() !== teacherName ? (
-                                    <span className="truncate max-w-[120px] sm:max-w-none">{config.establishmentName.trim()}</span>
-                                ) : (
-                                    <span>A</span>
-                                )}
-                                {formattedDate && (
-                                    <>
-                                        <span className="select-none text-border">•</span>
-                                        <span className="truncate font-normal normal-case text-muted-foreground">{formattedDate.split(' ').slice(0, 3).join(' ')}</span>
-                                    </>
-                                )}
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-background text-foreground antialiased relative overflow-x-hidden" data-dashboard-root>
+            {/* Éléments magiques flottants (Lucioles/Poussières) */}
+            <div className="firefly w-6 h-6 top-[10%] left-[15%]" style={{ animationDelay: '0s' }}></div>
+            <div className="firefly w-4 h-4 top-[20%] right-[20%]" style={{ animationDelay: '2s' }}></div>
+            <div className="firefly w-8 h-8 top-[40%] left-[5%]" style={{ animationDelay: '4s' }}></div>
+            <div className="firefly w-5 h-5 top-[60%] right-[10%]" style={{ animationDelay: '1s' }}></div>
+            <div className="firefly w-3 h-3 top-[80%] left-[25%]" style={{ animationDelay: '3s' }}></div>
+
+            <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
+                <header className="mb-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6" id="dashboard-header">
+                    <div>
+                        <h1 className="text-4xl sm:text-5xl font-black text-[#2f3e46] tracking-tight font-display">
+                            {getGreeting()}, <span className="text-[#52796f]">{teacherName}</span>
+                        </h1>
+                        <p className="text-[15px] font-semibold text-[#52796f] mt-2 flex items-center gap-2">
+                            <Sun className="w-4 h-4 text-[#e76f51]" />
+                            {formattedDate ? `Nous sommes le ${formattedDate}, une belle journée pour apprendre.` : "Une belle journée pour apprendre."}
+                        </p>
                     </div>
                     
                     <div className="flex items-center gap-3 shrink-0">
-                        <Button
-                            variant="outline"
+                        <button
                             onClick={() => setGuideOpen(true)} 
-                            className="flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground"
+                            className="flex items-center gap-2 px-5 py-3 text-[14px] font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
                             title="Consulter le guide d'utilisation"
                         >
-                            <CircleHelp className="h-4 w-4 text-muted-foreground" />
+                            <CircleHelp className="h-4 w-4 group-hover:scale-110 transition-transform" />
                             Guide
-                        </Button>
-                        <Button
-                            variant="outline"
+                        </button>
+                        <button
                             onClick={onOpenSettings} 
-                            className="flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:text-foreground"
+                            className="flex items-center gap-2 px-5 py-3 text-[14px] font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
                             title="Accéder aux réglages"
                         >
-                            <Settings className="h-4 w-4 text-muted-foreground" />
+                            <Settings className="h-4 w-4 group-hover:rotate-90 transition-transform duration-500" />
                             Réglages
-                        </Button>
+                        </button>
                     </div>
-                </div>
-            </header>
-            <main>
+                </header>
+                <main>
             {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
                 n'est pas intercepté, le navigateur affiche sa propre invite native
                 (mini-infobar Android, icône d'installation dans l'omnibox). */}
-            <LatenessBanner classes={classes} config={config} />
-            <AssessmentBanner classes={classes} config={config} />
             {/* Sélecteur de cycle — MASQUÉ en production (les cycles viennent de
                 l'inscription) ; en local sans compte, affiché si plusieurs cycles. */}
             {!showAllClasses && (
@@ -322,10 +310,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
                     return (
                         <>
-                            <div className="flex items-center gap-3 mb-6">
-                                <h2 className="text-xl font-bold text-foreground">Mes Classes</h2>
+                            <div className="flex items-center gap-4 mb-6">
+                                <h2 className="text-2xl font-extrabold text-[#2f3e46]">Mes Cahiers de Textes</h2>
                                 {visibleClasses.length > 0 && (
-                                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
+                                    <span className="px-3 py-1 bg-[#cad2c5] text-[#2f3e46] text-sm font-bold rounded-full">
                                         {visibleClasses.length}
                                     </span>
                                 )}

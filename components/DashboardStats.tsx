@@ -78,39 +78,33 @@ interface StatCardProps {
     icon: React.ComponentType<{ className?: string }>;
     title: string;
     value: string | number;
-    subtext: string;
-    colorTheme: 'indigo' | 'emerald' | 'purple' | 'amber';
+    subtext?: string;
+    isPercent?: boolean;
     index: number;
+    iconBgColor: string;
+    shapeBgColor: string;
+    textColor: string;
+    valueColor: string;
     onOpen: () => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtext, colorTheme, index, onOpen }) => {
-    const themeClasses = {
-        indigo: {
-            iconContainer: 'bg-indigo-50/80 text-indigo-600 group-hover:bg-indigo-100',
-            borderLeft: 'border-l-indigo-500',
-            hoverGlow: 'hover:shadow-indigo-100/40 hover:border-indigo-100/80',
-        },
-        emerald: {
-            iconContainer: 'bg-emerald-50/80 text-emerald-600 group-hover:bg-emerald-100',
-            borderLeft: 'border-l-emerald-500',
-            hoverGlow: 'hover:shadow-emerald-100/40 hover:border-emerald-100/80',
-        },
-        purple: {
-            iconContainer: 'bg-purple-50/80 text-purple-600 group-hover:bg-purple-100',
-            borderLeft: 'border-l-purple-500',
-            hoverGlow: 'hover:shadow-purple-100/40 hover:border-purple-100/80',
-        },
-        amber: {
-            iconContainer: 'bg-amber-50/80 text-amber-600 group-hover:bg-amber-100',
-            borderLeft: 'border-l-amber-500',
-            hoverGlow: 'hover:shadow-amber-100/40 hover:border-amber-100/80',
-        }
-    };
-
-    const classes = themeClasses[colorTheme];
+const StatCard: React.FC<StatCardProps> = ({
+    icon: Icon,
+    title,
+    value,
+    subtext,
+    isPercent = false,
+    index,
+    iconBgColor,
+    shapeBgColor,
+    textColor,
+    valueColor,
+    onOpen
+}) => {
+    // Hook toujours appelé (jamais conditionnellement) — respecte les règles des hooks.
     const numericValue = typeof value === 'number' ? value : null;
-    const displayValue = numericValue !== null ? useCountUp(numericValue) : value;
+    const animatedValue = useCountUp(numericValue ?? 0);
+    const displayValue = numericValue !== null ? animatedValue : value;
 
     return (
         <Card
@@ -118,21 +112,31 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtext, 
             tabIndex={0}
             onClick={onOpen}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
-            className={`group flex cursor-pointer flex-row items-center justify-between rounded-2xl border border-l-4 border-border bg-card p-6 opacity-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md animate-slide-in-up ${classes.borderLeft} ${classes.hoverGlow}`}
+            className={`group flex cursor-pointer flex-col justify-between rounded-[28px] border-2 border-[#e8e4d9] bg-[#fdfbf7] p-6 shadow-[0_10px_40px_-10px_rgba(82,121,111,0.15)] transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(82,121,111,0.25)] hover:border-[#cad2c5] animate-slide-in-up relative overflow-hidden`}
             style={{ animationDelay: `${index * 55}ms` }}
             aria-label={`${title} : ${value}.`}
         >
-            <div className="flex-1 min-w-0 pr-4 text-left">
-                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div className={`absolute top-0 right-0 w-24 h-24 ${shapeBgColor} opacity-20 rounded-bl-full transform group-hover:scale-110 transition-transform`} />
+
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                <span className={`text-sm font-bold ${textColor} uppercase tracking-wider`}>
                     {title}
                 </span>
-                <h3 className="mt-2.5 truncate text-3xl font-extrabold tracking-tight text-foreground">
-                    {displayValue}
-                    {colorTheme === 'indigo' && typeof value === 'number' && '%'}
-                </h3>
+                <div className={`p-2 rounded-2xl ${iconBgColor} ${textColor} transition-all duration-300 group-hover:scale-110`}>
+                    <Icon className="w-6 h-6" />
+                </div>
             </div>
-            <div className={`p-4 rounded-2xl shrink-0 transition-all duration-300 group-hover:scale-110 ${classes.iconContainer}`}>
-                <Icon className="w-7 h-7" />
+            
+            <div className="relative z-10">
+                <h3 className={`truncate text-4xl sm:text-5xl font-extrabold tracking-tight ${valueColor} leading-none`}>
+                    {displayValue}
+                    {isPercent && typeof value === 'number' && '%'}
+                </h3>
+                {subtext && (
+                    <span className="mt-2 block truncate text-[12px] font-bold text-muted-foreground/80">
+                        {subtext}
+                    </span>
+                )}
             </div>
         </Card>
     );
@@ -231,23 +235,30 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 <StatCard
                     title="Progression"
                     value={stats.completion}
-                    subtext={`${stats.planned}/${stats.total}`}
+                    subtext={`${stats.planned}/${stats.total} chapitres`}
                     icon={TrendingUp}
-                    colorTheme="indigo"
+                    isPercent
                     index={0}
+                    shapeBgColor="bg-[#a8dadc]"
+                    iconBgColor="bg-[#f1faee]"
+                    textColor="text-[#457b9d]"
+                    valueColor="text-[#1d3557]"
                     onOpen={() => setOpenSheet('program')}
                 />
                 <StatCard
                     title="Séances"
                     value={stats.sessionsCount}
-                    subtext="Total cours"
+                    subtext="Séances enregistrées"
                     icon={CalendarCheck}
-                    colorTheme="emerald"
                     index={1}
+                    shapeBgColor="bg-[#84a98c]"
+                    iconBgColor="bg-[#e8f0ec]"
+                    textColor="text-[#52796f]"
+                    valueColor="text-[#2f3e46]"
                     onOpen={() => setOpenSheet('today')}
                 />
                 <StatCard
@@ -255,17 +266,23 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                     value={stats.totalChapters}
                     subtext={`${stats.inProgressChapters} actifs`}
                     icon={Book}
-                    colorTheme="purple"
                     index={2}
+                    shapeBgColor="bg-[#f4a261]"
+                    iconBgColor="bg-[#fff3ec]"
+                    textColor="text-[#e76f51]"
+                    valueColor="text-[#e76f51]"
                     onOpen={() => setOpenSheet('program')}
                 />
                 <StatCard
                     title="Dernière séance"
                     value={stats.lastDate ? formatDateCompact(stats.lastDate) : '--'}
-                    subtext={stats.lastDateClass || '--'}
+                    subtext={stats.lastDateClass || 'Aucun cours'}
                     icon={Clock}
-                    colorTheme="amber"
                     index={3}
+                    shapeBgColor="bg-[#a593e0]"
+                    iconBgColor="bg-[#f4f2fb]"
+                    textColor="text-[#8a79b8]"
+                    valueColor="text-[#d2cce6]"
                     onOpen={() => setOpenSheet('pending')}
                 />
             </div>
@@ -338,9 +355,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                                 <span className="ml-1 font-bold text-muted-foreground/60">({p.planned}/{p.total})</span>
                                             </span>
                                         </div>
-                                        <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                                        <div className="h-2.5 overflow-hidden rounded-full bg-secondary">
                                             <div
-                                                className="h-full rounded-full bg-primary transition-[width] duration-700 ease-out"
+                                                className="h-full rounded-full bg-gradient-to-r from-primary to-success/80 transition-[width] duration-700 ease-out"
                                                 style={{ width: `${p.completion}%` }}
                                             />
                                         </div>
@@ -360,7 +377,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                         : 'Aucune séance prévue ce jour.'}
                                 </SheetDescription>
                             </SheetHeader>
-                            {stats.todayBlocks.length > 0 && (
+                            {stats.todayBlocks.length > 0 ? (
                                 <div className="mt-4 space-y-2">
                                     {stats.todayBlocks.map((b, i) => (
                                         <div key={`${b.classId}-${i}`} className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3">
@@ -374,6 +391,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                             </Badge>
                                         </div>
                                     ))}
+                                </div>
+                            ) : (
+                                <div className="mt-5 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border p-6 text-center bg-muted/20">
+                                    <span className="text-2xl">🍃</span>
+                                    <p className="text-sm font-bold text-foreground">Aucun cours aujourd'hui !</p>
+                                    <p className="text-xs text-muted-foreground/80 font-medium">Profitez de ce moment calme pour vous ressourcer.</p>
                                 </div>
                             )}
                         </>
