@@ -14,11 +14,7 @@ const CYCLES: { value: Cycle; label: string }[] = [
   { value: 'prepa', label: 'Prépa' },
 ];
 
-/**
- * Force du mot de passe — indicative (le serveur n'exige que 8 caractères, on
- * ne bloque donc jamais un mot de passe valide, on encourage seulement mieux).
- * Score 0→4 : longueur, casse mixte, chiffre, symbole.
- */
+/** Force du mot de passe — indicative (le serveur n'exige que 8 caractères). */
 const passwordStrength = (pw: string): { score: number; label: string; barClass: string; textClass: string } => {
   if (!pw) return { score: 0, label: '', barClass: '', textClass: '' };
   let score = 0;
@@ -38,24 +34,16 @@ const passwordStrength = (pw: string): { score: number; label: string; barClass:
   return { score: level, ...map[level] };
 };
 
-/** Formatage téléphone marocain à la saisie : « 06 12 34 56 78 ». Les espaces
- *  n'affectent pas le backend (il ne garde que les chiffres). */
-const formatMoroccanPhone = (raw: string): string => {
-  const digits = raw.replace(/[^\d]/g, '').slice(0, 10);
-  return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
-};
+/** Formatage téléphone marocain : « 06 12 34 56 78 » (le backend ne garde que les chiffres). */
+const formatMoroccanPhone = (raw: string): string =>
+  raw.replace(/[^\d]/g, '').slice(0, 10).replace(/(\d{2})(?=\d)/g, '$1 ').trim();
 
-const Field: React.FC<{
-  label: string;
-  children: React.ReactNode;
-}> = ({ label, children }) => (
-  <label className="block space-y-1.5">
-    <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">{label}</span>
-    {children}
-  </label>
+/** Libellé compact au-dessus d'un champ. */
+const Label: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span className="mb-1 block text-[10.5px] font-extrabold uppercase tracking-wide text-muted-foreground">{children}</span>
 );
 
-/** Champ mot de passe avec bascule de visibilité — indispensable au pouce. */
+/** Champ mot de passe : bascule de visibilité + alerte Verr. Maj (cible ≥44px). */
 const PasswordInput: React.FC<{
   value: string;
   onChange: (value: string) => void;
@@ -66,10 +54,7 @@ const PasswordInput: React.FC<{
 }> = ({ value, onChange, autoComplete, placeholder = '••••••••', minLength, required }) => {
   const [visible, setVisible] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
-
-  const detectCaps = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    setCapsLock(e.getModifierState?.('CapsLock') ?? false);
-  };
+  const detectCaps = (e: React.KeyboardEvent<HTMLInputElement>) => setCapsLock(e.getModifierState?.('CapsLock') ?? false);
 
   return (
     <div>
@@ -85,7 +70,7 @@ const PasswordInput: React.FC<{
           placeholder={placeholder}
           required={required}
           minLength={minLength}
-          className="min-h-11 rounded-xl pr-11"
+          className="h-11 rounded-xl pr-11"
         />
         <button
           type="button"
@@ -97,29 +82,18 @@ const PasswordInput: React.FC<{
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
-      {/* Alerte Verr. Maj — évite les échecs de connexion mystérieux */}
-      <AnimatePresence>
-        {capsLock && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-1.5 flex items-center gap-1 overflow-hidden text-[11px] font-semibold text-warning"
-          >
-            <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
-            Verrouillage majuscules activé
-          </motion.p>
-        )}
-      </AnimatePresence>
+      {capsLock && (
+        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-warning animate-fade-in">
+          <TriangleAlert className="h-3.5 w-3.5 shrink-0" /> Verrouillage majuscules activé
+        </p>
+      )}
     </div>
   );
 };
 
-/** Critère de validation en direct (inscription) : coche verte quand satisfait. */
 const LiveCheck: React.FC<{ ok: boolean; label: string }> = ({ ok, label }) => (
-  <span className={`inline-flex items-center gap-1 text-[11px] font-semibold transition-colors ${ok ? 'text-success' : 'text-muted-foreground/60'}`}>
-    <CircleCheck className={`h-3.5 w-3.5 transition-transform ${ok ? 'scale-100' : 'scale-90 opacity-40'}`} />
-    {label}
+  <span className={`inline-flex items-center gap-1 text-[10.5px] font-semibold transition-colors ${ok ? 'text-success' : 'text-muted-foreground/50'}`}>
+    <CircleCheck className={`h-3.5 w-3.5 ${ok ? '' : 'opacity-40'}`} /> {label}
   </span>
 );
 
@@ -140,54 +114,26 @@ export const AuthPage: React.FC = () => {
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const phoneValid = phone.replace(/[^\d]/g, '').length >= 8;
   const strength = passwordStrength(password);
+  const isRegister = mode === 'register';
 
-  const toggleCycle = (value: Cycle) => {
-    setCycles(prev => (prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]));
-  };
-
-  const toggleSubject = (value: string) => {
-    setSubjects(prev => (prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value]));
-  };
-
-  const switchMode = (next: Mode) => {
-    setMode(next);
-    setError(null);
-  };
+  const toggleCycle = (v: Cycle) => setCycles(p => (p.includes(v) ? p.filter(c => c !== v) : [...p, v]));
+  const toggleSubject = (v: string) => setSubjects(p => (p.includes(v) ? p.filter(s => s !== v) : [...p, v]));
+  const switchMode = (next: Mode) => { setMode(next); setError(null); };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
-
-    if (mode === 'register') {
-      if (!nom.trim() || !prenom.trim()) {
-        setError('Veuillez renseigner votre nom et votre prénom.');
-        return;
-      }
-      if (!passwordLongEnough) {
-        setError('Le mot de passe doit contenir au moins 8 caractères.');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Les deux mots de passe ne correspondent pas.');
-        return;
-      }
-      if (cycles.length === 0) {
-        setError('Veuillez choisir au moins un cycle d’enseignement.');
-        return;
-      }
-      if (subjects.length === 0) {
-        setError('Veuillez choisir au moins une matière.');
-        return;
-      }
+    if (isRegister) {
+      if (!nom.trim() || !prenom.trim()) return setError('Veuillez renseigner votre nom et votre prénom.');
+      if (!passwordLongEnough) return setError('Le mot de passe doit contenir au moins 8 caractères.');
+      if (password !== confirmPassword) return setError('Les deux mots de passe ne correspondent pas.');
+      if (cycles.length === 0) return setError('Veuillez choisir au moins un cycle d’enseignement.');
+      if (subjects.length === 0) return setError('Veuillez choisir au moins une matière.');
     }
-
     setIsSubmitting(true);
     try {
-      if (mode === 'login') {
-        await login(phone, password);
-      } else {
-        await register({ nom: nom.trim(), prenom: prenom.trim(), phone, password, cycles, subjects });
-      }
+      if (mode === 'login') await login(phone, password);
+      else await register({ nom: nom.trim(), prenom: prenom.trim(), phone, password, cycles, subjects });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
     } finally {
@@ -196,89 +142,72 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4 safe-bottom">
-      {/* Décor vivant — halos aux couleurs du design system */}
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/15 blur-[90px]" aria-hidden />
-      <div className="pointer-events-none absolute -bottom-32 -right-20 h-80 w-80 rounded-full bg-success/10 blur-[100px]" aria-hidden />
+    // min-h-dvh + justify-center : centré si ça tient, DÉFILABLE si c'est plus
+    // haut que l'écran (fini les coupures haut/bas). overflow-x-hidden empêche
+    // tout débordement latéral. Aucun halo décoratif (le fond du body suffit).
+    <div className="flex min-h-dvh w-full flex-col justify-center overflow-x-hidden px-4 py-5 safe-bottom">
+      <div className="mx-auto w-full max-w-sm">
+        {/* En-tête compact */}
+        <div className="mb-4 flex items-center gap-2.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/25">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-lg font-extrabold leading-tight text-foreground">Cahier de Textes</h1>
+            <p className="truncate text-[11px] font-medium text-muted-foreground">Votre hub d'enseignant, partout.</p>
+          </div>
+        </div>
 
-      <div className="relative w-full max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mb-6 text-center sm:mb-8"
+          transition={{ duration: 0.3 }}
+          className="rounded-2xl border border-border/60 bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:p-5"
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-            <BookOpen className="h-7 w-7" />
-          </div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-foreground">
-            Cahier de Textes Interactif
-          </h1>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">Votre hub d'enseignant, partout avec vous.</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.08 }}
-          className="rounded-2xl border border-border/60 bg-card/90 p-5 shadow-xl backdrop-blur-sm sm:p-8"
-        >
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+          {/* Onglets */}
+          <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
             {(['login', 'register'] as const).map(value => (
               <button
                 key={value}
                 type="button"
                 onClick={() => switchMode(value)}
-                className={`relative min-h-10 rounded-lg px-3 text-sm font-bold transition-colors ${
-                  mode === value ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`relative min-h-9 rounded-lg px-3 text-sm font-bold transition-colors ${mode === value ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {mode === value && (
-                  <motion.span
-                    layoutId="auth-tab"
-                    className="absolute inset-0 rounded-lg bg-primary shadow"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                  />
+                  <motion.span layoutId="auth-tab" className="absolute inset-0 rounded-lg bg-primary shadow" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />
                 )}
                 <span className="relative">{value === 'login' ? 'Connexion' : 'Créer un compte'}</span>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {mode === 'register' && (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Nom + Prénom (inscription) */}
+            <AnimatePresence initial={false}>
+              {isRegister && (
                 <motion.div
-                  key="register-fields"
+                  key="names"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="grid grid-cols-1 gap-4 overflow-hidden sm:grid-cols-2"
+                  className="grid grid-cols-2 gap-3 overflow-hidden"
                 >
-                  <Field label="Nom">
-                    <Input
-                      value={nom}
-                      onChange={e => setNom(e.target.value)}
-                      autoComplete="family-name"
-                      placeholder="Benali"
-                      className="min-h-11 rounded-xl"
-                    />
-                  </Field>
-                  <Field label="Prénom">
-                    <Input
-                      value={prenom}
-                      onChange={e => setPrenom(e.target.value)}
-                      autoComplete="given-name"
-                      placeholder="Malek"
-                      className="min-h-11 rounded-xl"
-                    />
-                  </Field>
+                  <label className="block">
+                    <Label>Nom</Label>
+                    <Input value={nom} onChange={e => setNom(e.target.value)} autoComplete="family-name" placeholder="Benali" className="h-11 rounded-xl" />
+                  </label>
+                  <label className="block">
+                    <Label>Prénom</Label>
+                    <Input value={prenom} onChange={e => setPrenom(e.target.value)} autoComplete="given-name" placeholder="Malek" className="h-11 rounded-xl" />
+                  </label>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <Field label="Téléphone portable">
+            {/* Téléphone */}
+            <label className="block">
+              <Label>Téléphone portable</Label>
               <div className="relative">
                 <Input
                   type="tel"
@@ -288,71 +217,54 @@ export const AuthPage: React.FC = () => {
                   autoComplete="tel"
                   placeholder="06 12 34 56 78"
                   required
-                  autoFocus
-                  className="min-h-11 rounded-xl pr-10"
+                  className="h-11 rounded-xl pr-10"
                 />
-                {phoneValid && (
-                  <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-success animate-fade-in" />
-                )}
+                {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-success animate-fade-in" />}
               </div>
-            </Field>
+            </label>
 
-            <Field label="Mot de passe">
-              <PasswordInput
-                value={password}
-                onChange={setPassword}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                required
-                minLength={mode === 'register' ? 8 : undefined}
-              />
-            </Field>
+            {/* Mot de passe */}
+            <label className="block">
+              <Label>Mot de passe</Label>
+              <PasswordInput value={password} onChange={setPassword} autoComplete={isRegister ? 'new-password' : 'current-password'} required minLength={isRegister ? 8 : undefined} />
+            </label>
 
-            <AnimatePresence mode="popLayout" initial={false}>
-              {mode === 'register' && (
+            {/* Confirmation + jauge + cycles + matières (inscription) */}
+            <AnimatePresence initial={false}>
+              {isRegister && (
                 <motion.div
-                  key="confirm-field"
+                  key="register-extra"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
+                  className="space-y-3 overflow-hidden"
                 >
-                  <Field label="Confirmer le mot de passe">
-                    <PasswordInput
-                      value={confirmPassword}
-                      onChange={setConfirmPassword}
-                      autoComplete="new-password"
-                    />
-                  </Field>
+                  <label className="block">
+                    <Label>Confirmer le mot de passe</Label>
+                    <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+                  </label>
 
-                  {/* Jauge de force (indicative) + validation en direct */}
+                  {/* Jauge de force + validations, sur une ligne compacte */}
                   {password.length > 0 && (
-                    <div className="mt-2.5 animate-fade-in">
-                      <div className="flex gap-1" aria-hidden>
+                    <div className="flex items-center gap-2 animate-fade-in">
+                      <div className="flex flex-1 gap-1" aria-hidden>
                         {[0, 1, 2, 3].map(i => (
-                          <span
-                            key={i}
-                            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                              i < strength.score ? strength.barClass : 'bg-muted'
-                            }`}
-                          />
+                          <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-muted'}`} />
                         ))}
                       </div>
-                      <span className={`mt-1 block text-[11px] font-bold ${strength.textClass}`}>
-                        Sécurité : {strength.label}
-                      </span>
+                      <span className={`shrink-0 text-[10.5px] font-bold ${strength.textClass}`}>{strength.label}</span>
                     </div>
                   )}
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                    <LiveCheck ok={passwordLongEnough} label="8 caractères min." />
-                    <LiveCheck ok={passwordsMatch} label="Mots de passe identiques" />
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    <LiveCheck ok={passwordLongEnough} label="8 car. min." />
+                    <LiveCheck ok={passwordsMatch} label="Identiques" />
                   </div>
 
-                  <div className="mt-4 space-y-1.5">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                      Cycle(s) d'enseignement
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
+                  {/* Cycles */}
+                  <div>
+                    <Label>Cycle(s)</Label>
+                    <div className="grid grid-cols-3 gap-1.5">
                       {CYCLES.map(cycle => {
                         const active = cycles.includes(cycle.value);
                         return (
@@ -360,12 +272,8 @@ export const AuthPage: React.FC = () => {
                             key={cycle.value}
                             type="button"
                             onClick={() => toggleCycle(cycle.value)}
-                            className={`min-h-11 rounded-xl border text-sm font-bold transition-all active:scale-95 ${
-                              active
-                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                                : 'border-border bg-background text-muted-foreground hover:border-primary/40'
-                            }`}
                             aria-pressed={active}
+                            className={`min-h-10 rounded-lg border text-[13px] font-bold transition-all active:scale-95 ${active ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}
                           >
                             {cycle.label}
                           </button>
@@ -374,13 +282,12 @@ export const AuthPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-1.5">
-                    <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                      Matière(s) enseignée(s)
+                  {/* Matières — chips compactes */}
+                  <div>
+                    <span className="mb-1 flex items-center gap-1.5">
+                      <Label>Matière(s)</Label>
                       {subjects.length > 0 && (
-                        <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-black tabular-nums text-primary">
-                          {subjects.length}
-                        </span>
+                        <span className="mb-1 rounded-full bg-primary/15 px-1.5 text-[10px] font-black tabular-nums text-primary">{subjects.length}</span>
                       )}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -391,12 +298,8 @@ export const AuthPage: React.FC = () => {
                             key={s}
                             type="button"
                             onClick={() => toggleSubject(s)}
-                            className={`min-h-9 rounded-full border px-3 text-xs font-bold transition-all active:scale-95 ${
-                              active
-                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                                : 'border-border bg-background text-muted-foreground hover:border-primary/40'
-                            }`}
                             aria-pressed={active}
+                            className={`min-h-8 rounded-full border px-2.5 text-[11px] font-bold transition-all active:scale-95 ${active ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-border bg-background text-muted-foreground hover:border-primary/40'}`}
                           >
                             {s}
                           </button>
@@ -409,37 +312,21 @@ export const AuthPage: React.FC = () => {
             </AnimatePresence>
 
             {error && (
-              <motion.p
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive"
-                role="alert"
-              >
+              <p className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-[13px] font-semibold text-destructive animate-fade-in" role="alert">
                 {error}
-              </motion.p>
+              </p>
             )}
 
-            <Button
-              type="submit"
-              className="min-h-12 w-full rounded-xl text-base font-bold shadow-md shadow-primary/20 transition-transform active:scale-[0.98]"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting} className="h-11 w-full rounded-xl text-[15px] font-bold shadow-md shadow-primary/20 transition-transform active:scale-[0.98]">
               {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Un instant…
-                </>
-              ) : mode === 'login' ? (
-                'Se connecter'
-              ) : (
-                'Créer mon compte'
-              )}
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Un instant…</>
+              ) : isRegister ? 'Créer mon compte' : 'Se connecter'}
             </Button>
           </form>
         </motion.div>
 
-        <p className="mt-6 text-center text-xs font-medium text-muted-foreground">
-          Vos cahiers sont synchronisés en ligne et restent disponibles hors connexion.
+        <p className="mt-4 text-center text-[11px] font-medium text-muted-foreground">
+          Synchronisé en ligne, disponible hors connexion.
         </p>
       </div>
     </div>
