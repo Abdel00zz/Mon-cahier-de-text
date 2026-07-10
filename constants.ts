@@ -205,80 +205,108 @@ Voir l'aide complète bilingue dans la fenêtre: Aide | مساعدة.
 `;
 
 // Aide complète en Français
-export const GUIDE_FR = `# Aide – Cahier de Textes Interactif
+export const GUIDE_FR = `# Guide d'utilisation
 
-Un guide court et ciblé. L'essentiel en 2 minutes.
+Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'une minute.
 
-## Démarrer en 3 étapes
-1. **Créez une classe** : Cliquez sur la carte « **Nouvelle classe** » sur le tableau de bord, puis choisissez le niveau de votre classe et votre matière. L'application génère automatiquement le nom de la classe. Vous pouvez aussi pré-charger un programme officiel de cours si disponible.
-2. **Définissez votre emploi du temps** : Allez dans l'onglet **Paramètres** puis cliquez sur **Emploi du temps** pour saisir vos heures de cours hebdomadaires. Vos créneaux saisis servent à calculer automatiquement votre progression et à vous alerter en cas de retard.
-3. **Remplissez le cahier** : Ajoutez vos chapitres, sections et éléments, puis associez des dates à vos séances de cours.
+## Bien démarrer
+1. **Créez une classe** : Sur le tableau de bord, touchez « **Nouvelle classe** », choisissez le niveau et la matière — le nom se compose tout seul. Si un programme officiel existe pour ce niveau, l'application vous propose de le pré-charger : acceptez, puis adaptez-le librement.
+2. **Renseignez votre emploi du temps** : À l'ouverture d'un cahier sans créneaux, une invitation vous guide vers **Paramètres ▸ Emploi du temps** (vous pouvez la passer). Ces créneaux activent tout le reste : progression, alertes de retard, rappels de fin de séance.
+3. **Remplissez le cahier** : Ajoutez chapitres, sections et contenus, puis datez vos séances au fil des cours.
 
-## Éditer le cahier
-- **Ajouter des éléments** : Sur mobile, utilisez le bouton rond « **+** ». Sur ordinateur, sélectionnez une ligne de votre tableau, puis cliquez sur **Ajouter après** dans la barre de sélection qui apparaît en bas de l'écran.
-- **Modifier un élément** : Double-cliquez directement sur la case que vous souhaitez modifier (ou sélectionnez la ligne puis cliquez sur **Modifier** dans la barre de sélection en bas).
-- **Dater une séance** : Sélectionnez une ou plusieurs lignes de votre tableau puis cliquez sur **Dater aujourd'hui** (en 1 clic) ou sur **Choisir une date...**. L'application calcule automatiquement les jours fériés, les vacances scolaires ou vos absences programmées pour vous signaler d'éventuels conflits, sans jamais bloquer votre saisie.
-- **Réorganiser ou supprimer** : Sélectionnez une ligne puis utilisez les boutons **Monter / Descendre** ou **Supprimer** dans la barre de sélection en bas.
-- **Formules de Math (LaTeX)** : Écrivez vos formules mathématiques entre les symboles dollars, par exemple : \`$E = mc^2$\`. Pour faire une liste, commencez vos lignes par un tiret « **-** » ou un numéro « **1.** ». Vous pouvez aussi mettre du texte en **Gras** (avec \`**texte**\`) ou en *Italique* (avec \`*texte*\`).
+## Le cahier au quotidien
+- **Ajouter** : Sur téléphone, le bouton rond « **+** ». Sur ordinateur, sélectionnez une ligne puis « **Ajouter après** » dans la barre du bas.
+- **Modifier** : Double-touchez la ligne à corriger, ou sélectionnez-la puis « **Modifier** ».
+- **Dater en un geste** : Sélectionnez une ou plusieurs lignes puis « **Dater aujourd'hui** » (un seul tap) ou « **Choisir une date…** » avec aperçu avant/après.
+- **Réorganiser / supprimer** : Boutons **Monter / Descendre** et **Supprimer** de la barre de sélection. Tout est annulable (\`Ctrl + Z\`).
+- **Formules de maths (LaTeX)** : Entre symboles dollars : \`$E = mc^2$\`. Listes avec « **-** » ou « **1.** », **gras** avec \`**texte**\`, *italique* avec \`*texte*\`.
 
-## Suivi & alertes
-- **Progression** : Cliquez sur le bouton **Analyse** dans le menu pour visualiser votre taux de complétion du programme et l'historique de vos séances.
-- **Retards & devoirs** : Des bannières de rappel s'affichent automatiquement sur votre tableau de bord lorsqu'un devoir approche ou qu'un retard est détecté dans votre calendrier. Ces alertes sont de simples indicateurs d'aide.
-- **Absences programmées** : Allez dans **Paramètres** puis cliquez sur **Notifications / Absences** pour déclarer vos arrêts ou congés. Vos calculs de progression excluront automatiquement ces périodes.
+## L'emploi du temps intelligent
+- **Une couleur par classe** : Chaque classe garde sa teinte dans la grille et le récapitulatif — l'emploi du temps se lit d'un coup d'œil.
+- **Séances de 2 h fusionnées** : Deux heures consécutives de la même classe forment **une seule cellule** ; l'application n'attend alors qu'**une** date dans le cahier, pas deux.
+- **Repère officiel** : À côté de chaque classe, « off. X h » rappelle l'horaire hebdomadaire officiel de votre matière — un simple repère indicatif, jamais une contrainte.
+
+## Un calendrier qui pense pour vous
+- **Garde-fou des dates** : Une date posée un jour férié, pendant les vacances ou une absence déclenche une simple alerte informative — la saisie n'est jamais bloquée (séance de rattrapage, exception…).
+- **Alertes en pause automatique** : Vacances, jours fériés et absences suspendent le moteur de retard et les rappels. Aucun reproche pendant les vacances !
+- **Fin d'année sereine** : L'été venu, vos cartes affichent « Année scolaire terminée » — pas de fausse « prochaine séance » vers la rentrée suivante.
+- **Absences programmées** : Déclarez un congé ou un arrêt dans **Paramètres ▸ Notifications** : la période est exclue de tous les calculs.
+
+## Suivi & progression
+- **Cartes du tableau de bord** : Progression globale, séances, chapitres actifs, dernière séance — touchez une carte pour ouvrir le détail.
+- **Analyse par classe** : Menu **⋮ ▸ Analyse & progression** pour le taux de complétion et l'historique détaillé.
+- **Rappels de fin de séance** : Une minute avant la fin d'un cours, votre téléphone vibre ; à la fin, il vérifie qu'une date a bien été posée. Activable dans **Paramètres ▸ Notifications**.
 
 ## Impression intelligente
-- **Imprimer son cahier** : Allez dans le menu puis cliquez sur **Imprimer**. L'application se souvient de ce qui a déjà été imprimé et vous propose l'option pratique **Nouveautés seulement** pour éviter tout doublon. Vous pouvez aussi numéroter les pages.
+- **Nouveautés seulement** : L'application se souvient de ce qui est déjà imprimé et recommande de n'imprimer que le nouveau — économie de papier garantie.
+- **Sélection personnalisée** : Cochez précisément les séances à imprimer, date par date, avec badges « Nouvelle / Déjà imprimée ».
+- **Vos réglages mémorisés** : Taille du texte, espacement et numérotation sont retenus par classe — la prochaine impression repart de vos choix.
 
-## Compte & sauvegarde
-- **Mise à jour en temps réel** : Vos données sont sauvegardées et synchronisées automatiquement dès que vous êtes connecté à Internet (vérifiable grâce à la pastille verte de synchronisation dans l'en-tête).
-- **Sauvegarde manuelle** : Allez dans **Paramètres** puis cliquez sur **Données** et choisissez **Exporter** pour télécharger l'intégralité de vos classes dans un fichier de secours sur votre appareil. Vous pourrez le restaurer à tout moment via l'option **Importer**.
+## Compte, synchro & sauvegarde
+- **Synchronisation automatique** : Dès que vous êtes en ligne, tout se sauvegarde et se synchronise entre vos appareils (pastille de synchro dans l'en-tête). Hors ligne, vous travaillez normalement — la synchro rattrape au retour du réseau.
+- **Votre profil** : **Paramètres ▸ Profil** pour modifier établissement, nom et cycle à tout moment.
+- **Sauvegarde de secours** : **Paramètres ▸ Données ▸ Exporter** télécharge tout dans un fichier restaurable via **Importer** — utile avant un changement d'appareil.
 
-## Raccourcis clavier pratiques
-- Rechercher rapidement : Appuyez sur la touche \`/\` ou \`Ctrl + K\`
-- Annuler l'action précédente : Appuyez sur \`Ctrl + Z\`
-- Rétablir l'action annulée : Appuyez sur \`Ctrl + Y\`
-- Fermer un panneau ou désélectionner : Appuyez sur la touche \`Échap\` (Escape)
+## Raccourcis clavier
+- Rechercher : \`/\` ou \`Ctrl + K\`
+- Annuler : \`Ctrl + Z\`
+- Rétablir : \`Ctrl + Y\`
+- Fermer / désélectionner : \`Échap\`
 
 ## À propos
-Développé par Boudouh Abdelmalek (Maroc). Pour toute suggestion ou aide, contactez : [bdh.malek@gmail.com](mailto:bdh.malek@gmail.com).
+Développé par Boudouh Abdelmalek (Maroc). Suggestions et aide : [bdh.malek@gmail.com](mailto:bdh.malek@gmail.com).
 `;
 
 
-// دليل كامل بالعربية
-export const GUIDE_AR = `# مساعدة – دفتر النصوص التفاعلي
+// دليل كامل بالعربية — نفس بنية الدليل الفرنسي (٩ أقسام متوازية)
+export const GUIDE_AR = `# دليل الاستخدام
 
-دليل موجز ومركّز. الأساسيات في دقيقتين.
+دفتر نصوصكم الرقمي، خطوة بخطوة. كل قسم يُقرأ في أقل من دقيقة.
 
-## البداية في 3 خطوات بسيطة
-1. **أنشئ قسماً جديداً** : اضغط على بطاقة الإضافة « **Nouvelle classe** » في لوحة التحكم، ثم اختر مستوى القسم والمادة. يقوم التطبيق بإنشاء الاسم تلقائياً. يمكنك أيضاً تحميل مقرر دراسي رسمي جاهز لتوفير الوقت.
-2. **أدخل استعمال الزمن الخاص بك** : اذهب إلى **الإعدادات** ثم اختر **استعمال الزمن** لتحديد حصصك الأسبوعية. تُستعمل هذه الحصص لحساب مدى تقدمك في الدروس وتنبيهك تلقائياً في حالة التأخر.
-3. **املأ دفتر النصوص** : أضف الفصول والفقرات والأنشطة، ثم حدد تواريخ إنجاز الحصص.
+## البداية الصحيحة
+1. **أنشئوا قسماً** : في لوحة التحكم، اضغطوا على « **قسم جديد** »، واختاروا المستوى والمادة — الاسم يتركّب تلقائياً. إن وُجد مقرر رسمي لهذا المستوى، يقترحه التطبيق جاهزاً: اقبلوه ثم عدّلوه بحرية.
+2. **أدخلوا استعمال الزمن** : عند فتح دفتر بلا حصص، تظهر دعوة لطيفة نحو **الإعدادات ▸ استعمال الزمن** (يمكن تخطّيها). هذه الحصص تُفعّل كل الباقي: التقدم، تنبيهات التأخر، وتذكيرات نهاية الحصة.
+3. **املؤوا الدفتر** : أضيفوا الفصول والفقرات والمحتويات، ثم أرّخوا حصصكم مع مرور الدروس.
 
-## تحرير وإدارة الدفتر
-- **إضافة عناصر جديدة** : في الهاتف، اضغط على الزر الدائري « **+** ». في الحاسوب، حدّد سطراً من الجدول ثم اضغط على **إضافة بعد** في شريط التحديد الذي يظهر أسفل الشاشة.
-- **تعديل عنصر** : انقر نقراً مزدوجاً على الخانة المراد تعديلها (أو حدد السطر ثم اضغط على **تعديل** في شريط التحديد بالأسفل).
-- **تأريخ حصة** : حدد سطراً أو أكثر من الجدول، ثم اضغط على **تأريخ اليوم** (بكبسة زر واحدة) أو **اختيار تاريخ...**. ينبهك التطبيق تلقائياً إذا كان التاريخ يتزامن مع عطلة، إجازة أو غياب دون حظر تسجيل الحصة.
-- **الترتيب والحذف** : حدد السطر المطلوب ثم استخدم أزرار **لأعلى / لأسفل** أو **حذف** في شريط التحديد بالأسفل.
-- **كتابة الرموز الرياضية (LaTeX)** : اكتب المعادلات الرياضية بين رمزي الدولار، مثلاً: \`$E = mc^2$\`. لكتابة قائمة، ابدأ السطر بعلامة « **-** » أو رقم « **1.** ». يمكنك كتابة نص **عريض** باستعمال \`**نص**\` أو نص *مائل* باستعمال \`*نص*\`.
+## الدفتر في الاستعمال اليومي
+- **الإضافة** : في الهاتف، الزر الدائري « **+** ». في الحاسوب، حدّدوا سطراً ثم « **إضافة بعد** » في الشريط السفلي.
+- **التعديل** : المسّوا السطر مرتين، أو حدّدوه ثم « **تعديل** ».
+- **التأريخ بلمسة** : حدّدوا سطراً أو أكثر ثم « **تأريخ اليوم** » (لمسة واحدة) أو « **اختيار تاريخ…** » مع معاينة قبل/بعد.
+- **الترتيب / الحذف** : أزرار **لأعلى / لأسفل** و**حذف** في شريط التحديد. كل شيء قابل للتراجع (\`Ctrl + Z\`).
+- **الرموز الرياضية (LaTeX)** : بين رمزي الدولار: \`$E = mc^2$\`. القوائم بـ « **-** » أو « **1.** »، **عريض** بـ \`**نص**\`، *مائل* بـ \`*نص*\`.
 
-## المتابعة والتقارير التلقائية
-- **نسبة التقدم** : اضغط على زر **تحليل** في القائمة لعرض الرسوم البيانية لنسبة إنجاز المقرر وإحصائيات الحصص.
-- **التأخر والفروض** : تظهر تنبيهات تلقائية في لوحة التحكم عند اقتراب موعد فرض محروس أو عند ملاحظة تأخر في إنجاز المقرر مقارنة باستعمال الزمن. هذه التنبيهات استرشادية فقط.
-- **تسجيل الغيابات** : اذهب إلى **الإعدادات** ثم **الإشعارات والغيابات** لتسجيل فترات غيابك (كالشهادات الطبية). سيقوم التطبيق تلقائياً باستثنائها من حسابات التقدم.
+## استعمال زمن ذكي
+- **لون لكل قسم** : يحتفظ كل قسم بلونه في الشبكة وفي الملخص — يُقرأ استعمال الزمن بنظرة واحدة.
+- **حصص الساعتين مدموجة** : ساعتان متتاليتان لنفس القسم تكوّنان **خلية واحدة** ؛ ولا ينتظر التطبيق حينها سوى تاريخ **واحد** في الدفتر، لا اثنين.
+- **المرجع الرسمي** : بجانب كل قسم، « off. X h » يذكّر بالغلاف الزمني الأسبوعي الرسمي لمادتكم — مجرد إشارة استرشادية، لا قيد أبداً.
+
+## تقويم يفكّر معكم
+- **حارس التواريخ** : تاريخ يصادف عطلة أو عيداً أو غياباً يُطلق تنبيهاً إخبارياً بسيطاً — التسجيل لا يُحظر أبداً (حصة استدراك، استثناء…).
+- **توقّف تلقائي للتنبيهات** : العطل والأعياد والغيابات توقف محرّك التأخر والتذكيرات. لا عتاب خلال العطلة!
+- **نهاية سنة هادئة** : في الصيف، تعرض البطاقات « السنة الدراسية انتهت » — دون « حصة قادمة » وهمية نحو الدخول المقبل.
+- **الغيابات المبرمجة** : صرّحوا بإجازة أو توقف في **الإعدادات ▸ الإشعارات** : تُستثنى الفترة من جميع الحسابات.
+
+## المتابعة والتقدم
+- **بطاقات لوحة التحكم** : التقدم الإجمالي، الحصص، الفصول النشطة، آخر حصة — المسّوا بطاقة لفتح التفاصيل.
+- **تحليل لكل قسم** : القائمة **⋮ ▸ التحليل والتقدم** لنسبة الإنجاز والسجل المفصّل.
+- **تذكير نهاية الحصة** : قبل نهاية الحصة بدقيقة يهتزّ هاتفكم؛ وعند نهايتها يتحقق من وضع التاريخ. يُفعَّل من **الإعدادات ▸ الإشعارات**.
 
 ## الطباعة الذكية
-- **طباعة الدفتر** : اذهب إلى القائمة واضغط على **طباعة**. يتذكر التطبيق الحصص التي قمت بطباعتها سابقاً ويقترح عليك خيار **الجديد فقط** لتفادي التكرار وتوفير الورق. مع إمكانية تفعيل ترقيم الصفحات تلقائياً.
+- **الجديد فقط** : يتذكّر التطبيق ما طُبع سابقاً ويوصي بطباعة الجديد وحده — اقتصاد مضمون في الورق.
+- **اختيار مخصّص** : اختاروا الحصص المراد طباعتها بدقة، تاريخاً بتاريخ، مع شارات « جديدة / مطبوعة سابقاً ».
+- **إعداداتكم محفوظة** : حجم الخط والتباعد والترقيم تُحفظ لكل قسم — الطباعة القادمة تنطلق من اختياراتكم.
 
-## الحساب والنسخ الاحتياطي لبياناتك
-- **المزامنة الفورية** : يتم حفظ بياناتك ومزامنتها تلقائياً عند اتصالك بالإنترنت (يمكنك التأكد من ذلك عبر ظهور أيقونة المزامنة الخضراء في أعلى الشاشة).
-- **النسخ الاحتياطي اليدوي** : اذهب إلى **الإعدادات** ثم **البيانات** واضغط على **تصدير** لتحميل جميع أقسامك وبياناتك في ملف آمن على جهازك. يمكنك استرجاعها في أي وقت عبر خيار **استيراد**.
+## الحساب والمزامنة والنسخ الاحتياطي
+- **مزامنة تلقائية** : بمجرد الاتصال بالإنترنت، يُحفظ كل شيء ويتزامن بين أجهزتكم (مؤشر المزامنة أعلى الشاشة). دون اتصال، تعملون بشكل عادي — وتلتحق المزامنة عند عودة الشبكة.
+- **ملفكم الشخصي** : **الإعدادات ▸ الملف الشخصي** لتعديل المؤسسة والاسم والسلك في أي وقت.
+- **نسخة أمان** : **الإعدادات ▸ البيانات ▸ تصدير** يحمّل كل شيء في ملف يُسترجع عبر **استيراد** — مفيد قبل تغيير الجهاز.
 
-## اختصارات لوحة المفاتيح المفيدة
-- البحث السريع في الدفتر : اضغط على \`/\` أو \`Ctrl + K\`
-- التراجع عن آخر إجراء : اضغط على \`Ctrl + Z\`
-- إعادة الإجراء المتراجع عنه : اضغط على \`Ctrl + Y\`
-- إغلاق نافذة أو إلغاء تحديد سطر : اضغط على زر \`Échap\` (Escape)
+## اختصارات لوحة المفاتيح
+- البحث : \`/\` أو \`Ctrl + K\`
+- التراجع : \`Ctrl + Z\`
+- الإعادة : \`Ctrl + Y\`
+- الإغلاق / إلغاء التحديد : \`Échap\`
 
 ## عن التطبيق
-تطوير الأستاذ بودوح عبد المالك (المغرب). للتواصل وتقديم المقترحات : [bdh.malek@gmail.com](mailto:bdh.malek@gmail.com).
+تطوير الأستاذ بودوح عبد المالك (المغرب). للمقترحات والمساعدة : [bdh.malek@gmail.com](mailto:bdh.malek@gmail.com).
 `;

@@ -235,11 +235,11 @@ export const effectiveSchedules = (
      • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
      • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
 
-import { HolidayCalendar, isSchoolDay, nextSchoolDay, toISODate, weekdayLabel } from './calendar.js';
+import { HolidayCalendar, getSchoolYearFor, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate, weekdayLabel } from './calendar.js';
 
 export interface NextSessionInfo {
-    /** now = séance en cours à cet instant précis */
-    kind: 'now' | 'today' | 'tomorrow' | 'weekday' | 'date';
+    /** now = séance en cours ; season-end = année scolaire terminée (été) */
+    kind: 'now' | 'today' | 'tomorrow' | 'weekday' | 'date' | 'season-end';
     label: string;
 }
 
@@ -263,6 +263,13 @@ export const nextSessionInfoForClass = (
     if (weekdays.length === 0) return null;
 
     const todayISO = toISODate(now);
+
+    // Hors année scolaire (été entre deux années) : la saison est TERMINÉE —
+    // inutile d'afficher une « prochaine séance » qui serait la rentrée suivante.
+    if (!isWithinKnownSchoolYear(calendar, todayISO)) {
+        return { kind: 'season-end', label: 'Année scolaire terminée' };
+    }
+
     const blocksFor = (weekday: number): SessionBlock[] =>
         entries.length
             ? getDaySessionBlocks(timetable, weekday).filter(b => b.classId === classId)
@@ -287,6 +294,15 @@ export const nextSessionInfoForClass = (
 
     const next = nextSchoolDay(todayISO, weekdays, calendar);
     if (!next) return null;
+
+    /*
+     * Fin de saison (bis) : encore dans l'année scolaire, mais la prochaine
+     * séance possible tombe déjà dans l'année SUIVANTE (derniers jours de
+     * l'année sans créneau restant) — l'année est finie pour cette classe.
+     */
+    if (next > getSchoolYearFor(calendar, todayISO).fin) {
+        return { kind: 'season-end', label: 'Année scolaire terminée' };
+    }
 
     const [y, m, d] = next.split('-').map(Number);
     const nextDate = new Date(y, m - 1, d);

@@ -3,6 +3,7 @@ import { ClassInfo } from '../types';
 import { NextSessionInfo } from '../utils/timetable';
 import { ConfirmDialog } from './ui/confirm-dialog';
 import { Trash2, Clock, Bell, Settings, ChevronRight, Book } from './ui/icons';
+import { Leaf } from 'lucide-react';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -110,6 +111,13 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[#e76f51]" />
                             </span>
                             <span className="text-sm font-bold text-[#e76f51]">Séance en cours</span>
+                        </div>
+                    ) : nextSession?.kind === 'season-end' ? (
+                        /* été / fin d'année : la saison est finie — pas de date de
+                           l'année suivante, un simple état apaisé « année terminée » */
+                        <div className="flex items-center gap-2 rounded-2xl bg-[#e8f0ec] px-4 py-2.5 border border-[#cad2c5]">
+                            <Leaf className="w-4 h-4 text-[#84a98c]" />
+                            <span className="text-sm font-bold text-[#52796f]">{nextSession.label}</span>
                         </div>
                     ) : nextSession ? (
                         <div className="flex items-center gap-2 rounded-2xl bg-[#f4f1ea] px-4 py-2.5 border border-[#e8e4d9]">

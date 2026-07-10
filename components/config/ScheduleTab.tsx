@@ -19,6 +19,20 @@ interface ScheduleTabProps {
     onChange: (patch: Partial<AppConfig>) => void;
 }
 
+/*
+ * Couleur DISTINCTE par classe (palette papier harmonieuse) : la grille se lit
+ * d'un coup d'œil — chaque classe garde sa teinte dans les cellules ET dans le
+ * récapitulatif. Attribution stable par ordre des classes.
+ */
+const CLASS_CELL_COLORS = [
+    { bg: 'bg-[#e8f0ec]', border: 'border-[#cad2c5]', text: 'text-[#52796f]', dot: 'bg-[#84a98c]' }, // sauge
+    { bg: 'bg-[#fff3ec]', border: 'border-[#ffd6c2]', text: 'text-[#c05a38]', dot: 'bg-[#e76f51]' }, // terracotta
+    { bg: 'bg-[#eaf1f8]', border: 'border-[#c9dcf2]', text: 'text-[#39628c]', dot: 'bg-[#457b9d]' }, // bleu doux
+    { bg: 'bg-[#faf3e3]', border: 'border-[#ecdfc0]', text: 'text-[#8a6d1f]', dot: 'bg-[#c9a227]' }, // ambre
+    { bg: 'bg-[#f3eefb]', border: 'border-[#dccff0]', text: 'text-[#65539a]', dot: 'bg-[#8a76c4]' }, // lavande
+    { bg: 'bg-[#fdeef2]', border: 'border-[#f5cdd8]', text: 'text-[#a34e69]', dot: 'bg-[#d0728f]' }, // rose
+];
+
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange }) => {
     const calendar = getBundledCalendar();
     const timetable = config.timetable ?? [];
@@ -29,9 +43,23 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return map;
     }, [classes]);
 
+    const colorFor = (classId: string) => {
+        const index = classes.findIndex(c => c.id === classId);
+        return CLASS_CELL_COLORS[(index >= 0 ? index : 0) % CLASS_CELL_COLORS.length];
+    };
+
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
+    };
+
+    // séance fusionnée (2 h+) : la cellule unique pilote TOUTES ses heures d'un coup
+    const assignRun = (day: number, startSlot: number, hours: number, classId: string | null) => {
+        let next = timetable;
+        for (let slot = startSlot; slot < startSlot + hours; slot++) {
+            next = setTimetableEntry(next, day, slot, classId);
+        }
+        onChange({ timetable: next, schedules: deriveSchedules(next) });
     };
 
     // séances continues par jour : deux créneaux consécutifs de la même classe
@@ -75,7 +103,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </p>
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
                 <div className="overflow-x-auto">
                 <table className="w-full min-w-[46rem] border-separate border-spacing-0 text-xs">
                     <thead>
@@ -102,41 +130,36 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     {day.label}
                                 </td>
                                 {HOUR_SLOTS.map(hour => {
+                                    const run = runsByDay.get(day.value)?.get(hour.index);
+                                    /*
+                                     * FUSION PARFAITE : une séance continue (2 h+) est UNE
+                                     * seule cellule (colSpan) avec UN seul libellé — fini le
+                                     * « math | math ». La cellule fusionnée pilote toutes
+                                     * ses heures d'un coup (changer/effacer = tout le bloc).
+                                     */
+                                    if (run && !run.isStart) return null; // couverte par le colSpan de la cellule de départ
+                                    const merged = !!run && run.hours > 1;
+                                    const span = run ? run.hours : 1;
                                     const entry = getTimetableEntry(timetable, day.value, hour.index);
                                     const classInfo = entry ? classById.get(entry.classId) : undefined;
-                                    const run = runsByDay.get(day.value)?.get(hour.index);
-                                    const merged = !!run && run.hours > 1;
-                                    // cases d'une même séance continue : soudées entre
-                                    // elles (padding et arrondis fusionnés), chaque
-                                    // heure restant individuellement modifiable
-                                    const cellPadding = merged
-                                        ? run.isStart
-                                            ? 'py-1 pl-1 pr-0'
-                                            : run.isEnd
-                                                ? 'py-1 pl-0 pr-1'
-                                                : 'py-1 px-0'
-                                        : 'p-1';
-                                    const rounding = merged
-                                        ? run.isStart
-                                            ? 'rounded-l-lg rounded-r-none'
-                                            : run.isEnd
-                                                ? 'rounded-r-lg rounded-l-none'
-                                                : 'rounded-none'
-                                        : 'rounded-lg';
+                                    const color = entry ? colorFor(entry.classId) : null;
                                     return (
                                         <td
                                             key={hour.index}
-                                            className={`relative align-top ${cellPadding} ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
+                                            colSpan={span}
+                                            className={`relative p-1 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
-                                                onChange={e => assign(day.value, hour.index, e.target.value || null)}
-                                                className={`h-11 w-full cursor-pointer border px-1.5 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${rounding} ${
-                                                    classInfo
-                                                        ? `border-primary/20 bg-primary/10 text-primary shadow-sm shadow-foreground/5 ${merged ? '' : 'hover:bg-primary/15'}`
+                                                onChange={e => merged
+                                                    ? assignRun(day.value, hour.index, span, e.target.value || null)
+                                                    : assign(day.value, hour.index, e.target.value || null)}
+                                                className={`h-11 w-full cursor-pointer rounded border px-1.5 text-center text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                                                    classInfo && color
+                                                        ? `${color.border} ${color.bg} ${color.text} shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
                                                         : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
-                                                aria-label={`${day.label} ${hour.label}${merged ? ` (séance continue de ${run.hours} h)` : ''}`}
+                                                aria-label={`${day.label} ${hour.label}${merged ? ` (séance fusionnée de ${span} h)` : ''}`}
                                             >
                                                 <option value="">—</option>
                                                 {classes.map(c => (
@@ -145,9 +168,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     </option>
                                                 ))}
                                             </select>
-                                            {merged && run.isStart && (
-                                                <span className="pointer-events-none absolute left-2 top-0.5 rounded-full bg-background/70 px-1.5 text-[9px] font-bold leading-4 text-primary shadow-sm font-mono">
-                                                    {run.hours} h
+                                            {merged && (
+                                                <span className={`pointer-events-none absolute left-2 top-0.5 rounded-full bg-card/80 px-1.5 text-[9px] font-bold leading-4 shadow-sm font-mono ${color?.text ?? 'text-primary'}`}>
+                                                    {span} h
                                                 </span>
                                             )}
                                         </td>
@@ -172,7 +195,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             key={c.id}
                             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm font-sans"
                         >
-                            <span className="h-2 w-2 rounded-full bg-primary/45" />
+                            <span className={`h-2 w-2 rounded-full ${colorFor(c.id).dot}`} />
                             {c.name}
                             <span className="text-muted-foreground/60 font-mono">
                                 · {sessions} séance{sessions > 1 ? 's' : ''}

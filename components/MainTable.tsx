@@ -193,11 +193,12 @@ const TableHeader: React.FC = React.memo(() => (
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
   <div className="hidden border-b border-[#e8e4d9] bg-[#f4f1ea] md:block">
+    {/* filets verticaux 2 px : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
+      <div className="flex items-center justify-center border-r-2 border-[#ddd5c4] p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
         Date
       </div>
-      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
+      <div className="flex items-center justify-center border-r-2 border-[#ddd5c4] p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
         Contenu
       </div>
       <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">

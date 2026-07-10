@@ -289,19 +289,21 @@ const TableRowComponent: FC<TableRowProps> = ({
   // reste porté par les cellules internes.
   const frameClasses = `group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
   
-  // Séparateurs verticaux entre colonnes — nettement visibles, ton chaud sur les rangées datées.
+  // Séparateurs verticaux Date|Contenu|Remarque — filets AFFIRMÉS (2 px) mais
+  // harmonieux : ton neutre doux au repos, chaud sur les rangées datées,
+  // primaire sur la sélection. Une seule épaisseur partout = rythme régulier.
   const dividerClass = isSelected
-    ? 'border-r border-primary/25'
+    ? 'border-r-2 border-primary/30'
     : hasAssignedDate
-      ? 'border-r border-scheduled/35'
-      : 'border-r border-border/50';
+      ? 'border-r-2 border-scheduled/40'
+      : 'border-r-2 border-border';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
-      ? 'md:border-r md:border-primary/25'
+      ? 'md:border-r-2 md:border-primary/30'
       : hasAssignedDate
-        ? 'md:border-r md:border-scheduled/35'
-        : 'md:border-r md:border-border/50';
+        ? 'md:border-r-2 md:border-scheduled/40'
+        : 'md:border-r-2 md:border-border';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;

@@ -7,175 +7,144 @@ interface GuideModalProps {
   onClose: () => void;
 }
 
+type Lang = 'fr' | 'ar';
+const LANG_KEY = 'guide_lang_v1';
+
+/*
+ * Guide REFONDU — esprit « papier doux » :
+ *  — UNE langue à la fois (séparation nette FR / AR), choix mémorisé ;
+ *  — colonne de lecture étroite et très aérée (respiration entre sections) ;
+ *  — sommaire monolingue (latéral sur ordinateur, chips sur mobile) ;
+ *  — palette papier chaud (#fdfbf7 / #f4f1ea / #e8e4d9, sauge, terracotta).
+ */
+
+const readLang = (): Lang => {
+  try {
+    return localStorage.getItem(LANG_KEY) === 'ar' ? 'ar' : 'fr';
+  } catch {
+    return 'fr';
+  }
+};
+
+/** markdown minimal → HTML « papier » (titres, cartes numérotées, cartes à rail, puces) */
+const toHtml = (markdown: string, prefix: Lang): string => {
+  let headingIndex = 0;
+  return markdown
+    .split('\n')
+    .map(line => {
+      if (line.startsWith('# ')) {
+        const t = line.replace('# ', '').trim();
+        return `<h1 class="text-3xl font-black font-display mb-3 text-[#2f3e46] tracking-tight">${t}</h1>`;
+      }
+      if (line.startsWith('## ')) {
+        const t = line.replace('## ', '').trim();
+        const id = `${prefix}-sec-${headingIndex}`;
+        headingIndex++;
+        return `<h2 id="${id}" class="text-xl font-extrabold font-display mt-14 mb-6 pb-3 border-b-2 border-[#e8e4d9] text-[#2f3e46] scroll-mt-4">${t}</h2>`;
+      }
+      if (line.startsWith('### ')) {
+        const t = line.replace('### ', '').trim();
+        return `<h3 class="text-base font-bold font-display mt-8 mb-4 text-[#2f3e46]">${t}</h3>`;
+      }
+
+      // « 1. **Titre** : description » → carte numérotée (pastille terracotta)
+      const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
+      if (numListMatch) {
+        const [, num, title, desc] = numListMatch;
+        return `<div class="flex gap-4 items-start rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] p-5 mb-4 shadow-sm"><div class="flex-shrink-0 w-9 h-9 rounded-full bg-[#fff3ec] border border-[#ffd6c2] text-[#e76f51] font-black flex items-center justify-center font-mono">${num}</div><div class="min-w-0 flex-1"><div class="font-bold text-[#2f3e46] font-display mb-1.5 text-[15px]">${title}</div><div class="text-[#52796f] text-[13.5px] leading-relaxed">${desc}</div></div></div>`;
+      }
+
+      // « - **Titre** : description » → carte à rail sauge
+      const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
+      if (boldBulletMatch) {
+        const [, title, desc] = boldBulletMatch;
+        return `<div class="relative overflow-hidden rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] p-5 mb-4 shadow-sm"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-[#84a98c]"></div><div class="font-bold text-[#2f3e46] font-display mb-1.5 text-[15px]">${title}</div><div class="text-[#52796f] text-[13.5px] leading-relaxed">${desc}</div></div>`;
+      }
+
+      // puce simple
+      if (line.startsWith('- ')) {
+        const content = line.replace('- ', '').trim();
+        return `<div class="flex gap-3 mb-3 items-start"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#84a98c]"></span><span class="text-[#52796f] text-[14px] leading-relaxed">${content}</span></div>`;
+      }
+
+      if (line.trim() === '---') return '<hr class="my-8 border-[#e8e4d9]">';
+      if (!line.trim()) return '';
+
+      const html = line
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-[#2f3e46]">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-[#f4f1ea] text-[#c05a38] px-1.5 py-0.5 rounded-md text-xs font-mono border border-[#e8e4d9]">$1</code>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[#52796f] font-semibold underline underline-offset-2 hover:text-[#2f3e46] transition-colors">$1</a>');
+
+      return `<p class="mb-4 text-[14px] text-[#52796f] leading-relaxed">${html}</p>`;
+    })
+    .join('\n');
+};
+
 export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
-  const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
-  const [viewMode, setViewMode] = useState<'fr' | 'ar' | 'split'>('split');
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [lang, setLangState] = useState<Lang>(readLang);
   const [activeSection, setActiveSection] = useState<string>('sec-0');
   const isProgrammaticScrollRef = useRef(false);
-  const programmaticScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const programmaticScrollTimeoutRef = useRef<number | null>(null);
 
-  // Set default viewMode depending on screen size
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (window.innerWidth < 1024) {
-        setViewMode('fr');
-      } else {
-        setViewMode('split');
-      }
+  const setLang = (next: Lang) => {
+    setLangState(next);
+    try {
+      localStorage.setItem(LANG_KEY, next);
+    } catch {
+      // stockage indisponible : le choix vaut pour cette session
     }
-  }, [isOpen]);
-
-  // Handle auto-switching if the screen shrinks to mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024 && viewMode === 'split') {
-        setViewMode('fr');
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [viewMode]);
-
-  const toHtml = (markdown: string, prefix: 'fr' | 'ar') => {
-    let headingIndex = 0;
-    return markdown
-      .split('\n')
-      .map(line => {
-        if (line.startsWith('# ')) {
-          const t = line.replace('# ', '').trim();
-          return `<h1 class="text-2.5xl font-extrabold font-display mb-8 text-primary text-center tracking-tight">${t}</h1>`;
-        }
-        if (line.startsWith('## ')) {
-          const t = line.replace('## ', '').trim();
-          const id = `${prefix}-sec-${headingIndex}`;
-          headingIndex++;
-          return `<h2 id="${id}" class="text-lg font-extrabold font-display mt-10 mb-5 pb-2 border-b border-border/60 text-foreground flex items-center gap-2">${t}</h2>`;
-        }
-        if (line.startsWith('### ')) {
-          const t = line.replace('### ', '').trim();
-          return `<h3 class="text-base font-bold font-display mt-6 mb-3 text-foreground">${t}</h3>`;
-        }
-        
-        // Convert numbered lists to cards with numbers
-        const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
-        if (numListMatch) {
-          const [, num, title, desc] = numListMatch;
-          return `<div class="group bg-card border border-border/60 rounded-2xl p-4 shadow-sm mb-4 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out flex gap-4 items-start"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-secondary text-primary font-bold flex items-center justify-center font-mono mt-0.5 group-hover:bg-primary group-hover:text-card transition-colors">${num}</div><div class="min-w-0 flex-1"><div class="font-bold text-foreground font-display mb-1 text-base group-hover:text-primary transition-colors">${title}</div><div class="text-muted-foreground text-[14px] leading-relaxed">${desc}</div></div></div>`;
-        }
-        
-        // Convert standard bold bullet lists to cards
-        const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
-        if (boldBulletMatch) {
-          const [, title, desc] = boldBulletMatch;
-          return `<div class="group bg-card border border-border/60 rounded-2xl p-4 shadow-sm mb-4 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-300 ease-out relative overflow-hidden"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-border group-hover:bg-primary transition-colors"></div><div class="font-bold text-foreground font-display mb-1 text-base group-hover:text-primary transition-colors">${title}</div><div class="text-muted-foreground text-[14px] leading-relaxed">${desc}</div></div>`;
-        }
-        
-        // Convert unbolded bullet lists to smaller cards
-        const normalBulletMatch = line.match(/^- (.+?) : (.+)$/);
-        if (normalBulletMatch) {
-          const [, title, desc] = normalBulletMatch;
-          return `<div class="group bg-card border border-border/60 rounded-xl p-3.5 shadow-sm mb-3 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-300 ease-out"><div class="font-bold text-foreground font-display mb-1 text-[14px] group-hover:text-primary transition-colors">${title}</div><div class="text-muted-foreground text-[13px] leading-relaxed">${desc}</div></div>`;
-        }
-        
-        // Fallback for bullet points
-        if (line.startsWith('- ')) {
-          const content = line.replace('- ', '').trim();
-          return `<div class="flex gap-2 mb-2"><span class="text-primary mt-1">•</span><span class="text-muted-foreground text-[14px] leading-relaxed">${content}</span></div>`;
-        }
-        
-        if (line.trim() === '---') {
-          return '<hr class="my-6 border-border/40">';
-        }
-        
-        if (!line.trim()) return '';
-        
-        // Process inline styles
-        let html = line
-          .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-foreground">$1</strong>')
-          .replace(/`([^`]+)`/g, '<code class="bg-secondary text-primary px-1.5 py-0.5 rounded-md text-xs font-mono border border-border/40">$1</code>')
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-medium hover:underline transition-colors">$1</a>');
-          
-        return `<p class="mb-3.5 text-[14px] text-muted-foreground leading-relaxed">${html}</p>`;
-      })
-      .join('\n');
+    // changement de langue = nouveau document : retour en haut
+    setActiveSection('sec-0');
+    contentRef.current?.scrollTo({ top: 0 });
   };
 
-  const htmlFr = useMemo(() => toHtml(GUIDE_FR, 'fr'), []);
-  const htmlAr = useMemo(() => toHtml(GUIDE_AR, 'ar'), []);
+  useEffect(() => {
+    if (isOpen) setActiveSection('sec-0');
+  }, [isOpen]);
+
+  const isAr = lang === 'ar';
+  const html = useMemo(() => toHtml(isAr ? GUIDE_AR : GUIDE_FR, lang), [lang, isAr]);
 
   const tocItems = useMemo(() => {
-    const frLines = GUIDE_FR.split('\n')
+    const source = isAr ? GUIDE_AR : GUIDE_FR;
+    return source
+      .split('\n')
       .filter(l => l.startsWith('## '))
-      .map(l => l.replace('## ', '').trim());
-    const arLines = GUIDE_AR.split('\n')
-      .filter(l => l.startsWith('## '))
-      .map(l => l.replace('## ', '').trim());
-
-    const items = [];
-    const maxLen = Math.max(frLines.length, arLines.length);
-    for (let i = 0; i < maxLen; i++) {
-      items.push({
-        fr: frLines[i] || '',
-        ar: arLines[i] || '',
-        id: `sec-${i}`,
-      });
-    }
-    return items;
-  }, []);
+      .map((l, i) => ({ label: l.replace('## ', '').trim(), id: `sec-${i}` }));
+  }, [isAr]);
 
   const handleScrollTo = (sectionId: string) => {
     isProgrammaticScrollRef.current = true;
-    if (programmaticScrollTimeoutRef.current) {
-      clearTimeout(programmaticScrollTimeoutRef.current);
-    }
-    
+    if (programmaticScrollTimeoutRef.current) window.clearTimeout(programmaticScrollTimeoutRef.current);
     setActiveSection(sectionId);
 
-    const index = sectionId.replace('sec-', '');
-
-    const scrollContainer = (container: HTMLDivElement | null, targetId: string) => {
-      if (!container) return;
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        const containerRect = container.getBoundingClientRect();
-        const targetRect = targetElement.getBoundingClientRect();
-        const relativeTop = targetRect.top - containerRect.top + container.scrollTop;
-        container.scrollTo({ top: relativeTop - 16, behavior: 'smooth' });
-      }
-    };
-
-    if (viewMode === 'fr' || viewMode === 'split') {
-      scrollContainer(leftRef.current, `fr-sec-${index}`);
+    const container = contentRef.current;
+    const target = document.getElementById(`${lang}-${sectionId}`);
+    if (container && target) {
+      const containerRect = container.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      // scroll INSTANTANÉ (affectation directe) : les défilements « smooth »
+      // programmés sont annulés dans certains moteurs — la fiabilité prime.
+      container.scrollTop = targetRect.top - containerRect.top + container.scrollTop - 16;
     }
-    if (viewMode === 'ar' || viewMode === 'split') {
-      scrollContainer(rightRef.current, `ar-sec-${index}`);
-    }
-
-    programmaticScrollTimeoutRef.current = setTimeout(() => {
+    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
       isProgrammaticScrollRef.current = false;
-    }, 850);
+    }, 150);
   };
 
-  const handleScroll = (ref: React.RefObject<HTMLDivElement | null>, prefix: 'fr' | 'ar') => {
+  const handleScroll = () => {
     if (isProgrammaticScrollRef.current) return;
-    const container = ref.current;
+    const container = contentRef.current;
     if (!container) return;
-
-    const headers = container.querySelectorAll('h2');
-    let currentActive = activeSection;
-
-    for (const header of Array.from(headers)) {
+    let current = activeSection;
+    for (const header of Array.from(container.querySelectorAll('h2'))) {
       const rect = header.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      if (rect.top - containerRect.top < 120) {
-        currentActive = header.id.replace(`${prefix}-`, '');
+      if (rect.top - container.getBoundingClientRect().top < 120) {
+        current = header.id.replace(`${lang}-`, '');
       }
     }
-
-    if (currentActive && currentActive !== activeSection) {
-      setActiveSection(currentActive);
-    }
+    if (current !== activeSection) setActiveSection(current);
   };
 
   return (
@@ -183,164 +152,100 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full select-none">
-          <div className="flex flex-col text-left">
-            <span className="font-display text-lg font-extrabold text-foreground">
-              Guide d'utilisation / دليل الاستخدام
+        <div className="flex w-full select-none flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'text-right font-ar' : 'text-left'}>
+            <span className="font-display text-lg font-extrabold text-[#2f3e46]">
+              {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
             </span>
-            <span className="text-xs font-semibold text-muted-foreground/80">
-              Documentation bilingue interactive & synchronisée
+            <span className="block text-xs font-semibold text-[#84a98c]">
+              {isAr ? 'الأساسيات خطوة بخطوة — ببساطة ووضوح' : "L'essentiel pas à pas — simple et complet"}
             </span>
           </div>
-          
-          {/* Beautiful Segmented Language Control */}
-          <div className="flex items-center bg-secondary/80 p-0.5 rounded-xl self-start sm:self-center border border-border/40 shrink-0">
-            <button
-              onClick={() => setViewMode('fr')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 cursor-pointer ${
-                viewMode === 'fr'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Français
-            </button>
-            <button
-              onClick={() => setViewMode('ar')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 cursor-pointer ${
-                viewMode === 'ar'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              العربية
-            </button>
-            <button
-              onClick={() => setViewMode('split')}
-              className={`hidden lg:block px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 cursor-pointer ${
-                viewMode === 'split'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Double affichage
-            </button>
+
+          {/* Bascule de langue : UNE langue à la fois, choix mémorisé */}
+          <div className="flex shrink-0 items-center self-start rounded-full border border-[#e8e4d9] bg-[#f4f1ea] p-0.5 sm:self-center">
+            {(['fr', 'ar'] as const).map(l => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                aria-pressed={lang === l}
+                className={`cursor-pointer rounded-full px-4 py-1.5 text-xs font-extrabold transition-all duration-200 ${
+                  lang === l ? 'bg-[#52796f] text-white shadow-sm' : 'text-[#84a98c] hover:text-[#52796f]'
+                }`}
+              >
+                {l === 'fr' ? 'Français' : 'العربية'}
+              </button>
+            ))}
           </div>
         </div>
       }
       maxWidth="5xl"
-      className="max-w-6xl sm:max-w-6xl h-[94vh] sm:h-[88vh] flex flex-col p-0 overflow-hidden"
+      className="flex h-[94vh] max-w-6xl flex-col overflow-hidden p-0 sm:h-[88vh] sm:max-w-6xl"
     >
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: hsl(var(--muted-foreground) / 0.15);
-          border-radius: 99px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: hsl(var(--muted-foreground) / 0.25);
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-
-      {/* Mobile Horizontal Anchor Shortcuts list */}
-      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto no-scrollbar py-2.5 px-3 border-b border-border/40 bg-muted/20 shrink-0 select-none">
-        {tocItems.map((item) => {
-          const isActive = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleScrollTo(item.id)}
-              className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/10'
-                  : 'bg-secondary/80 text-muted-foreground hover:bg-secondary'
-              }`}
-            >
-              {viewMode === 'fr' ? item.fr : item.ar}
-            </button>
-          );
-        })}
+      {/* Chips d'ancrage — mobile, dans la langue active */}
+      <div
+        dir={isAr ? 'rtl' : 'ltr'}
+        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-[#e8e4d9] bg-[#f4f1ea]/60 px-3 py-2.5 lg:hidden"
+      >
+        {tocItems.map(item => (
+          <button
+            key={item.id}
+            onClick={() => handleScrollTo(item.id)}
+            className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition-all duration-200 ${isAr ? 'font-ar' : ''} ${
+              activeSection === item.id
+                ? 'bg-[#52796f] text-white shadow-sm'
+                : 'bg-[#fdfbf7] text-[#84a98c] border border-[#e8e4d9] hover:text-[#52796f]'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
-      {/* Main split-screen bilingually synced documentation body */}
-      <div className={`h-full flex-1 grid overflow-hidden bg-background ${
-        viewMode === 'split' ? 'grid-cols-1 lg:grid-cols-[240px_1fr_2px_1fr]' : 'grid-cols-1 lg:grid-cols-[240px_1fr]'
-      }`}>
-        
-        {/* Desktop Sidebar Table of Contents */}
-        <div className="hidden lg:flex flex-col border-r border-border/40 bg-card/60 shrink-0 overflow-y-auto custom-scrollbar p-3.5 select-none w-[240px]">
-          <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/80 mb-3 px-2">
-            Sommaire / الفهرس
+      <div className="grid h-full flex-1 grid-cols-1 overflow-hidden bg-[#fdfbf7] lg:grid-cols-[250px_1fr]">
+        {/* Sommaire latéral — ordinateur, monolingue */}
+        <div
+          dir={isAr ? 'rtl' : 'ltr'}
+          className="custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto border-e border-[#e8e4d9] bg-[#f4f1ea]/50 p-4 lg:flex"
+        >
+          <div className={`mb-4 px-2 text-[10px] font-black uppercase tracking-wider text-[#84a98c] ${isAr ? 'font-ar' : ''}`}>
+            {isAr ? 'الفهرس' : 'Sommaire'}
           </div>
-          <nav className="space-y-1">
-            {tocItems.map((item) => {
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleScrollTo(item.id)}
-                  className={`w-full text-left flex flex-col gap-0.5 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/15 font-bold'
-                      : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <span className="text-[12px] font-extrabold leading-tight truncate w-full group-hover:translate-x-0.5 transition-transform duration-200">
-                    {item.fr}
-                  </span>
-                  <span className={`text-[10.5px] font-bold leading-tight text-right w-full font-ar mt-0.5 ${
-                    isActive ? 'text-primary-foreground/80' : 'text-muted-foreground/60 group-hover:text-muted-foreground/80'
-                  }`}>
-                    {item.ar}
-                  </span>
-                </button>
-              );
-            })}
+          <nav className="space-y-1.5">
+            {tocItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => handleScrollTo(item.id)}
+                className={`w-full cursor-pointer rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold leading-snug transition-all duration-200 ${
+                  isAr ? 'text-right font-ar' : 'text-left'
+                } ${
+                  activeSection === item.id
+                    ? 'bg-[#52796f] text-white shadow-sm'
+                    : 'text-[#52796f] hover:bg-[#e8f0ec] hover:text-[#2f3e46]'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
         </div>
 
-        {/* French Pane */}
-        {(viewMode === 'fr' || viewMode === 'split') && (
-          <div
-            ref={leftRef}
-            onScroll={() => handleScroll(leftRef, 'fr')}
-            className="relative overflow-y-auto overscroll-contain bg-background scroll-smooth custom-scrollbar flex-1"
-            style={{ scrollbarGutter: 'stable', height: '100%' }}
-          >
-            <div className="p-4 sm:p-8 pb-16">
-              <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: htmlFr }} />
-            </div>
+        {/* Corps de lecture — colonne étroite très AÉRÉE, une seule langue */}
+        <div
+          ref={contentRef}
+          onScroll={handleScroll}
+          className="custom-scrollbar relative flex-1 overflow-y-auto overscroll-contain"
+          style={{ scrollbarGutter: 'stable', height: '100%' }}
+          dir={isAr ? 'rtl' : 'ltr'}
+          lang={lang}
+        >
+          <div className="mx-auto max-w-2xl px-5 py-8 pb-24 sm:px-8 sm:py-12">
+            <div
+              className={`max-w-none ${isAr ? 'font-ar text-right text-[15px] leading-loose' : ''}`}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
           </div>
-        )}
-
-        {/* Separator Line */}
-        {viewMode === 'split' && (
-          <div className="hidden lg:block bg-border/40 w-[2px] self-stretch" aria-hidden="true" />
-        )}
-
-        {/* Arabic Pane */}
-        {(viewMode === 'ar' || viewMode === 'split') && (
-          <div
-            ref={rightRef}
-            onScroll={() => handleScroll(rightRef, 'ar')}
-            className="relative overflow-y-auto overscroll-contain bg-card/10 scroll-smooth custom-scrollbar flex-1"
-            style={{ scrollbarGutter: 'stable', height: '100%' }}
-            dir="rtl" lang="ar"
-          >
-            <div className="p-4 sm:p-8 pb-16">
-              <div className="prose max-w-none text-right font-ar text-[15px] leading-relaxed text-foreground" dangerouslySetInnerHTML={{ __html: htmlAr }} />
-            </div>
-          </div>
-        )}
+        </div>
       </div>
     </Modal>
   );
