@@ -1,11 +1,184 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, fetchTeacher, notifyTeacher, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, notifyTeacher, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { completionColor, timeAgo } from '../utils';
-import type { ClassSnapshot, TeacherSnapshot } from '../../types';
+import type { ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
+
+/* ── Inspection des chapitres d'un cahier (lecture seule) ─────────────────── */
+
+interface LeafItem {
+    title?: string;
+    type?: string;
+    date?: string;
+    description?: string;
+}
+
+/** Tous les éléments feuilles d'un bloc (sections/sous-sections/items, récursif). */
+const collectLeafItems = (node: unknown): LeafItem[] => {
+    const leaves: LeafItem[] = [];
+    const visit = (n: any): void => {
+        if (!n || typeof n !== 'object') return;
+        for (const key of ['sections', 'subsections', 'subsubsections'] as const) {
+            if (Array.isArray(n[key])) n[key].forEach(visit);
+        }
+        if (Array.isArray(n.items)) {
+            for (const item of n.items) {
+                leaves.push(item as LeafItem);
+                visit(item);
+            }
+        }
+    };
+    visit(node);
+    return leaves;
+};
+
+interface ChapterSummary {
+    title: string;
+    totalItems: number;
+    datedCount: number;
+    lastDate: string | null;
+    /** contenu exact de la dernière séance (éléments datés du dernier jour) */
+    lastSessionItems: LeafItem[];
+}
+
+const summarizeChapter = (chapter: any): ChapterSummary => {
+    const leaves = collectLeafItems(chapter);
+    const dated = leaves.filter(l => typeof l.date === 'string' && l.date);
+    const lastDate = dated.reduce((max, l) => ((l.date as string) > max ? (l.date as string) : max), '') || null;
+    return {
+        title: chapter?.title || chapter?.name || 'Sans titre',
+        totalItems: leaves.length,
+        datedCount: dated.length,
+        lastDate,
+        lastSessionItems: lastDate ? dated.filter(l => l.date === lastDate) : [],
+    };
+};
+
+const formatDateFr = (iso: string | null): string => {
+    if (!iso) return '—';
+    try {
+        const [y, m, d] = iso.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+        return iso;
+    }
+};
+
+const formatDateTimeFr = (iso: string | null | undefined): string => {
+    if (!iso) return '—';
+    try {
+        return new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    } catch {
+        return iso;
+    }
+};
+
+/**
+ * Chapitres d'une classe : dépliable à la demande (le cahier complet n'est
+ * chargé qu'au clic), puis chaque chapitre révèle sa dernière séance —
+ * date, contenu exact et horodatage de synchronisation.
+ */
+const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, classId }) => {
+    const [open, setOpen] = useState(false);
+    const [chapters, setChapters] = useState<ChapterSummary[] | null>(null);
+    const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [expanded, setExpanded] = useState<number | null>(null);
+
+    const toggle = async () => {
+        const next = !open;
+        setOpen(next);
+        if (!next || chapters !== null || loading) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const blob = await fetchClassLessons(phone, classId);
+            const data = (Array.isArray(blob.lessonsData) ? blob.lessonsData : []) as LessonsData;
+            setChapters(data.map(summarizeChapter));
+            setUpdatedAt(blob.updatedAt ?? null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Chargement impossible.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="mt-3 border-t border-border pt-2">
+            <button
+                onClick={toggle}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-semibold text-primary hover:bg-primary/10"
+            >
+                {open ? '▾' : '▸'} Inspecter les chapitres
+            </button>
+
+            {open && (
+                <div className="mt-2 space-y-1.5">
+                    {loading && <p className="text-xs text-muted-foreground">Chargement du cahier…</p>}
+                    {error && <p className="rounded-md bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">{error}</p>}
+
+                    {updatedAt && (
+                        <p className="text-[11px] text-muted-foreground">
+                            Cahier synchronisé le <b>{formatDateTimeFr(updatedAt)}</b>
+                        </p>
+                    )}
+
+                    {chapters !== null && chapters.length === 0 && (
+                        <p className="text-xs text-muted-foreground">Cahier vide.</p>
+                    )}
+
+                    {chapters?.map((ch, index) => (
+                        <div key={index} className="rounded-lg border border-border bg-background/60">
+                            <button
+                                onClick={() => setExpanded(current => (current === index ? null : index))}
+                                className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/40"
+                            >
+                                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{ch.title}</span>
+                                <span className="shrink-0 text-[11px] text-muted-foreground">
+                                    {ch.datedCount}/{ch.totalItems} datés
+                                    {ch.lastDate && <> · dernière séance {ch.lastDate}</>}
+                                </span>
+                            </button>
+
+                            {expanded === index && (
+                                <div className="border-t border-border px-3 py-2.5">
+                                    {ch.lastDate ? (
+                                        <>
+                                            <p className="text-[11px] font-semibold text-foreground">
+                                                Dernière séance : <span className="capitalize">{formatDateFr(ch.lastDate)}</span>
+                                            </p>
+                                            <ul className="mt-1.5 space-y-1">
+                                                {ch.lastSessionItems.map((item, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                                        <span className="mt-0.5 shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                                                            {item.type || 'contenu'}
+                                                        </span>
+                                                        <span className="min-w-0">
+                                                            <span className="font-medium text-foreground">{item.title || 'Sans titre'}</span>
+                                                            {item.description && (
+                                                                <span className="block truncate text-[11px] text-muted-foreground/80">{item.description}</span>
+                                                            )}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">Aucune séance datée dans ce chapitre.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 // mêmes paramètres que la liste : absences justifiées + seuils du prof
 const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null) =>
@@ -194,6 +367,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                 </span>
                                             )}
                                         </div>
+                                        <ClassChapters phone={phone} classId={cls.id} />
                                     </div>
                                 );
                             })}

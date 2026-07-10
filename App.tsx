@@ -202,6 +202,18 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
   }, [saveCurrentScroll]);
 
+  // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
+  // de bord) via l'historique — et non systématiquement au tableau de bord.
+  // Garde : sur un chargement direct de #/parametres, aucun état poussé par
+  // l'app → history.back() sortirait du site ; on retombe alors sur l'accueil.
+  const handleBackFromSettings = useCallback(() => {
+    if (window.history.state?.route === 'settings') {
+      window.history.back(); // popstate → syncRouteFromLocation restaure la vue précédente
+    } else {
+      handleBackToDashboard();
+    }
+  }, [handleBackToDashboard]);
+
   // Handle browser back / forward buttons
   useEffect(() => {
     if (!window.location.hash) {
@@ -241,10 +253,10 @@ const App: React.FC = () => {
       return <AuthPage />;
     }
     if (view === 'settings') {
-      return <SettingsPage onBack={handleBackToDashboard} />;
+      return <SettingsPage onBack={handleBackFromSettings} />;
     }
     if (view === 'editor' && activeClass) {
-      return <Editor classInfo={activeClass} onBack={handleBackToDashboard} />;
+      return <Editor classInfo={activeClass} onBack={handleBackToDashboard} onOpenSettings={handleOpenSettings} />;
     }
     return <Dashboard onSelectClass={handleSelectClass} onOpenSettings={handleOpenSettings} />;
   };
@@ -253,7 +265,11 @@ const App: React.FC = () => {
 
     return (
       <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
-        <div className="min-h-screen bg-background text-foreground relative overflow-x-hidden">
+        {/* overflow-x-clip (et non -hidden) : masque tout débordement horizontal
+            SANS créer de conteneur de scroll — sinon `overflow-y` passerait à
+            `auto` (spec CSS) et casserait le `position: sticky` de la barre
+            d'outils, qui défilerait au lieu de rester collée en haut. */}
+        <div className="min-h-screen bg-background text-foreground relative overflow-x-clip">
           {/* Éléments magiques flottants (Lucioles/Poussières d'étoiles Ghibli) */}
           <div className="firefly w-2 h-2 top-[12%] left-[8%]" style={{ animationDelay: '0s' }}></div>
           <div className="firefly w-1.5 h-1.5 top-[25%] right-[15%]" style={{ animationDelay: '2.5s' }}></div>

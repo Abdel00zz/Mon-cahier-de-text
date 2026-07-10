@@ -11,6 +11,7 @@ import {
     setTimetableEntry,
 } from '../../utils/timetable';
 import { useClassAssessments } from '../../hooks/useAssessments';
+import { getOfficialWeeklyHours } from '../../utils/officialHours';
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -159,10 +160,13 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
             </div>
 
-            {/* Récapitulatif par classe : séances (blocs continus) et heures */}
+            {/* Récapitulatif par classe : séances (blocs continus) et heures.
+                Repère officiel indicatif (MEN) affiché en douceur — jamais contraignant. */}
             <div className="flex flex-wrap gap-2">
                 {classes.map(c => {
                     const { hours, sessions } = weeklyStats(c.id);
+                    const official = getOfficialWeeklyHours(c.cycle, c.name, c.subject);
+                    const matches = official ? hours === official.hours : null;
                     return (
                         <span
                             key={c.id}
@@ -174,10 +178,28 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 · {sessions} séance{sessions > 1 ? 's' : ''}
                                 {hours !== sessions ? ` (${hours} h)` : ''}/sem
                             </span>
+                            {official && (
+                                <span
+                                    className={`font-mono ${matches ? 'text-success/80' : hours > 0 ? 'text-warning' : 'text-muted-foreground/50'}`}
+                                    title={
+                                        matches
+                                            ? `Conforme à l'horaire officiel indicatif (${official.context} : ${official.hours} h/sem).`
+                                            : `Horaire officiel indicatif : ${official.hours} h/sem (${official.context}). Vous avez saisi ${hours} h — simple repère, non contraignant.`
+                                    }
+                                >
+                                    · {matches ? '✓ officiel' : `off. ${official.hours} h`}
+                                </span>
+                            )}
                         </span>
                     );
                 })}
             </div>
+            {classes.some(c => getOfficialWeeklyHours(c.cycle, c.name, c.subject)) && (
+                <p className="text-[10px] leading-snug text-muted-foreground/60 font-sans">
+                    « officiel » = horaire hebdomadaire <b>indicatif</b> du MEN pour la matière/niveau — un simple repère
+                    pour vérifier qu'aucun créneau ne manque, jamais une contrainte.
+                </p>
+            )}
 
             <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <label className="text-xs font-semibold text-muted-foreground">Début de l'année scolaire</label>

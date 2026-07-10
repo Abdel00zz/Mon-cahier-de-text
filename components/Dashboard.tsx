@@ -6,13 +6,11 @@ import { useOptimizedLocalStorage } from '../hooks/useOptimizedLocalStorage';
 import { DashboardSkeleton } from './ui/PageSkeleton';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import { ClassCard } from './ClassCard';
 import { DashboardStats } from './DashboardStats';
 import { OnboardingGuide } from './OnboardingGuide';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { ImportPlatformModal } from './modals/ImportPlatformModal';
-import { WelcomeModal } from './modals/WelcomeModal';
 import { ClassInfo, Cycle } from '../types';
 import { logger } from '../utils/logger';
 import { getBundledCalendar, todayInMorocco } from '../utils/calendar';
@@ -22,7 +20,6 @@ import { nextSessionInfoForClass } from '../utils/timetable';
 import { Badge } from './ui/badge';
 import { Plus, BookOpen, Settings, CircleHelp } from './ui/icons';
 import { Leaf, Sun } from 'lucide-react';
-import { AUTH_REQUIRED } from '../config/features';
 import { restoreBackup } from '../utils/backup';
 
 const GuideModal = lazy(() => import('./modals/GuideModal').then(module => ({ default: module.GuideModal })));
@@ -107,12 +104,11 @@ const findLatestDate = (data: any): string | null => {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSettings }) => {
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
-    const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
+    const { config, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [isImportModalOpen, setImportModalOpen] = useState(false);
     const [isGuideOpen, setGuideOpen] = useState(false);
-    const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     // Session assistant features were cleaned up and removed
@@ -150,14 +146,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         }
     }, [isConfigLoading, config.selectedCycles, selectedCycle, setSelectedCycle]);
 
-    // Écran d'accueil (config initiale) : uniquement en mode LOCAL sans compte.
-    // En production, l'inscription fournit déjà nom, cycles et matières.
-    useEffect(() => {
-        if (!AUTH_REQUIRED && !isConfigLoading && !config.hasCompletedWelcome) {
-            setWelcomeModalOpen(true);
-        }
-    }, [config.hasCompletedWelcome, isConfigLoading]);
-
     const handleCreateClass = (details: { name: string; subject: string; cycle?: Cycle; }) => {
         addClass({
             ...details,
@@ -183,11 +171,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         }
         setImportModalOpen(false);
     }, []);
-
-    const needsConfiguration = !config.establishmentName || !config.defaultTeacherName;
-    // En production, les cycles sont déclarés à l'inscription : plus d'onglets,
-    // toutes les classes du professeur sont affichées ensemble.
-    const showAllClasses = AUTH_REQUIRED;
 
     if (isLoading) {
         return <DashboardSkeleton />;
@@ -224,8 +207,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
     const initials = getInitials(teacherName);
 
+    // overflow-x-clip : masque le débordement horizontal (lucioles) sans créer
+    // de conteneur de scroll — `hidden` forcerait overflow-y:auto et casserait
+    // tout `position: sticky` descendant (même piège que corrigé dans App).
     return (
-        <div className="min-h-screen bg-background text-foreground antialiased relative overflow-x-hidden" data-dashboard-root>
+        <div className="min-h-screen bg-background text-foreground antialiased relative overflow-x-clip" data-dashboard-root>
             {/* Éléments magiques flottants (Lucioles/Poussières) */}
             <div className="firefly w-6 h-6 top-[10%] left-[15%]" style={{ animationDelay: '0s' }}></div>
             <div className="firefly w-4 h-4 top-[20%] right-[20%]" style={{ animationDelay: '2s' }}></div>
@@ -268,44 +254,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
                 n'est pas intercepté, le navigateur affiche sa propre invite native
                 (mini-infobar Android, icône d'installation dans l'omnibox). */}
-            {/* Sélecteur de cycle — MASQUÉ en production (les cycles viennent de
-                l'inscription) ; en local sans compte, affiché si plusieurs cycles. */}
-            {!showAllClasses && (
-            <div className={`w-full flex justify-center mb-5 sm:mb-6 ${((config.selectedCycles?.length ?? 0) === 1 && !config.showAllCycles) ? 'hidden' : ''}`}>
-                <Tabs value={selectedCycle} onValueChange={(val) => !isClassesLoading && setSelectedCycle(val as Cycle)}>
-                    <TabsList className="rounded-lg border border-white/70 surface-glass shadow-sm p-1">
-                        {([
-                            { key: 'college', label: 'Collège' },
-                            { key: 'lycee', label: 'Lycée' },
-                            { key: 'prepa', label: 'Prépa' },
-                        ] as {key: Cycle; label: string;}[])
-                            .filter(opt => config.showAllCycles || !config.selectedCycles?.length || config.selectedCycles.includes(opt.key))
-                            .map(opt => (
-                                <TabsTrigger
-                                    key={opt.key}
-                                    value={opt.key}
-                                    disabled={isClassesLoading}
-                                    className="px-4 py-1.5 text-xs font-semibold font-sans transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
-                                >
-                                    {opt.label}
-                                </TabsTrigger>
-                            ))
-                        }
-                    </TabsList>
-                </Tabs>
-            </div>
-            )}
+            {/* Comme en production : les cycles viennent du compte — toutes les
+                classes du professeur sont affichées ensemble, sans onglets. */}
 
             {/* Cartes statistiques : branchées aux mêmes classes que la grille */}
-            <DashboardStats
-                classes={classes.filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)}
-                config={config}
-            />
+            <DashboardStats classes={classes} config={config} />
 
             <div className="w-full">
                 {(() => {
-                    const visibleClasses = classes
-                        .filter(c => showAllClasses || (c.cycle || 'college') === selectedCycle)
+                    const visibleClasses = [...classes]
                         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
                     return (
@@ -407,20 +364,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 onClose={() => setImportModalOpen(false)}
                 onImport={handleImportPlatform}
             />
-            <WelcomeModal
-                isOpen={isWelcomeModalOpen}
-                onClose={() => {
-                    setWelcomeModalOpen(false);
-                    if (classes.length === 0) {
-                        setCreateModalOpen(true);
-                    }
-                }}
-                config={config}
-                onConfigChange={updateConfig}
-            />
-
-            {/* Guide d'accueil interactif — pas pendant l'écran de config initial */}
-            <OnboardingGuide enabled={!isWelcomeModalOpen && !isCreateModalOpen} />
+            {/* Guide d'accueil interactif — pas pendant la création de classe */}
+            <OnboardingGuide enabled={!isCreateModalOpen} />
         </div>
     );
 };

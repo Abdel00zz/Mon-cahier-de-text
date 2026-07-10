@@ -1,12 +1,10 @@
 /**
  * Interrupteurs de fonctionnalités globaux.
  *
- * AUTHENTIFICATION — comportement par environnement :
- *   • Production (build déployé sur Vercel)  → page de connexion ACTIVE ;
- *   • Développement local (`npm run dev`)    → accès direct, sans connexion.
- *
- * `import.meta.env.PROD` est résolu par Vite au moment du build :
- * aucune manipulation n'est nécessaire entre le travail local et le déploiement.
- * Pour forcer un comportement, remplacez simplement par `true` ou `false`.
+ * AUTHENTIFICATION — TOUJOURS ACTIVE : le « mode local sans compte » a été
+ * éliminé, l'application se comporte partout comme la version déployée.
+ * En développement (`npm run dev`), les API /api/auth et /api/sync sont
+ * simulées par le plugin `devApiMockPlugin` de vite.config.ts :
+ * connexion avec 06000000 / 00000000.
  */
-export const AUTH_REQUIRED = import.meta.env.PROD;
+export const AUTH_REQUIRED = true;

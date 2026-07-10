@@ -1,4 +1,4 @@
-import type { ClassInfo, ClassSchedule, TeacherSnapshot } from '../types';
+import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
 
 export interface TeacherDetail {
     user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null } | null;
@@ -43,6 +43,13 @@ export const fetchOverview = async (): Promise<{ teachers: TeacherSnapshot[] }> 
 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>
     request(`/api/admin?action=teacher&phone=${encodeURIComponent(phone)}`);
+
+/** Cahier complet d'une classe (lecture seule) — inspection des chapitres. */
+export const fetchClassLessons = (
+    phone: string,
+    classId: string,
+): Promise<{ lessonsData: LessonsData; updatedAt: string }> =>
+    request(`/api/admin?action=lessons&phone=${encodeURIComponent(phone)}&classId=${encodeURIComponent(classId)}`);
 
 const postAdmin = (payload: Record<string, unknown>) =>
     request('/api/admin', {

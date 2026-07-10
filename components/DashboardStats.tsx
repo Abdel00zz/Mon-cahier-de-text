@@ -4,6 +4,8 @@ import { computeProgressionStats } from '../utils/progression';
 import { getDaySessionBlocks } from '../utils/timetable';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { useLateness } from '../hooks/useLateness';
+import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar';
+import { withAbsences } from '../utils/lateness';
 import { TrendingUp, CircleCheck, TriangleAlert, CalendarDays, Clock, Book, CalendarCheck } from './ui/icons';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -201,8 +203,18 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
 
         const completion = totalItems === 0 ? 0 : Math.round((plannedCount / totalItems) * 100);
 
-        // séances d'AUJOURD'HUI d'après la grille
-        const todayBlocks = getDaySessionBlocks(config.timetable, new Date().getDay())
+        /*
+         * Séances d'AUJOURD'HUI — harmonie des timings : « aujourd'hui » est la
+         * date au Maroc (pas celle de l'appareil), et un jour férié, de vacances
+         * ou d'absence justifiée n'attend AUCUNE séance (même règle que le
+         * moteur de retard et les rappels de fin de séance).
+         */
+        const calendar = withAbsences(getBundledCalendar(), config.absences);
+        const todayISO = todayInMorocco(new Date(), calendar);
+        const isOffDay = isHoliday(todayISO, calendar) || isVacation(todayISO, calendar);
+        const [ty, tm, td] = todayISO.split('-').map(Number);
+        const moroccoWeekday = new Date(Date.UTC(ty, tm - 1, td)).getUTCDay();
+        const todayBlocks = isOffDay ? [] : getDaySessionBlocks(config.timetable, moroccoWeekday)
             .filter(block => classes.some(c => c.id === block.classId))
             .sort((a, b) => a.startMin - b.startMin)
             .map(block => ({
@@ -211,6 +223,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
             }));
 
         return {
+            isOffDay,
             completion,
             planned: plannedCount,
             total: totalItems,
@@ -222,7 +235,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
             perClassProgress,
             todayBlocks,
         };
-    }, [classes, config.timetable]);
+    }, [classes, config.timetable, config.absences]);
 
     if (classes.length === 0) return null;
 
@@ -374,7 +387,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                                 <SheetDescription className="text-xs font-semibold text-muted-foreground/80">
                                     {stats.todayBlocks.length > 0
                                         ? `${stats.todayBlocks.length} séance(s) d'après votre emploi du temps`
-                                        : 'Aucune séance prévue ce jour.'}
+                                        : stats.isOffDay
+                                            ? 'Vacances, jour férié ou absence justifiée — aucune séance attendue aujourd\'hui.'
+                                            : 'Aucune séance prévue ce jour.'}
                                 </SheetDescription>
                             </SheetHeader>
                             {stats.todayBlocks.length > 0 ? (

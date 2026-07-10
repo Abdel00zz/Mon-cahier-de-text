@@ -8,6 +8,7 @@ import { SelectionBar } from './SelectionBar';
 import { EditorSkeleton } from './ui/PageSkeleton';
 import { ConfirmDialog } from './ui/confirm-dialog';
 import { Plus } from './ui/icons';
+import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '../hooks/useHistoryState';
 import { useConfigManager } from '../hooks/useConfigManager';
 import { useLessonSearch } from '../hooks/useLessonSearch';
@@ -43,6 +44,8 @@ type NotificationType = 'success' | 'error' | 'info' | 'warning';
 interface EditorProps {
     classInfo: ClassInfo;
     onBack: () => void;
+    /** ouvre la page Paramètres (utilisé pour renseigner l'emploi du temps) */
+    onOpenSettings?: () => void;
 }
 
 type ActiveModal =
@@ -80,7 +83,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
   return !!item && !indices.isSeparator;
 };
 
-export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack }) => {
+export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack, onOpenSettings }) => {
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
@@ -498,6 +501,45 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   const handleSmartPrint = useCallback(() => {
       setEditorState(draft => { draft.activeModal = 'print'; });
   }, [setEditorState]);
+
+  // Emploi du temps « en attente » : cette classe a-t-elle au moins un créneau
+  // saisi ? L'invitation disparaît dès qu'un créneau existe (réactif à la config).
+  const classHasTimetable = useMemo(
+      () => (config.timetable ?? []).some(entry => entry.classId === classInfo.id),
+      [config.timetable, classInfo.id]
+  );
+
+  // Renseigner l'emploi du temps : ouvre Paramètres directement sur l'onglet
+  // « Emploi du temps » via un signal de session lu par ConfigModal au montage.
+  const handleOpenTimetable = useCallback(() => {
+      try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* stockage indisponible */ }
+      onOpenSettings?.();
+  }, [onOpenSettings]);
+
+  /*
+   * Invitation modale FLUIDE (une fois par session et par classe) : proposée
+   * après un court délai à l'ouverture d'un cahier sans emploi du temps.
+   * « Passer pour l'instant » la mémorise pour la session — jamais bloquant.
+   */
+  const [showTimetableNudge, setShowTimetableNudge] = useState(false);
+  const timetableNudgeKey = `timetableNudge_v1_${classInfo.id}`;
+  useEffect(() => {
+      if (isClassLoading || isConfigLoading) return;
+      if (classHasTimetable) { setShowTimetableNudge(false); return; }
+      try { if (sessionStorage.getItem(timetableNudgeKey)) return; } catch { /* stockage indisponible */ }
+      const timer = window.setTimeout(() => setShowTimetableNudge(true), 700);
+      return () => window.clearTimeout(timer);
+  }, [isClassLoading, isConfigLoading, classHasTimetable, timetableNudgeKey]);
+
+  const dismissTimetableNudge = useCallback(() => {
+      try { sessionStorage.setItem(timetableNudgeKey, '1'); } catch { /* stockage indisponible */ }
+      setShowTimetableNudge(false);
+  }, [timetableNudgeKey]);
+
+  const fillTimetableFromNudge = useCallback(() => {
+      dismissTimetableNudge();
+      handleOpenTimetable();
+  }, [dismissTimetableNudge, handleOpenTimetable]);
 
   const handleExecutePrint = useCallback((mode: PrintMode, options: PrintOptions, selectedDates?: string[]) => {
       const classId = classInfo.id;
@@ -973,6 +1015,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
+      />
+
+      <TimetableNudgeModal
+        isOpen={showTimetableNudge}
+        onSkip={dismissTimetableNudge}
+        onFill={fillTimetableFromNudge}
+        classLabel={classInfo.name}
       />
 
       <ConfirmDialog

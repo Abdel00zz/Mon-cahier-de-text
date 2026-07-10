@@ -19,7 +19,7 @@ const containsArabic = (text: string): boolean => {
 };
 
 const formatSuperscript = (text: string) => {
-    const parts = text.split(/(d+(?:er|ere|eme|ère|ème))/);
+    const parts = text.split(/(\d+(?:er|ere|eme|ère|ème))/);
     return parts.map((part, idx) => {
         if (part.endsWith('er')) return <span key={idx}>{part.slice(0, -2)}<sup>er</sup></span>;
         if (part.endsWith('ere')) return <span key={idx}>{part.slice(0, -3)}<sup>ere</sup></span>;
@@ -93,6 +93,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                     <h3 className={`text-2xl sm:text-3xl font-black text-[#2f3e46] leading-tight transition-colors group-hover:text-[#52796f] ${isArabic ? 'font-ar text-[1.5rem]' : 'font-display'}`}>
                         {formatSuperscript(classInfo.name)}
                     </h3>
+                    {classInfo.subject && (
+                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#f4f1ea] border border-[#e8e4d9] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#84a98c]">
+                            <Book className="w-3 h-3" />
+                            {classInfo.subject}
+                        </span>
+                    )}
                 </div>
 
                 {/* Session Status */}

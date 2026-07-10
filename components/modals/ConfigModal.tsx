@@ -68,6 +68,21 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     }
   }, [isOpen, config]);
 
+  // Ouverture ciblée sur un onglet (ex. « Emploi du temps » depuis la bannière
+  // de l'éditeur) : signal transitoire posé par l'appelant, consommé une fois.
+  useEffect(() => {
+    try {
+      const requested = sessionStorage.getItem('config_initial_tab_v1');
+      if (requested) {
+        sessionStorage.removeItem('config_initial_tab_v1');
+        const valid: ConfigTab[] = ['profil', 'emploi', 'notifications', 'donnees', 'compte'];
+        if (valid.includes(requested as ConfigTab)) setActiveTab(requested as ConfigTab);
+      }
+    } catch {
+      // sessionStorage indisponible : reste sur l'onglet par défaut
+    }
+  }, []);
+
   // L'emploi du temps, les notifications et le compte s'appliquent immédiatement.
   const applyLive = (patch: Partial<AppConfig>) => {
     setLocalConfig(prev => ({ ...prev, ...patch }));

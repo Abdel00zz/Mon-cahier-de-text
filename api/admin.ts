@@ -89,6 +89,20 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     });
 };
 
+/**
+ * Cahier complet d'une classe (lecture seule) : permet à l'admin d'inspecter
+ * les chapitres, la dernière séance saisie et son contenu exact.
+ */
+const handleClassLessons = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    const classId = getQueryParam(req, 'classId');
+    if (!phone || !classId) throw new HttpError(400, 'Paramètres phone et classId requis.');
+    const redis = await getRedis();
+    const blob = await redis.get<{ lessonsData: unknown; updatedAt: string }>(KEYS.lessons(phone, classId));
+    if (!blob) throw new HttpError(404, 'Aucun cahier synchronisé pour cette classe.');
+    res.status(200).json(blob);
+};
+
 /* ── Actions de gestion (bloquer / supprimer / notifier un enseignant) ────── */
 
 const requirePhone = (body: AdminBody): string => {
@@ -169,6 +183,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             const action = getQueryParam(req, 'action');
             if (action === 'overview') return await handleOverview(res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
+            if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');
         }
 
