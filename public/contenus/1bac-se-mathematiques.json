@@ -1,0 +1,16 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 1BAC Sciences Expérimentales · Mathématiques (Maroc).",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Notions de logique", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Généralités sur les fonctions", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Le barycentre dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Étude analytique du produit scalaire et applications", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Trigonométrie", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : La rotation dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Limites d'une fonction", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : La dérivation", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Étude et représentation graphique des fonctions", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : Les suites numériques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Dénombrement", "sections": [] }
+  ]
+}

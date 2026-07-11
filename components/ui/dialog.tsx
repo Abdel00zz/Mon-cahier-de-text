@@ -36,7 +36,9 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[92dvh] w-full max-w-lg gap-4 overflow-hidden border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl rounded-t-2xl rounded-b-none sm:inset-0 sm:m-auto sm:w-[calc(100vw-1.5rem)] sm:rounded-2xl sm:p-6",
+        // style resserré et net : arrondis réduits (xl mobile / lg desktop),
+        // espacement plus compact — sans toucher aux couleurs
+        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[92dvh] w-full max-w-lg gap-3 overflow-hidden border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl rounded-t-xl rounded-b-none sm:inset-0 sm:m-auto sm:w-[calc(100vw-1.5rem)] sm:rounded-lg sm:p-5",
         className
       )}
       {...props}
@@ -58,7 +60,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1 border-b border-border pb-4 pr-12 text-left",
+      "flex flex-col space-y-1 border-b border-border pb-3 pr-12 text-left",
       className
     )}
     {...props}
@@ -72,7 +74,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end",
+      "flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end",
       className
     )}
     {...props}

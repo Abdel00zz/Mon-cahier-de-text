@@ -1,7 +1,49 @@
 {
-  "_commentaire": "Bibliothèque de contenus prédéfinis. Ajouter un fichier JSON (même format qu'un export de classe) puis le référencer ici : il sera proposé automatiquement à la création d'un cahier correspondant (niveau + matière). Modifiable sans rebuild.",
-  "version": 1,
+  "_commentaire": "Bibliothèque de contenus prédéfinis. Ajouter un fichier JSON (même format qu'un export de classe) puis le référencer ici : il sera proposé automatiquement à la création d'un cahier correspondant (niveau + matière). IMPORTANT : `niveau` doit être un PRÉFIXE du nom officiel de classe (CLASS_LEVELS_BY_CYCLE) — ex. « 2BAC Sc. Maths » couvre les variantes A et B. Modifiable sans rebuild.",
+  "version": 2,
   "contenus": [
+    {
+      "niveau": "1AC",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 1AC · Mathématiques",
+      "fichier": "1ac-mathematiques.json"
+    },
+    {
+      "niveau": "2AC",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 2AC · Mathématiques",
+      "fichier": "2ac-mathematiques.json"
+    },
+    {
+      "niveau": "3AC",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 3AC · Mathématiques",
+      "fichier": "3ac-mathematiques.json"
+    },
+    {
+      "niveau": "Tronc commun scientifique",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — Tronc Commun Scientifique · Mathématiques",
+      "fichier": "tc-sciences-mathematiques.json"
+    },
+    {
+      "niveau": "1BAC Sc. Expérimentales",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 1BAC Sciences Expérimentales · Mathématiques",
+      "fichier": "1bac-se-mathematiques.json"
+    },
+    {
+      "niveau": "1BAC Sc. Mathématiques",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 1BAC Sciences Mathématiques · Mathématiques",
+      "fichier": "1bac-sm-mathematiques.json"
+    },
+    {
+      "niveau": "2BAC Sc. Maths",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel — 2BAC Sciences Maths · Mathématiques",
+      "fichier": "2bac-sm-mathematiques.json"
+    },
     {
       "niveau": "2BAC PC",
       "matiere": "Mathématiques",
@@ -9,10 +51,22 @@
       "fichier": "2bac-pc-mathematiques.json"
     },
     {
-      "niveau": "TC Sciences",
+      "niveau": "2BAC SVT",
       "matiere": "Mathématiques",
-      "titre": "Programme officiel — Tronc Commun Sciences · Mathématiques",
-      "fichier": "tc-sciences-mathematiques.json"
+      "titre": "Programme officiel — 2BAC SVT · Mathématiques (base 2BAC PC)",
+      "fichier": "2bac-pc-mathematiques.json"
+    },
+    {
+      "niveau": "2BAC PC",
+      "matiere": "Physique-Chimie",
+      "titre": "Programme officiel — 2BAC PC · Physique-Chimie",
+      "fichier": "2bac-pc-physique-chimie.json"
+    },
+    {
+      "niveau": "2BAC SVT",
+      "matiere": "Sciences de la Vie et de la Terre",
+      "titre": "Programme officiel — 2BAC SVT · SVT",
+      "fichier": "2bac-svt-svt.json"
     }
   ]
 }

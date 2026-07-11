@@ -8,9 +8,9 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { ClassCard } from './ClassCard';
 import { DashboardStats } from './DashboardStats';
-import { OnboardingGuide } from './OnboardingGuide';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { ImportPlatformModal } from './modals/ImportPlatformModal';
+import { StartStepsModal } from './modals/StartStepsModal';
 import { ClassInfo, Cycle } from '../types';
 import { logger } from '../utils/logger';
 import { getBundledCalendar, todayInMorocco } from '../utils/calendar';
@@ -109,6 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [isImportModalOpen, setImportModalOpen] = useState(false);
     const [isGuideOpen, setGuideOpen] = useState(false);
+    const [isStartStepsOpen, setStartStepsOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     // Session assistant features were cleaned up and removed
@@ -145,6 +146,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             setSelectedCycle(preferred);
         }
     }, [isConfigLoading, config.selectedCycles, selectedCycle, setSelectedCycle]);
+
+    /*
+     * Démarrage en 3 étapes — INTELLIGENT : l'état réel de chaque étape est
+     * détecté (classe créée ? emploi du temps saisi ? cahier rempli ?). La
+     * modale s'ouvre d'elle-même pour un nouvel utilisateur (aucune classe),
+     * une fois par session, et reste joignable tant que tout n'est pas fait.
+     */
+    const startSteps = React.useMemo(() => ({
+        hasClass: classes.length > 0,
+        hasTimetable: (config.timetable?.length ?? 0) > 0,
+        hasContent: classes.some(c => {
+            try {
+                const raw = localStorage.getItem(`classData_v1_${c.id}`);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed.length > 0 : (parsed.lessonsData?.length ?? 0) > 0;
+            } catch {
+                return false;
+            }
+        }),
+    }), [classes, config.timetable]);
+
+    useEffect(() => {
+        if (isLoading || classes.length > 0) return;
+        try {
+            if (sessionStorage.getItem('startSteps_seen_v1')) return;
+        } catch { /* stockage indisponible */ }
+        const timer = window.setTimeout(() => setStartStepsOpen(true), 600);
+        return () => window.clearTimeout(timer);
+    }, [isLoading, classes.length]);
+
+    const closeStartSteps = () => {
+        try { sessionStorage.setItem('startSteps_seen_v1', '1'); } catch { /* stockage indisponible */ }
+        setStartStepsOpen(false);
+    };
 
     const handleCreateClass = (details: { name: string; subject: string; cycle?: Cycle; }) => {
         addClass({
@@ -231,21 +266,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                         </p>
                     </div>
                     
-                    <div className="flex items-center gap-3 shrink-0">
+                    {/* Zone Guide / Réglages : compacte et serrée */}
+                    <div className="flex items-center gap-1.5 shrink-0">
                         <button
-                            onClick={() => setGuideOpen(true)} 
-                            className="flex items-center gap-2 px-5 py-3 text-[14px] font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
+                            onClick={() => setGuideOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
                             title="Consulter le guide d'utilisation"
                         >
-                            <CircleHelp className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                            <CircleHelp className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
                             Guide
                         </button>
                         <button
-                            onClick={onOpenSettings} 
-                            className="flex items-center gap-2 px-5 py-3 text-[14px] font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
+                            onClick={onOpenSettings}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#84a98c] bg-white rounded-full border border-[#e8e4d9] hover:bg-[#f4f1ea] hover:text-[#52796f] transition-all shadow-sm group"
                             title="Accéder aux réglages"
                         >
-                            <Settings className="h-4 w-4 group-hover:rotate-90 transition-transform duration-500" />
+                            <Settings className="h-3.5 w-3.5 group-hover:rotate-90 transition-transform duration-500" />
                             Réglages
                         </button>
                     </div>
@@ -364,8 +400,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 onClose={() => setImportModalOpen(false)}
                 onImport={handleImportPlatform}
             />
-            {/* Guide d'accueil interactif — pas pendant la création de classe */}
-            <OnboardingGuide enabled={!isCreateModalOpen} />
+            <StartStepsModal
+                isOpen={isStartStepsOpen}
+                onClose={closeStartSteps}
+                steps={startSteps}
+                onCreateClass={() => { closeStartSteps(); setCreateModalOpen(true); }}
+                onOpenTimetable={() => {
+                    closeStartSteps();
+                    try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* stockage indisponible */ }
+                    onOpenSettings();
+                }}
+                onOpenNotebook={() => {
+                    closeStartSteps();
+                    if (classes[0]) onSelectClass(classes[0]);
+                }}
+            />
+            {/* Le démarrage guidé est porté par StartStepsModal (unique) —
+                l'ancien guide-pointeur OnboardingGuide a été supprimé. */}
         </div>
     );
 };

@@ -34,6 +34,8 @@ interface ConfigModalProps {
   onExportPlatform: () => void;
   onOpenImport: () => void;
   classes?: ClassInfo[];
+  /** création de classe depuis la grille d'emploi du temps */
+  onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
   /** rendu en PAGE plein écran (au lieu d'une modale) */
   asPage?: boolean;
 }
@@ -56,6 +58,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onExportPlatform,
   onOpenImport,
   classes = [],
+  onCreateClass,
   asPage = false,
 }) => {
   const [localConfig, setLocalConfig] = useState(config);
@@ -130,7 +133,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       </div>
 
       {activeTab === 'emploi' && (
-        <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} />
+        <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} />
       )}
       {activeTab === 'notifications' && (
         <NotificationsTab config={localConfig} onChange={applyLive} />

@@ -19,7 +19,7 @@ interface SettingsPageProps {
  * Compte) via `ConfigModal asPage`.
  */
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
-    const { classes, isLoading: isClassesLoading } = useClassManager();
+    const { classes, addClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isImportOpen, setImportOpen] = useState(false);
 
@@ -56,6 +56,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 }}
                 onOpenImport={() => setImportOpen(true)}
                 classes={classes}
+                onCreateClass={details =>
+                    addClass({
+                        ...details,
+                        cycle: details.cycle ?? (config.selectedCycles?.[0] as import('../types').Cycle) ?? 'lycee',
+                        teacherName: config.defaultTeacherName || 'Enseignant',
+                    })
+                }
             />
             <ImportPlatformModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} onImport={handleImport} />
         </>

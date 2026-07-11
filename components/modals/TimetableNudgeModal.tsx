@@ -13,6 +13,16 @@ interface TimetableNudgeModalProps {
 }
 
 type Lang = 'fr' | 'ar';
+/** même clé que le guide et le démarrage : préférence de langue PARTAGÉE */
+const LANG_KEY = 'guide_lang_v1';
+
+const readLang = (): Lang => {
+  try {
+    return localStorage.getItem(LANG_KEY) === 'ar' ? 'ar' : 'fr';
+  } catch {
+    return 'fr';
+  }
+};
 
 /** Textes chaleureux, dans les deux langues de l'enseignant marocain. */
 const TEXTS: Record<Lang, {
@@ -51,9 +61,18 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
   onFill,
   classLabel,
 }) => {
-  const [lang, setLang] = useState<Lang>('fr');
+  const [lang, setLangState] = useState<Lang>(readLang);
   const t = TEXTS[lang];
   const isAr = lang === 'ar';
+
+  const setLang = (next: Lang) => {
+    setLangState(next);
+    try {
+      localStorage.setItem(LANG_KEY, next);
+    } catch {
+      // stockage indisponible : le choix vaut pour cette session
+    }
+  };
 
   return (
     <Modal

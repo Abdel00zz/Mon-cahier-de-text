@@ -1,5 +1,6 @@
 import React from 'react';
-import { AppConfig, ClassInfo } from '../../types';
+import { AppConfig, ClassInfo, Cycle } from '../../types';
+import { CreateClassModal } from '../modals/CreateClassModal';
 import { getBundledCalendar } from '../../utils/calendar';
 import { SUBJECT_ABBREV_MAP } from '../../constants';
 import {
@@ -17,6 +18,13 @@ interface ScheduleTabProps {
     classes: ClassInfo[];
     config: AppConfig;
     onChange: (patch: Partial<AppConfig>) => void;
+    /**
+     * Création AUTOMATIQUE depuis la grille : chaque cellule propose
+     * « + Créer une classe… » — la classe créée est aussitôt posée sur le
+     * créneau. Le prof peut ainsi composer tout son emploi du temps d'abord,
+     * les classes naissent au fil de la saisie.
+     */
+    onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
 }
 
 /*
@@ -24,6 +32,29 @@ interface ScheduleTabProps {
  * d'un coup d'œil — chaque classe garde sa teinte dans les cellules ET dans le
  * récapitulatif. Attribution stable par ordre des classes.
  */
+/**
+ * Abréviation du nom de classe pour la CELLULE (le menu déroulant garde
+ * l'intitulé complet). Le niveau et le numéro/groupe restent toujours
+ * visibles : « 2 Bac SM-A » → « 2B·SM-A », « 1ère Bac SE » → « 1B·SE »,
+ * « 3AC 2 » → « 3AC·2 ». Les noms arabes sont conservés tels quels
+ * (tronqués par la cellule si besoin).
+ */
+const abbreviateClassName = (name: string): string => {
+    if (/[؀-ۿ]/.test(name)) return name;
+    const words = name.trim().split(/\s+/);
+    const parts = words.map(word => {
+        if (/\d/.test(word)) return word.replace(/(ère|ere|ème|eme|er)$/i, ''); // 1ère → 1, 3AC → 3AC
+        if (word === word.toUpperCase() || word.includes('-')) return word;      // SM-A, SE, TC…
+        return word.charAt(0).toUpperCase();                                     // Bac → B
+    });
+    // groupe/numéro final séparé par un point médian pour rester lisible
+    if (parts.length > 1) {
+        const last = parts[parts.length - 1];
+        return parts.slice(0, -1).join('') + '·' + last;
+    }
+    return parts.join('');
+};
+
 const CLASS_CELL_COLORS = [
     { bg: 'bg-[#e8f0ec]', border: 'border-[#cad2c5]', text: 'text-[#52796f]', dot: 'bg-[#84a98c]' }, // sauge
     { bg: 'bg-[#fff3ec]', border: 'border-[#ffd6c2]', text: 'text-[#c05a38]', dot: 'bg-[#e76f51]' }, // terracotta
@@ -33,9 +64,11 @@ const CLASS_CELL_COLORS = [
     { bg: 'bg-[#fdeef2]', border: 'border-[#f5cdd8]', text: 'text-[#a34e69]', dot: 'bg-[#d0728f]' }, // rose
 ];
 
-export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange }) => {
+export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const calendar = getBundledCalendar();
     const timetable = config.timetable ?? [];
+    // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
+    const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
 
     const classById = React.useMemo(() => {
         const map = new Map<string, ClassInfo>();
@@ -72,9 +105,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
 
-    if (classes.length === 0) {
+    // ZÉRO classe ≠ blocage : la grille reste affichée — les classes se créent
+    // directement depuis les cases (« + Créer une classe… »). On encourage.
+    const noClassesYet = classes.length === 0;
+    if (noClassesYet && !onCreateClass) {
         return (
-            <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+            <div className="rounded-md border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
                 Créez d'abord une classe pour composer votre emploi du temps.
             </div>
         );
@@ -96,11 +132,21 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     return (
         <div className="space-y-4">
             <p className="text-xs leading-relaxed text-muted-foreground">
-                Composez votre emploi du temps : pour chaque créneau, choisissez la classe que vous enseignez. La grille
-                s'enregistre automatiquement et se synchronise ; elle alimente le calcul de votre progression et les
-                alertes de retard (vacances et jours fériés exclus). Deux heures consécutives avec la même classe sont
-                automatiquement lues comme <b>une seule séance de 2 h</b> — une seule date attendue dans le cahier.
+                Composez votre emploi du temps : pour chaque créneau, choisissez la classe que vous enseignez — ou créez-la
+                à la volée avec <b>« ＋ Créer une classe… »</b> directement dans la case. La grille s'enregistre
+                automatiquement et se synchronise ; elle alimente le calcul de votre progression et les alertes de retard
+                (vacances et jours fériés exclus). Deux heures consécutives avec la même classe sont automatiquement lues
+                comme <b>une seule séance de 2 h</b> — une seule date attendue dans le cahier.
             </p>
+            {noClassesYet && (
+                <div className="flex items-center gap-2.5 rounded-md border border-[#cad2c5] bg-[#e8f0ec]/60 px-3 py-2.5">
+                    <span aria-hidden>🌱</span>
+                    <p className="text-xs font-semibold leading-relaxed text-[#52796f]">
+                        C'est ici que tout commence ! Touchez une case de la grille et choisissez
+                        « ＋ Créer une classe… » — votre première classe naîtra directement sur son créneau.
+                    </p>
+                </div>
+            )}
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
             <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
@@ -149,25 +195,51 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                             colSpan={span}
                                             className={`relative p-1 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
                                         >
+                                            {/*
+                                              * Cellule ABRÉGÉE, menu COMPLET : le texte natif du
+                                              * select est rendu transparent quand une classe est
+                                              * posée ; un libellé court superposé (niveau + groupe,
+                                              * sans la matière) tient dans la cellule. Le menu
+                                              * déroulant, lui, garde « Matière · Nom complet ».
+                                              */}
                                             <select
                                                 value={entry?.classId ?? ''}
-                                                onChange={e => merged
-                                                    ? assignRun(day.value, hour.index, span, e.target.value || null)
-                                                    : assign(day.value, hour.index, e.target.value || null)}
+                                                onChange={e => {
+                                                    if (e.target.value === '__create__') {
+                                                        setPendingCreate({ day: day.value, slot: hour.index, span });
+                                                        e.target.value = entry?.classId ?? '';
+                                                        return;
+                                                    }
+                                                    if (merged) assignRun(day.value, hour.index, span, e.target.value || null);
+                                                    else assign(day.value, hour.index, e.target.value || null);
+                                                }}
+                                                title={classInfo ? `${SUBJECT_ABBREV_MAP[classInfo.subject] || classInfo.subject} · ${classInfo.name}` : undefined}
                                                 className={`h-11 w-full cursor-pointer rounded border px-1.5 text-center text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                                                     classInfo && color
-                                                        ? `${color.border} ${color.bg} ${color.text} shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
+                                                        ? `${color.border} ${color.bg} text-transparent shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
                                                         : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
-                                                aria-label={`${day.label} ${hour.label}${merged ? ` (séance fusionnée de ${span} h)` : ''}`}
+                                                aria-label={`${day.label} ${hour.label}${classInfo ? ` — ${classInfo.name}` : ''}${merged ? ` (séance fusionnée de ${span} h)` : ''}`}
                                             >
-                                                <option value="">—</option>
+                                                <option value="" style={{ color: '#2f3e46' }}>—</option>
                                                 {classes.map(c => (
-                                                    <option key={c.id} value={c.id}>
+                                                    <option key={c.id} value={c.id} style={{ color: '#2f3e46' }}>
                                                         {SUBJECT_ABBREV_MAP[c.subject] || c.subject} · {c.name}
                                                     </option>
                                                 ))}
+                                                {onCreateClass && (
+                                                    <option value="__create__" style={{ color: '#2f3e46', fontWeight: 'bold' }}>
+                                                        ＋ Créer une classe…
+                                                    </option>
+                                                )}
                                             </select>
+                                            {classInfo && color && (
+                                                <span
+                                                    className={`pointer-events-none absolute inset-1 flex items-center justify-center truncate px-1 text-[11px] font-bold ${color.text}`}
+                                                >
+                                                    {abbreviateClassName(classInfo.name)}
+                                                </span>
+                                            )}
                                             {merged && (
                                                 <span className={`pointer-events-none absolute left-2 top-0.5 rounded-full bg-card/80 px-1.5 text-[9px] font-bold leading-4 shadow-sm font-mono ${color?.text ?? 'text-primary'}`}>
                                                     {span} h
@@ -237,6 +309,25 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
             {/* Planning officiel des devoirs — dates indicatives, MODIFIABLES */}
             <AssessmentsPlanner classes={classes} config={config} onChange={onChange} />
+
+            {/* Création de classe DEPUIS la grille : la classe naît et se pose
+                aussitôt sur le créneau qui l'a demandée. */}
+            {onCreateClass && (
+                <CreateClassModal
+                    isOpen={pendingCreate !== null}
+                    onClose={() => setPendingCreate(null)}
+                    onCreate={details => {
+                        if (!pendingCreate) return;
+                        const created = onCreateClass(details);
+                        if (pendingCreate.span > 1) assignRun(pendingCreate.day, pendingCreate.slot, pendingCreate.span, created.id);
+                        else assign(pendingCreate.day, pendingCreate.slot, created.id);
+                        setPendingCreate(null);
+                    }}
+                    defaultCycle={(config.selectedCycles?.[0] as Cycle) ?? 'lycee'}
+                    teacherSubjects={config.selectedSubjects}
+                    teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
+                />
+            )}
         </div>
     );
 };

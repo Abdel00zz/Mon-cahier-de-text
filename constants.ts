@@ -210,9 +210,9 @@ export const GUIDE_FR = `# Guide d'utilisation
 Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'une minute.
 
 ## Bien démarrer
-1. **Créez une classe** : Sur le tableau de bord, touchez « **Nouvelle classe** », choisissez le niveau et la matière — le nom se compose tout seul. Si un programme officiel existe pour ce niveau, l'application vous propose de le pré-charger : acceptez, puis adaptez-le librement.
-2. **Renseignez votre emploi du temps** : À l'ouverture d'un cahier sans créneaux, une invitation vous guide vers **Paramètres ▸ Emploi du temps** (vous pouvez la passer). Ces créneaux activent tout le reste : progression, alertes de retard, rappels de fin de séance.
-3. **Remplissez le cahier** : Ajoutez chapitres, sections et contenus, puis datez vos séances au fil des cours.
+1. **Composez votre emploi du temps** : Le geste fondateur ! Dans **Paramètres ▸ Emploi du temps**, posez vos créneaux — et créez vos classes **directement depuis la grille** avec « **＋ Créer une classe…** » dans chaque case. Deux minutes suffisent, et tout le reste s'active : progression, alertes de retard, rappels de séance.
+2. **Vos classes prennent vie** : Nées de la grille, elles apparaissent sur le tableau de bord avec leur couleur, leur prochaine séance et leur progression. Vous pouvez aussi en créer une manuellement via « **Nouvelle classe** ».
+3. **Remplissez le cahier** : Si un programme officiel existe pour le niveau, l'application propose de le pré-charger — acceptez puis adaptez librement. Datez ensuite vos séances au fil des cours.
 
 ## Le cahier au quotidien
 - **Ajouter** : Sur téléphone, le bouton rond « **+** ». Sur ordinateur, sélectionnez une ligne puis « **Ajouter après** » dans la barre du bas.
@@ -264,9 +264,9 @@ export const GUIDE_AR = `# دليل الاستخدام
 دفتر نصوصكم الرقمي، خطوة بخطوة. كل قسم يُقرأ في أقل من دقيقة.
 
 ## البداية الصحيحة
-1. **أنشئوا قسماً** : في لوحة التحكم، اضغطوا على « **قسم جديد** »، واختاروا المستوى والمادة — الاسم يتركّب تلقائياً. إن وُجد مقرر رسمي لهذا المستوى، يقترحه التطبيق جاهزاً: اقبلوه ثم عدّلوه بحرية.
-2. **أدخلوا استعمال الزمن** : عند فتح دفتر بلا حصص، تظهر دعوة لطيفة نحو **الإعدادات ▸ استعمال الزمن** (يمكن تخطّيها). هذه الحصص تُفعّل كل الباقي: التقدم، تنبيهات التأخر، وتذكيرات نهاية الحصة.
-3. **املؤوا الدفتر** : أضيفوا الفصول والفقرات والمحتويات، ثم أرّخوا حصصكم مع مرور الدروس.
+1. **ركّبوا استعمال الزمن** : الخطوة المؤسِّسة! في **الإعدادات ▸ استعمال الزمن**، ضعوا حصصكم — وأنشئوا أقسامكم **مباشرة من الشبكة** عبر « **＋ إنشاء قسم…** » في كل خانة. دقيقتان تكفيان، وكل الباقي يشتغل: التقدم، تنبيهات التأخر، تذكيرات الحصص.
+2. **أقسامكم تنبض بالحياة** : وُلدت من الشبكة، وتظهر في لوحة التحكم بلونها وحصتها القادمة وتقدمها. يمكنكم أيضاً إنشاء قسم يدوياً عبر « **قسم جديد** ».
+3. **املؤوا الدفتر** : إن وُجد مقرر رسمي للمستوى، يقترحه التطبيق جاهزاً — اقبلوه ثم عدّلوه بحرية. أرّخوا بعدها حصصكم مع مرور الدروس.
 
 ## الدفتر في الاستعمال اليومي
 - **الإضافة** : في الهاتف، الزر الدائري « **+** ». في الحاسوب، حدّدوا سطراً ثم « **إضافة بعد** » في الشريط السفلي.
