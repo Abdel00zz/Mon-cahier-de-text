@@ -64,10 +64,10 @@ const collectDates = (lessons: LessonsData): Set<string> => {
 };
 
 const TONE_STYLE: Record<Insight['tone'], { card: string; icon: string; title: string }> = {
-    critical: { card: 'border-red-200 bg-red-50/40', icon: 'text-red-600', title: 'text-red-700' },
-    warn: { card: 'border-amber-200 bg-amber-50/40', icon: 'text-amber-600', title: 'text-amber-700' },
-    info: { card: 'border-blue-200 bg-blue-50/40', icon: 'text-blue-600', title: 'text-blue-700' },
-    good: { card: 'border-success/30 bg-success/5', icon: 'text-success', title: 'text-success' },
+    critical: { card: 'border-red-200 bg-white', icon: 'text-red-600', title: 'text-slate-900' },
+    warn: { card: 'border-slate-200 bg-white', icon: 'text-red-500', title: 'text-slate-900' },
+    info: { card: 'border-blue-200 bg-white', icon: 'text-blue-600', title: 'text-slate-900' },
+    good: { card: 'border-emerald-200 bg-white', icon: 'text-emerald-600', title: 'text-slate-900' },
 };
 
 const ICON_MAP: Record<InsightIcon, React.ComponentType<{ className?: string }>> = {
@@ -83,10 +83,10 @@ const ICON_MAP: Record<InsightIcon, React.ComponentType<{ className?: string }>>
 
 /** barre de progression fine, teintée selon le taux (rouge bas → vert haut) */
 const progressColor = (rate: number): string => {
-    if (rate >= 75) return 'bg-success';
-    if (rate >= 40) return 'bg-primary';
-    if (rate >= 15) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (rate >= 75) return 'bg-emerald-400';
+    if (rate >= 40) return 'bg-blue-400';
+    if (rate >= 15) return 'bg-cyan-400';
+    return 'bg-blue-300';
 };
 
 /**
@@ -177,11 +177,11 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
             <AnalystHeader summary={summary} />
             <NextSessionsPlan rows={rows} classes={classes} onSelectClass={onSelectClass} />
 
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+            <div className="flex flex-col gap-5">
                 {/* Observations classées (suggestions) */}
-                <section className="lg:col-span-3 space-y-3">
+                <section className="order-2 space-y-3">
                     <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                        À votre attention
+                        À votre attention — action requise
                     </h3>
                     {insights.length === 0 ? (
                         <div className="flex items-center gap-3 rounded-2xl border border-success/25 bg-success/10 p-4">
@@ -195,6 +195,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                             {insights.slice(0, 3).map(insight => {
                                 const style = TONE_STYLE[insight.tone];
                                 const Icon = ICON_MAP[insight.icon];
+                                const shouldBlink = insight.tone === 'critical' || insight.tone === 'warn';
                                 const cls = insight.classId ? classes.find(c => c.id === insight.classId) : undefined;
                                 return (
                                     <li key={insight.id}>
@@ -204,7 +205,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                                             disabled={!cls}
                                             className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all ${style.card} ${cls ? 'cursor-pointer hover:border-primary/20 hover:shadow-sm' : 'cursor-default'}`}
                                         >
-                                            <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 shadow-sm ${style.icon}`}>
+                                            <span className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${shouldBlink ? 'bg-red-50 motion-safe:animate-pulse' : 'bg-blue-50'} ${style.icon}`}>
                                                 <Icon className="h-4 w-4" />
                                             </span>
                                             <span className="min-w-0 flex-1">
@@ -222,13 +223,13 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                 </section>
 
                 {/* Progression par classe — barres classées (la moins avancée d'abord) */}
-                <section className="lg:col-span-2 space-y-3">
+                <section className="order-1 space-y-3">
                     <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                         Progression par classe
                     </h3>
-                    <Card className="space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+                    <Card className="space-y-3 rounded-xl border border-blue-900 bg-gradient-to-br from-blue-950 to-blue-900 p-4 text-white shadow-sm">
                         {progressRows.length === 0 && (
-                            <p className="py-2 text-center text-xs font-medium text-slate-500">La progression apparaîtra après votre première séance datée.</p>
+                            <p className="py-2 text-center text-xs font-medium text-blue-100/80">La progression apparaîtra après votre première séance datée.</p>
                         )}
                         {progressRows.slice(0, 5).map(row => {
                             const cls = classes.find(c => c.id === row.classId);
@@ -240,37 +241,37 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                                     className="block w-full text-left cursor-pointer group"
                                 >
                                     <div className="mb-1 flex items-center justify-between gap-2">
-                                        <span className="min-w-0 truncate text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{row.className}</span>
-                                        <span className="shrink-0 text-xs font-black tabular-nums text-slate-500">
+                                        <span className="min-w-0 truncate text-sm font-bold text-white transition-colors group-hover:text-blue-200">{row.className}</span>
+                                        <span className="shrink-0 text-xs font-black tabular-nums text-blue-100">
                                             {row.completion}%
-                                            <span className="ml-1 font-bold text-slate-400">
+                                            <span className="ml-1 font-bold text-blue-200/70">
                                                 ({row.planned}/{row.total})
                                             </span>
                                         </span>
                                     </div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                    <div className="h-1.5 overflow-hidden rounded-full bg-blue-200/25">
                                         <div
                                             className={`h-full rounded-full ${progressColor(row.completion)} transition-[width] duration-700 ease-out`}
                                             style={{ width: `${row.completion}%` }}
                                         />
                                     </div>
-                                    <div className="mt-1 flex items-center gap-2 text-[10px] font-semibold text-slate-400">
+                                    <div className="mt-1.5 flex items-center gap-2 text-[10px] font-semibold text-blue-200/75">
                                         <span>{row.sessionsCount} séance{row.sessionsCount > 1 ? 's' : ''}</span>
                                         {row.gapSessions > 0 && (
-                                            <span className="flex items-center gap-0.5 text-amber-600 font-bold">
+                                            <span className="flex items-center gap-0.5 font-bold text-amber-300">
                                                 <CircleAlert className="h-3 w-3" />
                                                 {row.gapSessions} en attente
                                             </span>
                                         )}
                                         {row.gapSessions === 0 && row.hasSchedule && (
-                                            <span className="text-success font-bold">à jour</span>
+                                            <span className="font-bold text-emerald-300">à jour</span>
                                         )}
                                     </div>
                                 </button>
                             );
                         })}
                         {progressRows.length > 5 && (
-                            <p className="border-t border-slate-100 pt-2 text-center text-[11px] font-medium text-muted-foreground">
+                            <p className="border-t border-blue-200/20 pt-2 text-center text-[11px] font-medium text-blue-200/75">
                                 Les autres classes restent disponibles dans « Mes classes ».
                             </p>
                         )}
@@ -284,12 +285,12 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
 /* ── En-tête de l'analyste : bilan chiffré + phrase d'humeur ── */
 
 const AnalystHeader: React.FC<{ summary: AnalystSummary }> = ({ summary }) => (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-xl border border-blue-900 bg-gradient-to-r from-blue-950 via-blue-900 to-blue-800 p-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aujourd’hui</p>
-            <p className="mt-1 text-sm font-extrabold leading-snug text-slate-800 font-display sm:text-base">{summary.mood}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-200">Aujourd’hui</p>
+            <p className="mt-1 text-base font-extrabold leading-snug text-white font-display sm:text-lg">{summary.mood}</p>
         </div>
-        <div className="grid shrink-0 grid-cols-3 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white px-1 py-2 sm:min-w-[280px]">
+        <div className="grid shrink-0 grid-cols-3 divide-x divide-blue-200/20 rounded-lg border border-blue-200/15 bg-white/[0.07] px-1 py-2.5 sm:min-w-[290px]">
             <MiniStat value={`${summary.avgCompletion}%`} label="Progression moy." />
             <MiniStat value={summary.totalSessions} label="Séances" />
             <MiniStat
@@ -311,19 +312,19 @@ const NextSessionsPlan: React.FC<{
     if (prepared.length === 0) return null;
 
     return (
-        <section className="overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm">
-            <div className="flex items-start gap-3 border-b border-primary/10 bg-primary/[0.04] px-4 py-3.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+        <section className="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-blue-800 bg-gradient-to-r from-blue-950 to-blue-900 px-4 py-3.5 text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-300/25 bg-blue-500/20 text-blue-100">
                     <CalendarDays className="h-4.5 w-4.5" />
                 </span>
                 <div className="min-w-0">
-                    <h2 className="text-sm font-black text-slate-900 sm:text-base">Prochaines séances</h2>
-                    <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-slate-500">
+                    <h2 className="text-sm font-black text-white sm:text-base">Prochaines séances</h2>
+                    <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-blue-200">
                         Le point exact où reprendre dans chaque cahier.
                     </p>
                 </div>
             </div>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-blue-100">
                 {prepared.slice(0, 6).map(row => {
                     const classInfo = classes.find(item => item.id === row.classId);
                     return (
@@ -331,16 +332,16 @@ const NextSessionsPlan: React.FC<{
                             key={row.classId}
                             type="button"
                             onClick={() => classInfo && onSelectClass(classInfo)}
-                            className="group grid w-full min-w-0 gap-2 px-4 py-3 text-left transition-colors hover:bg-primary/[0.035] sm:grid-cols-[minmax(8rem,0.34fr)_minmax(0,1fr)] sm:items-center"
+                            className="group grid w-full min-w-0 gap-2 px-4 py-3.5 text-left transition-colors hover:bg-blue-50/70 sm:grid-cols-[minmax(8rem,0.34fr)_minmax(0,1fr)] sm:items-center"
                         >
                             <span className="flex min-w-0 items-center justify-between gap-2 sm:block">
                                 <span className="block truncate text-sm font-extrabold text-slate-900 group-hover:text-primary">{row.className}</span>
-                                <span className="mt-1 block shrink-0 text-[10px] font-bold text-primary">
+                                <span className="mt-1 block shrink-0 text-[10px] font-bold text-blue-600">
                                     {row.nextSessionLabel ?? 'horaire à compléter'}
                                 </span>
                             </span>
-                            <span className="min-w-0 border-l-2 border-primary/20 pl-3">
-                                <span className="block text-[9px] font-black uppercase tracking-wider text-primary">Début de la prochaine séance</span>
+                            <span className="min-w-0 border-l-2 border-blue-200 pl-3">
+                                <span className="block text-[9px] font-black uppercase tracking-wider text-blue-600">Début de la prochaine séance</span>
                                 <span className="mt-0.5 block line-clamp-2 text-sm font-extrabold leading-snug text-slate-900 sm:line-clamp-1">
                                     {row.nextContent?.title ?? 'Programme terminé — ajoutez le prochain contenu'}
                                 </span>
@@ -361,9 +362,9 @@ const NextSessionsPlan: React.FC<{
 
 const MiniStat: React.FC<{ value: string | number; label: string; tone?: 'warn' | 'good' }> = ({ value, label, tone }) => (
     <div className="px-2 text-center">
-        <div className={`text-xl font-black tabular-nums ${tone === 'warn' ? 'text-amber-600' : tone === 'good' ? 'text-success' : 'text-primary'}`}>
+        <div className={`text-xl font-black tabular-nums ${tone === 'warn' ? 'text-amber-300' : tone === 'good' ? 'text-emerald-300' : 'text-white'}`}>
             {value}
         </div>
-        <div className="text-[8px] font-bold uppercase leading-tight tracking-wider text-slate-400">{label}</div>
+        <div className="text-[8px] font-bold uppercase leading-tight tracking-wider text-blue-200/80">{label}</div>
     </div>
 );

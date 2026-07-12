@@ -114,7 +114,7 @@ export const buildInsights = (
         if (!r.hasSchedule || r.officialHours === null || (r.hoursDeviation !== 'over' && r.hoursDeviation !== 'under')) continue;
         insights.push({
             id: `hours-${r.classId}`,
-            tone: 'info',
+            tone: 'warn',
             icon: 'hours',
             title: `Volume horaire — ${r.className}`,
             detail:
@@ -130,7 +130,7 @@ export const buildInsights = (
         if (r.hasSchedule) continue;
         insights.push({
             id: `schedule-${r.classId}`,
-            tone: 'info',
+            tone: 'warn',
             icon: 'schedule',
             title: `${r.className} sans emploi du temps`,
             detail: 'Ajoutez ses créneaux pour activer le suivi de progression et les alertes.',
