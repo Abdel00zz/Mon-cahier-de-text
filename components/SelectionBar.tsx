@@ -56,7 +56,7 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 ${
+    className={`group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 sm:h-10 sm:w-10 ${
       danger
         ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
         : accent

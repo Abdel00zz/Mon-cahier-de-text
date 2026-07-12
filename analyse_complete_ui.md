@@ -469,7 +469,6 @@
 | Guide | [GuideModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/GuideModal.tsx) | Documentation accordéon |
 | History | [HistoryModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/HistoryModal.tsx) | Timeline chronologique |
 | Description | [DescriptionModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/DescriptionModal.tsx) | Description longue |
-| Orientation | [OrientationAlertModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/OrientationAlertModal.tsx) | Alerte orientation mobile |
 | Timetable Nudge | [TimetableNudgeModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/TimetableNudgeModal.tsx) | Suggestion emploi du temps |
 | Prompt | [PromptModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/PromptModal.tsx) | Confirmation avec input |
 
@@ -999,7 +998,6 @@ slide-in-right : translateX 100%→0            (300ms ease-out)
 | [ImportPlatformModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/ImportPlatformModal.tsx) | 4.4 KB |
 | [DescriptionModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/DescriptionModal.tsx) | 3.5 KB |
 | [PromptModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/PromptModal.tsx) | 1.7 KB |
-| [OrientationAlertModal.tsx](file:///c:/Users/it's%20me/Downloads/cahier-de-textes-interactif%20(3)%20(2)/components/modals/OrientationAlertModal.tsx) | 1.5 KB |
 
 ### Config (5 fichiers)
 | Fichier | Taille |

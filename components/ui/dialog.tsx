@@ -38,14 +38,14 @@ const DialogContent = React.forwardRef<
       className={cn(
         // style resserré et net : arrondis réduits (xl mobile / lg desktop),
         // espacement plus compact — sans toucher aux couleurs
-        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[92dvh] w-full max-w-lg gap-3 overflow-hidden border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl rounded-t-xl rounded-b-none sm:inset-0 sm:m-auto sm:w-[calc(100vw-1.5rem)] sm:rounded-lg sm:p-5",
+        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[96dvh] w-full max-w-lg gap-3 overflow-hidden rounded-t-2xl rounded-b-none border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl sm:inset-0 sm:m-auto sm:max-h-[92dvh] sm:w-[calc(100vw-1.5rem)] sm:rounded-xl sm:p-5",
         className
       )}
       {...props}
     >
       <div aria-hidden className="mx-auto -mt-1 h-1 w-10 rounded-full bg-border sm:hidden" />
       {children}
-      <DialogPrimitive.Close className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full border border-transparent bg-muted/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:right-4 sm:top-4">
+      <DialogPrimitive.Close className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card/95 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:right-4 sm:top-4">
         <X className="h-4 w-4" />
         <span className="sr-only">Fermer la fenêtre</span>
       </DialogPrimitive.Close>
@@ -74,7 +74,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end",
+      "flex flex-col-reverse gap-2 border-t border-border bg-card pt-3 [&>button]:min-h-11 [&>button]:w-full [&>div]:w-full sm:flex-row sm:justify-end sm:[&>button]:w-auto",
       className
     )}
     {...props}

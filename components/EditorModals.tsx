@@ -27,6 +27,7 @@ interface EditorModalsProps {
   selectedIndices: Indices[];
   /** validation intelligente : renvoie les alertes pour une date donnée */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  assignDateInitialDate?: string;
 }
 
 const ModalFallback = () => (
@@ -53,7 +54,8 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   singleSelection,
   handleConfirmAddContent,
   selectedIndices,
-  getDateWarnings
+  getDateWarnings,
+  assignDateInitialDate,
 }) => {
   if (!activeModal) return null;
 
@@ -78,6 +80,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
           selectedCount={selectedCount}
           selectedItems={selectedItemsData}
           getDateWarnings={getDateWarnings}
+          initialDate={assignDateInitialDate}
         />
       );
       break;

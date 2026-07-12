@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useCallback, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useDeferredValue, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useClassManager } from '../hooks/useClassManager';
 import { useConfigManager } from '../hooks/useConfigManager';
@@ -19,8 +19,10 @@ import { logger } from '../utils/logger';
 import { getBundledCalendar, getSchoolYearFor, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '../utils/timetable';
-import { Plus, CircleHelp, Search, Menu } from './ui/icons';
+import { Plus, Search, Menu, X, ArrowRight } from './ui/icons';
 import { restoreBackup } from '../utils/backup';
+import { migrateLessonsData } from '../utils/dataUtils';
+import { getTeachingResume, normalizeNotebookSearch, searchNotebook } from '../utils/notebookIntelligence';
 
 const GuideModal = lazy(() => import('./modals/GuideModal').then(module => ({ default: module.GuideModal })));
 
@@ -38,8 +40,15 @@ const getGreeting = (): string => {
     return 'Bonsoir';
 };
 
-const normalizeSearch = (value: string): string =>
-    value.normalize('NFD').replace(/\p{Diacritic}+/gu, '').toLocaleLowerCase('fr').trim();
+const readLessons = (classId: string) => {
+    try {
+        const raw = localStorage.getItem(`classData_v1_${classId}`);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return migrateLessonsData(Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []));
+    } catch {
+        return [];
+    }
+};
 
 const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
     return (
@@ -106,6 +115,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const deferredSearch = useDeferredValue(search);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     // vue courante du hub, mémorisée pour la session (retour de l'éditeur inclus)
@@ -113,6 +123,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const { value: sidebarCollapsed, setValue: setSidebarCollapsed } = useOptimizedLocalStorage<boolean>('sidebar_collapsed_v1', false, 100);
 
     const isLoading = isClassesLoading || isConfigLoading;
+
+    const classSearchResults = useMemo(() => {
+        const query = normalizeNotebookSearch(deferredSearch);
+        if (!query) return [];
+        return classes
+            .map(classInfo => {
+                const lessons = readLessons(classInfo.id);
+                const metadataMatch = normalizeNotebookSearch(`${classInfo.name} ${classInfo.subject}`).includes(query);
+                const matches = searchNotebook(lessons, query, 3);
+                if (!metadataMatch && matches.length === 0) return null;
+                return { classInfo, matches, resume: getTeachingResume(lessons), metadataMatch };
+            })
+            .filter((result): result is NonNullable<typeof result> => result !== null)
+            .sort((a, b) => Number(b.metadataMatch) - Number(a.metadataMatch));
+    }, [classes, deferredSearch, lastModifiedDates]);
 
     useEffect(() => {
         if (isClassesLoading) return;
@@ -259,12 +284,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         );
 
     const visibleClasses = [...classes]
-        .filter(c => {
-            const query = normalizeSearch(search);
-            if (!query) return true;
-            return normalizeSearch(c.name).includes(query) || normalizeSearch(c.subject).includes(query);
-        })
+        .filter(c => !normalizeNotebookSearch(deferredSearch) || classSearchResults.some(result => result.classInfo.id === c.id))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const openSearchResult = (classInfo: ClassInfo, continueInNotebook: boolean) => {
+        if (continueInNotebook) {
+            try {
+                sessionStorage.setItem('dashboard_search_handoff_v1', JSON.stringify({ classId: classInfo.id, query: search.trim() }));
+            } catch { /* navigation possible même sans stockage */ }
+        }
+        onSelectClass(classInfo);
+    };
 
     const header = VIEW_HEADERS[view];
 
@@ -335,16 +365,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                         {/* Recherche et Filtres : vue classes uniquement */}
                         {view === 'classes' && classes.length > 0 && (
                             <div className="flex w-full md:w-auto items-center gap-3 self-end md:self-auto shrink-0">
-                                <div className="relative w-full md:w-72">
-                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <div className="relative w-full md:w-80" role="search">
+                                    <Search className="pointer-events-none absolute left-3 top-[22px] h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="search"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
-                                        placeholder="Rechercher une classe, une matière…"
-                                        className="h-11 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm font-medium text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-                                        aria-label="Rechercher une classe"
+                                        placeholder="Classe, chapitre, contenu, remarque…"
+                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm font-medium text-slate-800 shadow-sm transition-all placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                                        aria-label="Rechercher dans toutes les classes et tous les cahiers"
                                     />
+                                    {search && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSearch('')}
+                                            className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                            aria-label="Effacer la recherche"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                    {search.trim() && (
+                                        <p className="mt-1.5 px-1 text-[11px] font-semibold text-slate-500" aria-live="polite">
+                                            {classSearchResults.length} cahier{classSearchResults.length > 1 ? 's' : ''} trouvé{classSearchResults.length > 1 ? 's' : ''} · recherche dans tout le contenu
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -404,8 +449,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                     </div>
                                 ) : visibleClasses.length === 0 ? (
                                     <p className="rounded-md border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-xs font-semibold text-slate-400">
-                                        Aucune classe ne correspond à « {search} ».
+                                        Aucun résultat pour « {search} » dans les classes, chapitres, contenus ou remarques.
                                     </p>
+                                ) : search.trim() ? (
+                                    <div className="space-y-3" aria-label="Résultats de recherche dans les cahiers">
+                                        {classSearchResults.map(({ classInfo, matches, resume }) => (
+                                            <button
+                                                key={classInfo.id}
+                                                type="button"
+                                                onClick={() => openSearchResult(classInfo, matches.length > 0)}
+                                                className="group block w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-primary/10 sm:p-5"
+                                            >
+                                                <span className="flex items-start justify-between gap-3">
+                                                    <span className="min-w-0">
+                                                        <span className="block truncate text-base font-extrabold text-slate-900 group-hover:text-primary">{classInfo.name}</span>
+                                                        <span className="mt-0.5 block text-xs font-bold uppercase tracking-wide text-slate-400">{classInfo.subject}</span>
+                                                    </span>
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary transition-transform group-hover:translate-x-0.5">
+                                                        <ArrowRight className="h-4 w-4" />
+                                                    </span>
+                                                </span>
+                                                {matches.length > 0 ? (
+                                                    <span className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                        {matches.slice(0, 2).map((match, index) => (
+                                                            <span key={`${match.breadcrumb}-${index}`} className="min-w-0 rounded-xl bg-slate-50 px-3 py-2.5">
+                                                                <span className="block truncate text-[11px] font-extrabold text-slate-800">{match.title}</span>
+                                                                {match.breadcrumb && <span className="mt-0.5 block truncate text-[10px] font-semibold text-primary">{match.breadcrumb}</span>}
+                                                                <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-slate-500">{match.snippet}</span>
+                                                            </span>
+                                                        ))}
+                                                    </span>
+                                                ) : resume.next ? (
+                                                    <span className="mt-3 block rounded-xl bg-primary/[0.04] px-3 py-2 text-xs text-slate-600">
+                                                        <strong className="text-primary">À reprendre :</strong> {resume.next.title}
+                                                    </span>
+                                                ) : null}
+                                                <span className="mt-3 block text-[11px] font-bold text-primary">
+                                                    {matches.length > 0 ? 'Ouvrir le cahier avec cette recherche' : 'Ouvrir ce cahier'}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {/* Entrée en cascade : les cartes montent l'une après l'autre */}

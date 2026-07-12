@@ -1,5 +1,4 @@
 import React from 'react';
-import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle, TimetableEntry } from '../../types';
 import { CreateClassModal } from '../modals/CreateClassModal';
 import { getBundledCalendar } from '../../utils/calendar';
@@ -14,7 +13,7 @@ import {
 } from '../../utils/timetable';
 import { useClassAssessments } from '../../hooks/useAssessments';
 import { getOfficialWeeklyHours } from '../../utils/officialHours';
-import { computeScheduleInsights, hoursDeviationMessage } from '../../utils/scheduleInsights';
+import { computeScheduleInsights } from '../../utils/scheduleInsights';
 import { TriangleAlert, CircleCheck, Info } from '../ui/icons';
 
 interface ScheduleTabProps {
@@ -91,26 +90,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
      * prof reste libre (dédoublement, option), mais il est PRÉVENU de la
      * probable coquille (« 6 h pour 2BAC PC alors que l'officiel est 5 h »).
      */
-    const notifyHoursDeviation = React.useCallback((nextTimetable: typeof timetable, classId: string | null) => {
-        if (!classId) return;
-        const classInfo = classById.get(classId);
-        if (!classInfo) return;
-        const [insight] = computeScheduleInsights([classInfo], nextTimetable);
-        if (insight.deviation === 'over' || (insight.deviation === 'under' && insight.officialHours !== null)) {
-            const message = hoursDeviationMessage(insight);
-            if (message) {
-                if (insight.deviation === 'over') toast.warning(message, { id: `hours-${classId}` });
-                else toast.info(message, { id: `hours-${classId}` });
-            }
-        } else if (insight.deviation === 'match' && insight.officialHours !== null && insight.scheduledHours > 0) {
-            toast.success(`${insight.className} : ${insight.scheduledHours} h — conforme à l'horaire officiel ✓`, { id: `hours-${classId}` });
-        }
-    }, [classById]);
-
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
-        notifyHoursDeviation(nextTimetable, classId);
     };
 
     // séance fusionnée (2 h+) : la cellule unique pilote TOUTES ses heures d'un coup
@@ -120,7 +102,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             next = setTimetableEntry(next, day, slot, classId);
         }
         onChange({ timetable: next, schedules: deriveSchedules(next) });
-        notifyHoursDeviation(next, classId);
     };
 
     // séances continues par jour : deux créneaux consécutifs de la même classe

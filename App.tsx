@@ -9,7 +9,6 @@ import { useSessionAlerts } from './hooks/useSessionAlerts';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { Analytics } from '@vercel/analytics/react';
-import { OrientationAlertModal } from './components/modals/OrientationAlertModal';
 import { normalizeOfficialClassName } from './constants';
 // No imports for deleted sessionAssistant
 
@@ -99,37 +98,7 @@ const App: React.FC = () => {
   const { status: authStatus } = useAuth();
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
-  const [showOrientationModal, setShowOrientationModal] = useState(false);
-  const orientationTimerRef = useRef<number | null>(null);
   const scrollPositionsRef = useRef<Record<string, number>>({});
-  
-  // Helper to know if we should show the orientation alert (mobile + portrait)
-  const isMobilePortrait = useCallback(() => {
-    const isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-    const uaMobile = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-    const isMobile = isCoarsePointer || uaMobile;
-    const isPortrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
-    return isMobile && isPortrait;
-  }, []);
-
-  const clearOrientationTimer = useCallback(() => {
-    if (orientationTimerRef.current !== null) {
-      clearTimeout(orientationTimerRef.current);
-      orientationTimerRef.current = null;
-    }
-  }, []);
-
-  const scheduleOrientationModal = useCallback(() => {
-    // le portrait est désormais pleinement utilisable : suggestion UNE fois par session
-    try {
-      if (sessionStorage.getItem('orientationHintShown_v1')) return;
-    } catch { /* stockage indisponible */ }
-    if (orientationTimerRef.current !== null) return;
-    orientationTimerRef.current = window.setTimeout(() => {
-      setShowOrientationModal(true);
-      orientationTimerRef.current = null;
-    }, 3000);
-  }, []);
 
   const saveCurrentScroll = useCallback(() => {
     scrollPositionsRef.current[getScrollKey(view, activeClass)] = window.scrollY;
@@ -152,33 +121,6 @@ const App: React.FC = () => {
       window.clearTimeout(settleTimer);
     };
   }, [activeClass, view]);
-
-  useEffect(() => {
-    if (view !== 'editor') {
-      clearOrientationTimer();
-      setShowOrientationModal(false);
-      return;
-    }
-
-    const computeAndSet = () => {
-      if (isMobilePortrait()) {
-        scheduleOrientationModal();
-      } else {
-        clearOrientationTimer();
-        setShowOrientationModal(false);
-      }
-    };
-
-    computeAndSet();
-    const handler = () => computeAndSet();
-    window.addEventListener('resize', handler);
-    window.addEventListener('orientationchange', handler as any);
-    return () => {
-      window.removeEventListener('resize', handler);
-      window.removeEventListener('orientationchange', handler as any);
-      clearOrientationTimer();
-    };
-  }, [view, clearOrientationTimer, isMobilePortrait, scheduleOrientationModal]);
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
     saveCurrentScroll();
@@ -234,15 +176,6 @@ const App: React.FC = () => {
     };
   }, [saveCurrentScroll]);
 
-  const handleCloseOrientationModal = () => {
-    setShowOrientationModal(false);
-    clearOrientationTimer();
-    // ne plus harceler l'utilisateur : mémorisé pour la session
-    try {
-      sessionStorage.setItem('orientationHintShown_v1', '1');
-    } catch { /* stockage indisponible */ }
-  };
-
   const renderContent = () => {
     // En attente du chargement (auth ignorée si AUTH_REQUIRED est désactivé).
     if (isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading')) {
@@ -276,9 +209,6 @@ const App: React.FC = () => {
             </Suspense>
           </div>
 
-          {view === 'editor' && (
-            <OrientationAlertModal isOpen={showOrientationModal} onClose={handleCloseOrientationModal} />
-          )}
         </div>
         <GlobalTooltip />
         <Toaster

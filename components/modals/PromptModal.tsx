@@ -16,10 +16,11 @@ export const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onCon
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-      setValue('');
-    }
+    if (!isOpen) return;
+
+    setValue('');
+    const focusFrame = window.requestAnimationFrame(() => inputRef.current?.focus());
+    return () => window.cancelAnimationFrame(focusFrame);
   }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {

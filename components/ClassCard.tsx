@@ -2,7 +2,7 @@ import { memo, MouseEvent, FC, useState } from 'react';
 import { ClassInfo } from '../types';
 import { NextSessionInfo } from '../utils/timetable';
 import { ConfirmDialog } from './ui/confirm-dialog';
-import { Trash2, Settings, Book } from './ui/icons';
+import { Trash2, Settings, BookOpen } from './ui/icons';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -41,6 +41,20 @@ const formatDate = (dateString: string | null | undefined): string => {
     }
 };
 
+const CLASS_ICON_STYLES = [
+    { shell: 'border-blue-200 bg-blue-50', icon: 'text-blue-600', glow: 'bg-blue-400/15' },
+    { shell: 'border-violet-200 bg-violet-50', icon: 'text-violet-600', glow: 'bg-violet-400/15' },
+    { shell: 'border-emerald-200 bg-emerald-50', icon: 'text-emerald-600', glow: 'bg-emerald-400/15' },
+    { shell: 'border-amber-200 bg-amber-50', icon: 'text-amber-600', glow: 'bg-amber-400/15' },
+    { shell: 'border-rose-200 bg-rose-50', icon: 'text-rose-600', glow: 'bg-rose-400/15' },
+    { shell: 'border-cyan-200 bg-cyan-50', icon: 'text-cyan-600', glow: 'bg-cyan-400/15' },
+] as const;
+
+const classIconStyle = (classId: string) => {
+    const hash = Array.from(classId).reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 0);
+    return CLASS_ICON_STYLES[hash % CLASS_ICON_STYLES.length];
+};
+
 const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSession, onSelect, onDelete, onConfigure }) => {
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -55,6 +69,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     };
 
     const isArabic = containsArabic(classInfo.name);
+    const iconStyle = classIconStyle(classInfo.id);
 
     return (
         <div
@@ -83,8 +98,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-center w-full">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-50 text-slate-500 border border-slate-200 mb-4 shadow-sm group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/20 transition-colors duration-200">
-                    <Book className="w-5 h-5" />
+                <div className={`relative mb-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md ${iconStyle.shell} ${iconStyle.icon}`}>
+                    <span aria-hidden className={`absolute -right-3 -top-3 h-8 w-8 rounded-full ${iconStyle.glow}`} />
+                    <BookOpen className="relative h-[22px] w-[22px] stroke-[2.1]" />
                 </div>
                 
                 <h3 className={`text-base font-bold text-slate-800 text-center leading-tight transition-colors group-hover:text-primary ${isArabic ? 'font-ar text-lg' : 'font-display'}`}>

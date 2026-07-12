@@ -82,16 +82,3 @@ export const computeScheduleInsights = (
     classes: ClassInfo[],
     timetable: TimetableEntry[] | undefined
 ): ClassHoursInsight[] => classes.map(c => computeClassHoursInsight(c, timetable));
-
-/** Message français court pour un écart d'heures (null si rien à signaler). */
-export const hoursDeviationMessage = (insight: ClassHoursInsight): string | null => {
-    if (insight.officialHours === null) return null;
-    const abs = Math.abs(insight.delta);
-    if (insight.deviation === 'over') {
-        return `${insight.className} : ${insight.scheduledHours} h posées pour ${insight.officialHours} h officielles — ${abs} h de trop. Vérifiez la grille (sauf dédoublement/option).`;
-    }
-    if (insight.deviation === 'under') {
-        return `${insight.className} : ${insight.scheduledHours} h posées pour ${insight.officialHours} h officielles — il manque ${abs} h. Un créneau oublié ?`;
-    }
-    return null;
-};

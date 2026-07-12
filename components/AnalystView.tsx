@@ -8,6 +8,8 @@ import { computeClassHoursInsight } from '../utils/scheduleInsights';
 import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
 import { getDaySessionBlocks } from '../utils/timetable';
+import { nextSessionInfoForClass } from '../utils/timetable';
+import { getTeachingResume } from '../utils/notebookIntelligence';
 import {
     AnalystSummary,
     ClassAnalysis,
@@ -61,23 +63,6 @@ const collectDates = (lessons: LessonsData): Set<string> => {
     return dates;
 };
 
-/** Le prochain contenu réellement daté : un repère pédagogique, pas une prédiction. */
-const findNextContent = (lessons: LessonsData, todayISO: string): { title: string; date: string } | undefined => {
-    let next: { title: string; date: string } | undefined;
-    const visit = (node: any): void => {
-        if (!node || typeof node !== 'object') return;
-        if (typeof node.date === 'string' && node.date >= todayISO) {
-            const title = typeof node.title === 'string' ? node.title.trim() : '';
-            if (title && (!next || node.date < next.date)) next = { title, date: node.date };
-        }
-        for (const value of Object.values(node)) {
-            if (Array.isArray(value)) value.forEach(visit);
-        }
-    };
-    lessons.forEach(visit);
-    return next;
-};
-
 const TONE_STYLE: Record<Insight['tone'], { card: string; icon: string; title: string }> = {
     critical: { card: 'border-red-200 bg-red-50/40', icon: 'text-red-600', title: 'text-red-700' },
     warn: { card: 'border-amber-200 bg-amber-50/40', icon: 'text-amber-600', title: 'text-amber-700' },
@@ -123,6 +108,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
 
         const rows: ClassAnalysis[] = classes.map(classInfo => {
             const lessons = readLessons(classInfo.id);
+            const resume = getTeachingResume(lessons);
             const stats = computeProgressionStats(lessons);
             const late = lateness?.perClass.find(p => p.classId === classInfo.id);
             const hours = computeClassHoursInsight(classInfo, config.timetable);
@@ -142,7 +128,14 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                 hoursDeviation: hours.deviation,
                 delta: hours.delta,
                 officialHours: hours.officialHours,
-                nextContent: findNextContent(lessons, todayISO),
+                lastContent: resume.last,
+                nextContent: resume.next,
+                nextSessionLabel: nextSessionInfoForClass(
+                    classInfo.id,
+                    config.timetable,
+                    config.schedules?.find(schedule => schedule.classId === classInfo.id)?.slots.map(slot => slot.weekday) ?? [],
+                    calendar,
+                )?.label,
             };
         });
 
@@ -174,14 +167,15 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
     if (classes.length === 0) return null;
 
     const sortedRows = [...rows].sort((a, b) => a.completion - b.completion);
+    const progressRows = sortedRows.filter(row => row.total > 0 || row.sessionsCount > 0);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-5">
             {/* Cartes KPI (dont la « prochaine séance » en tête) */}
 
             {/* Bilan d'humeur — la voix de l'analyste */}
             <AnalystHeader summary={summary} />
-            <TeachingCircuit rows={rows} upcomingCount={upcoming.length} />
+            <NextSessionsPlan rows={rows} classes={classes} onSelectClass={onSelectClass} />
 
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
                 {/* Observations classées (suggestions) */}
@@ -198,7 +192,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                         </div>
                     ) : (
                         <ul className="space-y-2.5">
-                            {insights.slice(0, 4).map(insight => {
+                            {insights.slice(0, 3).map(insight => {
                                 const style = TONE_STYLE[insight.tone];
                                 const Icon = ICON_MAP[insight.icon];
                                 const cls = insight.classId ? classes.find(c => c.id === insight.classId) : undefined;
@@ -208,7 +202,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                                             type="button"
                                             onClick={() => cls && onSelectClass(cls)}
                                             disabled={!cls}
-                                            className={`flex w-full items-start gap-3 rounded-2xl border p-3.5 text-left transition-all ${style.card} ${cls ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-sm' : 'cursor-default'}`}
+                                            className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all ${style.card} ${cls ? 'cursor-pointer hover:border-primary/20 hover:shadow-sm' : 'cursor-default'}`}
                                         >
                                             <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/70 shadow-sm ${style.icon}`}>
                                                 <Icon className="h-4 w-4" />
@@ -232,29 +226,11 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                     <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                         Progression par classe
                     </h3>
-                    {sortedRows.some(row => row.nextContent) && (
-                        <Card className="space-y-2 rounded-xl border border-primary/15 bg-primary/[0.03] p-3.5 shadow-sm">
-                            <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary">Prochains contenus prévus</p>
-                            {sortedRows
-                                .filter(row => row.nextContent)
-                                .sort((a, b) => a.nextContent!.date.localeCompare(b.nextContent!.date))
-                                .slice(0, 3)
-                                .map(row => {
-                                    const cls = classes.find(c => c.id === row.classId);
-                                    return (
-                                        <button key={`next-${row.classId}`} type="button" onClick={() => cls && onSelectClass(cls)} className="block w-full rounded-lg px-1 py-1.5 text-left hover:bg-card">
-                                            <span className="flex items-center justify-between gap-2 text-xs font-bold text-foreground">
-                                                <span className="truncate">{row.className}</span>
-                                                <span className="shrink-0 text-[10px] text-primary">{row.nextContent!.date.split('-').reverse().join('/')}</span>
-                                            </span>
-                                            <span className="mt-0.5 block line-clamp-1 text-[11px] text-muted-foreground">{row.nextContent!.title}</span>
-                                        </button>
-                                    );
-                                })}
-                        </Card>
-                    )}
-                    <Card className="space-y-3.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                        {sortedRows.slice(0, 6).map(row => {
+                    <Card className="space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
+                        {progressRows.length === 0 && (
+                            <p className="py-2 text-center text-xs font-medium text-slate-500">La progression apparaîtra après votre première séance datée.</p>
+                        )}
+                        {progressRows.slice(0, 5).map(row => {
                             const cls = classes.find(c => c.id === row.classId);
                             return (
                                 <button
@@ -293,7 +269,7 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
                                 </button>
                             );
                         })}
-                        {sortedRows.length > 6 && (
+                        {progressRows.length > 5 && (
                             <p className="border-t border-slate-100 pt-2 text-center text-[11px] font-medium text-muted-foreground">
                                 Les autres classes restent disponibles dans « Mes classes ».
                             </p>
@@ -308,12 +284,12 @@ export const AnalystView: React.FC<AnalystViewProps> = ({ classes, config, onSel
 /* ── En-tête de l'analyste : bilan chiffré + phrase d'humeur ── */
 
 const AnalystHeader: React.FC<{ summary: AnalystSummary }> = ({ summary }) => (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Bilan de la semaine</p>
-            <p className="mt-1 text-lg font-extrabold text-slate-800 font-display">{summary.mood}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Aujourd’hui</p>
+            <p className="mt-1 text-sm font-extrabold leading-snug text-slate-800 font-display sm:text-base">{summary.mood}</p>
         </div>
-        <div className="flex shrink-0 gap-5">
+        <div className="grid shrink-0 grid-cols-3 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white px-1 py-2 sm:min-w-[280px]">
             <MiniStat value={`${summary.avgCompletion}%`} label="Progression moy." />
             <MiniStat value={summary.totalSessions} label="Séances" />
             <MiniStat
@@ -325,45 +301,69 @@ const AnalystHeader: React.FC<{ summary: AnalystSummary }> = ({ summary }) => (
     </div>
 );
 
-/** Un circuit compact relie les données sources aux décisions de la journée. */
-const TeachingCircuit: React.FC<{ rows: ClassAnalysis[]; upcomingCount: number }> = ({ rows, upcomingCount }) => {
-    const scheduled = rows.filter(row => row.hasSchedule).length;
-    const prepared = rows.filter(row => row.nextContent).length;
-    const sessions = rows.reduce((total, row) => total + row.sessionsCount, 0);
-    const stages = [
-        { label: 'Emploi du temps', value: `${scheduled}/${rows.length}`, detail: 'classes reliées' },
-        { label: 'Séances saisies', value: sessions, detail: 'dates dans les cahiers' },
-        { label: 'Préparation', value: prepared, detail: 'contenus à venir' },
-        { label: 'Devoirs', value: upcomingCount, detail: 'dans les 14 jours' },
-    ];
+/** Repère central du professeur : dernière limite atteinte et point de reprise. */
+const NextSessionsPlan: React.FC<{
+    rows: ClassAnalysis[];
+    classes: ClassInfo[];
+    onSelectClass: (classInfo: ClassInfo) => void;
+}> = ({ rows, classes, onSelectClass }) => {
+    const prepared = rows.filter(row => row.nextContent || row.lastContent);
+    if (prepared.length === 0) return null;
+
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-primary">Circuit pédagogique</p>
-                    <p className="mt-0.5 text-xs font-medium text-muted-foreground">Une même donnée relie planning, contenus, progression et devoirs.</p>
+        <section className="overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm">
+            <div className="flex items-start gap-3 border-b border-primary/10 bg-primary/[0.04] px-4 py-3.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+                    <CalendarDays className="h-4.5 w-4.5" />
+                </span>
+                <div className="min-w-0">
+                    <h2 className="text-sm font-black text-slate-900 sm:text-base">Prochaines séances</h2>
+                    <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-slate-500">
+                        Le point exact où reprendre dans chaque cahier.
+                    </p>
                 </div>
-                <span className="hidden rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary sm:inline">temps réel local</span>
             </div>
-            <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 sm:grid-cols-4 sm:divide-y-0">
-                {stages.map((stage, index) => (
-                    <div key={stage.label} className="relative px-4 py-3.5">
-                        {index < stages.length - 1 && <span className="absolute -right-1.5 top-1/2 z-10 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-slate-200 bg-white sm:block" />}
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{stage.label}</p>
-                        <p className="mt-1 text-xl font-black tracking-tight text-slate-800 tabular-nums">{stage.value}</p>
-                        <p className="mt-0.5 text-[10px] font-medium text-slate-500">{stage.detail}</p>
-                    </div>
-                ))}
+            <div className="divide-y divide-slate-100">
+                {prepared.slice(0, 6).map(row => {
+                    const classInfo = classes.find(item => item.id === row.classId);
+                    return (
+                        <button
+                            key={row.classId}
+                            type="button"
+                            onClick={() => classInfo && onSelectClass(classInfo)}
+                            className="group grid w-full min-w-0 gap-2 px-4 py-3 text-left transition-colors hover:bg-primary/[0.035] sm:grid-cols-[minmax(8rem,0.34fr)_minmax(0,1fr)] sm:items-center"
+                        >
+                            <span className="flex min-w-0 items-center justify-between gap-2 sm:block">
+                                <span className="block truncate text-sm font-extrabold text-slate-900 group-hover:text-primary">{row.className}</span>
+                                <span className="mt-1 block shrink-0 text-[10px] font-bold text-primary">
+                                    {row.nextSessionLabel ?? 'horaire à compléter'}
+                                </span>
+                            </span>
+                            <span className="min-w-0 border-l-2 border-primary/20 pl-3">
+                                <span className="block text-[9px] font-black uppercase tracking-wider text-primary">Début de la prochaine séance</span>
+                                <span className="mt-0.5 block line-clamp-2 text-sm font-extrabold leading-snug text-slate-900 sm:line-clamp-1">
+                                    {row.nextContent?.title ?? 'Programme terminé — ajoutez le prochain contenu'}
+                                </span>
+                                {row.lastContent && (
+                                    <span className="mt-1 block truncate text-[10px] font-medium text-slate-500">Dernier point : {row.lastContent.title}</span>
+                                )}
+                                {row.nextContent?.breadcrumb && (
+                                    <span className="mt-0.5 block truncate text-[10px] font-semibold text-slate-400">{row.nextContent.breadcrumb}</span>
+                                )}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
         </section>
     );
 };
 
 const MiniStat: React.FC<{ value: string | number; label: string; tone?: 'warn' | 'good' }> = ({ value, label, tone }) => (
-    <div className="text-center">
-        <div className={`text-2xl font-black tabular-nums ${tone === 'warn' ? 'text-amber-600' : tone === 'good' ? 'text-success' : 'text-primary'}`}>
+    <div className="px-2 text-center">
+        <div className={`text-xl font-black tabular-nums ${tone === 'warn' ? 'text-amber-600' : tone === 'good' ? 'text-success' : 'text-primary'}`}>
             {value}
         </div>
-        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-medium">{label}</div>
+        <div className="text-[8px] font-bold uppercase leading-tight tracking-wider text-slate-400">{label}</div>
     </div>
 );

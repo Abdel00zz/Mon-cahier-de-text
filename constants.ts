@@ -186,7 +186,7 @@ export const SUBJECTS = [
 export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
     // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
-    'chapter': { name: 'Chapitre', icon: Book, color: 'text-slate-700', rowColor: 'bg-slate-50' },
+    'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700', rowColor: 'bg-slate-50' },
     'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-rose-600', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', rowColor: 'bg-rose-50/40' },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
     // type dans le cahier + 1) — réservé aux types récurrents.
@@ -214,17 +214,28 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 2. **Vos classes prennent vie** : Nées de la grille, elles apparaissent sur le tableau de bord avec leur couleur, leur prochaine séance et leur progression. Vous pouvez aussi en créer une manuellement via « **Nouvelle classe** ».
 3. **Remplissez le cahier** : Si un programme officiel existe pour le niveau, l'application propose de le pré-charger — acceptez puis adaptez librement. Datez ensuite vos séances au fil des cours.
 
+![Vue réelle du cahier de textes avec son programme organisé](/guide/02-cahier-de-textes.png)
+
 ## Le cahier au quotidien
 - **Ajouter** : Sur téléphone, le bouton rond « **+** ». Sur ordinateur, sélectionnez une ligne puis « **Ajouter après** » dans la barre du bas.
 - **Modifier** : Double-touchez la ligne à corriger, ou sélectionnez-la puis « **Modifier** ».
 - **Dater en un geste** : Sélectionnez une ou plusieurs lignes puis « **Dater aujourd'hui** » (un seul tap) ou « **Choisir une date…** » avec aperçu avant/après.
 - **Réorganiser / supprimer** : Boutons **Monter / Descendre** et **Supprimer** de la barre de sélection. Tout est annulable (\`Ctrl + Z\`).
 - **Formules de maths (LaTeX)** : Entre symboles dollars : \`$E = mc^2$\`. Listes avec « **-** » ou « **1.** », **gras** avec \`**texte**\`, *italique* avec \`*texte*\`.
+- **Recherche dans un cahier** : Le bouton **Rechercher** filtre instantanément les lignes et met en évidence le contenu correspondant.
+
+![Recherche instantanée dans les lignes du cahier](/guide/03-recherche-dans-cahier.png)
+
+- **Recherche depuis Mes classes** : Recherchez une classe, une matière, un chapitre, une description ou une remarque. Le cahier s'ouvre avec le même terme déjà actif.
+
+![Recherche globale dans toutes les classes et tous les contenus](/guide/06-recherche-globale.png)
 
 ## L'emploi du temps intelligent
 - **Une couleur par classe** : Chaque classe garde sa teinte dans la grille et le récapitulatif — l'emploi du temps se lit d'un coup d'œil.
 - **Séances de 2 h fusionnées** : Deux heures consécutives de la même classe forment **une seule cellule** ; l'application n'attend alors qu'**une** date dans le cahier, pas deux.
 - **Repère officiel** : À côté de chaque classe, « off. X h » rappelle l'horaire hebdomadaire officiel de votre matière — un simple repère indicatif, jamais une contrainte.
+
+![Composition de l'emploi du temps directement dans la grille](/guide/01-emploi-du-temps.png)
 
 ## Un calendrier qui pense pour vous
 - **Garde-fou des dates** : Une date posée un jour férié, pendant les vacances ou une absence déclenche une simple alerte informative — la saisie n'est jamais bloquée (séance de rattrapage, exception…).
@@ -232,10 +243,17 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 - **Fin d'année sereine** : L'été venu, vos cartes affichent « Année scolaire terminée » — pas de fausse « prochaine séance » vers la rentrée suivante.
 - **Absences programmées** : Déclarez un congé ou un arrêt dans **Paramètres ▸ Notifications** : la période est exclue de tous les calculs.
 
+![Choix d'une date avec explication immédiate des points à vérifier](/guide/04-selection-date.png)
+
+![Message de vérification avant l'enregistrement d'une date exceptionnelle](/guide/05-verification-date.png)
+
 ## Suivi & progression
 - **Cartes du tableau de bord** : Progression globale, séances, chapitres actifs, dernière séance — touchez une carte pour ouvrir le détail.
 - **Analyse par classe** : Menu **⋮ ▸ Analyse & progression** pour le taux de complétion et l'historique détaillé.
 - **Rappels de fin de séance** : Une minute avant la fin d'un cours, votre téléphone vibre ; à la fin, il vérifie qu'une date a bien été posée. Activable dans **Paramètres ▸ Notifications**.
+- **Préparer la prochaine séance** : Le tableau de bord indique **où vous vous êtes arrêté** et l'élément exact par lequel commencer la séance suivante.
+
+![Planification du prochain contenu à partir du dernier point traité](/guide/07-prochaine-seance.png)
 
 ## Impression intelligente
 - **Nouveautés seulement** : L'application se souvient de ce qui est déjà imprimé et recommande de n'imprimer que le nouveau — économie de papier garantie.
@@ -261,12 +279,14 @@ Développé par Boudouh Abdelmalek (Maroc). Suggestions et aide : [bdh.malek@gma
 // دليل كامل بالعربية — نفس بنية الدليل الفرنسي (٩ أقسام متوازية)
 export const GUIDE_AR = `# دليل الاستخدام
 
-دفتر نصوصكم الرقمي، خطوة بخطوة. كل قسم يُقرأ في أقل من دقيقة.
+هذا **دليل عملي مختصر** لاستعمال دفتر النصوص الرقمي. كل قسم يشرح مهمة أساسية بوضوح وفي أقل من دقيقة.
 
 ## البداية الصحيحة
-1. **ركّبوا استعمال الزمن** : الخطوة المؤسِّسة! في **الإعدادات ▸ استعمال الزمن**، ضعوا حصصكم — وأنشئوا أقسامكم **مباشرة من الشبكة** عبر « **＋ إنشاء قسم…** » في كل خانة. دقيقتان تكفيان، وكل الباقي يشتغل: التقدم، تنبيهات التأخر، تذكيرات الحصص.
-2. **أقسامكم تنبض بالحياة** : وُلدت من الشبكة، وتظهر في لوحة التحكم بلونها وحصتها القادمة وتقدمها. يمكنكم أيضاً إنشاء قسم يدوياً عبر « **قسم جديد** ».
-3. **املؤوا الدفتر** : إن وُجد مقرر رسمي للمستوى، يقترحه التطبيق جاهزاً — اقبلوه ثم عدّلوه بحرية. أرّخوا بعدها حصصكم مع مرور الدروس.
+1. **أعدّوا استعمال الزمن** : ابدؤوا من **الإعدادات ▸ استعمال الزمن**، ثم أضيفوا حصصكم وأنشئوا الأقسام **مباشرة من الشبكة** بواسطة « **إنشاء قسم** ». بعد ذلك يعمل حساب التقدم، وتنبيهات التأخر، وتذكيرات الحصص تلقائياً.
+2. **نظّموا أقسامكم** : يظهر كل قسم في لوحة التحكم بلونه، وحصته المقبلة، ونسبة تقدمه. ويمكنكم أيضاً إنشاء قسم يدوياً بواسطة زر « **قسم جديد** ».
+3. **أضيفوا محتوى الدفتر** : إذا كان المقرر الرسمي متاحاً، يقترحه التطبيق جاهزاً. راجعوه وعدّلوه عند الحاجة، ثم سجّلوا **تواريخ الحصص المنجزة** بالتدريج.
+
+![عرض حقيقي لدفتر النصوص وبرنامجه المنظم](/guide/02-cahier-de-textes.png)
 
 ## الدفتر في الاستعمال اليومي
 - **الإضافة** : في الهاتف، الزر الدائري « **+** ». في الحاسوب، حدّدوا سطراً ثم « **إضافة بعد** » في الشريط السفلي.
@@ -274,11 +294,20 @@ export const GUIDE_AR = `# دليل الاستخدام
 - **التأريخ بلمسة** : حدّدوا سطراً أو أكثر ثم « **تأريخ اليوم** » (لمسة واحدة) أو « **اختيار تاريخ…** » مع معاينة قبل/بعد.
 - **الترتيب / الحذف** : أزرار **لأعلى / لأسفل** و**حذف** في شريط التحديد. كل شيء قابل للتراجع (\`Ctrl + Z\`).
 - **الرموز الرياضية (LaTeX)** : بين رمزي الدولار: \`$E = mc^2$\`. القوائم بـ « **-** » أو « **1.** »، **عريض** بـ \`**نص**\`، *مائل* بـ \`*نص*\`.
+- **البحث داخل الدفتر** : يرشّح زر **البحث** الأسطر فوراً، ويبرز المحتوى المطابق للكلمة المطلوبة.
+
+![البحث الفوري داخل أسطر دفتر النصوص](/guide/03-recherche-dans-cahier.png)
+
+- **البحث من صفحة أقسامي** : يمكن البحث باسم القسم أو المادة أو عنوان الدرس أو الوصف أو الملاحظة، ثم فتح الدفتر مع الاحتفاظ بكلمة البحث نفسها.
+
+![البحث الشامل في جميع الأقسام ومحتويات الدفاتر](/guide/06-recherche-globale.png)
 
 ## استعمال زمن ذكي
 - **لون لكل قسم** : يحتفظ كل قسم بلونه في الشبكة وفي الملخص — يُقرأ استعمال الزمن بنظرة واحدة.
 - **حصص الساعتين مدموجة** : ساعتان متتاليتان لنفس القسم تكوّنان **خلية واحدة** ؛ ولا ينتظر التطبيق حينها سوى تاريخ **واحد** في الدفتر، لا اثنين.
 - **المرجع الرسمي** : بجانب كل قسم، « off. X h » يذكّر بالغلاف الزمني الأسبوعي الرسمي لمادتكم — مجرد إشارة استرشادية، لا قيد أبداً.
+
+![إعداد استعمال الزمن مباشرة داخل الشبكة](/guide/01-emploi-du-temps.png)
 
 ## تقويم يفكّر معكم
 - **حارس التواريخ** : تاريخ يصادف عطلة أو عيداً أو غياباً يُطلق تنبيهاً إخبارياً بسيطاً — التسجيل لا يُحظر أبداً (حصة استدراك، استثناء…).
@@ -286,10 +315,17 @@ export const GUIDE_AR = `# دليل الاستخدام
 - **نهاية سنة هادئة** : في الصيف، تعرض البطاقات « السنة الدراسية انتهت » — دون « حصة قادمة » وهمية نحو الدخول المقبل.
 - **الغيابات المبرمجة** : صرّحوا بإجازة أو توقف في **الإعدادات ▸ الإشعارات** : تُستثنى الفترة من جميع الحسابات.
 
+![اختيار التاريخ مع توضيح فوري للنقاط التي ينبغي التحقق منها](/guide/04-selection-date.png)
+
+![رسالة التحقق قبل تسجيل تاريخ استثنائي](/guide/05-verification-date.png)
+
 ## المتابعة والتقدم
 - **بطاقات لوحة التحكم** : التقدم الإجمالي، الحصص، الفصول النشطة، آخر حصة — المسّوا بطاقة لفتح التفاصيل.
 - **تحليل لكل قسم** : القائمة **⋮ ▸ التحليل والتقدم** لنسبة الإنجاز والسجل المفصّل.
 - **تذكير نهاية الحصة** : قبل نهاية الحصة بدقيقة يهتزّ هاتفكم؛ وعند نهايتها يتحقق من وضع التاريخ. يُفعَّل من **الإعدادات ▸ الإشعارات**.
+- **تحضير الحصة المقبلة** : تعرض لوحة التحكم **آخر نقطة وصلتم إليها** والعنصر الدقيق الذي ستبدأ منه الحصة التالية.
+
+![تخطيط المحتوى المقبل انطلاقاً من آخر عنصر تم إنجازه](/guide/07-prochaine-seance.png)
 
 ## الطباعة الذكية
 - **الجديد فقط** : يتذكّر التطبيق ما طُبع سابقاً ويوصي بطباعة الجديد وحده — اقتصاد مضمون في الورق.

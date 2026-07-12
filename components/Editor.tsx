@@ -110,6 +110,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
 
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
   const [pendingDateCommit, setPendingDateCommit] = useState<PendingDateCommit | null>(null);
+  const [assignDateInitialDate, setAssignDateInitialDate] = useState<string | undefined>();
   const [isSelectionPending, startSelectionTransition] = useTransition();
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
@@ -132,6 +133,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
   }, [editingIndices]);
+
+  // Une recherche lancée depuis « Mes classes » continue dans le tableau du
+  // cahier : mêmes mots, mêmes lignes filtrées et surlignées, sans ressaisie.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('dashboard_search_handoff_v1');
+      if (!raw) return;
+      const pending = JSON.parse(raw) as { classId?: string; query?: string };
+      if (pending.classId !== classInfo.id || !pending.query?.trim()) return;
+      setEditorState(draft => { draft.searchQuery = pending.query!.trim(); });
+      sessionStorage.removeItem('dashboard_search_handoff_v1');
+    } catch {
+      sessionStorage.removeItem('dashboard_search_handoff_v1');
+    }
+  }, [classInfo.id, setEditorState]);
 
   /*
    * Contenu prédéfini : si le cahier est vide et qu'un programme officiel
@@ -221,11 +237,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   const requestDateCommit = useCallback((date: string, commit: () => void) => {
     const warnings = date ? getDateWarnings(date) : [];
     if (warnings.length > 0) {
+      setAssignDateInitialDate(date);
       setPendingDateCommit({ date, warnings, commit });
+      // Une seule modale à la fois : la planification cède la place à la
+      // vérification, puis sera recréée avec la même date si l'utilisateur modifie.
+      setEditorState(draft => { draft.activeModal = null; });
       return;
     }
     commit();
-  }, [getDateWarnings]);
+  }, [getDateWarnings, setEditorState]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -972,7 +992,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           canDescription={canDescribeSelection}
           descriptionLabel={descriptionLabel}
           onAdd={() => handleOpenAddContentModal(selectedIndices[selectedIndices.length - 1])}
-          onAssignDate={() => setEditorState(draft => { draft.activeModal = 'assignDate'; })}
+          onAssignDate={() => {
+            setAssignDateInitialDate(undefined);
+            setEditorState(draft => { draft.activeModal = 'assignDate'; });
+          }}
           onAssignToday={handleAssignToday}
           onClearDate={handleClearSelectedDates}
           onDescription={() => setEditorState(draft => { draft.activeModal = 'description'; })}
@@ -1024,6 +1047,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
+        assignDateInitialDate={assignDateInitialDate}
       />
 
       <DateReviewModal
@@ -1032,7 +1056,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         warnings={pendingDateCommit?.warnings ?? []}
         onModify={() => {
           setPendingDateCommit(null);
-          window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
+          setEditorState(draft => { draft.activeModal = 'assignDate'; });
+          window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
+          });
         }}
         onConfirm={() => {
           const pending = pendingDateCommit;

@@ -101,10 +101,10 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
     };
   }, [searchQuery, setSearchQuery, isSearchVisible]);
 
-  // Sync local when external search cleared elsewhere
+  // Synchronise aussi les recherches ouvertes depuis « Mes classes ».
   useEffect(() => {
-    if (!searchQuery && !isSearchVisible) setLocalSearch('');
-  }, [searchQuery, isSearchVisible]);
+    setLocalSearch(current => current === searchQuery ? current : searchQuery);
+  }, [searchQuery]);
   
   return (
     <div className="sticky top-0 z-[50] mb-0 flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-200 bg-white/95 px-4 py-2 shadow-none backdrop-blur print:hidden">
@@ -145,9 +145,10 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label="Rechercher"
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel"
-            className="rounded-md h-8 w-8 text-slate-600"
+            className={`relative rounded-md h-8 w-8 ${searchQuery ? 'bg-primary/10 text-primary' : 'text-slate-600'}`}
           >
             <Search className="h-4 w-4" />
+            {searchQuery && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (

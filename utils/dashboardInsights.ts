@@ -27,8 +27,10 @@ export interface ClassAnalysis {
     hoursDeviation: HoursDeviation;
     delta: number;
     officialHours: number | null;
-    /** prochain contenu daté du cahier, quand il existe */
-    nextContent?: { title: string; date: string };
+    /** repères pédagogiques calculés dans l'ordre réel du cahier */
+    lastContent?: { title: string; breadcrumb: string; date?: string };
+    nextContent?: { title: string; breadcrumb: string; date?: string };
+    nextSessionLabel?: string;
 }
 
 export type InsightTone = 'good' | 'info' | 'warn' | 'critical';
@@ -107,7 +109,9 @@ export const buildInsights = (
 
     // 4. Volume horaire à vérifier
     for (const r of rows) {
-        if (r.officialHours === null || (r.hoursDeviation !== 'over' && r.hoursDeviation !== 'under')) continue;
+        // Sans emploi du temps, l'alerte dédiée ci-dessous suffit : afficher
+        // aussi « X h manquantes » répéterait exactement la même cause.
+        if (!r.hasSchedule || r.officialHours === null || (r.hoursDeviation !== 'over' && r.hoursDeviation !== 'under')) continue;
         insights.push({
             id: `hours-${r.classId}`,
             tone: 'info',
@@ -167,13 +171,18 @@ export interface AnalystSummary {
 
 export const summarizeAnalysis = (rows: ClassAnalysis[], upcomingCount: number): AnalystSummary => {
     const classCount = rows.length;
-    const avgCompletion = classCount === 0 ? 0 : Math.round(rows.reduce((s, r) => s + r.completion, 0) / classCount);
+    const measurableRows = rows.filter(row => row.total > 0);
+    const avgCompletion = measurableRows.length === 0
+        ? 0
+        : Math.round(measurableRows.reduce((sum, row) => sum + row.completion, 0) / measurableRows.length);
     const totalSessions = rows.reduce((s, r) => s + r.sessionsCount, 0);
     const lateClasses = rows.filter(r => r.gapSessions > 0).length;
     const upToDateClasses = rows.filter(r => r.hasSchedule && r.gapSessions === 0).length;
 
     let mood: string;
+    const totalPlanned = rows.reduce((sum, row) => sum + row.planned, 0);
     if (classCount === 0) mood = 'Créez vos classes pour lancer le suivi.';
+    else if (totalPlanned === 0) mood = 'Vos cahiers sont prêts — datez une première séance pour lancer le suivi.';
     else if (lateClasses === 0) mood = upcomingCount > 0 ? 'Tout est à jour — gardez un œil sur les devoirs à venir.' : 'Cahiers à jour sur toute la ligne. Excellent rythme !';
     else if (lateClasses === 1) mood = 'Presque parfait : une seule classe attend une mise à jour.';
     else mood = `${lateClasses} classes demandent un petit rattrapage — rien d'insurmontable.`;

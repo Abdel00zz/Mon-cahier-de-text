@@ -60,6 +60,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           }
         }
 
+        if (item.type === 'chapter') {
+          return (
+            <div className="w-full text-center font-slab text-lg font-extrabold tracking-tight text-red-700">
+              <span>{titleToDisplay}</span>
+            </div>
+          );
+        }
+
         return (
           <div className={`font-bold font-slab text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
             <config.icon className="h-5 w-5" />
@@ -102,6 +110,21 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     
     if (isCorrection) {
       indentClass = 'md:pl-4';
+    }
+
+    if (item.type === 'chapter') {
+      return (
+        <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
+          <div className="w-full py-3 text-center font-slab text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
+            <EditableTitle value={item.title} onSave={handleUpdate('title')} />
+            <span aria-hidden className="mx-auto mt-2.5 flex w-32 items-center justify-center">
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent via-red-300 to-red-400" />
+              <span className="mx-2 h-2 w-2 rotate-45 rounded-[1px] border border-red-400 bg-red-50 shadow-[0_0_0_2px_rgba(254,226,226,0.7)]" />
+              <span className="h-px flex-1 bg-gradient-to-l from-transparent via-red-300 to-red-400" />
+            </span>
+          </div>
+        </MaybeMathJax>
+      );
     }
 
     return (

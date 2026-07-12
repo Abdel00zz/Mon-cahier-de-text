@@ -192,17 +192,20 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-slate-200 bg-slate-50/80 md:block">
+  <div className="hidden border-y border-slate-200 bg-gradient-to-b from-white to-slate-50/90 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset] md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
-    <div className={`grid min-h-10 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-slate-200/80 p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
-        Date
+    <div className={`grid min-h-14 ${TABLE_GRID_CLASS}`}>
+      <div className="flex flex-col items-center justify-center gap-1.5 border-r border-slate-200/80 px-3 py-3 text-center">
+        <span className="font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-700">Date</span>
+        <span aria-hidden className="h-px w-5 bg-slate-300" />
       </div>
-      <div className="flex items-center justify-center border-r border-slate-200/80 p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
-        Contenu
+      <div className="flex flex-col items-center justify-center gap-1.5 border-r border-slate-200/80 px-4 py-3 text-center">
+        <span className="font-display text-xs font-black uppercase tracking-[0.18em] text-slate-800">Contenu pédagogique</span>
+        <span aria-hidden className="h-px w-10 bg-primary/45" />
       </div>
-      <div className="flex items-center justify-center p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
-        Remarque
+      <div className="flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
+        <span className="font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-700">Remarque</span>
+        <span aria-hidden className="h-px w-5 bg-slate-300" />
       </div>
     </div>
   </div>

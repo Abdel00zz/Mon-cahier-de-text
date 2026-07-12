@@ -20,7 +20,13 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
-    if (e.key === 'Enter' || e.key === 'Escape') {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.currentTarget.textContent = value;
+      e.currentTarget.blur();
+      return;
+    }
+    if (e.key === 'Enter') {
       e.preventDefault();
       e.currentTarget.blur();
     }
@@ -45,10 +51,22 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
   // Titre fixe en rouge moderne, independant de la couleur de classe.
   return (
     <div className="relative mb-3 flex items-center justify-center pb-2 group border-b border-slate-100">
+      {onBack && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="absolute left-0 top-0 z-10 h-11 w-11 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          aria-label="Retour à Mes classes"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      )}
       <div className="absolute right-0 top-0">
         <SyncStatusBadge />
       </div>
-      <header className="relative w-full overflow-hidden text-center">
+      <header className="relative w-full overflow-hidden px-12 text-center">
         {establishmentName && (
           <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-sans">{establishmentName}</p>
         )}

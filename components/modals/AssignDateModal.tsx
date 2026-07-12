@@ -26,6 +26,8 @@ interface AssignDateModalProps {
   selectedItems: SelectedItemPreview[];
   /** validation intelligente : alertes live pour la date choisie (emploi du temps, fériés, vacances, absences) */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** Date conservée lors d'un retour depuis la vérification. */
+  initialDate?: string;
 }
 
 const addDaysISO = (iso: string, offset: number): string => {
@@ -89,6 +91,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   selectedCount,
   selectedItems,
   getDateWarnings,
+  initialDate,
 }) => {
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
   const [selectedDate, setSelectedDate] = useState(() => isoFromOffset(0));
@@ -96,8 +99,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setActionType('associate');
-    setSelectedDate(isoFromOffset(0));
-  }, [isOpen]);
+    setSelectedDate(initialDate || isoFromOffset(0));
+  }, [initialDate, isOpen]);
 
   // Alertes live : recalculées à chaque changement de date choisie.
   const dateWarnings = useMemo(
