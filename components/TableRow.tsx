@@ -293,17 +293,17 @@ const TableRowComponent: FC<TableRowProps> = ({
   // harmonieux : ton neutre doux au repos, chaud sur les rangées datées,
   // primaire sur la sélection. Une seule épaisseur partout = rythme régulier.
   const dividerClass = isSelected
-    ? 'border-r-2 border-primary/30'
+    ? 'border-r border-primary/30'
     : hasAssignedDate
-      ? 'border-r-2 border-scheduled/40'
-      : 'border-r-2 border-border';
+      ? 'border-r border-scheduled/30'
+      : 'border-r border-slate-200/80';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
-      ? 'md:border-r-2 md:border-primary/30'
+      ? 'md:border-r md:border-primary/30'
       : hasAssignedDate
-        ? 'md:border-r-2 md:border-scheduled/40'
-        : 'md:border-r-2 md:border-border';
+        ? 'md:border-r md:border-scheduled/30'
+        : 'md:border-r md:border-slate-200/80';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;

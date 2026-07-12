@@ -56,12 +56,12 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 ${
+    className={`group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 ${
       danger
-        ? 'text-destructive hover:bg-destructive/10 hover:text-destructive'
+        ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
         : accent
-          ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10 hover:bg-primary/90 hover:text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
+          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
     }`}
     aria-label={title}
   >
@@ -72,7 +72,7 @@ const ActionButton: FC<{
   </Button>
 );
 
-const Divider: FC = () => <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-border/60" />;
+const Divider: FC = () => <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200" />;
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
@@ -139,14 +139,14 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-2xl border border-border/80 bg-card/95 shadow-xl shadow-foreground/5 backdrop-blur-md sm:bottom-6 print:hidden"
+      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 shadow-xl shadow-slate-200/50 backdrop-blur-md sm:bottom-6 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
       aria-label="Actions sur la sélection"
     >
       {/* En-tête contextuel : QUOI est sélectionné */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 pb-2 pt-2.5">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 pb-1.5 pt-2">
         <div className="min-w-0 flex items-baseline gap-2">
           {count === 1 && selectionLabel ? (
             /* barre resserrée : le titre est tronqué (…) et borné pour ne pas

@@ -34,7 +34,7 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
       suppressContentEditableWarning
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className={`inline-block px-2 py-0.5 -mx-2 -my-0.5 rounded-xl text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-ring/30 ${isArabic ? 'font-ar' : 'font-display'}`}
+      className={`inline-block px-1.5 py-0.5 -mx-1.5 -my-0.5 rounded-md text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-ar' : 'font-display'}`}
     >
       {value}
     </span>
@@ -44,19 +44,18 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
   // Titre fixe en rouge moderne, independant de la couleur de classe.
   return (
-    <div className="relative mb-3 flex items-center justify-center pb-2 group">
+    <div className="relative mb-3 flex items-center justify-center pb-2 group border-b border-slate-100">
       <div className="absolute right-0 top-0">
         <SyncStatusBadge />
       </div>
       <header className="relative w-full overflow-hidden text-center">
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-16 w-56 -translate-x-1/2 rounded-full bg-destructive/5 blur-2xl" />
         {establishmentName && (
-          <p className="relative mb-1 text-[11px] font-semibold uppercase text-muted-foreground/75 font-sans">{establishmentName}</p>
+          <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-sans">{establishmentName}</p>
         )}
-        <h1 className="relative mx-auto flex max-w-4xl items-center justify-center text-center text-[1.75rem] font-black leading-tight sm:text-[2.2rem] font-display">
+        <h1 className="relative mx-auto flex max-w-4xl items-center justify-center text-center text-xl font-bold leading-tight sm:text-2xl font-display text-slate-900">
           <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
         </h1>
-        <p className="relative mt-0.5 text-xs text-muted-foreground/55 italic opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <p className="relative mt-0.5 text-[10px] font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           Cliquez sur le nom pour modifier
         </p>
       </header>

@@ -17,7 +17,7 @@ import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection,
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '../utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '../utils/printMeta';
-import { validateSessionDate, summarizeWarnings } from '../utils/dateValidation';
+import { validateSessionDate } from '../utils/dateValidation';
 import { appendJournal, opLabel, readJournal, timeAgoFr } from '../utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '../utils/predefinedContent';
 import { BookOpen } from './ui/icons';
@@ -27,6 +27,7 @@ import { printDocument } from '../utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '../types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
+import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '../constants';
 import { logger } from '../utils/logger';
 import { todayInMorocco } from '../utils/calendar';
@@ -68,6 +69,12 @@ interface SelectionState {
   items: Map<string, Indices>;
 }
 
+interface PendingDateCommit {
+  date: string;
+  warnings: { message: string }[];
+  commit: () => void;
+}
+
 const createSelectionState = (indices?: Indices): SelectionState => {
   const keys = new Set<string>();
   const items = new Map<string, Indices>();
@@ -102,6 +109,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   });
 
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
+  const [pendingDateCommit, setPendingDateCommit] = useState<PendingDateCommit | null>(null);
   const [isSelectionPending, startSelectionTransition] = useTransition();
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
@@ -210,12 +218,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
     [classInfo, config]
   );
 
-  const checkSessionDate = useCallback((date: string) => {
-    if (!date) return;
-    const message = summarizeWarnings(getDateWarnings(date));
-    if (message) {
-      toast.warning(message, { duration: 15000 });
+  const requestDateCommit = useCallback((date: string, commit: () => void) => {
+    const warnings = date ? getDateWarnings(date) : [];
+    if (warnings.length > 0) {
+      setPendingDateCommit({ date, warnings, commit });
+      return;
     }
+    commit();
   }, [getDateWarnings]);
 
   const addNewItemHighlight = useCallback((id: string) => {
@@ -257,6 +266,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     }
   }, [lessonsData, getStorageKey, classInfo.id, showNotification, setEditorState]);
+
+  const handleBack = useCallback(() => {
+    if (!isClassLoading && !isConfigLoading && saveStatus !== 'saved') saveData();
+    onBack();
+  }, [isClassLoading, isConfigLoading, saveStatus, saveData, onBack]);
 
   const handleExportData = useCallback(() => {
     try {
@@ -358,17 +372,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }, [initialClassInfo, setEditorState]);
 
   const handleCellUpdate = useCallback((indices: Indices, field: string, value: any) => {
-    setState(draft => {
-        const { item } = findItem(draft, indices);
-        if (item) {
-            (item as any)[field] = value;
-        }
-    }, 'cell-edit');
-    setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-    if (field === 'date' && typeof value === 'string') {
-        checkSessionDate(value);
-    }
-  }, [setState, setEditorState, checkSessionDate]);
+    const commit = () => {
+      setState(draft => {
+          const { item } = findItem(draft, indices);
+          if (item) (item as any)[field] = value;
+      }, 'cell-edit');
+      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+    };
+    if (field === 'date' && typeof value === 'string') requestDateCommit(value, commit);
+    else commit();
+  }, [setState, setEditorState, requestDateCommit]);
 
   const handleUndo = useCallback(() => {
     if (!canUndo) return;
@@ -474,12 +487,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         showNotification(notificationMessage, "success");
         setEditorState(draft => { draft.saveStatus = 'unsaved'; });
       }
-      if (type === 'separator' && typeof data?.date === 'string' && data.date) {
-        checkSessionDate(data.date);
-      }
       setSelectionState(createSelectionState());
       handleModalClose();
-  }, [selectedIndices, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, checkSessionDate]);
+  }, [selectedIndices, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -655,6 +665,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
   }, [startSelectionTransition, setEditorState]);
 
   const handleAssignDates = useCallback((dateOrAssignments: string | { indices: Indices; date: string }[]) => {
+      const commit = () => {
       setState(draft => {
           if (typeof dateOrAssignments === 'string') {
               selectedIndices.forEach(idx => {
@@ -675,11 +686,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       });
       showNotification("Date(s) affectée(s).", "success");
       // garde intelligente sur les dates distinctes affectées
-      const assignedDates = typeof dateOrAssignments === 'string'
-          ? [dateOrAssignments]
-          : Array.from(new Set(dateOrAssignments.map(a => a.date)));
-      assignedDates.filter(Boolean).forEach(checkSessionDate);
-  }, [selectedIndices, setState, setEditorState, showNotification, checkSessionDate]);
+      };
+      if (typeof dateOrAssignments === 'string') requestDateCommit(dateOrAssignments, commit);
+      else commit();
+  }, [selectedIndices, setState, setEditorState, showNotification, requestDateCommit]);
 
   const handleClearSelectedDates = useCallback(() => {
       if (selectedIndices.length === 0) return;
@@ -734,21 +744,20 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           finalItem.type = normalizedType;
       }
 
-      setState(draft => {
-          const { item } = findItem(draft, indices);
-          if (item) {
-              Object.assign(item, finalItem);
-          }
-      }, 'inline-edit-item');
-      showNotification("Element mis a jour.", "success");
-      setEditorState(draft => {
-        draft.saveStatus = 'unsaved';
-        draft.editingIndices = null;
-      });
-      if (typeof finalItem.date === 'string' && finalItem.date) {
-          checkSessionDate(finalItem.date);
-      }
-  }, [setState, showNotification, setEditorState, checkSessionDate]);
+      const commit = () => {
+        setState(draft => {
+            const { item } = findItem(draft, indices);
+            if (item) Object.assign(item, finalItem);
+        }, 'inline-edit-item');
+        showNotification("Element mis a jour.", "success");
+        setEditorState(draft => {
+          draft.saveStatus = 'unsaved';
+          draft.editingIndices = null;
+        });
+      };
+      if (typeof finalItem.date === 'string') requestDateCommit(finalItem.date, commit);
+      else commit();
+  }, [setState, showNotification, setEditorState, requestDateCommit]);
 
   const handleImport = useCallback((data: any, mode: 'replace' | 'append') => {
       try {
@@ -868,7 +877,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             classInfo={classInfo}
             establishmentName={config.establishmentName}
             onClassInfoChange={handleClassInfoChange}
-            onBack={onBack}
+            onBack={handleBack}
           />
           {/* Barre d'outils COLLANTE : rendue en enfant direct de la colonne
               flex (pas de wrapper à sa taille, sinon le sticky serait confiné à
@@ -894,13 +903,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
           />
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
-            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-2 rounded-lg border border-white/70 surface-art p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[rgb(var(--sky-wash)_/_0.62)] text-primary">
+            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-slate-200 text-primary">
                 <BookOpen className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-foreground font-display">{predefinedOffer.titre}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-bold text-slate-900 font-display">{predefinedOffer.titre}</p>
+                <p className="text-xs text-slate-600">
                   Un programme prêt à l'emploi existe pour cette classe — chargez-le puis adaptez-le, ou ignorez-le.
                 </p>
               </div>
@@ -1015,6 +1024,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
+      />
+
+      <DateReviewModal
+        isOpen={pendingDateCommit !== null}
+        date={pendingDateCommit?.date ?? ''}
+        warnings={pendingDateCommit?.warnings ?? []}
+        onModify={() => {
+          setPendingDateCommit(null);
+          window.requestAnimationFrame(() => document.getElementById('assign-date-input')?.focus());
+        }}
+        onConfirm={() => {
+          const pending = pendingDateCommit;
+          setPendingDateCommit(null);
+          pending?.commit();
+        }}
       />
 
       <TimetableNudgeModal

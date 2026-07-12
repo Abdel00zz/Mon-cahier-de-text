@@ -270,13 +270,6 @@ const App: React.FC = () => {
             `auto` (spec CSS) et casserait le `position: sticky` de la barre
             d'outils, qui défilerait au lieu de rester collée en haut. */}
         <div className="min-h-screen bg-background text-foreground relative overflow-x-clip">
-          {/* Éléments magiques flottants (Lucioles/Poussières d'étoiles Ghibli) */}
-          <div className="firefly w-2 h-2 top-[12%] left-[8%]" style={{ animationDelay: '0s' }}></div>
-          <div className="firefly w-1.5 h-1.5 top-[25%] right-[15%]" style={{ animationDelay: '2.5s' }}></div>
-          <div className="firefly w-3 h-3 top-[50%] left-[4%]" style={{ animationDelay: '5s' }}></div>
-          <div className="firefly w-2 h-2 bottom-[20%] right-[12%]" style={{ animationDelay: '1.2s' }}></div>
-          <div className="firefly w-2.5 h-2.5 bottom-[35%] left-[18%]" style={{ animationDelay: '3.7s' }}></div>
-
           <div key={routeKey} className="min-h-screen relative z-10">
             <Suspense fallback={<AppBootSkeleton />}>
               {renderContent()}
@@ -291,8 +284,8 @@ const App: React.FC = () => {
         <Toaster
           position="bottom-right"
           closeButton
-          expand
-          gap={10}
+          expand={false}
+          gap={5}
           // Empilement : 3 toasts visibles max (les suivants en file). Deux
           // notifications simultanées s'empilent proprement avec un écart net
           // (gap) plutôt que de se chevaucher. Sur mobile, décalés au-dessus du

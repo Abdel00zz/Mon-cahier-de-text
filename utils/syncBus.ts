@@ -2,7 +2,7 @@
 // (Editor, useClassManager, ConfigModal) du consommateur (useCloudSync).
 // État module-level : les marqueurs "dirty" survivent aux démontages de composants.
 
-export type SyncEvent = 'dirty' | 'pull-applied';
+export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed';
 
 const listeners = new Map<SyncEvent, Set<() => void>>();
 const SYNC_PENDING_KEY = 'syncPending_v1';
@@ -175,6 +175,25 @@ export const markClassDeleted = (classId: string): void => {
 /** Émis après qu'un pull cloud a réécrit le localStorage : les hooks rechargent leur état. */
 export const notifyPullApplied = (): void => {
     emit('pull-applied');
+};
+
+/** Synchronise les instances locales de configuration entre les vues. */
+export const notifyConfigChanged = (): void => {
+    emit('config-changed');
+};
+
+/** Purge la file mémoire avant qu'un autre compte ne soit connecté. */
+export const resetSyncState = (): void => {
+    dirtyClassVersions.clear();
+    deletedClassIds.clear();
+    dirtySeq = 0;
+    classesListVersion = 0;
+    classesListSyncedVersion = 0;
+    try {
+        localStorage.removeItem(SYNC_PENDING_KEY);
+    } catch {
+        // L'état mémoire est déjà purgé.
+    }
 };
 
 export interface PendingWork {

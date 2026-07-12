@@ -211,6 +211,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             {/* Centered Date Input */}
             <div className="relative flex flex-col items-center gap-1.5">
               <Input
+                id="assign-date-input"
                 type="date"
                 value={selectedDate}
                 onChange={event => setSelectedDate(event.target.value)}
@@ -224,7 +225,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
             {/* Garde intelligente : conflits emploi du temps / fériés / vacances / absences */}
             {dateWarnings.length > 0 && (
-              <div className="mx-auto max-w-sm space-y-1 rounded-xl border border-warning/25 bg-warning/10 p-2.5 text-left animate-fade-in" role="alert">
+              <div className="mx-auto max-w-sm space-y-1 rounded-xl border border-warning/25 bg-warning/10 p-2.5 text-left animate-fade-in" role="status">
                 {dateWarnings.map((warning, i) => (
                   <p key={i} className="flex items-start gap-1.5 text-[11px] font-medium leading-snug text-warning">
                     <span aria-hidden className="mt-0.5 shrink-0">⚠</span>

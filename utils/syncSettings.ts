@@ -22,6 +22,7 @@ export type SyncableSettings = Pick<
     | 'timetable'
     | 'absences'
     | 'assessmentDates'
+    | 'assessmentAbsences'
     | 'schoolYearStart'
 > & {
     /** préférences de notification hors états locaux à l'appareil (push, vibration) */
@@ -45,6 +46,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'timetable',
     'absences',
     'assessmentDates',
+    'assessmentAbsences',
     'schoolYearStart',
 ];
 

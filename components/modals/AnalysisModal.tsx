@@ -105,13 +105,13 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
 
         {warningItems.length > 0 && (
           <div className="border-t border-border/40 pt-4">
-            <h3 className="text-xs font-bold text-destructive uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-warning uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-destructive animate-ping" />
-              Alertes de Calendrier & Dates Insolites ({warningItems.length})
+              Repères de calendrier à vérifier ({warningItems.length})
             </h3>
             <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
               {warningItems.map((item, idx) => (
-                <div key={idx} className="bg-destructive/10 p-3 rounded-xl border border-destructive/20 text-xs flex flex-col gap-1">
+                <div key={idx} className="bg-warning/10 p-3 rounded-xl border border-warning/20 text-xs flex flex-col gap-1">
                   <div className="flex justify-between items-center font-bold text-foreground">
                     <span className="truncate pr-2">
                       <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
@@ -136,4 +136,3 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
     </Modal>
   );
 };
-

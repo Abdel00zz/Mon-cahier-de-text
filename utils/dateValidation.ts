@@ -20,7 +20,7 @@ import {
  * séance exceptionnelle...), mais il est prévenu immédiatement.
  */
 
-export type DateWarningType = 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year' | 'future';
+export type DateWarningType = 'invalid' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
 
 export interface DateWarning {
     type: DateWarningType;
@@ -41,6 +41,11 @@ export const validateSessionDate = (
     const warnings: DateWarning[] = [];
     const iso = (date || '').slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return warnings;
+    const [year, month, day] = iso.split('-').map(Number);
+    const parsed = new Date(Date.UTC(year, month - 1, day));
+    if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) {
+        return [{ type: 'invalid', message: 'Cette date n’existe pas dans le calendrier.' }];
+    }
 
     // 1. Emploi du temps : le prof enseigne-t-il cette classe ce jour-là ?
     const schedule = config.schedules?.find(s => s.classId === classInfo.id);

@@ -182,7 +182,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               italique, listes) + LaTeX (les longues formules passent à la
               ligne via displayOverflow: linebreak). */}
           {allowDescription && (
-            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-normal whitespace-pre-wrap break-words animate-fade-in shadow-sm">
+            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-serif whitespace-pre-wrap break-words animate-fade-in shadow-sm">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

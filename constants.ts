@@ -31,17 +31,17 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 };
 
 export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
-    'définition': 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20',
-    'théorème': 'bg-[#eef3f0] text-[#2f3e46] border-[#2f3e46]/20',
-    'proposition': 'bg-[#f4f1ea] text-[#52796f] border-[#84a98c]/30',
-    'lemme': 'bg-[#fdfbf7] text-[#84a98c] border-[#cad2c5]',
-    'corollaire': 'bg-[#fff3ec] text-[#d45d40] border-[#d45d40]/20',
-    'remarque': 'bg-[#f4f1ea] text-[#84a98c] border-[#e8e4d9]',
-    'preuve': 'bg-[#fdfbf7] text-[#2f3e46] border-[#cad2c5]',
-    'exemple': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
-    'exercice': 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20',
-    'application': 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20',
+    'activité': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'définition': 'bg-blue-50 text-blue-700 border-blue-200',
+    'théorème': 'bg-purple-50 text-purple-700 border-purple-200',
+    'proposition': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    'lemme': 'bg-violet-50 text-violet-700 border-violet-200',
+    'corollaire': 'bg-pink-50 text-pink-700 border-pink-200',
+    'remarque': 'bg-slate-50 text-slate-600 border-slate-200',
+    'preuve': 'bg-slate-100 text-slate-700 border-slate-200',
+    'exemple': 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    'exercice': 'bg-amber-50 text-amber-700 border-amber-200',
+    'application': 'bg-teal-50 text-teal-700 border-teal-200',
 };
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
@@ -186,14 +186,14 @@ export const SUBJECTS = [
 export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
     // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
-    'chapter': { name: 'Chapitre', icon: Book, color: 'text-[#2f3e46]', rowColor: 'bg-[#f4f1ea]' },
-    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-[#e76f51]', badgeColor: 'bg-[#fff3ec] text-[#e76f51] border-[#e76f51]/20', rowColor: 'bg-[#fff3ec]' },
+    'chapter': { name: 'Chapitre', icon: Book, color: 'text-slate-700', rowColor: 'bg-slate-50' },
+    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-rose-600', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', rowColor: 'bg-rose-50/40' },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
     // type dans le cahier + 1) — réservé aux types récurrents.
-    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-[#457b9d]', badgeColor: 'bg-[#f1faee] text-[#457b9d] border-[#457b9d]/20', rowColor: 'bg-[#f1faee]', autoNumber: true },
-    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-[#52796f]', badgeColor: 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20', rowColor: 'bg-[#e8f0ec]', autoNumber: true },
-    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-[#457b9d]', badgeColor: 'bg-[#f1faee] text-[#457b9d] border-[#457b9d]/20', rowColor: 'bg-[#f1faee]', autoNumber: true },
-    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-[#52796f]', badgeColor: 'bg-[#e8f0ec] text-[#52796f] border-[#52796f]/20', rowColor: 'bg-[#e8f0ec]', autoNumber: true },
+    'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-600', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', rowColor: 'bg-blue-50/40', autoNumber: true },
+    'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-indigo-600', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', rowColor: 'bg-indigo-50/40', autoNumber: true },
+    'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-cyan-600', badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-200', rowColor: 'bg-cyan-50/40', autoNumber: true },
+    'correction_controle_continu': { name: 'Correction Contrôle continu', icon: CheckSquare, color: 'text-emerald-600', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200', rowColor: 'bg-emerald-50/40', autoNumber: true },
 };
 
 

@@ -38,6 +38,15 @@ export interface AppConfig {
     schoolYearStart?: string;
     /** dates de devoirs personnalisées par le prof : { [classId]: { [assessmentId]: 'YYYY-MM-DD' } } */
     assessmentDates?: Record<string, Record<string, string>>;
+    /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: AssessmentAbsenceRecord } } */
+    assessmentAbsences?: Record<string, Record<string, AssessmentAbsenceRecord>>;
+}
+
+/** Absents d'un devoir surveillé : consignés au moment du devoir, synchronisés avec le compte. */
+export interface AssessmentAbsenceRecord {
+    /** noms des élèves absents (un nom par entrée) */
+    names: string[];
+    updatedAt: string;
 }
 
 // ── Emploi du temps & notifications ─────────────────────────────────────────

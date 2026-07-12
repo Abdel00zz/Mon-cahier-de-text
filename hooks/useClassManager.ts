@@ -128,18 +128,16 @@ export const useClassManager = () => {
 
     const deleteClass = useCallback(
         (classId: string) => {
+            // La confirmation est portée par la couche UI (ConfirmDialog de la
+            // carte) — pas de `window.confirm` ici, sinon double confirmation.
             const target = classes.find(c => c.id === classId);
             if (!target) return;
-            if (window.confirm(
-                `Supprimer la classe "${target.name}" ?\nCette action est irréversible.`,
-            )) {
-                setClasses(d => {
-                    const i = d.findIndex(c => c.id === classId);
-                    if (i !== -1) d.splice(i, 1);
-                });
-                localStorage.removeItem(`${DATA_PREFIX}${classId}`);
-                markClassDeleted(classId);
-            }
+            setClasses(d => {
+                const i = d.findIndex(c => c.id === classId);
+                if (i !== -1) d.splice(i, 1);
+            });
+            localStorage.removeItem(`${DATA_PREFIX}${classId}`);
+            markClassDeleted(classId);
         },
         [classes, setClasses],
     );

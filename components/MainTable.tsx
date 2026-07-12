@@ -79,7 +79,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-lg border surface-art p-3 pl-4 shadow-lg shadow-foreground/5 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-xl border bg-white p-3 pl-4 shadow-lg shadow-slate-200/50 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -121,7 +121,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
-                    <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="alert">
+                    <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="status">
                         {dateWarnings.map((warning, i) => (
                             <p key={i} className="text-[11px] font-semibold leading-snug text-warning">⚠ {warning.message}</p>
                         ))}
@@ -192,16 +192,16 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-[#e8e4d9] bg-[#f4f1ea] md:block">
-    {/* filets verticaux 2 px : prolongent ceux des rangées (Date|Contenu|Remarque) */}
-    <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r-2 border-[#ddd5c4] p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
+  <div className="hidden border-b border-slate-200 bg-slate-50/80 md:block">
+    {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
+    <div className={`grid min-h-10 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-r border-slate-200/80 p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
         Date
       </div>
-      <div className="flex items-center justify-center border-r-2 border-[#ddd5c4] p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
+      <div className="flex items-center justify-center border-r border-slate-200/80 p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
         Contenu
       </div>
-      <div className="flex items-center justify-center p-2.5 text-center text-[11px] font-extrabold uppercase text-[#52796f] font-sans tracking-wider">
+      <div className="flex items-center justify-center p-2 text-center text-[10px] font-semibold uppercase text-slate-500 font-sans tracking-wider">
         Remarque
       </div>
     </div>
@@ -375,12 +375,12 @@ SessionGroupRow.displayName = 'SessionGroupRow';
 
 /* État vide — invite claire à l'action, dans le même esprit signature */
 const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-lg border border-t-0 border-dashed border-primary/20 surface-art px-6 py-16 text-center shadow-sm">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgb(var(--sky-wash)_/_0.65)] text-primary">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-xl border border-t-0 border-dashed border-primary/20 bg-primary/5 px-6 py-16 text-center shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm border border-slate-200 text-primary">
             <BookOpen className="h-5 w-5" />
         </div>
-        <h3 className="text-base font-bold text-foreground font-display">Le cahier de textes est vide</h3>
-        <p className="max-w-sm text-sm text-muted-foreground">
+        <h3 className="text-base font-bold text-slate-900 font-display">Le cahier de textes est vide</h3>
+        <p className="max-w-sm text-sm text-slate-600">
             Ajoutez un premier chapitre pour commencer à construire la progression.
         </p>
         <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="default">

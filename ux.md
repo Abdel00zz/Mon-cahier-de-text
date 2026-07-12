@@ -1,125 +1,63 @@
-# UX.md — Charte d'interface premium
+# UX — Cahier de textes interactif
 
-> Guide de référence pour une interface **haut de gamme, cohérente et hyper-pratique** sur tous les axes.
-> Chaque règle est actionnable et vérifiable. À lire avant toute modification visuelle.
+## Intention
 
----
+L’interface doit aider un enseignant à décider et agir rapidement, sans le juger. Le contenu pédagogique reste central ; les indicateurs sont des repères, jamais des sanctions.
 
-## 0. Les 5 principes directeurs
+## Principes
 
-1. **Le professeur d'abord** — chaque écran répond à « qu'est-ce que le prof veut faire *maintenant* ? ». L'action la plus fréquente est la plus grosse, la plus proche du pouce.
-2. **Calme visuel** — un seul accent principal bleu (`#0057D1`). L'ambre `scheduled` est réservé à la planification ; le reste est neutre. On n'ajoute une couleur que si elle *signifie* quelque chose.
-3. **La donnée respire** — pas de « boîtes dans des boîtes ». Des filets fins, de l'espace, un rythme régulier. Le contenu est le héros, pas les bordures.
-4. **Zéro surprise** — mêmes gestes partout : tap = sélectionner, double-tap = éditer, Échap = fermer. Les alertes conseillent, ne bloquent jamais.
-5. **Fluide et vivant** — micro-animations courtes (150–240 ms), jamais gratuites : elles confirment une action ou guident l'œil.
+1. Une information au bon endroit : une erreur de saisie reste dans le formulaire ou la modale concernée.
+2. Une décision explicite pour une exception : « Modifier la date » ou « J’ai compris, enregistrer ».
+3. Un écran, une intention principale ; une seule action primaire visible.
+4. Les données respirent : peu de cartes, des surfaces claires et des groupes visuels courts.
+5. Mobile d’abord : cibles tactiles de 44 px minimum, bottom sheets, contenu défilable et actions atteignables au pouce.
 
----
+## Dates et messages
 
-## 1. Fondations (design tokens)
+- Une date est contrôlée contre l’emploi du temps, les vacances, jours fériés, absences et années scolaires connues.
+- Un écart est affiché comme un message de vérification, pas comme un toast ni une erreur rouge.
+- Le message liste les raisons et laisse le professeur confirmer une séance exceptionnelle ou de rattrapage.
+- Les actions « Dater aujourd’hui », édition directe, édition complète et affectation multiple utilisent le même circuit.
+- Les alertes de progression emploient « à compléter » ; éviter « en retard » ou toute formulation culpabilisante.
 
-Source unique : [`index.css`](index.css) (`:root` + `@theme inline`). **Ne jamais coder une couleur en dur** hors de ce fichier — utiliser les classes sémantiques.
+## Tableau de bord
 
-| Rôle | Token | Usage |
-|---|---|---|
-| Accent principal | `primary` (`#0057D1`) | boutons d'action, sélection, liens |
-| Planification | `scheduled` | lavis et rails des séances datées uniquement |
-| Fond app | `background` (`#F9FAFB`) | corps |
-| Surface | `card` (blanc) | cartes, modales |
-| Texte | `foreground` / `muted-foreground` | primaire / secondaire |
-| Danger | `destructive` | suppression uniquement |
+Le tableau de bord suit ce circuit :
 
-**Typographie** : titres `Roboto Slab` (`.font-display`), corps `Fira Sans`, arabe `IBM Plex Sans Arabic` (`.font-ar`), dates en chiffres tabulaires.
+```text
+Emploi du temps → séances saisies → contenus à venir → progression → devoirs
+```
 
-**Rayons** : `rounded-lg` (éléments), `rounded-2xl` (cartes/modales), `rounded-full` (pastilles, FAB). **Ombres** : douces et chaudes (`--shadow-sm/md/lg`), jamais noires dures.
+- Présenter ce circuit dans une seule surface aérée.
+- Montrer les prochains contenus datés, puis les actions les plus utiles.
+- Limiter les listes de progression ; les autres classes restent accessibles depuis « Mes classes ».
+- Les couleurs traduisent une intention : bleu/indigo pour l’action, ambre pour une vérification, rouge uniquement pour une action destructive.
 
----
+## Sidebar
 
-## 2. Rythme & espacement
+- Palette ardoise/indigo douce, jamais noir uniforme.
+- État actif lumineux mais non agressif.
+- Mode compact mémorisé : icônes seules, libellés accessibles au clavier et au survol.
+- Sur mobile, la navigation s’ouvre en drawer et reste développée.
 
-- Échelle 4 px : `gap-1.5` (6px) entre éléments serrés, `gap-3` (12px) entre groupes, `gap-6` entre sections.
-- Marge de respiration des cartes : `p-4` mobile, `p-6` desktop.
-- **Cibles tactiles ≥ 44 px** partout (boutons `h-11`, items de menu `min-h-11`). Non négociable.
-- Largeur de lecture max `max-w-5xl` centré ; jamais de texte pleine largeur sur grand écran.
+## Modales
 
----
+- Titre court, une phrase de contexte, contenu défilable, fermeture `X` fixe et pied d’actions stable.
+- Une modale ne doit pas ouvrir une seconde modale ; utiliser une étape interne ou un circuit centralisé.
+- Bouton secondaire : annuler ou modifier. Bouton primaire : confirmer l’action précise.
+- Les choix FR/AR utilisent la préférence partagée et appliquent `dir="rtl"` au contenu arabe.
 
-## 3. Couleur avec intention
+## Accessibilité et mouvement
 
-- **Une sélection** = teinte primaire à 6 % + rail primaire 3 px sur toute la ligne. Jamais un simple gris.
-- **Une date affectée** = lavis `scheduled` + rail ambre. La sélection reste exclusivement bleue afin que les deux états ne puissent pas être confondus.
-- **Badges de type** (Déf./Th./Exo…) : la couleur code le type, pas la décoration. Palette douce (fonds `-100`, texte `-800`).
-- **Alertes** : ambre = conseil (retard, conflit de date), orange = urgent (devoir ≤ 3 j), rouge = danger destructif seulement.
+- Les messages informatifs utilisent `role="status"`; réserver `role="alert"` aux situations réellement urgentes.
+- Focus visible, libellé accessible sur chaque bouton icône, raccourcis jamais obligatoires.
+- Animations courtes, utiles et désactivables avec `prefers-reduced-motion`.
 
----
+## Checklist de revue
 
-## 4. Composants — règles d'or
-
-### Boutons
-Hiérarchie stricte par écran : **1 seule** action primaire (plein, accent), le reste en `secondary`/`ghost`/`outline`. L'action dangereuse est toujours à l'écart, en dernier, jamais accolée au « Enregistrer ».
-
-### Modales (bottom-sheet iOS)
-- Mobile : feuille montante avec **poignée**, `max-h-92vh`, coins hauts arrondis, safe-area en bas.
-- Le champ focusé remonte au centre (clavier virtuel).
-- Un titre clair + une phrase de contexte. Actions en pied : secondaire à gauche, primaire à droite.
-- Fermeture : croix, clic sur le fond, ou Échap — les trois toujours actives.
-
-### Table de l'éditeur
-- 3 colonnes **Date | Contenu | Remarque**, filets verticaux fins et visibles.
-- Rangées **plates et continues** ; un groupe de dates fusionnées se lit comme **un seul bloc** ambre, clos par un filet `scheduled` plus marqué.
-- La **date super-affichée** : grand jour, mois en petites capitales, année discrète — pas de badge encadré.
-- Sur mobile : le badge de type passe **au-dessus** du titre, la Remarque s'affiche **sous** le contenu (jamais cachée), un **FAB « + »** flotte en bas à droite.
-
-### Barre de sélection (contextuelle)
-- Apparaît en bas après un tap. Son en-tête dit **CE qui est sélectionné** (« Exercice — Calcul de termes »), pas un simple compteur.
-- Actions groupées par intention : *déplacer · contenu · dates · danger*, séparées par des filets.
-- L'action reine du prof en classe — **« Dater aujourd'hui »** — est un bouton accent, un seul tap.
-
-### Cartes de classe
-- Nom en évidence, matière en pastille, chip « Prochaine séance : jeudi », date de dernière modification en mono discret. Suppression révélée au survol (desktop) / toujours visible (tactile).
-
----
-
-## 5. Feedback & états
-
-- **Toasts** (sonner, bas-droite) : succès/erreur/info courts, auto-disparition. Jamais bloquants.
-- **États vides** : une icône douce, une phrase, **une** action (« Créer un chapitre »). Jamais une page blanche.
-- **Chargement** : squelettes qui épousent la forme finale, pas de spinner central.
-- **Alertes intelligentes** (retard, devoir proche, conflit de date) : bannière ambre ou toast — toujours *« vous pouvez tout de même… »*. L'app conseille, le prof décide.
-- **Synchronisation** : pastille d'état discrète dans l'en-tête (Synchronisé / … / Hors ligne), cliquable pour forcer.
-
----
-
-## 6. Mouvement
-
-| Interaction | Animation | Durée |
-|---|---|---|
-| Ouverture modale | slide-up + léger scale | 240 ms |
-| Toast / bannière | fade + slide | 180 ms |
-| Onglet actif | soulignement animé (`layoutId`) | spring |
-| Nouvel élément | halo doré qui s'estompe | 2,5 s |
-| Bouton pressé | `active:scale-95` | instantané |
-
-Respecter `prefers-reduced-motion` : désactiver les transforms non essentiels.
-
----
-
-## 7. Accessibilité & i18n
-
-- Contraste AA minimum ; focus visible (anneau primaire) sur tout élément interactif.
-- `aria-label` sur chaque bouton-icône ; `role="alert"` sur les avertissements.
-- **RTL arabe** : `dir` posé sur les contenus arabes détectés, police IBM Plex.
-- Raccourcis desktop annoncés (`/`, `Ctrl+K`, `Ctrl+Z`, `Échap`) mais **jamais** requis — tout est atteignable au doigt.
-
----
-
-## 8. Checklist de revue (avant merge d'un écran)
-
-- [ ] Une seule action primaire, danger isolé.
-- [ ] Cibles ≥ 44 px, testé à 360 px de large.
-- [ ] Aucune couleur en dur hors `index.css`.
-- [ ] Sélection = pleine ligne teintée, pas un bout de cellule.
-- [ ] Modale : poignée mobile, Échap actif, champ focusé visible sous clavier.
-- [ ] Alertes non bloquantes.
-- [ ] État vide + squelette de chargement présents.
-- [ ] RTL et MathJax vérifiés si contenu pédagogique.
-- [ ] Animation ≤ 240 ms, respect de `reduced-motion`.
+- [ ] Le message est-il dans le contexte de l’action ?
+- [ ] Une exception est-elle confirmée explicitement ?
+- [ ] L’action principale est-elle unique et compréhensible ?
+- [ ] Le parcours fonctionne-t-il à 360 px et au clavier ?
+- [ ] La règle métier est-elle dans `utils/`, non dupliquée dans la vue ?
+- [ ] Le composant ou le fichier est-il réellement importé avant toute suppression ?

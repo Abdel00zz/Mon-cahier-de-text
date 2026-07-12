@@ -72,4 +72,7 @@ export {
   TrendingUp,
   ArrowUpRight,
   Sun,
+  LayoutDashboard,
+  Menu,
+  Users,
 } from 'lucide-react';

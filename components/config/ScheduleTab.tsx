@@ -1,5 +1,6 @@
 import React from 'react';
-import { AppConfig, ClassInfo, Cycle } from '../../types';
+import { toast } from 'sonner';
+import { AppConfig, ClassInfo, Cycle, TimetableEntry } from '../../types';
 import { CreateClassModal } from '../modals/CreateClassModal';
 import { getBundledCalendar } from '../../utils/calendar';
 import { SUBJECT_ABBREV_MAP } from '../../constants';
@@ -13,6 +14,8 @@ import {
 } from '../../utils/timetable';
 import { useClassAssessments } from '../../hooks/useAssessments';
 import { getOfficialWeeklyHours } from '../../utils/officialHours';
+import { computeScheduleInsights, hoursDeviationMessage } from '../../utils/scheduleInsights';
+import { TriangleAlert, CircleCheck, Info } from '../ui/icons';
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -56,12 +59,12 @@ const abbreviateClassName = (name: string): string => {
 };
 
 const CLASS_CELL_COLORS = [
-    { bg: 'bg-[#e8f0ec]', border: 'border-[#cad2c5]', text: 'text-[#52796f]', dot: 'bg-[#84a98c]' }, // sauge
-    { bg: 'bg-[#fff3ec]', border: 'border-[#ffd6c2]', text: 'text-[#c05a38]', dot: 'bg-[#e76f51]' }, // terracotta
-    { bg: 'bg-[#eaf1f8]', border: 'border-[#c9dcf2]', text: 'text-[#39628c]', dot: 'bg-[#457b9d]' }, // bleu doux
-    { bg: 'bg-[#faf3e3]', border: 'border-[#ecdfc0]', text: 'text-[#8a6d1f]', dot: 'bg-[#c9a227]' }, // ambre
-    { bg: 'bg-[#f3eefb]', border: 'border-[#dccff0]', text: 'text-[#65539a]', dot: 'bg-[#8a76c4]' }, // lavande
-    { bg: 'bg-[#fdeef2]', border: 'border-[#f5cdd8]', text: 'text-[#a34e69]', dot: 'bg-[#d0728f]' }, // rose
+    { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', dot: 'bg-emerald-400' }, // sauge
+    { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-600', dot: 'bg-orange-400' }, // terracotta
+    { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', dot: 'bg-blue-400' }, // bleu doux
+    { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', dot: 'bg-amber-400' }, // ambre
+    { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-600', dot: 'bg-indigo-400' }, // lavande
+    { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600', dot: 'bg-rose-400' }, // rose
 ];
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
@@ -81,9 +84,33 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return CLASS_CELL_COLORS[(index >= 0 ? index : 0) % CLASS_CELL_COLORS.length];
     };
 
+    /*
+     * Avis intelligent en TEMPS RÉEL : après chaque modif de la grille, on
+     * confronte les heures posées à l'horaire officiel de la classe touchée.
+     * Un dépassement (ou un manque net) déclenche un toast bienveillant — le
+     * prof reste libre (dédoublement, option), mais il est PRÉVENU de la
+     * probable coquille (« 6 h pour 2BAC PC alors que l'officiel est 5 h »).
+     */
+    const notifyHoursDeviation = React.useCallback((nextTimetable: typeof timetable, classId: string | null) => {
+        if (!classId) return;
+        const classInfo = classById.get(classId);
+        if (!classInfo) return;
+        const [insight] = computeScheduleInsights([classInfo], nextTimetable);
+        if (insight.deviation === 'over' || (insight.deviation === 'under' && insight.officialHours !== null)) {
+            const message = hoursDeviationMessage(insight);
+            if (message) {
+                if (insight.deviation === 'over') toast.warning(message, { id: `hours-${classId}` });
+                else toast.info(message, { id: `hours-${classId}` });
+            }
+        } else if (insight.deviation === 'match' && insight.officialHours !== null && insight.scheduledHours > 0) {
+            toast.success(`${insight.className} : ${insight.scheduledHours} h — conforme à l'horaire officiel ✓`, { id: `hours-${classId}` });
+        }
+    }, [classById]);
+
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
+        notifyHoursDeviation(nextTimetable, classId);
     };
 
     // séance fusionnée (2 h+) : la cellule unique pilote TOUTES ses heures d'un coup
@@ -93,6 +120,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             next = setTimetableEntry(next, day, slot, classId);
         }
         onChange({ timetable: next, schedules: deriveSchedules(next) });
+        notifyHoursDeviation(next, classId);
     };
 
     // séances continues par jour : deux créneaux consécutifs de la même classe
@@ -139,9 +167,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 comme <b>une seule séance de 2 h</b> — une seule date attendue dans le cahier.
             </p>
             {noClassesYet && (
-                <div className="flex items-center gap-2.5 rounded-md border border-[#cad2c5] bg-[#e8f0ec]/60 px-3 py-2.5">
-                    <span aria-hidden>🌱</span>
-                    <p className="text-xs font-semibold leading-relaxed text-[#52796f]">
+                <div className="flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 px-3 py-2.5">
+                    <span aria-hidden>✨</span>
+                    <p className="text-xs font-semibold leading-relaxed text-primary">
                         C'est ici que tout commence ! Touchez une case de la grille et choisissez
                         « ＋ Créer une classe… » — votre première classe naîtra directement sur son créneau.
                     </p>
@@ -221,14 +249,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 }`}
                                                 aria-label={`${day.label} ${hour.label}${classInfo ? ` — ${classInfo.name}` : ''}${merged ? ` (séance fusionnée de ${span} h)` : ''}`}
                                             >
-                                                <option value="" style={{ color: '#2f3e46' }}>—</option>
+                                                <option value="" className="text-slate-800">—</option>
                                                 {classes.map(c => (
-                                                    <option key={c.id} value={c.id} style={{ color: '#2f3e46' }}>
+                                                    <option key={c.id} value={c.id} className="text-slate-800">
                                                         {SUBJECT_ABBREV_MAP[c.subject] || c.subject} · {c.name}
                                                     </option>
                                                 ))}
                                                 {onCreateClass && (
-                                                    <option value="__create__" style={{ color: '#2f3e46', fontWeight: 'bold' }}>
+                                                    <option value="__create__" className="text-slate-800 font-bold">
                                                         ＋ Créer une classe…
                                                     </option>
                                                 )}
@@ -254,6 +282,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </table>
                 </div>
             </div>
+
+            {/* Avis intelligent PERSISTANT : écarts entre heures posées et
+                horaire officiel, remis à jour en direct. Non bloquant. */}
+            <HoursAdvisory classes={classes} timetable={timetable} />
 
             {/* Récapitulatif par classe : séances (blocs continus) et heures.
                 Repère officiel indicatif (MEN) affiché en douceur — jamais contraignant. */}
@@ -328,6 +360,58 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
                 />
             )}
+        </div>
+    );
+};
+
+/* ── Avis « heures posées vs officiel » — persistant, temps réel, non bloquant ── */
+
+const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[] | undefined }> = ({ classes, timetable }) => {
+    const insights = React.useMemo(() => computeScheduleInsights(classes, timetable), [classes, timetable]);
+    // on ne signale que les classes dont l'officiel est connu ET qui s'écartent
+    const deviations = insights.filter(i => i.officialHours !== null && (i.deviation === 'over' || i.deviation === 'under'));
+    const conform = insights.filter(i => i.officialHours !== null && i.deviation === 'match' && i.scheduledHours > 0);
+
+    if (deviations.length === 0) {
+        if (conform.length === 0) return null;
+        return (
+            <div className="flex items-center gap-2 rounded-lg border border-success/25 bg-success/10 px-3 py-2">
+                <CircleCheck className="h-4 w-4 shrink-0 text-success" />
+                <p className="text-xs font-semibold text-success">
+                    Volume horaire conforme à l'officiel pour {conform.length} classe{conform.length > 1 ? 's' : ''}. Parfait.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-1.5 rounded-lg border border-warning/30 bg-warning/5 p-3">
+            <div className="flex items-center gap-2">
+                <TriangleAlert className="h-4 w-4 shrink-0 text-warning" />
+                <p className="text-xs font-bold text-amber-600">
+                    Volume horaire à vérifier ({deviations.length})
+                </p>
+            </div>
+            <ul className="space-y-1 pl-6">
+                {deviations.map(i => (
+                    <li key={i.classId} className="text-[11px] leading-relaxed text-muted-foreground">
+                        <span className="font-bold text-foreground">{i.className}</span> —{' '}
+                        <span className={i.deviation === 'over' ? 'font-bold text-warning' : 'font-bold text-blue-600'}>
+                            {i.scheduledHours} h posée{i.scheduledHours > 1 ? 's' : ''}
+                        </span>{' '}
+                        pour {i.officialHours} h officielles ({i.officialContext}) :{' '}
+                        {i.deviation === 'over'
+                            ? `${i.delta} h de trop`
+                            : `${Math.abs(i.delta)} h manquante${Math.abs(i.delta) > 1 ? 's' : ''}`}
+                        .
+                    </li>
+                ))}
+            </ul>
+            <p className="flex items-start gap-1.5 pl-6 pt-0.5 text-[10px] leading-snug text-muted-foreground/70">
+                <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                Simple repère : un dédoublement, une option ou une spécificité d'établissement peut justifier l'écart. Vous
+                décidez.
+            </p>
         </div>
     );
 };

@@ -107,36 +107,36 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery, isSearchVisible]);
   
   return (
-    <div className="sticky top-0 z-[50] mb-0 flex flex-wrap items-center justify-between gap-2 rounded-none border-b border-[#e8e4d9] bg-[#fdfbf7]/95 px-4 py-3 shadow-none backdrop-blur print:hidden">
+    <div className="sticky top-0 z-[50] mb-0 flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-200 bg-white/95 px-4 py-2 shadow-none backdrop-blur print:hidden">
       <div className="flex min-w-0 items-center gap-2">
         {/* Journal compact : dernière opération, clic → historique détaillé */}
         {lastModifiedLabel && (
           <button
             type="button"
             onClick={onOpenHistory}
-            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold text-muted-foreground/60 transition-colors hover:bg-secondary hover:text-foreground sm:max-w-56"
+            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 sm:max-w-56"
             data-tippy-content="Voir l'historique des actions"
             aria-label="Historique des modifications"
           >
-            <History className="h-3 w-3 shrink-0" />
+            <History className="h-3 w-3 shrink-0 text-slate-400" />
             <span className="truncate">{lastModifiedLabel}</span>
           </button>
         )}
       </div>
       
-      <div className="flex-1 flex justify-center items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification" className="rounded-xl">
-          <Undo2 className="h-[18px] w-[18px] text-primary" />
+      <div className="flex-1 flex justify-center items-center gap-1">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification" className="rounded-md h-8 w-8 text-slate-600">
+          <Undo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)" aria-label="Rétablir la modification">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)" aria-label="Rétablir la modification" className="rounded-md h-8 w-8 text-slate-600">
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle" aria-label="Sauvegarder maintenant">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle" aria-label="Sauvegarder maintenant" className="rounded-md h-8 w-8 text-slate-600">
           <Save className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <div ref={searchContainerRef} className="relative flex items-center" role="search">
           <Button
             variant="ghost" size="icon"
@@ -145,39 +145,40 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label="Rechercher"
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel"
+            className="rounded-md h-8 w-8 text-slate-600"
           >
             <Search className="h-4 w-4" />
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
-            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-3 pb-2 bg-card/95 backdrop-blur border-b border-border shadow-md animate-slide-in-down" id="toolbar-search-panel">
+            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-2.5 pb-2 bg-white/95 backdrop-blur border-b border-slate-200 shadow-md animate-slide-in-down" id="toolbar-search-panel">
               <div className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-muted-foreground" />
+                <Search className="h-4 w-4 text-slate-400" />
                 <Input
                   ref={searchInputRef}
                   type="search"
                   placeholder="Rechercher..."
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 h-8 text-xs rounded-md"
                 />
                 {localSearch && (
                   <button 
                     type="button" 
                     onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
-                    className="w-11 h-11 flex items-center justify-center rounded-full bg-secondary hover:bg-muted text-muted-foreground hover:text-foreground/80 transition-all duration-200 material-focus"
+                    className="w-8 h-8 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all duration-200"
                     aria-label="Effacer la recherche"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setIsSearchVisible(false)}
-                  className="w-11 h-11 flex items-center justify-center rounded-full bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary transition-all duration-200 material-focus"
+                  className="w-8 h-8 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary transition-all duration-200"
                   aria-label="Fermer la recherche"
                 >
-                  <ChevronUp className="h-5 w-5" />
+                  <ChevronUp className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -185,7 +186,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           {/* Desktop popover */}
           <div
             id="toolbar-search-panel"
-            className={`absolute hidden sm:block transition-all duration-300 ease-in-out origin-right top-1/2 right-[calc(100%+0.5rem)] -translate-y-1/2 w-60 ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
+            className={`absolute hidden sm:block transition-all duration-300 ease-in-out origin-right top-1/2 right-[calc(100%+0.5rem)] -translate-y-1/2 w-48 ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
           >
             <div className="relative w-full">
               <Input
@@ -194,7 +195,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 placeholder="Rechercher..."
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                className="rounded-full px-4"
+                className="rounded-md h-8 text-xs px-2.5"
               />
             </div>
           </div>
@@ -205,61 +206,61 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full border border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-accent active:bg-accent/80 cursor-pointer"
+              className="h-8 w-8 rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
               aria-label="Menu d'actions"
             >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 z-[70]">
-            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
+          <DropdownMenuContent align="end" className="w-56 z-[70] rounded-md border border-slate-200 shadow-lg">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-400">
               Actions rapides
             </DropdownMenuLabel>
             
             {/* On mobile screens, show undo/redo/save inside the menu */}
             <div className="sm:hidden">
-              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex items-center gap-3 py-2.5 cursor-pointer">
-                <Undo2 className="h-4 w-4 text-primary" />
+              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+                <Undo2 className="h-3.5 w-3.5 text-slate-400" />
                 <span>Annuler</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex items-center gap-3 py-2.5 cursor-pointer">
-                <Redo2 className="h-4 w-4 text-primary" />
+              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+                <Redo2 className="h-3.5 w-3.5 text-slate-400" />
                 <span>Rétablir</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex items-center gap-3 py-2.5 cursor-pointer">
-                <Save className="h-4 w-4 text-primary" />
+              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+                <Save className="h-3.5 w-3.5 text-slate-400" />
                 <span>Sauvegarder</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </div>
 
-            <DropdownMenuItem onClick={onOpenImport} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <FileInput className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={onOpenImport} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <FileInput className="h-3.5 w-3.5 text-slate-400" />
               <span>Importer JSON</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onExportData} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <FileOutput className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={onExportData} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <FileOutput className="h-3.5 w-3.5 text-slate-400" />
               <span>Exporter JSON</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenManageLessons} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <ListChecks className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={onOpenManageLessons} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <ListChecks className="h-3.5 w-3.5 text-slate-400" />
               <span>Gérer les chapitres & devoirs</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenAnalyse} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <PieChart className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={onOpenAnalyse} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <PieChart className="h-3.5 w-3.5 text-slate-400" />
               <span>Analyse & progression</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold uppercase text-muted-foreground">
+            <DropdownMenuLabel className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-400">
               Sortie
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => (onPrint ? onPrint() : printDocument('cahier-de-textes'))} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <Printer className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={() => (onPrint ? onPrint() : printDocument('cahier-de-textes'))} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <Printer className="h-3.5 w-3.5 text-slate-400" />
               <span>Imprimer</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenGuide} className="flex items-center gap-3 py-2.5 cursor-pointer">
-              <CircleHelp className="h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={onOpenGuide} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <CircleHelp className="h-3.5 w-3.5 text-slate-400" />
               <span>Aide</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

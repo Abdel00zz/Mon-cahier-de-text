@@ -4,7 +4,7 @@ import { AppConfig } from '../types';
 import { logger } from '../utils/logger';
 import { effectiveSchedules } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
-import { markClassesListDirty, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
+import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
@@ -96,7 +96,7 @@ export const useConfigManager = () => {
 
     // ── Rechargement quand un pull cloud a réécrit le localStorage ─────────
     useEffect(() => {
-        return subscribe('pull-applied', () => {
+        const reload = () => {
             try {
                 const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
                 if (stored) {
@@ -109,7 +109,13 @@ export const useConfigManager = () => {
             } catch (error) {
                 logger.error('Failed to reload config after cloud pull', error);
             }
-        });
+        };
+        const unsubscribePull = subscribe('pull-applied', reload);
+        const unsubscribeConfig = subscribe('config-changed', reload);
+        return () => {
+            unsubscribePull();
+            unsubscribeConfig();
+        };
     }, [setConfig]);
 
     const updateConfig = useCallback((newConfig: Partial<AppConfig>) => {
@@ -134,6 +140,7 @@ export const useConfigManager = () => {
             touchSettingsSyncMeta();
             markClassesListDirty();
         }
+        notifyConfigChanged();
     }, [setConfig]);
 
     return { config, updateConfig, isLoading };

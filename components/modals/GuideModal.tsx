@@ -34,48 +34,48 @@ const toHtml = (markdown: string, prefix: Lang): string => {
     .map(line => {
       if (line.startsWith('# ')) {
         const t = line.replace('# ', '').trim();
-        return `<h1 class="text-3xl font-black font-display mb-3 text-[#2f3e46] tracking-tight">${t}</h1>`;
+        return `<h1 class="text-3xl font-black font-display mb-3 text-slate-900 tracking-tight">${t}</h1>`;
       }
       if (line.startsWith('## ')) {
         const t = line.replace('## ', '').trim();
         const id = `${prefix}-sec-${headingIndex}`;
         headingIndex++;
-        return `<h2 id="${id}" class="text-xl font-extrabold font-display mt-14 mb-6 pb-3 border-b-2 border-[#e8e4d9] text-[#2f3e46] scroll-mt-4">${t}</h2>`;
+        return `<h2 id="${id}" class="text-xl font-extrabold font-display mt-14 mb-6 pb-3 border-b-2 border-slate-200 text-slate-900 scroll-mt-4">${t}</h2>`;
       }
       if (line.startsWith('### ')) {
         const t = line.replace('### ', '').trim();
-        return `<h3 class="text-base font-bold font-display mt-8 mb-4 text-[#2f3e46]">${t}</h3>`;
+        return `<h3 class="text-base font-bold font-display mt-8 mb-4 text-slate-900">${t}</h3>`;
       }
 
       // « 1. **Titre** : description » → carte numérotée (pastille terracotta)
       const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
       if (numListMatch) {
         const [, num, title, desc] = numListMatch;
-        return `<div class="flex gap-4 items-start rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] p-5 mb-4 shadow-sm"><div class="flex-shrink-0 w-9 h-9 rounded-full bg-[#fff3ec] border border-[#ffd6c2] text-[#e76f51] font-black flex items-center justify-center font-mono">${num}</div><div class="min-w-0 flex-1"><div class="font-bold text-[#2f3e46] font-display mb-1.5 text-[15px]">${title}</div><div class="text-[#52796f] text-[13.5px] leading-relaxed">${desc}</div></div></div>`;
+        return `<div class="flex gap-4 items-start rounded-2xl border-2 border-slate-200 bg-white p-5 mb-4 shadow-sm"><div class="flex-shrink-0 w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-black flex items-center justify-center font-mono">${num}</div><div class="min-w-0 flex-1"><div class="font-bold text-slate-900 font-display mb-1.5 text-[15px]">${title}</div><div class="text-slate-600 text-[13.5px] leading-relaxed">${desc}</div></div></div>`;
       }
 
       // « - **Titre** : description » → carte à rail sauge
       const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
       if (boldBulletMatch) {
         const [, title, desc] = boldBulletMatch;
-        return `<div class="relative overflow-hidden rounded-2xl border-2 border-[#e8e4d9] bg-[#fdfbf7] p-5 mb-4 shadow-sm"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-[#84a98c]"></div><div class="font-bold text-[#2f3e46] font-display mb-1.5 text-[15px]">${title}</div><div class="text-[#52796f] text-[13.5px] leading-relaxed">${desc}</div></div>`;
+        return `<div class="relative overflow-hidden rounded-2xl border-2 border-slate-200 bg-white p-5 mb-4 shadow-sm"><div class="absolute start-0 top-0 bottom-0 w-1.5 bg-primary"></div><div class="font-bold text-slate-900 font-display mb-1.5 text-[15px]">${title}</div><div class="text-slate-600 text-[13.5px] leading-relaxed">${desc}</div></div>`;
       }
 
       // puce simple
       if (line.startsWith('- ')) {
-        const content = line.replace('- ', '').trim();
-        return `<div class="flex gap-3 mb-3 items-start"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#84a98c]"></span><span class="text-[#52796f] text-[14px] leading-relaxed">${content}</span></div>`;
+        const content = line.replace('- ', '').trim().replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+        return `<div class="flex gap-3 mb-3 items-start"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span><span class="text-slate-600 text-[14px] leading-relaxed">${content}</span></div>`;
       }
 
-      if (line.trim() === '---') return '<hr class="my-8 border-[#e8e4d9]">';
+      if (line.trim() === '---') return '<hr class="my-8 border-slate-200">';
       if (!line.trim()) return '';
 
       const html = line
-        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-[#2f3e46]">$1</strong>')
-        .replace(/`([^`]+)`/g, '<code class="bg-[#f4f1ea] text-[#c05a38] px-1.5 py-0.5 rounded-md text-xs font-mono border border-[#e8e4d9]">$1</code>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[#52796f] font-semibold underline underline-offset-2 hover:text-[#2f3e46] transition-colors">$1</a>');
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-slate-800">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-md text-xs font-mono border border-slate-200">$1</code>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-semibold underline underline-offset-2 hover:text-primary/80 transition-colors">$1</a>');
 
-      return `<p class="mb-4 text-[14px] text-[#52796f] leading-relaxed">${html}</p>`;
+      return `<p class="mb-4 text-[14px] text-slate-600 leading-relaxed">${html}</p>`;
     })
     .join('\n');
 };
@@ -154,23 +154,23 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       title={
         <div className="flex w-full select-none flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'text-right font-ar' : 'text-left'}>
-            <span className="font-display text-lg font-extrabold text-[#2f3e46]">
+            <span className="font-display text-lg font-extrabold text-slate-800">
               {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
             </span>
-            <span className="block text-xs font-semibold text-[#84a98c]">
+            <span className="block text-xs font-semibold text-slate-500">
               {isAr ? 'الأساسيات خطوة بخطوة — ببساطة ووضوح' : "L'essentiel pas à pas — simple et complet"}
             </span>
           </div>
 
           {/* Bascule de langue : UNE langue à la fois, choix mémorisé */}
-          <div className="flex shrink-0 items-center self-start rounded-full border border-[#e8e4d9] bg-[#f4f1ea] p-0.5 sm:self-center">
+          <div className="flex shrink-0 items-center self-start rounded-full border border-slate-200 bg-slate-100 p-0.5 sm:self-center">
             {(['fr', 'ar'] as const).map(l => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
                 aria-pressed={lang === l}
                 className={`cursor-pointer rounded-full px-4 py-1.5 text-xs font-extrabold transition-all duration-200 ${
-                  lang === l ? 'bg-[#52796f] text-white shadow-sm' : 'text-[#84a98c] hover:text-[#52796f]'
+                  lang === l ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:text-primary'
                 }`}
               >
                 {l === 'fr' ? 'Français' : 'العربية'}
@@ -185,7 +185,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       {/* Chips d'ancrage — mobile, dans la langue active */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-[#e8e4d9] bg-[#f4f1ea]/60 px-3 py-2.5 lg:hidden"
+        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-slate-50 px-3 py-2.5 lg:hidden"
       >
         {tocItems.map(item => (
           <button
@@ -193,8 +193,8 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
             onClick={() => handleScrollTo(item.id)}
             className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition-all duration-200 ${isAr ? 'font-ar' : ''} ${
               activeSection === item.id
-                ? 'bg-[#52796f] text-white shadow-sm'
-                : 'bg-[#fdfbf7] text-[#84a98c] border border-[#e8e4d9] hover:text-[#52796f]'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-white text-slate-500 border border-slate-200 hover:text-primary'
             }`}
           >
             {item.label}
@@ -202,13 +202,13 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         ))}
       </div>
 
-      <div className="grid h-full flex-1 grid-cols-1 overflow-hidden bg-[#fdfbf7] lg:grid-cols-[250px_1fr]">
+      <div className="grid h-full flex-1 grid-cols-1 overflow-hidden bg-white lg:grid-cols-[250px_1fr]">
         {/* Sommaire latéral — ordinateur, monolingue */}
         <div
           dir={isAr ? 'rtl' : 'ltr'}
-          className="custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto border-e border-[#e8e4d9] bg-[#f4f1ea]/50 p-4 lg:flex"
+          className="custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto border-e border-slate-200 bg-slate-50/50 p-4 lg:flex"
         >
-          <div className={`mb-4 px-2 text-[10px] font-black uppercase tracking-wider text-[#84a98c] ${isAr ? 'font-ar' : ''}`}>
+          <div className={`mb-4 px-2 text-[10px] font-black uppercase tracking-wider text-slate-400 ${isAr ? 'font-ar' : ''}`}>
             {isAr ? 'الفهرس' : 'Sommaire'}
           </div>
           <nav className="space-y-1.5">
@@ -220,8 +220,8 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                   isAr ? 'text-right font-ar' : 'text-left'
                 } ${
                   activeSection === item.id
-                    ? 'bg-[#52796f] text-white shadow-sm'
-                    : 'text-[#52796f] hover:bg-[#e8f0ec] hover:text-[#2f3e46]'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 {item.label}

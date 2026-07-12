@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData } from '../types';
 import { computeProgressionStats } from '../utils/progression';
-import { getDaySessionBlocks } from '../utils/timetable';
+import { getDaySessionBlocks, nextSessionInfoForClass, NextSessionInfo, formatHourLabel } from '../utils/timetable';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { useLateness } from '../hooks/useLateness';
 import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
-import { TrendingUp, CircleCheck, TriangleAlert, CalendarDays, Clock, Book, CalendarCheck } from './ui/icons';
+import { TrendingUp, CircleCheck, Clock, Book, CalendarCheck, Bell } from './ui/icons';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import {
@@ -114,28 +114,26 @@ const StatCard: React.FC<StatCardProps> = ({
             tabIndex={0}
             onClick={onOpen}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
-            className={`group flex cursor-pointer flex-col justify-between rounded-[28px] border-2 border-[#e8e4d9] bg-[#fdfbf7] p-6 shadow-[0_10px_40px_-10px_rgba(82,121,111,0.15)] transition-all duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(82,121,111,0.25)] hover:border-[#cad2c5] animate-slide-in-up relative overflow-hidden`}
+            className={`group flex cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300 animate-slide-in-up relative overflow-hidden`}
             style={{ animationDelay: `${index * 55}ms` }}
             aria-label={`${title} : ${value}.`}
         >
-            <div className={`absolute top-0 right-0 w-24 h-24 ${shapeBgColor} opacity-20 rounded-bl-full transform group-hover:scale-110 transition-transform`} />
-
-            <div className="flex justify-between items-start mb-6 relative z-10">
-                <span className={`text-sm font-bold ${textColor} uppercase tracking-wider`}>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+                <span className={`text-[11px] font-bold ${textColor} uppercase tracking-wider`}>
                     {title}
                 </span>
-                <div className={`p-2 rounded-2xl ${iconBgColor} ${textColor} transition-all duration-300 group-hover:scale-110`}>
-                    <Icon className="w-6 h-6" />
+                <div className={`p-1.5 rounded-lg ${iconBgColor} ${textColor} transition-colors duration-200`}>
+                    <Icon className="w-4.5 h-4.5" />
                 </div>
             </div>
             
             <div className="relative z-10">
-                <h3 className={`truncate text-4xl sm:text-5xl font-extrabold tracking-tight ${valueColor} leading-none`}>
+                <h3 className={`truncate text-3xl sm:text-4xl font-extrabold tracking-tight ${valueColor} leading-none`}>
                     {displayValue}
                     {isPercent && typeof value === 'number' && '%'}
                 </h3>
                 {subtext && (
-                    <span className="mt-2 block truncate text-[12px] font-bold text-muted-foreground/80">
+                    <span className="mt-2.5 block truncate text-[11px] font-bold text-slate-400">
                         {subtext}
                     </span>
                 )}
@@ -222,6 +220,40 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                 className: classes.find(c => c.id === block.classId)?.name ?? '',
             }));
 
+        /*
+         * Séance PROCHE-PROCHAINE (toutes classes confondues) — la carte de
+         * tête : d'abord la réalité du jour (séance en cours ou suivante,
+         * d'après l'heure), sinon la plus imminente des « prochaines séances »
+         * par classe (mêmes règles que les cartes : fériés/vacances/absences).
+         */
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        let nextUp: { className: string; info: NextSessionInfo } | null = null;
+        const activeBlock = todayBlocks.find(b => nowMin >= b.startMin && nowMin < b.endMin);
+        const upcomingBlock = todayBlocks.find(b => b.startMin > nowMin);
+        if (activeBlock) {
+            nextUp = { className: activeBlock.className, info: { kind: 'now', label: `en cours · fin ${formatHourLabel(activeBlock.endMin)}` } };
+        } else if (upcomingBlock) {
+            nextUp = { className: upcomingBlock.className, info: { kind: 'today', label: `aujourd'hui · ${formatHourLabel(upcomingBlock.startMin)}` } };
+        } else {
+            const kindPriority: Record<NextSessionInfo['kind'], number> = {
+                now: 0, today: 1, tomorrow: 2, weekday: 3, date: 4, 'season-end': 5,
+            };
+            for (const classInfo of classes) {
+                const info = nextSessionInfoForClass(
+                    classInfo.id,
+                    config.timetable,
+                    config.schedules?.find(s => s.classId === classInfo.id)?.slots.map(s => s.weekday) ?? [],
+                    calendar,
+                    now,
+                );
+                if (!info) continue;
+                if (!nextUp || kindPriority[info.kind] < kindPriority[nextUp.info.kind]) {
+                    nextUp = { className: classInfo.name, info };
+                }
+            }
+        }
+
         return {
             isOffDay,
             completion,
@@ -234,8 +266,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
             lastDateClass,
             perClassProgress,
             todayBlocks,
+            nextUp,
         };
-    }, [classes, config.timetable, config.absences]);
+    }, [classes, config.timetable, config.schedules, config.absences]);
 
     if (classes.length === 0) return null;
 
@@ -249,54 +282,84 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                {/* Carte de TÊTE — toujours en premier, style volontairement
+                    DISTINCT (fond plein sombre) : la séance en cours ou la plus
+                    proche, toutes classes confondues. */}
+                <Card
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setOpenSheet('today')}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenSheet('today'); } }}
+                    className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-xl border border-slate-900 bg-slate-900 p-5 text-white shadow-sm transition-all duration-200 hover:bg-slate-800 hover:shadow-md animate-slide-in-up"
+                    aria-label={`Prochaine séance : ${stats.nextUp ? `${stats.nextUp.className}, ${stats.nextUp.info.label}` : 'aucune'}.`}
+                >
+                    <div className="absolute top-0 right-0 h-20 w-20 rounded-bl-full bg-white/5 transition-transform group-hover:scale-110" />
+                    <div className="relative z-10 mb-4 flex items-start justify-between">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            {stats.nextUp?.info.kind === 'now' ? 'Séance en cours' : 'Prochaine séance'}
+                        </span>
+                        <div className="rounded-lg bg-white/10 p-1.5 text-white transition-colors duration-200">
+                            {stats.nextUp?.info.kind === 'now'
+                                ? (
+                                    <span className="relative flex h-5 w-5 items-center justify-center">
+                                        <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-amber-400 opacity-75" />
+                                        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+                                    </span>
+                                )
+                                : <Bell className="h-4.5 w-4.5" />}
+                        </div>
+                    </div>
+                    <div className="relative z-10">
+                        <h3 className="truncate text-xl sm:text-2xl font-extrabold leading-tight tracking-tight">
+                            {stats.nextUp
+                                ? stats.nextUp.info.kind === 'season-end' ? 'Année terminée' : stats.nextUp.className
+                                : 'Aucune séance'}
+                        </h3>
+                        <span className="mt-2 block truncate text-[11px] font-bold text-slate-300">
+                            {stats.nextUp
+                                ? stats.nextUp.info.kind === 'season-end' ? 'Rendez-vous à la rentrée 🌱' : stats.nextUp.info.label
+                                : (config.timetable?.length ?? 0) === 0
+                                    ? 'Renseignez votre emploi du temps'
+                                    : 'Rien de planifié'}
+                        </span>
+                    </div>
+                </Card>
                 <StatCard
                     title="Progression"
                     value={stats.completion}
-                    subtext={`${stats.planned}/${stats.total} chapitres`}
+                    subtext={`${stats.planned}/${stats.total} contenus datés`}
                     icon={TrendingUp}
                     isPercent
-                    index={0}
-                    shapeBgColor="bg-[#a8dadc]"
-                    iconBgColor="bg-[#f1faee]"
-                    textColor="text-[#457b9d]"
-                    valueColor="text-[#1d3557]"
+                    index={1}
+                    shapeBgColor="bg-blue-500"
+                    iconBgColor="bg-blue-50"
+                    textColor="text-blue-600"
+                    valueColor="text-slate-900"
                     onOpen={() => setOpenSheet('program')}
                 />
                 <StatCard
                     title="Séances"
                     value={stats.sessionsCount}
-                    subtext="Séances enregistrées"
+                    subtext={stats.lastDate ? `Dernière : ${formatDateCompact(stats.lastDate)} (${stats.lastDateClass})` : 'Séances enregistrées'}
                     icon={CalendarCheck}
-                    index={1}
-                    shapeBgColor="bg-[#84a98c]"
-                    iconBgColor="bg-[#e8f0ec]"
-                    textColor="text-[#52796f]"
-                    valueColor="text-[#2f3e46]"
-                    onOpen={() => setOpenSheet('today')}
+                    index={2}
+                    shapeBgColor="bg-primary/20"
+                    iconBgColor="bg-primary/10"
+                    textColor="text-primary"
+                    valueColor="text-slate-900"
+                    onOpen={() => setOpenSheet('pending')}
                 />
                 <StatCard
                     title="Chapitres"
                     value={stats.totalChapters}
                     subtext={`${stats.inProgressChapters} actifs`}
                     icon={Book}
-                    index={2}
-                    shapeBgColor="bg-[#f4a261]"
-                    iconBgColor="bg-[#fff3ec]"
-                    textColor="text-[#e76f51]"
-                    valueColor="text-[#e76f51]"
-                    onOpen={() => setOpenSheet('program')}
-                />
-                <StatCard
-                    title="Dernière séance"
-                    value={stats.lastDate ? formatDateCompact(stats.lastDate) : '--'}
-                    subtext={stats.lastDateClass || 'Aucun cours'}
-                    icon={Clock}
                     index={3}
-                    shapeBgColor="bg-[#a593e0]"
-                    iconBgColor="bg-[#f4f2fb]"
-                    textColor="text-[#8a79b8]"
-                    valueColor="text-[#d2cce6]"
-                    onOpen={() => setOpenSheet('pending')}
+                    shapeBgColor="bg-amber-500"
+                    iconBgColor="bg-amber-50"
+                    textColor="text-amber-600"
+                    valueColor="text-slate-900"
+                    onOpen={() => setOpenSheet('program')}
                 />
             </div>
 

@@ -12,24 +12,24 @@ const SNOOZE_KEY = 'latenessSnooze_v1';
    notice = primaire (information), warning = --warning, critical = --destructive. */
 const SEVERITY_STYLE: Record<string, { bg: string; border: string; iconColor: string; accentColor: string; icon: React.ComponentType<{ className?: string }> }> = {
     notice: {
-        bg: 'surface-glass',
-        border: 'border-primary/20',
+        bg: 'bg-slate-50',
+        border: 'border-slate-200',
         iconColor: 'text-primary',
         accentColor: 'bg-primary',
         icon: Bell
     },
     warning: {
-        bg: 'bg-[rgb(var(--paper-wash)_/_0.72)]',
-        border: 'border-warning/25',
-        iconColor: 'text-warning',
-        accentColor: 'bg-warning',
+        bg: 'bg-amber-50/80',
+        border: 'border-amber-200',
+        iconColor: 'text-amber-600',
+        accentColor: 'bg-amber-500',
         icon: TriangleAlert
     },
     critical: {
-        bg: 'surface-coral',
-        border: 'border-destructive/25',
-        iconColor: 'text-destructive',
-        accentColor: 'bg-destructive',
+        bg: 'bg-red-50/80',
+        border: 'border-red-200',
+        iconColor: 'text-red-600',
+        accentColor: 'bg-red-500',
         icon: CircleAlert
     },
 };
@@ -71,7 +71,7 @@ export const LatenessBanner: React.FC<LatenessBannerProps> = ({ classes, config 
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className={`mx-auto mb-5 flex max-w-5xl items-start gap-3 rounded-lg border ${style.border} ${style.bg} p-4 shadow-sm relative overflow-hidden pl-5`}
+                className={`mx-auto mb-5 flex max-w-5xl items-start gap-3 rounded-xl border ${style.border} ${style.bg} p-4 shadow-sm relative overflow-hidden pl-5`}
                 role="status"
             >
                 {/* Left accent bar */}

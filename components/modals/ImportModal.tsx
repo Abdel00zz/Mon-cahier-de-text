@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { Modal } from '../ui/modal';
 import { FileUp } from '../ui/icons';
 import { Button } from '../ui/button';
@@ -15,12 +14,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   const [jsonText, setJsonText] = useState('');
   const [fileName, setFileName] = useState('');
   const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     setJsonText('');
     setFileName('');
     setImportMode('replace');
+    setMessage(null);
   }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,12 +37,13 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   };
 
   const handleImport = () => {
+    setMessage(null);
     try {
       const parsed = JSON.parse(jsonText);
       onImport(parsed, importMode);
     } catch (error) {
         const message = error instanceof Error ? error.message : "Format JSON invalide.";
-        toast.error(`Erreur d'importation : ${message}`);
+        setMessage(`Le fichier ne peut pas encore être importé : ${message}`);
     }
   };
 
@@ -64,6 +66,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
       }
     >
       <div className="space-y-4">
+        {message && (
+          <div className="rounded-xl border border-warning/25 bg-warning/10 px-3 py-2.5 text-xs leading-relaxed text-foreground" role="status">
+            <p className="font-bold">Vérifiez le fichier</p>
+            <p className="mt-0.5 text-muted-foreground">{message}</p>
+          </div>
+        )}
         <div>
           <label
             htmlFor="json-file-input"

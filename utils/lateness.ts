@@ -87,16 +87,16 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
 
 export const formatLatenessMessage = (result: LatenessResult, className: string): string => {
     if (result.severity === 'critical') {
-        return `${className} : environ ${result.gapSessions} séances de décalage par rapport à l'emploi du temps. Vous pouvez tout de même rattraper la saisie à votre rythme.`;
+        return `${className} : environ ${result.gapSessions} séances semblent à compléter par rapport à l'emploi du temps. Vous avancez à votre rythme.`;
     }
     if (result.severity === 'warning') {
         if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
             return `Dernière saisie il y a ${result.daysSinceLastEntry} jour(s) de classe en ${className}. Un petit rattrapage quand vous avez le temps ?`;
         }
-        return `Attention : environ ${result.gapSessions} séances de décalage en ${className}. L'application conseille une mise à jour, mais vous décidez du rythme.`;
+        return `${className} : environ ${result.gapSessions} séances semblent à compléter. Vous décidez du rythme.`;
     }
     if (result.severity === 'notice') {
-        return `Pensez à mettre à jour ${className} (${result.gapSessions} séance(s) en attente).`;
+        return `${className} : ${result.gapSessions} séance(s) à compléter lorsque vous le souhaitez.`;
     }
     return `${className} est à jour. Continuez ainsi !`;
 };
@@ -123,8 +123,8 @@ export const summarizeForTeacher = (results: ClassLateness[]): { title: string; 
     }
     const names = flagged.slice(0, 3).map(r => r.className).join(', ');
     return {
-        title: `${flagged.length} classes attendent une mise à jour`,
-        body: `Un décalage a été détecté pour ${names}${flagged.length > 3 ? '…' : ''}. Vous pouvez rattraper la saisie à votre rythme.`,
+        title: `${flagged.length} classes à compléter`,
+        body: `Certaines séances de ${names}${flagged.length > 3 ? '…' : ''} ne sont pas encore renseignées. Vous avancez à votre rythme.`,
         severity,
     };
 };

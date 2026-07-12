@@ -210,9 +210,9 @@ export default defineConfig(({ mode }) => {
     loadEnv(mode, '.', '');
     return {
         server: {
-            // le harnais de preview assigne un port via la variable d'environnement PORT
-            port: process.env.PORT ? Number(process.env.PORT) : 5173,
-            strictPort: false,
+            port: 3000,
+            host: '0.0.0.0',
+            strictPort: true,
         },
         plugins: [
             devApiMockPlugin(),
