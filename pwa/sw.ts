@@ -4,6 +4,12 @@ import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { clientsClaim } from 'workbox-core';
+import {
+    defaultNotificationTag,
+    isPushNotificationKind,
+    type PushNotificationKind,
+    type PushNotificationPayload,
+} from '../utils/notificationTypes';
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<{ url: string; revision: string | null }> };
 
@@ -49,26 +55,29 @@ registerRoute(
 
 // ── Web Push ────────────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
-    let payload: { title?: string; body?: string; url?: string } = {};
+    let payload: Partial<PushNotificationPayload> = {};
     try {
         payload = event.data?.json() ?? {};
     } catch {
         payload = { body: event.data?.text() };
     }
     const title = payload.title || 'Cahier de textes';
+    const kind: PushNotificationKind = isPushNotificationKind(payload.kind) ? payload.kind : 'lateness';
+    const targetUrl = payload.url || '/';
     event.waitUntil(
         self.registration.showNotification(title, {
             body: payload.body || 'Vous avez une mise à jour à faire.',
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
-            tag: 'cdt-lateness',
-            data: { url: payload.url || '/' },
+            tag: payload.tag || defaultNotificationTag(kind),
+            data: { url: targetUrl, kind, timestamp: payload.timestamp || Date.now() },
         })
     );
 });
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
+    if (event.action === 'dismiss') return;
     const targetUrl = (event.notification.data?.url as string) || '/';
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {

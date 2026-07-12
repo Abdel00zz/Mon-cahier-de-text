@@ -1,6 +1,5 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -19,7 +18,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "dialog-overlay fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm",
+      "dialog-overlay fixed inset-0 z-50 bg-foreground/25 backdrop-blur-[3px]",
       className
     )}
     {...props}
@@ -38,15 +37,14 @@ const DialogContent = React.forwardRef<
       className={cn(
         // style resserré et net : arrondis réduits (xl mobile / lg desktop),
         // espacement plus compact — sans toucher aux couleurs
-        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[96dvh] w-full max-w-lg gap-3 overflow-hidden rounded-t-2xl rounded-b-none border border-border bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-xl sm:inset-0 sm:m-auto sm:max-h-[92dvh] sm:w-[calc(100vw-1.5rem)] sm:rounded-xl sm:p-5",
+        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[calc(100dvh-0.75rem)] w-full max-w-lg gap-3 overflow-hidden overscroll-contain rounded-t-[1.5rem] rounded-b-none border border-border bg-card/98 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-[0_-10px_40px_rgba(15,20,25,0.14)] will-change-transform sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100vw-1.5rem)] sm:rounded-2xl sm:p-5 sm:shadow-[0_24px_80px_rgba(15,20,25,0.18)]",
         className
       )}
       {...props}
     >
-      <div aria-hidden className="mx-auto -mt-1 h-1 w-10 rounded-full bg-border sm:hidden" />
+      <div aria-hidden className="mx-auto -mt-1 h-1.5 w-9 rounded-full bg-muted-foreground/25 sm:hidden" />
       {children}
-      <DialogPrimitive.Close className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card/95 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:right-4 sm:top-4">
-        <X className="h-4 w-4" />
+      <DialogPrimitive.Close className="hidden">
         <span className="sr-only">Fermer la fenêtre</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -60,7 +58,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1 border-b border-border pb-3 pr-12 text-left",
+      "flex flex-col space-y-1 pb-2 text-left",
       className
     )}
     {...props}
@@ -74,7 +72,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 border-t border-border bg-card pt-3 [&>button]:min-h-11 [&>button]:w-full [&>div]:w-full sm:flex-row sm:justify-end sm:[&>button]:w-auto",
+      "flex flex-col-reverse gap-2 bg-card pt-2 [&>button]:min-h-11 [&>button]:w-full [&>div]:w-full sm:flex-row sm:justify-end sm:[&>button]:w-auto",
       className
     )}
     {...props}

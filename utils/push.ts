@@ -1,5 +1,7 @@
 // Helpers d'abonnement Web Push côté client.
 
+import type { PushNotificationKind } from './notificationTypes';
+
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
 export const pushSupported = (): boolean =>
@@ -82,7 +84,8 @@ export const showLocalNotification = async (
     title: string,
     body: string,
     tag: string,
-    url = '/'
+    url = '/',
+    kind: PushNotificationKind = tag.includes('missing') ? 'missing-date' : 'session-reminder'
 ): Promise<boolean> => {
     try {
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
@@ -93,7 +96,7 @@ export const showLocalNotification = async (
             tag, // remplace une notification du même créneau au lieu d'empiler
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
-            data: { url },
+            data: { url, kind, timestamp: Date.now() },
         });
         return true;
     } catch {

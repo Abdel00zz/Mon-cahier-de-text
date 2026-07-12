@@ -9,6 +9,7 @@ import { withAbsences } from '../utils/lateness';
 import { TrendingUp, CircleCheck, Clock, Book, CalendarCheck, Bell } from './ui/icons';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 import {
     Sheet,
     SheetContent,
@@ -479,6 +480,11 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ classes, config 
                             )}
                         </>
                     )}
+                    <div className="mt-5 flex justify-end">
+                        <Button type="button" variant="secondary" className="h-11 w-full rounded-xl sm:w-auto" onClick={() => setOpenSheet(null)}>
+                            Fermer
+                        </Button>
+                    </div>
                 </SheetContent>
             </Sheet>
         </>

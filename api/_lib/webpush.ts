@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import type { PushNotificationPayload } from '../../utils/notificationTypes.js';
 
 /** Helper Web Push partagé entre le cron (notify) et les actions admin. */
 
@@ -28,7 +29,7 @@ export const configureVapid = (): boolean => {
  */
 export const sendToEntry = async (
     entry: PushEntry,
-    payload: { title: string; body: string; url: string }
+    payload: PushNotificationPayload
 ): Promise<{ survivingSubs: PushEntry['subs']; sent: number }> => {
     const survivingSubs: PushEntry['subs'] = [];
     let sent = 0;

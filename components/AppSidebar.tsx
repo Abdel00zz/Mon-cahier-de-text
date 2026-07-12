@@ -61,21 +61,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <button
                 type="button"
                 onClick={onOpenAccount}
-                className={`group flex items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/10 ${isCompact ? 'justify-center px-1.5' : ''}`}
+                className={`group flex items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-sidebar-accent ${isCompact ? 'justify-center px-1.5' : ''}`}
                 title="Ouvrir mon compte"
             >
                 <div className="relative shrink-0">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-400 text-xs font-black text-slate-950 shadow-lg shadow-indigo-950/20">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary text-xs font-black text-sidebar-primary-foreground shadow-sm">
                         {getInitials(teacherName)}
                     </span>
                     {/* Tiny premium green online badge */}
-                    <span className="absolute -bottom-0.5 -right-0.5 block h-2 w-2 rounded-full bg-emerald-300 ring-2 ring-indigo-900" />
+                    <span className="absolute -bottom-0.5 -right-0.5 block h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
                 </div>
                 <span className={`min-w-0 ${isCompact ? 'sr-only' : ''}`}>
-                    <span className="block truncate text-xs font-semibold text-white leading-tight">
+                    <span className="block truncate text-xs font-semibold text-sidebar-foreground leading-tight">
                         {teacherName || 'Professeur'}
                     </span>
-                    <span className="block text-[10px] font-medium text-slate-400 group-hover:text-white transition-colors leading-none mt-0.5">
+                    <span className="block text-[10px] font-medium text-muted-foreground group-hover:text-primary transition-colors leading-none mt-0.5">
                         Mon compte
                     </span>
                 </span>
@@ -94,21 +94,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                             title={item.hint}
                             className={`group relative flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12.5px] font-medium transition-all cursor-pointer ${isCompact ? 'justify-center px-1.5' : ''} ${
                                 active
-                                    ? 'text-white font-semibold'
-                                    : 'text-slate-400 hover:bg-white/8 hover:text-white'
+                                    ? 'text-primary font-semibold'
+                                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                             }`}
                         >
                             {/* Animated sliding background pill for active state */}
                             {active && (
                                 <motion.div
                                     layoutId="active-sidebar-pill"
-                                    className="absolute inset-0 rounded-xl bg-white/16 ring-1 ring-white/20 shadow-lg shadow-indigo-950/15"
+                                    className="absolute inset-0 rounded-xl bg-sidebar-accent ring-1 ring-primary/15"
                                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                                 />
                             )}
                             <item.icon 
                                 className={`relative z-10 h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                                    active ? 'text-white' : 'text-slate-500 group-hover:text-slate-200'
+                                    active ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
                                 }`} 
                                 strokeWidth={active ? 2.2 : 1.5}
                             />
@@ -119,26 +119,26 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             </nav>
 
             {/* Pied : année scolaire + Guide + Paramètres */}
-            <div className="space-y-0.5 border-t border-slate-100 pt-3">
+            <div className="space-y-0.5 border-t border-sidebar-border pt-3">
                 {onOpenGuide && (
                     <button
                         type="button"
                         onClick={() => { onOpenGuide(); onMobileClose(); }}
-                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100/50 hover:text-slate-900 cursor-pointer"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
                     >
-                        <CircleHelp className="h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.5} />
+                        <CircleHelp className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
                         Guide d'utilisation
                     </button>
                 )}
                 <button
                     type="button"
                     onClick={() => { onOpenSettings(); onMobileClose(); }}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100/50 hover:text-slate-900 cursor-pointer"
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
                 >
-                    <Settings className="h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.5} />
+                    <Settings className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
                     Paramètres
                 </button>
-                <p className="px-2.5 pt-2 text-[10px] font-medium tracking-tight text-slate-400 font-mono">
+                <p className="px-2.5 pt-2 text-[10px] font-medium tracking-tight text-muted-foreground font-mono">
                     Année scolaire : {yearLabel}
                 </p>
             </div>
@@ -148,8 +148,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     return (
         <>
             {/* Desktop : colonne fixe */}
-            <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-indigo-900/20 bg-gradient-to-b from-slate-700 via-slate-700 to-indigo-800 p-3 shadow-xl shadow-indigo-950/10 backdrop-blur-md transition-[width] duration-300 lg:flex print:hidden ${collapsed ? 'w-[4.5rem]' : 'w-60'}`}>
-                <button type="button" onClick={() => onCollapsedChange(!collapsed)} className="mb-3 flex h-8 w-full items-center rounded-lg px-2 text-slate-500 transition-colors hover:bg-white/8 hover:text-white" aria-label={collapsed ? 'Développer la barre latérale' : 'Réduire la barre latérale'} title={collapsed ? 'Développer' : 'Réduire'}>
+            <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-3 text-sidebar-foreground shadow-sm transition-[width] duration-300 lg:flex print:hidden ${collapsed ? 'w-[4.5rem]' : 'w-60'}`}>
+                <button type="button" onClick={() => onCollapsedChange(!collapsed)} className="mb-3 flex h-8 w-full items-center rounded-lg px-2 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-primary" aria-label={collapsed ? 'Développer la barre latérale' : 'Réduire la barre latérale'} title={collapsed ? 'Développer' : 'Réduire'}>
                     {collapsed ? <ArrowRight className="mx-auto h-4 w-4" /> : <><ArrowLeft className="h-4 w-4" /><span className="ml-2 text-[10px] font-bold uppercase tracking-wider">Réduire</span></>}
                 </button>
                 {content}
@@ -159,7 +159,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {mobileOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden print:hidden" role="dialog" aria-modal="true" aria-label="Menu">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px] animate-fade-in" onClick={onMobileClose} />
-                    <div className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col bg-gradient-to-b from-slate-700 to-indigo-800 p-3 shadow-xl animate-slide-in-left">
+                    <div className="absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col bg-sidebar p-3 text-sidebar-foreground shadow-xl animate-slide-in-left">
                         <button
                             type="button"
                             onClick={onMobileClose}

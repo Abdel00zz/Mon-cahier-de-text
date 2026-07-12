@@ -2,7 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { PushEntry, PushSubscriptionJSON, configureVapid, sendToEntry } from './_lib/webpush.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { requireUser } from './_lib/auth.js';
-import { getBundledCalendar, isHoliday, isVacation, todayInMorocco } from '../utils/calendar.js';
+import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from '../utils/calendar.js';
 import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness.js';
 import type { TeacherSnapshot } from '../types.js';
 
@@ -61,6 +61,9 @@ const handleTest = async (res: ApiResponse, phone: string) => {
         title: 'Cahier de textes',
         body: 'Notification de test — tout fonctionne !',
         url: '/',
+        kind: 'test',
+        tag: 'cdt-test',
+        timestamp: Date.now(),
     });
     await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
     res.status(200).json({ ok: sent > 0, sent });
@@ -75,7 +78,8 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
     }
 
     const dryRun = getQueryParam(req, 'dry') === '1';
-    const calendar = getBundledCalendar();
+    const redis = await getRedis();
+    const calendar = (await redis.get<HolidayCalendar>(KEYS.adminCalendar)) ?? getBundledCalendar();
     const today = todayInMorocco(new Date(), calendar);
 
     if (isHoliday(today, calendar) || isVacation(today, calendar)) {
@@ -83,7 +87,6 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
     }
 
     const vapidReady = configureVapid();
-    const redis = await getRedis();
     const [snapshots, subsMap] = await Promise.all([
         redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots),
         redis.hgetall<Record<string, PushEntry>>(KEYS.pushSubs),
@@ -143,6 +146,9 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
             title: summary.title,
             body: summary.body,
             url: '/',
+            kind: 'lateness',
+            tag: `cdt-lateness-${today}`,
+            timestamp: Date.now(),
         });
         totalSent += sent;
         updates[phone] = {

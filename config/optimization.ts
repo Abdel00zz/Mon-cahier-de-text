@@ -8,7 +8,12 @@ export const BUNDLE_OPTIMIZATION = {
   MANUAL_CHUNKS: {
     vendor: ['react', 'react-dom'],
     math: ['better-react-mathjax'],
-    utils: ['immer']
+    utils: ['immer'],
+    icons: [
+      '@fortawesome/react-fontawesome',
+      '@fortawesome/fontawesome-svg-core',
+      '@fortawesome/free-solid-svg-icons',
+    ]
   },
   
   // Préchargement des modules critiques

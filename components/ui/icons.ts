@@ -1,78 +1,183 @@
+import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import {
+  faArrowDown,
+  faArrowLeft,
+  faArrowRight,
+  faArrowTrendUp,
+  faArrowUp,
+  faArrowUpRightFromSquare,
+  faBars,
+  faBell,
+  faBook,
+  faBookOpen,
+  faCalendar,
+  faCalendarCheck,
+  faCalendarDays,
+  faCalendarMinus,
+  faCalendarPlus,
+  faCalendarWeek,
+  faCalendarXmark,
+  faChartPie,
+  faCheck,
+  faCheckDouble,
+  faChevronDown,
+  faChevronRight,
+  faChevronUp,
+  faCircleCheck,
+  faCircle,
+  faCircleExclamation,
+  faCircleInfo,
+  faCircleQuestion,
+  faCircleXmark,
+  faClock,
+  faClockRotateLeft,
+  faDatabase,
+  faDiagramProject,
+  faDownload,
+  faEllipsisVertical,
+  faEye,
+  faEyeSlash,
+  faFileArrowDown,
+  faFileArrowUp,
+  faFileExport,
+  faFileImport,
+  faFileLines,
+  faFileSignature,
+  faFlask,
+  faFloppyDisk,
+  faFolderOpen,
+  faGear,
+  faGraduationCap,
+  faGrip,
+  faGripLinesVertical,
+  faHouse,
+  faListCheck,
+  faLock,
+  faLocationDot,
+  faMagnifyingGlass,
+  faMobileScreenButton,
+  faPencil,
+  faPlus,
+  faPrint,
+  faRotateLeft,
+  faRotateRight,
+  faSchool,
+  faSitemap,
+  faSpinner,
+  faSquareCheck,
+  faSquareRootVariable,
+  faSun,
+  faTableColumns,
+  faTrashCan,
+  faTriangleExclamation,
+  faUpload,
+  faUser,
+  faUsers,
+  faVial,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons';
+
 /**
- * Barrel d'icônes — remplace Font Awesome (CDN) par lucide-react (tree-shaken).
- * Une seule source d'import pour toute l'application, cohérente avec l'esprit
- * IBM Carbon / claude.ai (traits fins, géométrie nette).
+ * Adaptateur unique Font Awesome 7.
+ * Les imports restent nommes et tree-shaken ; l'API historique des composants
+ * (`className`, `size`, `strokeWidth`) reste compatible avec toute l'application.
  */
-export {
-  Plus,
-  X,
-  Check,
-  CheckCheck,
-  CheckSquare,
-  Settings,
-  Trash2,
-  CalendarDays,
-  CalendarRange,
-  CalendarCheck,
-  CalendarPlus,
-  CalendarMinus,
-  CalendarX,
-  Clock,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  ArrowDown,
-  TriangleAlert,
-  Undo2,
-  Redo2,
-  Save,
-  History,
-  Search,
-  ChevronUp,
-  ChevronDown,
-  ChevronRight,
-  MoreVertical,
-  FileInput,
-  FileOutput,
-  FileText,
-  FileUp,
-  FileDown,
-  FileSignature,
-  ListChecks,
-  ListTree,
-  PieChart,
-  Printer,
-  Bell,
-  BookOpen,
-  Book,
-  Pencil,
-  School,
-  GraduationCap,
-  FlaskConical,
-  Smartphone,
-  GripVertical,
-  GripHorizontal,
-  FolderOpen,
-  Upload,
-  Download,
-  CircleAlert,
-  CircleCheck,
-  CircleHelp,
-  Info,
-  MapPin,
-  Network,
-  TestTube,
-  Home,
-  Sigma,
-  Eye,
-  EyeOff,
-  Database,
-  User,
-  Loader2,
-  TrendingUp,
-  ArrowUpRight,
-  Sun,
-  LayoutDashboard,
-  Menu,
-  Users,
-} from 'lucide-react';
+export interface AppIconProps {
+  className?: string;
+  size?: number;
+  style?: React.CSSProperties;
+  'aria-hidden'?: boolean | 'true' | 'false';
+  'aria-label'?: string;
+  /** Compatibilite avec les anciens appels Lucide ; sans effet sur une icone pleine. */
+  strokeWidth?: number;
+}
+
+const icon = (definition: IconDefinition): React.FC<AppIconProps> => {
+  const AppIcon: React.FC<AppIconProps> = ({ size, strokeWidth: _strokeWidth, style, ...props }) =>
+    React.createElement(FontAwesomeIcon, {
+      icon: definition,
+      style: (size ? { width: size, height: size, ...style } : style) as React.ComponentProps<typeof FontAwesomeIcon>['style'],
+      ...props,
+    });
+  return AppIcon;
+};
+
+export const Plus = icon(faPlus);
+export const X = icon(faXmark);
+export const Check = icon(faCheck);
+export const CheckCheck = icon(faCheckDouble);
+export const CheckSquare = icon(faSquareCheck);
+export const Settings = icon(faGear);
+export const Trash2 = icon(faTrashCan);
+export const CalendarDays = icon(faCalendarDays);
+export const Calendar = icon(faCalendar);
+export const CalendarRange = icon(faCalendarWeek);
+export const CalendarCheck = icon(faCalendarCheck);
+export const CalendarPlus = icon(faCalendarPlus);
+export const CalendarMinus = icon(faCalendarMinus);
+export const CalendarX = icon(faCalendarXmark);
+export const Clock = icon(faClock);
+export const ArrowLeft = icon(faArrowLeft);
+export const ArrowRight = icon(faArrowRight);
+export const ArrowUp = icon(faArrowUp);
+export const ArrowDown = icon(faArrowDown);
+export const TriangleAlert = icon(faTriangleExclamation);
+export const Undo2 = icon(faRotateLeft);
+export const Redo2 = icon(faRotateRight);
+export const Save = icon(faFloppyDisk);
+export const History = icon(faClockRotateLeft);
+export const Search = icon(faMagnifyingGlass);
+export const ChevronUp = icon(faChevronUp);
+export const ChevronDown = icon(faChevronDown);
+export const ChevronRight = icon(faChevronRight);
+export const MoreVertical = icon(faEllipsisVertical);
+export const FileInput = icon(faFileImport);
+export const FileOutput = icon(faFileExport);
+export const FileText = icon(faFileLines);
+export const FileUp = icon(faFileArrowUp);
+export const FileDown = icon(faFileArrowDown);
+export const FileSignature = icon(faFileSignature);
+export const ListChecks = icon(faListCheck);
+export const ListTree = icon(faSitemap);
+export const PieChart = icon(faChartPie);
+export const Printer = icon(faPrint);
+export const Bell = icon(faBell);
+export const BookOpen = icon(faBookOpen);
+export const Book = icon(faBook);
+export const Pencil = icon(faPencil);
+export const School = icon(faSchool);
+export const GraduationCap = icon(faGraduationCap);
+export const FlaskConical = icon(faFlask);
+export const Smartphone = icon(faMobileScreenButton);
+export const GripVertical = icon(faGripLinesVertical);
+export const GripHorizontal = icon(faGrip);
+export const FolderOpen = icon(faFolderOpen);
+export const Upload = icon(faUpload);
+export const Download = icon(faDownload);
+export const CircleAlert = icon(faCircleExclamation);
+export const CircleCheck = icon(faCircleCheck);
+export const Circle = icon(faCircle);
+export const CircleX = icon(faCircleXmark);
+export const OctagonX = CircleX;
+export const CircleHelp = icon(faCircleQuestion);
+export const Info = icon(faCircleInfo);
+export const MapPin = icon(faLocationDot);
+export const Network = icon(faDiagramProject);
+export const TestTube = icon(faVial);
+export const Home = icon(faHouse);
+export const Sigma = icon(faSquareRootVariable);
+export const Eye = icon(faEye);
+export const EyeOff = icon(faEyeSlash);
+export const Database = icon(faDatabase);
+export const User = icon(faUser);
+export const Loader2 = icon(faSpinner);
+export const LoaderCircle = Loader2;
+export const TrendingUp = icon(faArrowTrendUp);
+export const ArrowUpRight = icon(faArrowUpRightFromSquare);
+export const Sun = icon(faSun);
+export const LayoutDashboard = icon(faTableColumns);
+export const Menu = icon(faBars);
+export const Users = icon(faUsers);
+export const Lock = icon(faLock);

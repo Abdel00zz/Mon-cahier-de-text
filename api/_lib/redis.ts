@@ -24,5 +24,6 @@ export const KEYS = {
   lessons: (phone: string, classId: string) => `lessons:${phone}:${classId}`,
   adminSnapshots: 'admin:snapshots',
   pushSubs: 'push:subs',
+  adminCalendar: 'admin:calendar',
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, notifyTeacher, TeacherDetail as TeacherDetailData } from '../api';
-import { getBundledCalendar } from '../../utils/calendar';
+import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, notifyTeacher, saveAssessmentDate, TeacherDetail as TeacherDetailData } from '../api';
+import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
+import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type PlannedAssessment } from '../../utils/assessments';
 import { completionColor, timeAgo } from '../utils';
-import type { ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
+import type { ClassInfo, ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
 
@@ -191,6 +192,57 @@ const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null
         absences: teacher?.absences,
     });
 
+const AssessmentDateEditor: React.FC<{
+    phone: string;
+    classes: ClassInfo[];
+    initial: Record<string, Record<string, string>>;
+}> = ({ phone, classes, initial }) => {
+    const [dates, setDates] = useState(initial);
+    const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        Promise.all([loadPlanning(), loadHolidayCalendar()]).then(([planning, calendar]) => {
+            if (!planning) return;
+            const today = todayInMorocco(new Date(), calendar);
+            const next = classes.flatMap(classInfo => {
+                const plan = findPlanFor(planning, classInfo);
+                if (!plan) return [];
+                return applyOverrides(computeAssessmentDates(plan, calendar, today), initial[classInfo.id])
+                    .map(item => ({ ...item, classId: classInfo.id, className: classInfo.name }));
+            });
+            setRows(next.sort((a, b) => a.dateISO.localeCompare(b.dateISO)));
+        });
+    }, [classes, initial]);
+
+    const change = async (row: PlannedAssessment & { classId: string }, date: string) => {
+        setDates(current => ({ ...current, [row.classId]: { ...(current[row.classId] ?? {}), [row.id]: date } }));
+        setRows(current => current.map(item => item.classId === row.classId && item.id === row.id ? { ...item, dateISO: date } : item));
+        try {
+            await saveAssessmentDate(phone, row.classId, row.id, date);
+            setMessage('Date du devoir synchronisÃ©e avec le compte enseignant.');
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : 'Modification impossible.');
+        }
+    };
+
+    if (rows.length === 0) return null;
+    return (
+        <section className="mb-5 rounded-2xl bg-accent/50 p-4">
+            <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquÃ©es au planning du professeur et synchronisÃ©es sur son tÃ©lÃ©phone.</p></div>
+            <div className="grid gap-2 sm:grid-cols-2">
+                {rows.map(row => (
+                    <label key={`${row.classId}-${row.id}`} className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-sm">
+                        <span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{row.className}</span><span className="block truncate text-[10px] text-muted-foreground">{row.label}</span></span>
+                        <input type="date" value={dates[row.classId]?.[row.id] ?? row.dateISO} onChange={event => void change(row, event.target.value)} className="h-9 w-32 rounded-lg border bg-background px-2 text-[11px]" />
+                    </label>
+                ))}
+            </div>
+            {message && <p className="mt-2 text-[11px] font-semibold text-primary">{message}</p>}
+        </section>
+    );
+};
+
 export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({ phone, onBack }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -315,6 +367,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                             <p className="mt-2 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground">{actionMessage}</p>
                         )}
                     </header>
+
+                    <AssessmentDateEditor phone={phone} classes={data.classes} initial={data.assessmentDates ?? {}} />
 
                     {snapshotClasses.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">

@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal } from '../ui/modal';
 import { JournalEntry, opLabel, timeAgoFr } from '../../utils/journal';
 import { Clock } from '../ui/icons';
+import { Button } from '../ui/button';
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -69,6 +70,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, ent
       }
       description="Les dernières actions effectuées sur ce cahier (conservées sur cet appareil)"
       maxWidth="lg"
+      footer={<Button type="button" variant="secondary" onClick={onClose}>Fermer</Button>}
     >
       {entries.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-secondary/50 p-8 text-center text-sm text-muted-foreground">

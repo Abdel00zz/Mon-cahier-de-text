@@ -34,7 +34,7 @@ export interface HolidayCalendar {
 
 const bundled = calendarJson as HolidayCalendar;
 
-export const getBundledCalendar = (): HolidayCalendar => bundled;
+export const getBundledCalendar = (): HolidayCalendar => cachedCalendar ?? bundled;
 
 let cachedCalendar: HolidayCalendar | null = null;
 
@@ -42,7 +42,7 @@ let cachedCalendar: HolidayCalendar | null = null;
 export const loadHolidayCalendar = async (): Promise<HolidayCalendar> => {
     if (cachedCalendar) return cachedCalendar;
     try {
-        const response = await fetch('/vacances-jourferie.json', { cache: 'no-cache' });
+        const response = await fetch('/api/calendar', { cache: 'no-cache' });
         if (response.ok) {
             cachedCalendar = (await response.json()) as HolidayCalendar;
             return cachedCalendar;

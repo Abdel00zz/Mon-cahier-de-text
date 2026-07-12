@@ -275,6 +275,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({ classes, config, onCon
                             className={selectedClass.name}
                             initialNames={absencesRecord?.names ?? []}
                             updatedAt={absencesRecord?.updatedAt}
+                            onCancel={() => setAbsencesFor(null)}
                             onSave={names => {
                                 const classId = selectedClass.id;
                                 const forClass = { ...(config.assessmentAbsences?.[classId] ?? {}) };
@@ -308,10 +309,11 @@ interface AbsencesEditorProps {
     className: string;
     initialNames: string[];
     updatedAt?: string;
+    onCancel: () => void;
     onSave: (names: string[]) => void;
 }
 
-const AbsencesEditor: React.FC<AbsencesEditorProps> = ({ link, className, initialNames, updatedAt, onSave }) => {
+const AbsencesEditor: React.FC<AbsencesEditorProps> = ({ link, className, initialNames, updatedAt, onCancel, onSave }) => {
     const [names, setNames] = useState<string[]>(initialNames);
     const [draft, setDraft] = useState('');
 
@@ -399,9 +401,14 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({ link, className, initia
                     compte (synchronisée), utile pour organiser les rattrapages.
                 </p>
 
-                <Button type="button" className="h-11 w-full rounded-full font-bold" onClick={() => onSave(names)}>
-                    Enregistrer {names.length > 0 ? `(${names.length})` : 'la liste vide'}
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" variant="secondary" className="h-11 rounded-xl font-bold" onClick={onCancel}>
+                        Annuler
+                    </Button>
+                    <Button type="button" className="h-11 rounded-xl font-bold" onClick={() => onSave(names)}>
+                        Enregistrer {names.length > 0 ? `(${names.length})` : ''}
+                    </Button>
+                </div>
             </div>
         </>
     );

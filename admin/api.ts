@@ -1,4 +1,5 @@
 import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
+import type { HolidayCalendar } from '../utils/calendar';
 
 export interface TeacherDetail {
     user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null } | null;
@@ -6,6 +7,7 @@ export interface TeacherDetail {
     schedules: ClassSchedule[];
     classMeta: Record<string, { updatedAt: string }>;
     snapshot: TeacherSnapshot | null;
+    assessmentDates: Record<string, Record<string, string>>;
 }
 
 const request = async (input: string, init?: RequestInit) => {
@@ -69,3 +71,17 @@ export const deleteTeacher = (phone: string): Promise<{ ok: boolean; deletedClas
 /** Notification push directe vers le(s) téléphone(s) de l'enseignant. */
 export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number }> =>
     postAdmin({ action: 'notifyTeacher', phone, message, title });
+
+export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>
+    request('/api/admin?action=calendar');
+
+export const saveAdminCalendar = (calendar: HolidayCalendar): Promise<{ ok: boolean; calendar: HolidayCalendar }> =>
+    postAdmin({ action: 'saveCalendar', calendar });
+
+export const saveAssessmentDate = (
+    phone: string,
+    classId: string,
+    assessmentId: string,
+    date: string,
+): Promise<{ ok: boolean; assessmentDates: Record<string, Record<string, string>> }> =>
+    postAdmin({ action: 'saveAssessmentDate', phone, classId, assessmentId, date });

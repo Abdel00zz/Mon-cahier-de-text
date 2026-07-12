@@ -43,7 +43,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
             </li>
           ))}
         </ul>
-        <p className="mt-4 border-t border-warning/20 pt-3 text-xs font-medium leading-relaxed text-slate-600">
+        <p className="mt-4 text-xs font-medium leading-relaxed text-slate-600">
           Une séance de rattrapage ou une situation exceptionnelle peut justifier cette date. Confirmez simplement que vous avez pris connaissance de ces points.
         </p>
       </div>

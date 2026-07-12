@@ -4,8 +4,9 @@ import { adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
 import { TeacherList } from './components/TeacherList';
 import { TeacherDetail } from './components/TeacherDetail';
+import { CalendarManager } from './components/CalendarManager';
 
-type View = { name: 'locked' } | { name: 'overview' } | { name: 'teacher'; phone: string };
+type View = { name: 'locked' } | { name: 'overview' } | { name: 'teacher'; phone: string } | { name: 'calendar' };
 
 export const AdminApp: React.FC = () => {
     const [view, setView] = useState<View>({ name: 'locked' });
@@ -63,8 +64,17 @@ export const AdminApp: React.FC = () => {
         return <TeacherDetail phone={view.phone} onBack={() => setView({ name: 'overview' })} />;
     }
 
+    if (view.name === 'calendar') {
+        return <CalendarManager onBack={() => setView({ name: 'overview' })} />;
+    }
+
     return (
         <div className="min-h-screen" style={{ backgroundColor: 'var(--clr-bg)' }}>
+            <div className="mx-auto flex max-w-6xl justify-end px-4 pt-4 sm:px-8">
+                <button onClick={() => setView({ name: 'calendar' })} className="h-10 rounded-xl bg-foreground px-4 text-xs font-bold text-primary-foreground shadow-sm">
+                    GÃ©rer le calendrier
+                </button>
+            </div>
             <TeacherList
                 teachers={teachers}
                 isLoading={isLoading}

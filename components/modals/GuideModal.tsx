@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_FR, GUIDE_AR } from '../../constants';
 import { Modal } from '../ui/modal';
+import { Button } from '../ui/button';
 
 interface GuideModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ const toHtml = (markdown: string, prefix: Lang): string => {
         const t = line.replace('## ', '').trim();
         const id = `${prefix}-sec-${headingIndex}`;
         headingIndex++;
-        return `<h2 id="${id}" class="mb-5 mt-12 scroll-mt-4 border-b border-slate-200 pb-3 font-display text-2xl font-black text-slate-950 sm:text-[26px]">${t}</h2>`;
+        return `<h2 id="${id}" class="mb-5 mt-12 scroll-mt-4 pb-1 font-display text-2xl font-black text-slate-950 sm:text-[26px]">${t}</h2>`;
       }
       if (line.startsWith('### ')) {
         const t = line.replace('### ', '').trim();
@@ -61,21 +62,21 @@ const toHtml = (markdown: string, prefix: Lang): string => {
       const imageMatch = line.match(/^!\[(.+?)\]\((\/guide\/[^\s)]+\.(?:png|jpe?g|webp|gif))\)$/i);
       if (imageMatch) {
         const [, caption, src] = imageMatch;
-        return `<figure class="my-7 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" class="block h-auto w-full bg-white object-contain"><figcaption class="border-t border-slate-200 px-4 py-3 text-center text-sm font-bold leading-relaxed text-slate-600">${caption}</figcaption></figure>`;
+        return `<figure class="my-7 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" class="block h-auto w-full bg-white object-contain"><figcaption class="px-4 py-3 text-center text-sm font-bold leading-relaxed text-slate-600">${caption}</figcaption></figure>`;
       }
 
       // Les étapes restent structurées, sans boîte ni pastille numérotée.
       const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
       if (numListMatch) {
         const [, , title, desc] = numListMatch;
-        return `<section class="mb-5 border-b border-slate-100 pb-5"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-6"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       // Les actions quotidiennes utilisent le même rythme éditorial léger.
       const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
       if (boldBulletMatch) {
         const [, title, desc] = boldBulletMatch;
-        return `<section class="mb-5 border-b border-slate-100 pb-5"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-6"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       // puce simple
@@ -84,7 +85,7 @@ const toHtml = (markdown: string, prefix: Lang): string => {
         return `<div class="mb-3 flex items-start gap-3"><span class="mt-[0.85em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span><span class="${bodyClass}">${content}</span></div>`;
       }
 
-      if (line.trim() === '---') return '<hr class="my-8 border-slate-200">';
+      if (line.trim() === '---') return '<div class="h-4" aria-hidden="true"></div>';
       if (!line.trim()) return '';
 
       return `<p class="mb-5 ${bodyClass}">${inline(line)}</p>`;
@@ -194,11 +195,18 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       }
       maxWidth="5xl"
       className="flex h-[94vh] max-w-6xl flex-col overflow-hidden p-0 sm:h-[88vh] sm:max-w-6xl"
+      footer={
+        <div className="flex w-full justify-end px-4 pb-4">
+          <Button type="button" onClick={onClose} className="h-11 w-full rounded-xl px-6 font-bold sm:w-auto">
+            {isAr ? '\u0625\u063a\u0644\u0627\u0642' : 'Fermer'}
+          </Button>
+        </div>
+      }
     >
       {/* Chips d'ancrage — mobile, dans la langue active */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-slate-50 px-3 py-2.5 lg:hidden"
+        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto bg-slate-50 px-3 py-2.5 lg:hidden"
       >
         {tocItems.map(item => (
           <button
@@ -220,7 +228,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         {/* Sommaire latéral — ordinateur, monolingue */}
         <div
           dir={isAr ? 'rtl' : 'ltr'}
-          className={`custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto bg-slate-50/50 p-4 lg:flex ${isAr ? 'lg:order-2 lg:border-l lg:border-slate-200' : 'lg:order-1 lg:border-r lg:border-slate-200'}`}
+          className={`custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto bg-slate-50/50 p-4 lg:flex ${isAr ? 'lg:order-2' : 'lg:order-1'}`}
         >
           <div className={`mb-4 px-2 font-black uppercase tracking-wider text-slate-400 ${isAr ? 'font-ar text-sm' : 'text-[10px]'}`}>
             {isAr ? 'الفهرس' : 'Sommaire'}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Settings, LayoutDashboard, Menu, Search, X, BookOpen, Calendar, Lock } from 'lucide-react';
+import { Home, Settings, LayoutDashboard, Menu, Search, X, BookOpen, Calendar, Lock } from './ui/icons';
 import { cn } from '../lib/utils';
 import { ClassInfo } from '../types';
 
@@ -118,4 +118,3 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, active, collapse
         </button>
     );
 };
-

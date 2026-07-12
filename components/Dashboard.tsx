@@ -55,14 +55,14 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
         <button
             onClick={onClick}
             data-guide="create-class"
-            className="group relative flex h-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl bg-slate-50/50 p-6 transition-all duration-200 border border-dashed border-slate-300 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md w-full focus:outline-none focus:ring-2 focus:ring-primary/20 text-center"
+            className="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/35 p-6 text-center transition-all duration-200 hover:border-primary/40 hover:bg-accent/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-            <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-lg bg-white text-slate-500 transition-all duration-200 group-hover:bg-primary/5 group-hover:text-primary border border-slate-200 shadow-sm mb-4">
+            <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground shadow-sm transition-all duration-200 group-hover:border-primary/20 group-hover:bg-accent group-hover:text-primary">
                 <Plus className="w-5 h-5" />
             </div>
             <div className="relative z-10">
-                <span className="block text-base font-bold text-slate-800 transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
-                <span className="block text-xs font-semibold text-slate-400 mt-1">Créer un cahier de textes</span>
+                <span className="block text-base font-bold text-foreground transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
+                <span className="mt-1 block text-xs font-semibold text-muted-foreground">Créer un cahier de textes</span>
             </div>
         </button>
     );
@@ -326,23 +326,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                             <button
                                 type="button"
                                 onClick={() => setSidebarOpen(true)}
-                                className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm lg:hidden hover:bg-slate-50"
+                                className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground shadow-sm hover:bg-accent hover:text-primary lg:hidden"
                                 aria-label="Ouvrir le menu"
                             >
                                 <Menu className="h-4.5 w-4.5" />
                             </button>
                             <div className="min-w-0 flex-1">
-                                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-display flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                                <h1 className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-2xl font-extrabold tracking-tight text-foreground font-display sm:text-3xl">
                                     {view === 'classes' && teacherName ? (
                                         <>
-                                            <span className="text-slate-900">{getGreeting()},</span>
+                                            <span className="text-foreground">{getGreeting()},</span>
                                             <span className="text-primary">{teacherName}</span>
                                         </>
                                     ) : (
                                         <>
                                             {header.title(yearLabel)}
                                             {view === 'classes' && visibleClasses.length > 0 && (
-                                                <span className="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs sm:text-sm font-semibold text-slate-700 animate-fade-in">
+                                                <span className="animate-fade-in rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground sm:text-sm">
                                                     {visibleClasses.length}
                                                 </span>
                                             )}
@@ -351,11 +351,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                 </h1>
                                 <div className="mt-2 h-0.5 w-12 bg-primary" aria-hidden />
                                 {view === 'classes' && teacherName ? (
-                                    <p className="mt-2 text-xs sm:text-sm font-semibold text-slate-400">
+                                    <p className="mt-2 text-xs font-semibold text-muted-foreground sm:text-sm">
                                         {formattedDate} · Vos cahiers de classes, prêts à ouvrir.
                                     </p>
                                 ) : (
-                                    <p className="mt-2 text-xs sm:text-sm font-medium text-slate-500">
+                                    <p className="mt-2 text-xs font-medium text-muted-foreground sm:text-sm">
                                         {header.subtitle}
                                     </p>
                                 )}
@@ -366,27 +366,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                         {view === 'classes' && classes.length > 0 && (
                             <div className="flex w-full md:w-auto items-center gap-3 self-end md:self-auto shrink-0">
                                 <div className="relative w-full md:w-80" role="search">
-                                    <Search className="pointer-events-none absolute left-3 top-[22px] h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Search className="pointer-events-none absolute left-3 top-[22px] h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <input
                                         type="search"
                                         value={search}
                                         onChange={e => setSearch(e.target.value)}
                                         placeholder="Classe, chapitre, contenu, remarque…"
-                                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm font-medium text-slate-800 shadow-sm transition-all placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
+                                        className="h-11 w-full rounded-xl border border-input bg-background pl-9 pr-10 text-sm font-medium text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
                                         aria-label="Rechercher dans toutes les classes et tous les cahiers"
                                     />
                                     {search && (
                                         <button
                                             type="button"
                                             onClick={() => setSearch('')}
-                                            className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                            className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-primary"
                                             aria-label="Effacer la recherche"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
                                     )}
                                     {search.trim() && (
-                                        <p className="mt-1.5 px-1 text-[11px] font-semibold text-slate-500" aria-live="polite">
+                                        <p className="mt-1.5 px-1 text-[11px] font-semibold text-muted-foreground" aria-live="polite">
                                             {classSearchResults.length} cahier{classSearchResults.length > 1 ? 's' : ''} trouvé{classSearchResults.length > 1 ? 's' : ''} · recherche dans tout le contenu
                                         </p>
                                     )}
@@ -458,12 +458,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                                 key={classInfo.id}
                                                 type="button"
                                                 onClick={() => openSearchResult(classInfo, matches.length > 0)}
-                                                className="group block w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-primary/10 sm:p-5"
+                                                className="group block w-full rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-primary/10 sm:p-5"
                                             >
                                                 <span className="flex items-start justify-between gap-3">
                                                     <span className="min-w-0">
-                                                        <span className="block truncate text-base font-extrabold text-slate-900 group-hover:text-primary">{classInfo.name}</span>
-                                                        <span className="mt-0.5 block text-xs font-bold uppercase tracking-wide text-slate-400">{classInfo.subject}</span>
+                                                        <span className="block truncate text-base font-extrabold text-foreground group-hover:text-primary">{classInfo.name}</span>
+                                                        <span className="mt-0.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">{classInfo.subject}</span>
                                                     </span>
                                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary transition-transform group-hover:translate-x-0.5">
                                                         <ArrowRight className="h-4 w-4" />
@@ -472,15 +472,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                                 {matches.length > 0 ? (
                                                     <span className="mt-3 grid gap-2 sm:grid-cols-2">
                                                         {matches.slice(0, 2).map((match, index) => (
-                                                            <span key={`${match.breadcrumb}-${index}`} className="min-w-0 rounded-xl bg-slate-50 px-3 py-2.5">
-                                                                <span className="block truncate text-[11px] font-extrabold text-slate-800">{match.title}</span>
+                                                            <span key={`${match.breadcrumb}-${index}`} className="min-w-0 rounded-xl bg-muted/60 px-3 py-2.5">
+                                                                <span className="block truncate text-[11px] font-extrabold text-foreground">{match.title}</span>
                                                                 {match.breadcrumb && <span className="mt-0.5 block truncate text-[10px] font-semibold text-primary">{match.breadcrumb}</span>}
-                                                                <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-slate-500">{match.snippet}</span>
+                                                                <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-muted-foreground">{match.snippet}</span>
                                                             </span>
                                                         ))}
                                                     </span>
                                                 ) : resume.next ? (
-                                                    <span className="mt-3 block rounded-xl bg-primary/[0.04] px-3 py-2 text-xs text-slate-600">
+                                                    <span className="mt-3 block rounded-xl bg-accent px-3 py-2 text-xs text-accent-foreground">
                                                         <strong className="text-primary">À reprendre :</strong> {resume.next.title}
                                                     </span>
                                                 ) : null}

@@ -3,6 +3,7 @@ import { LessonsData } from '../../types';
 import { computeProgressionStats } from '../../utils/progression';
 import { Modal } from '../ui/modal';
 import { MathText } from '../ui/math-text';
+import { Button } from '../ui/button';
 import { PieChart } from '../ui/icons';
 
 interface AnalysisModalProps {
@@ -56,6 +57,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </span>
       }
       maxWidth="2xl"
+      footer={<Button type="button" variant="secondary" onClick={onClose}>Fermer</Button>}
     >
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -104,7 +106,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </div>
 
         {warningItems.length > 0 && (
-          <div className="border-t border-border/40 pt-4">
+          <div className="pt-2">
             <h3 className="text-xs font-bold text-warning uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-destructive animate-ping" />
               Repères de calendrier à vérifier ({warningItems.length})

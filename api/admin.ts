@@ -10,7 +10,8 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
+import type { AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
+import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
 
 interface AdminBody {
     action?: string;
@@ -19,6 +20,10 @@ interface AdminBody {
     blocked?: boolean;
     title?: string;
     message?: string;
+    calendar?: HolidayCalendar;
+    classId?: string;
+    assessmentId?: string;
+    date?: string;
 }
 
 interface ClassesBlob {
@@ -26,6 +31,8 @@ interface ClassesBlob {
     schedules: ClassSchedule[];
     classMeta: Record<string, { updatedAt: string }>;
     updatedAt: string;
+    settings?: Partial<AppConfig>;
+    settingsUpdatedAt?: string;
 }
 
 interface StoredUser {
@@ -61,6 +68,45 @@ const handleOverview = async (res: ApiResponse) => {
     res.status(200).json({ teachers });
 };
 
+const validISO = (value: unknown): value is string =>
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+const validateCalendar = (value: unknown): HolidayCalendar => {
+    if (!value || typeof value !== 'object') throw new HttpError(400, 'Calendrier invalide.');
+    const calendar = value as HolidayCalendar;
+    if (!calendar.anneeScolaire || !validISO(calendar.anneeScolaire.debut) || !validISO(calendar.anneeScolaire.fin)) {
+        throw new HttpError(400, 'AnnÃ©e scolaire invalide.');
+    }
+    if (!Array.isArray(calendar.joursFeries) || calendar.joursFeries.some(item => !validISO(item.date) || !item.nom)) {
+        throw new HttpError(400, 'Liste des jours fÃ©riÃ©s invalide.');
+    }
+    if (!Array.isArray(calendar.vacances) || calendar.vacances.some(item => !validISO(item.debut) || !validISO(item.fin) || item.fin < item.debut || !item.nom)) {
+        throw new HttpError(400, 'Liste des vacances invalide.');
+    }
+    return {
+        ...calendar,
+        version: Math.max(1, Number(calendar.version) || 1),
+        pays: calendar.pays || 'MA',
+        fuseau: calendar.fuseau || 'Africa/Casablanca',
+        joursFeries: [...calendar.joursFeries].sort((a, b) => a.date.localeCompare(b.date)),
+        vacances: [...calendar.vacances].sort((a, b) => a.debut.localeCompare(b.debut)),
+    };
+};
+
+const handleGetCalendar = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const calendar = (await redis.get<HolidayCalendar>(KEYS.adminCalendar)) ?? getBundledCalendar();
+    res.status(200).json({ calendar });
+};
+
+const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
+    const calendar = validateCalendar(body.calendar);
+    const redis = await getRedis();
+    const saved = { ...calendar, version: calendar.version + 1 };
+    await redis.set(KEYS.adminCalendar, saved);
+    res.status(200).json({ ok: true, calendar: saved });
+};
+
 const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     const phone = getQueryParam(req, 'phone');
     if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
@@ -86,7 +132,30 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         schedules: classesBlob?.schedules ?? [],
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
+        assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
     });
+};
+
+const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    if (!body.classId || !body.assessmentId) throw new HttpError(400, 'Classe et devoir requis.');
+    if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
+    const redis = await getRedis();
+    const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    if (!blob) throw new HttpError(404, 'DonnÃ©es de l\'enseignant introuvables.');
+    const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
+    const forClass = { ...(assessmentDates[body.classId] ?? {}) };
+    if (body.date) forClass[body.assessmentId] = body.date;
+    else delete forClass[body.assessmentId];
+    assessmentDates[body.classId] = forClass;
+    const now = new Date().toISOString();
+    await redis.set(KEYS.classes(phone), {
+        ...blob,
+        settings: { ...(blob.settings ?? {}), assessmentDates },
+        settingsUpdatedAt: now,
+        updatedAt: now,
+    });
+    res.status(200).json({ ok: true, assessmentDates });
 };
 
 /**
@@ -155,6 +224,9 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         title: (body.title || 'Message de l’administration').slice(0, 80),
         body: message,
         url: '/',
+        kind: 'admin',
+        tag: `cdt-admin-${Date.now()}`,
+        timestamp: Date.now(),
     });
     await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
     res.status(200).json({ ok: sent > 0, sent });
@@ -175,6 +247,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'blockTeacher') return await handleBlockTeacher(body, res);
             if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
             if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
+            if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
+            if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
             throw new HttpError(400, 'Action inconnue.');
         }
 
@@ -183,6 +257,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             const action = getQueryParam(req, 'action');
             if (action === 'overview') return await handleOverview(res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
+            if (action === 'calendar') return await handleGetCalendar(res);
             if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');
         }

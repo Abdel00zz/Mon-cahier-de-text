@@ -1,10 +1,9 @@
 import {
-  CircleCheck,
   Info,
   LoaderCircle,
   OctagonX,
   TriangleAlert,
-} from "lucide-react"
+} from "./icons"
 import { Toaster as Sonner } from "sonner"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
