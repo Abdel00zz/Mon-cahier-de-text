@@ -54,7 +54,7 @@ export const setTimetableEntry = (
  * La pause déjeuner (`lunchBefore`) brise la continuité : 11h–12h puis 14h–15h
  * restent deux séances distinctes.
  */
-export const areSlotsContiguous = (slotA: number, slotB: number): boolean => {
+const areSlotsContiguous = (slotA: number, slotB: number): boolean => {
     const [a, b] = slotA <= slotB ? [slotA, slotB] : [slotB, slotA];
     if (b !== a + 1) return false;
     return !HOUR_SLOTS.find(s => s.index === b)?.lunchBefore;
@@ -67,7 +67,7 @@ export const areSlotsContiguous = (slotA: number, slotB: number): boolean => {
  * son cahier pour une telle séance, le moteur de retard ne doit donc en
  * attendre qu'une.
  */
-export const countContiguousSessions = (slots: number[]): number => {
+const countContiguousSessions = (slots: number[]): number => {
     if (slots.length === 0) return 0;
     const sorted = Array.from(new Set(slots)).sort((a, b) => a - b);
     let sessions = 1;

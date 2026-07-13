@@ -475,7 +475,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     (config.schedules?.length ?? 0) > 0 ||
                     (config.timetable?.length ?? 0) > 0 ||
                     !!config.establishmentName ||
-                    Object.keys(config.assessmentDates ?? {}).length > 0;
+                    Object.keys(config.assessmentDates ?? {}).length > 0 ||
+                    Object.keys(config.pedagogicalEvents ?? {}).length > 0;
                 const shouldApplyRemoteSettings =
                     !!settings &&
                     (

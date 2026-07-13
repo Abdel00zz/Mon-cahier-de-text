@@ -8,7 +8,7 @@ interface MathTextProps {
     inline?: boolean;
 }
 
-export const MathText: React.FC<MathTextProps> = ({ children, source, inline }) => {
+export const MathText: React.FC<MathTextProps> = ({ children, source }) => {
     const text = typeof source === 'string' ? source : '';
     const hasMath = text.includes('$') || text.includes('\\(') || text.includes('\\[') || text.includes('\\begin{');
     
@@ -17,5 +17,3 @@ export const MathText: React.FC<MathTextProps> = ({ children, source, inline }) 
     }
     return <>{children}</>;
 };
-
-export default MathText;

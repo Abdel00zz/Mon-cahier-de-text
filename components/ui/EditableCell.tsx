@@ -12,7 +12,7 @@ interface EditableCellProps {
 }
 
 /** Découpe le texte et enveloppe chaque occurrence (insensible à la casse) dans <mark>. */
-export const highlightMatches = (text: string, query?: string): React.ReactNode => {
+const highlightMatches = (text: string, query?: string): React.ReactNode => {
   const q = (query || '').trim();
   if (!q || !text) return text;
   const lower = text.toLowerCase();

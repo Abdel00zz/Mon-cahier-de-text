@@ -10,6 +10,8 @@ export type SyncableSettings = Pick<
     AppConfig,
     | 'establishmentName'
     | 'defaultTeacherName'
+    | 'academyRegion'
+    | 'educationProvince'
     | 'selectedCycles'
     | 'selectedSubjects'
     | 'showAllCycles'
@@ -23,6 +25,7 @@ export type SyncableSettings = Pick<
     | 'absences'
     | 'assessmentDates'
     | 'assessmentAbsences'
+    | 'pedagogicalEvents'
     | 'schoolYearStart'
 > & {
     /** préférences de notification hors états locaux à l'appareil (push, vibration) */
@@ -34,6 +37,8 @@ export type SyncableSettings = Pick<
 export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'establishmentName',
     'defaultTeacherName',
+    'academyRegion',
+    'educationProvince',
     'selectedCycles',
     'selectedSubjects',
     'showAllCycles',
@@ -47,6 +52,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'absences',
     'assessmentDates',
     'assessmentAbsences',
+    'pedagogicalEvents',
     'schoolYearStart',
 ];
 

@@ -12,7 +12,7 @@ import { getDaySlotRuns, TIMETABLE_DAYS } from './timetable.js';
  * spécificités d'établissement) — c'est une aide, pas une contrainte.
  */
 
-export type HoursDeviation = 'match' | 'over' | 'under' | 'empty';
+type HoursDeviation = 'match' | 'over' | 'under' | 'empty';
 
 export interface ClassHoursInsight {
     classId: string;
@@ -33,11 +33,11 @@ export interface ClassHoursInsight {
 }
 
 /** Heures posées dans la grille pour une classe (une case = 1 h). */
-export const countScheduledHours = (timetable: TimetableEntry[] | undefined, classId: string): number =>
+const countScheduledHours = (timetable: TimetableEntry[] | undefined, classId: string): number =>
     (timetable ?? []).filter(e => e.classId === classId).length;
 
 /** Séances/semaine (blocs continus fusionnés) pour une classe. */
-export const countWeeklySessions = (timetable: TimetableEntry[] | undefined, classId: string): number => {
+const countWeeklySessions = (timetable: TimetableEntry[] | undefined, classId: string): number => {
     let sessions = 0;
     for (const day of TIMETABLE_DAYS) {
         for (const run of getDaySlotRuns(timetable, day.value).values()) {

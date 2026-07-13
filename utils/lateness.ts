@@ -85,7 +85,7 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
     return { expectedSessions, actualSessions: sessionsCount, gapSessions, daysSinceLastEntry, severity };
 };
 
-export const formatLatenessMessage = (result: LatenessResult, className: string): string => {
+const formatLatenessMessage = (result: LatenessResult, className: string): string => {
     if (result.severity === 'critical') {
         return `${className} : environ ${result.gapSessions} séances semblent à compléter par rapport à l'emploi du temps. Vous avancez à votre rythme.`;
     }

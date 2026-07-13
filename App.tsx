@@ -1,5 +1,4 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 'react';
-import { MathJaxContext } from 'better-react-mathjax';
 import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
 import { AppBootSkeleton } from './components/ui/PageSkeleton';
@@ -8,14 +7,14 @@ import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
-import { Analytics } from '@vercel/analytics/react';
 import { normalizeOfficialClassName } from './constants';
-// No imports for deleted sessionAssistant
 
-const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
-const Editor = lazy(() => import('./components/Editor').then(module => ({ default: module.Editor })));
-const SettingsPage = lazy(() => import('./components/SettingsPage').then(module => ({ default: module.SettingsPage })));
-const AuthPage = lazy(() => import('./components/auth/AuthPage').then(module => ({ default: module.AuthPage })));
+const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
+const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
+const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const AuthPage = lazy(() => import('./features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
+const Analytics = lazy(() => import('@vercel/analytics/react').then(module => ({ default: module.Analytics })));
+const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 
 // MathJax 4.1.3 (dernière version) — chargé depuis jsDelivr. L'API de démarrage
 // de la v4 reste compatible avec `version={3}` de better-react-mathjax (config
@@ -94,7 +93,7 @@ const App: React.FC = () => {
 
   const [view, setView] = useState<View>(initialRouteRef.current.view);
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
-  const { config, isLoading: isConfigLoading } = useConfigManager();
+  const { isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
@@ -113,7 +112,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const key = getScrollKey(view, activeClass);
     const top = scrollPositionsRef.current[key] ?? 0;
-    let animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
+    const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
     const settleTimer = window.setTimeout(() => window.scrollTo(0, top), 220);
 
     return () => {
@@ -196,37 +195,42 @@ const App: React.FC = () => {
 
   const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : view;
 
-    return (
-      <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
-        {/* overflow-x-clip (et non -hidden) : masque tout débordement horizontal
-            SANS créer de conteneur de scroll — sinon `overflow-y` passerait à
-            `auto` (spec CSS) et casserait le `position: sticky` de la barre
-            d'outils, qui défilerait au lieu de rester collée en haut. */}
-        <div className="min-h-screen bg-background text-foreground relative overflow-x-clip">
-          <div key={routeKey} className="min-h-screen relative z-10">
-            <Suspense fallback={<AppBootSkeleton />}>
-              {renderContent()}
-            </Suspense>
-          </div>
-
+    const appSurface = (
+      /* overflow-x-clip (et non -hidden) : masque tout débordement horizontal
+         sans créer de conteneur de scroll, afin de préserver la barre d’outils sticky. */
+      <div className="min-h-screen bg-background text-foreground relative overflow-x-clip">
+        <div key={routeKey} className="min-h-screen relative z-10">
+          <Suspense fallback={<AppBootSkeleton />}>
+            {renderContent()}
+          </Suspense>
         </div>
+      </div>
+    );
+
+    return (
+      <>
+        {view === 'editor' ? (
+          <Suspense fallback={<AppBootSkeleton />}>
+            <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
+              {appSurface}
+            </MathJaxContext>
+          </Suspense>
+        ) : appSurface}
         <GlobalTooltip />
         <Toaster
           position="bottom-right"
           closeButton
           expand={false}
           gap={5}
-          // Empilement : 3 toasts visibles max (les suivants en file). Deux
-          // notifications simultanées s'empilent proprement avec un écart net
-          // (gap) plutôt que de se chevaucher. Sur mobile, décalés au-dessus du
-          // FAB « + » (56 px + safe-area) pour ne jamais le recouvrir.
           visibleToasts={3}
           offset={{ bottom: 24, right: 24 }}
           mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)', left: 12, right: 12 }}
           className="print:hidden"
         />
-        <Analytics />
-      </MathJaxContext>
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
+      </>
     );
 }
 

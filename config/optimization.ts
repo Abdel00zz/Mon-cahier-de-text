@@ -16,13 +16,6 @@ export const BUNDLE_OPTIMIZATION = {
     ]
   },
   
-  // Préchargement des modules critiques
-  PRELOAD_MODULES: [
-    './components/Editor',
-    './components/Dashboard',
-    './utils/dataUtils'
-  ],
-
   // Budget applicatif premium: avertit si un chunk devient trop lourd
-  CHUNK_WARN_LIMIT_KB: 340
+  CHUNK_WARN_LIMIT_KB: 220
 };

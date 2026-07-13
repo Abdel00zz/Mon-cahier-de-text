@@ -77,7 +77,7 @@ export const createArchive = (yearLabel: string): ArchiveMeta | null => {
     }
 };
 
-export const readArchive = (id: string): FullBackup | null => {
+const readArchive = (id: string): FullBackup | null => {
     try {
         const raw = localStorage.getItem(entryKey(id));
         return raw ? (JSON.parse(raw) as FullBackup) : null;

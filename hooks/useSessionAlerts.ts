@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { AppConfig, ClassInfo } from '../types';
 import { SessionBlock, getDaySessionBlocks } from '../utils/timetable';
 import { collectSessionDates } from '../utils/printMeta';
-import { isHoliday, isVacation, loadHolidayCalendar, toISODate } from '../utils/calendar';
+import { isHoliday, isVacation, loadHolidayCalendar, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
 import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
@@ -36,6 +36,27 @@ const vibrate = (pattern: number | number[]): void => {
     } catch {
         // API indisponible (desktop, iOS hors PWA) : le toast reste le signal
     }
+};
+
+const clockMinutesInZone = (now: Date, timeZone: string): number => {
+    try {
+        const parts = new Intl.DateTimeFormat('fr-FR', {
+            timeZone,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hourCycle: 'h23',
+        }).formatToParts(now);
+        const value = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find(part => part.type === type)?.value ?? 0);
+        return value('hour') * 60 + value('minute') + value('second') / 60;
+    } catch {
+        return now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+    }
+};
+
+const weekdayFromISO = (iso: string): number => {
+    const [year, month, day] = iso.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 };
 
 const readConfig = (): Partial<AppConfig> => {
@@ -100,16 +121,16 @@ export const useSessionAlerts = (): void => {
             if (cancelled) return;
 
             const now = new Date();
-            const todayISO = toISODate(now);
+            const todayISO = todayInMorocco(now, calendar);
             // jour sans classe (férié, vacances, absence justifiée) : silence total
             if (isHoliday(todayISO, calendar) || isVacation(todayISO, calendar)) return;
 
-            const blocks = getDaySessionBlocks(timetable, now.getDay());
+            const blocks = getDaySessionBlocks(timetable, weekdayFromISO(todayISO));
             if (blocks.length === 0) return;
 
             const classNames = new Map(readClasses().map(c => [c.id, c.name]));
             const nameOf = (classId: string): string => classNames.get(classId) ?? 'votre classe';
-            const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+            const nowMin = clockMinutesInZone(now, calendar.fuseau);
 
             // blocs partageant la même fin → un seul signal groupé (règle §Q)
             const byEnd = new Map<number, SessionBlock[]>();
@@ -156,18 +177,14 @@ export const useSessionAlerts = (): void => {
             }
         })();
 
-        // re-planification au passage de minuit (30 s de marge)
-        const nextMidnight = new Date();
-        nextMidnight.setHours(24, 0, 30, 0);
-        const midnightTimer = window.setTimeout(
-            () => setTick(t => t + 1),
-            nextMidnight.getTime() - Date.now()
-        );
+        // Revalidation légère : suit un changement de jour/fuseau et les
+        // ajustements d'heure du Maroc sans dépendre de l'horloge du téléphone.
+        const refreshTimer = window.setTimeout(() => setTick(t => t + 1), 30 * 60_000);
 
         return () => {
             cancelled = true;
             timers.forEach(id => window.clearTimeout(id));
-            window.clearTimeout(midnightTimer);
+            window.clearTimeout(refreshTimer);
         };
     }, [tick]);
 };

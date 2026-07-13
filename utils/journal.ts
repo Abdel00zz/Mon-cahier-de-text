@@ -12,7 +12,7 @@ const key = (classId: string) => `editJournal_v1_${classId}`;
 const MAX_ENTRIES = 60;
 
 /** Libellés français des types d'opérations de l'éditeur. */
-export const OP_LABELS: Record<string, string> = {
+const OP_LABELS: Record<string, string> = {
     'initial-load': 'Ouverture du cahier',
     'cell-edit': 'Modification d\'une cellule',
     'inline-edit-item': 'Modification d\'un élément',

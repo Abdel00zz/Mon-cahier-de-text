@@ -12,6 +12,11 @@ import {
 } from './_lib/auth.js';
 import type { AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
 import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
+import {
+    getOfficialStudentEventsFile,
+    validateOfficialStudentEventsFile,
+    type OfficialStudentEventsFile,
+} from '../utils/officialStudentEvents.js';
 
 interface AdminBody {
     action?: string;
@@ -21,6 +26,7 @@ interface AdminBody {
     title?: string;
     message?: string;
     calendar?: HolidayCalendar;
+    officialEvents?: OfficialStudentEventsFile;
     classId?: string;
     assessmentId?: string;
     date?: string;
@@ -75,10 +81,10 @@ const validateCalendar = (value: unknown): HolidayCalendar => {
     if (!value || typeof value !== 'object') throw new HttpError(400, 'Calendrier invalide.');
     const calendar = value as HolidayCalendar;
     if (!calendar.anneeScolaire || !validISO(calendar.anneeScolaire.debut) || !validISO(calendar.anneeScolaire.fin)) {
-        throw new HttpError(400, 'AnnÃ©e scolaire invalide.');
+        throw new HttpError(400, 'Année scolaire invalide.');
     }
     if (!Array.isArray(calendar.joursFeries) || calendar.joursFeries.some(item => !validISO(item.date) || !item.nom)) {
-        throw new HttpError(400, 'Liste des jours fÃ©riÃ©s invalide.');
+        throw new HttpError(400, 'Liste des jours fériés invalide.');
     }
     if (!Array.isArray(calendar.vacances) || calendar.vacances.some(item => !validISO(item.debut) || !validISO(item.fin) || item.fin < item.debut || !item.nom)) {
         throw new HttpError(400, 'Liste des vacances invalide.');
@@ -105,6 +111,26 @@ const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
     const saved = { ...calendar, version: calendar.version + 1 };
     await redis.set(KEYS.adminCalendar, saved);
     res.status(200).json({ ok: true, calendar: saved });
+};
+
+const handleGetOfficialEvents = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const officialEvents = (await redis.get<OfficialStudentEventsFile>(KEYS.adminOfficialEvents))
+        ?? getOfficialStudentEventsFile();
+    res.status(200).json({ officialEvents });
+};
+
+const handleSaveOfficialEvents = async (body: AdminBody, res: ApiResponse) => {
+    let validated: OfficialStudentEventsFile;
+    try {
+        validated = validateOfficialStudentEventsFile(body.officialEvents);
+    } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : 'Bulletin officiel JSON invalide.');
+    }
+    const redis = await getRedis();
+    const saved = { ...validated, version: validated.version + 1 };
+    await redis.set(KEYS.adminOfficialEvents, saved);
+    res.status(200).json({ ok: true, officialEvents: saved });
 };
 
 const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
@@ -142,7 +168,7 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
     if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
     const redis = await getRedis();
     const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
-    if (!blob) throw new HttpError(404, 'DonnÃ©es de l\'enseignant introuvables.');
+    if (!blob) throw new HttpError(404, 'Données de l\'enseignant introuvables.');
     const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
     const forClass = { ...(assessmentDates[body.classId] ?? {}) };
     if (body.date) forClass[body.assessmentId] = body.date;
@@ -248,6 +274,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
             if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
             if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
+            if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
             throw new HttpError(400, 'Action inconnue.');
         }
@@ -258,6 +285,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (action === 'overview') return await handleOverview(res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);
+            if (action === 'officialEvents') return await handleGetOfficialEvents(res);
             if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');
         }

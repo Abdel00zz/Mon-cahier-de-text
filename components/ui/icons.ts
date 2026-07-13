@@ -5,14 +5,10 @@ import {
   faArrowDown,
   faArrowLeft,
   faArrowRight,
-  faArrowTrendUp,
   faArrowUp,
-  faArrowUpRightFromSquare,
-  faBars,
   faBell,
   faBook,
   faBookOpen,
-  faCalendar,
   faCalendarCheck,
   faCalendarDays,
   faCalendarMinus,
@@ -26,7 +22,6 @@ import {
   faChevronRight,
   faChevronUp,
   faCircleCheck,
-  faCircle,
   faCircleExclamation,
   faCircleInfo,
   faCircleQuestion,
@@ -41,7 +36,6 @@ import {
   faEyeSlash,
   faFileArrowDown,
   faFileArrowUp,
-  faFileExport,
   faFileImport,
   faFileLines,
   faFileSignature,
@@ -54,10 +48,8 @@ import {
   faGripLinesVertical,
   faHouse,
   faListCheck,
-  faLock,
   faLocationDot,
   faMagnifyingGlass,
-  faMobileScreenButton,
   faPencil,
   faPlus,
   faPrint,
@@ -68,11 +60,8 @@ import {
   faSpinner,
   faSquareCheck,
   faSquareRootVariable,
-  faSun,
-  faTableColumns,
   faTrashCan,
   faTriangleExclamation,
-  faUpload,
   faUser,
   faUsers,
   faVial,
@@ -98,6 +87,7 @@ const icon = (definition: IconDefinition): React.FC<AppIconProps> => {
   const AppIcon: React.FC<AppIconProps> = ({ size, strokeWidth: _strokeWidth, style, ...props }) =>
     React.createElement(FontAwesomeIcon, {
       icon: definition,
+      fixedWidth: true,
       style: (size ? { width: size, height: size, ...style } : style) as React.ComponentProps<typeof FontAwesomeIcon>['style'],
       ...props,
     });
@@ -112,7 +102,6 @@ export const CheckSquare = icon(faSquareCheck);
 export const Settings = icon(faGear);
 export const Trash2 = icon(faTrashCan);
 export const CalendarDays = icon(faCalendarDays);
-export const Calendar = icon(faCalendar);
 export const CalendarRange = icon(faCalendarWeek);
 export const CalendarCheck = icon(faCalendarCheck);
 export const CalendarPlus = icon(faCalendarPlus);
@@ -134,7 +123,6 @@ export const ChevronDown = icon(faChevronDown);
 export const ChevronRight = icon(faChevronRight);
 export const MoreVertical = icon(faEllipsisVertical);
 export const FileInput = icon(faFileImport);
-export const FileOutput = icon(faFileExport);
 export const FileText = icon(faFileLines);
 export const FileUp = icon(faFileArrowUp);
 export const FileDown = icon(faFileArrowDown);
@@ -150,17 +138,13 @@ export const Pencil = icon(faPencil);
 export const School = icon(faSchool);
 export const GraduationCap = icon(faGraduationCap);
 export const FlaskConical = icon(faFlask);
-export const Smartphone = icon(faMobileScreenButton);
 export const GripVertical = icon(faGripLinesVertical);
 export const GripHorizontal = icon(faGrip);
 export const FolderOpen = icon(faFolderOpen);
-export const Upload = icon(faUpload);
 export const Download = icon(faDownload);
 export const CircleAlert = icon(faCircleExclamation);
 export const CircleCheck = icon(faCircleCheck);
-export const Circle = icon(faCircle);
 export const CircleX = icon(faCircleXmark);
-export const OctagonX = CircleX;
 export const CircleHelp = icon(faCircleQuestion);
 export const Info = icon(faCircleInfo);
 export const MapPin = icon(faLocationDot);
@@ -173,11 +157,4 @@ export const EyeOff = icon(faEyeSlash);
 export const Database = icon(faDatabase);
 export const User = icon(faUser);
 export const Loader2 = icon(faSpinner);
-export const LoaderCircle = Loader2;
-export const TrendingUp = icon(faArrowTrendUp);
-export const ArrowUpRight = icon(faArrowUpRightFromSquare);
-export const Sun = icon(faSun);
-export const LayoutDashboard = icon(faTableColumns);
-export const Menu = icon(faBars);
 export const Users = icon(faUsers);
-export const Lock = icon(faLock);

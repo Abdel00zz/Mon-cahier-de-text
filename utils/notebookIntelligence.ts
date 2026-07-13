@@ -3,7 +3,7 @@ import { flattenLessons } from './dataUtils.js';
 
 const CONTAINER_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
 
-export interface NotebookPoint {
+interface NotebookPoint {
     title: string;
     breadcrumb: string;
     date?: string;

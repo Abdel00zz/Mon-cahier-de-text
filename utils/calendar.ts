@@ -201,9 +201,3 @@ export const nextSchoolDay = (
 const WEEKDAY_LABELS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 
 export const weekdayLabel = (weekday: number): string => WEEKDAY_LABELS[weekday] ?? '';
-
-export const formatSchoolDayLabel = (iso: string): string => {
-    const weekday = getWeekday(iso);
-    const [, , d] = iso.split('-');
-    return `${WEEKDAY_LABELS[weekday]} ${Number(d)}`;
-};

@@ -1,7 +1,7 @@
 import {
   Info,
-  LoaderCircle,
-  OctagonX,
+  Loader2,
+  CircleX,
   TriangleAlert,
 } from "./icons"
 import { Toaster as Sonner } from "sonner"
@@ -17,8 +17,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
         success: <div className="hidden" />,
         info: <Info className="h-3.5 w-3.5" />,
         warning: <TriangleAlert className="h-3.5 w-3.5" />,
-        error: <OctagonX className="h-3.5 w-3.5" />,
-        loading: <LoaderCircle className="h-3.5 w-3.5 animate-spin" />,
+        error: <CircleX className="h-3.5 w-3.5" />,
+        loading: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
       }}
       toastOptions={{
         classNames: {

@@ -1,79 +1,99 @@
 # Cahier de textes interactif
 
-Application web offline-first destinée aux enseignants : cahiers structurés, emploi du temps, progression, devoirs, impression et synchronisation sécurisée.
+Application web et mobile offline-first destinée aux enseignants : classes, cahiers structurés, emploi du temps, évaluations, impression, notifications et synchronisation sécurisée.
 
-## Ce que fait l’application
+## Parcours principal
 
-- Gère des classes et des cahiers hiérarchiques (chapitres, sections, contenus, remarques).
-- Affecte une date à un ou plusieurs contenus, avec contrôle du calendrier scolaire, des absences et de l’emploi du temps.
-- Affiche un tableau de bord relié au même circuit de données : emploi du temps, séances saisies, contenus préparés, progression et devoirs à venir.
-- Permet l’impression, l’export, l’import, l’archivage et l’utilisation hors connexion.
-- Synchronise les données d’un compte vers le cloud dès que le réseau est disponible.
+1. L’enseignant se connecte ou crée son compte.
+2. L’accueil **Mes classes** présente la situation du jour, la recherche globale et les cahiers.
+3. Une classe ouvre son cahier : contenus, dates, remarques, recherche, historique et impression.
+4. Les paramètres réunissent profil, emploi du temps, notifications, données et compte.
+5. Les évaluations s’ouvrent depuis la classe active et restent liées à cette classe.
 
-## Parcours enseignant
+## Circuits uniques
 
-1. Connexion ou inscription.
-2. Accueil guidé : profil, classes, puis emploi du temps.
-3. Tableau de bord : le circuit pédagogique résume les données utiles de la journée.
-4. Édition d’un cahier : saisie, sélection multiple, dates, recherche, annulation et impression.
-5. Paramètres : emploi du temps, notifications, sauvegardes, archives et compte.
-
-## Circuit d’une date
+### Date
 
 ```text
 Choix de date
-  → validation (emploi du temps, vacances, fériés, absences, année scolaire)
-  → aucun écart : écriture immédiate
-  → écart : message de vérification « J’ai compris, enregistrer »
-  → historique et sauvegarde locale
-  → file de synchronisation cloud
-  → progression, séances, devoirs et tableau de bord
+  → validation centralisée
+  → emploi du temps + vacances + fériés + absences + année scolaire
+  → aucun écart : enregistrement
+  → écart : dialogue « Modifier la date / J’ai compris, enregistrer »
+  → historique local + synchronisation
 ```
 
-Les écarts ne sont jamais présentés comme une faute : l’enseignant peut confirmer une exception ou modifier la date.
+Un écart est une information à confirmer, jamais une faute et jamais un toast fugitif.
+
+### Données pédagogiques
+
+```text
+Cahier de classe
+  → dates réellement saisies
+  → progression et prochaine séance
+  → briefing Mes classes
+  → évaluations et alertes contextuelles
+```
+
+La grille `timetable` est la source de vérité de l’emploi du temps. Les `schedules` sont dérivés. Les vues n’implémentent pas une seconde version des règles métier.
 
 ## Architecture
 
-| Dossier | Rôle |
+| Emplacement | Responsabilité |
 |---|---|
-| `components/` | Écrans, éditeur, vues du tableau de bord, modales et composants UI |
-| `components/config/` | Paramètres, emploi du temps, archives et notifications |
-| `components/modals/` | Parcours guidés et interactions nécessitant une décision explicite |
-| `contexts/` | Authentification et synchronisation cloud |
-| `hooks/` | État local, historique, données de classes et alertes locales |
-| `utils/` | Règles métier pures : calendrier, dates, progression, emploi du temps, devoirs et synchronisation |
-| `api/` | Fonctions serverless Vercel et helpers Redis/authentification |
-| `public/` | Calendrier, contenus officiels et icônes |
-| `pwa/` | Service worker et enregistrement PWA |
+| `features/auth/` | Connexion et inscription |
+| `features/dashboard/` | Accueil Mes classes, briefing, cartes et onboarding |
+| `features/editor/` | Cahier, tableau, actions, impression et modales d’édition |
+| `features/evaluations/` | Évaluations, parcours officiel, concours et absences |
+| `features/settings/` | Paramètres, emploi du temps, notifications et données |
+| `features/guide/` | Guide bilingue FR/AR |
+| `components/ui/` | Primitives visuelles partagées uniquement |
+| `hooks/` | Orchestration d’état réutilisable |
+| `contexts/` | Authentification et synchronisation |
+| `utils/` | Règles métier et transformations pures |
+| `api/` | Fonctions serverless, authentification, Redis et push |
+| `admin/` | Interface d’administration isolée |
+| `pwa/` | Service worker et installation PWA |
+| `public/` | Contenus officiels, calendrier, guide et icônes |
 
-### Sources de vérité
-
-- La grille `timetable` est la source de vérité de l’emploi du temps ; `schedules` est toujours dérivé.
-- Le cahier est la source de vérité des contenus et des dates réellement retenues.
-- Les règles métier vivent dans `utils/` et ne dépendent pas de React.
-- Les vues lisent les mêmes données : aucune règle de progression, de retard ou de devoir ne doit être dupliquée dans un composant.
+La documentation détaillée se trouve dans [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). La reconstruction HTML statique est décrite dans [maquette.md](maquette.md) et disponible directement dans [maquette/maquette.html](maquette/maquette.html) avec ses fichiers CSS/JS autonomes.
 
 ## Développement
 
 ```bash
-npm.cmd run dev
-npm.cmd run lint
-npm.cmd run build
+npm run dev
+npm run lint
+npm run check:architecture
+npm run check:unused
+npm run build
+npm run check
 ```
 
-`lint` lance TypeScript sans émission de fichiers. Le projet utilise React, TypeScript, Vite, Tailwind CSS, Radix UI, Immer et Vercel Functions.
+- `lint` vérifie TypeScript.
+- `check:architecture` interdit aussi les variables et paramètres inutilisés.
+- `check:unused` détecte fichiers, exports et dépendances orphelins.
+- `build` produit les entrées enseignant et administration ainsi que le service worker.
+- `check` exécute toute la chaîne de qualité.
 
-## Synchronisation et sécurité
+## Technologies
+
+React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Font Awesome, Immer, MathJax, Vercel Functions, Upstash Redis, Workbox et Capacitor.
+
+## Sécurité et robustesse
 
 - Sessions signées dans des cookies `HttpOnly`.
 - Mots de passe hachés avec `scrypt`.
-- Synchronisation par classe, avec lots limités en taille et archivage local lors d’un conflit multi-appareils.
-- À la déconnexion, le poste local est purgé afin qu’un autre compte partagé ne voie ni ne synchronise les cahiers précédents.
+- Synchronisation par classe et travail hors ligne.
+- Notifications web push avec validation centralisée des types.
+- Contrôle des dépendances par `npm audit`.
+- Budget de 220 kB par chunk non compressé ; les écrans lourds, les modales et MathJax sont chargés à la demande.
+- Le suivi analytics est différé pour ne pas ralentir le premier affichage.
 
 ## Règles de maintenance
 
-- Toute nouvelle saisie de date passe par la validation centralisée.
-- Une erreur de formulaire reste dans son contexte ; un toast ne remplace pas une décision utilisateur.
-- Les actions destructives demandent confirmation.
-- Les composants UI génériques restent dans `components/ui/`, les règles dans `utils/` et les flux d’écran dans `components/`.
-- Avant toute suppression de fichier, vérifier son import, son rôle PWA/API et l’état Git du dépôt.
+- Une fonctionnalité d’écran appartient à son dossier `features/<domaine>`.
+- Un composant va dans `components/ui` seulement s’il est réellement transversal et sans logique métier.
+- Toute règle de date, progression, horaire ou calendrier reste dans `utils`.
+- Les imports inter-domaines utilisent l’alias `@/` ; les imports internes à une feature restent relatifs.
+- Aucun fichier temporaire, rendu PDF, script ponctuel ou ancienne maquette ne doit être versionné.
+- Toute suppression doit être confirmée par `npm run check:unused`, puis par TypeScript et le build.

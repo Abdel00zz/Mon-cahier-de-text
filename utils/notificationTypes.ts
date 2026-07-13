@@ -1,4 +1,4 @@
-export const PUSH_NOTIFICATION_KINDS = [
+const PUSH_NOTIFICATION_KINDS = [
   'lateness',
   'session-reminder',
   'missing-date',

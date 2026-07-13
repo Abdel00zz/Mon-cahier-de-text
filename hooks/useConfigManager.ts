@@ -21,6 +21,8 @@ export const defaultNotificationSettings = {
 const defaultConfig: AppConfig = {
     establishmentName: '',
     defaultTeacherName: '',
+    academyRegion: '',
+    educationProvince: '',
     printShowDescriptions: true,
     screenDescriptionMode: 'all',
     screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
@@ -36,6 +38,7 @@ const defaultConfig: AppConfig = {
     notificationSettings: { ...defaultNotificationSettings },
     absences: [],
     assessmentDates: {},
+    pedagogicalEvents: {},
 };
 
 export const useConfigManager = () => {
@@ -47,6 +50,10 @@ export const useConfigManager = () => {
             const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
             if (storedConfig) {
                 const loadedConfig = JSON.parse(storedConfig);
+                const loadedPrintDescriptionMode: AppConfig['printDescriptionMode'] =
+                    loadedConfig.printDescriptionMode === 'all' || loadedConfig.printDescriptionMode === 'none' || loadedConfig.printDescriptionMode === 'custom'
+                        ? loadedConfig.printDescriptionMode
+                        : loadedConfig.printShowDescriptions === false ? 'none' : 'all';
                 setConfig(() => ({
                     ...defaultConfig,
                     ...loadedConfig,
@@ -55,7 +62,8 @@ export const useConfigManager = () => {
                     screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
                         ? loadedConfig.screenDescriptionTypes
                         : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    printDescriptionMode: loadedConfig.printDescriptionMode ?? 'all',
+                    // Migration explicite de l'ancien booléen printShowDescriptions.
+                    printDescriptionMode: loadedPrintDescriptionMode,
                     printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
                         ? loadedConfig.printDescriptionTypes
                         : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
@@ -70,6 +78,7 @@ export const useConfigManager = () => {
                     notificationSettings: { ...defaultNotificationSettings, ...(loadedConfig.notificationSettings ?? {}) },
                     absences: loadedConfig.absences ?? [],
                     assessmentDates: loadedConfig.assessmentDates ?? {},
+                    pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
                     schoolYearStart: loadedConfig.schoolYearStart,
                 }));
             } else {

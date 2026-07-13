@@ -12,7 +12,7 @@ const CONTAINER_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsect
 const isContentEntry = (entry: { data: any; elementType: string }): boolean =>
     !CONTAINER_TYPES.has(entry.elementType) && !CONTAINER_TYPES.has(entry.data?.type);
 
-export interface ChapterProgress {
+interface ChapterProgress {
     title: string;
     total: number;
     planned: number;
@@ -74,7 +74,7 @@ export const computeProgressionStats = (lessonsData: LessonsData): ProgressionSt
     return { totalItems, plannedCount, completionRate, sessionsCount, unplannedItems, lastDate, perChapter };
 };
 
-export const computeClassSnapshot = (
+const computeClassSnapshot = (
     classInfo: ClassInfo,
     lessonsData: LessonsData,
     schedule?: ClassSchedule

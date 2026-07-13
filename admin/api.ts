@@ -1,5 +1,6 @@
 import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
+import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
 export interface TeacherDetail {
     user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null } | null;
@@ -77,6 +78,14 @@ export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>
 
 export const saveAdminCalendar = (calendar: HolidayCalendar): Promise<{ ok: boolean; calendar: HolidayCalendar }> =>
     postAdmin({ action: 'saveCalendar', calendar });
+
+export const fetchAdminOfficialEvents = (): Promise<{ officialEvents: OfficialStudentEventsFile }> =>
+    request('/api/admin?action=officialEvents');
+
+export const saveAdminOfficialEvents = (
+    officialEvents: OfficialStudentEventsFile,
+): Promise<{ ok: boolean; officialEvents: OfficialStudentEventsFile }> =>
+    postAdmin({ action: 'saveOfficialEvents', officialEvents });
 
 export const saveAssessmentDate = (
     phone: string,

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "admin/index.tsx",
+    "api/admin.ts",
+    "api/auth.ts",
+    "api/calendar.ts",
+    "api/notify.ts",
+    "api/official-events.ts",
+    "api/send-email.ts",
+    "api/sync.ts"
+  ],
+  "ignoreFiles": [
+    "maquette/script.js",
+    "maquette/styles.css"
+  ],
+  "ignoreDependencies": [
+    "@capacitor/android",
+    "@capacitor/cli"
+  ]
+}

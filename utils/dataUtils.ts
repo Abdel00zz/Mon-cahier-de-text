@@ -202,22 +202,6 @@ export const deleteSeparator = (draft: Draft<LessonsData>, itemIndices: Indices)
     }
 };
 
-export const formatModernDate = memoize((dateString: string): { day: string; month: string; year: string } | null => {
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return null;
-        }
-        const day = date.toLocaleDateString('fr-FR', { day: '2-digit' });
-        const month = date.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-        const year = date.toLocaleDateString('fr-FR', { year: 'numeric' });
-        return { day, month, year };
-    } catch (error) {
-        logger.error("Error formatting date:", dateString, error);
-        return null;
-    }
-});
-
 // Compact date formatter: returns dd/mm/yyyy from ISO (yyyy-mm-dd) without timezone shifts
 export const formatDateDDMMYYYY = memoize((dateString: string): string | null => {
     if (!dateString || typeof dateString !== 'string') return null;

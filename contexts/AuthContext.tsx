@@ -4,7 +4,7 @@ import { clearLocalWorkspace } from '../utils/workspace';
 
 export type Cycle = 'college' | 'lycee' | 'prepa';
 
-export interface AuthUser {
+interface AuthUser {
   phone: string;
   nom: string;
   prenom: string;
@@ -12,9 +12,9 @@ export interface AuthUser {
   subjects?: string[];
 }
 
-export type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'offline';
+type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'offline';
 
-export interface RegisterInput {
+interface RegisterInput {
   nom: string;
   prenom: string;
   phone: string;

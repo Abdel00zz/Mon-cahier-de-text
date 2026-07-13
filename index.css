@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Tajawal:wght@400;500;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -30,14 +29,6 @@
   --color-chart-3: hsl(var(--chart-3));
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
 
   /* Style Propre / Notion-Stripe : arrondis des CADRES très calibrés et sérieux */
 
@@ -48,29 +39,31 @@
   --radius-2xl: 1.3rem;
   --radius-3xl: 1.5rem;
 
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', ui-monospace, monospace;
-  --font-ar: 'Tajawal', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+  --font-sans: 'Fira Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Roboto Slab', 'Fira Sans', Georgia, serif;
+  --font-mono: 'Fira Sans Condensed', 'Fira Sans', 'Segoe UI', sans-serif;
+  --font-ar: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
   --font-serif: 'Roboto Slab', Georgia, serif;
   --font-slab: 'Roboto Slab', Georgia, serif;
+  --font-compact: 'Fira Sans Condensed', 'Fira Sans', 'Segoe UI', sans-serif;
 }
 
 @layer base {
   :root {
-    /* TweakCN · Twitter, adapté au pipeline HSL du projet. */
-    --background: 0 0% 100%;
-    --foreground: 210 25% 8%;
-    --card: 180 14% 98%;
-    --card-foreground: 210 25% 8%;
+    /* Bleu académique, encre profonde et papier clair : la vivacité de la
+       palette Twitter est conservée, avec la douceur éditoriale de mini (4). */
+    --background: 220 33% 99%;
+    --foreground: 230 38% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 38% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 25% 8%;
+    --popover-foreground: 230 38% 15%;
     --primary: 203 89% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 204 26% 96%;
-    --secondary-foreground: 210 25% 8%;
-    --muted: 204 26% 96%;
-    --muted-foreground: 203 15% 38%;
+    --secondary: 216 38% 96%;
+    --secondary-foreground: 230 38% 15%;
+    --muted: 216 32% 96%;
+    --muted-foreground: 220 15% 42%;
     --accent: 203 88% 95%;
     --accent-foreground: 203 89% 40%;
     --destructive: 0 84.2% 60.2%;
@@ -80,22 +73,14 @@
     --warning: 38 92% 50%;
     --scheduled: 203 88% 95%;
     --scheduled-foreground: 203 89% 38%;
-    --border: 200 17% 85%;
-    --input: 200 17% 85%;
+    --border: 216 24% 88%;
+    --input: 216 24% 84%;
     --ring: 203 89% 53%;
     --chart-1: 203 89% 53%;
     --chart-2: 160 100% 36%;
     --chart-3: 262 83% 58%;
     --chart-4: 38 92% 50%;
     --chart-5: 340 82% 60%;
-    --sidebar: 0 0% 100%;
-    --sidebar-foreground: 210 25% 8%;
-    --sidebar-primary: 203 89% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 203 88% 95%;
-    --sidebar-accent-foreground: 203 89% 40%;
-    --sidebar-border: 200 17% 85%;
-    --sidebar-ring: 203 89% 53%;
     --radius: 1.25rem;
   }
 }
@@ -107,20 +92,34 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    font-weight: 500;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-width: 320px;
+    min-height: 100dvh;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
   }
   
-  h1, h2, h4, h5, h6, .font-display {
+  h1, h2, h3, h4, h5, h6, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.018em;
+    font-optical-sizing: auto;
   }
   .font-mono {
     font-family: var(--font-mono);
   }
+  .font-compact {
+    font-family: var(--font-compact);
+  }
   .font-ar {
     font-family: var(--font-ar);
     letter-spacing: 0;
+    line-height: 1.65;
   }
 }
 /* Animation Lucioles - désactivée pour rigueur professionnelle */
@@ -151,67 +150,6 @@
   }
 }
 
-@layer components {
-  /*
-   * Contour commun du tableau de bord : les quatre cotes restent visibles.
-   * Le relief court separe la carte sans ajouter une seconde bordure visuelle.
-   */
-  .dashboard-panel {
-    border: 1px solid hsl(var(--border));
-    background: hsl(var(--card));
-    box-shadow: 0 2px 6px hsl(var(--foreground) / 0.055);
-  }
-
-  .dashboard-panel--primary {
-    border-color: hsl(var(--primary) / 0.88);
-    background: hsl(var(--primary));
-  }
-
-  .dashboard-panel--dark {
-    border-color: hsl(var(--foreground) / 0.88);
-    background: hsl(var(--foreground));
-  }
-
-  /* L'alerte est un rail interieur : elle ne remplace jamais le contour. */
-  .dashboard-attention-card {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .dashboard-attention-card::before {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    width: 3px;
-    content: "";
-    background: hsl(var(--primary));
-  }
-
-  .dashboard-attention-card[data-urgent="true"]::before {
-    background: hsl(var(--destructive));
-  }
-
-  .dashboard-section-title {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-  }
-
-  .dashboard-section-title::before,
-  .dashboard-section-title::after {
-    width: 1.75rem;
-    height: 0.75rem;
-    flex: 0 0 auto;
-    content: "";
-    background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 12'%3E%3Cpath d='M1 8.5C7 8.5 8 3.5 14 3.5' fill='none' stroke='%231d9bf0' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='18' cy='3.5' r='2' fill='%231d9bf0'/%3E%3Ccircle cx='24.5' cy='3.5' r='1' fill='%231d9bf0' opacity='.45'/%3E%3C/svg%3E");
-    opacity: 0.72;
-  }
-
-  .dashboard-section-title::after {
-    transform: scaleX(-1);
-  }
-}
-
 /*
  * Icônes interactives (boutons, barres d'outils, barre de sélection) : +30%
  * et FLEXIBLES (unités `rem` → suivent le zoom navigateur et l'accessibilité).
@@ -222,15 +160,28 @@
  * Les sélecteurs `svg.lucide.h-4/.h-5` (0,2,1) l'emportent sur h-4 seul (0,1,0)
  * et sur [&_svg]:size-4 des boutons. Icônes décoratives hors boutons : intactes.
  */
-button svg.lucide.h-4,  button svg.lucide.size-4,
-[role="toolbar"] svg.lucide.h-4,  [role="toolbar"] svg.lucide.size-4 {
+button svg:is(.lucide, .svg-inline--fa).h-4,
+button svg:is(.lucide, .svg-inline--fa).size-4,
+[role="toolbar"] svg:is(.lucide, .svg-inline--fa).h-4,
+[role="toolbar"] svg:is(.lucide, .svg-inline--fa).size-4 {
   width: 1.3rem;
   height: 1.3rem;
 }
-button svg.lucide.h-5,  button svg.lucide.size-5,
-[role="toolbar"] svg.lucide.h-5,  [role="toolbar"] svg.lucide.size-5 {
+button svg:is(.lucide, .svg-inline--fa).h-5,
+button svg:is(.lucide, .svg-inline--fa).size-5,
+[role="toolbar"] svg:is(.lucide, .svg-inline--fa).h-5,
+[role="toolbar"] svg:is(.lucide, .svg-inline--fa).size-5 {
   width: 1.6rem;
   height: 1.6rem;
+}
+
+svg.svg-inline--fa {
+  shape-rendering: geometricPrecision;
+}
+
+button svg.svg-inline--fa,
+[role="button"] svg.svg-inline--fa {
+  transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
 }
 
 /* Tooltip maison (remplace Tippy.js) */
@@ -267,40 +218,6 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
 }
 .animate-fade-in { animation: fade-in 0.18s ease-out; }
 
-/* Tableau de bord : entree hierarchisee, rapide et stable au toucher. */
-@keyframes dashboard-reveal-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem) scale(0.985);
-    filter: blur(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-.dashboard-reveal {
-  opacity: 0;
-  will-change: transform, opacity;
-  animation: dashboard-reveal-in 480ms cubic-bezier(.16, 1, .3, 1) both;
-}
-.dashboard-reveal-1 { animation-delay: 30ms; }
-.dashboard-reveal-2 { animation-delay: 95ms; }
-.dashboard-reveal-3 { animation-delay: 160ms; }
-
-.dashboard-stagger > * {
-  opacity: 0;
-  animation: dashboard-reveal-in 420ms cubic-bezier(.16, 1, .3, 1) both;
-}
-.dashboard-stagger > :nth-child(1) { animation-delay: 140ms; }
-.dashboard-stagger > :nth-child(2) { animation-delay: 190ms; }
-.dashboard-stagger > :nth-child(3) { animation-delay: 240ms; }
-.dashboard-stagger > :nth-child(4) { animation-delay: 290ms; }
-.dashboard-stagger > :nth-child(5) { animation-delay: 340ms; }
-.dashboard-stagger > :nth-child(6) { animation-delay: 390ms; }
-
 /* Dialog/Sheet motion is defined locally because Tailwind's animate-in
    utilities are not part of the installed stack. */
 @keyframes dialog-overlay-in { from { opacity: 0; } to { opacity: 1; } }
@@ -333,8 +250,7 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dialog-overlay[data-state], .dialog-content[data-state],
-  .dashboard-reveal, .dashboard-stagger > * {
+  .dialog-overlay[data-state], .dialog-content[data-state] {
     animation-duration: 1ms !important;
     transform: none !important;
     filter: none !important;
@@ -348,6 +264,15 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
 
 /* Touch */
 .touch-manipulation { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+
+/* Papier de lecture du guide : jaune très doux, sans lignes décoratives. */
+.guide-paper-surface {
+  background-color: #fff8dc;
+  background-image:
+    radial-gradient(circle at 14% 10%, rgba(177, 137, 52, 0.055), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(120, 95, 38, 0.035), transparent 32%);
+  box-shadow: inset 0 0 3.5rem rgba(150, 112, 34, 0.035);
+}
 
 /* Date cell animation */
 .date-cell-filled::before {
@@ -369,6 +294,26 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
   to   { background-color: transparent; }
 }
 .new-item-highlight { animation: highlight-fade-out 2.5s ease-out forwards; }
+
+/* Guidage du centre d'actions : la source respire brièvement, sans flash agressif. */
+@keyframes action-source-focus {
+  0%, 100% { box-shadow: inset 0 0 0 0 hsl(var(--warning) / 0); background-color: transparent; }
+  18%, 62% { box-shadow: inset 0 0 0 2px hsl(var(--warning) / 0.55); background-color: hsl(var(--warning) / 0.08); }
+}
+.action-source-highlight {
+  position: relative;
+  z-index: 2;
+  border-radius: 0.75rem;
+  animation: action-source-focus 3.8s ease-in-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-source-highlight {
+    animation: none;
+    box-shadow: inset 0 0 0 2px hsl(var(--warning) / 0.55);
+    background-color: hsl(var(--warning) / 0.08);
+  }
+}
 
 /* Focus */
 .material-focus:focus { outline: 2px solid hsl(var(--accent)); outline-offset: 2px; }
@@ -395,7 +340,15 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
     margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important;
     background: white !important;
   }
-  .notification, [class*="notification"], .modal, [class*="modal"], .tooltip, [class*="tooltip"], .dropdown, [class*="dropdown"], button, input[type="button"], input[type="submit"] {
+  .notification, [class*="notification"], .modal, [class*="modal"], .tooltip, [class*="tooltip"], .dropdown, [class*="dropdown"],
+  .dialog-overlay, .dialog-content,
+  [data-radix-portal], [data-radix-popper-content-wrapper], [data-sonner-toaster],
+  button, input[type="button"], input[type="submit"] {
+    display: none !important; visibility: hidden !important;
+  }
+  /* Radix renders dialogs and popovers in a portal outside the editor root.
+     Hide the portal itself so an open modal can never bleed into the paper. */
+  body > [data-radix-portal], body > [data-radix-popper-content-wrapper] {
     display: none !important; visibility: hidden !important;
   }
   body {
@@ -406,8 +359,10 @@ button svg.lucide.h-5,  button svg.lucide.size-5,
   p { color: black !important; }
   *, *::before, *::after { box-shadow: none !important; outline: none !important; transform: none !important; }
   div, p, h1, h2, h3, h4, h5, h6 { margin-bottom: 3px !important; padding-bottom: 2px !important; }
-  table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; padding: 0 !important; margin-bottom: 0 !important; }
-  th, td { border: none !important; padding: 3px 6px !important; vertical-align: top !important; text-align: left !important; margin: 0 !important; }
+  /* Restrict generic table normalization to the hidden application shell.
+     The print view owns its borders, merged groups and column widths. */
+  .print-hidden table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; padding: 0 !important; margin-bottom: 0 !important; }
+  .print-hidden th, .print-hidden td { border: none !important; padding: 3px 6px !important; vertical-align: top !important; text-align: left !important; margin: 0 !important; }
   .pl-4 { padding-left: 0.8rem !important; } .pl-8 { padding-left: 1.5rem !important; } .pl-12 { padding-left: 2.2rem !important; }
   .text-sm { font-size: 8pt !important; } .font-bold { font-weight: bold !important; } .font-semibold { font-weight: 600 !important; } .italic { font-style: italic !important; }
 }

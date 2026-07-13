@@ -132,7 +132,7 @@ export const markSettingsSynced = (syncedAt: string): void => {
     }
 };
 
-export const removeClassSyncMeta = (classId: string): void => {
+const removeClassSyncMeta = (classId: string): void => {
     const meta = readSyncMeta();
     if (meta[classId]) {
         delete meta[classId];

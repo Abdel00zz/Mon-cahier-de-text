@@ -69,44 +69,6 @@ export const SUBJECT_ABBREV_MAP: Record<string, string> = {
   'Sciences de la Vie et de la Terre': 'SVT',
 };
 
-// Unified band color per subject (used to color the card border/ring)
-// Note: use lowercase normalized keys without accents for robust matching
-export const SUBJECT_BAND_CLASS_MAP: Record<string, string> = {
-  // FR subjects
-  'mathematiques': 'border-teal-500 ring-2 ring-inset ring-teal-100',
-  'maths': 'border-teal-500 ring-2 ring-inset ring-teal-100',
-  'physique': 'border-indigo-500 ring-2 ring-inset ring-indigo-100',
-  'physique-chimie': 'border-blue-500 ring-2 ring-inset ring-blue-100',
-  'francais': 'border-blue-600 ring-2 ring-inset ring-blue-100',
-  'economie': 'border-amber-500 ring-2 ring-inset ring-amber-100',
-  'svt': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
-  'sciences de la vie': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
-  'sciences de la vie et de la terre': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
-  'informatique': 'border-cyan-500 ring-2 ring-inset ring-cyan-100',
-  'lettres': 'border-fuchsia-500 ring-2 ring-inset ring-fuchsia-100',
-  // AR subjects
-  'الرياضيات': 'border-teal-500 ring-2 ring-inset ring-teal-100',
-  'علوم فيزيائية': 'border-indigo-500 ring-2 ring-inset ring-indigo-100',
-  'اللغة العربية': 'border-blue-600 ring-2 ring-inset ring-blue-100',
-  'علوم الحياة والأرض': 'border-emerald-500 ring-2 ring-inset ring-emerald-100',
-};
-
-export function getSubjectBandClass(subject: string | undefined | null): string {
-  if (!subject) return 'border-slate-300 ring-2 ring-inset ring-slate-100';
-  const norm = subject
-    .normalize('NFD')
-    .replace(/\p{Diacritic}+/gu, '')
-    .toLowerCase()
-    .trim();
-  if (SUBJECT_BAND_CLASS_MAP[norm]) return SUBJECT_BAND_CLASS_MAP[norm];
-  const abbr = SUBJECT_ABBREV_MAP[subject];
-  if (abbr) {
-    const abbrKey = abbr.toLowerCase();
-    if (SUBJECT_BAND_CLASS_MAP[abbrKey]) return SUBJECT_BAND_CLASS_MAP[abbrKey];
-  }
-  return 'border-slate-300 ring-2 ring-inset ring-slate-100';
-}
-
 // ── Niveaux de classes officiels (système marocain), par cycle ──────────────
 // Utilisés par le formulaire de création de classe : le prof choisit un niveau
 // dans cette liste puis ajoute éventuellement un numéro de groupe (ex. « 1 »).
@@ -144,6 +106,63 @@ export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
         'ECS',
         'ECT',
     ],
+};
+
+/**
+ * Intitulés lisibles affichés à l'utilisateur : niveau développé, filière
+ * explicite et abréviations scolaires usuelles pour rester compact sur mobile.
+ *
+ * Les valeurs courtes de `CLASS_LEVELS_BY_CYCLE` restent les identifiants
+ * historiques utilisés par le planning, les imports et les synchronisations.
+ * Cette couche de présentation évite donc de casser ces branchements tout en
+ * employant une nomenclature scolaire lisible et soignée dans l'interface.
+ */
+const CLASS_LEVEL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
+    '1AC': '1re année collégiale',
+    '2AC': '2e année collégiale',
+    '3AC': '3e année collégiale',
+    'Tronc commun scientifique': 'Tronc commun scientifique',
+    'Tronc commun lettres': 'Tronc commun littéraire',
+    'Tronc commun technologique': 'Tronc commun technologique',
+    '1BAC Sc. Expérimentales': '1re Bac · Sciences expérimentales',
+    '1BAC Sc. Mathématiques': '1re Bac · Sciences mathématiques',
+    '1BAC Lettres': '1re Bac · Lettres',
+    '1BAC Sc. Économiques': '1re Bac · Sciences économiques et gestion',
+    '2BAC PC': '2e Bac · Sciences physiques',
+    '2BAC SVT': '2e Bac · Sciences de la vie et de la Terre',
+    '2BAC Sc. Maths A': '2e Bac · Sciences mathématiques A',
+    '2BAC Sc. Maths B': '2e Bac · Sciences mathématiques B',
+    '2BAC Sc. Économiques': '2e Bac · Sciences économiques',
+    '2BAC Sc. Gestion Comptable': '2e Bac · Sciences de gestion comptable',
+    '2BAC Lettres': '2e Bac · Lettres',
+    '2BAC Sc. Humaines': '2e Bac · Sciences humaines',
+    'MPSI': 'Mathématiques, physique et sciences de l’ingénieur',
+    'PCSI': 'Physique, chimie et sciences de l’ingénieur',
+    'MP': 'Mathématiques et physique',
+    'PSI': 'Physique et sciences de l’ingénieur',
+    'TSI': 'Technologie et sciences industrielles',
+    'ECS': 'Économie et commerce — option scientifique',
+    'ECT': 'Économie et commerce — option technologique',
+};
+
+const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
+    .sort((left, right) => right.length - left.length);
+
+/**
+ * Développe le niveau d'une classe sans modifier son nom enregistré.
+ * Un éventuel groupe est conservé, par exemple `2BAC PC 3` devient
+ * `2e Bac · Sciences physiques · Gr. 3`.
+ */
+export const formatClassDisplayName = (name: string): string => {
+    const normalized = (name || '').trim().replace(/\s+/g, ' ');
+    const level = DISPLAY_LEVEL_KEYS.find(key =>
+        normalized === key || normalized.startsWith(`${key} `)
+    );
+    if (!level) return normalized;
+
+    const suffix = normalized.slice(level.length).trim();
+    const label = CLASS_LEVEL_DISPLAY_NAMES[level];
+    return suffix ? `${label} · Gr. ${suffix}` : label;
 };
 
 const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
@@ -197,13 +216,6 @@ export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string;
 };
 
 
-export const GUIDE_MARKDOWN = `# Aide - Cahier de Textes Interactif
-
-Bienvenue dans le guide du Cahier de Textes Interactif ! Voici un aperçu des fonctionnalités clés pour vous aider à démarrer.
-
-Voir l'aide complète bilingue dans la fenêtre: Aide | مساعدة.
-`;
-
 // Aide complète en Français
 export const GUIDE_FR = `# Guide d'utilisation
 
@@ -211,7 +223,7 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 
 ## Bien démarrer
 1. **Composez votre emploi du temps** : Le geste fondateur ! Dans **Paramètres ▸ Emploi du temps**, posez vos créneaux — et créez vos classes **directement depuis la grille** avec « **＋ Créer une classe…** » dans chaque case. Deux minutes suffisent, et tout le reste s'active : progression, alertes de retard, rappels de séance.
-2. **Vos classes prennent vie** : Nées de la grille, elles apparaissent sur le tableau de bord avec leur couleur, leur prochaine séance et leur progression. Vous pouvez aussi en créer une manuellement via « **Nouvelle classe** ».
+2. **Vos classes prennent vie** : Nées de la grille, elles apparaissent dans **Mes classes** avec leur matière, leur prochaine séance et leur dernière mise à jour. Vous pouvez aussi en créer une manuellement via « **Nouveau cahier** ».
 3. **Remplissez le cahier** : Si un programme officiel existe pour le niveau, l'application propose de le pré-charger — acceptez puis adaptez librement. Datez ensuite vos séances au fil des cours.
 
 ![Vue réelle du cahier de textes avec son programme organisé](/guide/02-cahier-de-textes.png)
@@ -248,10 +260,10 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 ![Message de vérification avant l'enregistrement d'une date exceptionnelle](/guide/05-verification-date.png)
 
 ## Suivi & progression
-- **Cartes du tableau de bord** : Progression globale, séances, chapitres actifs, dernière séance — touchez une carte pour ouvrir le détail.
-- **Analyse par classe** : Menu **⋮ ▸ Analyse & progression** pour le taux de complétion et l'historique détaillé.
+- **Briefing Mes classes** : L’accueil résume la situation scolaire du jour, la progression et les actions réellement utiles, sans multiplier les cartes.
+- **Progression de toutes les classes** : Les indicateurs sont calculés depuis les dates du cahier et l’emploi du temps, jamais saisis une seconde fois.
 - **Rappels de fin de séance** : Une minute avant la fin d'un cours, votre téléphone vibre ; à la fin, il vérifie qu'une date a bien été posée. Activable dans **Paramètres ▸ Notifications**.
-- **Préparer la prochaine séance** : Le tableau de bord indique **où vous vous êtes arrêté** et l'élément exact par lequel commencer la séance suivante.
+- **Préparer la prochaine séance** : L’accueil indique **où vous vous êtes arrêté** et l'élément exact par lequel commencer la séance suivante.
 
 ![Planification du prochain contenu à partir du dernier point traité](/guide/07-prochaine-seance.png)
 
@@ -283,7 +295,7 @@ export const GUIDE_AR = `# دليل الاستخدام
 
 ## البداية الصحيحة
 1. **أعدّوا استعمال الزمن** : ابدؤوا من **الإعدادات ▸ استعمال الزمن**، ثم أضيفوا حصصكم وأنشئوا الأقسام **مباشرة من الشبكة** بواسطة « **إنشاء قسم** ». بعد ذلك يعمل حساب التقدم، وتنبيهات التأخر، وتذكيرات الحصص تلقائياً.
-2. **نظّموا أقسامكم** : يظهر كل قسم في لوحة التحكم بلونه، وحصته المقبلة، ونسبة تقدمه. ويمكنكم أيضاً إنشاء قسم يدوياً بواسطة زر « **قسم جديد** ».
+2. **نظّموا أقسامكم** : يظهر كل قسم في صفحة **أقسامي** مع المادة والحصة المقبلة وآخر تحديث. ويمكنكم أيضاً إنشاء دفتر يدوياً بواسطة زر « **دفتر جديد** ».
 3. **أضيفوا محتوى الدفتر** : إذا كان المقرر الرسمي متاحاً، يقترحه التطبيق جاهزاً. راجعوه وعدّلوه عند الحاجة، ثم سجّلوا **تواريخ الحصص المنجزة** بالتدريج.
 
 ![عرض حقيقي لدفتر النصوص وبرنامجه المنظم](/guide/02-cahier-de-textes.png)
@@ -320,10 +332,10 @@ export const GUIDE_AR = `# دليل الاستخدام
 ![رسالة التحقق قبل تسجيل تاريخ استثنائي](/guide/05-verification-date.png)
 
 ## المتابعة والتقدم
-- **بطاقات لوحة التحكم** : التقدم الإجمالي، الحصص، الفصول النشطة، آخر حصة — المسّوا بطاقة لفتح التفاصيل.
-- **تحليل لكل قسم** : القائمة **⋮ ▸ التحليل والتقدم** لنسبة الإنجاز والسجل المفصّل.
+- **ملخص أقسامي** : تعرض الصفحة الرئيسية وضع اليوم الدراسي والتقدم والإجراءات الضرورية فقط، دون تكديس البطاقات.
+- **تقدم جميع الأقسام** : تُحسب المؤشرات من تواريخ الدفتر واستعمال الزمن، ولا تُدخل المعطيات مرتين.
 - **تذكير نهاية الحصة** : قبل نهاية الحصة بدقيقة يهتزّ هاتفكم؛ وعند نهايتها يتحقق من وضع التاريخ. يُفعَّل من **الإعدادات ▸ الإشعارات**.
-- **تحضير الحصة المقبلة** : تعرض لوحة التحكم **آخر نقطة وصلتم إليها** والعنصر الدقيق الذي ستبدأ منه الحصة التالية.
+- **تحضير الحصة المقبلة** : تعرض صفحة **أقسامي** آخر نقطة وصلتم إليها والعنصر الدقيق الذي ستبدأ منه الحصة التالية.
 
 ![تخطيط المحتوى المقبل انطلاقاً من آخر عنصر تم إنجازه](/guide/07-prochaine-seance.png)
 

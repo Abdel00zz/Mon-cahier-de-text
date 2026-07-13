@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b72c9">
+  <title>Maquette · Cahier de textes interactif</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700;800;900&family=Fira+Sans+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Roboto+Slab:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="icon-guide" viewBox="0 0 24 24"><path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11.5H8a3 3 0 0 0-3 3V4.5Z"/><path d="M5 19.5a3 3 0 0 1 3-3h11M8 8h7M8 11h5"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"/><path d="m19.2 13.5 1.2 1-.3 2.1-2 .8-.5 1.5-1.8 1-1.8-1-.8.8-2.1-.3-.8-2-1.5-.5-1-1.8 1-1.8-.6-1.6-1.8-1 .3-2.1 2-.8.5-1.5 1.8-1 1.8 1 .8-.8 2.1.3.8 2 1.5.5 1 1.8-1 1.8.6 1.6Z"/></symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="icon-back" viewBox="0 0 24 24"><path d="M19 12H5m7-7-7 7 7 7"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M5 4.5h9.5A3.5 3.5 0 0 1 18 8v12H8a3 3 0 0 0-3 3V4.5Z"/><path d="M5 20a3 3 0 0 1 3-3h10M8.5 9h5M8.5 12h4"/></symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="15" rx="2"/><path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.7L16.5 9"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 4v12m0 0 5-5m-5 5-5-5M5 20h14"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <header class="topbar" aria-label="Navigation principale">
+      <a class="brand" href="#dashboard" data-go-dashboard>
+        <span class="brand-mark">CDT</span>
+        <span><strong>Cahier de textes</strong><small>Maquette interactive</small></span>
+      </a>
+      <div class="topbar-actions">
+        <button class="button button--ghost" type="button" data-open="guideModal"><svg><use href="#icon-guide"/></svg><span>Guide</span></button>
+        <button class="button button--ghost" type="button" data-open="settingsModal"><svg><use href="#icon-settings"/></svg><span>Paramètres</span></button>
+      </div>
+    </header>
+
+    <main>
+      <section id="dashboardView" class="view view--active" aria-labelledby="dashboardTitle">
+        <div class="hero container">
+          <div>
+            <p class="eyebrow">Lundi 13 juillet 2026 · 15 h 20</p>
+            <h1 id="dashboardTitle" class="display">Bonsoir, <span class="accent">Prof Dev</span></h1>
+            <p class="lede">Vos cahiers de classes, prêts à ouvrir.</p>
+          </div>
+          <div class="hero-search" data-search-box>
+            <button class="icon-button icon-button--blue search-trigger" type="button" data-toggle-search aria-label="Afficher la recherche"><svg><use href="#icon-search"/></svg></button>
+            <form class="search-form" role="search" data-search-form>
+              <svg aria-hidden="true"><use href="#icon-search"/></svg>
+              <input type="search" placeholder="Classe, chapitre, contenu, remarque…" aria-label="Rechercher dans l’application" data-search-input>
+              <button class="search-clear" type="button" data-clear-search aria-label="Effacer la recherche">Effacer</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="container">
+          <section class="briefing" aria-label="Situation du jour">
+            <div class="briefing-copy">
+              <span class="live-dot" aria-hidden="true"></span>
+              <div><p class="eyebrow">Aujourd’hui · en direct</p><strong>Vacances d’été 2026 en cours</strong><span>Calendrier scolaire · reprise lundi 7 septembre · aucune séance attendue</span></div>
+            </div>
+            <dl class="briefing-stats">
+              <div><dt>Progression</dt><dd>1 %</dd></div>
+              <div><dt>Classes</dt><dd>4</dd></div>
+              <div><dt>Séances</dt><dd>3</dd></div>
+            </dl>
+          </section>
+
+          <section class="search-results" data-search-results hidden aria-live="polite">
+            <div class="section-heading"><h2 class="display">Résultats</h2><button class="text-button" type="button" data-clear-search>Fermer la recherche</button></div>
+            <div class="result-list" data-result-list></div>
+          </section>
+
+          <section class="classes-section" aria-labelledby="classesTitle">
+            <div class="section-heading"><h2 id="classesTitle" class="display">Mes classes</h2><span class="count-badge">4 classes</span></div>
+            <div class="class-grid">
+              <button class="class-card class-card--blue" type="button" data-class="2AC 3" data-open-editor>
+                <span class="subject-label">Mathématiques</span><span class="class-icon"><svg><use href="#icon-book"/></svg></span>
+                <span class="class-name">2e année collégiale · Gr. 3</span><span class="class-meta">Collège · 2AC 3</span>
+                <span class="class-footer"><span><small>Prochaine séance</small><b>Année scolaire terminée</b></span><span><small>Mise à jour</small><time>13 juil.</time></span></span>
+              </button>
+              <button class="class-card class-card--amber" type="button" data-class="1AC 2" data-open-editor>
+                <span class="subject-label">Mathématiques</span><span class="class-icon"><svg><use href="#icon-book"/></svg></span>
+                <span class="class-name">1re année collégiale · Gr. 2</span><span class="class-meta">Collège · 1AC 2</span>
+                <span class="class-footer"><span><small>Prochaine séance</small><b>Année scolaire terminée</b></span><span><small>Mise à jour</small><time>13 juil.</time></span></span>
+              </button>
+              <button class="class-card class-card--violet" type="button" data-class="3AC 3" data-open-editor>
+                <span class="subject-label">Mathématiques</span><span class="class-icon"><svg><use href="#icon-book"/></svg></span>
+                <span class="class-name">3e année collégiale · Gr. 3</span><span class="class-meta">Collège · 3AC 3</span>
+                <span class="class-footer"><span><small>Prochaine séance</small><b>Année scolaire terminée</b></span><span><small>Mise à jour</small><time>12 juil.</time></span></span>
+              </button>
+              <button class="class-card class-card--green" type="button" data-class="2AC 1" data-open-editor>
+                <span class="subject-label">Mathématiques</span><span class="class-icon"><svg><use href="#icon-book"/></svg></span>
+                <span class="class-name">2e année collégiale · Gr. 1</span><span class="class-meta">Collège · 2AC 1</span>
+                <span class="class-footer"><span><small>Prochaine séance</small><b>Année scolaire terminée</b></span><span><small>Mise à jour</small><time>Vierge</time></span></span>
+              </button>
+              <button class="class-card class-card--new" type="button" data-open="createClassModal"><span class="new-icon"><svg><use href="#icon-plus"/></svg></span><strong>Nouveau cahier</strong><small>Créer un cahier de textes</small></button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="editorView" class="view" hidden aria-labelledby="editorTitle">
+        <div class="editor-shell container">
+          <header class="editor-heading">
+            <button class="back-button" type="button" data-go-dashboard><svg><use href="#icon-back"/></svg><span>Mes classes</span></button>
+            <div class="editor-identity"><p class="eyebrow">Cahier de textes · Mathématiques</p><h1 id="editorTitle" class="display" data-editor-class>2AC 3</h1><p>Prof Dev · Lycée / collège de démonstration</p></div>
+            <span class="sync-state"><i></i>Synchronisé</span>
+          </header>
+          <div class="editor-toolbar">
+            <span class="toolbar-context"><svg><use href="#icon-calendar"/></svg><span>Affectation de date(s) · il y a 1 min</span></span>
+            <div class="toolbar-actions"><button class="icon-button" type="button" data-open="historyModal" aria-label="Historique"><svg><use href="#icon-clock"/></svg></button><button class="icon-button" type="button" data-open="editorSearchModal" aria-label="Rechercher dans le cahier"><svg><use href="#icon-search"/></svg></button><button class="icon-button" type="button" data-open="menuModal" aria-label="Actions du cahier"><svg><use href="#icon-more"/></svg></button></div>
+          </div>
+          <div class="table-frame">
+            <div class="table-scroll">
+              <table class="lesson-table">
+                <thead><tr><th>Date</th><th>Contenu pédagogique</th><th>Remarque</th></tr></thead>
+                <tbody>
+                  <tr class="chapter-row"><td></td><td><button class="chapter-title" type="button"><svg><use href="#icon-book"/></svg><span>Chapitre 1 : Les nombres rationnels — introduction et comparaison</span></button></td><td></td></tr>
+                  <tr class="chapter-row"><td></td><td><button class="chapter-title" type="button"><svg><use href="#icon-book"/></svg><span>Chapitre 2 : Somme et différence de deux nombres rationnels</span></button></td><td></td></tr>
+                  <tr class="lesson-row lesson-row--attention"><td><button class="date-cell" type="button" data-open="dateReviewModal"><strong>13</strong><small>JUIL. 26</small></button></td><td><button class="content-cell" type="button"><strong>Produit et quotient de deux nombres rationnels</strong><small>Calculs, propriétés et exercices guidés</small></button></td><td><span class="empty-cell">Ajouter une remarque</span></td></tr>
+                  <tr class="chapter-row"><td></td><td><button class="chapter-title" type="button"><svg><use href="#icon-book"/></svg><span>Chapitre 4 : Les puissances</span></button></td><td></td></tr>
+                  <tr class="lesson-row"><td><button class="date-cell" type="button" data-open="dateReviewModal"><strong>20</strong><small>JUIL. 26</small></button></td><td><button class="content-cell" type="button"><strong>Calcul littéral</strong><small>Développer, réduire et factoriser</small></button></td><td><span class="remark">Exercices 12 à 18</span></td></tr>
+                  <tr class="add-row"><td colspan="3"><button type="button" class="add-row-button" data-open="plannerModal"><svg><use href="#icon-plus"/></svg>Ajouter une séance ou un chapitre</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="editor-bottom"><button class="button button--primary" type="button" data-open="evaluationsModal"><svg><use href="#icon-check"/></svg>Évaluations de la classe</button><button class="button button--ghost" type="button" data-open="plannerModal"><svg><use href="#icon-calendar"/></svg>Planifier une date</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-layer" data-modal-layer hidden>
+    <section class="modal" data-modal="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Aide rapide</p><h2 id="guideTitle" class="display">Guide d’utilisation</h2></div><div class="modal-header-actions"><button class="button button--soft" type="button" data-guide-lang="fr">Français</button><button class="button button--soft" type="button" data-guide-lang="ar">العربية</button></div></header>
+      <div class="guide-layout" data-guide-content>
+        <nav class="guide-nav" aria-label="Sommaire du guide"><p class="eyebrow">Sommaire</p><button class="is-active" type="button">La bonne approche</button><button type="button">Mon emploi du temps</button><button type="button">Planifier une séance</button><button type="button">Vérifier une date</button><button type="button">Rechercher rapidement</button></nav>
+        <article class="guide-paper"><p class="guide-kicker">Cahier de textes · méthode simple</p><h3>Commencer en trois gestes</h3><p class="guide-intro">Chaque écran vous donne une prochaine action claire. Les alertes importantes restent visibles jusqu’à leur résolution.</p><div class="guide-step"><b>01</b><div><strong>Choisir la classe</strong><p>Depuis <em>Mes classes</em>, ouvrez le cahier concerné. La couleur de l’icône aide à repérer rapidement le niveau.</p></div></div><div class="guide-step"><b>02</b><div><strong>Repérer le point de reprise</strong><p>La ligne active indique la séance et le chapitre à reprendre. Utilisez le bouton <em>Planifier une date</em> pour préparer la suite.</p></div></div><div class="guide-step"><b>03</b><div><strong>Résoudre une alerte</strong><p>Une date non conforme ouvre un message explicatif. <em>Modifier la date</em> vous conduit directement au planificateur.</p></div></div><figure class="guide-visual"><div class="mini-dashboard"><span></span><span></span><span></span><div></div></div><figcaption>Repères visuels : action bleue, statut calme, contenu lisible.</figcaption></figure></article>
+      </div>
+      <footer class="modal-footer"><span class="modal-hint">Vous pouvez rouvrir ce guide depuis le bouton en haut.</span><button class="button button--primary" type="button" data-close-modal>Fermer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Préférences</p><h2 id="settingsTitle" class="display">Paramètres</h2></div></header><div class="settings-list"><button type="button"><span>Notifications natives</span><small>Activées sur ce navigateur</small><b>›</b></button><button type="button"><span>Emploi du temps</span><small>4 classes · calendrier 2026–2027</small><b>›</b></button><button type="button"><span>Langue de l’interface</span><small>Français · arabe disponible dans le guide</small><b>›</b></button></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-close-modal>Annuler</button><button class="button button--primary" type="button" data-close-modal>Enregistrer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="menuModal" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Actions du cahier</p><h2 id="menuTitle" class="display">Outils et données</h2></div></header><div class="action-grid"><button type="button" data-open="evaluationsModal"><svg><use href="#icon-check"/></svg><span><strong>Évaluations</strong><small>Suivi de la classe en cours</small></span><b>›</b></button><button type="button" data-open="historyModal"><svg><use href="#icon-clock"/></svg><span><strong>Historique</strong><small>Versions et restaurations</small></span><b>›</b></button><button type="button" data-open="transferModal"><svg><use href="#icon-upload"/></svg><span><strong>Importer / exporter</strong><small>Un seul espace pour vos données</small></span><b>›</b></button></div><footer class="modal-footer"><button class="button button--primary" type="button" data-close-modal>Fermer</button></footer>
+    </section>
+
+    <section class="modal" data-modal="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Données du cahier</p><h2 id="transferTitle" class="display">Importer / exporter</h2></div></header><div class="segmented" role="tablist"><button class="is-active" type="button" data-transfer-tab="import">Importer</button><button type="button" data-transfer-tab="export">Exporter</button></div><div class="transfer-panel" data-transfer-panel="import"><label class="field-label">Collez un JSON compatible<textarea placeholder="{ &quot;classe&quot;: &quot;2AC 3&quot;, &quot;séances&quot;: [] }"></textarea></label><p class="field-help">La maquette montre l’emplacement prévu pour le format administrateur.</p><button class="button button--primary" type="button" data-close-modal>Valider l’import</button></div><div class="transfer-panel" data-transfer-panel="export" hidden><label class="field-label">Aperçu JSON<textarea readonly>{
+  "classe": "2AC 3",
+  "séances": 4,
+  "langue": "fr"
+}</textarea></label><button class="button button--primary" type="button" data-close-modal><svg><use href="#icon-download"/></svg>Télécharger</button></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-close-modal>Fermer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="evaluationsModal" role="dialog" aria-modal="true" aria-labelledby="evaluationsTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Parcours de la classe · 2AC 3</p><h2 id="evaluationsTitle" class="display">Évaluations & échéances</h2></div></header><div class="class-pills"><button class="is-active" type="button">2AC 3</button><button type="button">2AC 1</button><button type="button">1AC 2</button></div><div class="evaluation-tabs"><button class="is-active" type="button">Mes évaluations</button><button type="button">Parcours officiel</button><button type="button">Concours</button></div><div class="evaluation-list"><article><span class="status-pill">À venir</span><div><strong>Surveillé 1</strong><p>Lundi 5 octobre · 1 h</p></div><button class="small-button" type="button">Absent(s)</button></article><article><span class="status-pill status-pill--done">Planifié</span><div><strong>Évaluation diagnostique</strong><p>Repérer les acquis avant le chapitre 3</p></div><button class="small-button" type="button">Modifier</button></article></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-close-modal>Fermer</button><button class="button button--primary" type="button" data-open="plannerModal">Ajouter une étape</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="dateReviewModal" role="dialog" aria-modal="true" aria-labelledby="dateReviewTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Point de contrôle · 13/07/2026</p><h2 id="dateReviewTitle" class="display">Vérification de la date</h2></div></header><div class="notice notice--warning"><strong>À vérifier avant de continuer</strong><ul><li>Votre emploi du temps ne prévoit pas cette classe le dimanche.</li><li>La date tombe pendant les vacances d’été 2026.</li><li>Cette date est en dehors des années scolaires connues.</li></ul><p>Une séance de rattrapage ou une exception peut justifier cette date.</p></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-open="plannerModal">Modifier la date</button><button class="button button--primary" type="button" data-close-modal data-toast="Date conservée dans la maquette.">J’ai compris, enregistrer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="plannerModal" role="dialog" aria-modal="true" aria-labelledby="plannerTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Planification liée à 2AC 3</p><h2 id="plannerTitle" class="display">Choisir une date</h2></div></header><div class="planner-grid"><label class="field-label">Date<input type="date" value="2026-07-13"></label><label class="field-label">Créneau<select><option>08:00 – 09:00</option><option>10:00 – 11:00</option><option>14:00 – 15:00</option></select></label></div><div class="notice notice--info"><svg><use href="#icon-check"/></svg><p>Le planificateur est ouvert directement depuis l’alerte pour éviter un détour.</p></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-close-modal>Annuler</button><button class="button button--primary" type="button" data-close-modal data-toast="Date planifiée dans la maquette.">Appliquer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Traçabilité du cahier</p><h2 id="historyTitle" class="display">Historique</h2></div></header><div class="history-list"><article><time>13 juil. · 15:18</time><div><strong>Date affectée</strong><p>Chapitre 3 · séance du 13/07/2026</p></div><span class="status-dot status-dot--blue"></span></article><article><time>12 juil. · 18:42</time><div><strong>Contenu modifié</strong><p>Calcul littéral · remarque ajoutée</p></div><span class="status-dot"></span></article></div><footer class="modal-footer"><button class="button button--primary" type="button" data-close-modal>Fermer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="editorSearchModal" role="dialog" aria-modal="true" aria-labelledby="editorSearchTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Recherche ciblée</p><h2 id="editorSearchTitle" class="display">Dans le cahier</h2></div></header><label class="search-field"><svg><use href="#icon-search"/></svg><input type="search" placeholder="Chapitre, contenu, remarque…" autofocus></label><div class="empty-state"><svg><use href="#icon-filter"/></svg><p>Saisissez un mot pour filtrer les séances de 2AC 3.</p></div><footer class="modal-footer"><button class="button button--primary" type="button" data-close-modal>Fermer</button></footer>
+    </section>
+
+    <section class="modal modal--compact" data-modal="createClassModal" role="dialog" aria-modal="true" aria-labelledby="createClassTitle" hidden>
+      <header class="modal-header"><div><p class="eyebrow">Nouveau cahier</p><h2 id="createClassTitle" class="display">Créer une classe</h2></div></header><div class="planner-grid"><label class="field-label">Nom court<input placeholder="2BAC PC 1"></label><label class="field-label">Cycle<select><option>Collège</option><option>Lycée qualifiant</option></select></label></div><footer class="modal-footer"><button class="button button--ghost" type="button" data-close-modal>Annuler</button><button class="button button--primary" type="button" data-close-modal data-toast="Nouveau cahier créé dans la maquette.">Créer le cahier</button></footer>
+    </section>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite" data-toast-region hidden></div>
+  <script src="script.js" defer></script>
+</body>
+</html>

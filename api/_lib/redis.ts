@@ -25,5 +25,6 @@ export const KEYS = {
   adminSnapshots: 'admin:snapshots',
   pushSubs: 'push:subs',
   adminCalendar: 'admin:calendar',
+  adminOfficialEvents: 'admin:official-events',
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData } from '../types';
+import { formatClassDisplayName } from '../constants';
 import {
     HolidayCalendar,
     isHoliday,
@@ -76,7 +77,7 @@ export const useLateness = (classes: ClassInfo[], config: AppConfig): LatenessSu
                     ? { gapThreshold: settings.gapThreshold, inactivityThresholdDays: settings.inactivityThresholdDays }
                     : undefined,
             });
-            perClass.push({ ...result, classId: classInfo.id, className: classInfo.name });
+            perClass.push({ ...result, classId: classInfo.id, className: formatClassDisplayName(classInfo.name) });
         }
 
         if (perClass.length === 0) return null;

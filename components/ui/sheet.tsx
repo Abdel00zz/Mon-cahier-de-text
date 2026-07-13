@@ -6,10 +6,6 @@ import { cn } from "@/lib/utils"
 
 const Sheet = SheetPrimitive.Root
 
-const SheetTrigger = SheetPrimitive.Trigger
-
-const SheetClose = SheetPrimitive.Close
-
 const SheetPortal = SheetPrimitive.Portal
 
 const SheetOverlay = React.forwardRef<
@@ -18,7 +14,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-foreground/15 backdrop-blur-sm transition-all duration-150 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-foreground/18 backdrop-blur-[4px] transition-all duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -28,16 +24,16 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-white p-6 shadow-2xl ring-1 ring-slate-200 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 overflow-y-auto overscroll-contain custom-scrollbar",
+  "fixed z-50 gap-4 overflow-y-auto overscroll-contain bg-card/96 p-5 shadow-[0_24px_80px_rgba(30,37,72,0.2)] ring-1 ring-border/80 backdrop-blur-2xl transition ease-in-out custom-scrollbar data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-250 data-[state=open]:duration-400 sm:p-6",
   {
     variants: {
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+          "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-[1.5rem] border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "inset-y-0 left-0 h-full w-[min(86vw,22rem)] border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
         right:
-          "inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "inset-y-0 right-0 h-full w-[min(86vw,22rem)] border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
       },
     },
     defaultVariants: {
@@ -83,20 +79,6 @@ const SheetHeader = ({
 )
 SheetHeader.displayName = "SheetHeader"
 
-const SheetFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
-    )}
-    {...props}
-  />
-)
-SheetFooter.displayName = "SheetFooter"
-
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
@@ -123,13 +105,8 @@ SheetDescription.displayName = SheetPrimitive.Description.displayName
 
 export {
   Sheet,
-  SheetPortal,
-  SheetOverlay,
-  SheetTrigger,
-  SheetClose,
   SheetContent,
   SheetHeader,
-  SheetFooter,
   SheetTitle,
   SheetDescription,
 }

@@ -87,7 +87,7 @@ export const findNotebookAssessments = (lessons: LessonsData): NotebookAssessmen
     return result;
 };
 
-export type AssessmentLinkStatus =
+type AssessmentLinkStatus =
     /** saisi dans le cahier, date identique au calendrier */
     | 'done'
     /** saisi dans le cahier mais à une AUTRE date que le calendrier → proposer l'alignement */

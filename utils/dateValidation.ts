@@ -1,4 +1,5 @@
 import { AppConfig, ClassInfo } from '../types.js';
+import { formatClassDisplayName } from '../constants.js';
 import {
     HolidayCalendar,
     getBundledCalendar,
@@ -20,7 +21,7 @@ import {
  * séance exceptionnelle...), mais il est prévenu immédiatement.
  */
 
-export type DateWarningType = 'invalid' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
+type DateWarningType = 'invalid' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
 
 export interface DateWarning {
     type: DateWarningType;
@@ -54,7 +55,7 @@ export const validateSessionDate = (
         if (!schedule.slots.some(slot => slot.weekday === weekday)) {
             warnings.push({
                 type: 'not-scheduled',
-                message: `D'après votre emploi du temps, vous n'enseignez pas « ${classInfo.name} » le ${weekdayLabel(weekday)}.`,
+                message: `D'après votre emploi du temps, vous n'enseignez pas « ${formatClassDisplayName(classInfo.name)} » le ${weekdayLabel(weekday)}.`,
             });
         }
     }
@@ -96,11 +97,4 @@ export const validateSessionDate = (
     }
 
     return warnings;
-};
-
-/** Message condensé pour un toast (première alerte + compteur). */
-export const summarizeWarnings = (warnings: DateWarning[]): string | null => {
-    if (warnings.length === 0) return null;
-    if (warnings.length === 1) return warnings[0].message;
-    return `${warnings[0].message} (+${warnings.length - 1} autre(s) alerte(s))`;
 };

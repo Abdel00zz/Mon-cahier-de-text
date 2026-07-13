@@ -220,7 +220,7 @@ const AssessmentDateEditor: React.FC<{
         setRows(current => current.map(item => item.classId === row.classId && item.id === row.id ? { ...item, dateISO: date } : item));
         try {
             await saveAssessmentDate(phone, row.classId, row.id, date);
-            setMessage('Date du devoir synchronisÃ©e avec le compte enseignant.');
+            setMessage('Date du devoir synchronisée avec le compte enseignant.');
         } catch (error) {
             setMessage(error instanceof Error ? error.message : 'Modification impossible.');
         }
@@ -229,7 +229,7 @@ const AssessmentDateEditor: React.FC<{
     if (rows.length === 0) return null;
     return (
         <section className="mb-5 rounded-2xl bg-accent/50 p-4">
-            <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquÃ©es au planning du professeur et synchronisÃ©es sur son tÃ©lÃ©phone.</p></div>
+            <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquées au planning du professeur et synchronisées sur son téléphone.</p></div>
             <div className="grid gap-2 sm:grid-cols-2">
                 {rows.map(row => (
                     <label key={`${row.classId}-${row.id}`} className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-sm">

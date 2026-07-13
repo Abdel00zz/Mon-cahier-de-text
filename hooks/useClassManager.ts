@@ -9,13 +9,6 @@ const STORAGE_KEY  = 'classManager_v1';
 const DATA_PREFIX  = 'classData_v1_';
 const LAUNCH_FLAG  = 'app_first_launch_v1';
 
-const getUserConfig = () => {
-    try {
-        const raw = localStorage.getItem('appConfig_v1');
-        return raw ? JSON.parse(raw) : {};
-    } catch { return {}; }
-};
-
 export const useClassManager = () => {
     const [classes, setClasses] = useImmer<ClassInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);

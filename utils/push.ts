@@ -16,6 +16,42 @@ export const isStandalone = (): boolean =>
     (window.matchMedia?.('(display-mode: standalone)').matches ||
         (navigator as unknown as { standalone?: boolean }).standalone === true);
 
+const isIOS = (): boolean =>
+    typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+export interface NativeNotificationActivation {
+    permission: NotificationPermission | 'unsupported';
+    /** abonnement au push serveur ; distinct de l'autorisation native locale */
+    subscribed: boolean;
+    reason?: string;
+}
+
+/**
+ * Déclenche uniquement la demande NATIVE du navigateur. Cette étape reste
+ * utile même sans clé VAPID : les rappels locaux du service worker peuvent
+ * alors apparaître sur l'écran verrouillé et dans le volet du téléphone.
+ */
+const requestNativeNotificationPermission = async (): Promise<NativeNotificationActivation> => {
+    if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+        return { permission: 'unsupported', subscribed: false, reason: 'non-supporté' };
+    }
+    if (isIOS() && !isStandalone()) {
+        return { permission: 'unsupported', subscribed: false, reason: 'installation requise sur iPhone/iPad' };
+    }
+    try {
+        const permission = Notification.permission === 'default'
+            ? await Notification.requestPermission()
+            : Notification.permission;
+        return {
+            permission,
+            subscribed: false,
+            reason: permission === 'granted' ? undefined : permission === 'denied' ? 'permission refusée' : 'demande ignorée',
+        };
+    } catch {
+        return { permission: 'unsupported', subscribed: false, reason: 'demande native indisponible' };
+    }
+};
+
 const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -34,11 +70,13 @@ const deviceLabel = (): string => {
     return 'Appareil';
 };
 
-export const subscribeToPush = async (): Promise<{ ok: boolean; reason?: string }> => {
+export const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<{ ok: boolean; reason?: string }> => {
     if (!pushSupported()) return { ok: false, reason: 'non-supporté' };
     if (!VAPID_PUBLIC_KEY) return { ok: false, reason: 'clé VAPID manquante' };
 
-    const permission = await Notification.requestPermission();
+    const permission = Notification.permission === 'default' && options.requestPermission !== false
+        ? await Notification.requestPermission()
+        : Notification.permission;
     if (permission !== 'granted') return { ok: false, reason: 'permission refusée' };
 
     const registration = await navigator.serviceWorker.ready;
@@ -57,6 +95,20 @@ export const subscribeToPush = async (): Promise<{ ok: boolean; reason?: string 
         body: JSON.stringify({ action: 'subscribe', subscription, device: deviceLabel() }),
     });
     return response.ok ? { ok: true } : { ok: false, reason: 'enregistrement serveur échoué' };
+};
+
+/** Autorisation système puis abonnement serveur si celui-ci est configuré. */
+export const activateNativeNotifications = async (): Promise<NativeNotificationActivation> => {
+    const native = await requestNativeNotificationPermission();
+    if (native.permission !== 'granted') return native;
+
+    const subscription = await subscribeToPush({ requestPermission: false });
+    return {
+        permission: 'granted',
+        subscribed: subscription.ok,
+        // Une clé serveur absente n'annule pas les notifications locales.
+        reason: subscription.ok ? undefined : subscription.reason,
+    };
 };
 
 export const unsubscribeFromPush = async (): Promise<void> => {
@@ -91,13 +143,15 @@ export const showLocalNotification = async (
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
         if (!('serviceWorker' in navigator)) return false;
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification(title, {
+        const options = {
             body,
             tag, // remplace une notification du même créneau au lieu d'empiler
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
+            vibrate: kind === 'missing-date' ? [280, 120, 280] : [180, 90, 180],
             data: { url, kind, timestamp: Date.now() },
-        });
+        } as NotificationOptions & { vibrate: number[] };
+        await registration.showNotification(title, options);
         return true;
     } catch {
         return false;

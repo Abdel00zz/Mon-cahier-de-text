@@ -37,7 +37,7 @@ registerRoute(
 );
 
 /*
- * Polices Google (Fraunces, Public Sans, IBM Plex…) : indispensables au rendu
+ * Polices Google (Fira Sans, Roboto Slab, IBM Plex Arabic) : indispensables au rendu
  * hors ligne sur mobile/tablette. La feuille CSS est revalidée en arrière-plan,
  * les fichiers de police (immuables) sont servis cache-first un an.
  */
@@ -70,8 +70,9 @@ self.addEventListener('push', event => {
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
             tag: payload.tag || defaultNotificationTag(kind),
+            vibrate: kind === 'admin' ? [220, 100, 220] : [180, 90, 180],
             data: { url: targetUrl, kind, timestamp: payload.timestamp || Date.now() },
-        })
+        } as NotificationOptions & { vibrate: number[] })
     );
 });
 

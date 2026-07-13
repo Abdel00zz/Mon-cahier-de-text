@@ -12,6 +12,8 @@ export interface PrintPrefs {
     textSize: 's' | 'm' | 'l';
     lineSpacing: 'compact' | 'normal' | 'aere';
     pageNumbers: boolean;
+    /** en-tête administratif : première page, toutes les pages ou masqué */
+    headerMode: 'first' | 'all' | 'none';
 }
 
 export interface PrintMeta {
@@ -23,12 +25,36 @@ export interface PrintMeta {
 
 const key = (classId: string) => `printMeta_v1_${classId}`;
 
+const normalizeDateKeys = (value: unknown): string[] => {
+    if (!Array.isArray(value)) return [];
+    return Array.from(new Set(
+        value
+            .filter((date): date is string => typeof date === 'string')
+            .map(date => date.trim())
+            .filter(Boolean)
+    )).sort();
+};
+
+const normalizePrintPrefs = (value: unknown): PrintPrefs | undefined => {
+    if (typeof value !== 'object' || value === null) return undefined;
+    const prefs = value as Partial<PrintPrefs>;
+    const textSize = prefs.textSize === 's' || prefs.textSize === 'm' || prefs.textSize === 'l' ? prefs.textSize : 'm';
+    const lineSpacing = prefs.lineSpacing === 'compact' || prefs.lineSpacing === 'normal' || prefs.lineSpacing === 'aere' ? prefs.lineSpacing : 'normal';
+    const headerMode = prefs.headerMode === 'all' || prefs.headerMode === 'none' ? prefs.headerMode : 'first';
+    if (typeof prefs.pageNumbers !== 'boolean') return undefined;
+    return { textSize, lineSpacing, pageNumbers: prefs.pageNumbers, headerMode };
+};
+
 export const readPrintMeta = (classId: string): PrintMeta => {
     try {
         const raw = localStorage.getItem(key(classId));
         if (raw) {
             const parsed = JSON.parse(raw) as PrintMeta;
-            return { lastPrintedAt: parsed.lastPrintedAt ?? null, printedDates: parsed.printedDates ?? [], prefs: parsed.prefs };
+            const printedDates = normalizeDateKeys(parsed.printedDates);
+            const lastPrintedAt = typeof parsed.lastPrintedAt === 'string' && !Number.isNaN(Date.parse(parsed.lastPrintedAt))
+                ? parsed.lastPrintedAt
+                : null;
+            return { lastPrintedAt, printedDates, prefs: normalizePrintPrefs(parsed.prefs) };
         }
     } catch {
         // corrompu : on repart de zéro
@@ -36,22 +62,21 @@ export const readPrintMeta = (classId: string): PrintMeta => {
     return { lastPrintedAt: null, printedDates: [] };
 };
 
-export const recordPrint = (classId: string, printedDates: string[]): void => {
+export const recordPrint = (classId: string, printedDates: string[]): boolean => {
     const existing = readPrintMeta(classId);
-    const merged = Array.from(new Set([...existing.printedDates, ...printedDates])).sort();
+    const merged = normalizeDateKeys([...existing.printedDates, ...printedDates]);
     try {
         localStorage.setItem(
             key(classId),
             // préserve les préférences déjà mémorisées
             JSON.stringify({ lastPrintedAt: new Date().toISOString(), printedDates: merged, prefs: existing.prefs } satisfies PrintMeta)
         );
+        return true;
     } catch {
         // stockage plein : l'impression fonctionne quand même
+        return false;
     }
 };
-
-/** Préférences d'impression mémorisées pour cette classe (ou null si aucune). */
-export const readPrintPrefs = (classId: string): PrintPrefs | null => readPrintMeta(classId).prefs ?? null;
 
 /** Mémorise les préférences d'impression sans toucher à l'historique des dates imprimées. */
 export const savePrintPrefs = (classId: string, prefs: PrintPrefs): void => {
@@ -85,6 +110,8 @@ const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
     if (typeof node !== 'object' || node === null) return false;
     const date = typeof node.date === 'string' ? node.date.trim() : '';
     if (date && keep.has(date)) return true;
+    const separatorDate = typeof node.separatorAfter?.date === 'string' ? node.separatorAfter.date.trim() : '';
+    if (separatorDate && keep.has(separatorDate)) return true;
     for (const childKey of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
         const children = node[childKey];
         if (Array.isArray(children) && children.some((child: any) => nodeHasKeptContent(child, keep))) {
@@ -96,6 +123,10 @@ const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
 
 const pruneNode = <T extends Record<string, any>>(node: T, keep: Set<string>): T => {
     const clone: any = { ...node };
+    const ownDate = typeof clone.date === 'string' ? clone.date.trim() : '';
+    // Un parent peut rester pour donner le contexte d'une séance retenue,
+    // mais sa propre date ne doit jamais réapparaître dans un tirage filtré.
+    if (ownDate && !keep.has(ownDate)) delete clone.date;
     for (const childKey of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
         const children = clone[childKey];
         if (Array.isArray(children)) {
@@ -118,7 +149,7 @@ const pruneNode = <T extends Record<string, any>>(node: T, keep: Set<string>): T
  * pour le contexte).
  */
 export const filterLessonsByDates = (lessonsData: LessonsData, dates: string[]): LessonsData => {
-    const keep = new Set(dates);
+    const keep = new Set(dates.map(date => date.trim()).filter(Boolean));
     return lessonsData
         .filter(chapter => nodeHasKeptContent(chapter, keep))
         .map(chapter => pruneNode(chapter, keep));

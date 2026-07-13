@@ -5,11 +5,7 @@ import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 
-const DialogTrigger = DialogPrimitive.Trigger
-
 const DialogPortal = DialogPrimitive.Portal
-
-const DialogClose = DialogPrimitive.Close
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
@@ -18,7 +14,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "dialog-overlay fixed inset-0 z-50 bg-foreground/25 backdrop-blur-[3px]",
+      "dialog-overlay fixed inset-0 z-50 bg-foreground/20 backdrop-blur-[4px]",
       className
     )}
     {...props}
@@ -37,7 +33,7 @@ const DialogContent = React.forwardRef<
       className={cn(
         // style resserré et net : arrondis réduits (xl mobile / lg desktop),
         // espacement plus compact — sans toucher aux couleurs
-        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit max-h-[calc(100dvh-0.75rem)] w-full max-w-lg gap-3 overflow-hidden overscroll-contain rounded-t-[1.5rem] rounded-b-none border border-border bg-card/98 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-[0_-10px_40px_rgba(15,20,25,0.14)] will-change-transform sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100vw-1.5rem)] sm:rounded-2xl sm:p-5 sm:shadow-[0_24px_80px_rgba(15,20,25,0.18)]",
+        "dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(100dvh-0.75rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden overscroll-contain rounded-t-[1.5rem] rounded-b-none border border-white/80 bg-card/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-card-foreground shadow-[0_-12px_42px_rgba(30,37,72,0.16)] backdrop-blur-2xl will-change-transform sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100vw-1.5rem)] sm:rounded-xl sm:border-border/80 sm:p-5 sm:shadow-[0_26px_80px_rgba(30,37,72,0.18)]",
         className
       )}
       {...props}
@@ -72,7 +68,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 bg-card pt-2 [&>button]:min-h-11 [&>button]:w-full [&>div]:w-full sm:flex-row sm:justify-end sm:[&>button]:w-auto",
+      "relative z-10 flex shrink-0 flex-col-reverse gap-2 bg-card pt-2 shadow-[0_-8px_18px_-16px_rgba(30,37,72,0.55)] [&>button]:min-h-11 [&>button]:w-full [&>div]:w-full sm:flex-row sm:justify-end sm:[&>button]:w-auto",
       className
     )}
     {...props}
@@ -87,7 +83,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-bold leading-tight tracking-normal text-foreground",
+      "font-display text-lg font-semibold leading-tight tracking-[-0.01em] text-foreground",
       className
     )}
     {...props}
@@ -109,10 +105,6 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 export {
   Dialog,
-  DialogPortal,
-  DialogOverlay,
-  DialogClose,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,

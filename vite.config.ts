@@ -5,6 +5,11 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { BUNDLE_OPTIMIZATION } from './config/optimization';
 import { getBundledCalendar, type HolidayCalendar } from './utils/calendar';
+import {
+    getOfficialStudentEventsFile,
+    validateOfficialStudentEventsFile,
+    type OfficialStudentEventsFile,
+} from './utils/officialStudentEvents';
 
 /*
  * MOCK D'API POUR LE DÉVELOPPEMENT LOCAL (jamais inclus au build : apply 'serve').
@@ -27,6 +32,7 @@ const devApiMockPlugin = (): Plugin => {
     let sessionUser: Record<string, unknown> | null = null;
     let classesBlob: Record<string, unknown> | null = null;
     let devCalendar: HolidayCalendar = structuredClone(getBundledCalendar());
+    let devOfficialEvents: OfficialStudentEventsFile = structuredClone(getOfficialStudentEventsFile());
     const lessonsByClass = new Map<string, unknown>();
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
 
@@ -142,6 +148,11 @@ const devApiMockPlugin = (): Plugin => {
                 send(res, 405, { error: 'Methode non autorisee.' });
             });
 
+            server.middlewares.use('/api/official-events', async (req, res) => {
+                if (req.method === 'GET') return send(res, 200, devOfficialEvents);
+                send(res, 405, { error: 'Methode non autorisee.' });
+            });
+
             server.middlewares.use('/api/admin', async (req, res) => {
                 const hasAdmin = /cdt_dev_admin=1/.test(req.headers.cookie ?? '');
                 if (req.method === 'POST') {
@@ -169,6 +180,15 @@ const devApiMockPlugin = (): Plugin => {
                         };
                         return send(res, 200, { ok: true, calendar: devCalendar });
                     }
+                    if (body.action === 'saveOfficialEvents') {
+                        try {
+                            const validated = validateOfficialStudentEventsFile(body.officialEvents);
+                            devOfficialEvents = { ...validated, version: validated.version + 1 };
+                            return send(res, 200, { ok: true, officialEvents: devOfficialEvents });
+                        } catch (error) {
+                            return send(res, 400, { error: error instanceof Error ? error.message : 'Bulletin JSON invalide.' });
+                        }
+                    }
                     if (body.action === 'saveAssessmentDate') {
                         const classId = String(body.classId ?? '');
                         const assessmentId = String(body.assessmentId ?? '');
@@ -195,6 +215,7 @@ const devApiMockPlugin = (): Plugin => {
                         return send(res, 200, { teachers: devSnapshot ? [devSnapshot] : [] });
                     }
                     if (action === 'calendar') return send(res, 200, { calendar: devCalendar });
+                    if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
                     if (action === 'teacher') {
                         return send(res, 200, {
                             user: { ...DEV_USER, createdAt: new Date().toISOString(), lastSyncAt: (devSnapshot as any)?.lastSyncAt ?? null },

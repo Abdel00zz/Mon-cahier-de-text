@@ -68,7 +68,7 @@ export const signSession = async (payload: SessionPayload, maxAgeSeconds: number
   return `${unsigned}.${signJwtPart(unsigned)}`;
 };
 
-export const verifySession = async (token: string): Promise<SessionPayload | null> => {
+const verifySession = async (token: string): Promise<SessionPayload | null> => {
   try {
     const [header, body, signature] = token.split('.');
     if (!header || !body || !signature) return null;
@@ -87,7 +87,7 @@ export const verifySession = async (token: string): Promise<SessionPayload | nul
   }
 };
 
-export const readCookie = (req: ApiRequest, name: string): string | undefined => {
+const readCookie = (req: ApiRequest, name: string): string | undefined => {
   const header = req.headers.cookie;
   const raw = Array.isArray(header) ? header.join('; ') : header;
   if (!raw) return undefined;

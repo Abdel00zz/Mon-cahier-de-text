@@ -10,13 +10,12 @@ export interface ClassInfo {
     cycle?: Cycle; // optional for backward compatibility
 }
 
-export interface AppSettings {
-    // This can be used for future class-specific settings, like curriculum, etc.
-}
-
 export interface AppConfig {
   establishmentName: string;
   defaultTeacherName: string;
+  /** Référentiel administratif marocain utilisé dans l'en-tête imprimé. */
+  academyRegion?: string;
+  educationProvince?: string;
   printShowDescriptions: boolean;
     // New flexible description visibility controls
     screenDescriptionMode?: 'all' | 'none' | 'custom';
@@ -40,13 +39,37 @@ export interface AppConfig {
     assessmentDates?: Record<string, Record<string, string>>;
     /** élèves absents consignés par devoir : { [classId]: { [assessmentId]: AssessmentAbsenceRecord } } */
     assessmentAbsences?: Record<string, Record<string, AssessmentAbsenceRecord>>;
+    /** activités pédagogiques libres par classe (diagnostic, olympiade, soutien, examen blanc...) */
+    pedagogicalEvents?: Record<string, PedagogicalEvent[]>;
 }
 
 /** Absents d'un devoir surveillé : consignés au moment du devoir, synchronisés avec le compte. */
-export interface AssessmentAbsenceRecord {
+interface AssessmentAbsenceRecord {
     /** noms des élèves absents (un nom par entrée) */
     names: string[];
     updatedAt: string;
+}
+
+export type PedagogicalEventType =
+    | 'evaluation_diagnostic'
+    | 'olympiade'
+    | 'concours'
+    | 'soutien'
+    | 'remediation'
+    | 'examen_blanc'
+    | 'rattrapage'
+    | 'autre';
+
+/** Activité créée par le professeur et reliée à une classe, sans la confondre avec une date ministérielle. */
+export interface PedagogicalEvent {
+    id: string;
+    type: PedagogicalEventType;
+    title: string;
+    date: string;
+    endDate?: string;
+    note?: string;
+    status: 'planned' | 'done';
+    createdAt: string;
 }
 
 // ── Emploi du temps & notifications ─────────────────────────────────────────

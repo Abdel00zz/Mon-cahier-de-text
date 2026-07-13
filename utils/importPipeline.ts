@@ -156,4 +156,4 @@ export const prepareImportedLessons = (payload: unknown): ImportPreparationResul
   return { lessonsData, report };
 };
 
-export type { ImportReport, ImportPreparationResult };
+export type { ImportPreparationResult };
