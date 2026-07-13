@@ -2,7 +2,7 @@ import { memo, MouseEvent, FC, useState } from 'react';
 import { ClassInfo } from '../types';
 import { NextSessionInfo } from '../utils/timetable';
 import { ConfirmDialog } from './ui/confirm-dialog';
-import { Trash2, Settings, BookOpen } from './ui/icons';
+import { Trash2, Settings, GraduationCap } from './ui/icons';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -15,7 +15,7 @@ interface ClassCardProps {
 
 const containsArabic = (text: string): boolean => {
     if (!text) return false;
-    return /[؀-ۿ]/.test(text);
+    return /[\u0600-\u06FF]/.test(text);
 };
 
 const formatSuperscript = (text: string) => {
@@ -100,7 +100,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             <div className="relative z-10 flex flex-col items-center justify-center w-full">
                 <div className={`relative mb-4 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md ${iconStyle.shell} ${iconStyle.icon}`}>
                     <span aria-hidden className={`absolute -right-3 -top-3 h-8 w-8 rounded-full ${iconStyle.glow}`} />
-                    <BookOpen className="relative h-[22px] w-[22px] stroke-[2.1]" />
+                    <GraduationCap className="relative h-[22px] w-[22px]" aria-hidden />
                 </div>
                 
                 <h3 className={`text-base font-bold text-slate-800 text-center leading-tight transition-colors group-hover:text-primary ${isArabic ? 'font-ar text-lg' : 'font-display'}`}>

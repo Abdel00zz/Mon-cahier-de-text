@@ -192,20 +192,17 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-y border-slate-200 bg-gradient-to-b from-white to-slate-50/90 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset] md:block">
+  <div className="hidden border-b border-primary/15 bg-primary/[0.065] md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-14 ${TABLE_GRID_CLASS}`}>
-      <div className="flex flex-col items-center justify-center gap-1.5 border-r border-slate-200/80 px-3 py-3 text-center">
-        <span className="font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-700">Date</span>
-        <span aria-hidden className="h-px w-5 bg-slate-300" />
+      <div className="flex items-center justify-center border-r border-primary/15 px-3 py-3.5 text-center">
+        <span className="font-mono text-[10px] font-extrabold uppercase tracking-[0.04em] text-primary/80">Date</span>
       </div>
-      <div className="flex flex-col items-center justify-center gap-1.5 border-r border-slate-200/80 px-4 py-3 text-center">
-        <span className="font-display text-xs font-black uppercase tracking-[0.18em] text-slate-800">Contenu pédagogique</span>
-        <span aria-hidden className="h-px w-10 bg-primary/45" />
+      <div className="flex items-center justify-center border-r border-primary/15 px-4 py-3.5 text-center">
+        <span className="font-mono text-[11px] font-black uppercase tracking-[0.045em] text-primary">Contenu pédagogique</span>
       </div>
-      <div className="flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
-        <span className="font-display text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-700">Remarque</span>
-        <span aria-hidden className="h-px w-5 bg-slate-300" />
+      <div className="flex items-center justify-center px-3 py-3.5 text-center">
+        <span className="font-mono text-[10px] font-extrabold uppercase tracking-[0.04em] text-primary/80">Remarque</span>
       </div>
     </div>
   </div>
@@ -306,14 +303,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-t border-scheduled/30 border-b-2 border-scheduled/45 bg-scheduled/[0.07] transition-colors duration-150`,
-                groupIsSelected ? 'bg-primary/[0.06]' : '',
+                `group relative grid ${TABLE_GRID_CLASS} border-y transition-colors duration-150`,
+                hasWarning
+                    ? 'border-warning/[0.35] bg-warning/[0.07]'
+                    : 'border-primary/20 bg-primary/[0.035]',
+                groupIsSelected ? 'bg-primary/[0.085]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
             {/* Rail latéral supprimé selon la demande */}
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} bg-scheduled/10`}>
+            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-primary/[0.085]'}`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -343,7 +343,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className="hidden min-w-0 self-stretch bg-scheduled/[0.05] p-1.5 md:flex" onClick={event => event.stopPropagation()}>
+            <div className={`hidden min-w-0 self-stretch p-1.5 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-primary/[0.028]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -574,9 +574,9 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }
 
   return (
-    /* Bloc tableau : la barre d'outils porte les coins hauts, la table les coins bas. */
+    /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
-      className="overflow-hidden rounded-none border-none bg-transparent shadow-none"
+      className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-[0_2px_8px_rgba(15,20,25,0.055)]"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

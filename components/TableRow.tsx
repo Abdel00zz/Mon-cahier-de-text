@@ -99,13 +99,13 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-none animate-fade-in">
       <span
-        className={`font-display text-xl font-bold tabular-nums transition-colors ${
+        className={`font-mono text-xl font-extrabold tracking-[-0.08em] tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
         }`}
       >
         {parsed.day}
       </span>
-      <span className={`mt-1 text-[9px] font-bold uppercase font-sans ${hasWarning ? 'text-destructive' : 'text-muted-foreground/60'}`}>
+      <span className={`mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.08em] ${hasWarning ? 'text-destructive' : 'text-muted-foreground/65'}`}>
         {parsed.month} {parsed.year.slice(2)}
       </span>
       {!hasWarning && parsed.isToday && <span className="mt-1 h-1 w-1 rounded-full bg-primary" aria-hidden />}
@@ -118,9 +118,11 @@ DateCard.displayName = 'DateCard';
 const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boolean; isSelected?: boolean; hasAssignedDate?: boolean }> = memo(({ dateStr, merge, hasWarning, isSelected, hasAssignedDate }) => {
   const isMerged = !!merge?.isMerged;
   const bgClass = isSelected 
-    ? 'bg-primary/[0.08]' 
+    ? 'bg-primary/[0.12]'
+    : hasWarning
+      ? 'bg-warning/[0.12]'
     : hasAssignedDate
-      ? 'bg-scheduled/12'
+      ? 'bg-primary/[0.085]'
       : 'bg-card';
 
   if (isMerged) {
@@ -152,13 +154,16 @@ const RemarkCell: FC<{
   onSave: (value: string) => void;
   hasAssignedDate?: boolean;
   isSelected?: boolean;
-}> = memo(({ value, merge, lineClass, onSave, hasAssignedDate, isSelected }) => {
+  hasWarning?: boolean;
+}> = memo(({ value, merge, lineClass, onSave, hasAssignedDate, isSelected, hasWarning }) => {
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
   
   const bgClass = isSelected 
-    ? 'bg-primary/[0.04]' 
-    : hasAssignedDate 
-      ? 'bg-scheduled/[0.07]'
+    ? 'bg-primary/[0.065]'
+    : hasWarning
+      ? 'bg-warning/[0.055]'
+    : hasAssignedDate
+      ? 'bg-primary/[0.028]'
       : 'bg-card';
 
   const borderClass = '';
@@ -267,8 +272,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? 'border-t border-scheduled/30' : '',
-    isDatedGroupEnd ? 'border-b-2 border-scheduled/45' : '',
+    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.35]' : 'border-t border-primary/20') : '',
+    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/40' : 'border-b border-primary/25') : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -281,9 +286,19 @@ const TableRowComponent: FC<TableRowProps> = ({
    * entière (date + contenu + remarque), pas à une seule cellule —
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
-  const datedWash = hasAssignedDate ? 'bg-scheduled/[0.07]' : 'bg-card';
-  const rowWash = isSelected ? 'bg-primary/[0.06]' : datedWash;
-  const hoverWash = isSelected ? '' : hasAssignedDate ? 'hover:bg-scheduled/12' : 'hover:bg-muted/60';
+  const datedWash = hasWarning
+    ? 'bg-warning/[0.07]'
+    : hasAssignedDate
+      ? 'bg-primary/[0.035]'
+      : 'bg-card';
+  const rowWash = isSelected ? 'bg-primary/[0.085]' : datedWash;
+  const hoverWash = isSelected
+    ? ''
+    : hasWarning
+      ? 'hover:bg-warning/[0.11]'
+      : hasAssignedDate
+        ? 'hover:bg-primary/[0.07]'
+        : 'hover:bg-muted/60';
   // §G tableau serré : AUCUN padding de cadre — les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
@@ -295,15 +310,19 @@ const TableRowComponent: FC<TableRowProps> = ({
   const dividerClass = isSelected
     ? 'border-r border-primary/30'
     : hasAssignedDate
-      ? 'border-r border-scheduled/30'
-      : 'border-r border-slate-200/80';
+      ? hasWarning
+        ? 'border-r border-warning/30'
+        : 'border-r border-primary/20'
+      : 'border-r border-border/80';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
       ? 'md:border-r md:border-primary/30'
       : hasAssignedDate
-        ? 'md:border-r md:border-scheduled/30'
-        : 'md:border-r md:border-slate-200/80';
+        ? hasWarning
+          ? 'md:border-r md:border-warning/30'
+          : 'md:border-r md:border-primary/20'
+        : 'md:border-r md:border-border/80';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;
@@ -320,7 +339,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} hover:bg-muted/60 transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -373,14 +392,14 @@ const TableRowComponent: FC<TableRowProps> = ({
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </div>
         {contentCell}
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} />
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
       </div>
     );
   }
 
   const contentCell = (
     <div
-      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;
@@ -440,7 +459,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
       {contentCell}
 
-      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} />
+      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
     </div>
   );
 };

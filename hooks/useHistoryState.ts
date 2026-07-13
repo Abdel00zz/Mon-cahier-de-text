@@ -10,6 +10,8 @@ interface HistoryEntry<T> {
   operationType: string;
 }
 
+type HistoryAction = 'edit' | 'reset' | 'undo' | 'redo';
+
 export const useHistoryState = <T,>(
   initialState: T,
   options: HistoryOptions = { capacity: 50 }
@@ -17,9 +19,11 @@ export const useHistoryState = <T,>(
   const [historyState, setHistoryState] = useState<{
     history: HistoryEntry<T>[];
     currentIndex: number;
+    lastAction: HistoryAction;
   }>({
     history: [{ data: initialState, operationType: 'initial' }],
     currentIndex: 0,
+    lastAction: 'reset',
   });
 
   const { history, currentIndex } = historyState;
@@ -46,6 +50,7 @@ export const useHistoryState = <T,>(
       return {
         history: finalHistory,
         currentIndex: finalHistory.length - 1,
+        lastAction: 'edit',
       };
     });
   }, [options.capacity]);
@@ -59,20 +64,23 @@ export const useHistoryState = <T,>(
     setHistoryState({
       history: [{ data: nextState, operationType }],
       currentIndex: 0,
+      lastAction: 'reset',
     });
   }, []);
 
   const undo = useCallback(() => {
     setHistoryState(prev => ({
       ...prev,
-      currentIndex: Math.max(0, prev.currentIndex - 1)
+      currentIndex: Math.max(0, prev.currentIndex - 1),
+      lastAction: 'undo',
     }));
   }, []);
 
   const redo = useCallback(() => {
     setHistoryState(prev => ({
       ...prev,
-      currentIndex: Math.min(prev.history.length - 1, prev.currentIndex + 1)
+      currentIndex: Math.min(prev.history.length - 1, prev.currentIndex + 1),
+      lastAction: 'redo',
     }));
   }, []);
 
@@ -85,5 +93,6 @@ export const useHistoryState = <T,>(
     canUndo: currentIndex > 0,
     canRedo: currentIndex < history.length - 1,
     operationType: history[currentIndex]?.operationType,
+    historyAction: historyState.lastAction,
   };
 };

@@ -30,6 +30,9 @@ export const OP_LABELS: Record<string, string> = {
     'import-data': 'Import de données',
     'manage-lessons': 'Réorganisation des leçons',
     'description-edit': 'Modification d\'une description',
+    'undo': 'Annulation de la dernière action',
+    'redo': 'Rétablissement de la dernière action',
+    'export-data': 'Export d\'une sauvegarde',
 };
 
 export const opLabel = (op: string): string => OP_LABELS[op] || op;

@@ -31,6 +31,7 @@ const readLang = (): Lang => {
 const toHtml = (markdown: string, prefix: Lang): string => {
   let headingIndex = 0;
   const isArabic = prefix === 'ar';
+  const headingFontClass = isArabic ? 'font-ar' : 'font-display';
   const bodyClass = isArabic
     ? 'text-[17px] leading-[2] text-slate-700 sm:text-[18px]'
     : 'text-[15px] leading-7 text-slate-600 sm:text-base';
@@ -44,17 +45,17 @@ const toHtml = (markdown: string, prefix: Lang): string => {
     .map(line => {
       if (line.startsWith('# ')) {
         const t = line.replace('# ', '').trim();
-        return `<h1 class="mb-3 font-display text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">${t}</h1>`;
+        return `<h1 class="mb-3 ${headingFontClass} text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">${t}</h1>`;
       }
       if (line.startsWith('## ')) {
         const t = line.replace('## ', '').trim();
         const id = `${prefix}-sec-${headingIndex}`;
         headingIndex++;
-        return `<h2 id="${id}" class="mb-5 mt-12 scroll-mt-4 pb-1 font-display text-2xl font-black text-slate-950 sm:text-[26px]">${t}</h2>`;
+        return `<h2 id="${id}" class="mb-5 mt-12 scroll-mt-4 pb-1 ${headingFontClass} text-2xl font-black text-slate-950 sm:text-[26px]">${t}</h2>`;
       }
       if (line.startsWith('### ')) {
         const t = line.replace('### ', '').trim();
-        return `<h3 class="mb-3 mt-8 font-display text-lg font-extrabold text-slate-950 sm:text-xl">${t}</h3>`;
+        return `<h3 class="mb-3 mt-8 ${headingFontClass} text-lg font-extrabold text-slate-950 sm:text-xl">${t}</h3>`;
       }
 
       // Les illustrations peuvent être remplacées sans toucher au composant :
@@ -69,14 +70,14 @@ const toHtml = (markdown: string, prefix: Lang): string => {
       const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
       if (numListMatch) {
         const [, , title, desc] = numListMatch;
-        return `<section class="mb-6"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-6"><h3 class="mb-1.5 ${headingFontClass} text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       // Les actions quotidiennes utilisent le même rythme éditorial léger.
       const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
       if (boldBulletMatch) {
         const [, title, desc] = boldBulletMatch;
-        return `<section class="mb-6"><h3 class="mb-1.5 font-display text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-6"><h3 class="mb-1.5 ${headingFontClass} text-lg font-black text-slate-950 sm:text-xl">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       // puce simple
@@ -167,7 +168,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       title={
         <div className={`flex w-full select-none flex-col justify-between gap-3 sm:items-center ${isAr ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}>
           <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'text-right font-ar' : 'text-left'}>
-            <span className="font-display text-lg font-extrabold text-slate-800">
+            <span className={`${isAr ? 'font-ar' : 'font-display'} text-lg font-extrabold text-slate-800`}>
               {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
             </span>
             <span className="block text-xs font-semibold text-slate-500">

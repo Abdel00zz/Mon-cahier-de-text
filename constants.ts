@@ -31,17 +31,17 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 };
 
 export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    'définition': 'bg-blue-50 text-blue-700 border-blue-200',
-    'théorème': 'bg-purple-50 text-purple-700 border-purple-200',
-    'proposition': 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    'lemme': 'bg-violet-50 text-violet-700 border-violet-200',
-    'corollaire': 'bg-pink-50 text-pink-700 border-pink-200',
-    'remarque': 'bg-slate-50 text-slate-600 border-slate-200',
-    'preuve': 'bg-slate-100 text-slate-700 border-slate-200',
-    'exemple': 'bg-cyan-50 text-cyan-700 border-cyan-200',
-    'exercice': 'bg-amber-50 text-amber-700 border-amber-200',
-    'application': 'bg-teal-50 text-teal-700 border-teal-200',
+    'activité': 'bg-emerald-100/75 text-emerald-800 border-emerald-200/90',
+    'définition': 'bg-blue-100/75 text-blue-800 border-blue-200/90',
+    'théorème': 'bg-purple-100/75 text-purple-800 border-purple-200/90',
+    'proposition': 'bg-indigo-100/75 text-indigo-800 border-indigo-200/90',
+    'lemme': 'bg-violet-100/75 text-violet-800 border-violet-200/90',
+    'corollaire': 'bg-pink-100/75 text-pink-800 border-pink-200/90',
+    'remarque': 'bg-slate-100/85 text-slate-700 border-slate-200/90',
+    'preuve': 'bg-zinc-100 text-zinc-800 border-zinc-200/90',
+    'exemple': 'bg-cyan-100/75 text-cyan-800 border-cyan-200/90',
+    'exercice': 'bg-amber-100/80 text-amber-800 border-amber-200/90',
+    'application': 'bg-teal-100/75 text-teal-800 border-teal-200/90',
 };
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {

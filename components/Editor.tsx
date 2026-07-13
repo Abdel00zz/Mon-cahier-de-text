@@ -18,7 +18,7 @@ import { prepareImportedLessons } from '../utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '../utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '../utils/printMeta';
 import { validateSessionDate } from '../utils/dateValidation';
-import { appendJournal, opLabel, readJournal, timeAgoFr } from '../utils/journal';
+import { appendJournal, readJournal } from '../utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '../utils/predefinedContent';
 import { BookOpen } from './ui/icons';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
@@ -50,7 +50,7 @@ interface EditorProps {
 }
 
 type ActiveModal =
-  | 'import'
+  | 'dataTransfer'
   | 'manageLessons'
   | 'guide'
   | 'analyse'
@@ -91,7 +91,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack, onOpenSettings }) => {
-  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType } = useHistoryState<LessonsData>([]);
+  const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
   const [editorState, setEditorState] = useImmer({
@@ -186,22 +186,25 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
    * « Dernière modification » et la modale Historique.
    */
   const [journalVersion, setJournalVersion] = useState(0);
-  const lastLoggedOpRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!operationType || operationType === lastLoggedOpRef.current) {
-      // même snapshot (undo/redo pointent sur un état existant) : on ne journalise
-      // que les nouvelles opérations, détectées par le changement de lessonsData.
-    }
-    lastLoggedOpRef.current = operationType ?? null;
-    if (operationType && operationType !== 'initial' && operationType !== 'initial-load') {
-      appendJournal(classInfo.id, operationType);
+    const journalOp = historyAction === 'undo'
+      ? 'undo'
+      : historyAction === 'redo'
+        ? 'redo'
+        : historyAction === 'edit'
+          ? operationType
+          : null;
+    if (journalOp && journalOp !== 'initial' && journalOp !== 'initial-load') {
+      appendJournal(classInfo.id, journalOp);
       setJournalVersion(v => v + 1);
     }
+    // La donnée change à chaque édition/annulation/rétablissement. Ne pas
+    // dépendre de classInfo.id : lors d'un changement de classe, l'ancien
+    // snapshot ne doit jamais être journalisé dans le nouveau cahier.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonsData]);
 
   const journalEntries = useMemo(() => readJournal(classInfo.id), [classInfo.id, journalVersion]);
-  const lastJournalEntry = journalEntries[0] ?? null;
 
   // Échap : efface la sélection (si aucune modale/édition n'est ouverte — elles gèrent leur propre Échap)
   useEffect(() => {
@@ -305,6 +308,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        appendJournal(classInfo.id, 'export-data');
+        setJournalVersion(version => version + 1);
         showNotification("Donnees exportees avec succes!", "success");
     } catch (error) {
         logger.error("Failed to export data", error);
@@ -910,15 +915,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
             canRedo={canRedo}
             onSave={saveData}
             saveStatus={saveStatus}
-            onOpenImport={() => setEditorState(draft => { draft.activeModal = 'import'; })}
+            onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
             onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
             onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
             onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-            onExportData={handleExportData}
             onPrint={handleSmartPrint}
             searchQuery={searchQuery}
             setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
-            lastModifiedLabel={lastJournalEntry ? `${opLabel(lastJournalEntry.op)} · ${timeAgoFr(lastJournalEntry.at)}` : null}
             onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
           />
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
@@ -1034,6 +1037,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
         activeModal={activeModal}
         handleModalClose={handleModalClose}
         handleImport={handleImport}
+        handleExportData={handleExportData}
         lessonsData={lessonsData}
         handleUpdateLessons={handleUpdateLessons}
         config={config}

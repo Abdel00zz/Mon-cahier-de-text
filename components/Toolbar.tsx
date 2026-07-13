@@ -12,8 +12,9 @@ import {
 import { printDocument } from '../utils/printUtils';
 import {
   Undo2, Redo2, Save, Search, X, ChevronUp, MoreVertical,
-  FileInput, FileOutput, ListChecks, PieChart, Printer, CircleHelp, History,
+  Database, ListChecks, PieChart, Printer, CircleHelp, History,
 } from './ui/icons';
+import { SyncStatusBadge } from './ui/SyncStatusBadge';
 
 interface ToolbarProps {
   onUndo: () => void;
@@ -22,25 +23,22 @@ interface ToolbarProps {
   canRedo: boolean;
   onSave: () => void;
   saveStatus: 'saved' | 'saving' | 'unsaved';
-  onOpenImport: () => void;
+  onOpenDataTransfer: () => void;
   onOpenManageLessons: () => void;
   onOpenGuide: () => void;
   onOpenAnalyse: () => void;
-  onExportData: () => void;
   onPrint?: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  /** journal : dernière opération, format compact « op · il y a X » */
-  lastModifiedLabel?: string | null;
-  onOpenHistory?: () => void;
+  onOpenHistory: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   onUndo, onRedo, canUndo, canRedo, onSave, saveStatus,
-  onOpenImport, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onExportData,
+  onOpenDataTransfer, onOpenManageLessons, onOpenGuide, onOpenAnalyse,
   onPrint,
   searchQuery, setSearchQuery,
-  lastModifiedLabel, onOpenHistory,
+  onOpenHistory,
 }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchQuery);
@@ -107,36 +105,24 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div className="sticky top-0 z-[50] mb-0 flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-200 bg-white/95 px-4 py-2 shadow-none backdrop-blur print:hidden">
-      <div className="flex min-w-0 items-center gap-2">
-        {/* Journal compact : dernière opération, clic → historique détaillé */}
-        {lastModifiedLabel && (
-          <button
-            type="button"
-            onClick={onOpenHistory}
-            className="flex min-w-0 max-w-[38vw] items-center gap-1.5 rounded bg-slate-50 border border-slate-200/60 px-2 py-0.5 text-[10px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 sm:max-w-56"
-            data-tippy-content="Voir l'historique des actions"
-            aria-label="Historique des modifications"
-          >
-            <History className="h-3 w-3 shrink-0 text-slate-400" />
-            <span className="truncate">{lastModifiedLabel}</span>
-          </button>
-        )}
+    <div className="sticky top-2 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-primary/15 bg-card/95 px-2.5 py-2 shadow-[0_4px_14px_rgba(15,20,25,0.07)] backdrop-blur print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3">
+      <div className="flex min-w-0 items-center justify-start gap-2">
+        <SyncStatusBadge />
       </div>
       
-      <div className="flex-1 flex justify-center items-center gap-1">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification" className="rounded-md h-8 w-8 text-slate-600">
+      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border/80 bg-secondary/70 p-1 sm:flex">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification" className="h-8 w-8 rounded-md text-muted-foreground hover:bg-card hover:text-primary">
           <Undo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)" aria-label="Rétablir la modification" className="rounded-md h-8 w-8 text-slate-600">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content="Rétablir (Ctrl+Y)" aria-label="Rétablir la modification" className="h-8 w-8 rounded-md text-muted-foreground hover:bg-card hover:text-primary">
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle" aria-label="Sauvegarder maintenant" className="rounded-md h-8 w-8 text-slate-600">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content="Sauvegarde manuelle" aria-label="Sauvegarder maintenant" className="h-8 w-8 rounded-md text-muted-foreground hover:bg-card hover:text-primary">
           <Save className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-end gap-1.5">
         <div ref={searchContainerRef} className="relative flex items-center" role="search">
           <Button
             variant="ghost" size="icon"
@@ -145,7 +131,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label="Rechercher"
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel"
-            className={`relative rounded-md h-8 w-8 ${searchQuery ? 'bg-primary/10 text-primary' : 'text-slate-600'}`}
+            className={`relative h-9 w-9 rounded-lg border transition-colors ${searchQuery ? 'border-primary/20 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-primary'}`}
           >
             <Search className="h-4 w-4" />
             {searchQuery && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
@@ -207,7 +193,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+              className="h-9 w-9 cursor-pointer rounded-lg border border-border/90 bg-card text-muted-foreground shadow-sm hover:bg-secondary hover:text-primary"
               aria-label="Menu d'actions"
             >
               <MoreVertical className="h-4 w-4" />
@@ -235,13 +221,13 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <DropdownMenuSeparator />
             </div>
 
-            <DropdownMenuItem onClick={onOpenImport} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
-              <FileInput className="h-3.5 w-3.5 text-slate-400" />
-              <span>Importer JSON</span>
+            <DropdownMenuItem onClick={onOpenDataTransfer} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <Database className="h-3.5 w-3.5 text-slate-400" />
+              <span>Importer / exporter</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onExportData} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
-              <FileOutput className="h-3.5 w-3.5 text-slate-400" />
-              <span>Exporter JSON</span>
+            <DropdownMenuItem onClick={onOpenHistory} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
+              <History className="h-3.5 w-3.5 text-slate-400" />
+              <span>Historique des modifications</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenManageLessons} className="flex items-center gap-2.5 py-2 cursor-pointer text-xs">
               <ListChecks className="h-3.5 w-3.5 text-slate-400" />

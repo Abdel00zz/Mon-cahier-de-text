@@ -7,7 +7,7 @@ import { EditableCell } from './ui/EditableCell';
 import { Badge } from './ui/badge';
 import { logger } from '../utils/logger';
 import { renderDescriptionWithBold } from '../utils/textFormat';
-import { TriangleAlert } from './ui/icons';
+import { BookOpen, TriangleAlert } from './ui/icons';
 
 interface ContentRendererProps {
   data: any;
@@ -62,7 +62,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
         if (item.type === 'chapter') {
           return (
-            <div className="w-full text-center font-slab text-lg font-extrabold tracking-tight text-red-700">
+            <div className="flex w-full items-center justify-center gap-2.5 text-center font-slab text-lg font-extrabold tracking-tight text-red-700">
+              <BookOpen className="h-4.5 w-4.5 shrink-0" aria-hidden />
               <span>{titleToDisplay}</span>
             </div>
           );
@@ -115,13 +116,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       return (
         <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
-          <div className="w-full py-3 text-center font-slab text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
-            <EditableTitle value={item.title} onSave={handleUpdate('title')} />
-            <span aria-hidden className="mx-auto mt-2.5 flex w-32 items-center justify-center">
-              <span className="h-px flex-1 bg-gradient-to-r from-transparent via-red-300 to-red-400" />
-              <span className="mx-2 h-2 w-2 rotate-45 rounded-[1px] border border-red-400 bg-red-50 shadow-[0_0_0_2px_rgba(254,226,226,0.7)]" />
-              <span className="h-px flex-1 bg-gradient-to-l from-transparent via-red-300 to-red-400" />
+          <div className="flex w-full items-center justify-center gap-3 py-3 text-center font-slab text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200/90 bg-red-50 text-red-700 shadow-[0_1px_2px_rgba(127,29,29,0.08)]" aria-hidden>
+              <BookOpen className="h-4 w-4" />
             </span>
+            <EditableTitle value={item.title} onSave={handleUpdate('title')} />
           </div>
         </MaybeMathJax>
       );

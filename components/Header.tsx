@@ -1,8 +1,7 @@
 import React from 'react';
 import { ClassInfo } from '../types';
 import { Button } from './ui/button';
-import { SyncStatusBadge } from './ui/SyncStatusBadge';
-import { ArrowLeft } from './ui/icons';
+import { ArrowLeft, School, User } from './ui/icons';
 
 interface HeaderProps {
   classInfo: ClassInfo;
@@ -48,35 +47,44 @@ const EditableHeader: React.FC<{ value: string; onSave: (value: string) => void 
 };
 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
-  // Titre fixe en rouge moderne, independant de la couleur de classe.
   return (
-    <div className="relative mb-3 flex items-center justify-center pb-2 group border-b border-slate-100">
-      {onBack && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="absolute left-0 top-0 z-10 h-11 w-11 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-          aria-label="Retour à Mes classes"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-      )}
-      <div className="absolute right-0 top-0">
-        <SyncStatusBadge />
+    <div className="group relative mb-3 mt-2 px-1 py-3 sm:mt-3 sm:px-2 sm:py-4">
+      <div className="flex items-start gap-2.5 sm:gap-4">
+        {onBack ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="mt-0.5 h-10 w-10 shrink-0 rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
+            aria-label="Retour à Mes classes"
+          >
+            <ArrowLeft className="h-4.5 w-4.5" />
+          </Button>
+        ) : null}
+
+        <header className="min-w-0 flex-1 text-left">
+          <h1 className="flex min-w-0 items-center justify-start text-left font-display text-3xl font-black leading-none tracking-[-0.045em] text-foreground sm:text-4xl">
+            <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
+          </h1>
+
+          <div className="mt-3 flex flex-col items-start gap-1.5 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-2">
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <User className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden />
+              <span className="truncate"><span className="font-semibold text-foreground/65">Professeur</span> · {classInfo.teacherName || 'Non renseigné'}</span>
+            </span>
+            <span className="inline-flex min-w-0 items-center gap-2">
+              <School className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden />
+              <span className="truncate"><span className="font-semibold text-foreground/65">Établissement</span> · {establishmentName || 'Non renseigné'}</span>
+            </span>
+          </div>
+
+          <p className="mt-1.5 text-left text-[10px] font-medium text-muted-foreground/65 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+            Cliquez sur le nom pour modifier
+          </p>
+        </header>
+
       </div>
-      <header className="relative w-full overflow-hidden px-12 text-center">
-        {establishmentName && (
-          <p className="relative mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-sans">{establishmentName}</p>
-        )}
-        <h1 className="relative mx-auto flex max-w-4xl items-center justify-center text-center text-xl font-bold leading-tight sm:text-2xl font-display text-slate-900">
-          <EditableHeader value={classInfo.name} onSave={(v) => onClassInfoChange({ name: v })} />
-        </h1>
-        <p className="relative mt-0.5 text-[10px] font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          Cliquez sur le nom pour modifier
-        </p>
-      </header>
     </div>
   );
 });
