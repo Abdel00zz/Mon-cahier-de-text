@@ -34,8 +34,8 @@ interface EditorModalsProps {
 }
 
 const ModalFallback = () => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
-    <div className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-medium text-card-foreground shadow-xl">
+  <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-[3px] animate-fade-in">
+    <div className="rounded-lg border border-slate-200/80 bg-card/98 px-4 py-3 text-sm font-medium text-card-foreground shadow-[0_18px_48px_rgba(15,23,42,0.16)] animate-slide-in-up">
       Chargement…
     </div>
   </div>

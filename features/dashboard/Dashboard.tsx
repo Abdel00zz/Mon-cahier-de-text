@@ -54,14 +54,14 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
         <button
             onClick={onClick}
             data-guide="create-class"
-            className="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 text-center shadow-[0_2px_8px_rgba(30,37,72,0.035)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/45 hover:shadow-[0_10px_28px_rgba(30,37,72,0.08)] focus:outline-none focus:ring-[3px] focus:ring-primary/20"
+            className="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-zinc-200 bg-zinc-50/40 p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50/70 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-            <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm transition-all duration-300 group-hover:border-primary/20 group-hover:bg-accent group-hover:text-primary">
+            <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-400 shadow-sm transition-all duration-300 group-hover:border-zinc-300 group-hover:text-primary">
                 <Plus className="w-5 h-5" />
             </div>
             <div className="relative z-10">
-                <span className="block text-base font-bold text-foreground transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
-                <span className="mt-1 block text-xs font-semibold text-muted-foreground">Créer un cahier de textes</span>
+                <span className="block text-sm font-bold text-zinc-800 transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
+                <span className="mt-1 block text-xs font-semibold text-zinc-400">Créer un cahier de textes</span>
             </div>
         </button>
     );
@@ -145,15 +145,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         const totalPlanned = stats.reduce((sum, item) => sum + item.plannedCount, 0);
         const lateClasses = latenessSummary?.perClass.filter(item => item.gapSessions > 0).length ?? 0;
 
-        let mood = 'Vos cahiers sont prêts — datez une première séance pour lancer le suivi.';
+        let mood = 'Cahiers prêts : datez une séance pour activer le suivi.';
         if (totalPlanned > 0 && latenessSummary?.severity === 'ok') {
-            mood = 'Cahiers à jour sur toute la ligne. Excellent rythme !';
+            mood = 'Cahiers à jour.';
         } else if (totalPlanned > 0 && lateClasses === 1) {
-            mood = 'Une classe demande une petite mise à jour.';
+            mood = 'Une classe à mettre à jour.';
         } else if (totalPlanned > 0 && lateClasses > 1) {
-            mood = `${lateClasses} classes demandent une mise à jour ciblée.`;
+            mood = `${lateClasses} classes à mettre à jour.`;
         } else if (totalPlanned > 0) {
-            mood = 'Vos cahiers avancent — le suivi se précise à chaque séance.';
+            mood = 'Suivi mis à jour à chaque séance.';
         }
 
         return { mood, classCount: classes.length, avgCompletion, totalSessions };
@@ -337,7 +337,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                     )}
                                 </h1>
                                 <p className="mt-1.5 text-xs font-semibold text-muted-foreground sm:text-sm">
-                                    {formattedDate} · Vos cahiers de classes, prêts à ouvrir.
+                                    {formattedDate} — Vos cahiers prêts à ouvrir.
                                 </p>
                             </div>
 
@@ -356,7 +356,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                     }`}>
                                         {isSearchOpen ? (
                                             <div id="dashboard-search" className="relative h-10 w-full animate-fade-in" role="search">
-                                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                                                 <input
                                                     ref={searchInputRef}
                                                     type="search"
@@ -368,7 +368,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                                         setSearchOpen(false);
                                                     }}
                                                     placeholder="Classe, chapitre, contenu…"
-                                                    className="h-10 w-full rounded-lg border border-primary/30 bg-background/95 pl-9 pr-10 text-sm font-semibold text-foreground shadow-[0_4px_14px_rgba(29,155,240,0.09)] outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus:border-primary focus:ring-[3px] focus:ring-primary/15"
+                                                    className="h-10 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-10 text-sm font-medium text-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:shadow-[0_4px_12px_rgba(0,0,0,0.04)] focus:ring-0"
                                                     aria-label="Rechercher dans toutes les classes et tous les cahiers"
                                                 />
                                                 <button
@@ -377,7 +377,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                                         setSearch('');
                                                         setSearchOpen(false);
                                                     }}
-                                                    className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                                                    className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
                                                     aria-label="Fermer la recherche"
                                                 >
                                                     <X className="h-4 w-4" />

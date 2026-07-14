@@ -52,7 +52,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
             variant="destructive"
             onClick={() => onSave('')}
             disabled={!initialValue}
-            className="rounded-xl"
+            className="rounded-xl font-semibold px-4 shadow-sm"
           >
             Effacer
           </Button>
@@ -63,7 +63,7 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
             <Button 
               type="button" 
               onClick={() => onSave(value)}
-              className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-4 shadow-sm"
+              className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-4 shadow-sm text-primary-foreground"
             >
               Enregistrer
             </Button>
@@ -77,21 +77,21 @@ export const DescriptionModal: FC<DescriptionModalProps> = ({
           value={value}
           onChange={event => setValue(event.target.value)}
           rows={6}
-          className="w-full min-h-[140px] rounded-xl border-border"
+          className="w-full min-h-[140px] rounded-xl border border-zinc-200 focus:ring-0 focus:border-zinc-300"
           placeholder="Saisissez la description détaillée de votre séance (LaTeX supporté)..."
         />
 
         {/* Real-time LaTeX Preview Area */}
         {hasMath && (
-          <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-1.5 animate-fade-in">
+          <div className="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-1.5 animate-fade-in">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-zinc-600 flex items-center gap-1.5 uppercase tracking-wider">
                 <Sigma className="h-3 w-3" />
                 <span>Aperçu LaTeX en temps réel</span>
               </span>
-              <span className="text-[9px] text-muted-foreground/60 font-medium">Auto-généré</span>
+              <span className="text-[9px] text-zinc-400 font-medium">Auto-généré</span>
             </div>
-            <div className="bg-card/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[45px] max-h-[150px] overflow-y-auto">
+            <div className="bg-white p-3 rounded-lg border border-zinc-200 shadow-inner text-xs text-zinc-800 leading-relaxed overflow-x-auto min-h-[45px] max-h-[150px] overflow-y-auto">
               <MathJax hideUntilTypeset="first">
                 <div className="whitespace-pre-wrap break-words">
                   {value}

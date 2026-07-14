@@ -45,7 +45,6 @@ type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
 interface EditorProps {
     classInfo: ClassInfo;
-    onBack: () => void;
     /** ouvre la page Paramètres (utilisé pour renseigner l'emploi du temps) */
     onOpenSettings?: () => void;
 }
@@ -153,7 +152,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
   return !!item && !indices.isSeparator;
 };
 
-export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onBack, onOpenSettings }) => {
+export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings }) => {
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
@@ -470,11 +469,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     }
   }, [lessonsData, getStorageKey, classInfo.id, showNotification, setEditorState]);
-
-  const handleBack = useCallback(() => {
-    if (!isClassLoading && !isConfigLoading && saveStatus !== 'saved') saveData();
-    onBack();
-  }, [isClassLoading, isConfigLoading, saveStatus, saveData, onBack]);
 
   const handleExportData = useCallback(() => {
     try {
@@ -1151,13 +1145,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onB
 
   return (
     <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root>
-      <div className="max-w-screen-2xl mx-auto flex flex-col min-h-screen print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
+      <div className="max-w-screen-2xl mx-auto flex min-h-screen w-full flex-col bg-slate-50/45 px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
             establishmentName={config.establishmentName}
             onClassInfoChange={handleClassInfoChange}
-            onBack={handleBack}
           />
           {/* Barre d'outils COLLANTE : rendue en enfant direct de la colonne
               flex (pas de wrapper à sa taille, sinon le sticky serait confiné à

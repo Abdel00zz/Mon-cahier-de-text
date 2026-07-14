@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { TriangleAlert, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -97,12 +98,11 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
 
         {fileContent && (
           <div className="p-3.5 rounded-xl bg-destructive/5 border border-destructive/20">
-            <label className="flex items-center gap-3 cursor-pointer text-foreground">
-              <input
-                type="checkbox"
+            <label className="flex items-center justify-center gap-3 cursor-pointer text-foreground">
+              <Checkbox
                 checked={isConfirmed}
-                onChange={(e) => setIsConfirmed(e.target.checked)}
-                className="h-4.5 w-4.5 rounded border-destructive/40 text-destructive focus:ring-destructive focus:ring-offset-1"
+                onCheckedChange={(checked) => setIsConfirmed(checked === true)}
+                className="border-destructive/40 data-[state=checked]:bg-destructive data-[state=checked]:text-destructive-foreground data-[state=checked]:border-destructive"
               />
               <span className="text-xs font-semibold text-destructive select-none">
                 Je comprends que l'importation écrasera définitivement toutes mes données actuelles.

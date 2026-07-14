@@ -60,7 +60,7 @@ export const AssessmentBanner: React.FC<AssessmentBannerProps> = ({ classes, con
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 className={`relative mx-auto mb-4 max-w-5xl overflow-hidden rounded-xl border p-4 pl-5 shadow-sm ${
-                    isUrgent ? 'border-red-200 bg-red-50/80' : 'border-slate-200 bg-slate-50'
+                    isUrgent ? 'border-red-200 bg-red-50/80' : 'border-zinc-200 bg-zinc-50'
                 }`}
                 role="status"
             >

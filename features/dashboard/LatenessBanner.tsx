@@ -12,8 +12,8 @@ const SNOOZE_KEY = 'latenessSnooze_v1';
    notice = primaire (information), warning = --warning, critical = --destructive. */
 const SEVERITY_STYLE: Record<string, { bg: string; border: string; iconColor: string; accentColor: string; icon: React.ComponentType<{ className?: string }> }> = {
     notice: {
-        bg: 'bg-slate-50',
-        border: 'border-slate-200',
+        bg: 'bg-zinc-50',
+        border: 'border-zinc-200',
         iconColor: 'text-primary',
         accentColor: 'bg-primary',
         icon: Bell

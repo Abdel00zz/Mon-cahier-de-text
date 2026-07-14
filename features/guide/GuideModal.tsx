@@ -195,10 +195,10 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         </div>
       }
       maxWidth="5xl"
-      className="flex h-[94vh] max-w-6xl flex-col overflow-hidden bg-[#fff8dc] p-0 sm:h-[88vh] sm:max-w-6xl"
+      className="flex h-[94vh] max-w-6xl flex-col overflow-hidden bg-card/98 p-0 sm:h-[88vh] sm:max-w-6xl"
       footer={
-        <div className="flex w-full justify-end px-4 pb-4">
-          <Button type="button" onClick={onClose} className="h-11 w-full rounded-xl px-6 font-bold sm:w-auto">
+        <div className={`flex w-full px-4 pb-4 ${isAr ? 'justify-start' : 'justify-end'}`}>
+          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="h-11 w-full rounded-xl px-6 font-bold sm:w-auto">
             {isAr ? '\u0625\u063a\u0644\u0627\u0642' : 'Fermer'}
           </Button>
         </div>
@@ -207,7 +207,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       {/* Chips d'ancrage — mobile, dans la langue active */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-[#e7d9a9] bg-[#f8edc5] px-3 py-2.5 lg:hidden"
+        className="no-scrollbar flex shrink-0 select-none items-center gap-1.5 overflow-x-auto border-b border-slate-200/80 bg-slate-50/90 px-3 py-2.5 lg:hidden"
       >
         {tocItems.map(item => (
           <button
@@ -217,7 +217,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
             className={`shrink-0 cursor-pointer rounded-full px-3.5 py-2 font-extrabold transition-all duration-200 ${isAr ? 'font-ar text-[13px]' : 'text-[11px]'} ${
               activeSection === item.id
                 ? 'bg-primary text-white shadow-sm'
-                : 'border border-[#e4d49d] bg-[#fffaf0] text-slate-600 hover:text-primary'
+                : 'border border-slate-200 bg-white text-slate-600 hover:border-primary/25 hover:text-primary'
             }`}
           >
             {item.label}
@@ -225,11 +225,11 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         ))}
       </div>
 
-      <div className={`grid h-full flex-1 grid-cols-1 overflow-hidden bg-[#fff8dc] ${isAr ? 'lg:grid-cols-[1fr_250px]' : 'lg:grid-cols-[250px_1fr]'}`}>
+      <div className={`grid h-full flex-1 grid-cols-1 overflow-hidden bg-card ${isAr ? 'lg:grid-cols-[1fr_250px]' : 'lg:grid-cols-[250px_1fr]'}`}>
         {/* Sommaire latéral — ordinateur, monolingue */}
         <div
           dir={isAr ? 'rtl' : 'ltr'}
-          className={`custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto border-[#e6d7a5] bg-[#f6e9ba]/70 p-4 lg:flex ${isAr ? 'border-l lg:order-2' : 'border-r lg:order-1'}`}
+          className={`custom-scrollbar hidden w-[250px] shrink-0 select-none flex-col overflow-y-auto border-slate-200/80 bg-slate-50/75 p-4 lg:flex ${isAr ? 'border-l lg:order-2' : 'border-r lg:order-1'}`}
         >
           <div className={`mb-4 px-2 font-black uppercase tracking-wider text-slate-400 ${isAr ? 'font-ar text-sm' : 'text-[10px]'}`}>
             {isAr ? 'الفهرس' : 'Sommaire'}
@@ -245,7 +245,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
                 } ${
                   activeSection === item.id
                     ? 'bg-primary text-white shadow-sm'
-                    : 'text-slate-700 hover:bg-[#fff7dc] hover:text-slate-950'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
                 }`}
               >
                 {item.label}

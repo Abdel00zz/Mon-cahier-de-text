@@ -52,7 +52,7 @@ export function Modal({
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className={`${mwClass} ${className || ""}`}>
         {(title || description) && (
-          <DialogHeader className="pb-3">
+          <DialogHeader className="pb-2.5">
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
@@ -60,7 +60,7 @@ export function Modal({
         {/* -mx-2/px-2 : la zone défilable déborde de 8 px de chaque côté puis
             se re-remplit — les anneaux de focus des champs ne sont plus COUPÉS
             à gauche/droite par l'overflow, sans décaler le contenu. */}
-        <div className="custom-scrollbar -mx-2 min-h-0 min-w-0 scroll-pb-24 overflow-y-auto overscroll-contain px-2 py-1.5 [overflow-anchor:none]">{children}</div>
+        <div className="custom-scrollbar -mx-2 min-h-0 min-w-0 scroll-pb-24 overflow-y-auto overscroll-contain px-2 py-1 [overflow-anchor:none]">{children}</div>
         {footer && <DialogFooter className="pt-3">{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>

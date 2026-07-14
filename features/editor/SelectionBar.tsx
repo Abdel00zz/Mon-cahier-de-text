@@ -58,21 +58,21 @@ const ActionButton: FC<{
     disabled={disabled}
     className={`group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 sm:h-10 sm:w-10 ${
       danger
-        ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
+        ? 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
         : accent
           ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
     }`}
     aria-label={title}
   >
     <Icon className="h-4.5 w-4.5 transition-transform duration-200 group-hover:scale-105" />
-    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground border border-foreground/10 px-2 py-1 text-[10px] font-semibold text-background opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
+    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 border border-zinc-800 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
       {title}
     </span>
   </Button>
 );
 
-const Divider: FC = () => <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200" />;
+const Divider: FC = () => <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-zinc-200" />;
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
@@ -139,26 +139,26 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 shadow-xl shadow-slate-200/50 backdrop-blur-md sm:bottom-6 print:hidden"
+      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-xl border border-zinc-200 bg-white/98 shadow-xl shadow-zinc-200/40 backdrop-blur-md sm:bottom-6 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
       aria-label="Actions sur la sélection"
     >
       {/* En-tête contextuel : QUOI est sélectionné */}
-      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 pb-1.5 pt-2">
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 pb-1.5 pt-2">
         <div className="min-w-0 flex items-baseline gap-2">
           {count === 1 && selectionLabel ? (
             /* barre resserrée : le titre est tronqué (…) et borné pour ne pas
                étirer la barre — l'info complète reste dans le tableau/l'édition */
-            <span className="max-w-[9rem] sm:max-w-[13rem] truncate text-xs font-extrabold text-foreground font-display">
+            <span className="max-w-[9rem] sm:max-w-[13rem] truncate text-xs font-bold text-zinc-800 font-display">
               <MathText source={selectionLabel} cacheKey={selectionLabel} inline>{selectionLabel}</MathText>
             </span>
           ) : (
-            <span className="text-xs font-extrabold text-foreground font-display">{count} éléments sélectionnés</span>
+            <span className="text-xs font-bold text-zinc-800 font-display">{count} éléments sélectionnés</span>
           )}
           {hasDate && sharedDate && (
-            <span className="shrink-0 text-[10px] font-bold text-primary font-mono bg-primary/10 px-1.5 py-0.5 rounded-full">
+            <span className="shrink-0 text-[10px] font-bold text-zinc-700 font-mono bg-zinc-100 px-1.5 py-0.5 rounded-full border border-zinc-200/50">
               {sharedDate}
             </span>
           )}
@@ -168,7 +168,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           size="icon"
           onClick={onClear}
           title="Fermer (Échap)"
-          className="h-6 w-6 shrink-0 rounded-full text-muted-foreground/60 hover:bg-muted hover:text-foreground cursor-pointer"
+          className="h-6 w-6 shrink-0 rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-800 cursor-pointer"
           aria-label="Effacer la sélection"
         >
           <X className="h-3.5 w-3.5" />

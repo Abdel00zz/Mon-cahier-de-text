@@ -67,21 +67,21 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       disabled={disabled}
       className={`relative flex items-start gap-3.5 p-3 rounded-2xl border text-left transition-all duration-150 select-none ${
         disabled
-          ? 'bg-secondary/30 border-border/60 opacity-40 cursor-not-allowed'
-          : 'bg-card hover:bg-secondary/40 border-border hover:border-primary active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
+          ? 'bg-zinc-50/50 border-zinc-100 opacity-40 cursor-not-allowed'
+          : 'bg-white hover:bg-zinc-50/80 border-zinc-200 hover:border-zinc-300 active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
       }`}
       title={tooltip}
     >
-      <div className={`p-2.5 rounded-xl ${disabled ? 'bg-secondary text-muted-foreground/60' : `${colorClass} bg-secondary/30`} flex-shrink-0 flex items-center justify-center w-11 h-11`}>
+      <div className={`p-2.5 rounded-xl ${disabled ? 'bg-zinc-100 text-zinc-400' : `${colorClass} bg-zinc-100/60`} flex-shrink-0 flex items-center justify-center w-11 h-11`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-semibold text-xs text-foreground leading-snug">{label}</div>
+        <div className="font-semibold text-xs text-zinc-800 leading-snug">{label}</div>
         {description && (
-          <div className="text-[10px] text-muted-foreground/60 mt-0.5 leading-normal truncate">{description}</div>
+          <div className="text-[10px] text-zinc-400 mt-0.5 leading-normal truncate">{description}</div>
         )}
         {disabled && tooltip && (
-          <div className="text-[9px] text-destructive font-medium mt-1 leading-tight flex items-center gap-1">
+          <div className="text-[9px] text-red-500 font-medium mt-1 leading-tight flex items-center gap-1">
             <CircleAlert className="h-2 w-2" />
             <span className="truncate">{tooltip}</span>
           </div>
@@ -192,7 +192,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     }
   };
 
-  const labelClasses = "block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5";
+  const labelClasses = "block text-[11px] font-bold text-zinc-500 uppercase tracking-wide mb-1.5";
 
   // Math detected on currently edited form
   const hasMath = useMemo(() => {
@@ -368,10 +368,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => setStage('select')}
-          className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-secondary flex-shrink-0"
+          className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-zinc-100 flex-shrink-0 cursor-pointer"
           aria-label="Retour à la sélection"
         >
-          <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
+          <ArrowLeft className="h-3.5 w-3.5 text-zinc-500" />
         </Button>
       )}
       <span className="truncate">{modalTitle}</span>
@@ -398,7 +398,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             <Button 
               type="submit" 
               form="add-content-form" 
-              className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm"
+              className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm text-primary-foreground"
             >
               Insérer
             </Button>
@@ -411,13 +411,13 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       }
     >
       {/* Context Target Banner */}
-      <div className="mb-4 p-3 bg-secondary/50 border border-border/60 rounded-xl text-xs text-muted-foreground flex items-start gap-2.5 flex-shrink-0">
-        <div className="p-1.5 bg-card border border-border text-muted-foreground/60 rounded-lg flex-shrink-0">
+      <div className="mb-4 p-3 bg-zinc-50/80 border border-zinc-200 rounded-xl text-xs text-zinc-500 flex items-start gap-2.5 flex-shrink-0">
+        <div className="p-1.5 bg-white border border-zinc-200 text-zinc-400 rounded-lg flex-shrink-0">
           <MapPin className="h-3 w-3" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-foreground/80">Point d'insertion ciblé</div>
-          <div className="truncate mt-0.5 text-muted-foreground font-medium">{targetLocationLabel}</div>
+          <div className="font-bold text-zinc-700">Point d'insertion ciblé</div>
+          <div className="truncate mt-0.5 text-zinc-400 font-medium">{targetLocationLabel}</div>
         </div>
       </div>
 
@@ -425,7 +425,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
         <div className="space-y-5 py-1 overflow-y-auto max-h-[50vh] pr-1">
           {/* Group 1: Cours & Structures */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
               Structures & Cours
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -433,14 +433,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Book}
                 label="Chapitre"
                 description="Ajoute un grand chapitre de cours à la racine"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-800"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
                 label="Section"
                 description="Ajoute une partie au chapitre ou bloc sélectionné"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-700"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip="Sélectionnez un chapitre ou une section"
@@ -449,7 +449,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-section"
                 description="Ajoute un niveau sous la section sélectionnée"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-700"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
                 tooltip="Sélectionnez une section"
@@ -458,7 +458,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label="Sous-sous-section"
                 description="Ajoute un niveau sous la sous-section sélectionnée"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-700"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
                 tooltip="Sélectionnez une sous-section"
@@ -467,7 +467,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={ListTree}
                 label="Élément"
                 description="Ajoute un exercice, cours, méthode, application..."
-                colorClass="text-muted-foreground bg-secondary border-border"
+                colorClass="text-zinc-600"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
                 tooltip="Sélectionnez une section pour insérer un élément"
@@ -476,7 +476,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={GripHorizontal}
                 label="Séparateur"
                 description="Insère une démarcation chronologique de séance"
-                colorClass="text-muted-foreground/60 bg-secondary/50 border-border/50"
+                colorClass="text-zinc-400"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
                 tooltip="Sélectionnez un élément pour ajouter un séparateur après"
@@ -486,7 +486,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Group 2: Évaluations & Devoirs */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
               Évaluations & Devoirs
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -494,21 +494,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={TestTube}
                 label="Évaluation diagnostique"
                 description="Évaluer les prérequis en début de chapitre"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-750"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
                 label="Devoir maison"
                 description="Planifier un travail personnel hors-classe"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-zinc-750"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
                 label="Contrôle continu"
                 description="Ajouter un devoir surveillé ou un quiz régulier"
-                colorClass="text-muted-foreground bg-secondary border-border"
+                colorClass="text-zinc-750"
                 onClick={() => handleSelectType('controle_continu')}
               />
             </div>
@@ -516,7 +516,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Group 3: Corrections */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider pl-1">
+            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
               Corrections d'épreuves
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -524,14 +524,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckCheck}
                 label="Correction Devoir maison"
                 description="Ajouter le corrigé complet d'un DM"
-                colorClass="text-primary bg-primary/10 border-primary/20"
+                colorClass="text-emerald-700"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
                 icon={CheckSquare}
                 label="Correction Contrôle continu"
                 description="Ajouter le barème et corrigé d'un contrôle"
-                colorClass="text-muted-foreground bg-secondary border-border"
+                colorClass="text-zinc-750"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
             </div>
@@ -545,23 +545,23 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Live LaTeX Render Area */}
           {hasMath && (
-            <div className="mt-2 p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-2 animate-fade-in flex-shrink-0">
+            <div className="mt-2 p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-2 animate-fade-in flex-shrink-0">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-zinc-600 flex items-center gap-1.5 uppercase tracking-wider">
                   <Sigma className="h-3 w-3" />
                   <span>Aperçu LaTeX en temps réel</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground/60 font-medium">Auto-généré</span>
+                <span className="text-[9px] text-zinc-400 font-medium">Auto-généré</span>
               </div>
-              <div className="bg-card/95 p-3 rounded-lg border border-primary/10 shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
+              <div className="bg-white p-3 rounded-lg border border-zinc-200 shadow-inner text-xs text-zinc-800 leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
                 <MathJax hideUntilTypeset="first">
                   {formData.title || formData.name || formData.content ? (
-                    <div className="font-semibold text-foreground break-words">
+                    <div className="font-semibold text-zinc-800 break-words">
                       {formData.title || formData.name || formData.content}
                     </div>
                   ) : null}
                   {formData.description ? (
-                    <div className="text-muted-foreground mt-1.5 whitespace-pre-wrap break-words">
+                    <div className="text-zinc-500 mt-1.5 whitespace-pre-wrap break-words">
                       {formData.description}
                     </div>
                   ) : null}

@@ -43,8 +43,8 @@ export function ConfirmDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-4 border border-slate-200 bg-white p-4 shadow-xl sm:max-w-[420px] sm:gap-6 sm:p-6">
-                <DialogHeader className="gap-2">
+            <DialogContent className="gap-3 border-slate-200/80 bg-card/98 p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] sm:max-w-[420px] sm:gap-4 sm:p-5">
+                <DialogHeader className="gap-1.5">
                     <DialogTitle className="text-lg font-extrabold font-display leading-tight tracking-normal text-foreground">
                         {title}
                     </DialogTitle>
@@ -57,7 +57,7 @@ export function ConfirmDialog({
                         type="button"
                         variant="ghost"
                         onClick={handleCancel}
-                        className="w-full sm:w-auto rounded-full font-semibold transition-all duration-200"
+                        className="w-full sm:w-auto rounded-md font-semibold transition-all duration-200"
                     >
                         {cancelLabel}
                     </Button>
@@ -65,7 +65,7 @@ export function ConfirmDialog({
                         type="button"
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
-                        className="w-full sm:w-auto rounded-full font-semibold px-5 transition-all duration-200"
+                        className="w-full sm:w-auto rounded-md px-5 font-semibold transition-all duration-200"
                     >
                         {confirmLabel}
                     </Button>

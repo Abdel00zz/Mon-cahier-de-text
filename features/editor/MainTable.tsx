@@ -79,7 +79,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-2 my-2.5 grid gap-3 overflow-hidden rounded-xl border bg-white p-3 pl-4 shadow-lg shadow-slate-200/50 animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -192,17 +192,17 @@ const TableHeader: React.FC = React.memo(() => (
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-primary/30 bg-primary/[0.065] md:block">
+  <div className="hidden border-b border-slate-200/90 bg-slate-50/90 md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
-    <div className={`grid min-h-14 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-primary/35 px-3 py-3.5 text-center">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-primary/80">Date</span>
+    <div className={`grid min-h-11 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-r border-slate-200 px-2.5 py-2.5 text-center">
+        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">Date</span>
       </div>
-      <div className="flex items-center justify-center border-r border-primary/35 px-4 py-3.5 text-center">
-        <span className="font-compact text-[11px] font-black uppercase tracking-[0.045em] text-primary">Contenu pédagogique</span>
+      <div className="flex items-center justify-center border-r border-slate-200 px-3 py-2.5 text-center">
+        <span className="font-compact text-[11px] font-black uppercase tracking-[0.045em] text-slate-600">Contenu pédagogique</span>
       </div>
-      <div className="flex items-center justify-center px-3 py-3.5 text-center">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-primary/80">Remarque</span>
+      <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
+        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">Remarque</span>
       </div>
     </div>
   </div>
@@ -302,7 +302,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         ? 'border-r border-primary/45'
         : hasWarning
             ? 'border-r border-warning/45'
-            : 'border-r border-primary/40';
+            : 'border-r border-slate-200/90';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -311,17 +311,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y transition-colors duration-150`,
+                `group relative grid ${TABLE_GRID_CLASS} border-y border-slate-200/90 transition-colors duration-150`,
                 hasWarning
                     ? 'border-warning/[0.5] bg-warning/[0.07]'
-                    : 'border-primary/30 bg-primary/[0.035]',
+                    : 'bg-slate-50/35',
                 groupIsSelected ? 'bg-primary/[0.085]' : '',
                 groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
             {/* Rail latéral supprimé selon la demande */}
 
-            <div className={`flex min-h-[64px] min-w-0 items-center justify-center self-stretch px-2 py-2 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-primary/[0.085]'}`}>
+            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1.5 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-slate-50/80'}`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -354,7 +354,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className={`hidden min-w-0 self-stretch p-1.5 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-primary/[0.028]'}`} onClick={event => event.stopPropagation()}>
+            <div className={`hidden min-w-0 self-stretch p-1 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-white/55'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -587,7 +587,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   return (
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
-      className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-[0_2px_8px_rgba(15,20,25,0.055)]"
+      className="mx-0 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:rounded-xl"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

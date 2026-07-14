@@ -188,7 +188,7 @@ const App: React.FC = () => {
       return <SettingsPage onBack={handleBackFromSettings} />;
     }
     if (view === 'editor' && activeClass) {
-      return <Editor classInfo={activeClass} onBack={handleBackToDashboard} onOpenSettings={handleOpenSettings} />;
+      return <Editor classInfo={activeClass} onOpenSettings={handleOpenSettings} />;
     }
     return <Dashboard onSelectClass={handleSelectClass} onOpenSettings={handleOpenSettings} />;
   };

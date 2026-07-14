@@ -122,7 +122,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     : hasWarning
       ? 'bg-warning/[0.12]'
     : hasAssignedDate
-      ? 'bg-primary/[0.085]'
+      ? 'bg-zinc-50/80'
       : 'bg-card';
 
   if (isMerged) {
@@ -163,7 +163,7 @@ const RemarkCell: FC<{
     : hasWarning
       ? 'bg-warning/[0.055]'
     : hasAssignedDate
-      ? 'bg-primary/[0.028]'
+      ? 'bg-white/55'
       : 'bg-card';
 
   const borderClass = '';
@@ -272,8 +272,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-primary/30') : '',
-    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-primary/40') : '',
+    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-zinc-200') : '',
+    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-zinc-200') : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -289,7 +289,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-warning/[0.07]'
     : hasAssignedDate
-      ? 'bg-primary/[0.035]'
+      ? 'bg-zinc-50/40'
       : 'bg-card';
   const rowWash = isSelected ? 'bg-primary/[0.085]' : datedWash;
   const hoverWash = isSelected
@@ -312,7 +312,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     : hasAssignedDate
       ? hasWarning
         ? 'border-r border-warning/40'
-        : 'border-r border-primary/35'
+        : 'border-r border-zinc-200/90'
       : 'border-r border-border/80';
   const contentDividerClass = layout === 'content-only'
     ? ''
@@ -321,7 +321,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? hasWarning
           ? 'md:border-r md:border-warning/40'
-          : 'md:border-r md:border-primary/35'
+          : 'md:border-r md:border-zinc-200/90'
         : 'md:border-r md:border-border/80';
 
   /* Rail latéral supprimé selon la demande. */
@@ -339,7 +339,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-2.5 sm:px-4 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -399,7 +399,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`min-w-0 flex-1 px-2 py-2 cursor-pointer sm:px-4 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`min-w-0 flex-1 px-2 py-1.5 cursor-pointer sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;

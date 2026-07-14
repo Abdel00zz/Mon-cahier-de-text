@@ -52,6 +52,14 @@ interface BriefingItem {
     priority: number;
 }
 
+const BRIEFING_TEXT_STYLE: Record<BriefingTone, { title: string; label: string }> = {
+    blue: { title: 'text-blue-950', label: 'text-blue-700' },
+    emerald: { title: 'text-emerald-950', label: 'text-emerald-700' },
+    amber: { title: 'text-amber-950', label: 'text-amber-700' },
+    violet: { title: 'text-violet-950', label: 'text-violet-700' },
+    slate: { title: 'text-slate-900', label: 'text-slate-600' },
+};
+
 const dateFromISO = (iso: string): Date => {
     const [year, month, day] = iso.split('-').map(Number);
     return new Date(Date.UTC(year, month - 1, day, 12));
@@ -147,9 +155,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
             const resumeDelay = Math.max(0, daysBetweenISO(today, resume));
             add({
                 id: `vacation-${vacation.debut}`,
-                eyebrow: 'Calendrier scolaire · en direct',
+                eyebrow: 'Calendrier scolaire:',
                 title: `${vacation.nom} en cours`,
-                detail: `Aucune séance attendue · reprise ${formatDate(resume, { weekday: 'long', day: 'numeric', month: 'long' })} (${resumeDelay || daysBeforeResume} j)`,
+                detail: `Aucune séance aujourd’hui. Reprise ${formatDate(resume, { weekday: 'long', day: 'numeric', month: 'long' })} (${resumeDelay || daysBeforeResume} j).`,
                 icon: 'sun',
                 tone: 'blue',
                 priority: 100,
@@ -157,9 +165,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else if (holiday) {
             add({
                 id: `holiday-${holiday.date}`,
-                eyebrow: 'Jour férié · calendrier officiel',
+                eyebrow: 'Jour férié:',
                 title: holiday.nom,
-                detail: 'Les séances et les rappels de retard sont automatiquement suspendus.',
+                detail: 'Séances et rappels suspendus pour aujourd’hui.',
                 icon: 'calendar',
                 tone: 'blue',
                 priority: 100,
@@ -167,7 +175,7 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else if (absence) {
             add({
                 id: `absence-${absence.debut}`,
-                eyebrow: 'Absence justifiée',
+                eyebrow: 'Absence justifiée:',
                 title: absence.motif || 'Période d’absence enregistrée',
                 detail: `Suivi suspendu jusqu’au ${formatDate(absence.fin, { day: 'numeric', month: 'long' })}.`,
                 icon: 'calendar',
@@ -187,9 +195,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (vacation || holiday || absence) {
             add({
                 id: 'today-paused',
-                eyebrow: `${weekdayName} · ${clock.label}`,
+                eyebrow: `${weekdayName}:`,
                 title: `Aucune classe attendue aujourd’hui`,
-                detail: vacation ? 'L’emploi du temps reste en pause pendant les vacances.' : 'Le moteur respecte automatiquement le calendrier.',
+                detail: vacation ? 'Emploi du temps en pause pendant les vacances.' : 'Calendrier officiel respecté.',
                 icon: 'clock',
                 tone: 'slate',
                 priority: 92,
@@ -197,9 +205,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else if (weekday === 0) {
             add({
                 id: 'sunday',
-                eyebrow: `Aujourd’hui · ${clock.label}`,
+                eyebrow: 'Aujourd’hui:',
                 title: 'Dimanche : aucune classe programmée',
-                detail: 'Le prochain jour d’enseignement sera calculé depuis votre emploi du temps.',
+                detail: 'Prochain jour d’enseignement selon votre planning.',
                 icon: 'sun',
                 tone: 'blue',
                 priority: 96,
@@ -208,9 +216,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
             const classInfo = classById.get(currentBlock.classId);
             add({
                 id: `current-${currentBlock.classId}-${currentBlock.startMin}`,
-                eyebrow: `Maintenant · jusqu’à ${formatHourLabel(currentBlock.endMin)}`,
+                eyebrow: 'En cours:',
                 title: classInfo ? `Vous enseignez à ${formatClassDisplayName(classInfo.name)}` : 'Séance en cours',
-                detail: `${currentBlock.hours} h prévue${currentBlock.hours > 1 ? 's' : ''}${nextBlock ? ` · puis ${formatClassDisplayName(classById.get(nextBlock.classId)?.name ?? '')} à ${formatHourLabel(nextBlock.startMin)}` : ''}`,
+                detail: `${currentBlock.hours} h prévue${currentBlock.hours > 1 ? 's' : ''}. Jusqu’à ${formatHourLabel(currentBlock.endMin)}${nextBlock ? `. Puis ${formatClassDisplayName(classById.get(nextBlock.classId)?.name ?? '')} à ${formatHourLabel(nextBlock.startMin)}` : ''}.`,
                 icon: 'clock',
                 tone: 'emerald',
                 priority: 99,
@@ -218,10 +226,10 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else if (dayBlocks.length > 0) {
             add({
                 id: 'today-classes',
-                eyebrow: `${weekdayName} · ${dayBlocks.length} séance${dayBlocks.length > 1 ? 's' : ''}`,
+                eyebrow: `${weekdayName}:`,
                 title: `Aujourd’hui : ${classList(todayClassNames)}`,
                 detail: nextBlock
-                    ? `Prochaine séance à ${formatHourLabel(nextBlock.startMin)} · fin prévue à ${formatHourLabel(dayBlocks[dayBlocks.length - 1].endMin)}`
+                    ? `Prochaine séance à ${formatHourLabel(nextBlock.startMin)}. Fin à ${formatHourLabel(dayBlocks[dayBlocks.length - 1].endMin)}.`
                     : 'Toutes les séances prévues aujourd’hui sont terminées.',
                 icon: 'clock',
                 tone: nextBlock ? 'blue' : 'emerald',
@@ -230,9 +238,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else {
             add({
                 id: 'today-empty',
-                eyebrow: `${weekdayName} · ${clock.label}`,
+                eyebrow: `${weekdayName}:`,
                 title: 'Aucune classe prévue aujourd’hui',
-                detail: 'Votre emploi du temps ne contient aucun créneau pour cette journée.',
+                detail: 'Aucun créneau dans votre emploi du temps.',
                 icon: 'calendar',
                 tone: 'slate',
                 priority: 90,
@@ -246,9 +254,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         officialThisWeek.slice(0, 2).forEach(({ event, classNames }) => {
             add({
                 id: `official-week-${event.id}`,
-                eyebrow: 'Cette semaine · bulletin officiel',
+                eyebrow: 'Cette semaine:',
                 title: event.title,
-                detail: `${event.studentAction} · ${classList(classNames)}`,
+                detail: `${event.studentAction}. ${classList(classNames)}.`,
                 icon: 'official',
                 tone: event.category === 'assessment' || event.category === 'exam' ? 'amber' : 'violet',
                 priority: event.category === 'exam' ? 94 : 88,
@@ -259,7 +267,7 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (assessmentsThisWeek.length > 0) {
             add({
                 id: 'assessment-week',
-                eyebrow: 'Planning pédagogique · cette semaine',
+                eyebrow: 'Cette semaine:',
                 title: `${assessmentsThisWeek.length} devoir${assessmentsThisWeek.length > 1 ? 's' : ''} surveillé${assessmentsThisWeek.length > 1 ? 's' : ''} à préparer`,
                 detail: classList(assessmentsThisWeek.map(item => item.className), 4),
                 icon: 'assessment',
@@ -271,9 +279,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         assessments.slice(0, 3).forEach(item => {
             add({
                 id: `assessment-${item.classId}-${item.id}`,
-                eyebrow: `Évaluation · ${formatDelay(item.inDays)}`,
-                title: `${formatClassDisplayName(item.className)} · ${item.label.split(' — ')[0]}`,
-                detail: `Date indicative : ${formatDate(item.dateISO, { weekday: 'long', day: 'numeric', month: 'long' })}`,
+                eyebrow: `Évaluation: ${formatDelay(item.inDays)}`,
+                title: `${formatClassDisplayName(item.className)} — ${item.label.split(' — ')[0]}`,
+                detail: `Prévue le ${formatDate(item.dateISO, { weekday: 'long', day: 'numeric', month: 'long' })}.`,
                 icon: 'assessment',
                 tone: item.inDays <= 3 ? 'amber' : 'blue',
                 priority: item.inDays <= 3 ? 89 : 70,
@@ -286,9 +294,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
             .forEach(({ event, classNames, inDays }) => {
                 add({
                     id: `official-${event.id}`,
-                    eyebrow: `Bulletin officiel · ${formatDelay(inDays)}`,
+                    eyebrow: `Bulletin officiel: ${formatDelay(inDays)}`,
                     title: event.title,
-                    detail: `${formatDate(event.start, { day: 'numeric', month: 'long' })} · ${classList(classNames)}`,
+                    detail: `${formatDate(event.start, { day: 'numeric', month: 'long' })}. ${classList(classNames)}.`,
                     icon: 'official',
                     tone: 'violet',
                     priority: inDays <= 14 ? 86 : 64,
@@ -303,9 +311,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
             const classInfo = classById.get(classId);
             add({
                 id: `pedagogical-${event.id}`,
-                eyebrow: `Activité pédagogique · ${formatDelay(daysBetweenISO(today, event.date))}`,
+                eyebrow: `Activité pédagogique: ${formatDelay(daysBetweenISO(today, event.date))}`,
                 title: event.title,
-                detail: `${classInfo ? formatClassDisplayName(classInfo.name) : 'Classe'} · ${formatDate(event.date, { day: 'numeric', month: 'long' })}`,
+                detail: `${classInfo ? formatClassDisplayName(classInfo.name) : 'Classe'}, le ${formatDate(event.date, { day: 'numeric', month: 'long' })}.`,
                 icon: 'school',
                 tone: 'violet',
                 priority: 68,
@@ -317,7 +325,7 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (missingSchedule.length > 0) {
             add({
                 id: 'missing-schedule',
-                eyebrow: 'Emploi du temps · à compléter',
+                eyebrow: 'Emploi du temps:',
                 title: `${missingSchedule.length} classe${missingSchedule.length > 1 ? 's' : ''} sans créneau`,
                 detail: classList(missingSchedule.map(classInfo => classInfo.name), 4),
                 icon: 'calendar',
@@ -327,9 +335,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         } else if (classes.length > 0) {
             add({
                 id: 'schedule-ready',
-                eyebrow: 'Emploi du temps',
+                eyebrow: 'Emploi du temps:',
                 title: 'Toutes les classes sont reliées au planning',
-                detail: 'Les prochaines séances et les alertes peuvent être calculées automatiquement.',
+                detail: 'Prochaines séances et alertes prêtes.',
                 icon: 'check',
                 tone: 'emerald',
                 priority: 52,
@@ -340,12 +348,12 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         const weeklyHours = weeklyBlocks.reduce((sum, block) => sum + block.hours, 0);
         add({
             id: 'weekly-load',
-            eyebrow: 'Rythme hebdomadaire',
+            eyebrow: 'Rythme hebdomadaire:',
             title: weeklyBlocks.length > 0
-                ? `${weeklyBlocks.length} séance${weeklyBlocks.length > 1 ? 's' : ''} · ${weeklyHours} h planifiées par semaine`
+                ? `${weeklyBlocks.length} séance${weeklyBlocks.length > 1 ? 's' : ''}, ${weeklyHours} h par semaine`
                 : 'Volume hebdomadaire à construire',
             detail: weeklyBlocks.length > 0
-                ? 'Les créneaux consécutifs sont regroupés en une seule séance pédagogique.'
+                ? 'Les créneaux consécutifs sont regroupés.'
                 : 'Ajoutez l’emploi du temps pour activer le briefing horaire.',
             icon: 'clock',
             tone: weeklyBlocks.length > 0 ? 'blue' : 'slate',
@@ -356,12 +364,12 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         const lyceeCount = classes.filter(classInfo => classInfo.cycle === 'lycee').length;
         add({
             id: 'portfolio',
-            eyebrow: 'Portefeuille de classes',
+            eyebrow: 'Vos classes:',
             title: `${classes.length} classe${classes.length > 1 ? 's' : ''} suivie${classes.length > 1 ? 's' : ''}`,
             detail: [
                 collegeCount ? `${collegeCount} collège` : '',
                 lyceeCount ? `${lyceeCount} lycée qualifiant` : '',
-            ].filter(Boolean).join(' · ') || 'Niveaux synchronisés avec vos cahiers.',
+            ].filter(Boolean).join(', ') || 'Niveaux synchronisés.',
             icon: 'school',
             tone: 'slate',
             priority: 50,
@@ -370,9 +378,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (officialEvents.length > 0) {
             add({
                 id: 'official-feed',
-                eyebrow: 'Connexion administrative',
-                title: `${officialEvents.length} jalon${officialEvents.length > 1 ? 's' : ''} officiel${officialEvents.length > 1 ? 's' : ''} relié${officialEvents.length > 1 ? 's' : ''} à vos classes`,
-                detail: 'Le bulletin publié par l’administration est filtré selon le collège et le lycée qualifiant.',
+                eyebrow: 'Bulletin officiel:',
+                title: `${officialEvents.length} jalon${officialEvents.length > 1 ? 's' : ''} lié${officialEvents.length > 1 ? 's' : ''} à vos classes`,
+                detail: 'Informations filtrées pour vos niveaux.',
                 icon: 'official',
                 tone: 'violet',
                 priority: 53,
@@ -385,9 +393,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (nextHoliday) {
             add({
                 id: `next-holiday-${nextHoliday.date}`,
-                eyebrow: 'Prochain repère du calendrier',
+                eyebrow: 'Calendrier:',
                 title: nextHoliday.nom,
-                detail: `${formatDate(nextHoliday.date, { weekday: 'long', day: 'numeric', month: 'long' })} · ${formatDelay(daysBetweenISO(today, nextHoliday.date))}`,
+                detail: `${formatDate(nextHoliday.date, { weekday: 'long', day: 'numeric', month: 'long' })} — ${formatDelay(daysBetweenISO(today, nextHoliday.date))}.`,
                 icon: 'calendar',
                 tone: 'slate',
                 priority: 46,
@@ -398,13 +406,13 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
             const latest = lastModifiedDates[classInfo.id];
             add({
                 id: `notebook-${classInfo.id}`,
-                eyebrow: `${formatClassDisplayName(classInfo.name)} · dernier point daté`,
+                eyebrow: `${formatClassDisplayName(classInfo.name)}:`,
                 title: latest
                     ? formatDate(latest, { weekday: 'long', day: 'numeric', month: 'long' })
-                    : 'Aucune séance datée pour le moment',
+                    : 'Aucune séance datée',
                 detail: latest
-                    ? `Le cahier contient un repère pédagogique jusqu’au ${formatDate(latest, { day: 'numeric', month: 'long' })}.`
-                    : 'Ouvrez le cahier pour poser le premier repère de progression.',
+                    ? `Dernier repère: ${formatDate(latest, { day: 'numeric', month: 'long' })}.`
+                    : 'Ouvrez le cahier pour commencer.',
                 icon: 'notebook',
                 tone: latest ? 'emerald' : 'slate',
                 priority: latest ? 44 : 42,
@@ -414,8 +422,8 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         const datedNotebooks = Object.values(lastModifiedDates).filter(Boolean).length;
         add({
             id: 'notebooks',
-            eyebrow: 'Cahiers de textes',
-            title: `${datedNotebooks}/${snapshot.classCount} cahier${snapshot.classCount > 1 ? 's' : ''} contiennent des séances datées`,
+            eyebrow: 'Cahiers:',
+            title: `${datedNotebooks}/${snapshot.classCount} cahier${snapshot.classCount > 1 ? 's' : ''} daté${snapshot.classCount > 1 ? 's' : ''}`,
             detail: snapshot.mood,
             icon: 'notebook',
             tone: datedNotebooks === snapshot.classCount ? 'emerald' : 'blue',
@@ -424,9 +432,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
 
         add({
             id: 'progress',
-            eyebrow: 'Progression consolidée',
-            title: `${snapshot.avgCompletion}% du programme renseigné`,
-            detail: `${snapshot.totalSessions} séance${snapshot.totalSessions > 1 ? 's' : ''} enregistrée${snapshot.totalSessions > 1 ? 's' : ''} dans ${snapshot.classCount} classe${snapshot.classCount > 1 ? 's' : ''}.`,
+            eyebrow: 'Progression:',
+            title: `${snapshot.avgCompletion}% du programme`,
+            detail: `${snapshot.totalSessions} séance${snapshot.totalSessions > 1 ? 's' : ''} dans ${snapshot.classCount} classe${snapshot.classCount > 1 ? 's' : ''}.`,
             icon: 'progress',
             tone: 'blue',
             priority: 54,
@@ -435,9 +443,9 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
         if (lateClassCount > 0 && !vacation && !holiday && !absence) {
             add({
                 id: 'late-classes',
-                eyebrow: 'Suivi pédagogique',
+                eyebrow: 'À corriger:',
                 title: `${lateClassCount} classe${lateClassCount > 1 ? 's' : ''} demande${lateClassCount > 1 ? 'nt' : ''} une mise à jour`,
-                detail: 'Le retard est estimé depuis l’emploi du temps et les dates réellement consignées.',
+                detail: 'Vérifiez les dates saisies et l’emploi du temps.',
                 icon: 'alert',
                 tone: 'amber',
                 priority: 84,
@@ -446,8 +454,8 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
 
         add({
             id: 'school-year',
-            eyebrow: 'Repère annuel',
-            title: `Année scolaire ${schoolYear.libelle}`,
+            eyebrow: 'Année scolaire:',
+            title: schoolYear.libelle,
             detail: today < schoolYear.debut
                 ? `Rentrée des classes le ${formatDate(schoolYear.debut, { weekday: 'long', day: 'numeric', month: 'long' })}.`
                 : `Calendrier suivi jusqu’au ${formatDate(schoolYear.fin, { day: 'numeric', month: 'long', year: 'numeric' })}.`,
@@ -479,14 +487,15 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
 
     const current = briefing.items[activeIndex] ?? briefing.items[0];
     if (!current) return null;
+    const textStyle = BRIEFING_TEXT_STYLE[current.tone];
     return (
         <section
-            className="relative mb-4 overflow-hidden rounded-2xl border border-blue-200/75 bg-[linear-gradient(110deg,rgba(239,246,255,.96),rgba(255,255,255,.98)_48%,rgba(248,250,252,.98))] shadow-[0_8px_30px_rgba(37,99,235,0.07)]"
+            className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-zinc-50/60 shadow-[0_1px_3px_rgba(0,0,0,0.02),_0_1px_2px_rgba(0,0,0,0.01)]"
             aria-label="Briefing pédagogique du jour"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
-            <span aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-blue-100/60 blur-3xl" />
+            <span aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-zinc-100/30 blur-3xl" />
             <div className="relative flex min-h-[76px] flex-col gap-2.5 px-3.5 py-2.5 sm:flex-row sm:items-center sm:px-4">
                 <div className="flex min-w-0 flex-1 items-center">
                     <div className="min-w-0 flex-1">
@@ -498,18 +507,19 @@ export const TodayBriefing: React.FC<TodayBriefingProps> = ({
                                 exit={reduceMotion ? undefined : { opacity: 0, y: -6, filter: 'blur(2px)' }}
                                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                             >
-                                <p className="truncate text-sm font-black leading-snug tracking-tight text-slate-950" title={current.title}>
+                                <p className={`truncate text-sm font-black leading-snug tracking-tight ${textStyle.title}`} title={current.title}>
                                     {current.title}
                                 </p>
-                                <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-relaxed text-slate-500 sm:text-[11px]">
-                                    <span className="font-extrabold text-slate-400">{current.eyebrow}</span> · {current.detail}
+                                <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-relaxed text-zinc-500 sm:text-[11px]">
+                                    <span className={`font-extrabold ${textStyle.label}`}>{current.eyebrow}</span>{' '}
+                                    <span className="text-zinc-600">{current.detail}</span>
                                 </p>
-                            </motion.div>
+                              </motion.div>
                         </AnimatePresence>
                     </div>
                 </div>
 
-                <div className="grid shrink-0 grid-cols-3 divide-x divide-slate-200/90 overflow-hidden rounded-xl border border-slate-200/90 bg-white/90 shadow-sm sm:min-w-[250px]">
+                <div className="grid shrink-0 grid-cols-3 divide-x divide-zinc-200/80 overflow-hidden rounded-xl border border-zinc-200/80 bg-white/95 shadow-sm sm:min-w-[250px]">
                     <EssentialStat value={`${snapshot.avgCompletion}%`} label="Progression" />
                     <EssentialStat value={lateClassCount} label="À traiter" />
                     <EssentialStat value={snapshot.totalSessions} label="Séances" />

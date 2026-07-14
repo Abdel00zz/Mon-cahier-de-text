@@ -88,15 +88,15 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       <div className="flex flex-col items-center gap-4 py-2 text-center">
         {/* Bascule de langue — discrète, en tête */}
         <div className="flex w-full justify-end">
-          <div className="inline-flex rounded-full border border-border bg-secondary/60 p-0.5">
+          <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-0.5">
             {(['fr', 'ar'] as const).map(l => (
               <button
                 key={l}
                 type="button"
                 onClick={() => setLang(l)}
                 aria-pressed={lang === l}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${
-                  lang === l ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                className={`rounded-full px-3 py-1 text-[11px] font-bold transition-all ${
+                  lang === l ? 'bg-white text-zinc-800 shadow-xs border border-zinc-200/50 font-extrabold' : 'text-zinc-500 hover:text-zinc-800'
                 }`}
               >
                 {l === 'fr' ? 'FR' : 'ع'}
@@ -105,19 +105,19 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
           </div>
         </div>
 
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-warning/15 text-warning">
-          <CalendarRange className="h-7 w-7" />
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 shadow-xs">
+          <CalendarRange className="h-7 w-7 text-amber-600" />
         </span>
 
         <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'font-ar' : ''}>
-          <p className="text-sm leading-relaxed text-muted-foreground">{t.message(classLabel)}</p>
-          <p className="mt-3 text-[11px] font-semibold text-primary/80">{t.benefits}</p>
+          <p className="text-sm leading-relaxed text-zinc-500">{t.message(classLabel)}</p>
+          <p className="mt-3 text-[11px] font-bold text-zinc-500">{t.benefits}</p>
         </div>
 
         <Button
           type="button"
           onClick={onFill}
-          className="mt-1 h-11 w-full max-w-xs rounded-full text-sm font-bold shadow-md shadow-primary/20"
+          className="mt-1 h-11 w-full max-w-xs rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
         >
           {t.fill}
         </Button>
@@ -126,7 +126,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
         <button
           type="button"
           onClick={onSkip}
-          className="pb-1 text-xs font-semibold text-muted-foreground/60 underline-offset-2 transition-colors hover:text-foreground hover:underline"
+          className="pb-1 text-xs font-semibold text-zinc-400 hover:text-zinc-700 transition-colors"
         >
           {t.skip}
         </button>

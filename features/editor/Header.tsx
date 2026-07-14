@@ -1,14 +1,12 @@
 import React from 'react';
 import { ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, School, User } from '@/components/ui/icons';
+import { School, User } from '@/components/ui/icons';
 
 interface HeaderProps {
   classInfo: ClassInfo;
   establishmentName?: string;
   onClassInfoChange: (newInfo: Partial<ClassInfo>) => void;
-  onBack?: () => void;
 }
 
 // Helper to detect Arabic characters in a string
@@ -56,25 +54,12 @@ const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (
   );
 };
 
-export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
+export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange }) => {
   return (
-    <div className="group relative mb-3 mt-2 px-1 py-3 sm:mt-3 sm:px-2 sm:py-4">
+    <div className="group relative mb-2 mt-1 px-0 py-2 sm:mt-2 sm:py-3">
       <div className="flex items-start gap-2.5 sm:gap-4">
-        {onBack ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            className="mt-0.5 h-10 w-10 shrink-0 rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
-            aria-label="Retour à Mes classes"
-          >
-            <ArrowLeft className="h-4.5 w-4.5" />
-          </Button>
-        ) : null}
-
         <header className="min-w-0 flex-1 text-left">
-          <h1 className="flex min-w-0 items-center justify-start text-left font-display text-xl font-black leading-tight tracking-[-0.035em] text-foreground sm:text-3xl">
+          <h1 className="flex min-w-0 items-center justify-start text-left font-display text-lg font-black leading-tight tracking-[-0.035em] text-foreground sm:text-2xl">
             <EditableHeader
               value={classInfo.name}
               displayValue={formatClassDisplayName(classInfo.name)}
@@ -82,7 +67,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
             />
           </h1>
 
-          <div className="mt-3 flex flex-col items-start gap-1.5 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-2">
+          <div className="mt-2 flex flex-col items-start gap-1 text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-1.5 sm:text-xs">
             <span className="inline-flex min-w-0 items-center gap-2">
               <User className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden />
               <span className="truncate"><span className="font-semibold text-foreground/65">Professeur</span> · {classInfo.teacherName || 'Non renseigné'}</span>

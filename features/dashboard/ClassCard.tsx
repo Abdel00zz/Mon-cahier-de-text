@@ -76,14 +76,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     return (
         <div
             onClick={() => onSelect()}
-            className="group relative flex min-h-[172px] cursor-pointer flex-col overflow-hidden rounded-lg border-2 border-slate-200/90 bg-white shadow-[0_2px_8px_rgba(30,37,72,0.045)] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_10px_28px_rgba(30,37,72,0.09)] sm:min-h-[190px]"
+            className="group relative flex min-h-[172px] cursor-pointer flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_1px_2px_rgba(0,0,0,0.03)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:min-h-[190px]"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
         >
             {classInfo.subject && (
                 <span
-                    className="absolute left-3 top-3 z-20 max-w-[calc(100%-6.5rem)] truncate rounded-md border border-slate-200 bg-slate-50/95 px-2 py-1 font-compact text-[9px] font-bold uppercase tracking-[0.08em] text-slate-500"
+                    className="absolute left-3 top-3 z-20 max-w-[calc(100%-6.5rem)] truncate rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-[0.06em] text-zinc-500 transition-colors group-hover:border-zinc-300"
                     title={classInfo.subject}
                 >
                     {classInfo.subject}
@@ -91,17 +91,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             )}
 
             {/* Quick Actions (Hover) */}
-            <div className="absolute right-3 top-3 z-20 flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
+            <div className="absolute right-3 top-2.5 z-20 flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
                 <button
                     onClick={handleConfigureClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-colors border border-transparent hover:border-slate-200"
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 transition-colors border border-zinc-200 shadow-sm"
                     title="Modifier"
                 >
                     <Settings className="w-3.5 h-3.5" />
                 </button>
                 <button
                     onClick={handleDeleteClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors border border-transparent hover:border-red-100"
+                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-zinc-400 hover:bg-red-50 hover:text-red-600 transition-colors border border-zinc-200 shadow-sm"
                     title="Supprimer"
                 >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -109,14 +109,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             </div>
 
             <div className="relative z-10 flex min-h-[168px] w-full flex-1 flex-col sm:min-h-[186px]">
-                <div className="flex flex-1 flex-col items-center justify-center px-4 pb-3 pt-10 sm:pt-9">
-                    <div className={`relative mb-3 flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${iconStyle.shell} ${iconStyle.icon}`}>
+                <div className="flex flex-1 flex-col items-center justify-center px-4 pb-3 pt-12 sm:pt-11">
+                    <div className={`relative mb-3 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${iconStyle.shell} ${iconStyle.icon}`}>
                         <span aria-hidden className={`absolute -right-3 -top-3 h-8 w-8 rounded-full ${iconStyle.glow}`} />
                         <GraduationCap className="relative h-[22px] w-[22px]" aria-hidden />
                     </div>
 
                     <h3
-                        className={`max-w-full text-center text-[12px] font-bold leading-snug text-slate-800 transition-colors group-hover:text-primary sm:text-[13px] ${isArabic ? 'font-ar text-lg' : 'font-display'}`}
+                        className={`max-w-full text-center text-[12px] font-bold leading-snug text-zinc-800 transition-colors group-hover:text-primary sm:text-[13px] ${isArabic ? 'font-ar text-lg' : 'font-display'}`}
                         title={displayName}
                     >
                         {formatSuperscript(displayName)}
@@ -124,16 +124,16 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 
                 </div>
 
-                <div className="mt-auto grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-3 border-t-2 border-slate-200/90 bg-slate-50/80 px-4 pb-3 pt-2.5">
+                <div className="mt-auto grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-3 border-t border-zinc-100 bg-zinc-50/50 px-4 pb-3 pt-2.5 transition-colors group-hover:bg-zinc-50/80">
                     <span className="min-w-0 text-left">
-                        <span className="block text-[7px] font-black uppercase tracking-[0.12em] text-slate-300">Prochaine séance</span>
-                        <span className={`mt-0.5 block truncate text-[9px] font-bold ${nextSession?.kind === 'now' ? 'text-emerald-600' : nextSession ? 'text-blue-600' : 'text-slate-400'}`}>
+                        <span className="block text-[8px] font-semibold uppercase tracking-[0.08em] text-zinc-400">Prochaine séance</span>
+                        <span className={`mt-0.5 block truncate text-[10px] font-bold ${nextSession?.kind === 'now' ? 'text-emerald-600' : nextSession ? 'text-primary' : 'text-zinc-400'}`}>
                             {nextSession?.label ?? 'Horaire à compléter'}
                         </span>
                     </span>
                     <span className="shrink-0 text-right">
-                        <span className="block text-[7px] font-black uppercase tracking-[0.12em] text-slate-300">Mise à jour</span>
-                        <span className="mt-0.5 block font-mono text-[8px] font-bold text-slate-500">{formatDate(lastModified)}</span>
+                        <span className="block text-[8px] font-semibold uppercase tracking-[0.08em] text-zinc-400">Mise à jour</span>
+                        <span className="mt-0.5 block font-mono text-[9px] font-bold text-zinc-500">{formatDate(lastModified)}</span>
                     </span>
                 </div>
             </div>
