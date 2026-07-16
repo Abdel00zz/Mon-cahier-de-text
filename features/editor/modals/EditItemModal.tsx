@@ -65,14 +65,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex items-start gap-3.5 p-3 rounded-2xl border text-left transition-all duration-150 select-none ${
+      className={`relative flex select-none items-start gap-3 rounded-xl border p-2.5 text-left transition-all duration-150 ${
         disabled
           ? 'bg-zinc-50/50 border-zinc-100 opacity-40 cursor-not-allowed'
           : 'bg-white hover:bg-zinc-50/80 border-zinc-200 hover:border-zinc-300 active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
       }`}
       title={tooltip}
     >
-      <div className={`p-2.5 rounded-xl ${disabled ? 'bg-zinc-100 text-zinc-400' : `${colorClass} bg-zinc-100/60`} flex-shrink-0 flex items-center justify-center w-11 h-11`}>
+      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg p-2 ${disabled ? 'bg-zinc-100 text-zinc-400' : `${colorClass} bg-zinc-100/60`}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
@@ -215,7 +215,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
               placeholder={`Ex: ${config.name} de mathématiques`}
-              className="rounded-xl border-border h-11"
+              className="h-10 rounded-lg border-border"
             />
           </div>
         </div>
@@ -243,7 +243,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder="Ex: Définitions et propriétés"
-                className="rounded-xl border-border h-11"
+                className="h-10 rounded-lg border-border"
               />
             </div>
           </div>
@@ -259,7 +259,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                   required
                 >
-                  <SelectTrigger id="itemType" ref={selectFocusRef as any} className="rounded-xl border-border h-11 shadow-none">
+                  <SelectTrigger id="itemType" ref={selectFocusRef as any} className="h-10 rounded-lg border-border shadow-none">
                     <SelectValue placeholder="Choisir..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -280,7 +280,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   value={formData.number || ''}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                   placeholder="Ex: 1, 1.2, A..."
-                  className="rounded-xl border-border h-11"
+                  className="h-10 rounded-lg border-border"
                 />
               </div>
             </div>
@@ -292,7 +292,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Saisir un titre optionnel..."
-                className="rounded-xl border-border h-11"
+                className="h-10 rounded-lg border-border"
               />
             </div>
             <div className="space-y-1.5">
@@ -320,7 +320,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.content || ''}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Ex: Travail effectué, Fin de séance, etc."
-                className="rounded-xl border-border h-11"
+                className="h-10 rounded-lg border-border"
               />
             </div>
             <div className="space-y-1.5">
@@ -330,7 +330,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 id="separatorDate"
                 value={formData.date || ''}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="rounded-xl border-border h-11"
+                className="h-10 rounded-lg border-border"
               />
             </div>
           </div>

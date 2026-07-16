@@ -60,18 +60,18 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
       footer={<Button type="button" variant="secondary" onClick={onClose} className="rounded-xl">Fermer</Button>}
     >
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
+          <div className="rounded-lg border border-zinc-200 bg-white p-3">
             <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Complétion</div>
             <div className="text-2xl font-black text-zinc-800">{stats.completionRate}%</div>
             <div className="text-[10px] text-zinc-500 font-semibold mt-1">{stats.plannedCount} sur {stats.totalItems} éléments</div>
           </div>
-          <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+          <div className="rounded-lg border border-zinc-200 bg-white p-3">
             <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Séances</div>
             <div className="text-2xl font-black text-zinc-800">{stats.sessionsCount}</div>
             <div className="text-[10px] text-zinc-500 font-semibold mt-1">Jours de cours distincts</div>
           </div>
-          <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+          <div className="rounded-lg border border-zinc-200 bg-white p-3">
             <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">À planifier</div>
             <div className="text-2xl font-black text-zinc-800">{stats.unplannedItems.length}</div>
             <div className="text-[10px] text-zinc-500 font-semibold mt-1">Éléments sans date</div>
@@ -113,7 +113,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
             </h3>
             <div className="space-y-2 max-h-[25vh] overflow-y-auto pr-1">
               {warningItems.map((item, idx) => (
-                <div key={idx} className="bg-amber-50/50 p-3 rounded-xl border border-amber-200 text-xs flex flex-col gap-1">
+                <div key={idx} className="flex flex-col gap-1 rounded-lg border border-amber-200 bg-amber-50/50 p-2.5 text-xs">
                   <div className="flex justify-between items-center font-bold text-zinc-800">
                     <span className="truncate pr-2">
                       <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>

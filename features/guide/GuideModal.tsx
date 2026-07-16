@@ -195,10 +195,11 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         </div>
       }
       maxWidth="5xl"
-      className="flex h-[94vh] max-w-6xl flex-col overflow-hidden bg-card/98 p-0 sm:h-[88vh] sm:max-w-6xl"
+      className="h-[94vh] max-w-6xl overflow-hidden sm:h-[88vh] sm:max-w-6xl"
+      bodyClassName="flex flex-col overflow-hidden bg-white p-0 sm:p-0"
       footer={
-        <div className={`flex w-full px-4 pb-4 ${isAr ? 'justify-start' : 'justify-end'}`}>
-          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="h-11 w-full rounded-xl px-6 font-bold sm:w-auto">
+        <div className={`flex w-full ${isAr ? 'justify-start' : 'justify-end'}`}>
+          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="w-full px-4 font-bold sm:w-auto">
             {isAr ? '\u0625\u063a\u0644\u0627\u0642' : 'Fermer'}
           </Button>
         </div>

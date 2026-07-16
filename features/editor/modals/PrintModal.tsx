@@ -82,21 +82,21 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       return next;
     });
 
-  /** petit sélecteur segmenté réutilisé pour la taille et l'aération */
+  /** Petit sélecteur segmenté réutilisé pour les options de mise en page. */
   const Segmented = <T extends string>({ value, onChange, options }: {
     value: T;
     onChange: (v: T) => void;
     options: { value: T; label: string }[];
   }) => (
-    <div className="inline-flex rounded-xl border border-zinc-200 bg-zinc-100 p-0.5 shadow-xs">
+    <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5">
       {options.map(opt => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
           aria-pressed={value === opt.value}
-          className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all duration-150 ${
-            value === opt.value ? 'bg-primary text-primary-foreground shadow-xs border border-primary' : 'text-zinc-500 hover:text-zinc-800'
+          className={`rounded-md border px-2.5 py-1 text-[10px] font-bold transition-all duration-150 ${
+            value === opt.value ? 'border-[#123a63] bg-[#123a63] text-white shadow-xs' : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
           {opt.label}
@@ -126,39 +126,43 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     }
   }, [allDates, isOpen, newDates, recommendNew, savedPrefs]);
 
-  const ModeCard: React.FC<{
+  const printModes: Array<{
     value: PrintMode;
+    label: string;
     title: string;
     subtitle: string;
     badge?: string;
     disabled?: boolean;
     icon: React.ComponentType<{ className?: string }>;
-  }> = ({ value, title, subtitle, badge, disabled, icon: Icon }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => setMode(value)}
-      className={`relative flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-all duration-150 ${
-        disabled
-          ? 'cursor-not-allowed opacity-40'
-          : mode === value
-            ? 'border-zinc-300 bg-zinc-50/50 shadow-xs'
-            : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50/40'
-      }`}
-      aria-pressed={mode === value}
-    >
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${mode === value ? 'bg-primary text-primary-foreground' : 'bg-zinc-100 text-zinc-400'}`}>
-        <Icon className="h-5 w-5" />
-      </span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-2 text-xs font-bold text-zinc-800">
-          {title}
-          {badge && <span className="rounded-full bg-emerald-50 border border-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">{badge}</span>}
-        </span>
-        <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500">{subtitle}</span>
-      </span>
-    </button>
-  );
+  }> = [
+    {
+      value: 'new',
+      label: 'Nouvelles',
+      title: 'Nouveautés seulement',
+      subtitle: newDates.length > 0
+        ? `${newDates.length} séance${newDates.length > 1 ? 's' : ''} jamais imprimée${newDates.length > 1 ? 's' : ''}, avec le contexte utile.`
+        : 'Aucune nouvelle séance depuis la dernière impression.',
+      badge: recommendNew ? 'Recommandé' : undefined,
+      disabled: newDates.length === 0,
+      icon: CalendarCheck,
+    },
+    {
+      value: 'all',
+      label: 'Complet',
+      title: 'Document complet',
+      subtitle: 'Tout le cahier, y compris les séances déjà imprimées.',
+      icon: FileText,
+    },
+    {
+      value: 'custom',
+      label: 'Sélection',
+      title: 'Sélection personnalisée',
+      subtitle: 'Choisissez précisément les séances à imprimer.',
+      disabled: allDates.length === 0,
+      icon: CalendarDays,
+    },
+  ];
+  const activeMode = printModes.find(item => item.value === mode) ?? printModes[1];
 
   return (
     <Modal
@@ -172,80 +176,84 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       }
       description="L'application sait ce qui a déjà été imprimé — n'imprimez que le nécessaire"
       maxWidth="md"
-      className="h-[calc(100dvh-0.75rem)] grid-rows-[auto_minmax(0,1fr)_auto] sm:h-auto"
       footer={
         <>
-          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl">Annuler</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0)}
             onClick={() => onPrint(mode, { pageNumbers, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm"
+            className="px-3.5 font-semibold"
           >
-            {isPrinting ? 'Préparation…' : <>Imprimer {mode === 'new'
-              ? `(${newDates.length} séance${newDates.length > 1 ? 's' : ''})`
+            {isPrinting ? 'Préparation…' : <>Imprimer · {mode === 'new'
+              ? `${newDates.length} séance${newDates.length > 1 ? 's' : ''}`
               : mode === 'custom'
-                ? `(${selectedDates.size} séance${selectedDates.size > 1 ? 's' : ''})`
-                : '(complet)'}</>}
+                ? `${selectedDates.size} séance${selectedDates.size > 1 ? 's' : ''}`
+                : 'complet'}</>}
           </Button>
         </>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {/* État de l'impression */}
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-zinc-50 border border-zinc-200/60 p-2.5">
-            <div className="text-base font-black text-zinc-800">{totalDates}</div>
-            <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-400">Séances</div>
+        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+          <div className="grid grid-cols-3 divide-x divide-zinc-100 text-center">
+            <div className="flex items-baseline justify-center gap-1.5 px-2 py-2.5">
+              <span className="text-sm font-black text-zinc-800">{totalDates}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">Séances</span>
+            </div>
+            <div className="flex items-baseline justify-center gap-1.5 px-2 py-2.5">
+              <span className="text-sm font-black text-zinc-500">{printedCount}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">Imprimées</span>
+            </div>
+            <div className="flex items-baseline justify-center gap-1.5 bg-emerald-50/70 px-2 py-2.5">
+              <span className="text-sm font-black text-emerald-700">{newDates.length}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-700">Nouvelles</span>
+            </div>
           </div>
-          <div className="rounded-xl bg-zinc-50 border border-zinc-200/60 p-2.5">
-            <div className="text-base font-black text-zinc-500">{printedCount}</div>
-            <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-400">Imprimées</div>
-          </div>
-          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-2.5">
-            <div className="text-base font-black text-emerald-700">{newDates.length}</div>
-            <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-600/85">Nouvelles</div>
-          </div>
+          {lastPrintedAt && (
+            <p className="border-t border-zinc-100 px-3 py-1.5 text-center text-[9px] font-medium text-zinc-400">
+              Dernière impression · {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
+            </p>
+          )}
         </div>
 
-        {lastPrintedAt && (
-          <p className="text-center text-[10px] font-medium text-zinc-400">
-            Dernière impression : {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
-          </p>
-        )}
-
         {/* Choix du mode */}
-        <div className="space-y-2">
-          <ModeCard
-            value="new"
-            icon={CalendarCheck}
-            title="Nouveautés seulement"
-            subtitle={
-              newDates.length > 0
-                ? `Uniquement les ${newDates.length} séance(s) jamais imprimée(s) — les titres de chapitres/sections sont conservés pour le contexte.`
-                : 'Aucune nouvelle séance depuis la dernière impression.'
-            }
-            badge={recommendNew ? 'Recommandé' : undefined}
-            disabled={newDates.length === 0}
-          />
-          <ModeCard
-            value="all"
-            icon={FileText}
-            title="Document complet"
-            subtitle="Tout le cahier, y compris les séances déjà imprimées."
-          />
-          <ModeCard
-            value="custom"
-            icon={CalendarDays}
-            title="Sélection personnalisée"
-            subtitle="Cochez précisément les séances à imprimer, date par date."
-            disabled={allDates.length === 0}
-          />
+        <div className="rounded-lg border border-zinc-200 bg-white p-2">
+          <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1" role="tablist" aria-label="Type d'impression">
+            {printModes.map(item => {
+              const Icon = item.icon;
+              const selected = mode === item.value;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  role="tab"
+                  disabled={item.disabled}
+                  aria-selected={selected}
+                  onClick={() => setMode(item.value)}
+                  className={`flex min-w-0 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[10px] font-bold transition-colors ${
+                    selected ? 'bg-[#123a63] text-white shadow-xs' : 'text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:cursor-not-allowed disabled:opacity-35'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="px-2 pb-0.5 pt-2">
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] font-extrabold text-zinc-800">{activeMode.title}</p>
+              {activeMode.badge && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-700">{activeMode.badge}</span>}
+            </div>
+            <p className="mt-0.5 text-[10px] leading-snug text-zinc-500">{activeMode.subtitle}</p>
+          </div>
         </div>
 
         {/* Aperçu des nouvelles dates */}
         {mode === 'new' && newDates.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 justify-center py-1 bg-zinc-50/50 border border-zinc-100 rounded-xl p-2">
+          <div className="flex flex-wrap justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white p-2">
             {newDates.slice(0, 12).map(date => (
               <span key={date} className="rounded-full bg-zinc-100 border border-zinc-200/60 px-2 py-0.5 text-[10px] font-bold text-zinc-700">
                 {formatDateDDMMYYYY(date)}
@@ -261,7 +269,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Sélection à la séance : liste cochable de toutes les dates */}
         {mode === 'custom' && allDates.length > 0 && (
-          <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/40 p-3">
+          <div className="space-y-2 rounded-lg border border-zinc-200 bg-white p-2.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-zinc-700">
                 Séances à imprimer ({selectedDates.size}/{allDates.length})
@@ -309,7 +317,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         )}
 
         {/* Mise en page : taille du texte et aération des lignes */}
-        <div className="space-y-2.5 rounded-xl border border-zinc-200 bg-zinc-50/40 p-3">
+        <div className="space-y-2.5 rounded-lg border border-zinc-200 bg-white p-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-bold text-zinc-700">Taille du texte</span>
             <Segmented
@@ -344,31 +352,27 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           mode={config.printDescriptionMode ?? 'all'}
           types={config.printDescriptionTypes ?? []}
           onChange={next => onConfigChange({ printDescriptionMode: next.mode, printDescriptionTypes: next.types })}
+          className="rounded-lg bg-white p-2.5"
         />
 
-        {/* Options d'impression */}
-        <label className="flex cursor-pointer items-start justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50/40 p-3">
-          <span>
-            <span className="block text-xs font-bold text-zinc-700">Numéroter les pages</span>
-            <span className="mt-0.5 block text-[10px] leading-snug text-zinc-400">
-              Affiche « Page X / N » en bas. Dans Chrome, cochez aussi « En-têtes et pieds de page » du dialogue d'impression.
-            </span>
-          </span>
-          <Switch
-            checked={pageNumbers}
-            onCheckedChange={setPageNumbers}
-            className="mt-0.5"
-          />
-        </label>
-
-        <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/40 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span className="block text-xs font-bold text-zinc-700">En-tête du document</span>
-              <span className="mt-0.5 block text-[10px] leading-snug text-zinc-400">
-                Par défaut, il apparaît seulement sur la première page.
+        {/* Options d'impression regroupées pour éviter l'empilement de grandes cartes. */}
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-start justify-between gap-2.5 rounded-lg border border-zinc-200 bg-white p-2.5">
+            <span>
+              <span className="block text-[11px] font-bold text-zinc-700">Numéroter les pages</span>
+              <span className="mt-0.5 block text-[9px] leading-snug text-zinc-400">
+                Ajoute « Page X / N » dans le pied de page.
               </span>
-            </div>
+            </span>
+            <Switch
+              checked={pageNumbers}
+              onCheckedChange={setPageNumbers}
+              className="mt-0.5 data-[state=checked]:bg-[#123a63]"
+            />
+          </label>
+
+          <div className="space-y-2 rounded-lg border border-zinc-200 bg-white p-2.5">
+            <span className="block text-[11px] font-bold text-zinc-700">En-tête du document</span>
             <Segmented
               value={headerMode}
               onChange={(v) => setHeaderMode(v as PrintHeaderMode)}

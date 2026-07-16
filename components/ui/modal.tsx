@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./dialog"
+import { cn } from "@/lib/utils"
 
 interface ModalProps {
   isOpen?: boolean
@@ -17,6 +18,9 @@ interface ModalProps {
   footer?: React.ReactNode
   maxWidth?: string // e.g. "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl"
   className?: string
+  headerClassName?: string
+  bodyClassName?: string
+  footerClassName?: string
 }
 
 const maxWidthClassMap: Record<string, string> = {
@@ -39,6 +43,9 @@ export function Modal({
   footer,
   maxWidth = "md",
   className,
+  headerClassName,
+  bodyClassName,
+  footerClassName,
 }: ModalProps) {
   const onChange = (open: boolean) => {
     if (!open && onClose) {
@@ -50,18 +57,37 @@ export function Modal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
-      <DialogContent className={`${mwClass} ${className || ""}`}>
+      <DialogContent className={cn(mwClass, className)}>
         {(title || description) && (
-          <DialogHeader className="pb-2.5">
+          <DialogHeader
+            className={cn(
+              "modal-header shrink-0 border-b border-zinc-100 bg-white px-4 pb-3 pt-4 sm:px-5 sm:pb-3.5 sm:pt-[1.125rem]",
+              headerClassName,
+            )}
+          >
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
         )}
-        {/* -mx-2/px-2 : la zone défilable déborde de 8 px de chaque côté puis
-            se re-remplit — les anneaux de focus des champs ne sont plus COUPÉS
-            à gauche/droite par l'overflow, sans décaler le contenu. */}
-        <div className="custom-scrollbar -mx-2 min-h-0 min-w-0 scroll-pb-24 overflow-y-auto overscroll-contain px-2 py-1 [overflow-anchor:none]">{children}</div>
-        {footer && <DialogFooter className="pt-3">{footer}</DialogFooter>}
+        <div
+          className={cn(
+            "modal-body custom-scrollbar min-h-0 min-w-0 scroll-pb-20 overflow-y-auto overscroll-contain bg-zinc-50/55 px-4 py-3.5 [overflow-anchor:none] sm:px-5 sm:py-4",
+            !(title || description) && "pt-12",
+            bodyClassName,
+          )}
+        >
+          {children}
+        </div>
+        {footer && (
+          <DialogFooter
+            className={cn(
+              "modal-footer border-t border-zinc-100 bg-white px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-3",
+              footerClassName,
+            )}
+          >
+            {footer}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )

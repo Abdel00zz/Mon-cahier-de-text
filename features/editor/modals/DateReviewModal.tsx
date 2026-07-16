@@ -35,17 +35,17 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
         </div>
       }
     >
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4" role="status" aria-live="polite">
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3" role="status" aria-live="polite">
         <p className="text-sm font-bold text-amber-900">À vérifier avant de continuer</p>
-        <ul className="mt-3 divide-y divide-amber-100">
+        <ul className="mt-2 divide-y divide-amber-100">
           {distinctWarnings.map((warning, index) => (
-            <li key={index} className="flex items-start gap-2.5 py-2.5 first:pt-0 last:pb-0">
+            <li key={index} className="flex items-start gap-2 py-2 first:pt-0 last:pb-0">
               <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden />
               <span className="text-[12px] font-semibold leading-relaxed text-zinc-700">{warning.message}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-[11px] font-medium leading-relaxed text-zinc-500">
+        <p className="mt-3 text-[11px] font-medium leading-relaxed text-zinc-500">
           Une séance de rattrapage ou une situation exceptionnelle peut justifier cette date. Confirmez simplement que vous avez pris connaissance de ces points.
         </p>
         {onIgnore && (

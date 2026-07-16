@@ -219,8 +219,57 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     </div>
                 </div>
             }
+            footer={
+                <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full items-center justify-between gap-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="h-8 shrink-0 rounded-lg px-2.5 text-[11px] font-bold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                    >
+                        {t.later} {isAr ? '←' : '→'}
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                        {step > 0 && (
+                            <Button type="button" variant="secondary" className="px-3 text-xs font-bold" onClick={() => setStep(step - 1)}>
+                                {t.back}
+                            </Button>
+                        )}
+                        {step === 0 && (
+                            <Button type="button" className="px-3.5 text-xs font-bold" onClick={() => setStep(1)} disabled={!hasProfile}>
+                                {t.next}
+                            </Button>
+                        )}
+                        {step === 1 && (
+                            <Button type="button" className="px-3.5 text-xs font-bold" onClick={createBatch} disabled={!rows.some(r => r.level)}>
+                                {t.createClasses(rows.filter(r => r.level).length)}
+                            </Button>
+                        )}
+                        {step === 2 && (
+                            <Button
+                                type="button"
+                                className="px-3.5 text-xs font-bold"
+                                disabled={!hasClasses || finishing}
+                                onClick={async () => {
+                                    if (finishing) return;
+                                    setFinishing(true);
+                                    try {
+                                        await onComplete();
+                                        onClose();
+                                        if (classes[0]) onOpenNotebook(classes[0]);
+                                    } finally {
+                                        setFinishing(false);
+                                    }
+                                }}
+                            >
+                                <BookOpen className="h-3.5 w-3.5" />
+                                {finishing ? (isAr ? 'جارٍ التفعيل…' : 'Activation…') : t.start}
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            }
         >
-            <div dir={isAr ? 'rtl' : 'ltr'} className={`space-y-4 py-0.5 ${isAr ? 'font-ar' : ''}`}>
+            <div dir={isAr ? 'rtl' : 'ltr'} className={`space-y-3.5 ${isAr ? 'font-ar' : ''}`}>
                 <p className={`text-sm leading-relaxed text-slate-600 ${isAr ? 'text-right' : ''}`}>{t.subtitle}</p>
 
                 {/* Fil d'étapes : cliquable, ✓ = état réel détecté */}
@@ -261,7 +310,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                 value={config.defaultTeacherName || ''}
                                 onChange={e => onConfigChange({ defaultTeacherName: e.target.value })}
                                 placeholder="Ex : M. Ahmed Benali"
-                                className="h-11 text-sm"
+                                className="h-10 text-sm"
                                 autoFocus
                             />
                         </div>
@@ -274,7 +323,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                 value={config.establishmentName || ''}
                                 onChange={e => onConfigChange({ establishmentName: e.target.value })}
                                 placeholder="Ex : Lycée Ibn al-Haytham"
-                                className="h-11 text-sm"
+                                className="h-10 text-sm"
                             />
                         </div>
                         <div className="space-y-2">
@@ -289,7 +338,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                             key={c.key}
                                             type="button"
                                             onClick={() => onConfigChange({ selectedCycles: [c.key], showAllCycles: false })}
-                                            className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-3 text-[11px] font-bold transition-all ${
+                                            className={`flex flex-col items-center justify-center gap-1 rounded-xl border py-2.5 text-[11px] font-bold transition-all ${
                                                 active
                                                     ? 'border-primary/40 bg-primary/10 text-primary shadow-sm'
                                                     : 'border-slate-200 bg-white text-slate-400 hover:border-primary/30'
@@ -328,10 +377,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                     Combien de classes ?
                                 </label>
                                 <div className="flex items-center gap-1">
-                                    <Button type="button" variant="secondary" size="icon" className="h-11 w-11 rounded-lg text-lg font-black"
+                                    <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-lg text-base font-black"
                                         onClick={() => setRowCount(rows.length - 1)} disabled={rows.length <= 1} aria-label="Une classe de moins">−</Button>
                                     <span className="w-10 text-center text-xl font-black text-slate-800 tabular-nums">{rows.length}</span>
-                                    <Button type="button" variant="secondary" size="icon" className="h-11 w-11 rounded-lg text-lg font-black"
+                                    <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-lg text-base font-black"
                                         onClick={() => setRowCount(rows.length + 1)} disabled={rows.length >= 12} aria-label="Une classe de plus">+</Button>
                                 </div>
                             </div>
@@ -340,7 +389,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                     Matière (pour toutes)
                                 </label>
                                 <Select value={subject} onValueChange={setSubject}>
-                                    <SelectTrigger className="h-11">
+                                    <SelectTrigger className="h-10">
                                         <SelectValue placeholder="Matière…" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -361,7 +410,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                         value={row.level}
                                         onValueChange={value => setRows(prev => prev.map((r, i) => (i === index ? { ...r, level: value } : r)))}
                                     >
-                                        <SelectTrigger className="h-11 flex-1">
+                                        <SelectTrigger className="h-10 flex-1">
                                             <SelectValue placeholder="Niveau / filière…" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -382,7 +431,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                         value={row.group}
                                         onChange={e => setRows(prev => prev.map((r, i) => (i === index ? { ...r, group: e.target.value } : r)))}
                                         placeholder="Gr."
-                                        className="h-11 w-16 text-center"
+                                        className="h-10 w-16 text-center"
                                         maxLength={4}
                                         aria-label={`Groupe de la classe ${index + 1}`}
                                     />
@@ -390,7 +439,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="h-11 w-11 shrink-0 rounded-lg text-muted-foreground/50 hover:text-destructive"
+                                        className="h-10 w-10 shrink-0 rounded-lg text-muted-foreground/50 hover:text-destructive"
                                         onClick={() => setRows(prev => prev.filter((_, i) => i !== index))}
                                         disabled={rows.length <= 1}
                                         aria-label={`Retirer la classe ${index + 1}`}
@@ -434,54 +483,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     </div>
                 )}
 
-                {/* Navigation : jamais bloquante */}
-                <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="h-10 w-full rounded-xl px-3 py-1.5 text-xs font-bold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:h-auto sm:w-auto sm:rounded-full"
-                    >
-                        {t.later} {isAr ? '←' : '→'}
-                    </button>
-                    <div className="flex w-full items-center gap-2 sm:w-auto">
-                        {step > 0 && (
-                            <Button type="button" variant="secondary" className="h-11 flex-1 rounded-xl px-4 text-xs font-bold sm:h-10 sm:flex-none sm:rounded-full sm:px-5" onClick={() => setStep(step - 1)}>
-                                {t.back}
-                            </Button>
-                        )}
-                        {step === 0 && (
-                            <Button type="button" className="h-11 flex-1 rounded-xl px-5 text-xs font-bold sm:h-10 sm:flex-none sm:rounded-full sm:px-6" onClick={() => setStep(1)} disabled={!hasProfile}>
-                                {t.next}
-                            </Button>
-                        )}
-                        {step === 1 && (
-                            <Button type="button" className="h-11 flex-1 rounded-xl px-4 text-xs font-bold sm:h-10 sm:flex-none sm:rounded-full sm:px-6" onClick={createBatch} disabled={!rows.some(r => r.level)}>
-                                {t.createClasses(rows.filter(r => r.level).length)}
-                            </Button>
-                        )}
-                        {step === 2 && (
-                            <Button
-                                type="button"
-                                className="h-11 flex-1 rounded-xl px-3 text-xs font-bold sm:h-10 sm:flex-none sm:rounded-full sm:px-6"
-                                disabled={!hasClasses || finishing}
-                                onClick={async () => {
-                                    if (finishing) return;
-                                    setFinishing(true);
-                                    try {
-                                        await onComplete();
-                                        onClose();
-                                        if (classes[0]) onOpenNotebook(classes[0]);
-                                    } finally {
-                                        setFinishing(false);
-                                    }
-                                }}
-                            >
-                                <BookOpen className="h-3.5 w-3.5" />
-                                {finishing ? (isAr ? 'جارٍ التفعيل…' : 'Activation…') : t.start}
-                            </Button>
-                        )}
-                    </div>
-                </div>
             </div>
         </Modal>
     );

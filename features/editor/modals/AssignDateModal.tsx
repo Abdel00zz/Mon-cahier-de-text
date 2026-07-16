@@ -152,13 +152,13 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       maxWidth="md"
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
-          <Button type="button" variant="secondary" onClick={onClose} className="h-11 rounded-xl px-4 text-xs font-semibold">
+          <Button type="button" variant="secondary" onClick={onClose} className="px-3 text-xs font-semibold">
             Annuler
           </Button>
           <Button
             type="button"
             onClick={handleApply}
-            className={`h-11 rounded-xl px-5 text-xs font-bold shadow-sm transition-all duration-150 cursor-pointer ${
+            className={`cursor-pointer px-3.5 text-xs font-bold shadow-sm transition-all duration-150 ${
               actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'bg-rose-600 hover:bg-rose-700 text-white'
@@ -179,7 +179,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <button
             type="button"
             onClick={() => setActionType('associate')}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 active:scale-95 ${
+            className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg py-1 text-xs font-bold transition-all duration-150 active:scale-95 ${
               actionType === 'associate'
                 ? 'bg-white text-zinc-800 shadow-xs border border-zinc-200/50'
                 : 'text-zinc-500 hover:text-zinc-800'
@@ -190,7 +190,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <button
             type="button"
             onClick={() => setActionType('dissociate')}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition-all duration-150 active:scale-95 ${
+            className={`flex min-h-9 items-center justify-center gap-1.5 rounded-lg py-1 text-xs font-bold transition-all duration-150 active:scale-95 ${
               actionType === 'dissociate'
                 ? 'bg-white text-red-600 shadow-xs border border-zinc-200/50'
                 : 'text-zinc-500 hover:text-red-600'
@@ -214,7 +214,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 type="date"
                 value={selectedDate}
                 onChange={event => setSelectedDate(event.target.value)}
-                className="h-11 text-center text-sm font-bold rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 transition-colors focus:ring-0 focus:border-zinc-300 w-48 shadow-xs"
+                className="h-10 w-48 rounded-lg border border-zinc-200 bg-white text-center text-sm font-bold shadow-xs transition-colors hover:bg-zinc-50 focus:border-zinc-300 focus:ring-0"
               />
               {/* Intelligent date readout / Capteur intelligent */}
               <span className="text-xs font-semibold text-zinc-600 capitalize">
@@ -241,7 +241,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             <div className="grid grid-cols-3 gap-1.5 max-w-xs mx-auto pt-1">
               <Button
                 type="button"
-                className={`h-10 rounded-xl border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-9 rounded-lg border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(-1)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-white hover:bg-zinc-50 text-zinc-700'
@@ -252,7 +252,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               </Button>
               <Button
                 type="button"
-                className={`h-10 rounded-xl border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-9 rounded-lg border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(0)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-white hover:bg-zinc-50 text-zinc-700'
@@ -263,7 +263,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               </Button>
               <Button
                 type="button"
-                className={`h-10 rounded-xl border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-9 rounded-lg border border-zinc-200 py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(1)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-white hover:bg-zinc-50 text-zinc-700'
@@ -275,7 +275,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-center max-w-sm mx-auto space-y-1.5 animate-fade-in">
+          <div className="mx-auto max-w-sm animate-fade-in space-y-1.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-center">
             <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-100 text-rose-600 mb-0.5">
               <CalendarX className="h-4 w-4" />
             </div>

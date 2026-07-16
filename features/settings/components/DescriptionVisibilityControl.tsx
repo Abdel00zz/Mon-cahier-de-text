@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, BADGE_TOOLTIP_MAP } from '@/constants';
 import { ChevronUp, ChevronDown } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
 
 export type DescriptionMode = 'all' | 'none' | 'custom';
 
@@ -10,6 +11,7 @@ interface DescriptionVisibilityControlProps {
   mode: DescriptionMode;
   types: string[];
   onChange: (next: { mode: DescriptionMode; types: string[] }) => void;
+  className?: string;
 }
 
 /** types de contenu descriptibles (dédupliqués depuis TYPE_MAP) */
@@ -39,6 +41,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
   mode,
   types,
   onChange,
+  className,
 }) => {
   const [showTypes, setShowTypes] = useState(mode === 'custom');
   const uniqueTypes = getUniqueTypes();
@@ -66,7 +69,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
   };
 
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-secondary/50 p-3">
+    <div className={cn("space-y-2 rounded-xl border border-border bg-secondary/50 p-3", className)}>
       <span className="text-xs font-semibold text-foreground/80">{labels.title}</span>
 
       {/* Segmenté 3 états */}
@@ -78,7 +81,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
             onClick={() => handleModeChange(m)}
             aria-pressed={mode === m}
             className={`flex-1 rounded-md py-1.5 text-[11px] font-bold transition-all ${
-              mode === m ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary/40'
+              mode === m ? 'bg-[#123a63] text-white shadow-sm' : 'text-muted-foreground hover:bg-secondary/40'
             }`}
           >
             {m === 'all' ? 'Afficher' : m === 'none' ? 'Masquer' : 'Sélection'}

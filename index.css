@@ -247,6 +247,50 @@ button svg.svg-inline--fa,
 .dialog-content[data-state="open"] { animation: dialog-sheet-in 360ms cubic-bezier(.22, 1, .36, 1) both; }
 .dialog-content[data-state="closed"] { animation: dialog-sheet-out 220ms cubic-bezier(.4, 0, 1, 1) both; }
 
+/* Barre d'actions volontairement compacte : le contenu reste la zone
+   principale de la modale, sans gros boutons qui tassent la lecture. */
+.dialog-footer [data-slot="button"] {
+  height: 2rem;
+  min-height: 2rem;
+  border-radius: .55rem;
+  padding-inline: .75rem;
+  font-size: .75rem;
+}
+
+.modal-body [data-slot="button"]:not([data-size="icon"]) {
+  height: 2rem;
+  min-height: 2rem;
+  padding-inline: .65rem;
+  font-size: .72rem;
+}
+
+.modal-body [data-slot="button"][data-size="icon"] {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+}
+
+.dialog-footer [data-slot="button"][data-variant="default"] {
+  border-color: #123a63;
+  background: #123a63;
+  color: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / .12);
+}
+
+.dialog-footer [data-slot="button"][data-variant="default"]:hover {
+  border-color: #0c2e50;
+  background: #0c2e50;
+}
+
+@media (max-width: 639px) {
+  .dialog-footer [data-slot="button"] {
+    height: 2.25rem;
+    min-height: 2.25rem;
+  }
+}
+
 @keyframes sheet-bottom-in { from { opacity: .78; transform: translate3d(0, 100%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 @keyframes sheet-bottom-out { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: .5; transform: translate3d(0, 100%, 0); } }
 @keyframes sheet-top-in { from { opacity: .78; transform: translate3d(0, -100%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }

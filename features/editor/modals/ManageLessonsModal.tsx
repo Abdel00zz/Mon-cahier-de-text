@@ -123,7 +123,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
                 return (
                   <li 
                     key={index} 
-                    className="flex items-center gap-3 p-3 rounded-xl bg-rose-50 border border-rose-200"
+                    className="flex items-center gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-2.5"
                   >
                     <TriangleAlert className="mr-2 h-4 w-4 flex-shrink-0 text-rose-600" />
                     <span className="flex-grow text-rose-800 text-xs font-semibold truncate">Contenu corrompu: "{item.title}"</span>
@@ -211,7 +211,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
             })}
           </ul>
         ) : (
-          <div className="text-center text-zinc-500 font-medium italic py-12 bg-zinc-50 border border-dashed border-zinc-200 rounded-xl">
+          <div className="rounded-lg border border-dashed border-zinc-300 bg-white py-8 text-center font-medium italic text-zinc-500">
             <FolderOpen className="mx-auto mb-2 h-5 w-5 text-zinc-400" />
             Aucun contenu principal à organiser.
           </div>

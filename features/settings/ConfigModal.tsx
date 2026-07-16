@@ -98,19 +98,19 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   if (!asPage && !isOpen) return null;
 
   const footer = (
-    <div className="flex w-full justify-end gap-2.5">
+    <div className="flex w-full justify-end gap-2">
       <Button
         type="button"
         variant="secondary"
         onClick={onClose}
-        className="flex-1 sm:flex-initial h-10 text-xs font-bold rounded-full"
+        className="flex-1 text-xs font-bold sm:flex-initial"
       >
         {asPage ? 'Retour' : 'Annuler'}
       </Button>
       <Button
         type="button"
         onClick={handleSave}
-        className="flex-1 sm:flex-initial h-10 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-full"
+        className="flex-1 bg-primary text-xs font-bold text-white hover:bg-primary/90 sm:flex-initial"
       >
         Enregistrer les modifications
       </Button>
@@ -122,10 +122,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
 
   const tabContent = (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Tab Header for Context */}
-      <div className="border-b border-border/40 pb-4">
-        <h2 className="text-xl font-extrabold text-foreground font-display flex items-center gap-2">
+      <div className="border-b border-border/40 pb-3">
+        <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-foreground">
           {activeTabDetails && <activeTabDetails.icon className="h-5 w-5 text-primary" />}
           {activeTabDetails?.label}
         </h2>
@@ -247,20 +247,20 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       )}
 
       {activeTab === 'donnees' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Section Gestion des données */}
-          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4 relative">
+          <div className="relative space-y-3 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
             <div className="relative">
               <h3 className="text-base font-bold text-foreground font-display mb-2">Sauvegarde & Restauration</h3>
-              <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+              <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                 Protégez votre travail en exportant périodiquement vos cahiers de textes. Vous pourrez restaurer l'intégralité de vos cours sur n'importe quel appareil.
               </p>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="bg-secondary/40 rounded-2xl p-4 border border-border/80 flex flex-col justify-between">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex flex-col justify-between rounded-xl border border-border/80 bg-secondary/40 p-3">
                   <div>
                     <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Exporter mon cahier</h4>
-                    <p className="text-[11px] text-muted-foreground font-medium mb-4 leading-relaxed">
+                    <p className="mb-3 text-[11px] font-medium leading-relaxed text-muted-foreground">
                       Téléchargez un fichier de sauvegarde crypté contenant toutes vos classes, leçons et configurations.
                     </p>
                   </div>
@@ -268,16 +268,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     type="button" 
                     variant="outline" 
                     onClick={onExportPlatform} 
-                    className="w-full text-xs h-10 border-border text-primary hover:bg-primary hover:text-white rounded-full transition-all"
+                    className="w-full border-border text-xs text-primary transition-all hover:bg-primary hover:text-white"
                   >
                     Sauvegarder localement
                   </Button>
                 </div>
                 
-                <div className="bg-secondary/40 rounded-2xl p-4 border border-border/80 flex flex-col justify-between">
+                <div className="flex flex-col justify-between rounded-xl border border-border/80 bg-secondary/40 p-3">
                   <div>
                     <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Restaurer des données</h4>
-                    <p className="text-[11px] text-muted-foreground font-medium mb-4 leading-relaxed">
+                    <p className="mb-3 text-[11px] font-medium leading-relaxed text-muted-foreground">
                       Remplacez les données actuelles de cet appareil par celles d'un fichier de sauvegarde préexistant.
                     </p>
                   </div>
@@ -288,7 +288,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       onClose();
                       onOpenImport();
                     }}
-                    className="w-full text-xs h-10 border-border text-muted-foreground hover:bg-secondary hover:text-foreground rounded-full transition-all"
+                    className="w-full border-border text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
                   >
                     Choisir une sauvegarde
                   </Button>
@@ -396,15 +396,15 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       maxWidth="3xl"
       footer={footer}
     >
-      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)} className="mb-4">
-        <TabsList className="flex flex-col gap-1 bg-secondary border border-border/60 p-1 rounded-xl overflow-x-auto md:flex-row md:flex-wrap h-auto w-full">
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)} className="mb-3">
+        <TabsList className="flex h-auto w-full gap-1 overflow-x-auto rounded-lg border border-border/60 bg-secondary p-1 md:flex-row md:flex-wrap">
           {TABS.map(tab => {
             const isActive = activeTab === tab.id;
             return (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
                 <span>{tab.label}</span>
@@ -413,7 +413,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           })}
         </TabsList>
       </Tabs>
-      <div className="py-2">
+      <div>
         {tabContent}
       </div>
     </Modal>

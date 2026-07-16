@@ -85,7 +85,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         <div>
           <label
             htmlFor="platform-json-file-input"
-            className="w-full inline-flex flex-col items-center justify-center px-4 py-6 bg-secondary/50 text-muted-foreground rounded-xl border-2 border-dashed border-input hover:border-destructive hover:bg-destructive/5 hover:text-destructive cursor-pointer transition-colors"
+            className="inline-flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-input bg-white px-4 py-4 text-muted-foreground transition-colors hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
           >
             <FileUp className="mx-auto mb-2 h-6 w-6" />
             <span className="font-semibold text-sm">
@@ -97,7 +97,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         </div>
 
         {fileContent && (
-          <div className="p-3.5 rounded-xl bg-destructive/5 border border-destructive/20">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
             <label className="flex items-center justify-center gap-3 cursor-pointer text-foreground">
               <Checkbox
                 checked={isConfirmed}

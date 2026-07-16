@@ -1,12 +1,11 @@
-import React, { Suspense, lazy, useState, useCallback, useDeferredValue, useEffect, useMemo, useRef } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
 import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/ui/button';
 import { ClassCard } from './ClassCard';
-import { LatenessBanner } from './LatenessBanner';
-import { AssessmentBanner } from './AssessmentBanner';
+import { NotificationCenter, useNotificationFeed } from './NotificationCenter';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
 import { TodayBriefing, TodaySnapshot } from './TodayBriefing';
@@ -15,10 +14,8 @@ import { logger } from '@/utils/logger';
 import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { CircleHelp, Plus, Search, Settings, X, ArrowRight } from '@/components/ui/icons';
+import { CircleHelp, Plus, Settings } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
-import { getTeachingResume, normalizeNotebookSearch, searchNotebook } from '@/utils/notebookIntelligence';
-import { formatClassDisplayName } from '@/constants';
 import { computeProgressionStats } from '@/utils/progression';
 import { useLateness } from '@/hooks/useLateness';
 import { activateNativeNotifications } from '@/utils/push';
@@ -105,35 +102,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [isGuideOpen, setGuideOpen] = useState(false);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
-    const [search, setSearch] = useState('');
-    const [isSearchOpen, setSearchOpen] = useState(false);
-    const searchInputRef = useRef<HTMLInputElement>(null);
-    const deferredSearch = useDeferredValue(search);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
+    // Centre de notifications : version incrémentée après « Ignorer/Réactiver »
+    // ou à l'ouverture du panneau pour relire les signaux depuis le stockage.
+    const [notificationVersion, setNotificationVersion] = useState(0);
+    const [isNotificationCenterOpen, setNotificationCenterOpen] = useState(false);
+    const notificationFeed = useNotificationFeed(classes, config, notificationVersion);
 
     const isLoading = isClassesLoading || isConfigLoading;
-
-    useEffect(() => {
-        if (!isSearchOpen) return;
-        const frame = window.requestAnimationFrame(() => searchInputRef.current?.focus());
-        return () => window.cancelAnimationFrame(frame);
-    }, [isSearchOpen]);
-
-    const classSearchResults = useMemo(() => {
-        const query = normalizeNotebookSearch(deferredSearch);
-        if (!query) return [];
-        return classes
-            .map(classInfo => {
-                const lessons = readLessons(classInfo.id);
-                const metadataMatch = normalizeNotebookSearch(`${classInfo.name} ${classInfo.subject}`).includes(query);
-                const matches = searchNotebook(lessons, query, 3);
-                if (!metadataMatch && matches.length === 0) return null;
-                return { classInfo, matches, resume: getTeachingResume(lessons), metadataMatch };
-            })
-            .filter((result): result is NonNullable<typeof result> => result !== null)
-            .sort((a, b) => Number(b.metadataMatch) - Number(a.metadataMatch));
-    }, [classes, deferredSearch, lastModifiedDates]);
 
     const classesTodaySnapshot = useMemo<TodaySnapshot>(() => {
         const stats = classes.map(classInfo => computeProgressionStats(readLessons(classInfo.id)));
@@ -304,17 +281,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         );
 
     const visibleClasses = [...classes]
-        .filter(c => !normalizeNotebookSearch(deferredSearch) || classSearchResults.some(result => result.classInfo.id === c.id))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-    const openSearchResult = (classInfo: ClassInfo, continueInNotebook: boolean) => {
-        if (continueInNotebook) {
-            try {
-                sessionStorage.setItem('dashboard_search_handoff_v1', JSON.stringify({ classId: classInfo.id, query: search.trim() }));
-            } catch { /* navigation possible même sans stockage */ }
-        }
-        onSelectClass(classInfo);
-    };
 
     // overflow-x-clip : masque le débordement horizontal (lucioles) sans créer
     // de conteneur de scroll — `hidden` forcerait overflow-y:auto et casserait
@@ -341,64 +308,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                 </p>
                             </div>
 
-                            <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 self-end lg:w-auto lg:flex-nowrap lg:self-start" aria-label="Aide, réglages et recherche">
-                                <Button type="button" variant="outline" size="sm" onClick={() => setGuideOpen(true)} className="h-10 px-3 text-xs">
-                                    <CircleHelp className="h-4 w-4 text-primary" />
-                                    Guide
+                            <div className="flex w-full shrink-0 items-center justify-end gap-1 self-end lg:w-auto lg:self-start" aria-label="Aide, réglages et notifications">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setGuideOpen(true)}
+                                    className="group h-9 w-9 rounded-xl border-0 bg-transparent text-zinc-400 shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#f2f6fc] hover:text-[#0056D2]"
+                                    aria-label="Aide"
+                                    data-tippy-content="Aide"
+                                >
+                                    <CircleHelp className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110" />
                                 </Button>
-                                <Button type="button" variant="outline" size="sm" onClick={onOpenSettings} className="h-10 px-3 text-xs">
-                                    <Settings className="h-4 w-4 text-primary" />
-                                    Paramètres
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={onOpenSettings}
+                                    className="group h-9 w-9 rounded-xl border-0 bg-transparent text-zinc-400 shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#f2f6fc] hover:text-[#0056D2]"
+                                    aria-label="Paramètres"
+                                    data-tippy-content="Paramètres"
+                                >
+                                    <Settings className="h-[18px] w-[18px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105" />
                                 </Button>
-                                {classes.length > 0 && (
-                                    <div className={`relative order-last h-10 overflow-hidden transition-[width,margin] duration-300 ease-out ${
-                                        isSearchOpen ? 'mt-2 w-full sm:mt-0 sm:w-72 lg:w-80' : 'w-10'
-                                    }`}>
-                                        {isSearchOpen ? (
-                                            <div id="dashboard-search" className="relative h-10 w-full animate-fade-in" role="search">
-                                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                                                <input
-                                                    ref={searchInputRef}
-                                                    type="search"
-                                                    value={search}
-                                                    onChange={event => setSearch(event.target.value)}
-                                                    onKeyDown={event => {
-                                                        if (event.key !== 'Escape') return;
-                                                        setSearch('');
-                                                        setSearchOpen(false);
-                                                    }}
-                                                    placeholder="Classe, chapitre, contenu…"
-                                                    className="h-10 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-10 text-sm font-medium text-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:shadow-[0_4px_12px_rgba(0,0,0,0.04)] focus:ring-0"
-                                                    aria-label="Rechercher dans toutes les classes et tous les cahiers"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSearch('');
-                                                        setSearchOpen(false);
-                                                    }}
-                                                    className="absolute right-1 top-1 flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
-                                                    aria-label="Fermer la recherche"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => setSearchOpen(true)}
-                                                className={`h-10 w-10 border-primary/25 text-primary ${search ? 'bg-primary text-primary-foreground' : 'bg-primary/5 hover:border-primary/40 hover:bg-primary/10 hover:text-primary'}`}
-                                                aria-label="Rechercher dans les cahiers"
-                                                aria-expanded="false"
-                                                aria-controls="dashboard-search"
-                                            >
-                                                <Search className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                )}
+                                <NotificationCenter
+                                    classes={classes}
+                                    feed={notificationFeed}
+                                    onSelectClass={onSelectClass}
+                                    onOpenSettings={onOpenSettings}
+                                    isOpen={isNotificationCenterOpen}
+                                    onOpenChange={setNotificationCenterOpen}
+                                    onMutate={() => setNotificationVersion(version => version + 1)}
+                                />
                             </div>
                         </div>
                     </header>
@@ -407,19 +348,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                         {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
                             n'est pas intercepté, le navigateur affiche sa propre invite native. */}
 
-                        {classes.length > 0 && !search.trim() && (
+                        {classes.length > 0 && (
                             <TodayBriefing
                                 classes={classes}
                                 config={config}
                                 snapshot={classesTodaySnapshot}
                                 lastModifiedDates={lastModifiedDates}
                                 lateClassCount={latenessSummary?.perClass.filter(item => item.gapSessions > 0).length ?? 0}
+                                attentionCount={notificationFeed.attentionCount}
+                                onSelectClass={onSelectClass}
+                                onOpenSettings={onOpenSettings}
+                                onOpenNotifications={() => {
+                                    setNotificationVersion(version => version + 1);
+                                    setNotificationCenterOpen(true);
+                                }}
                             />
                         )}
 
-                        {/* Alertes intelligentes : retard + devoirs proches (snooze quotidien) */}
-                        <LatenessBanner classes={classes} config={config} />
-                        <AssessmentBanner classes={classes} config={config} />
+                        {/* Retards et échéances : fusionnés dans le centre de
+                            notifications (cloche de l'en-tête) — plus de bannières. */}
 
                         <section className="mt-6 w-full" aria-labelledby="classes-heading">
                             <div className="mb-4 flex flex-wrap items-center gap-3 sm:mb-5">
@@ -447,54 +394,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                         <Button onClick={() => setOnboardingOpen(true)} data-guide="create-class" className="mt-2 h-9 rounded-md px-4 font-semibold shadow-sm">
                                             Commencer
                                         </Button>
-                                    </div>
-                                ) : visibleClasses.length === 0 ? (
-                                    <p className="rounded-md border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-xs font-semibold text-slate-400">
-                                        Aucun résultat pour « {search} » dans les classes, chapitres, contenus ou remarques.
-                                    </p>
-                                ) : search.trim() ? (
-                                    <div className="space-y-3" aria-label="Résultats de recherche dans les cahiers">
-                                        {classSearchResults.map(({ classInfo, matches, resume }) => (
-                                            <button
-                                                key={classInfo.id}
-                                                type="button"
-                                                onClick={() => openSearchResult(classInfo, matches.length > 0)}
-                                                className="group block w-full rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-primary/10 sm:p-5"
-                                            >
-                                                <span className="flex items-start justify-between gap-3">
-                                                    <span className="min-w-0">
-                                                        <span
-                                                            className="block text-sm font-extrabold leading-snug text-foreground group-hover:text-primary sm:text-base"
-                                                            title={formatClassDisplayName(classInfo.name)}
-                                                        >
-                                                            {formatClassDisplayName(classInfo.name)}
-                                                        </span>
-                                                        <span className="mt-0.5 block text-xs font-bold uppercase tracking-wide text-muted-foreground">{classInfo.subject}</span>
-                                                    </span>
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary transition-transform group-hover:translate-x-0.5">
-                                                        <ArrowRight className="h-4 w-4" />
-                                                    </span>
-                                                </span>
-                                                {matches.length > 0 ? (
-                                                    <span className="mt-3 grid gap-2 sm:grid-cols-2">
-                                                        {matches.slice(0, 2).map((match, index) => (
-                                                            <span key={`${match.breadcrumb}-${index}`} className="min-w-0 rounded-xl bg-muted/60 px-3 py-2.5">
-                                                                <span className="block truncate text-[11px] font-extrabold text-foreground">{match.title}</span>
-                                                                {match.breadcrumb && <span className="mt-0.5 block truncate text-[10px] font-semibold text-primary">{match.breadcrumb}</span>}
-                                                                <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-muted-foreground">{match.snippet}</span>
-                                                            </span>
-                                                        ))}
-                                                    </span>
-                                                ) : resume.next ? (
-                                                    <span className="mt-3 block rounded-xl bg-accent px-3 py-2 text-xs text-accent-foreground">
-                                                        <strong className="text-primary">À reprendre :</strong> {resume.next.title}
-                                                    </span>
-                                                ) : null}
-                                                <span className="mt-3 block text-[11px] font-bold text-primary">
-                                                    {matches.length > 0 ? 'Ouvrir le cahier avec cette recherche' : 'Ouvrir ce cahier'}
-                                                </span>
-                                            </button>
-                                        ))}
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

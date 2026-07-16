@@ -213,8 +213,12 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         !!(item.data._tempId && newlyAddedIds.includes(item.data._tempId));
 
     const renderPrintContent = (item: FlatDataItem) => (
-        <MathJax hideUntilTypeset="first">
-            <ContentRenderer 
+        // Pas de hideUntilTypeset ici : la vue n'est jamais visible à l'écran
+        // (display:none hors @media print), et si MathJax ne charge pas
+        // (hors ligne), le texte source doit rester imprimable au lieu de
+        // sortir des cellules vides (visibility:hidden).
+        <MathJax>
+            <ContentRenderer
                 data={item.data} 
                 indices={item.indices} 
                 elementType={item.elementType} 
@@ -602,7 +606,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         margin-top: 1px !important;
                         padding-left: 4.35em;
                         color: #374151;
-                        font-size: 8pt;
+                        font-size: ${sizes.description};
                         line-height: 1.2;
                         white-space: pre-wrap;
                     }
@@ -641,23 +645,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
             
             {/* En-tête administratif : les champs choisis dans Paramètres sont
                 repris sans écraser le nom réel de la classe ou de la matière. */}
-            {headerMode === 'first' && (
-            <div className="print-header">
-                <div className="print-government">Royaume du Maroc — Ministère de l’Éducation nationale, du Préscolaire et des Sports</div>
-                <div className="print-academy">{academyLine}</div>
-                <div className="print-province">{provinceLine}</div>
-                <div className="print-header-title">Cahier de textes — Extrait imprimé</div>
-                <div className="print-institution-grid">
-                    <div className="print-institution-field"><span className="print-field-label">Établissement</span><strong className="print-field-value">{config.establishmentName || 'Non renseigné'}</strong></div>
-                    <div className="print-institution-field"><span className="print-field-label">Enseignant</span><strong className="print-field-value">{classInfo.teacherName || config.defaultTeacherName || 'Non renseigné'}</strong></div>
-                    <div className="print-institution-field"><span className="print-field-label">Classe</span><strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>{classInfo.name || 'Non spécifiée'}</strong></div>
-                    <div className="print-institution-field"><span className="print-field-label">Matière</span><strong className="print-field-value">{classInfo.subject || 'Non renseignée'}</strong></div>
-                    <div className="print-institution-field"><span className="print-field-label">Année scolaire</span><strong className="print-field-value">{schoolYearLabel}</strong></div>
-                    <div className="print-institution-field"><span className="print-field-label">Période imprimée</span><strong className="print-field-value">{periodLabel}</strong></div>
-                </div>
-            </div>
-            
-            )}
+            {headerMode === 'first' && administrativeHeader}
 
             {/* Table */}
             <table className="print-table">

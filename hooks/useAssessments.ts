@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppConfig, ClassInfo } from '../types';
 import { HolidayCalendar, loadHolidayCalendar, todayInMorocco } from '../utils/calendar';
 import {
+    PastAssessment,
     PlannedAssessment,
     UpcomingAssessment,
     applyOverrides,
     computeAssessmentDates,
     findPlanFor,
+    getRecentPastAssessments,
     getUpcomingAssessments,
     loadPlanning,
 } from '../utils/assessments';
@@ -48,6 +50,21 @@ export const useUpcomingAssessments = (
         const today = todayInMorocco(new Date(), calendar);
         return getUpcomingAssessments(classes, planning as any, config, calendar, today, horizonDays);
     }, [calendar, planning, classes, config.assessmentDates, horizonDays]);
+};
+
+/** Devoirs récemment passés (≤ lookback jours) — rappel « absents à consigner » du centre de notifications. */
+export const useRecentPastAssessments = (
+    classes: ClassInfo[],
+    config: AppConfig,
+    lookbackDays = 10
+): PastAssessment[] => {
+    const { calendar, planning } = useCalendarAndPlanning();
+
+    return useMemo(() => {
+        if (!calendar || !planning) return [];
+        const today = todayInMorocco(new Date(), calendar);
+        return getRecentPastAssessments(classes, planning as any, config, calendar, today, lookbackDays);
+    }, [calendar, planning, classes, config.assessmentDates, lookbackDays]);
 };
 
 /** Planning complet d'UNE classe (dates officielles + surcharges du prof) — pour l'onglet Emploi du temps. */

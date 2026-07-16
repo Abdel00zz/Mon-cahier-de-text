@@ -85,7 +85,7 @@ const fromUTC = (ms: number): string => {
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 };
 
-export const addDaysISO = (iso: string, days: number): string => fromUTC(toUTC(iso) + days * 86_400_000);
+const addDaysISO = (iso: string, days: number): string => fromUTC(toUTC(iso) + days * 86_400_000);
 
 /** Écart en jours calendaires (b − a), négatif si b est passé. */
 export const daysBetweenISO = (a: string, b: string): number => Math.round((toUTC(b) - toUTC(a)) / 86_400_000);
@@ -193,4 +193,41 @@ export const getUpcomingAssessments = (
         }
     }
     return upcoming.sort((a, b) => a.inDays - b.inDays);
+};
+
+export interface PastAssessment extends PlannedAssessment {
+    classId: string;
+    className: string;
+    /** jours écoulés depuis le devoir (1 = hier) */
+    daysAgo: number;
+}
+
+/**
+ * Devoirs récemment PASSÉS : fenêtre [-lookback jours, hier]. Sert au rappel
+ * « absents non consignés » — après la fenêtre, le rappel s'éteint de lui-même.
+ */
+export const getRecentPastAssessments = (
+    classes: ClassInfo[],
+    planning: PlanningFile,
+    config: Pick<AppConfig, 'assessmentDates'>,
+    cal: HolidayCalendar,
+    today: string,
+    lookbackDays = 10
+): PastAssessment[] => {
+    const past: PastAssessment[] = [];
+    for (const classInfo of classes) {
+        const plan = findPlanFor(planning, classInfo);
+        if (!plan) continue;
+        const dates = applyOverrides(
+            computeAssessmentDates(plan, cal, today),
+            config.assessmentDates?.[classInfo.id]
+        );
+        for (const assessment of dates) {
+            const daysAgo = daysBetweenISO(assessment.dateISO, today);
+            if (daysAgo >= 1 && daysAgo <= lookbackDays) {
+                past.push({ ...assessment, classId: classInfo.id, className: classInfo.name, daysAgo });
+            }
+        }
+    }
+    return past.sort((a, b) => a.daysAgo - b.daysAgo);
 };

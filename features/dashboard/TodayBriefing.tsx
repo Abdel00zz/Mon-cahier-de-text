@@ -3,16 +3,10 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
 import { useUpcomingAssessments } from '@/hooks/useAssessments';
-import { useUpcomingOfficialStudentEvents } from '@/hooks/useOfficialStudentEvents';
-import {
-    getBundledCalendar,
-    getSchoolYearFor,
-    HolidayCalendar,
-    loadHolidayCalendar,
-    todayInMorocco,
-} from '@/utils/calendar';
-import { addDaysISO, daysBetweenISO } from '@/utils/assessments';
+import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
 import { formatHourLabel, getDaySessionBlocks } from '@/utils/timetable';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, ArrowRight } from '@/components/ui/icons';
 
 export interface TodaySnapshot {
     mood: string;
@@ -27,37 +21,43 @@ interface TodayBriefingProps {
     snapshot: TodaySnapshot;
     lastModifiedDates: Record<string, string | null>;
     lateClassCount: number;
+    attentionCount?: number;
+    onSelectClass: (classInfo: ClassInfo) => void;
+    onOpenSettings: () => void;
+    onOpenNotifications: () => void;
 }
 
-type BriefingTone = 'blue' | 'emerald' | 'amber' | 'violet' | 'slate';
-type BriefingIcon =
-    | 'calendar'
-    | 'clock'
-    | 'official'
-    | 'assessment'
-    | 'progress'
-    | 'notebook'
-    | 'school'
-    | 'sun'
-    | 'check'
-    | 'alert';
+interface ActionContext {
+    missingScheduleCount: number;
+    focusClass: ClassInfo | null;
+    focusLabel: string;
+    focusValue: string;
+    focusDetail: string;
+}
 
-interface BriefingItem {
+interface TaskItem {
     id: string;
-    eyebrow: string;
+    label: string;
     title: string;
     detail: string;
-    icon: BriefingIcon;
-    tone: BriefingTone;
-    priority: number;
+    actionLabel: string;
+    onAction?: () => void;
 }
 
-const BRIEFING_TEXT_STYLE: Record<BriefingTone, { title: string; label: string }> = {
-    blue: { title: 'text-blue-950', label: 'text-blue-700' },
-    emerald: { title: 'text-emerald-950', label: 'text-emerald-700' },
-    amber: { title: 'text-amber-950', label: 'text-amber-700' },
-    violet: { title: 'text-violet-950', label: 'text-violet-700' },
-    slate: { title: 'text-slate-900', label: 'text-slate-600' },
+const minutesInTimeZone = (date: Date, timeZone: string): number => {
+    try {
+        const parts = new Intl.DateTimeFormat('fr-FR', {
+            timeZone,
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        }).formatToParts(date);
+        const hour = Number(parts.find(part => part.type === 'hour')?.value ?? date.getHours());
+        const minute = Number(parts.find(part => part.type === 'minute')?.value ?? date.getMinutes());
+        return hour * 60 + minute;
+    } catch {
+        return date.getHours() * 60 + date.getMinutes();
+    }
 };
 
 const dateFromISO = (iso: string): Date => {
@@ -65,473 +65,218 @@ const dateFromISO = (iso: string): Date => {
     return new Date(Date.UTC(year, month - 1, day, 12));
 };
 
-const formatDate = (iso: string, options: Intl.DateTimeFormatOptions): string => {
+const formatShortDate = (iso: string): string => {
     try {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
-        return new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', ...options }).format(dateFromISO(iso));
+        return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(dateFromISO(iso));
     } catch {
         return iso;
     }
 };
 
-const formatDelay = (days: number): string => {
-    if (days <= 0) return "aujourd'hui";
-    if (days === 1) return 'demain';
-    return `dans ${days} jours`;
-};
-
-const getMoroccoClock = (now: Date, timeZone: string): { minutes: number; label: string } => {
-    try {
-        const parts = new Intl.DateTimeFormat('fr-FR', {
-            timeZone,
-            hour: '2-digit',
-            minute: '2-digit',
-            hourCycle: 'h23',
-        }).formatToParts(now);
-        const hour = Number(parts.find(part => part.type === 'hour')?.value ?? now.getHours());
-        const minute = Number(parts.find(part => part.type === 'minute')?.value ?? now.getMinutes());
-        return { minutes: hour * 60 + minute, label: formatHourLabel(hour * 60 + minute) };
-    } catch {
-        const minutes = now.getHours() * 60 + now.getMinutes();
-        return { minutes, label: formatHourLabel(minutes) };
-    }
-};
-
-const classList = (names: string[], max = 3): string => {
-    const unique = [...new Set(names.map(formatClassDisplayName))];
-    const visible = unique.slice(0, max).join(', ');
-    return unique.length > max ? `${visible} +${unique.length - max}` : visible;
-};
-
-/**
- * Briefing contextuel unique : calendrier, emploi du temps, évaluations,
- * bulletin officiel et état réel des cahiers sont hiérarchisés dans le même
- * circuit. La carte principale tourne lentement ; le détail reste à la demande.
- */
 export const TodayBriefing: React.FC<TodayBriefingProps> = ({
     classes,
     config,
     snapshot,
     lastModifiedDates,
     lateClassCount,
+    attentionCount,
+    onSelectClass,
+    onOpenSettings,
+    onOpenNotifications,
 }) => {
     const [now, setNow] = useState(() => new Date());
-    const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [paused, setPaused] = useState(false);
+    const [activeTaskIndex, setActiveTaskIndex] = useState(0);
+    const [direction, setDirection] = useState<1 | -1>(1);
     const reduceMotion = useReducedMotion();
     const assessments = useUpcomingAssessments(classes, config, 21);
-    const officialEvents = useUpcomingOfficialStudentEvents(classes, 90);
+    const priorityCount = attentionCount ?? lateClassCount;
 
     useEffect(() => {
-        const timer = window.setInterval(() => setNow(new Date()), 30_000);
+        const timer = window.setInterval(() => setNow(new Date()), 60_000);
         return () => window.clearInterval(timer);
     }, []);
 
-    useEffect(() => {
-        let active = true;
-        loadHolidayCalendar().then(value => { if (active) setCalendar(value); });
-        return () => { active = false; };
-    }, []);
+    const openPlanning = () => {
+        try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* navigation possible sans stockage */ }
+        onOpenSettings();
+    };
 
-    const briefing = useMemo(() => {
+    const context = useMemo<ActionContext>(() => {
+        const calendar = getBundledCalendar();
         const today = todayInMorocco(now, calendar);
-        const todayDate = dateFromISO(today);
-        const weekday = todayDate.getUTCDay();
-        const weekdayName = formatDate(today, { weekday: 'long' });
-        const clock = getMoroccoClock(now, calendar.fuseau);
-        const vacation = calendar.vacances.find(item => today >= item.debut && today <= item.fin);
-        const holiday = calendar.joursFeries.find(item => item.date === today);
-        const absence = config.absences?.find(item => today >= item.debut && today <= item.fin);
-        const schoolYear = getSchoolYearFor(calendar, today);
-        const weekStart = addDaysISO(today, weekday === 0 ? -6 : 1 - weekday);
-        const weekEnd = addDaysISO(weekStart, 6);
-        const items: BriefingItem[] = [];
-        const add = (item: BriefingItem) => items.push(item);
-
-        if (vacation) {
-            const daysBeforeResume = Math.max(0, daysBetweenISO(today, addDaysISO(vacation.fin, 1)));
-            const resume = vacation.fin < schoolYear.debut ? schoolYear.debut : addDaysISO(vacation.fin, 1);
-            const resumeDelay = Math.max(0, daysBetweenISO(today, resume));
-            add({
-                id: `vacation-${vacation.debut}`,
-                eyebrow: 'Calendrier scolaire:',
-                title: `${vacation.nom} en cours`,
-                detail: `Aucune séance aujourd’hui. Reprise ${formatDate(resume, { weekday: 'long', day: 'numeric', month: 'long' })} (${resumeDelay || daysBeforeResume} j).`,
-                icon: 'sun',
-                tone: 'blue',
-                priority: 100,
-            });
-        } else if (holiday) {
-            add({
-                id: `holiday-${holiday.date}`,
-                eyebrow: 'Jour férié:',
-                title: holiday.nom,
-                detail: 'Séances et rappels suspendus pour aujourd’hui.',
-                icon: 'calendar',
-                tone: 'blue',
-                priority: 100,
-            });
-        } else if (absence) {
-            add({
-                id: `absence-${absence.debut}`,
-                eyebrow: 'Absence justifiée:',
-                title: absence.motif || 'Période d’absence enregistrée',
-                detail: `Suivi suspendu jusqu’au ${formatDate(absence.fin, { day: 'numeric', month: 'long' })}.`,
-                icon: 'calendar',
-                tone: 'blue',
-                priority: 100,
-            });
-        }
-
+        const weekday = dateFromISO(today).getUTCDay();
+        const currentMinutes = minutesInTimeZone(now, calendar.fuseau);
+        const isPaused = calendar.vacances.some(period => today >= period.debut && today <= period.fin)
+            || calendar.joursFeries.some(day => day.date === today)
+            || Boolean(config.absences?.some(period => today >= period.debut && today <= period.fin));
+        const blocks = isPaused ? [] : getDaySessionBlocks(config.timetable, weekday);
+        const currentBlock = blocks.find(block => currentMinutes >= block.startMin && currentMinutes < block.endMin);
+        const nextBlock = blocks.find(block => block.startMin > currentMinutes);
         const classById = new Map(classes.map(classInfo => [classInfo.id, classInfo]));
-        const dayBlocks = vacation || holiday || absence ? [] : getDaySessionBlocks(config.timetable, weekday);
-        const currentBlock = dayBlocks.find(block => clock.minutes >= block.startMin && clock.minutes < block.endMin);
-        const nextBlock = dayBlocks.find(block => block.startMin > clock.minutes);
-        const todayClassNames = dayBlocks
-            .map(block => classById.get(block.classId)?.name)
-            .filter((name): name is string => Boolean(name));
-
-        if (vacation || holiday || absence) {
-            add({
-                id: 'today-paused',
-                eyebrow: `${weekdayName}:`,
-                title: `Aucune classe attendue aujourd’hui`,
-                detail: vacation ? 'Emploi du temps en pause pendant les vacances.' : 'Calendrier officiel respecté.',
-                icon: 'clock',
-                tone: 'slate',
-                priority: 92,
-            });
-        } else if (weekday === 0) {
-            add({
-                id: 'sunday',
-                eyebrow: 'Aujourd’hui:',
-                title: 'Dimanche : aucune classe programmée',
-                detail: 'Prochain jour d’enseignement selon votre planning.',
-                icon: 'sun',
-                tone: 'blue',
-                priority: 96,
-            });
-        } else if (currentBlock) {
-            const classInfo = classById.get(currentBlock.classId);
-            add({
-                id: `current-${currentBlock.classId}-${currentBlock.startMin}`,
-                eyebrow: 'En cours:',
-                title: classInfo ? `Vous enseignez à ${formatClassDisplayName(classInfo.name)}` : 'Séance en cours',
-                detail: `${currentBlock.hours} h prévue${currentBlock.hours > 1 ? 's' : ''}. Jusqu’à ${formatHourLabel(currentBlock.endMin)}${nextBlock ? `. Puis ${formatClassDisplayName(classById.get(nextBlock.classId)?.name ?? '')} à ${formatHourLabel(nextBlock.startMin)}` : ''}.`,
-                icon: 'clock',
-                tone: 'emerald',
-                priority: 99,
-            });
-        } else if (dayBlocks.length > 0) {
-            add({
-                id: 'today-classes',
-                eyebrow: `${weekdayName}:`,
-                title: `Aujourd’hui : ${classList(todayClassNames)}`,
-                detail: nextBlock
-                    ? `Prochaine séance à ${formatHourLabel(nextBlock.startMin)}. Fin à ${formatHourLabel(dayBlocks[dayBlocks.length - 1].endMin)}.`
-                    : 'Toutes les séances prévues aujourd’hui sont terminées.',
-                icon: 'clock',
-                tone: nextBlock ? 'blue' : 'emerald',
-                priority: 95,
-            });
-        } else {
-            add({
-                id: 'today-empty',
-                eyebrow: `${weekdayName}:`,
-                title: 'Aucune classe prévue aujourd’hui',
-                detail: 'Aucun créneau dans votre emploi du temps.',
-                icon: 'calendar',
-                tone: 'slate',
-                priority: 90,
-            });
-        }
-
-        const officialThisWeek = officialEvents.filter(({ event }) => {
-            const end = event.end ?? event.start;
-            return event.start <= weekEnd && end >= weekStart;
-        });
-        officialThisWeek.slice(0, 2).forEach(({ event, classNames }) => {
-            add({
-                id: `official-week-${event.id}`,
-                eyebrow: 'Cette semaine:',
-                title: event.title,
-                detail: `${event.studentAction}. ${classList(classNames)}.`,
-                icon: 'official',
-                tone: event.category === 'assessment' || event.category === 'exam' ? 'amber' : 'violet',
-                priority: event.category === 'exam' ? 94 : 88,
-            });
-        });
-
-        const assessmentsThisWeek = assessments.filter(item => item.dateISO >= weekStart && item.dateISO <= weekEnd);
-        if (assessmentsThisWeek.length > 0) {
-            add({
-                id: 'assessment-week',
-                eyebrow: 'Cette semaine:',
-                title: `${assessmentsThisWeek.length} devoir${assessmentsThisWeek.length > 1 ? 's' : ''} surveillé${assessmentsThisWeek.length > 1 ? 's' : ''} à préparer`,
-                detail: classList(assessmentsThisWeek.map(item => item.className), 4),
-                icon: 'assessment',
-                tone: 'amber',
-                priority: 91,
-            });
-        }
-
-        assessments.slice(0, 3).forEach(item => {
-            add({
-                id: `assessment-${item.classId}-${item.id}`,
-                eyebrow: `Évaluation: ${formatDelay(item.inDays)}`,
-                title: `${formatClassDisplayName(item.className)} — ${item.label.split(' — ')[0]}`,
-                detail: `Prévue le ${formatDate(item.dateISO, { weekday: 'long', day: 'numeric', month: 'long' })}.`,
-                icon: 'assessment',
-                tone: item.inDays <= 3 ? 'amber' : 'blue',
-                priority: item.inDays <= 3 ? 89 : 70,
-            });
-        });
-
-        officialEvents
-            .filter(({ event }) => !officialThisWeek.some(current => current.event.id === event.id))
-            .slice(0, 3)
-            .forEach(({ event, classNames, inDays }) => {
-                add({
-                    id: `official-${event.id}`,
-                    eyebrow: `Bulletin officiel: ${formatDelay(inDays)}`,
-                    title: event.title,
-                    detail: `${formatDate(event.start, { day: 'numeric', month: 'long' })}. ${classList(classNames)}.`,
-                    icon: 'official',
-                    tone: 'violet',
-                    priority: inDays <= 14 ? 86 : 64,
-                });
-            });
-
-        const pedagogicalEvents = Object.entries(config.pedagogicalEvents ?? {})
-            .flatMap(([classId, events]) => events.map(event => ({ event, classId })))
-            .filter(({ event }) => event.status === 'planned' && daysBetweenISO(today, event.date) >= 0 && daysBetweenISO(today, event.date) <= 21)
-            .sort((a, b) => a.event.date.localeCompare(b.event.date));
-        pedagogicalEvents.slice(0, 3).forEach(({ event, classId }) => {
-            const classInfo = classById.get(classId);
-            add({
-                id: `pedagogical-${event.id}`,
-                eyebrow: `Activité pédagogique: ${formatDelay(daysBetweenISO(today, event.date))}`,
-                title: event.title,
-                detail: `${classInfo ? formatClassDisplayName(classInfo.name) : 'Classe'}, le ${formatDate(event.date, { day: 'numeric', month: 'long' })}.`,
-                icon: 'school',
-                tone: 'violet',
-                priority: 68,
-            });
-        });
+        const currentClass = currentBlock ? classById.get(currentBlock.classId) ?? null : null;
+        const nextClass = nextBlock ? classById.get(nextBlock.classId) ?? null : null;
 
         const scheduledIds = new Set((config.timetable ?? []).map(entry => entry.classId));
-        const missingSchedule = classes.filter(classInfo => !scheduledIds.has(classInfo.id));
-        if (missingSchedule.length > 0) {
-            add({
-                id: 'missing-schedule',
-                eyebrow: 'Emploi du temps:',
-                title: `${missingSchedule.length} classe${missingSchedule.length > 1 ? 's' : ''} sans créneau`,
-                detail: classList(missingSchedule.map(classInfo => classInfo.name), 4),
-                icon: 'calendar',
-                tone: 'amber',
-                priority: 76,
-            });
-        } else if (classes.length > 0) {
-            add({
-                id: 'schedule-ready',
-                eyebrow: 'Emploi du temps:',
-                title: 'Toutes les classes sont reliées au planning',
-                detail: 'Prochaines séances et alertes prêtes.',
-                icon: 'check',
-                tone: 'emerald',
-                priority: 52,
-            });
+        const missingScheduleCount = classes.filter(classInfo => !scheduledIds.has(classInfo.id)).length;
+        const urgentAssessment = [...assessments].sort((a, b) => a.inDays - b.inDays)[0];
+        const assessmentClass = urgentAssessment ? classById.get(urgentAssessment.classId) ?? null : null;
+        const oldestNotebook = [...classes].sort((a, b) => {
+            const aDate = lastModifiedDates[a.id];
+            const bDate = lastModifiedDates[b.id];
+            if (!aDate && bDate) return -1;
+            if (aDate && !bDate) return 1;
+            return (aDate ?? '').localeCompare(bDate ?? '');
+        })[0] ?? null;
+
+        if (currentClass && currentBlock) {
+            return {
+                missingScheduleCount,
+                focusClass: currentClass,
+                focusLabel: 'Séance en cours',
+                focusValue: formatClassDisplayName(currentClass.name),
+                focusDetail: `Jusqu’à ${formatHourLabel(currentBlock.endMin)}`,
+            };
         }
 
-        const weeklyBlocks = [1, 2, 3, 4, 5, 6].flatMap(day => getDaySessionBlocks(config.timetable, day));
-        const weeklyHours = weeklyBlocks.reduce((sum, block) => sum + block.hours, 0);
-        add({
-            id: 'weekly-load',
-            eyebrow: 'Rythme hebdomadaire:',
-            title: weeklyBlocks.length > 0
-                ? `${weeklyBlocks.length} séance${weeklyBlocks.length > 1 ? 's' : ''}, ${weeklyHours} h par semaine`
-                : 'Volume hebdomadaire à construire',
-            detail: weeklyBlocks.length > 0
-                ? 'Les créneaux consécutifs sont regroupés.'
-                : 'Ajoutez l’emploi du temps pour activer le briefing horaire.',
-            icon: 'clock',
-            tone: weeklyBlocks.length > 0 ? 'blue' : 'slate',
-            priority: 51,
-        });
-
-        const collegeCount = classes.filter(classInfo => classInfo.cycle === 'college').length;
-        const lyceeCount = classes.filter(classInfo => classInfo.cycle === 'lycee').length;
-        add({
-            id: 'portfolio',
-            eyebrow: 'Vos classes:',
-            title: `${classes.length} classe${classes.length > 1 ? 's' : ''} suivie${classes.length > 1 ? 's' : ''}`,
-            detail: [
-                collegeCount ? `${collegeCount} collège` : '',
-                lyceeCount ? `${lyceeCount} lycée qualifiant` : '',
-            ].filter(Boolean).join(', ') || 'Niveaux synchronisés.',
-            icon: 'school',
-            tone: 'slate',
-            priority: 50,
-        });
-
-        if (officialEvents.length > 0) {
-            add({
-                id: 'official-feed',
-                eyebrow: 'Bulletin officiel:',
-                title: `${officialEvents.length} jalon${officialEvents.length > 1 ? 's' : ''} lié${officialEvents.length > 1 ? 's' : ''} à vos classes`,
-                detail: 'Informations filtrées pour vos niveaux.',
-                icon: 'official',
-                tone: 'violet',
-                priority: 53,
-            });
+        if (nextClass && nextBlock) {
+            return {
+                missingScheduleCount,
+                focusClass: nextClass,
+                focusLabel: 'Prochaine séance',
+                focusValue: formatClassDisplayName(nextClass.name),
+                focusDetail: `Aujourd’hui à ${formatHourLabel(nextBlock.startMin)}`,
+            };
         }
 
-        const nextHoliday = calendar.joursFeries
-            .filter(item => item.date > today)
-            .sort((a, b) => a.date.localeCompare(b.date))[0];
-        if (nextHoliday) {
-            add({
-                id: `next-holiday-${nextHoliday.date}`,
-                eyebrow: 'Calendrier:',
-                title: nextHoliday.nom,
-                detail: `${formatDate(nextHoliday.date, { weekday: 'long', day: 'numeric', month: 'long' })} — ${formatDelay(daysBetweenISO(today, nextHoliday.date))}.`,
-                icon: 'calendar',
-                tone: 'slate',
-                priority: 46,
-            });
+        if (urgentAssessment && assessmentClass && urgentAssessment.inDays <= 7) {
+            return {
+                missingScheduleCount,
+                focusClass: assessmentClass,
+                focusLabel: 'Évaluation proche',
+                focusValue: formatClassDisplayName(assessmentClass.name),
+                focusDetail: urgentAssessment.inDays <= 0 ? "Aujourd’hui" : `Dans ${urgentAssessment.inDays} jour${urgentAssessment.inDays > 1 ? 's' : ''}`,
+            };
         }
 
-        classes.slice(0, 4).forEach(classInfo => {
-            const latest = lastModifiedDates[classInfo.id];
-            add({
-                id: `notebook-${classInfo.id}`,
-                eyebrow: `${formatClassDisplayName(classInfo.name)}:`,
-                title: latest
-                    ? formatDate(latest, { weekday: 'long', day: 'numeric', month: 'long' })
-                    : 'Aucune séance datée',
-                detail: latest
-                    ? `Dernier repère: ${formatDate(latest, { day: 'numeric', month: 'long' })}.`
-                    : 'Ouvrez le cahier pour commencer.',
-                icon: 'notebook',
-                tone: latest ? 'emerald' : 'slate',
-                priority: latest ? 44 : 42,
-            });
-        });
-
-        const datedNotebooks = Object.values(lastModifiedDates).filter(Boolean).length;
-        add({
-            id: 'notebooks',
-            eyebrow: 'Cahiers:',
-            title: `${datedNotebooks}/${snapshot.classCount} cahier${snapshot.classCount > 1 ? 's' : ''} daté${snapshot.classCount > 1 ? 's' : ''}`,
-            detail: snapshot.mood,
-            icon: 'notebook',
-            tone: datedNotebooks === snapshot.classCount ? 'emerald' : 'blue',
-            priority: 58,
-        });
-
-        add({
-            id: 'progress',
-            eyebrow: 'Progression:',
-            title: `${snapshot.avgCompletion}% du programme`,
-            detail: `${snapshot.totalSessions} séance${snapshot.totalSessions > 1 ? 's' : ''} dans ${snapshot.classCount} classe${snapshot.classCount > 1 ? 's' : ''}.`,
-            icon: 'progress',
-            tone: 'blue',
-            priority: 54,
-        });
-
-        if (lateClassCount > 0 && !vacation && !holiday && !absence) {
-            add({
-                id: 'late-classes',
-                eyebrow: 'À corriger:',
-                title: `${lateClassCount} classe${lateClassCount > 1 ? 's' : ''} demande${lateClassCount > 1 ? 'nt' : ''} une mise à jour`,
-                detail: 'Vérifiez les dates saisies et l’emploi du temps.',
-                icon: 'alert',
-                tone: 'amber',
-                priority: 84,
-            });
-        }
-
-        add({
-            id: 'school-year',
-            eyebrow: 'Année scolaire:',
-            title: schoolYear.libelle,
-            detail: today < schoolYear.debut
-                ? `Rentrée des classes le ${formatDate(schoolYear.debut, { weekday: 'long', day: 'numeric', month: 'long' })}.`
-                : `Calendrier suivi jusqu’au ${formatDate(schoolYear.fin, { day: 'numeric', month: 'long', year: 'numeric' })}.`,
-            icon: 'school',
-            tone: 'slate',
-            priority: 40,
-        });
-
-        const deduplicated = [...new Map(items.map(item => [item.id, item])).values()]
-            .sort((a, b) => b.priority - a.priority || a.title.localeCompare(b.title))
-            .slice(0, 4);
-
+        const focusClass = oldestNotebook ?? assessmentClass;
+        const latest = focusClass ? lastModifiedDates[focusClass.id] : null;
         return {
-            items: deduplicated,
+            missingScheduleCount,
+            focusClass,
+            focusLabel: 'Cahier à reprendre',
+            focusValue: focusClass ? formatClassDisplayName(focusClass.name) : 'Aucune classe',
+            focusDetail: latest ? `Dernière saisie : ${formatShortDate(latest)}` : 'Commencer la première séance',
         };
-    }, [now, calendar, classes, config.absences, config.timetable, config.pedagogicalEvents, assessments, officialEvents, snapshot, lastModifiedDates, lateClassCount]);
+    }, [assessments, classes, config.absences, config.timetable, lastModifiedDates, now]);
 
-    useEffect(() => {
-        setActiveIndex(index => Math.min(index, Math.max(0, briefing.items.length - 1)));
-    }, [briefing.items.length]);
+    const focusClass = context.focusClass;
+    const tasks: TaskItem[] = [
+        {
+            id: 'priorities',
+            label: 'Priorités des cahiers',
+            title: priorityCount > 0
+                ? `${priorityCount} point${priorityCount > 1 ? 's' : ''} à traiter`
+                : 'Aucune priorité urgente',
+            detail: priorityCount > 0
+                ? 'Dates, retards et échéances regroupés au même endroit.'
+                : 'Les prochaines échéances restent accessibles.',
+            actionLabel: priorityCount > 0 ? 'Traiter' : 'Consulter',
+            onAction: onOpenNotifications,
+        },
+        {
+            id: 'planning',
+            label: 'Emploi du temps',
+            title: context.missingScheduleCount > 0
+                ? `${context.missingScheduleCount} classe${context.missingScheduleCount > 1 ? 's' : ''} à planifier`
+                : 'Tous les créneaux sont renseignés',
+            detail: context.missingScheduleCount > 0
+                ? 'Ajoutez les créneaux manquants pour fiabiliser le suivi.'
+                : 'Le volume horaire et les prochaines séances sont prêts.',
+            actionLabel: context.missingScheduleCount > 0 ? 'Planifier' : 'Vérifier',
+            onAction: openPlanning,
+        },
+        {
+            id: 'focus',
+            label: context.focusLabel,
+            title: `${context.focusLabel} : ${context.focusValue}`,
+            detail: context.focusDetail,
+            actionLabel: 'Ouvrir',
+            onAction: focusClass ? () => onSelectClass(focusClass) : undefined,
+        },
+    ];
 
-    useEffect(() => {
-        if (paused || reduceMotion || briefing.items.length < 2) return;
-        const timer = window.setInterval(() => {
-            setActiveIndex(index => (index + 1) % briefing.items.length);
-        }, 7_000);
-        return () => window.clearInterval(timer);
-    }, [paused, reduceMotion, briefing.items.length]);
+    const currentTask = tasks[activeTaskIndex] ?? tasks[0];
+    const navigateTasks = (step: 1 | -1) => {
+        setDirection(step);
+        setActiveTaskIndex(index => (index + step + tasks.length) % tasks.length);
+    };
 
-    const current = briefing.items[activeIndex] ?? briefing.items[0];
-    if (!current) return null;
-    const textStyle = BRIEFING_TEXT_STYLE[current.tone];
     return (
-        <section
-            className="relative mb-4 overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-zinc-50/60 shadow-[0_1px_3px_rgba(0,0,0,0.02),_0_1px_2px_rgba(0,0,0,0.01)]"
-            aria-label="Briefing pédagogique du jour"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-        >
-            <span aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-zinc-100/30 blur-3xl" />
-            <div className="relative flex min-h-[76px] flex-col gap-2.5 px-3.5 py-2.5 sm:flex-row sm:items-center sm:px-4">
-                <div className="flex min-w-0 flex-1 items-center">
-                    <div className="min-w-0 flex-1">
-                        <AnimatePresence mode="wait" initial={false}>
+        <section className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]" aria-label="Outils du professeur">
+            <div className="overflow-hidden rounded-xl border border-[#ffe58f] bg-[#fffbe6] shadow-sm">
+                <div className="flex min-h-[68px] items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                        <AnimatePresence mode="wait" initial={false} custom={direction}>
                             <motion.div
-                                key={current.id}
-                                initial={reduceMotion ? false : { opacity: 0, y: 7, filter: 'blur(3px)' }}
-                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                                exit={reduceMotion ? undefined : { opacity: 0, y: -6, filter: 'blur(2px)' }}
-                                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                                key={currentTask.id}
+                                custom={direction}
+                                initial={reduceMotion ? false : { opacity: 0, x: direction * 18 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={reduceMotion ? undefined : { opacity: 0, x: direction * -14 }}
+                                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                                className="flex min-w-0 items-center gap-2.5"
                             >
-                                <p className={`truncate text-sm font-black leading-snug tracking-tight ${textStyle.title}`} title={current.title}>
-                                    {current.title}
-                                </p>
-                                <p className="mt-0.5 line-clamp-2 text-[10px] font-semibold leading-relaxed text-zinc-500 sm:text-[11px]">
-                                    <span className={`font-extrabold ${textStyle.label}`}>{current.eyebrow}</span>{' '}
-                                    <span className="text-zinc-600">{current.detail}</span>
-                                </p>
-                              </motion.div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-extrabold text-[#613400]" title={currentTask.title}>{currentTask.title}</p>
+                                </div>
+                                {currentTask.onAction && (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={currentTask.onAction}
+                                        className="h-8 shrink-0 rounded-lg border-[#0056D2] bg-[#0056D2] px-3 text-[10px] font-bold shadow-none hover:bg-[#0048b5]"
+                                    >
+                                        {currentTask.actionLabel}
+                                    </Button>
+                                )}
+                            </motion.div>
                         </AnimatePresence>
                     </div>
-                </div>
 
-                <div className="grid shrink-0 grid-cols-3 divide-x divide-zinc-200/80 overflow-hidden rounded-xl border border-zinc-200/80 bg-white/95 shadow-sm sm:min-w-[250px]">
-                    <EssentialStat value={`${snapshot.avgCompletion}%`} label="Progression" />
-                    <EssentialStat value={lateClassCount} label="À traiter" />
-                    <EssentialStat value={snapshot.totalSessions} label="Séances" />
+                    <div className="flex shrink-0 items-center gap-0.5 border-l border-[#ffe58f] pl-2 sm:pl-3" aria-label="Naviguer entre les tâches">
+                        <button
+                            type="button"
+                            onClick={() => navigateTasks(-1)}
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#ad8b3a] transition-colors hover:bg-[#fff1b8] hover:text-[#874d00]"
+                            aria-label="Tâche précédente"
+                        >
+                            <ArrowLeft className="h-3 w-3" />
+                        </button>
+                        <span className="min-w-7 text-center text-[8px] font-black tabular-nums text-[#ad8b3a]">{activeTaskIndex + 1}/{tasks.length}</span>
+                        <button
+                            type="button"
+                            onClick={() => navigateTasks(1)}
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#ad8b3a] transition-colors hover:bg-[#fff1b8] hover:text-[#874d00]"
+                            aria-label="Tâche suivante"
+                        >
+                            <ArrowRight className="h-3 w-3" />
+                        </button>
+                    </div>
                 </div>
+            </div>
+
+            <div className="grid grid-cols-3 divide-x divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+                <EssentialStat value={`${snapshot.avgCompletion}%`} label="Progression" />
+                <EssentialStat value={snapshot.totalSessions} label="Séances" />
+                <EssentialStat value={snapshot.classCount} label="Classes" />
             </div>
         </section>
     );
 };
 
 const EssentialStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
-    <span className="min-w-0 px-2 py-2 text-center">
-        <span className="block text-sm font-black tabular-nums leading-none text-slate-950">{value}</span>
-        <span className="mt-1 block truncate text-[7px] font-black uppercase tracking-[0.08em] text-slate-400">{label}</span>
+    <span className="flex min-w-0 flex-col items-center justify-center px-2 py-2.5 text-center">
+        <span className="block text-lg font-black tabular-nums leading-none text-slate-950">{value}</span>
+        <span className="mt-1.5 block truncate text-[7px] font-black uppercase tracking-[0.1em] text-slate-400">{label}</span>
     </span>
 );

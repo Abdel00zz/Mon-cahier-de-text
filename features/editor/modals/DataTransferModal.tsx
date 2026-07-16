@@ -100,8 +100,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
         </div>
 
         {panel === 'export' ? (
-          <section className="flex flex-col items-start gap-4 py-2 sm:flex-row sm:items-center">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 border border-zinc-200">
+          <section className="flex flex-col items-start gap-3 py-1 sm:flex-row sm:items-center">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-700">
               <FileDown className="h-5 w-5" aria-hidden />
             </span>
             <div className="min-w-0">
@@ -123,7 +123,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
             <div>
               <label
                 htmlFor="data-transfer-json-file"
-                className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 px-4 py-5 text-center text-zinc-500 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-800"
+                className="inline-flex min-h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-4 text-center text-zinc-500 transition-all hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-800"
               >
                 <FileUp className="mb-2 h-5 w-5 text-zinc-400" aria-hidden />
                 <span className="text-xs font-bold text-zinc-700">{fileName || 'Choisir une sauvegarde JSON'}</span>
@@ -153,7 +153,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 type="button"
                 onClick={() => setImportMode('replace')}
                 aria-pressed={importMode === 'replace'}
-                className={`min-h-16 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${importMode === 'replace' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
+                className={`min-h-14 rounded-lg px-3 py-2 text-left transition-all duration-150 ${importMode === 'replace' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
               >
                 <span className="block text-xs font-bold">Remplacer le cahier</span>
                 <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Le contenu actuel est remplacé. L’action reste annulable.</span>
@@ -162,7 +162,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 type="button"
                 onClick={() => setImportMode('append')}
                 aria-pressed={importMode === 'append'}
-                className={`min-h-16 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${importMode === 'append' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
+                className={`min-h-14 rounded-lg px-3 py-2 text-left transition-all duration-150 ${importMode === 'append' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
               >
                 <span className="block text-xs font-bold">Ajouter à la suite</span>
                 <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Le contenu importé est ajouté après le cahier actuel.</span>

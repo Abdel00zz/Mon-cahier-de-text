@@ -13,14 +13,22 @@ import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useSelectionData } from '@/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, flattenLessons, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
-import { computeClassHoursInsight } from '@/utils/scheduleInsights';
 import { appendJournal, readJournal } from '@/utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/utils/predefinedContent';
+import {
+  EDITOR_MODAL_KEY,
+  EditorModalPayload,
+  SESSION_FOCUS_KEY,
+  SessionFocusPayload,
+  dateActionId,
+  readIgnoredActionIds,
+  writeIgnoredActionIds,
+} from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
 import { HistoryModal } from './modals/HistoryModal';
 import { printDocument } from '@/utils/printUtils';
@@ -28,18 +36,9 @@ import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, Su
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
-import { ActionCenterSheet, EditorActionItem } from './ActionCenterSheet';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
-
-const SESSION_ASSISTANT_FOCUS_KEY = 'session_focus_v1';
-interface SessionAssistantFocusPayload {
-  classId: string;
-  targetIndices: Indices;
-  expiresAt: number;
-  message: string;
-}
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -103,30 +102,6 @@ const typesetBeforePrint = async (timeoutMs = 4000): Promise<boolean> => {
   }
 };
 
-const ACTIONS_IGNORED_KEY_PREFIX = 'editor_actions_ignored_v1_';
-
-const readIgnoredActionIds = (classId: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(`${ACTIONS_IGNORED_KEY_PREFIX}${classId}`);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed.filter(value => typeof value === 'string') : []);
-  } catch {
-    return new Set();
-  }
-};
-
-const actionSourceLabel = (entry: any, date: string): string => {
-  const label = entry?.title || entry?.name || entry?.content;
-  if (typeof label === 'string' && label.trim()) {
-    const compact = label.trim().replace(/\s+/g, ' ');
-    return compact.length > 38 ? `${compact.slice(0, 37)}…` : compact;
-  }
-  return `Séance du ${date.split('-').reverse().join('/')}`;
-};
-
-const dateActionId = (classId: string, date: string, warnings: DateWarning[]): string =>
-  `date:${classId}:${date}:${warnings.map(warning => warning.type).sort().join('+')}`;
-
 const createSelectionState = (indices?: Indices): SelectionState => {
   const keys = new Set<string>();
   const items = new Map<string, Indices>();
@@ -136,16 +111,6 @@ const createSelectionState = (indices?: Indices): SelectionState => {
     items.set(key, indices);
   }
   return { keys, items };
-};
-
-const createSelectionStateFromIndices = (indicesList: Indices[]): SelectionState => {
-  const state = createSelectionState();
-  for (const indices of indicesList) {
-    const key = indicesKey(indices);
-    state.keys.add(key);
-    state.items.set(key, indices);
-  }
-  return state;
 };
 
 const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
@@ -178,8 +143,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const editingIndicesRef = useRef<Indices | null>(null);
   const [sessionFocusKey, setSessionFocusKey] = useState<string | null>(null);
   const consumedSessionFocusRef = useRef<string | null>(null);
-  const [actionCenterOpen, setActionCenterOpen] = useState(false);
-  const [ignoredActionIds, setIgnoredActionIds] = useState<Set<string>>(() => readIgnoredActionIds(initialClassInfo.id));
   const [printMetaVersion, setPrintMetaVersion] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
   const isPrintingRef = useRef(false);
@@ -211,10 +174,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
   }, [editingIndices]);
-
-  useEffect(() => {
-    setIgnoredActionIds(readIgnoredActionIds(classInfo.id));
-  }, [classInfo.id]);
 
   // Une recherche lancée depuis « Mes classes » continue dans le tableau du
   // cahier : mêmes mots, mêmes lignes filtrées et surlignées, sans ressaisie.
@@ -332,103 +291,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     commit();
   }, [getDateWarnings, setEditorState]);
 
-  const allEditorActions = useMemo<EditorActionItem[]>(() => {
-    const actions: EditorActionItem[] = [];
-    const entriesByDate = new Map<string, ReturnType<typeof flattenLessons>>();
-
-    for (const entry of flattenLessons(lessonsData)) {
-      const date = typeof entry.data?.date === 'string' ? entry.data.date.trim() : '';
-      if (!date) continue;
-      const entries = entriesByDate.get(date) ?? [];
-      entries.push(entry);
-      entriesByDate.set(date, entries);
-    }
-
-    for (const [date, entries] of entriesByDate) {
-      const warnings = getDateWarnings(date);
-      if (warnings.length === 0) continue;
-      const firstEntry = entries[0];
-      actions.push({
-        id: dateActionId(classInfo.id, date, warnings),
-        kind: 'date',
-        title: `Date du ${date.split('-').reverse().join('/')} à vérifier`,
-        summary: entries.length > 1
-          ? `Cette date relie ${entries.length} éléments de la séance et ne correspond pas entièrement aux règles actuellement connues.`
-          : 'Cette date reste enregistrée, mais elle ne correspond pas entièrement aux règles actuellement connues.',
-        details: warnings.map(warning => warning.message),
-        source: actionSourceLabel(firstEntry.data, date),
-        primaryLabel: 'Voir et corriger la date',
-        date,
-        indices: firstEntry.indices,
-        indicesList: entries.map(entry => entry.indices),
-      });
-    }
-
-    const hours = computeClassHoursInsight(classInfo, config.timetable);
-    if (hours.deviation === 'empty') {
-      actions.push({
-        id: `schedule:${classInfo.id}:missing`,
-        kind: 'schedule',
-        title: 'Emploi du temps à compléter',
-        summary: 'Aucun créneau n’est encore relié à cette classe. Les contrôles de dates et le suivi des séances restent donc partiels.',
-        details: ['Ajoutez les créneaux habituels de la classe.', 'Les prochains contrôles de date seront ensuite automatiques.'],
-        source: 'Paramètres · Emploi du temps',
-        primaryLabel: 'Renseigner les créneaux',
-      });
-    } else if (hours.officialHours !== null && hours.deviation !== 'match') {
-      const difference = Math.abs(hours.delta);
-      actions.push({
-        id: `hours:${classInfo.id}:${hours.scheduledHours}:${hours.officialHours}`,
-        kind: 'hours',
-        title: 'Volume horaire à confirmer',
-        summary: `${hours.scheduledHours} h sont planifiées contre ${hours.officialHours} h indicatives pour ce niveau.`,
-        details: [
-          `${difference} heure${difference > 1 ? 's' : ''} ${hours.deviation === 'under' ? 'semble manquer' : 'semble dépasser le repère'}.`,
-          'Un dédoublement ou une organisation locale peut justifier cet écart.',
-        ],
-        source: 'Paramètres · Emploi du temps',
-        primaryLabel: 'Vérifier le planning',
-      });
-    }
-
-    return actions;
-  }, [classInfo, config.timetable, getDateWarnings, lessonsData]);
-
-  const activeEditorActions = useMemo(
-    () => allEditorActions.filter(action => !ignoredActionIds.has(action.id)),
-    [allEditorActions, ignoredActionIds]
-  );
-  const ignoredEditorActions = useMemo(
-    () => allEditorActions.filter(action => ignoredActionIds.has(action.id)),
-    [allEditorActions, ignoredActionIds]
-  );
-
-  const updateIgnoredActions = useCallback((updater: (current: Set<string>) => Set<string>) => {
-    setIgnoredActionIds(current => {
-      const next = updater(new Set(current));
-      try {
-        localStorage.setItem(`${ACTIONS_IGNORED_KEY_PREFIX}${classInfo.id}`, JSON.stringify(Array.from(next).slice(-100)));
-      } catch {
-        // Le centre reste utilisable pendant la session si le stockage est indisponible.
-      }
-      return next;
-    });
+  /*
+   * Exception de date : « Ignorer » dans la vérification de date enregistre
+   * le point dans la même mémoire que le centre de notifications de
+   * l'accueil (mêmes identifiants) — il y devient réactivable.
+   */
+  const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
+    const ids = readIgnoredActionIds(classInfo.id);
+    ids.add(dateActionId(classInfo.id, date, warnings));
+    writeIgnoredActionIds(classInfo.id, ids);
   }, [classInfo.id]);
-
-  const ignoreEditorAction = useCallback((action: EditorActionItem) => {
-    updateIgnoredActions(current => {
-      current.add(action.id);
-      return current;
-    });
-    toast.info('Point conservé comme exception. Vous pourrez le réactiver depuis le centre d’actions.');
-  }, [updateIgnoredActions]);
-
-  const restoreEditorAction = useCallback((action: EditorActionItem) => {
-    updateIgnoredActions(current => {
-      current.delete(action.id);
-      return current;
-    });
-  }, [updateIgnoredActions]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -527,10 +399,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   useEffect(() => {
     if (isClassLoading) return;
 
-    let payload: SessionAssistantFocusPayload | null = null;
+    let payload: SessionFocusPayload | null = null;
     try {
-      const raw = sessionStorage.getItem(SESSION_ASSISTANT_FOCUS_KEY);
-      payload = raw ? (JSON.parse(raw) as SessionAssistantFocusPayload) : null;
+      const raw = sessionStorage.getItem(SESSION_FOCUS_KEY);
+      payload = raw ? (JSON.parse(raw) as SessionFocusPayload) : null;
     } catch {
       payload = null;
     }
@@ -549,7 +421,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     toast.info(payload.message, { id: 'session-assistant-focus', duration: 9000 });
 
     try {
-      sessionStorage.removeItem(SESSION_ASSISTANT_FOCUS_KEY);
+      sessionStorage.removeItem(SESSION_FOCUS_KEY);
     } catch {
       // aucune consequence : la garde consumedSessionFocusRef evite les boucles
     }
@@ -560,6 +432,29 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
     return () => window.clearTimeout(clearTimer);
   }, [classInfo.id, isClassLoading, lessonsData]);
+
+  /*
+   * Deep-link du centre de notifications : ouvre directement la modale visée
+   * (évaluations, impression, import/export) à l'arrivée dans le cahier.
+   */
+  useEffect(() => {
+    if (isClassLoading) return;
+    let payload: EditorModalPayload | null = null;
+    try {
+      const raw = sessionStorage.getItem(EDITOR_MODAL_KEY);
+      payload = raw ? (JSON.parse(raw) as EditorModalPayload) : null;
+    } catch {
+      payload = null;
+    }
+    if (!payload || payload.classId !== classInfo.id || payload.expiresAt < Date.now()) return;
+    try {
+      sessionStorage.removeItem(EDITOR_MODAL_KEY);
+    } catch { /* déjà consommé au prochain rendu grâce au retrait ci-dessus */ }
+    const modal = payload.modal;
+    if (modal === 'evaluations' || modal === 'dataTransfer' || modal === 'print') {
+      setEditorState(draft => { draft.activeModal = modal; });
+    }
+  }, [classInfo.id, isClassLoading, setEditorState]);
 
   useEffect(() => {
     if (config.defaultTeacherName && config.defaultTeacherName !== classInfo.teacherName) {
@@ -727,33 +622,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* stockage indisponible */ }
       onOpenSettings?.();
   }, [onOpenSettings]);
-
-  const resolveEditorAction = useCallback((action: EditorActionItem) => {
-      setActionCenterOpen(false);
-
-      if (action.kind !== 'date' || !action.indices || !action.date) {
-          handleOpenTimetable();
-          return;
-      }
-
-      const focusKey = indicesKey(action.indices);
-      setAssignDateInitialDate(action.date);
-      setSelectionState(createSelectionStateFromIndices(action.indicesList?.length ? action.indicesList : [action.indices]));
-      setSessionFocusKey(focusKey);
-      setEditorState(draft => {
-          draft.searchQuery = '';
-          draft.activeModal = null;
-      });
-
-      // Laisse d’abord apparaître et surligner la source, puis ouvre le même
-      // formulaire de date utilisé partout ailleurs dans l’application.
-      window.setTimeout(() => {
-          setEditorState(draft => { draft.activeModal = 'assignDate'; });
-      }, 520);
-      window.setTimeout(() => {
-          setSessionFocusKey(current => (current === focusKey ? null : current));
-      }, 4200);
-  }, [handleOpenTimetable, setEditorState]);
 
   /*
    * Invitation modale FLUIDE (une fois par session et par classe) : proposée
@@ -1172,9 +1040,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             searchQuery={searchQuery}
             setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
             onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
-            actionRequiredCount={activeEditorActions.length}
-            ignoredActionCount={ignoredEditorActions.length}
-            onOpenActionCenter={() => setActionCenterOpen(true)}
           />
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
@@ -1329,24 +1194,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         onIgnore={() => {
           const pending = pendingDateCommit;
           if (!pending) return;
-          updateIgnoredActions(current => {
-            current.add(dateActionId(classInfo.id, pending.date, pending.warnings));
-            return current;
-          });
+          ignoreDateException(pending.date, pending.warnings);
           setPendingDateCommit(null);
           pending.commit();
-          toast.info('Date conservée comme exception. Le contrôle reste réactivable depuis le centre d’actions.');
+          toast.info('Date conservée comme exception. Le contrôle reste réactivable depuis le centre de notifications de l’accueil.');
         }}
-      />
-
-      <ActionCenterSheet
-        open={actionCenterOpen}
-        onOpenChange={setActionCenterOpen}
-        actions={activeEditorActions}
-        ignoredActions={ignoredEditorActions}
-        onResolve={resolveEditorAction}
-        onIgnore={ignoreEditorAction}
-        onRestore={restoreEditorAction}
       />
 
       <TimetableNudgeModal

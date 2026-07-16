@@ -117,7 +117,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
         <Button
           type="button"
           onClick={onFill}
-          className="mt-1 h-11 w-full max-w-xs rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+          className="mt-1 h-9 w-full max-w-xs rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-sm hover:bg-primary/90"
         >
           {t.fill}
         </Button>
