@@ -243,7 +243,7 @@ export interface NextSessionInfo {
     label: string;
 }
 
-export const formatHourLabel = (minutes: number): string => {
+const formatHourLabel = (minutes: number): string => {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return `${String(h).padStart(2, '0')}h${m ? String(m).padStart(2, '0') : ''}`;

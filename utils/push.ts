@@ -70,7 +70,7 @@ const deviceLabel = (): string => {
     return 'Appareil';
 };
 
-export const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<{ ok: boolean; reason?: string }> => {
+const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<{ ok: boolean; reason?: string }> => {
     if (!pushSupported()) return { ok: false, reason: 'non-supporté' };
     if (!VAPID_PUBLIC_KEY) return { ok: false, reason: 'clé VAPID manquante' };
 

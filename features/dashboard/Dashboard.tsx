@@ -18,7 +18,6 @@ import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, CircleHelp, Plus, Settings } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { computeProgressionStats } from '@/utils/progression';
-import { activateNativeNotifications } from '@/utils/push';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
@@ -212,18 +211,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         setOnboardingOpen(false);
     }, [config.hasCompletedWelcome, updateConfig]);
 
-    const completeOnboarding = useCallback(async () => {
-        const activation = await activateNativeNotifications();
+    const completeOnboarding = useCallback(() => {
         const current = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
         updateConfig({
             hasCompletedWelcome: true,
             notificationSettings: {
                 ...current,
+                // On active seulement les couches qui NE demandent AUCUNE
+                // permission système (alertes in-app + vibration locale).
                 enabled: true,
-                // Le même choix active le circuit local vibration + notification.
                 sessionVibration: true,
-                // Une permission locale accordée ne prétend pas être un push serveur.
-                pushEnabled: current.pushEnabled || activation.subscribed,
+                // Le push n'est plus demandé automatiquement ici : un refus de
+                // permission navigateur est collant. L'enseignant l'active
+                // explicitement depuis Paramètres ▸ Notifications (vrai geste).
             },
         });
     }, [config.notificationSettings, updateConfig]);
@@ -332,7 +332,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 <div className="relative z-10 mx-auto max-w-7xl px-3 py-4 sm:px-5 sm:py-6 lg:px-6 lg:py-8">
                     <header className="mb-6 space-y-4 sm:mb-8" id="dashboard-header">
                         <div className="relative flex min-h-9 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="dashboard-header-copy min-w-0 flex-1 pr-[7.5rem] lg:pr-0">
+                            <div className="dashboard-header-copy min-w-0 flex-1 pr-[8.25rem] lg:pr-0">
                                 <h1 className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-[1.65rem] font-extrabold tracking-tight text-foreground sm:text-3xl">
                                     {teacherName ? (
                                         <>
@@ -348,28 +348,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                 </p>
                             </div>
 
-                            <div className="dashboard-header-actions absolute right-0 top-0 flex shrink-0 items-center gap-2 lg:static sm:gap-3" aria-label="Aide, réglages et notifications">
+                            <div className="dashboard-header-actions absolute right-0 top-0 flex shrink-0 items-center gap-3 lg:static sm:gap-4" aria-label="Aide, réglages et notifications">
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setGuideOpen(true)}
-                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 sm:h-11 sm:w-11"
+                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 [&_svg]:!size-[25px] sm:h-11 sm:w-11"
                                     aria-label="Aide"
                                     data-tippy-content="Aide"
                                 >
-                                    <CircleHelp className="h-[25px] w-[25px] transition-transform duration-200 group-hover:scale-110 sm:h-7 sm:w-7" />
+                                    <CircleHelp className="h-[25px] w-[25px] transition-transform duration-200 group-hover:scale-110" />
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     onClick={onOpenSettings}
-                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 sm:h-11 sm:w-11"
+                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 [&_svg]:!size-[25px] sm:h-11 sm:w-11"
                                     aria-label="Paramètres"
                                     data-tippy-content="Paramètres"
                                 >
-                                    <Settings className="h-[25px] w-[25px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105 sm:h-7 sm:w-7" />
+                                    <Settings className="h-[25px] w-[25px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105" />
                                 </Button>
                                 <NotificationCenter
                                     classes={classes}

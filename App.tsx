@@ -129,8 +129,6 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
   }, [saveCurrentScroll]);
 
-  // Session assistant suggestion auto-focus has been cleaned up and removed
-
   const handleBackToDashboard = useCallback(() => {
     saveCurrentScroll();
     setActiveClass(null);

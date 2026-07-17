@@ -1,12 +1,125 @@
 import React, { useState } from 'react';
 import { AbsencePeriod, AppConfig, NotificationSettings } from '@/types';
 import { defaultNotificationSettings } from '@/hooks/useConfigManager';
-import { isStandalone, pushSupported, sendTestNotification, subscribeToPush, unsubscribeFromPush } from '@/utils/push';
+import { activateNativeNotifications, isStandalone, pushSupported, sendTestNotification, unsubscribeFromPush } from '@/utils/push';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
-import { Bell, CalendarCheck, Clock, TriangleAlert, X } from '@/components/ui/icons';
+import { Bell, CalendarCheck, Check, Clock, Download, TriangleAlert, X } from '@/components/ui/icons';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useLocale } from '@/i18n/LocaleProvider';
+
+type Translate = ReturnType<typeof useLocale>['t'];
+
+/**
+ * Carte d'activation des rappels push — le geste explicite qui remplace la
+ * demande de permission autrefois noyée dans l'onboarding. États clairs :
+ * non supporté · installation iOS requise · bloqué (navigateur) · activé ·
+ * à activer. Tout en tokens du design system (aucune couleur en dur).
+ */
+const PushActivationCard: React.FC<{
+    active: boolean;
+    busy: boolean;
+    onActivate: () => void;
+    onDeactivate: () => void;
+    onTest: () => void;
+    t: Translate;
+}> = ({ active, busy, onActivate, onDeactivate, onTest, t }) => {
+    const supported = pushSupported();
+    const iosNeedsInstall = /iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone();
+    const permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+
+    // Cas informatifs (aucune action possible)
+    if (!supported || iosNeedsInstall) {
+        return (
+            <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/40 p-3.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    {iosNeedsInstall ? <Download className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                </span>
+                <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                        {iosNeedsInstall ? t('notifications.pushIosInstall') : t('notifications.pushUnsupported')}
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // Bloqué par le navigateur : ré-autorisation impossible par API.
+    if (permission === 'denied' && !active) {
+        return (
+            <div className="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning">
+                    <TriangleAlert className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{t('notifications.permissionDenied')}</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Activé : état de succès + test + désactivation.
+    if (active) {
+        return (
+            <div className="rounded-xl border border-success/40 bg-success/10 p-3.5">
+                <div className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
+                        <Check className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{t('notifications.remindersActive')}</p>
+                    </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={onTest}
+                        disabled={busy}
+                        className="h-9 flex-1 rounded-lg border border-border bg-card text-xs font-bold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+                    >
+                        {t('notifications.sendTest')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onDeactivate}
+                        disabled={busy}
+                        className="h-9 rounded-lg px-3 text-xs font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    >
+                        {t('notifications.turnOff')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // À activer : le vrai CTA (permission + abonnement en un geste).
+    const label = permission === 'granted' ? t('notifications.finalizeReminders') : t('notifications.enableReminders');
+    return (
+        <div className="rounded-xl border border-primary/25 bg-primary/5 p-3.5">
+            <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+                    <Bell className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{t('notifications.pushHint')}</p>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={onActivate}
+                disabled={busy}
+                className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
+            >
+                <Bell className="h-4 w-4" />
+                {label}
+            </button>
+        </div>
+    );
+};
 
 interface NotificationsTabProps {
     config: AppConfig;
@@ -58,31 +171,45 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const patch = (updates: Partial<NotificationSettings>) =>
         onChange({ notificationSettings: { ...settings, ...updates } });
 
-    const supported = pushSupported();
-    const standalone = isStandalone();
-    const iosNeedsInstall = /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone;
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
+    const pushActive = settings.pushEnabled
+        && typeof Notification !== 'undefined'
+        && Notification.permission === 'granted';
 
-    const handlePushToggle = async (enable: boolean) => {
+    // Un seul geste : autorisation système + abonnement serveur.
+    const handleActivate = async () => {
         setBusy(true);
         setMessage(null);
         try {
-            if (enable) {
-                const result = await subscribeToPush();
-                if (result.ok) {
-                    patch({ pushEnabled: true });
-                    setMessage(t('notifications.pushEnabled'));
-                } else {
-                    setMessage(t('notifications.activationFailed', { reason: result.reason ?? '—' }));
-                }
+            const result = await activateNativeNotifications();
+            if (result.subscribed) {
+                patch({ pushEnabled: true });
+                setMessage(t('notifications.pushEnabled'));
             } else {
-                await unsubscribeFromPush();
-                patch({ pushEnabled: false });
-                setMessage(t('notifications.pushDisabled'));
+                setMessage(t('notifications.activationFailed', { reason: result.reason ?? '—' }));
             }
         } finally {
             setBusy(false);
         }
+    };
+
+    const handleDeactivate = async () => {
+        setBusy(true);
+        setMessage(null);
+        try {
+            await unsubscribeFromPush();
+            patch({ pushEnabled: false });
+            setMessage(t('notifications.pushDisabled'));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const handleTest = async () => {
+        setBusy(true);
+        const ok = await sendTestNotification();
+        setMessage(ok ? t('notifications.testSuccess') : t('notifications.testFailure'));
+        setBusy(false);
     };
 
     return (
@@ -91,18 +218,21 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 {t('notifications.intro')}
             </p>
 
+            {/* Activation explicite des rappels push (remplace la demande auto d'onboarding) */}
+            <PushActivationCard
+                active={pushActive}
+                busy={busy}
+                onActivate={handleActivate}
+                onDeactivate={handleDeactivate}
+                onTest={handleTest}
+                t={t}
+            />
+
             <div className="rounded-xl border border-border bg-secondary/35 p-3">
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
-                        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                            {t('notifications.nativeDescription')}
-                        </p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                        {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? t('notifications.authorized') : t('notifications.inactive')}
-                    </span>
-                </div>
+                <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                    {t('notifications.nativeDescription')}
+                </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                     <NotificationKind icon={TriangleAlert} label={t('notifications.kindDelay')} detail={t('notifications.smartCheck')} />
                     <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={t('notifications.localReminder')} />
@@ -116,20 +246,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 hint={t('notifications.inAppHint')}
                 checked={settings.enabled}
                 onChange={v => patch({ enabled: v })}
-            />
-
-            <Toggle
-                label={t('notifications.push')}
-                hint={
-                    iosNeedsInstall
-                        ? t('notifications.pushIosInstall')
-                        : !supported
-                          ? t('notifications.pushUnsupported')
-                          : t('notifications.pushHint')
-                }
-                checked={settings.pushEnabled}
-                onChange={handlePushToggle}
-                disabled={busy || !supported || iosNeedsInstall}
             />
 
             <Toggle
@@ -173,22 +289,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 checked={settings.quietDuringVacations}
                 onChange={v => patch({ quietDuringVacations: v })}
             />
-
-            {settings.pushEnabled && (
-                <button
-                    type="button"
-                    onClick={async () => {
-                        setBusy(true);
-                        const ok = await sendTestNotification();
-                        setMessage(ok ? t('notifications.testSuccess') : t('notifications.testFailure'));
-                        setBusy(false);
-                    }}
-                    disabled={busy}
-                    className="h-9 w-full rounded-md border border-border/80 bg-card text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-50 transition-colors"
-                >
-                    {t('notifications.sendTest')}
-                </button>
-            )}
 
             {message && <p className="rounded-lg bg-secondary border border-border/60 px-3 py-2 text-[11px] font-medium text-foreground">{message}</p>}
 
