@@ -4,7 +4,6 @@ import { flattenLessons, migrateLessonsData } from './dataUtils';
 import { DateWarning, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
-import { getNewDates } from './printMeta';
 import { readJournal } from './journal';
 import {
     HolidayCalendar,
@@ -78,19 +77,18 @@ export const dateActionId = (classId: string, date: string, warnings: DateWarnin
     `date:${classId}:${date}:${warnings.map(warning => warning.type).sort().join('+')}`;
 
 /** Situations concrètes couvertes par le centre. */
-export type SignalKind =
+type SignalKind =
     | 'date'            // date saisie en conflit avec le calendrier/l'emploi du temps
     | 'missed-session'  // séance prévue passée sans aucune entrée datée ce jour-là
     | 'assessment-week' // semaine de devoir surveillé imminente
-    | 'absences'        // devoir passé sans liste d'absents consignée
+    | 'absences'        // devoir du jour/passé sans liste d'absents consignée
     | 'never-started'   // cahier jamais démarré alors que l'année a commencé
     | 'schedule'        // emploi du temps manquant (préalable aux contrôles)
-    | 'print-backlog'   // séances jamais imprimées qui s'accumulent
     | 'progress-gap'    // écart de progression entre classes du même niveau
     | 'backup';         // aucune sauvegarde exportée récemment (global)
 
 /** Destination de l'action principale du signal. */
-type SignalAction = 'class' | 'timetable' | 'evaluations' | 'print' | 'export';
+type SignalAction = 'class' | 'timetable' | 'evaluations' | 'export';
 
 /** ordre d'affichage : du plus urgent au plus périphérique */
 const KIND_PRIORITY: Record<SignalKind, number> = {
@@ -100,9 +98,8 @@ const KIND_PRIORITY: Record<SignalKind, number> = {
     'absences': 3,
     'never-started': 4,
     'schedule': 5,
-    'print-backlog': 6,
-    'progress-gap': 7,
-    'backup': 8,
+    'progress-gap': 6,
+    'backup': 7,
 };
 
 export interface ClassSignal {
@@ -283,21 +280,8 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
         });
     }
 
-    // 5 · Impressions en retard : le cahier signé s'accumule (≥ 3 séances)
-    const newPrintDates = getNewDates(lessons, classInfo.id);
-    if (newPrintDates.length >= 3) {
-        const id = `print:${classInfo.id}:${newPrintDates[0]}`;
-        signals.push({
-            id,
-            kind: 'print-backlog',
-            action: 'print',
-            classId: classInfo.id,
-            className,
-            title: `${newPrintDates.length} séances jamais imprimées`,
-            detail: 'Le tirage « Nouveautés seulement » imprime uniquement ces séances, prêtes pour le visa.',
-            ignored: ignored.has(id),
-        });
-    }
+    // L'impression est libre : aucun rappel « à imprimer » — le prof décide
+    // seul de quand et de quoi tirer depuis la modale d'impression.
 
     return signals;
 };

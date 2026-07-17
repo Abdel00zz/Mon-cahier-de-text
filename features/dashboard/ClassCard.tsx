@@ -76,14 +76,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     return (
         <div
             onClick={() => onSelect()}
-            className="group relative flex min-h-[172px] cursor-pointer flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_1px_2px_rgba(0,0,0,0.03)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:min-h-[190px]"
+            className="group relative flex min-h-[148px] cursor-pointer flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_1px_2px_rgba(0,0,0,0.03)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:min-h-[190px] sm:rounded-xl"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
         >
             {classInfo.subject && (
                 <span
-                    className="absolute left-3 top-3 z-20 max-w-[calc(100%-6.5rem)] truncate rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-sans text-[9px] font-semibold uppercase tracking-[0.06em] text-zinc-500 transition-colors group-hover:border-zinc-300"
+                    className="absolute left-2 top-2 z-20 max-w-[calc(100%-4.25rem)] truncate rounded-full border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 font-sans text-[7px] font-semibold uppercase tracking-[0.05em] text-zinc-500 transition-colors group-hover:border-zinc-300 sm:left-3 sm:top-3 sm:max-w-[calc(100%-6rem)] sm:px-2 sm:text-[8px] sm:tracking-[0.06em]"
                     title={classInfo.subject}
                 >
                     {classInfo.subject}
@@ -91,32 +91,32 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             )}
 
             {/* Quick Actions (Hover) */}
-            <div className="absolute right-3 top-2.5 z-20 flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
+            <div className="absolute right-2 top-2 z-20 flex items-center gap-1 opacity-55 transition-opacity duration-200 hover:opacity-100 sm:right-3 sm:top-2.5 sm:opacity-0 sm:group-hover:opacity-100">
                 <button
                     onClick={handleConfigureClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 transition-colors border border-zinc-200 shadow-sm"
+                  className="flex h-4 w-4 items-center justify-center rounded text-zinc-400 transition-colors active:scale-[0.96] hover:bg-zinc-100 hover:text-zinc-700 sm:h-5 sm:w-5 md:h-4 md:w-4"
                     title="Modifier"
                 >
-                    <Settings className="w-3.5 h-3.5" />
+                    <Settings size={8} />
                 </button>
                 <button
                     onClick={handleDeleteClick}
-                    className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-zinc-400 hover:bg-red-50 hover:text-red-600 transition-colors border border-zinc-200 shadow-sm"
+                  className="flex h-4 w-4 items-center justify-center rounded text-zinc-400 transition-colors active:scale-[0.96] hover:bg-red-50 hover:text-red-600 sm:h-5 sm:w-5 md:h-4 md:w-4"
                     title="Supprimer"
                 >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 size={8} />
                 </button>
             </div>
 
-            <div className="relative z-10 flex min-h-[168px] w-full flex-1 flex-col sm:min-h-[186px]">
-                <div className="flex flex-1 flex-col items-center justify-center px-4 pb-3 pt-12 sm:pt-11">
-                    <div className={`relative mb-3 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${iconStyle.shell} ${iconStyle.icon}`}>
-                        <span aria-hidden className={`absolute -right-3 -top-3 h-8 w-8 rounded-full ${iconStyle.glow}`} />
-                        <GraduationCap className="relative h-[22px] w-[22px]" aria-hidden />
+            <div className="relative z-10 flex min-h-[144px] w-full flex-1 flex-col sm:min-h-[186px]">
+                <div className="flex flex-1 flex-col items-center justify-center px-2 pb-2 pt-9 sm:px-4 sm:pb-3 sm:pt-11">
+                    <div className={`relative mb-2 flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md sm:mb-2.5 sm:h-10 sm:w-10 sm:rounded-lg ${iconStyle.shell} ${iconStyle.icon}`}>
+                        <span aria-hidden className={`absolute -right-2.5 -top-2.5 h-6 w-6 rounded-full sm:h-7 sm:w-7 ${iconStyle.glow}`} />
+                        <GraduationCap className="relative h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
                     </div>
 
                     <h3
-                        className={`max-w-full text-center text-[12px] font-bold leading-snug text-zinc-800 transition-colors group-hover:text-primary sm:text-[13px] ${isArabic ? 'font-ar text-lg' : 'font-display'}`}
+                        className={`max-w-full text-center text-[10px] font-bold leading-[1.2] text-zinc-800 transition-colors group-hover:text-primary sm:text-[12px] sm:leading-snug ${isArabic ? 'font-ar text-[13px] sm:text-base' : 'font-display'}`}
                         title={displayName}
                     >
                         {formatSuperscript(displayName)}
@@ -124,16 +124,16 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 
                 </div>
 
-                <div className="mt-auto grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-3 border-t border-zinc-100 bg-zinc-50/50 px-4 pb-3 pt-2.5 transition-colors group-hover:bg-zinc-50/80">
+                <div className="mt-auto grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-1.5 border-t border-zinc-100 bg-zinc-50/50 px-2 pb-2 pt-1.5 transition-colors group-hover:bg-zinc-50/80 sm:gap-3 sm:px-4 sm:pb-3 sm:pt-2.5">
                     <span className="min-w-0 text-left">
-                        <span className="block text-[8px] font-semibold uppercase tracking-[0.08em] text-zinc-400">Prochaine séance</span>
-                        <span className={`mt-0.5 block truncate text-[10px] font-bold ${nextSession?.kind === 'now' ? 'text-emerald-600' : nextSession ? 'text-primary' : 'text-zinc-400'}`}>
+                        <span className="block text-[6px] font-semibold uppercase tracking-[0.05em] text-zinc-400 sm:text-[7px] sm:tracking-[0.08em]">Prochaine séance</span>
+                        <span className={`mt-0.5 block truncate text-[8px] font-bold sm:text-[9px] ${nextSession?.kind === 'now' ? 'text-emerald-600' : nextSession ? 'text-primary' : 'text-zinc-400'}`}>
                             {nextSession?.label ?? 'Horaire à compléter'}
                         </span>
                     </span>
                     <span className="shrink-0 text-right">
-                        <span className="block text-[8px] font-semibold uppercase tracking-[0.08em] text-zinc-400">Mise à jour</span>
-                        <span className="mt-0.5 block font-mono text-[9px] font-bold text-zinc-500">{formatDate(lastModified)}</span>
+                        <span className="block text-[6px] font-semibold uppercase tracking-[0.05em] text-zinc-400 sm:text-[7px] sm:tracking-[0.08em]">Mise à jour</span>
+                        <span className="mt-0.5 block font-mono text-[7px] font-bold text-zinc-500 sm:text-[8px]">{formatDate(lastModified)}</span>
                     </span>
                 </div>
             </div>

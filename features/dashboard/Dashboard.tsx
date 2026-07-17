@@ -1,23 +1,23 @@
-import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
 import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/ui/button';
 import { ClassCard } from './ClassCard';
+import { ClassListItem } from './ClassListItem';
 import { NotificationCenter, useNotificationFeed } from './NotificationCenter';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
-import { TodayBriefing, TodaySnapshot } from './TodayBriefing';
+import { DashboardMetrics, DashboardMetricsBar } from './DashboardMetricsBar';
 import { ClassInfo, Cycle } from '@/types';
 import { logger } from '@/utils/logger';
 import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { CircleHelp, Plus, Settings } from '@/components/ui/icons';
+import { ChevronDown, CircleHelp, Plus, Settings } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { computeProgressionStats } from '@/utils/progression';
-import { useLateness } from '@/hooks/useLateness';
 import { activateNativeNotifications } from '@/utils/push';
 
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
@@ -26,6 +26,15 @@ interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     onOpenSettings: () => void;
 }
+
+type ClassDisplayMode = 'list' | 'single' | 'double' | 'triple';
+
+const CLASS_DISPLAY_OPTIONS: Array<{ value: ClassDisplayMode; label: string; description: string }> = [
+    { value: 'list', label: 'Liste', description: 'Sans cartes' },
+    { value: 'single', label: '1 par ligne', description: 'Confort' },
+    { value: 'double', label: '2 par ligne', description: 'Compact' },
+    { value: 'triple', label: '3 par ligne', description: 'Large écran' },
+];
 
 /** Salutation selon l'heure — petite touche vivante, esprit app mobile. */
 const getGreeting = (): string => {
@@ -53,9 +62,7 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
             data-guide="create-class"
             className="group relative flex h-full w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-zinc-200 bg-zinc-50/40 p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50/70 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-            <div className="relative z-10 mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-400 shadow-sm transition-all duration-300 group-hover:border-zinc-300 group-hover:text-primary">
-                <Plus className="w-5 h-5" />
-            </div>
+            <Plus size={13} className="relative z-10 mb-3 text-zinc-400 transition-colors duration-200 group-hover:text-primary" />
             <div className="relative z-10">
                 <span className="block text-sm font-bold text-zinc-800 transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
                 <span className="mt-1 block text-xs font-semibold text-zinc-400">Créer un cahier de textes</span>
@@ -97,13 +104,15 @@ const findLatestDate = (data: any): string | null => {
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSettings }) => {
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
-    const latenessSummary = useLateness(classes, config);
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [isGuideOpen, setGuideOpen] = useState(false);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
+    const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', 'double', 100);
+    const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
+    const displayMenuRef = useRef<HTMLDivElement>(null);
     // Centre de notifications : version incrémentée après « Ignorer/Réactiver »
     // ou à l'ouverture du panneau pour relire les signaux depuis le stockage.
     const [notificationVersion, setNotificationVersion] = useState(0);
@@ -112,29 +121,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
     const isLoading = isClassesLoading || isConfigLoading;
 
-    const classesTodaySnapshot = useMemo<TodaySnapshot>(() => {
+    const dashboardMetrics = useMemo<DashboardMetrics>(() => {
         const stats = classes.map(classInfo => computeProgressionStats(readLessons(classInfo.id)));
         const measurable = stats.filter(item => item.totalItems > 0);
         const avgCompletion = measurable.length > 0
             ? Math.round(measurable.reduce((sum, item) => sum + item.completionRate, 0) / measurable.length)
             : 0;
         const totalSessions = stats.reduce((sum, item) => sum + item.sessionsCount, 0);
-        const totalPlanned = stats.reduce((sum, item) => sum + item.plannedCount, 0);
-        const lateClasses = latenessSummary?.perClass.filter(item => item.gapSessions > 0).length ?? 0;
 
-        let mood = 'Cahiers prêts : datez une séance pour activer le suivi.';
-        if (totalPlanned > 0 && latenessSummary?.severity === 'ok') {
-            mood = 'Cahiers à jour.';
-        } else if (totalPlanned > 0 && lateClasses === 1) {
-            mood = 'Une classe à mettre à jour.';
-        } else if (totalPlanned > 0 && lateClasses > 1) {
-            mood = `${lateClasses} classes à mettre à jour.`;
-        } else if (totalPlanned > 0) {
-            mood = 'Suivi mis à jour à chaque séance.';
-        }
-
-        return { mood, classCount: classes.length, avgCompletion, totalSessions };
-    }, [classes, lastModifiedDates, latenessSummary]);
+        return { progression: avgCompletion, sessions: totalSessions, classes: classes.length };
+    }, [classes, lastModifiedDates]);
 
     useEffect(() => {
         if (isClassesLoading) return;
@@ -156,6 +152,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         });
         setLastModifiedDates(dates);
     }, [classes, isClassesLoading]);
+
+    useEffect(() => {
+        if (!isDisplayMenuOpen) return;
+        const closeMenu = (event: PointerEvent) => {
+            if (!displayMenuRef.current?.contains(event.target as Node)) setDisplayMenuOpen(false);
+        };
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setDisplayMenuOpen(false);
+        };
+        window.addEventListener('pointerdown', closeMenu);
+        window.addEventListener('keydown', closeOnEscape);
+        return () => {
+            window.removeEventListener('pointerdown', closeMenu);
+            window.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [isDisplayMenuOpen]);
 
     // Synchroniser l'onglet actif avec le cycle configuré (au chargement + quand config change)
     useEffect(() => {
@@ -282,6 +294,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
 
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const currentDisplay = CLASS_DISPLAY_OPTIONS.find(option => option.value === classDisplayMode) ?? CLASS_DISPLAY_OPTIONS[2];
+    const classGridClass = classDisplayMode === 'single'
+        ? 'grid-cols-1'
+        : classDisplayMode === 'triple'
+            ? 'grid-cols-2 md:grid-cols-3'
+            : 'grid-cols-2';
 
     // overflow-x-clip : masque le débordement horizontal (lucioles) sans créer
     // de conteneur de scroll — `hidden` forcerait overflow-y:auto et casserait
@@ -349,34 +367,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                             n'est pas intercepté, le navigateur affiche sa propre invite native. */}
 
                         {classes.length > 0 && (
-                            <TodayBriefing
-                                classes={classes}
-                                config={config}
-                                snapshot={classesTodaySnapshot}
-                                lastModifiedDates={lastModifiedDates}
-                                lateClassCount={latenessSummary?.perClass.filter(item => item.gapSessions > 0).length ?? 0}
-                                attentionCount={notificationFeed.attentionCount}
-                                onSelectClass={onSelectClass}
-                                onOpenSettings={onOpenSettings}
-                                onOpenNotifications={() => {
-                                    setNotificationVersion(version => version + 1);
-                                    setNotificationCenterOpen(true);
-                                }}
-                            />
+                            <div className="mb-4 flex w-full justify-end">
+                                <DashboardMetricsBar metrics={dashboardMetrics} />
+                            </div>
                         )}
 
                         {/* Retards et échéances : fusionnés dans le centre de
                             notifications (cloche de l'en-tête) — plus de bannières. */}
 
                         <section className="mt-6 w-full" aria-labelledby="classes-heading">
-                            <div className="mb-4 flex flex-wrap items-center gap-3 sm:mb-5">
-                                <h2 id="classes-heading" className="font-display text-[1.75rem] font-bold leading-none tracking-tight text-foreground sm:text-[2rem]">
-                                    Mes classes
-                                </h2>
+                            <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
+                                <div className="flex min-w-0 items-baseline gap-2.5">
+                                    <h2 id="classes-heading" className="font-display text-[1.75rem] font-bold leading-none tracking-tight text-foreground sm:text-[2rem]">
+                                        Mes classes
+                                    </h2>
+                                    {classes.length > 0 && (
+                                        <span className="shrink-0 pb-0.5 text-[13px] font-semibold text-zinc-400 sm:text-sm">
+                                            {classes.length} classe{classes.length > 1 ? 's' : ''}
+                                        </span>
+                                    )}
+                                </div>
                                 {classes.length > 0 && (
-                                    <span className="shrink-0 rounded-md border border-primary/15 bg-primary/5 px-2.5 py-1 text-xs font-bold text-primary">
-                                        {classes.length} classe{classes.length > 1 ? 's' : ''}
-                                    </span>
+                                    <div ref={displayMenuRef} className="relative shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDisplayMenuOpen(open => !open)}
+                                            aria-haspopup="menu"
+                                            aria-expanded={isDisplayMenuOpen}
+                                            className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-[11px] font-semibold text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-zinc-300 hover:text-zinc-900 active:scale-[0.98] sm:h-9 sm:px-3 sm:text-xs"
+                                        >
+                                            <span className="hidden text-zinc-400 sm:inline">Affichage</span>
+                                            <span>{currentDisplay.label}</span>
+                                            <ChevronDown className={`h-2.5 w-2.5 text-zinc-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        {isDisplayMenuOpen && (
+                                            <div
+                                                role="menu"
+                                                className="absolute right-0 top-[calc(100%+0.4rem)] z-30 w-44 overflow-hidden rounded-xl border border-zinc-200 bg-white p-1.5 shadow-[0_14px_32px_rgba(24,24,27,0.14)]"
+                                            >
+                                                {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                    const isActive = option.value === classDisplayMode;
+                                                    return (
+                                                        <button
+                                                            key={option.value}
+                                                            type="button"
+                                                            role="menuitemradio"
+                                                            aria-checked={isActive}
+                                                            onClick={() => {
+                                                                setClassDisplayMode(option.value);
+                                                                setDisplayMenuOpen(false);
+                                                            }}
+                                                            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors ${isActive ? 'bg-primary/8 text-primary' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'}`}
+                                                        >
+                                                            <span className="text-[11px] font-semibold">{option.label}</span>
+                                                            <span className={`text-[9px] font-medium ${isActive ? 'text-primary/75' : 'text-zinc-400'}`}>{option.description}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                                 {classes.length === 0 ? (
@@ -395,8 +445,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                             Commencer
                                         </Button>
                                     </div>
+                                ) : classDisplayMode === 'list' ? (
+                                    <div className="space-y-2" role="list" aria-label="Liste des cahiers">
+                                        {visibleClasses.map((classInfo, index) => (
+                                            <div
+                                                key={classInfo.id}
+                                                role="listitem"
+                                                className="animate-slide-in-up opacity-0"
+                                                style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}
+                                            >
+                                                <ClassListItem
+                                                    classInfo={classInfo}
+                                                    lastModified={lastModifiedDates[classInfo.id]}
+                                                    nextSession={nextSession(classInfo.id)}
+                                                    onSelect={() => onSelectClass(classInfo)}
+                                                    onDelete={() => handleDeleteClass(classInfo.id)}
+                                                    onConfigure={() => setEditingClass(classInfo)}
+                                                />
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => setCreateModalOpen(true)}
+                                            className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 px-3 text-[11px] font-semibold text-zinc-500 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-primary sm:min-h-16 sm:text-xs"
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            Nouveau cahier
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    <div className={`grid ${classGridClass} gap-2.5 sm:gap-4`}>
                                         {/* Entrée en cascade : les cartes montent l'une après l'autre */}
                                         {visibleClasses.map((classInfo, index) => (
                                             <div
@@ -416,7 +494,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                         ))}
                                         {/* Carte « nouvelle classe » : desktop/tablette ; sur mobile le FAB prend le relais */}
                                         <div
-                                            className="hidden h-full sm:block animate-slide-in-up opacity-0"
+                                            className="h-full animate-slide-in-up opacity-0"
                                             style={{ animationDelay: `${Math.min(visibleClasses.length, 9) * 45}ms` }}
                                         >
                                             <AddClassCard onClick={() => setCreateModalOpen(true)} />
@@ -429,16 +507,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             </div>
 
             {/* FAB mobile — geste app native : créer une classe depuis le pouce */}
-            <Button
-                onClick={() => setCreateModalOpen(true)}
-                size="icon"
-                className="fab-safe fixed right-4 z-50 h-14 w-14 rounded-full shadow-xl shadow-primary/30 transition-transform active:scale-90 sm:hidden print:hidden"
-                aria-label="Créer une nouvelle classe"
-                data-guide="create-class-fab"
-            >
-                <Plus className="h-6 w-6" />
-            </Button>
-
             <CreateClassModal
                 isOpen={isCreateModalOpen || !!editingClass}
                 onClose={() => {

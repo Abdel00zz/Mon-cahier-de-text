@@ -48,11 +48,11 @@ Connexion, inscription, validation locale du formulaire et présentation des err
 
 ### `features/dashboard`
 
-Accueil **Mes classes**, recherche globale, briefing, cartes, création de cahier et onboarding. Les calculs de progression ou de calendrier sont consommés depuis `utils` et les hooks ; ils ne sont pas redéfinis ici.
+Accueil **Mes classes**, indicateurs compacts alignés à droite, centre de notifications, cartes, création de cahier et onboarding. Les calculs de progression ou de calendrier sont consommés depuis `utils` et les hooks ; ils ne sont pas redéfinis ici.
 
 ### `features/editor`
 
-Éditeur du cahier, tableau, lignes, sélection, historique, impression, centre d’actions et modales propres à la saisie. Les modales sont chargées à la demande depuis `EditorModals.tsx`.
+Éditeur du cahier, tableau, lignes, sélection, impression, centre d’actions et modales propres à la saisie. Le journal d’activité est consultable depuis le centre de notifications global. Les modales sont chargées à la demande depuis `EditorModals.tsx`.
 
 ### `features/evaluations`
 
@@ -74,7 +74,7 @@ Boutons, champs, sélecteurs, dialogues, feuilles, icônes, rendu mathématique 
 
 ### `hooks`
 
-État réutilisable : classes, configuration, historique, recherche, sélection, évaluations et alertes. Un hook ne produit pas de mise en page.
+État réutilisable : classes, configuration, annulation/rétablissement, recherche, sélection, évaluations et alertes. Un hook ne produit pas de mise en page.
 
 ### `contexts`
 
@@ -105,7 +105,7 @@ Fonctions testables sans interface : calendrier, validation des dates, progressi
 
 ### Cahier
 
-Chaque classe possède ses `LessonsData`. Les opérations structurelles passent par `utils/dataUtils.ts`, l’historique par `useHistoryState` et le journal par `utils/journal.ts`.
+Chaque classe possède ses `LessonsData`. Les opérations structurelles passent par `utils/dataUtils.ts`, l’annulation/rétablissement par `useHistoryState` et le journal d’activité par `utils/journal.ts`.
 
 ### Date
 

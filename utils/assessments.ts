@@ -198,13 +198,14 @@ export const getUpcomingAssessments = (
 export interface PastAssessment extends PlannedAssessment {
     classId: string;
     className: string;
-    /** jours écoulés depuis le devoir (1 = hier) */
+    /** jours écoulés depuis le devoir (0 = aujourd'hui même, 1 = hier) */
     daysAgo: number;
 }
 
 /**
- * Devoirs récemment PASSÉS : fenêtre [-lookback jours, hier]. Sert au rappel
- * « absents non consignés » — après la fenêtre, le rappel s'éteint de lui-même.
+ * Devoirs du JOUR ou récemment passés : fenêtre [aujourd'hui, -lookback jours].
+ * Sert au rappel « absents non consignés » — il apparaît dès la séance du
+ * devoir (jour même) puis s'éteint de lui-même après la fenêtre.
  */
 export const getRecentPastAssessments = (
     classes: ClassInfo[],
@@ -224,7 +225,7 @@ export const getRecentPastAssessments = (
         );
         for (const assessment of dates) {
             const daysAgo = daysBetweenISO(assessment.dateISO, today);
-            if (daysAgo >= 1 && daysAgo <= lookbackDays) {
+            if (daysAgo >= 0 && daysAgo <= lookbackDays) {
                 past.push({ ...assessment, classId: classInfo.id, className: classInfo.name, daysAgo });
             }
         }

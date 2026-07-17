@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Undo2, Redo2, Save, Search, X, ChevronUp, MoreVertical,
-  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp, History,
+  CalendarCheck, Database, ListChecks, PieChart, Printer, CircleHelp,
 } from '@/components/ui/icons';
 import { SyncStatusBadge } from '@/components/ui/SyncStatusBadge';
 
@@ -32,7 +32,6 @@ interface ToolbarProps {
   onPrint: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  onOpenHistory: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = React.memo(({
@@ -40,7 +39,6 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   onOpenDataTransfer, onOpenManageLessons, onOpenGuide, onOpenAnalyse, onOpenEvaluations,
   onPrint,
   searchQuery, setSearchQuery,
-  onOpenHistory,
 }) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchQuery);
@@ -235,10 +233,6 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <DropdownMenuItem onClick={onOpenDataTransfer} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <Database className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
               <span className="font-semibold">Importer / exporter</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenHistory} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <History className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span className="font-semibold">Historique des modifications</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenManageLessons} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <ListChecks className="h-3.5 w-3.5 text-zinc-500 shrink-0" />

@@ -18,7 +18,7 @@ import { prepareImportedLessons } from '@/utils/importPipeline';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
-import { appendJournal, readJournal } from '@/utils/journal';
+import { appendJournal } from '@/utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/utils/predefinedContent';
 import {
   EDITOR_MODAL_KEY,
@@ -30,7 +30,6 @@ import {
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
-import { HistoryModal } from './modals/HistoryModal';
 import { printDocument } from '@/utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '@/types';
 import { PrintView } from './PrintView';
@@ -58,7 +57,6 @@ type ActiveModal =
   | 'assignDate'
   | 'description'
   | 'print'
-  | 'history'
   | null;
 
 const indicesKey = (idx: Indices): string =>
@@ -224,9 +222,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Journal des actions : chaque opération d'édition (operationType du
    * useHistoryState) est consignée avec son horodatage → alimente la ligne
-   * « Dernière modification » et la modale Historique.
+   * « Dernière modification » et le centre global d’activité.
    */
-  const [journalVersion, setJournalVersion] = useState(0);
   useEffect(() => {
     const journalOp = historyAction === 'undo'
       ? 'undo'
@@ -237,15 +234,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           : null;
     if (journalOp && journalOp !== 'initial' && journalOp !== 'initial-load') {
       appendJournal(classInfo.id, journalOp);
-      setJournalVersion(v => v + 1);
     }
     // La donnée change à chaque édition/annulation/rétablissement. Ne pas
     // dépendre de classInfo.id : lors d'un changement de classe, l'ancien
     // snapshot ne doit jamais être journalisé dans le nouveau cahier.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonsData]);
-
-  const journalEntries = useMemo(() => readJournal(classInfo.id), [classInfo.id, journalVersion]);
 
   // Échap : efface la sélection (si aucune modale/édition n'est ouverte — elles gèrent leur propre Échap)
   useEffect(() => {
@@ -356,7 +350,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         appendJournal(classInfo.id, 'export-data');
-        setJournalVersion(version => version + 1);
         showNotification("Donnees exportees avec succes!", "success");
     } catch (error) {
         logger.error("Failed to export data", error);
@@ -1039,7 +1032,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             onPrint={handleSmartPrint}
             searchQuery={searchQuery}
             setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
-            onOpenHistory={() => setEditorState(draft => { draft.activeModal = 'history'; })}
           />
           {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
           {predefinedOffer && lessonsData.length === 0 && (
@@ -1147,12 +1139,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         onConfigChange={updateConfig}
         onPrint={handleExecutePrint}
       />
-      <HistoryModal
-        isOpen={activeModal === 'history'}
-        onClose={handleModalClose}
-        entries={journalEntries}
-      />
-
       <EditorModals
         activeModal={activeModal}
         handleModalClose={handleModalClose}

@@ -5,8 +5,8 @@ Application web et mobile offline-first destinée aux enseignants : classes, cah
 ## Parcours principal
 
 1. L’enseignant se connecte ou crée son compte.
-2. L’accueil **Mes classes** présente la situation du jour, la recherche globale et les cahiers.
-3. Une classe ouvre son cahier : contenus, dates, remarques, recherche, historique et impression.
+2. L’accueil **Mes classes** présente les trois indicateurs compacts à droite, le centre de notifications et les cahiers.
+3. Une classe ouvre son cahier : contenus, dates, remarques, recherche et impression. Le journal d’activité se consulte depuis le centre de notifications.
 4. Les paramètres réunissent profil, emploi du temps, notifications, données et compte.
 5. Les évaluations s’ouvrent depuis la classe active et restent liées à cette classe.
 
@@ -20,7 +20,7 @@ Choix de date
   → emploi du temps + vacances + fériés + absences + année scolaire
   → aucun écart : enregistrement
   → écart : dialogue « Modifier la date / J’ai compris, enregistrer »
-  → historique local + synchronisation
+  → journal d’activité local + synchronisation
 ```
 
 Un écart est une information à confirmer, jamais une faute et jamais un toast fugitif.
@@ -31,7 +31,7 @@ Un écart est une information à confirmer, jamais une faute et jamais un toast 
 Cahier de classe
   → dates réellement saisies
   → progression et prochaine séance
-  → briefing Mes classes
+  → indicateurs compacts Mes classes + centre de notifications
   → évaluations et alertes contextuelles
 ```
 
@@ -42,7 +42,7 @@ La grille `timetable` est la source de vérité de l’emploi du temps. Les `sch
 | Emplacement | Responsabilité |
 |---|---|
 | `features/auth/` | Connexion et inscription |
-| `features/dashboard/` | Accueil Mes classes, briefing, cartes et onboarding |
+| `features/dashboard/` | Accueil Mes classes, indicateurs compacts, centre de notifications, cartes et onboarding |
 | `features/editor/` | Cahier, tableau, actions, impression et modales d’édition |
 | `features/evaluations/` | Évaluations, parcours officiel, concours et absences |
 | `features/settings/` | Paramètres, emploi du temps, notifications et données |

@@ -7,6 +7,7 @@ Objectifs d’apprentissage
 - Créer une classe et configurer l’application
 - Ajouter et structurer des contenus (chapitres, sections, items)
 - Gérer les dates, remarques et séparateurs
+- Traiter les priorités et consulter le journal d’activité depuis les notifications
 - Rechercher, réorganiser, imprimer et sauvegarder (export/import)
 
 Durée estimée: 25–35 min (découpée en chapitres courts)
@@ -24,6 +25,8 @@ Narration clé: « En quelques minutes, vous créez votre classe, saisissez vos 
 
 ### 2) Premiers pas et configuration (2–3 min)
 - Ouverture de l’application: présentation du Tableau de bord (liste des classes, bouton de création, bouton Configuration, bouton Aide visible).
+- Repères rapides: la barre jaune douce, alignée à droite sur grand écran, affiche seulement **Progression**, **Séances** et **Classes**. Sur téléphone, elle reprend toute la largeur pour rester lisible.
+- Centre de notifications: cliquer sur la cloche pour traiter les priorités, les échéances et consulter le **journal d’activité**. Le filtre de classe affiche le journal complet de ce cahier; les catégories Contenu, Dates et Structure facilitent la lecture.
 - Ouvrir la Configuration: 
 	- Établissement (nom affiché sur les impressions)
 	- Nom de l’enseignant par défaut
@@ -54,7 +57,8 @@ Scénario suggéré: « 3e – Mathématiques »
 	- Annuler/Rétablir (Ctrl+Z / Ctrl+Y)
 	- Sauvegarder (manuel, en plus de l’auto)
 	- Recherche (touche « / » ou Ctrl+K)
-	- Menu … : Importer chapitre(s), Exporter les contenus, Gérer les leçons, Imprimer / PDF, Aide (dernier)
+- Menu … : Importer chapitre(s), Exporter les contenus, Gérer les leçons, Imprimer / PDF, Aide (dernier)
+- Le journal des modifications n’est pas dans l’Éditeur: il est centralisé dans le centre de notifications, ce qui évite les doublons.
 - Zone principale (tableau): colonnes Date, Contenu, Remarque.
 
 Note: Le rendu des formules mathématiques est supporté (MathJax) – utile en sciences.
@@ -136,6 +140,7 @@ Conseil: rangez vos fichiers dans « Sauvegardes CAHIER_txt/AAAA‑MM‑JJ ».
 
 ## Script de narration (extraits)
 
+- « La cloche réunit les priorités et le journal d’activité de toutes vos classes; choisissez une classe pour retrouver son suivi complet. »
 - « Bienvenue dans CAHIER_txt, votre cahier de textes numérique simple et puissant. »
 - « Depuis la configuration, définissez votre établissement et votre nom d’enseignant; ces informations apparaîtront sur vos impressions. »
 - « Créons notre première classe, puis ajoutons un chapitre et une séance datée. »
@@ -147,6 +152,7 @@ Conseil: rangez vos fichiers dans « Sauvegardes CAHIER_txt/AAAA‑MM‑JJ ».
 ## Annexes pour la vidéo
 
 Rappels visuels à préparer
+- Icône Notifications (🔔) : ouverture des priorités, échéances et du journal d’activité.
 - Vignettes de touches: Ctrl+Z, Ctrl+Y, /, Ctrl+K, Échap
 - Icônes: Config (⚙️), Rechercher (🔎), Imprimer (🖨️), Import/Export (⬇️/⬆️)
 - Écran mobile: bascule portrait → paysage
@@ -160,4 +166,3 @@ Conseils de tournage
 - Zoom UI à 125–150% pour lisibilité
 - Découper en chapitres YouTube (timestamps) correspondant au plan
 - Terminer par un récapitulatif et un call-to-action (s’abonner, consulter l’aide)
-

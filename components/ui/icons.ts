@@ -4,7 +4,6 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
   faArrowDown,
   faArrowLeft,
-  faArrowRight,
   faArrowUp,
   faBell,
   faBook,
@@ -109,7 +108,6 @@ export const CalendarMinus = icon(faCalendarMinus);
 export const CalendarX = icon(faCalendarXmark);
 export const Clock = icon(faClock);
 export const ArrowLeft = icon(faArrowLeft);
-export const ArrowRight = icon(faArrowRight);
 export const ArrowUp = icon(faArrowUp);
 export const ArrowDown = icon(faArrowDown);
 export const TriangleAlert = icon(faTriangleExclamation);

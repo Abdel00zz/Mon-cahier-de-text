@@ -1,6 +1,6 @@
 /**
  * Journal des actions d'édition — par classe, persistant, plafonné.
- * Alimente la ligne « Dernière modification » et la modale Historique.
+ * Alimente la ligne « Dernière modification » et le centre global d’activité.
  */
 
 export interface JournalEntry {
