@@ -19,6 +19,7 @@ import { ChevronDown, CircleHelp, Plus, Settings } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { computeProgressionStats } from '@/utils/progression';
 import { activateNativeNotifications } from '@/utils/push';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 
@@ -37,8 +38,17 @@ const CLASS_DISPLAY_OPTIONS: Array<{ value: ClassDisplayMode; label: string; des
 ];
 
 /** Salutation selon l'heure — petite touche vivante, esprit app mobile. */
-const getGreeting = (): string => {
+const getGreeting = (locale: 'fr' | 'en' | 'ar'): string => {
     const hour = new Date().getHours();
+    if (locale === 'en') {
+        if (hour < 5) return 'Good evening';
+        if (hour < 13) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+    }
+    if (locale === 'ar') {
+        return hour < 13 ? 'صباح الخير' : 'مساء الخير';
+    }
     if (hour < 5) return 'Bonsoir';
     if (hour < 13) return 'Bonjour';
     if (hour < 18) return 'Bon après-midi';
@@ -56,6 +66,7 @@ const readLessons = (classId: string) => {
 };
 
 const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+    const { t } = useLocale();
     return (
         <button
             onClick={onClick}
@@ -64,7 +75,7 @@ const AddClassCard: React.FC<{ onClick: () => void }> = ({ onClick }) => {
         >
             <Plus size={13} className="relative z-10 mb-3 text-zinc-400 transition-colors duration-200 group-hover:text-primary" />
             <div className="relative z-10">
-                <span className="block text-sm font-bold text-zinc-800 transition-colors group-hover:text-primary font-display">Nouveau cahier</span>
+                <span className="block text-sm font-bold text-zinc-800 transition-colors group-hover:text-primary font-display">{t('dashboard.newNotebook')}</span>
                 <span className="mt-1 block text-xs font-semibold text-zinc-400">Créer un cahier de textes</span>
             </div>
         </button>
@@ -102,6 +113,7 @@ const findLatestDate = (data: any): string | null => {
 };
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSettings }) => {
+    const { locale, t } = useLocale();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -300,6 +312,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
         : classDisplayMode === 'triple'
             ? 'grid-cols-2 md:grid-cols-3'
             : 'grid-cols-2';
+    const displayCopy = (value: ClassDisplayMode) => {
+        const keys: Record<ClassDisplayMode, [string, string]> = {
+            list: ['dashboard.display.list', 'dashboard.display.listDescription'],
+            single: ['dashboard.display.single', 'dashboard.display.singleDescription'],
+            double: ['dashboard.display.double', 'dashboard.display.doubleDescription'],
+            triple: ['dashboard.display.triple', 'dashboard.display.tripleDescription'],
+        };
+        const [labelKey, descriptionKey] = keys[value];
+        return { label: t(labelKey), description: t(descriptionKey) };
+    };
 
     // overflow-x-clip : masque le débordement horizontal (lucioles) sans créer
     // de conteneur de scroll — `hidden` forcerait overflow-y:auto et casserait
@@ -309,16 +331,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-7xl px-3 py-4 sm:px-5 sm:py-6 lg:px-6 lg:py-8">
                     <header className="mb-6 space-y-4 sm:mb-8" id="dashboard-header">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="min-w-0 flex-1">
-                                <h1 className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-display text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                        <div className="relative flex min-h-9 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="dashboard-header-copy min-w-0 flex-1 pr-[7.5rem] lg:pr-0">
+                                <h1 className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-[1.65rem] font-extrabold tracking-tight text-foreground sm:text-3xl">
                                     {teacherName ? (
                                         <>
-                                            <span>{getGreeting()},</span>
+                                            <span>{getGreeting(locale)},</span>
                                             <span className="text-primary">{teacherName}</span>
                                         </>
                                     ) : (
-                                        <span>Mes classes</span>
+                                        <span>{t('dashboard.classes')}</span>
                                     )}
                                 </h1>
                                 <p className="mt-1.5 text-xs font-semibold text-muted-foreground sm:text-sm">
@@ -326,28 +348,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                 </p>
                             </div>
 
-                            <div className="flex w-full shrink-0 items-center justify-end gap-1 self-end lg:w-auto lg:self-start" aria-label="Aide, réglages et notifications">
+                            <div className="dashboard-header-actions absolute right-0 top-0 flex shrink-0 items-center gap-2 lg:static sm:gap-3" aria-label="Aide, réglages et notifications">
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setGuideOpen(true)}
-                                    className="group h-9 w-9 rounded-xl border-0 bg-transparent text-zinc-400 shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#f2f6fc] hover:text-[#0056D2]"
+                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 sm:h-11 sm:w-11"
                                     aria-label="Aide"
                                     data-tippy-content="Aide"
                                 >
-                                    <CircleHelp className="h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-110" />
+                                    <CircleHelp className="h-[25px] w-[25px] transition-transform duration-200 group-hover:scale-110 sm:h-7 sm:w-7" />
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     size="icon"
                                     onClick={onOpenSettings}
-                                    className="group h-9 w-9 rounded-xl border-0 bg-transparent text-zinc-400 shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#f2f6fc] hover:text-[#0056D2]"
+                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 sm:h-11 sm:w-11"
                                     aria-label="Paramètres"
                                     data-tippy-content="Paramètres"
                                 >
-                                    <Settings className="h-[18px] w-[18px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105" />
+                                    <Settings className="h-[25px] w-[25px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105 sm:h-7 sm:w-7" />
                                 </Button>
                                 <NotificationCenter
                                     classes={classes}
@@ -363,8 +385,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                     </header>
 
                     <main>
-                        {/* Installation PWA : AUCUNE bannière applicative — beforeinstallprompt
-                            n'est pas intercepté, le navigateur affiche sa propre invite native. */}
+                        {/* Installation PWA : AUCUNE bannière ni invite applicative.
+                            `beforeinstallprompt` n'est pas intercepté → Chrome/Edge
+                            affichent leur invite native ; sur Safari/iOS l'ajout se
+                            fait via Partager ▸ « Sur l'écran d'accueil » (pas d'API). */}
 
                         {classes.length > 0 && (
                             <div className="mb-4 flex w-full justify-end">
@@ -379,11 +403,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                             <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
                                 <div className="flex min-w-0 items-baseline gap-2.5">
                                     <h2 id="classes-heading" className="font-display text-[1.75rem] font-bold leading-none tracking-tight text-foreground sm:text-[2rem]">
-                                        Mes classes
+                                        {t('dashboard.classes')}
                                     </h2>
                                     {classes.length > 0 && (
                                         <span className="shrink-0 pb-0.5 text-[13px] font-semibold text-zinc-400 sm:text-sm">
-                                            {classes.length} classe{classes.length > 1 ? 's' : ''}
+                                            {t('dashboard.classCount', { count: classes.length, plural: locale === 'ar' || classes.length < 2 ? '' : 's' })}
                                         </span>
                                     )}
                                 </div>
@@ -396,8 +420,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                             aria-expanded={isDisplayMenuOpen}
                                             className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-[11px] font-semibold text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:border-zinc-300 hover:text-zinc-900 active:scale-[0.98] sm:h-9 sm:px-3 sm:text-xs"
                                         >
-                                            <span className="hidden text-zinc-400 sm:inline">Affichage</span>
-                                            <span>{currentDisplay.label}</span>
+                                            <span className="hidden text-zinc-400 sm:inline">{t('dashboard.display')}</span>
+                                            <span>{displayCopy(currentDisplay.value).label}</span>
                                             <ChevronDown className={`h-2.5 w-2.5 text-zinc-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isDisplayMenuOpen && (
@@ -419,8 +443,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                                             }}
                                                             className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors ${isActive ? 'bg-primary/8 text-primary' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'}`}
                                                         >
-                                                            <span className="text-[11px] font-semibold">{option.label}</span>
-                                                            <span className={`text-[9px] font-medium ${isActive ? 'text-primary/75' : 'text-zinc-400'}`}>{option.description}</span>
+                                                            <span className="text-[11px] font-semibold">{displayCopy(option.value).label}</span>
+                                                            <span className={`text-[9px] font-medium ${isActive ? 'text-primary/75' : 'text-zinc-400'}`}>{displayCopy(option.value).description}</span>
                                                         </button>
                                                     );
                                                 })}
@@ -470,7 +494,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                             className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 px-3 text-[11px] font-semibold text-zinc-500 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-primary sm:min-h-16 sm:text-xs"
                                         >
                                             <Plus className="h-3 w-3" />
-                                            Nouveau cahier
+                                            {t('dashboard.newNotebook')}
                                         </button>
                                     </div>
                                 ) : (

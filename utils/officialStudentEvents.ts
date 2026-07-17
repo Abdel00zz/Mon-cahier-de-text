@@ -1,4 +1,6 @@
-import officialEventsJson from '../public/official-student-events.json';
+// Attribut d'import obligatoire côté Node/ESM (fonctions Vercel), inline par
+// Vite côté navigateur — voir utils/calendar.ts.
+import officialEventsJson from '../public/official-student-events.json' with { type: 'json' };
 import { ClassInfo } from '../types.js';
 
 export type OfficialStudentEventCategory =

@@ -6,6 +6,7 @@ import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { Bell, CalendarCheck, Clock, TriangleAlert, X } from '@/components/ui/icons';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface NotificationsTabProps {
     config: AppConfig;
@@ -49,6 +50,7 @@ const NotificationKind: React.FC<{
 );
 
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onChange }) => {
+    const { locale, t } = useLocale();
     const settings = config.notificationSettings ?? { ...defaultNotificationSettings };
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -69,14 +71,14 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 const result = await subscribeToPush();
                 if (result.ok) {
                     patch({ pushEnabled: true });
-                    setMessage('Notifications push activées sur cet appareil.');
+                    setMessage(t('notifications.pushEnabled'));
                 } else {
-                    setMessage(`Activation impossible : ${result.reason ?? 'erreur inconnue'}.`);
+                    setMessage(t('notifications.activationFailed', { reason: result.reason ?? '—' }));
                 }
             } else {
                 await unsubscribeFromPush();
                 patch({ pushEnabled: false });
-                setMessage('Notifications push désactivées sur cet appareil.');
+                setMessage(t('notifications.pushDisabled'));
             }
         } finally {
             setBusy(false);
@@ -86,45 +88,44 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     return (
         <div className="space-y-3">
             <p className="text-xs leading-relaxed text-muted-foreground">
-                Recevez des rappels intelligents lorsque votre cahier prend du retard — jamais pendant les vacances, les
-                jours fériés ou le week-end.
+                {t('notifications.intro')}
             </p>
 
             <div className="rounded-xl border border-border bg-secondary/35 p-3">
                 <div className="flex items-start justify-between gap-3">
                     <div>
-                        <h4 className="text-xs font-bold text-foreground">Alertes natives du téléphone</h4>
+                        <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
                         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                            Elles apparaissent dans la bannière système, l'écran verrouillé et le centre de notifications selon les réglages du téléphone.
+                            {t('notifications.nativeDescription')}
                         </p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
-                        {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? 'Autorisées' : 'Non activées'}
+                        {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? t('notifications.authorized') : t('notifications.inactive')}
                     </span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                    <NotificationKind icon={TriangleAlert} label="Retard du cahier" detail="Cron intelligent" />
-                    <NotificationKind icon={Clock} label="Fin de séance" detail="Rappel local" />
-                    <NotificationKind icon={CalendarCheck} label="Date manquante" detail="Après le cours" />
-                    <NotificationKind icon={Bell} label="Administration" detail="Message direct" />
+                    <NotificationKind icon={TriangleAlert} label={t('notifications.kindDelay')} detail={t('notifications.smartCheck')} />
+                    <NotificationKind icon={Clock} label={t('notifications.kindEnd')} detail={t('notifications.localReminder')} />
+                    <NotificationKind icon={CalendarCheck} label={t('notifications.kindMissingDate')} detail={t('notifications.afterClass')} />
+                    <NotificationKind icon={Bell} label={t('notifications.kindAdmin')} detail={t('notifications.directMessage')} />
                 </div>
             </div>
 
             <Toggle
-                label="Alertes dans l'application"
-                hint="Bannière affichée sur le tableau de bord en cas de retard."
+                label={t('notifications.inApp')}
+                hint={t('notifications.inAppHint')}
                 checked={settings.enabled}
                 onChange={v => patch({ enabled: v })}
             />
 
             <Toggle
-                label="Notifications push sur cet appareil"
+                label={t('notifications.push')}
                 hint={
                     iosNeedsInstall
-                        ? "Sur iPhone/iPad, installez d'abord l'application sur l'écran d'accueil."
+                        ? t('notifications.pushIosInstall')
                         : !supported
-                          ? "Cet appareil ne prend pas en charge les notifications push."
-                          : 'Recevez une notification même quand l\'application est fermée.'
+                          ? t('notifications.pushUnsupported')
+                          : t('notifications.pushHint')
                 }
                 checked={settings.pushEnabled}
                 onChange={handlePushToggle}
@@ -132,11 +133,11 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <Toggle
-                label="Rappels de fin de séance sur cet appareil"
+                label={t('notifications.vibration')}
                 hint={
                     vibrationSupported
-                        ? 'Vibration une minute avant la fin de chaque séance, et alerte si aucune date n\'a été affectée.'
-                        : 'Cet appareil ne prend pas en charge la vibration — les rappels s\'affichent en notification visuelle.'
+                        ? t('notifications.vibrationHint')
+                        : t('notifications.vibrationUnsupported')
                 }
                 checked={settings.sessionVibration ?? false}
                 onChange={v => patch({ sessionVibration: v })}
@@ -145,34 +146,30 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="rounded-xl border border-border bg-card p-3">
-                    <span className="block text-xs font-semibold text-foreground font-sans">Seuil de retard</span>
+                    <span className="block text-xs font-semibold text-foreground font-sans">{t('notifications.delayThreshold')}</span>
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
                         className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-card text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                        <option value={1}>1 séance de retard</option>
-                        <option value={2}>2 séances de retard</option>
-                        <option value={3}>3 séances de retard</option>
+                        {[1, 2, 3].map(count => <option key={count} value={count}>{t('notifications.delayedSessions', { count, plural: count > 1 && locale !== 'ar' ? 's' : '' })}</option>)}
                     </select>
                 </label>
                 <label className="rounded-xl border border-border bg-card p-3">
-                    <span className="block text-xs font-semibold text-foreground font-sans">Inactivité</span>
+                    <span className="block text-xs font-semibold text-foreground font-sans">{t('notifications.inactivity')}</span>
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
                         className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-card text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                        <option value={3}>Après 3 jours de classe</option>
-                        <option value={5}>Après 5 jours de classe</option>
-                        <option value={10}>Après 10 jours de classe</option>
+                        {[3, 5, 10].map(count => <option key={count} value={count}>{t('notifications.inactiveDays', { count })}</option>)}
                     </select>
                 </label>
             </div>
 
             <Toggle
-                label="Silence pendant les vacances"
-                hint="Aucune alerte durant les vacances scolaires et jours fériés."
+                label={t('notifications.quiet')}
+                hint={t('notifications.quietHint')}
                 checked={settings.quietDuringVacations}
                 onChange={v => patch({ quietDuringVacations: v })}
             />
@@ -183,13 +180,13 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     onClick={async () => {
                         setBusy(true);
                         const ok = await sendTestNotification();
-                        setMessage(ok ? 'Notification de test envoyée.' : "Échec de l'envoi du test.");
+                        setMessage(ok ? t('notifications.testSuccess') : t('notifications.testFailure'));
                         setBusy(false);
                     }}
                     disabled={busy}
                     className="h-9 w-full rounded-md border border-border/80 bg-card text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-50 transition-colors"
                 >
-                    Envoyer une notification de test
+                    {t('notifications.sendTest')}
                 </button>
             )}
 
@@ -209,6 +206,7 @@ const AbsencesSection: React.FC<{
     absences: AbsencePeriod[];
     onChange: (absences: AbsencePeriod[]) => void;
 }> = ({ absences, onChange }) => {
+    const { t } = useLocale();
     const [debut, setDebut] = useState('');
     const [fin, setFin] = useState('');
     const [motif, setMotif] = useState('');
@@ -228,10 +226,9 @@ const AbsencesSection: React.FC<{
 
     return (
         <div className="rounded-xl border border-border bg-card p-3">
-            <h4 className="text-xs font-semibold text-foreground font-display">Absences justifiées</h4>
+            <h4 className="text-xs font-semibold text-foreground font-display">{t('notifications.absences')}</h4>
             <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground font-sans">
-                Certificat de maladie, congé... Ces périodes sont exclues du calcul de retard et aucune alerte
-                n'est envoyée pendant.
+                {t('notifications.absencesHint')}
             </p>
 
             {absences.length > 0 && (
@@ -250,7 +247,7 @@ const AbsencesSection: React.FC<{
                                 type="button"
                                 onClick={() => removeAbsence(index)}
                                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                                aria-label="Supprimer cette absence"
+                                aria-label={t('notifications.deleteAbsence')}
                             >
                                 <X className="h-2.5 w-2.5" />
                             </button>
@@ -265,7 +262,7 @@ const AbsencesSection: React.FC<{
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
                     className="h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    aria-label="Début de l'absence"
+                    aria-label={t('notifications.absenceStart')}
                 />
                 <input
                     type="date"
@@ -273,13 +270,13 @@ const AbsencesSection: React.FC<{
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
                     className="h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    aria-label="Fin de l'absence"
+                    aria-label={t('notifications.absenceEnd')}
                 />
                 <input
                     type="text"
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
-                    placeholder="Motif (optionnel)"
+                    placeholder={t('notifications.reasonOptional')}
                     className="col-span-2 h-10 rounded-md border border-border/80 bg-card px-2 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <button
@@ -288,7 +285,7 @@ const AbsencesSection: React.FC<{
                     disabled={!debut}
                     className="col-span-2 h-10 rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-40 sm:col-span-1 text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
-                    Ajouter
+                    {t('notifications.add')}
                 </button>
             </div>
         </div>

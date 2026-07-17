@@ -12,6 +12,7 @@ export type SyncableSettings = Pick<
     | 'defaultTeacherName'
     | 'academyRegion'
     | 'educationProvince'
+    | 'applicationLocale'
     | 'selectedCycles'
     | 'selectedSubjects'
     | 'showAllCycles'
@@ -39,6 +40,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'defaultTeacherName',
     'academyRegion',
     'educationProvince',
+    'applicationLocale',
     'selectedCycles',
     'selectedSubjects',
     'showAllCycles',

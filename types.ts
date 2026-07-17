@@ -1,4 +1,5 @@
 export type Cycle = 'college' | 'lycee' | 'prepa';
+export type AppLocale = 'fr' | 'en' | 'ar';
 
 export interface ClassInfo {
   id: string;
@@ -11,6 +12,8 @@ export interface ClassInfo {
 }
 
 export interface AppConfig {
+  /** Langue de l'interface, partagée avec le compte enseignant. */
+  applicationLocale?: AppLocale;
   establishmentName: string;
   defaultTeacherName: string;
   /** Référentiel administratif marocain utilisé dans l'en-tête imprimé. */

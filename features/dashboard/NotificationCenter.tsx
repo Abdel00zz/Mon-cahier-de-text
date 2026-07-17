@@ -516,13 +516,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           aria-label={attentionCount > 0 ? `Notifications, ${attentionCount} à traiter` : 'Notifications'}
           data-tippy-content={attentionCount > 0 ? `${attentionCount} notification${attentionCount > 1 ? 's' : ''}` : 'Notifications'}
           className={cn(
-            'group relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors duration-150',
+            'group relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 sm:h-9 sm:w-9',
             attentionCount > 0
               ? 'bg-[#e6f4ff] text-[#1677ff] hover:bg-[#bae0ff]'
               : 'text-[rgba(0,0,0,0.55)] hover:bg-[rgba(0,0,0,0.04)] hover:text-[#1677ff]',
           )}
         >
-          <Bell className="h-[17px] w-[17px]" />
+          <Bell className="h-4 w-4 sm:h-[17px] sm:w-[17px]" />
           {attentionCount > 0 && (
             <span
               className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
@@ -540,7 +540,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           onOpenAutoFocus={event => event.preventDefault()}
           className={cn(
             // Desktop : modale AntD centrée, compacte. Mobile : quasi plein écran, ancrée en bas.
-            'fixed z-50 flex flex-col overflow-hidden bg-white outline-none',
+            'mobile-modal-content fixed z-50 flex flex-col overflow-hidden bg-white outline-none',
             'left-1/2 top-1/2 w-[min(680px,calc(100vw-24px))] max-h-[min(680px,calc(100vh-48px))] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-[#f0f0f0]',
             'shadow-[0_6px_16px_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
             'max-md:inset-x-2 max-md:bottom-[max(0.5rem,env(safe-area-inset-bottom))] max-md:left-2 max-md:top-auto max-md:max-h-[94dvh] max-md:w-auto max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-2xl',
@@ -569,7 +569,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </div>
 
           {/* Corps : rail (desktop) + colonne de contenu */}
-          <div className="flex min-h-0 flex-1 md:flex-row">
+          <div className="rtl-notifications flex min-h-0 flex-1 md:flex-row">
             {/* Rail vertical type Menu AntD (desktop) */}
             <nav className="hidden w-[168px] shrink-0 flex-col gap-0.5 border-r border-[#f0f0f0] bg-[#fafafa] p-2 md:flex" aria-label="Axes">
               {axes.map(axis => {

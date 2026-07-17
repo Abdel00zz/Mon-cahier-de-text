@@ -12,6 +12,7 @@ import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { BookOpen } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 /* Accent sobre pour les interactions du tableau. */
 const TABLE_ACCENT = 'hsl(var(--primary))';
@@ -187,7 +188,9 @@ const VIRTUALIZATION_THRESHOLD = 140;
 const ESTIMATED_ROW_HEIGHT = 72;
 const VIRTUAL_OVERSCAN = 16;
 
-const TableHeader: React.FC = React.memo(() => (
+const TableHeader: React.FC = React.memo(() => {
+  const { t } = useLocale();
+  return (
   /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
@@ -196,17 +199,18 @@ const TableHeader: React.FC = React.memo(() => (
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-11 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-r border-slate-200 px-2.5 py-2.5 text-center">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">Date</span>
+        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-r border-slate-200 px-3 py-2.5 text-center">
         <span className="font-compact text-[11px] font-black uppercase tracking-[0.045em] text-slate-600">Contenu pédagogique</span>
       </div>
       <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">Remarque</span>
+        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
-));
+  );
+});
 TableHeader.displayName = 'TableHeader';
 
 const makeKey = (idx: Indices): string =>
@@ -587,7 +591,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   return (
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
-      className="mx-0 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:rounded-xl"
+      className="rtl-table mx-0 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:rounded-xl"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

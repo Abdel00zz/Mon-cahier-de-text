@@ -290,9 +290,16 @@ export default defineConfig(({ mode }) => {
                     lang: 'fr',
                     dir: 'ltr',
                     display: 'standalone',
+                    // Fenêtre autonome préférée, repli navigateur : améliore la
+                    // qualité perçue de l'app installée par Chrome/Edge.
+                    display_override: ['standalone', 'minimal-ui'],
                     orientation: 'any',
                     start_url: '/',
                     scope: '/',
+                    // Réutilise l'onglet existant au lieu d'en rouvrir un — évite
+                    // les doublons quand l'invite native lance l'app.
+                    launch_handler: { client_mode: 'navigate-existing' },
+                    prefer_related_applications: false,
                     // aligné sur les tokens du design system : --primary / --background
                     theme_color: '#0057D1',
                     background_color: '#F9FAFB',

@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from './dialog';
 import { Button } from './button';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -25,11 +26,12 @@ export function ConfirmDialog({
     onOpenChange,
     title,
     description,
-    confirmLabel = 'Confirmer',
-    cancelLabel = 'Annuler',
+    confirmLabel,
+    cancelLabel,
     onConfirm,
     variant = 'destructive',
 }: ConfirmDialogProps) {
+    const { t } = useLocale();
     const handleConfirm = (e: React.MouseEvent) => {
         e.stopPropagation();
         onConfirm();
@@ -59,7 +61,7 @@ export function ConfirmDialog({
                         onClick={handleCancel}
                         className="w-full sm:w-auto rounded-md font-semibold transition-all duration-200"
                     >
-                        {cancelLabel}
+                        {cancelLabel ?? t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -67,7 +69,7 @@ export function ConfirmDialog({
                         onClick={handleConfirm}
                         className="w-full sm:w-auto rounded-md px-5 font-semibold transition-all duration-200"
                     >
-                        {confirmLabel}
+                        {confirmLabel ?? t('common.confirm')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

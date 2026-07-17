@@ -105,7 +105,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div className="sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
+    <div className="rtl-flow sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
       <div className="flex min-w-0 items-center justify-start gap-2">
         <SyncStatusBadge />
       </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 export interface DashboardMetrics {
   progression: number;
@@ -11,16 +12,20 @@ interface DashboardMetricsBarProps {
 }
 
 /** Bloc purement présentatif : les calculs restent dans le tableau de bord. */
-export const DashboardMetricsBar: React.FC<DashboardMetricsBarProps> = ({ metrics }) => (
-  <section
-    className="grid w-full grid-cols-3 divide-x divide-[#f2d28a] overflow-hidden rounded-xl border border-[#f3d58f] bg-[#fff8df] shadow-[0_1px_2px_rgba(113,74,0,0.05)] md:w-[40%] md:min-w-[300px]"
-    aria-label="Repères de progression"
-  >
-    <Metric value={`${metrics.progression}%`} label="Progression" />
-    <Metric value={metrics.sessions} label="Séances" />
-    <Metric value={metrics.classes} label="Classes" />
-  </section>
-);
+export const DashboardMetricsBar: React.FC<DashboardMetricsBarProps> = ({ metrics }) => {
+  const { t } = useLocale();
+
+  return (
+    <section
+      className="grid w-full grid-cols-3 divide-x divide-[#f2d28a] overflow-hidden rounded-xl border border-[#f3d58f] bg-[#fff8df] shadow-[0_1px_2px_rgba(113,74,0,0.05)] md:w-[40%] md:min-w-[300px]"
+      aria-label={t('dashboard.progression')}
+    >
+      <Metric value={`${metrics.progression}%`} label={t('dashboard.progression')} />
+      <Metric value={metrics.sessions} label={t('dashboard.sessions')} />
+      <Metric value={metrics.classes} label={t('dashboard.classesMetric')} />
+    </section>
+  );
+};
 
 const Metric: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <span className="flex min-w-0 flex-col items-center justify-center px-2 py-2 text-center sm:py-2.5">

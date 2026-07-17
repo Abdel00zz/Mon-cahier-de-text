@@ -3,6 +3,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/i18n/LocaleProvider"
 
 const Sheet = SheetPrimitive.Root
 
@@ -51,19 +52,23 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
+>(({ side = "right", className, children, ...props }, ref) => {
+  const { isRtl } = useLocale()
+  return (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
       data-side={side}
-      className={cn(sheetVariants({ side }), className)}
+      dir={isRtl ? "rtl" : "ltr"}
+      className={cn("rtl-flow", sheetVariants({ side }), className)}
       {...props}
     >
       {children}
     </SheetPrimitive.Content>
   </SheetPortal>
-))
+  )
+})
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({

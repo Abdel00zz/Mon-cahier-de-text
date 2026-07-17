@@ -1,5 +1,6 @@
 import React, { useState, useEffect, FC } from 'react';
-import { AppConfig, ClassInfo, Cycle } from '@/types';
+import { AppConfig, AppLocale, ClassInfo, Cycle } from '@/types';
+import { localeMetadata, useLocale } from '@/i18n/LocaleProvider';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,10 +21,10 @@ import {
   Settings,
 } from '@/components/ui/icons';
 
-const CYCLES: { key: Cycle; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: 'college', label: 'Collège', icon: School },
-  { key: 'lycee', label: 'Lycée', icon: GraduationCap },
-  { key: 'prepa', label: 'Prépa', icon: FlaskConical },
+const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'college', icon: School },
+  { key: 'lycee', icon: GraduationCap },
+  { key: 'prepa', icon: FlaskConical },
 ];
 
 interface ConfigModalProps {
@@ -42,12 +43,12 @@ interface ConfigModalProps {
 
 type ConfigTab = 'profil' | 'emploi' | 'notifications' | 'donnees' | 'compte';
 
-const TABS: { id: ConfigTab; label: string; description: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'profil', label: 'Profil & infos', description: 'Académie, direction, établissement et enseignant', icon: GraduationCap },
-  { id: 'emploi', label: 'Emploi du temps', description: 'Compositions, heures et devoirs', icon: CalendarRange },
-  { id: 'notifications', label: 'Notifications', description: 'Alertes de retard et absences', icon: Bell },
-  { id: 'donnees', label: 'Données', description: 'Sauvegarde et restauration', icon: Database },
-  { id: 'compte', label: 'Compte', description: 'Profil enseignant et synchronisation', icon: User },
+const TABS: { id: ConfigTab; icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: 'profil', icon: GraduationCap },
+  { id: 'emploi', icon: CalendarRange },
+  { id: 'notifications', icon: Bell },
+  { id: 'donnees', icon: Database },
+  { id: 'compte', icon: User },
 ];
 
 export const ConfigModal: FC<ConfigModalProps> = ({
@@ -61,6 +62,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onCreateClass,
   asPage = false,
 }) => {
+  const { isRtl, t } = useLocale();
   const [localConfig, setLocalConfig] = useState(config);
   const [activeTab, setActiveTab] = useState<ConfigTab>('profil');
   useEffect(() => {
@@ -97,6 +99,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   if (!asPage && !isOpen) return null;
 
+  const tabCopy = (id: ConfigTab) => {
+    const key = id === 'profil' ? 'profile' : id === 'emploi' ? 'schedule' : id === 'donnees' ? 'data' : id === 'compte' ? 'account' : id;
+    return {
+      label: t(`settings.tab.${key}`),
+      description: t(`settings.tab.${key}Description`),
+    };
+  };
+
   const footer = (
     <div className="flex w-full justify-end gap-2">
       <Button
@@ -105,19 +115,19 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         onClick={onClose}
         className="flex-1 text-xs font-bold sm:flex-initial"
       >
-        {asPage ? 'Retour' : 'Annuler'}
+        {asPage ? t('settings.back') : t('common.cancel')}
       </Button>
       <Button
         type="button"
         onClick={handleSave}
         className="flex-1 bg-primary text-xs font-bold text-white hover:bg-primary/90 sm:flex-initial"
       >
-        Enregistrer les modifications
+        {t('settings.saveChanges')}
       </Button>
     </div>
   );
 
-  const activeTabDetails = TABS.find(t => t.id === activeTab);
+  const activeTabDetails = TABS.find(tab => tab.id === activeTab);
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
 
@@ -127,9 +137,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       <div className="border-b border-border/40 pb-3">
         <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-foreground">
           {activeTabDetails && <activeTabDetails.icon className="h-5 w-5 text-primary" />}
-          {activeTabDetails?.label}
+          {activeTabDetails ? tabCopy(activeTabDetails.id).label : ''}
         </h2>
-        <p className="text-xs text-muted-foreground font-sans mt-1">{activeTabDetails?.description}</p>
+        <p className="text-xs text-muted-foreground font-sans mt-1">{activeTabDetails ? tabCopy(activeTabDetails.id).description : ''}</p>
       </div>
 
       {activeTab === 'emploi' && (
@@ -142,15 +152,43 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       {activeTab === 'profil' && (
         <div className="max-w-xl space-y-5">
+          <section className="rounded-2xl border border-border/70 bg-secondary/25 p-3.5 sm:p-4">
+            <div className="mb-3">
+              <h3 className="text-sm font-extrabold text-foreground font-display">{t('language.settings.title')}</h3>
+              <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {localeMetadata.map(option => {
+                const active = (localConfig.applicationLocale ?? 'fr') === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
+                    aria-pressed={active}
+                    className={`flex min-h-[74px] flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 text-center transition-all ${
+                      active
+                        ? 'border-primary/35 bg-primary text-primary-foreground shadow-[0_5px_14px_rgba(0,86,210,0.18)]'
+                        : 'border-border/80 bg-card text-muted-foreground hover:border-primary/25 hover:bg-primary/[0.03] hover:text-foreground'
+                    }`}
+                  >
+                    <span className={`text-base font-extrabold leading-none ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.shortName}</span>
+                    <span className={`text-[10px] font-bold ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.nativeName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           <div className="space-y-1.5">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Établissement d'enseignement
+              {t('settings.establishment')}
             </label>
             <Input
               type="text"
               value={localConfig.establishmentName || ''}
               onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
-              placeholder="Ex : Lycée Ibn al-Haytham"
+              placeholder={t('settings.establishmentPlaceholder')}
               className="h-10 text-sm"
             />
           </div>
@@ -158,7 +196,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <label htmlFor="academy-region" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Académie régionale (AREF)
+                {t('settings.academy')}
               </label>
               <select
                 id="academy-region"
@@ -174,17 +212,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 }}
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">Sélectionner une académie…</option>
+                <option value="">{t('settings.chooseAcademy')}</option>
                 {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
                   <option key={academy.id} value={academy.id}>{academy.label}</option>
                 ))}
               </select>
-              <p className="text-[10px] leading-snug text-muted-foreground/60">Le choix alimente automatiquement l'en-tête du document imprimé.</p>
+              <p className="text-[10px] leading-snug text-muted-foreground/60">{t('settings.academyHint')}</p>
             </div>
 
             <div className="space-y-1.5">
               <label htmlFor="education-province" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Direction provinciale
+                {t('settings.province')}
               </label>
               <select
                 id="education-province"
@@ -193,31 +231,31 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="">{selectedAcademy ? 'Sélectionner une province / préfecture…' : 'Choisir d’abord une académie'}</option>
+                <option value="">{selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}</option>
                 {availableProvinces.map(province => (
                   <option key={province.id} value={province.id}>{province.label}{province.kind === 'prefecture' ? ' · préfecture' : ''}</option>
                 ))}
               </select>
-              <p className="text-[10px] leading-snug text-muted-foreground/60">Les préfectures sont proposées dans la même liste administrative.</p>
+              <p className="text-[10px] leading-snug text-muted-foreground/60">{t('settings.provinceHint')}</p>
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Nom de l'enseignant (M. ou Mme)
+              {t('settings.teacherName')}
             </label>
             <Input
               type="text"
               value={localConfig.defaultTeacherName || ''}
               onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
-              placeholder="Ex : M. Ahmed Benali"
+              placeholder={t('settings.teacherPlaceholder')}
               className="h-10 text-sm"
             />
           </div>
 
           <div className="space-y-2">
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Cycle d'enseignement principal
+              {t('settings.cycle')}
             </label>
             <div className="grid max-w-sm grid-cols-3 gap-2">
               {CYCLES.map(c => {
@@ -234,13 +272,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     }`}
                   >
                     <c.icon className="h-4 w-4" />
-                    {c.label}
+                    {t(`settings.cycle.${c.key}`)}
                   </button>
                 );
               })}
             </div>
             <p className="text-[10px] leading-snug text-muted-foreground/60">
-              Ces informations personnalisent l'accueil et pré-remplissent la création de vos classes. La matière se choisit par classe.
+              {t('settings.cycleHint')}
             </p>
           </div>
         </div>
@@ -251,17 +289,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           {/* Section Gestion des données */}
           <div className="relative space-y-3 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
             <div className="relative">
-              <h3 className="text-base font-bold text-foreground font-display mb-2">Sauvegarde & Restauration</h3>
+              <h3 className="text-base font-bold text-foreground font-display mb-2">{t('settings.backupTitle')}</h3>
               <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-                Protégez votre travail en exportant périodiquement vos cahiers de textes. Vous pourrez restaurer l'intégralité de vos cours sur n'importe quel appareil.
+                {t('settings.backupDescription')}
               </p>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="flex flex-col justify-between rounded-xl border border-border/80 bg-secondary/40 p-3">
                   <div>
-                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Exporter mon cahier</h4>
+                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">{t('settings.exportTitle')}</h4>
                     <p className="mb-3 text-[11px] font-medium leading-relaxed text-muted-foreground">
-                      Téléchargez un fichier de sauvegarde crypté contenant toutes vos classes, leçons et configurations.
+                      {t('settings.exportDescription')}
                     </p>
                   </div>
                   <Button 
@@ -270,15 +308,15 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     onClick={onExportPlatform} 
                     className="w-full border-border text-xs text-primary transition-all hover:bg-primary hover:text-white"
                   >
-                    Sauvegarder localement
+                    {t('settings.exportAction')}
                   </Button>
                 </div>
                 
                 <div className="flex flex-col justify-between rounded-xl border border-border/80 bg-secondary/40 p-3">
                   <div>
-                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">Restaurer des données</h4>
+                    <h4 className="text-sm font-bold text-foreground font-display mb-1.5">{t('settings.importTitle')}</h4>
                     <p className="mb-3 text-[11px] font-medium leading-relaxed text-muted-foreground">
-                      Remplacez les données actuelles de cet appareil par celles d'un fichier de sauvegarde préexistant.
+                      {t('settings.importDescription')}
                     </p>
                   </div>
                   <Button
@@ -290,7 +328,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     }}
                     className="w-full border-border text-xs text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
                   >
-                    Choisir une sauvegarde
+                    {t('settings.importAction')}
                   </Button>
                 </div>
               </div>
@@ -307,17 +345,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   // ── Rendu en PAGE plein écran ──────────────────────────────────────────
   if (asPage) {
     return (
-      <div className="min-h-screen bg-background safe-bottom">
+      <div className="rtl-flow min-h-screen bg-background safe-bottom">
         <header className="sticky top-0 z-20 border-b border-border/60 bg-card/95 backdrop-blur shadow-sm">
           <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
                 <h1 className="text-xl font-extrabold text-foreground font-display tracking-tight">
-                  Paramètres de l'application
+                  {t('settings.title')}
                 </h1>
               </div>
-              <p className="text-xs text-muted-foreground font-sans truncate">Gérez votre emploi du temps, vos notifications, affichages et données</p>
+              <p className="text-xs text-muted-foreground font-sans truncate">{t('settings.description')}</p>
             </div>
           </div>
         </header>
@@ -336,10 +374,20 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       <TabsTrigger
                         key={tab.id}
                         value={tab.id}
-                        className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all text-left cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        dir={isRtl ? 'ltr' : undefined}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground ${isRtl ? 'justify-end text-right' : 'justify-start text-left'}`}
                       >
-                        <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
-                        <span>{tab.label}</span>
+                        {isRtl ? (
+                          <>
+                            <span dir="rtl">{tabCopy(tab.id).label}</span>
+                            <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                          </>
+                        ) : (
+                          <>
+                            <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <span>{tabCopy(tab.id).label}</span>
+                          </>
+                        )}
                       </TabsTrigger>
                     );
                   })}
@@ -357,10 +405,20 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       <TabsTrigger
                         key={tab.id}
                         value={tab.id}
+                        dir={isRtl ? 'ltr' : undefined}
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                       >
-                        <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
-                        <span>{tab.label}</span>
+                        {isRtl ? (
+                          <>
+                            <span dir="rtl">{tabCopy(tab.id).label}</span>
+                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                          </>
+                        ) : (
+                          <>
+                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <span>{tabCopy(tab.id).label}</span>
+                          </>
+                        )}
                       </TabsTrigger>
                     );
                   })}
@@ -391,8 +449,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Configuration"
-      description="Préférences d'affichage et gestion des données"
+      title={t('settings.configuration')}
+      description={t('settings.preferences')}
       maxWidth="3xl"
       footer={footer}
     >
@@ -407,7 +465,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-bold transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
-                <span>{tab.label}</span>
+                <span>{tabCopy(tab.id).label}</span>
               </TabsTrigger>
             );
           })}

@@ -8,6 +8,7 @@ import { useSessionAlerts } from './hooks/useSessionAlerts';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
+import { LocaleProvider } from './i18n/LocaleProvider';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -93,7 +94,7 @@ const App: React.FC = () => {
 
   const [view, setView] = useState<View>(initialRouteRef.current.view);
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
-  const { isLoading: isConfigLoading } = useConfigManager();
+  const { config, isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
@@ -209,6 +210,7 @@ const App: React.FC = () => {
 
     return (
       <>
+        <LocaleProvider locale={config.applicationLocale ?? 'fr'}>
         {view === 'editor' ? (
           <Suspense fallback={<AppBootSkeleton />}>
             <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
@@ -230,6 +232,7 @@ const App: React.FC = () => {
         <Suspense fallback={null}>
           <Analytics />
         </Suspense>
+        </LocaleProvider>
       </>
     );
 }
