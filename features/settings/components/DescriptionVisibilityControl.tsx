@@ -81,7 +81,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
             onClick={() => handleModeChange(m)}
             aria-pressed={mode === m}
             className={`flex-1 rounded-md py-1.5 text-[11px] font-bold transition-all ${
-              mode === m ? 'bg-[#123a63] text-white shadow-sm' : 'text-muted-foreground hover:bg-secondary/40'
+              mode === m ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary/40'
             }`}
           >
             {m === 'all' ? 'Afficher' : m === 'none' ? 'Masquer' : 'Sélection'}

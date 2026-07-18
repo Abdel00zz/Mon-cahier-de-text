@@ -131,15 +131,45 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
 
+  const languageSection = (
+    <section className="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-3.5">
+      <div className="mb-2.5 min-w-0 sm:mb-0">
+        <h3 className="text-sm font-extrabold text-foreground font-display">{t('language.settings.title')}</h3>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5 sm:w-[320px] sm:shrink-0 sm:gap-2">
+        {localeMetadata.map(option => {
+          const active = (localConfig.applicationLocale ?? 'fr') === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
+              aria-pressed={active}
+              className={`flex min-h-[50px] flex-col items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-center transition-all ${
+                active
+                  ? 'border-primary/30 bg-primary/[0.09] text-primary ring-1 ring-inset ring-primary/10'
+                  : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-800'
+              }`}
+            >
+              <span className={`text-sm font-extrabold leading-none ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.shortName}</span>
+              <span className={`text-[9px] font-semibold ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.nativeName}</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+
   const tabContent = (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Tab Header for Context */}
-      <div className="border-b border-border/40 pb-3">
-        <h2 className="flex items-center gap-2 font-display text-lg font-extrabold text-foreground">
-          {activeTabDetails && <activeTabDetails.icon className="h-5 w-5 text-primary" />}
+      <div className="border-b border-zinc-200/80 pb-4">
+        <h2 className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight text-foreground">
+          {activeTabDetails && <activeTabDetails.icon className="h-[18px] w-[18px] text-primary" />}
           {activeTabDetails ? tabCopy(activeTabDetails.id).label : ''}
         </h2>
-        <p className="text-xs text-muted-foreground font-sans mt-1">{activeTabDetails ? tabCopy(activeTabDetails.id).description : ''}</p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{activeTabDetails ? tabCopy(activeTabDetails.id).description : ''}</p>
       </div>
 
       {activeTab === 'emploi' && (
@@ -148,40 +178,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       {activeTab === 'notifications' && (
         <NotificationsTab config={localConfig} onChange={applyLive} />
       )}
-      {activeTab === 'compte' && <AccountTab />}
+      {activeTab === 'compte' && (
+        <div className="flex max-w-3xl flex-col gap-4 sm:gap-5">
+          {languageSection}
+          <AccountTab />
+        </div>
+      )}
 
       {activeTab === 'profil' && (
-        <div className="max-w-xl space-y-5">
-          <section className="rounded-2xl border border-border/70 bg-secondary/25 p-3.5 sm:p-4">
-            <div className="mb-3">
-              <h3 className="text-sm font-extrabold text-foreground font-display">{t('language.settings.title')}</h3>
-              <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {localeMetadata.map(option => {
-                const active = (localConfig.applicationLocale ?? 'fr') === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
-                    aria-pressed={active}
-                    className={`flex min-h-[74px] flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-2 text-center transition-all ${
-                      active
-                        ? 'border-primary/35 bg-primary text-primary-foreground shadow-[0_5px_14px_rgba(0,86,210,0.18)]'
-                        : 'border-border/80 bg-card text-muted-foreground hover:border-primary/25 hover:bg-primary/[0.03] hover:text-foreground'
-                    }`}
-                  >
-                    <span className={`text-base font-extrabold leading-none ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.shortName}</span>
-                    <span className={`text-[10px] font-bold ${option.value === 'ar' ? 'font-ar' : ''}`}>{option.nativeName}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
+        <div className="flex max-w-3xl flex-col gap-4 sm:gap-5">
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <label className="block text-xs font-semibold text-zinc-700">
               {t('settings.establishment')}
             </label>
             <Input
@@ -189,13 +196,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               value={localConfig.establishmentName || ''}
               onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
               placeholder={t('settings.establishmentPlaceholder')}
-              className="h-10 text-sm"
+              className="h-10 rounded-xl border-zinc-200 bg-white px-3.5 text-sm shadow-none"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label htmlFor="academy-region" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label htmlFor="academy-region" className="block text-xs font-semibold text-zinc-700">
                 {t('settings.academy')}
               </label>
               <select
@@ -210,7 +217,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     educationProvince: provinces.some(province => province.id === prev.educationProvince) ? prev.educationProvince : '',
                   }));
                 }}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
               >
                 <option value="">{t('settings.chooseAcademy')}</option>
                 {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
@@ -221,7 +228,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="education-province" className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label htmlFor="education-province" className="block text-xs font-semibold text-zinc-700">
                 {t('settings.province')}
               </label>
               <select
@@ -229,7 +236,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 value={localConfig.educationProvince ?? ''}
                 disabled={!selectedAcademy}
                 onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:opacity-60"
               >
                 <option value="">{selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}</option>
                 {availableProvinces.map(province => (
@@ -241,7 +248,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <label className="block text-xs font-semibold text-zinc-700">
               {t('settings.teacherName')}
             </label>
             <Input
@@ -249,15 +256,15 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               value={localConfig.defaultTeacherName || ''}
               onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
               placeholder={t('settings.teacherPlaceholder')}
-              className="h-10 text-sm"
+              className="h-10 rounded-xl border-zinc-200 bg-white px-3.5 text-sm shadow-none"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-2 text-center">
+            <label className="block text-xs font-semibold text-zinc-700">
               {t('settings.cycle')}
             </label>
-            <div className="grid max-w-sm grid-cols-3 gap-2">
+            <div className="mx-auto grid w-full max-w-lg grid-cols-3 gap-2">
               {CYCLES.map(c => {
                 const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
                 return (
@@ -265,10 +272,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     key={c.key}
                     type="button"
                     onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
-                    className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl border py-3 text-[11px] font-bold transition-all ${
+                    className={`flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[11px] font-bold transition-all ${
                       active
-                        ? 'border-primary/30 bg-primary/10 text-primary shadow-sm'
-                        : 'border-border/60 bg-secondary/30 text-muted-foreground hover:border-border hover:bg-secondary/50 hover:text-foreground'
+                        ? 'border-primary/30 bg-primary/[0.08] text-primary ring-1 ring-inset ring-primary/10'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-800'
                     }`}
                   >
                     <c.icon className="h-4 w-4" />
@@ -277,7 +284,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 );
               })}
             </div>
-            <p className="text-[10px] leading-snug text-muted-foreground/60">
+            <p className="mx-auto max-w-lg text-[10px] leading-snug text-muted-foreground/60">
               {t('settings.cycleHint')}
             </p>
           </div>
@@ -345,9 +352,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   // ── Rendu en PAGE plein écran ──────────────────────────────────────────
   if (asPage) {
     return (
-      <div className="rtl-flow min-h-screen bg-background safe-bottom">
-        <header className="sticky top-0 z-20 border-b border-border/60 bg-card/95 backdrop-blur shadow-sm">
-          <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
+      <div className="rtl-flow min-h-screen bg-zinc-50/70 safe-bottom">
+        <header className="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3.5 sm:px-6">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
@@ -360,14 +367,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-4 py-6 pb-28 sm:px-6">
+        <div className="mx-auto max-w-7xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
           {/* Navigation par onglets sur ordinateur, barre segmentée sur mobile. */}
-          <div className="flex flex-col md:flex-row gap-6 items-start">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:gap-5">
             
             {/* Navigation latérale pour les écrans moyens et larges. */}
-            <aside className="w-full md:w-64 shrink-0 hidden md:block">
+            <aside className="sticky top-20 hidden w-full shrink-0 md:block md:w-56">
               <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)}>
-                <TabsList className="flex flex-col h-auto w-full border border-border bg-card p-2 shadow-sm gap-1 rounded-2xl items-stretch">
+                <TabsList className="flex h-auto w-full flex-col items-stretch gap-0.5 rounded-xl border border-zinc-200/80 bg-white p-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
                   {TABS.map(tab => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -375,16 +382,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         key={tab.id}
                         value={tab.id}
                         dir={isRtl ? 'ltr' : undefined}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground ${isRtl ? 'justify-end text-right' : 'justify-start text-left'}`}
+                        className={`flex min-h-10 w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-semibold text-zinc-600 transition-all cursor-pointer data-[state=active]:bg-primary/[0.09] data-[state=active]:text-primary data-[state=active]:shadow-none ${isRtl ? 'justify-end text-right' : 'justify-start text-left'}`}
                       >
                         {isRtl ? (
                           <>
                             <span dir="rtl">{tabCopy(tab.id).label}</span>
-                            <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <tab.icon className={`h-[15px] w-[15px] shrink-0 ${isActive ? 'text-primary' : 'text-zinc-400'}`} />
                           </>
                         ) : (
                           <>
-                            <tab.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <tab.icon className={`h-[15px] w-[15px] shrink-0 ${isActive ? 'text-primary' : 'text-zinc-400'}`} />
                             <span>{tabCopy(tab.id).label}</span>
                           </>
                         )}
@@ -396,9 +403,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </aside>
 
             {/* Top segment control for mobile screens */}
-            <div className="w-full md:hidden overflow-x-auto no-scrollbar py-1">
+            <div className="no-scrollbar w-full overflow-x-auto py-1 md:hidden">
               <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as ConfigTab)} className="w-max">
-                <TabsList className="flex gap-1 bg-secondary/60 border border-border/80 p-1 rounded-2xl">
+                <TabsList className="flex gap-0.5 rounded-xl border border-zinc-200/80 bg-white p-1 shadow-sm">
                   {TABS.map(tab => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -406,16 +413,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         key={tab.id}
                         value={tab.id}
                         dir={isRtl ? 'ltr' : undefined}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[11px] font-semibold text-zinc-500 transition-all cursor-pointer data-[state=active]:bg-primary/[0.09] data-[state=active]:text-primary"
                       >
                         {isRtl ? (
                           <>
                             <span dir="rtl">{tabCopy(tab.id).label}</span>
-                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary' : 'text-zinc-400'}`} />
                           </>
                         ) : (
                           <>
-                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                            <tab.icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary' : 'text-zinc-400'}`} />
                             <span>{tabCopy(tab.id).label}</span>
                           </>
                         )}
@@ -427,7 +434,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* Core Settings Content Container */}
-            <div className="flex-1 w-full bg-card rounded-3xl border border-border/60 p-6 md:p-8 shadow-sm relative min-h-[480px]">
+            <div className="relative w-full flex-1 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.05)] sm:p-5 md:min-h-[480px] md:p-6">
               <div className="relative">
                 {tabContent}
               </div>
@@ -437,8 +444,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         </div>
 
         {/* Fixed Sticky Footer for Actions */}
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 px-4 py-4 backdrop-blur shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="mx-auto max-w-6xl px-2 sm:px-4">{footer}</div>
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200/80 bg-white/92 px-4 py-3 backdrop-blur-xl pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-7xl px-1 sm:px-4">{footer}</div>
         </div>
       </div>
     );

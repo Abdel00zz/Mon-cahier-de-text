@@ -124,7 +124,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 {dateWarnings.length > 0 && (
                     <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="status">
                         {dateWarnings.map((warning, i) => (
-                            <p key={i} className="text-[11px] font-semibold leading-snug text-warning">⚠ {warning.message}</p>
+                            <p key={i} className="text-[11px] font-semibold leading-snug text-warning-strong">⚠ {warning.message}</p>
                         ))}
                     </div>
                 )}

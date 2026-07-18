@@ -48,7 +48,7 @@ Connexion, inscription, validation locale du formulaire et présentation des err
 
 ### `features/dashboard`
 
-Accueil **Mes classes**, indicateurs compacts alignés à droite, centre de notifications, cartes, création de cahier et onboarding. Les calculs de progression ou de calendrier sont consommés depuis `utils` et les hooks ; ils ne sont pas redéfinis ici.
+Accueil **Mes classes**, indicateurs compacts alignés à droite, centre de notifications, cartes, création de cahier et onboarding. Le centre de notifications contient aussi un calendrier mensuel unifié (`NotificationCalendar.tsx`) : il croise les vacances et jours fériés, le bulletin officiel (examens, concours, résultats), les évaluations personnalisées, les absences du professeur et son emploi du temps. Les calculs de progression ou de calendrier sont consommés depuis `utils` et les hooks ; ils ne sont pas redéfinis ici.
 
 ### `features/editor`
 

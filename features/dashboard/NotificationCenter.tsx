@@ -4,12 +4,14 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
+import { useLocale } from '@/i18n/LocaleProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Bell, BookOpen, CalendarCheck, CalendarRange, Check, CircleAlert, Clock, Database,
+  Bell, BookOpen, CalendarCheck, CalendarDays, CalendarRange, Check, CircleAlert, Clock, Database,
   GraduationCap, History, PieChart, Undo2, User, X,
 } from '@/components/ui/icons';
 import { useRecentPastAssessments, useUpcomingAssessments } from '@/hooks/useAssessments';
+import { Bell as HeaderBell } from 'lucide-react';
 import { useUpcomingOfficialStudentEvents, UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
 import { UpcomingAssessment } from '@/utils/assessments';
 import { computeProgressionStats } from '@/utils/progression';
@@ -27,14 +29,16 @@ import {
   sortSignals,
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
+import { NotificationCalendar } from './NotificationCalendar';
 
 /**
- * Centre de notifications — reconstruit dans le langage visuel Ant Design 5
- * (jetons AntD : bleu #1677ff, rayons 6/8, densité « compact », List/Tag/
- * Segmented/Empty, ombres de dropdown/modal). Compact, flexible (rail + menu
- * sur desktop, segmented sur mobile) et robuste (troncatures, états vides,
- * scroll interne, gestion clavier via Radix). Le moteur de données
- * `useNotificationFeed` reste inchangé ; seule la couche visuelle est refaite.
+ * Centre de notifications — langage visuel Ant Design 5 (rayons 6/8, densité
+ * « compact », List/Tag/Segmented/Empty, ombres de dropdown/modal, rail Menu),
+ * mais COULEURS issues des tokens du design system (`--primary`,
+ * `--destructive`, `--success`, `--warning`, `--border`) : une seule identité
+ * de marque, aucun bleu concurrent en dur. Compact, flexible (rail sur desktop,
+ * segmented sur mobile) et robuste (troncatures, états vides, scroll interne,
+ * clavier via Radix). Le moteur `useNotificationFeed` reste inchangé.
  */
 
 /* ------------------------------------------------------------------ */
@@ -115,30 +119,29 @@ export const useNotificationFeed = (
 };
 
 /* ------------------------------------------------------------------ */
-/*  Jetons Ant Design 5 & primitives visuelles                         */
+/*  Palette — structure Ant Design, COULEURS du design system           */
+/*                                                                      */
+/*  On garde la densité et les motifs AntD (List/Tag/Segmented/rail),   */
+/*  mais chaque couleur vient des tokens de l'app (`--primary`,         */
+/*  `--destructive`, `--success`, `--warning`, `--border`…) : une seule  */
+/*  identité de marque, aucun bleu concurrent en dur.                   */
 /* ------------------------------------------------------------------ */
 
 const ANT = {
-  primary: '#1677ff',
-  primaryHover: '#4096ff',
-  primaryActive: '#0958d9',
-  error: '#ff4d4f',
-  text: 'rgba(0,0,0,0.88)',
-  textSec: 'rgba(0,0,0,0.65)',
-  textTer: 'rgba(0,0,0,0.45)',
-  border: '#d9d9d9',
-  borderSec: '#f0f0f0',
-  fill: 'rgba(0,0,0,0.04)',
-  layout: '#fafafa',
+  primary: 'hsl(var(--primary))',
+  error: 'hsl(var(--destructive))',
+  text: 'hsl(var(--foreground))',
+  textSec: 'hsl(var(--muted-foreground))',
+  border: 'hsl(var(--border))',
 } as const;
 
 type Tone = 'blue' | 'red' | 'green' | 'gold' | 'default';
 const TAG: Record<Tone, { bg: string; border: string; text: string }> = {
-  blue: { bg: '#e6f4ff', border: '#91caff', text: '#0958d9' },
-  red: { bg: '#fff2f0', border: '#ffccc7', text: '#cf1322' },
-  green: { bg: '#f6ffed', border: '#b7eb8f', text: '#389e0d' },
-  gold: { bg: '#fffbe6', border: '#ffe58f', text: '#d48806' },
-  default: { bg: 'rgba(0,0,0,0.02)', border: ANT.border, text: ANT.textSec },
+  blue: { bg: 'hsl(var(--primary) / 0.1)', border: 'hsl(var(--primary) / 0.3)', text: 'hsl(var(--primary))' },
+  red: { bg: 'hsl(var(--destructive) / 0.1)', border: 'hsl(var(--destructive) / 0.3)', text: 'hsl(var(--destructive-strong))' },
+  green: { bg: 'hsl(var(--success) / 0.1)', border: 'hsl(var(--success) / 0.3)', text: 'hsl(var(--success-strong))' },
+  gold: { bg: 'hsl(var(--warning) / 0.12)', border: 'hsl(var(--warning) / 0.35)', text: 'hsl(var(--warning-strong))' },
+  default: { bg: 'hsl(var(--muted))', border: ANT.border, text: ANT.textSec },
 };
 
 const KIND_VISUAL: Record<ClassSignal['kind'], { icon: React.ComponentType<{ className?: string }>; tone: Tone }> = {
@@ -164,15 +167,15 @@ const AntBtn: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'default' | 'text' }
 > = ({ variant = 'default', className, children, ...props }) => {
   const styles: Record<string, string> = {
-    primary: 'bg-[#1677ff] text-white shadow-[0_2px_0_rgba(5,145,255,0.1)] hover:bg-[#4096ff] active:bg-[#0958d9]',
-    default: 'border border-[#d9d9d9] bg-white text-[rgba(0,0,0,0.88)] hover:border-[#4096ff] hover:text-[#1677ff]',
+    primary: 'bg-primary text-white shadow-[0_2px_0_rgba(5,145,255,0.1)] hover:bg-primary/90 active:bg-primary',
+    default: 'border border-border bg-white text-[rgba(0,0,0,0.88)] hover:border-primary hover:text-primary',
     text: 'text-[rgba(0,0,0,0.65)] hover:bg-[rgba(0,0,0,0.04)] hover:text-[rgba(0,0,0,0.88)]',
   };
   return (
     <button
       type="button"
       className={cn(
-        'inline-flex h-7 items-center justify-center gap-1 whitespace-nowrap rounded-md px-2.5 text-[12px] font-medium leading-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1677ff]/25 disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex h-7 items-center justify-center gap-1 whitespace-nowrap rounded-md px-2.5 text-[12px] font-medium leading-none transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50',
         styles[variant],
         className,
       )}
@@ -225,7 +228,7 @@ const AxisCount: React.FC<{ value: number; emphasize?: boolean; active?: boolean
 /*  Types internes de vue                                              */
 /* ------------------------------------------------------------------ */
 
-type AxisId = 'priorites' | 'echeances' | 'classes' | 'activite' | 'ignores';
+type AxisId = 'priorites' | 'echeances' | 'calendrier' | 'classes' | 'activite' | 'ignores';
 
 interface AxisDef {
   id: AxisId;
@@ -317,6 +320,7 @@ const delayLabel = (inDays: number): string => {
 
 interface NotificationCenterProps {
   classes: ClassInfo[];
+  config: AppConfig;
   feed: NotificationFeed;
   onSelectClass: (classInfo: ClassInfo) => void;
   onOpenSettings: () => void;
@@ -328,6 +332,7 @@ interface NotificationCenterProps {
 
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   classes,
+  config,
   feed,
   onSelectClass,
   onOpenSettings,
@@ -335,6 +340,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   onOpenChange,
   onMutate,
 }) => {
+  const { t } = useLocale();
   const [internalOpen, setInternalOpen] = useState(false);
   const [activeAxis, setActiveAxis] = useState<AxisId>('priorites');
   const [selectedClassId, setSelectedClassId] = useState('all');
@@ -398,12 +404,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const filteredAttention = filteredCorrections.length + filteredOfficial.filter(i => i.inDays <= 3).length;
 
   const axes: AxisDef[] = [
-    { id: 'priorites', label: 'Priorités', icon: CircleAlert, count: filteredCorrections.length, emphasize: true },
-    { id: 'echeances', label: 'Échéances', icon: CalendarCheck, count: filteredAssessments.length + filteredOfficial.length },
-    { id: 'classes', label: 'Classes', icon: GraduationCap, count: filteredOverviews.length },
-    { id: 'activite', label: 'Activité', icon: History, count: filteredActivity.length },
+    { id: 'priorites', label: t('notifications.priorities'), icon: CircleAlert, count: filteredCorrections.length, emphasize: true },
+    { id: 'echeances', label: t('notifications.deadlines'), icon: CalendarCheck, count: filteredAssessments.length + filteredOfficial.length },
+    { id: 'calendrier', label: t('notifications.calendar'), icon: CalendarDays, count: 0 },
+    { id: 'classes', label: t('notifications.classes'), icon: GraduationCap, count: filteredOverviews.length },
+    { id: 'activite', label: t('notifications.activity'), icon: History, count: filteredActivity.length },
     ...(filteredIgnored.length > 0
-      ? [{ id: 'ignores' as AxisId, label: 'Ignorés', icon: Undo2, count: filteredIgnored.length }]
+      ? [{ id: 'ignores' as AxisId, label: t('notifications.ignored'), icon: Undo2, count: filteredIgnored.length }]
       : []),
   ];
   const activeAxisDef = axes.find(axis => axis.id === activeAxis) ?? axes[0];
@@ -436,6 +443,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const available: Record<AxisId, boolean> = {
       priorites: corrections.some(s => s.classId === nextClass.id),
       echeances: assessments.some(i => i.classId === nextClass.id) || officialEvents.some(i => i.classNames.includes(nextClass.name)),
+      calendrier: true,
       classes: true,
       activite: allActivityEntries.some(e => e.classId === nextClass.id),
       ignores: ignoredCorrections.some(s => s.classId === nextClass.id),
@@ -516,13 +524,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           aria-label={attentionCount > 0 ? `Notifications, ${attentionCount} à traiter` : 'Notifications'}
           data-tippy-content={attentionCount > 0 ? `${attentionCount} notification${attentionCount > 1 ? 's' : ''}` : 'Notifications'}
           className={cn(
-            'group relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 sm:h-9 sm:w-9',
-            attentionCount > 0
-              ? 'bg-[#e6f4ff] text-[#1677ff] hover:bg-[#bae0ff]'
-              : 'text-[rgba(0,0,0,0.55)] hover:bg-[rgba(0,0,0,0.04)] hover:text-[#1677ff]',
+            'group relative flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100/90 text-zinc-500 shadow-none ring-1 ring-inset ring-zinc-200/70 transition-all duration-200 hover:-translate-y-px hover:bg-zinc-200/80 hover:text-zinc-800 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/30 sm:h-9 sm:w-9',
           )}
         >
-          <Bell className="h-4 w-4 sm:h-[17px] sm:w-[17px]" />
+          <HeaderBell strokeWidth={2} className="h-4 w-4 transition-transform duration-200 group-hover:scale-105" />
           {attentionCount > 0 && (
             <span
               className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-white"
@@ -541,23 +546,25 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           className={cn(
             // Desktop : modale AntD centrée, compacte. Mobile : quasi plein écran, ancrée en bas.
             'mobile-modal-content fixed z-50 flex flex-col overflow-hidden bg-white outline-none',
-            'left-1/2 top-1/2 w-[min(680px,calc(100vw-24px))] max-h-[min(680px,calc(100vh-48px))] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-[#f0f0f0]',
+            'transition-[width,max-height] duration-200',
+            'left-1/2 top-1/2 w-[min(680px,calc(100vw-24px))] max-h-[min(680px,calc(100vh-48px))] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border',
+            activeAxis === 'calendrier' && 'md:w-[min(1040px,calc(100vw-32px))] md:max-h-[min(780px,calc(100vh-32px))]',
             'shadow-[0_6px_16px_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
             'max-md:inset-x-2 max-md:bottom-[max(0.5rem,env(safe-area-inset-bottom))] max-md:left-2 max-md:top-auto max-md:max-h-[94dvh] max-md:w-auto max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-2xl',
             'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95',
           )}
         >
           {/* En-tête AntD Modal */}
-          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#f0f0f0] px-4 py-3">
+          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
             <div className="min-w-0">
               <DialogPrimitive.Title className="flex items-center gap-2 text-[15px] font-semibold leading-tight text-[rgba(0,0,0,0.88)]">
-                <Bell className="h-4 w-4 text-[#1677ff]" />
-                Notifications
+                <Bell className="h-4 w-4 text-primary" />
+                {t('notifications.centerTitle')}
               </DialogPrimitive.Title>
               <DialogPrimitive.Description className="mt-0.5 text-[12px] leading-tight text-[rgba(0,0,0,0.45)]">
                 {filteredAttention > 0
-                  ? `${filteredAttention} à traiter${selectedClass ? ` · ${formatClassDisplayName(selectedClass.name)}` : ''}`
-                  : 'Tout est à jour'}
+                  ? `${t('notifications.toHandle', { count: filteredAttention })}${selectedClass ? ` · ${formatClassDisplayName(selectedClass.name)}` : ''}`
+                  : t('notifications.upToDate')}
               </DialogPrimitive.Description>
             </div>
             <DialogPrimitive.Close
@@ -571,7 +578,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           {/* Corps : rail (desktop) + colonne de contenu */}
           <div className="rtl-notifications flex min-h-0 flex-1 md:flex-row">
             {/* Rail vertical type Menu AntD (desktop) */}
-            <nav className="hidden w-[168px] shrink-0 flex-col gap-0.5 border-r border-[#f0f0f0] bg-[#fafafa] p-2 md:flex" aria-label="Axes">
+            <nav className="hidden w-[168px] shrink-0 flex-col gap-0.5 border-r border-border bg-secondary/40 p-2 md:flex" aria-label="Axes">
               {axes.map(axis => {
                 const active = axis.id === activeAxis;
                 return (
@@ -583,11 +590,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     className={cn(
                       'flex h-8 items-center gap-2 rounded-md px-2.5 text-[13px] transition-colors',
                       active
-                        ? 'bg-[#e6f4ff] font-semibold text-[#1677ff]'
+                        ? 'bg-primary/10 font-semibold text-primary'
                         : 'text-[rgba(0,0,0,0.65)] hover:bg-[rgba(0,0,0,0.04)] hover:text-[rgba(0,0,0,0.88)]',
                     )}
                   >
-                    <axis.icon className={cn('h-3.5 w-3.5 shrink-0', active ? 'text-[#1677ff]' : 'text-[rgba(0,0,0,0.4)]')} />
+                    <axis.icon className={cn('h-3.5 w-3.5 shrink-0', active ? 'text-primary' : 'text-[rgba(0,0,0,0.4)]')} />
                     <span className="flex-1 truncate text-left">{axis.label}</span>
                     {axis.count > 0 && <AxisCount value={axis.count} emphasize={axis.emphasize} active={active} />}
                   </button>
@@ -597,8 +604,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
               {/* Onglets Segmented AntD (mobile) */}
-              <div className="shrink-0 overflow-x-auto border-b border-[#f0f0f0] px-2 py-2 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <div className="inline-flex min-w-full gap-1 rounded-lg bg-[#f5f5f5] p-1">
+              <div className="shrink-0 overflow-x-auto border-b border-border px-2 py-2 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="inline-flex min-w-full gap-1 rounded-lg bg-muted p-1">
                   {axes.map(axis => {
                     const active = axis.id === activeAxis;
                     return (
@@ -620,20 +627,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               </div>
 
               {/* Barre d'outils : titre d'axe (desktop) + filtre classe */}
-              <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-[#f0f0f0] px-3">
+              <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
                 <span className="hidden items-center gap-2 text-[13px] font-semibold text-[rgba(0,0,0,0.88)] md:flex">
                   {activeAxisDef.label}
                   {activeAxisDef.count > 0 && <AntTag tone={activeAxisDef.emphasize ? 'red' : 'default'}>{activeAxisDef.count}</AntTag>}
                 </span>
                 <Select value={classFilterValue} onValueChange={handleClassFilterChange}>
                   <SelectTrigger
-                    aria-label="Filtrer par classe"
-                    className="ml-auto h-9 w-[min(15rem,68vw)] rounded-lg border-[#d9d9d9] bg-white px-3 text-[12px] font-medium text-[rgba(0,0,0,0.88)] shadow-none focus:border-[#1677ff] focus:ring-2 focus:ring-[#1677ff]/10 md:h-7 md:w-[210px] md:rounded-md md:px-2.5"
+                    aria-label={t('notifications.filterByClass')}
+                    className="ml-auto h-9 w-[min(15rem,68vw)] rounded-lg border-border bg-white px-3 text-[12px] font-medium text-[rgba(0,0,0,0.88)] shadow-none focus:border-primary focus:ring-2 focus:ring-primary/10 md:h-7 md:w-[210px] md:rounded-md md:px-2.5"
                   >
-                    <SelectValue placeholder="Toutes les classes" />
+                    <SelectValue placeholder={t('notifications.allClasses')} />
                   </SelectTrigger>
-                  <SelectContent className="z-[80] rounded-lg border-[#f0f0f0] shadow-[0_6px_16px_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]">
-                    <SelectItem value="all" className="text-[12px]">Toutes les classes</SelectItem>
+                  <SelectContent className="z-[80] rounded-lg border-border shadow-[0_6px_16px_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]">
+                    <SelectItem value="all" className="text-[12px]">{t('notifications.allClasses')}</SelectItem>
                     {classes.map(classInfo => (
                       <SelectItem key={classInfo.id} value={classInfo.id} className="text-[12px]">
                         {formatClassDisplayName(classInfo.name)}
@@ -644,13 +651,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               </div>
 
               {activeAxis === 'activite' && (
-                <div className="no-scrollbar flex shrink-0 items-center gap-2 overflow-x-auto border-b border-[#f0f0f0] px-3 py-1.5" aria-label="Filtres de l’activité">
+                <div className="no-scrollbar flex shrink-0 items-center gap-2 overflow-x-auto border-b border-border px-3 py-1.5" aria-label="Filtres de l’activité">
                   <span className="shrink-0 text-[10px] font-medium text-[rgba(0,0,0,0.45)]">
                     {selectedClass
                       ? `${activitySource.length} action${activitySource.length > 1 ? 's' : ''} · journal de classe`
                       : `${activitySource.length} actions récentes`}
                   </span>
-                  <div className="ml-auto inline-flex shrink-0 rounded-md bg-[#f5f5f5] p-0.5" role="tablist" aria-label="Catégories d’activité">
+                  <div className="ml-auto inline-flex shrink-0 rounded-md bg-muted p-0.5" role="tablist" aria-label="Catégories d’activité">
                     {ACTIVITY_FILTERS.map(filter => (
                       <button
                         key={filter.id}
@@ -674,11 +681,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
               {/* Zone défilable */}
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-white px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
+                {activeAxis === 'calendrier' && (
+                  <NotificationCalendar classes={classes} config={config} selectedClassId={classFilterValue} />
+                )}
+
                 {activeAxis === 'priorites' && (
                   filteredCorrections.length === 0
                     ? <AntEmpty title="Aucune priorité en attente" description="Séances non consignées, dates à vérifier, devoirs imminents, absents à saisir apparaîtront ici, reliés à leur source." />
                     : (
-                      <ul className="divide-y divide-[#f0f0f0]">
+                      <ul className="divide-y divide-border">
                         {filteredCorrections.map(signal => {
                           const visual = KIND_VISUAL[signal.kind];
                           const Icon = visual.icon;
@@ -710,7 +721,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   filteredAssessments.length === 0 && filteredOfficial.length === 0
                     ? <AntEmpty title="Aucune échéance proche" description="Devoirs indicatifs (14 jours) et jalons du bulletin officiel (30 jours) apparaîtront ici." />
                     : (
-                      <ul className="divide-y divide-[#f0f0f0]">
+                      <ul className="divide-y divide-border">
                         {filteredAssessments.map(item => (
                           <li key={`${item.classId}-${item.id}`}>
                             <button type="button" onClick={() => openClassById(item.classId)} className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-[rgba(0,0,0,0.02)]">
@@ -753,7 +764,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   filteredOverviews.length === 0
                     ? <AntEmpty title="Aucune classe" description="Créez un cahier pour suivre ici sa progression et son état." />
                     : (
-                      <ul className="divide-y divide-[#f0f0f0]">
+                      <ul className="divide-y divide-border">
                         {filteredOverviews.map(overview => (
                           <li key={overview.classInfo.id}>
                             <button type="button" onClick={() => openClassById(overview.classInfo.id)} className="block w-full py-3 text-left transition-colors hover:bg-[rgba(0,0,0,0.02)]">
@@ -765,14 +776,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                                   </span>
                                 </span>
                                 <span className="shrink-0 text-right">
-                                  <span className="block text-[15px] font-bold leading-none tabular-nums text-[#1677ff]">{overview.completionRate}%</span>
+                                  <span className="block text-[15px] font-bold leading-none tabular-nums text-primary">{overview.completionRate}%</span>
                                 </span>
                               </span>
-                              <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-full bg-[#f5f5f5]" aria-hidden>
+                              <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
                                 <span className="block h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, overview.completionRate))}%`, background: ANT.primary }} />
                               </span>
                               <span className="mt-1.5 flex items-center justify-between gap-3 text-[11px]">
-                                <span className={overview.toPrintCount > 0 ? 'font-medium text-[#1677ff]' : 'text-[rgba(0,0,0,0.4)]'}>
+                                <span className={overview.toPrintCount > 0 ? 'font-medium text-primary' : 'text-[rgba(0,0,0,0.4)]'}>
                                   {overview.toPrintCount > 0 ? `${overview.toPrintCount} séance${overview.toPrintCount > 1 ? 's' : ''} à imprimer` : 'Impressions à jour'}
                                 </span>
                                 <span className="text-[rgba(0,0,0,0.4)]">{overview.lastPrintedAt ? `Imprimé ${timeAgoFr(overview.lastPrintedAt)}` : 'Jamais imprimé'}</span>
@@ -791,10 +802,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                       <div className="pb-2">
                         {groupedActivityDays.map((day, dayIndex) => (
                           <section key={`${day.label}-${dayIndex}`} className="pt-2">
-                            <h3 className="sticky top-0 z-10 -mx-3 border-b border-[#f0f0f0] bg-white/95 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[rgba(0,0,0,0.45)] backdrop-blur">
+                            <h3 className="sticky top-0 z-10 -mx-3 border-b border-border bg-white/95 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-[rgba(0,0,0,0.45)] backdrop-blur">
                               {day.label}
                             </h3>
-                            <ul className="divide-y divide-[#f0f0f0]">
+                            <ul className="divide-y divide-border">
                               {day.entries.map((entry, index) => (
                                 <li key={`${entry.classId}-${entry.at}-${index}`}>
                                   <button
@@ -828,7 +839,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   filteredIgnored.length === 0
                     ? <AntEmpty title="Aucune exception" description="Les points ignorés depuis les priorités ou la vérification de dates apparaîtront ici, réactivables." />
                     : (
-                      <ul className="divide-y divide-[#f0f0f0]">
+                      <ul className="divide-y divide-border">
                         {filteredIgnored.map(signal => (
                           <li key={signal.id} className="flex items-center gap-2.5 py-3">
                             <span className="min-w-0 flex-1 text-[12px] leading-snug text-[rgba(0,0,0,0.5)]">

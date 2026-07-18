@@ -285,7 +285,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             </span>
                             {official && (
                                 <span
-                                    className={`font-mono ${matches ? 'text-success/80' : hours > 0 ? 'text-warning' : 'text-muted-foreground/50'}`}
+                                    className={`font-mono ${matches ? 'text-success-strong' : hours > 0 ? 'text-warning-strong' : 'text-muted-foreground/50'}`}
                                     title={
                                         matches
                                             ? `Conforme à l'horaire officiel indicatif (${official.context} : ${official.hours} h/sem).`

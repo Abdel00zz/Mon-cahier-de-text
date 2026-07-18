@@ -26,7 +26,7 @@ Narration clé: « En quelques minutes, vous créez votre classe, saisissez vos 
 ### 2) Premiers pas et configuration (2–3 min)
 - Ouverture de l’application: présentation du Tableau de bord (liste des classes, bouton de création, bouton Configuration, bouton Aide visible).
 - Repères rapides: la barre jaune douce, alignée à droite sur grand écran, affiche seulement **Progression**, **Séances** et **Classes**. Sur téléphone, elle reprend toute la largeur pour rester lisible.
-- Centre de notifications: cliquer sur la cloche pour traiter les priorités, les échéances et consulter le **journal d’activité**. Le filtre de classe affiche le journal complet de ce cahier; les catégories Contenu, Dates et Structure facilitent la lecture.
+- Centre de notifications: cliquer sur la cloche pour traiter les priorités, les échéances et consulter le **journal d’activité**. L’onglet **Calendrier** réunit les cours du professeur, les vacances, les jours fériés, les examens et les concours officiels. Le filtre de classe adapte à la fois le calendrier et le journal au cahier choisi.
 - Ouvrir la Configuration: 
 	- Établissement (nom affiché sur les impressions)
 	- Nom de l’enseignant par défaut

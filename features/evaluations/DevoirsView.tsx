@@ -73,7 +73,7 @@ const formatLongDate = (iso: string): string => {
 
 /* pastille d'état — une teinte par famille, cohérente avec le reste de l'app */
 const STATUS_STYLE: Record<AssessmentLink['status'], { label: string; className: string }> = {
-    done: { label: 'Dans le cahier', className: 'bg-success/5 text-success border-success/30' },
+    done: { label: 'Dans le cahier', className: 'bg-success/5 text-success-strong border-success/30' },
     mismatch: { label: 'Écart avec le cahier', className: 'bg-amber-50 text-amber-700 border-amber-200' },
     upcoming: { label: 'À venir', className: 'bg-blue-50 text-blue-700 border-blue-200' },
     missing: { label: 'Non saisi', className: 'bg-slate-50 text-slate-500 border-slate-200' },

@@ -96,7 +96,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           onClick={() => onChange(opt.value)}
           aria-pressed={value === opt.value}
           className={`rounded-md border px-2.5 py-1 text-[10px] font-bold transition-all duration-150 ${
-            value === opt.value ? 'border-[#123a63] bg-[#123a63] text-white shadow-xs' : 'border-transparent text-zinc-500 hover:text-zinc-800'
+            value === opt.value ? 'border-primary bg-primary text-primary-foreground shadow-xs' : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
           {opt.label}
@@ -233,7 +233,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                   aria-selected={selected}
                   onClick={() => setMode(item.value)}
                   className={`flex min-w-0 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[10px] font-bold transition-colors ${
-                    selected ? 'bg-[#123a63] text-white shadow-xs' : 'text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:cursor-not-allowed disabled:opacity-35'
+                    selected ? 'bg-primary text-primary-foreground shadow-xs' : 'text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:cursor-not-allowed disabled:opacity-35'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -367,7 +367,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <Switch
               checked={pageNumbers}
               onCheckedChange={setPageNumbers}
-              className="mt-0.5 data-[state=checked]:bg-[#123a63]"
+              className="mt-0.5 data-[state=checked]:bg-primary"
             />
           </label>
 

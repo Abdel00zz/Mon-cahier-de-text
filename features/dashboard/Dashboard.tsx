@@ -15,7 +15,8 @@ import { logger } from '@/utils/logger';
 import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { ChevronDown, CircleHelp, Plus, Settings } from '@/components/ui/icons';
+import { ChevronDown, Plus } from '@/components/ui/icons';
+import { CircleHelp, Settings } from 'lucide-react';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { computeProgressionStats } from '@/utils/progression';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -332,7 +333,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                 <div className="relative z-10 mx-auto max-w-7xl px-3 py-4 sm:px-5 sm:py-6 lg:px-6 lg:py-8">
                     <header className="mb-6 space-y-4 sm:mb-8" id="dashboard-header">
                         <div className="relative flex min-h-9 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="dashboard-header-copy min-w-0 flex-1 pr-[8.25rem] lg:pr-0">
+                            <div className="dashboard-header-copy min-w-0 flex-1 pr-[8.25rem] sm:pr-[9.75rem] lg:pr-0">
                                 <h1 className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-[1.65rem] font-extrabold tracking-tight text-foreground sm:text-3xl">
                                     {teacherName ? (
                                         <>
@@ -349,30 +350,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                             </div>
 
                             <div className="dashboard-header-actions absolute right-0 top-0 flex shrink-0 items-center gap-3 lg:static sm:gap-4" aria-label="Aide, réglages et notifications">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setGuideOpen(true)}
-                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 [&_svg]:!size-[25px] sm:h-11 sm:w-11"
-                                    aria-label="Aide"
-                                    data-tippy-content="Aide"
-                                >
-                                    <CircleHelp className="h-[25px] w-[25px] transition-transform duration-200 group-hover:scale-110" />
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={onOpenSettings}
-                                    className="group h-9 w-9 rounded-full border-0 bg-[#eef0ff] text-[#4257ff] shadow-none transition-all duration-200 hover:-translate-y-px hover:bg-[#e1e5ff] hover:text-[#2745ff] focus-visible:ring-2 focus-visible:ring-[#4257ff]/25 [&_svg]:!size-[25px] sm:h-11 sm:w-11"
-                                    aria-label="Paramètres"
-                                    data-tippy-content="Paramètres"
-                                >
-                                    <Settings className="h-[25px] w-[25px] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105" />
-                                </Button>
                                 <NotificationCenter
                                     classes={classes}
+                                    config={config}
                                     feed={notificationFeed}
                                     onSelectClass={onSelectClass}
                                     onOpenSettings={onOpenSettings}
@@ -380,6 +360,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectClass, onOpenSetti
                                     onOpenChange={setNotificationCenterOpen}
                                     onMutate={() => setNotificationVersion(version => version + 1)}
                                 />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setGuideOpen(true)}
+                                    className="group h-8 w-8 rounded-full border-0 bg-zinc-100/90 text-zinc-500 shadow-none ring-1 ring-inset ring-zinc-200/70 transition-all duration-200 hover:-translate-y-px hover:bg-zinc-200/80 hover:text-zinc-800 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-zinc-400/30 [&_svg]:!size-4 sm:h-9 sm:w-9"
+                                    aria-label="Aide"
+                                    data-tippy-content="Aide"
+                                >
+                                    <CircleHelp strokeWidth={2} className="transition-transform duration-200 group-hover:scale-105" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={onOpenSettings}
+                                    className="group h-8 w-8 rounded-full border-0 bg-zinc-100/90 text-zinc-500 shadow-none ring-1 ring-inset ring-zinc-200/70 transition-all duration-200 hover:-translate-y-px hover:bg-zinc-200/80 hover:text-zinc-800 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-zinc-400/30 [&_svg]:!size-4 sm:h-9 sm:w-9"
+                                    aria-label="Paramètres"
+                                    data-tippy-content="Paramètres"
+                                >
+                                    <Settings strokeWidth={2} className="transition-transform duration-200 group-hover:rotate-12 group-hover:scale-105" />
+                                </Button>
                             </div>
                         </div>
                     </header>

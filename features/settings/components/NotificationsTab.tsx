@@ -49,7 +49,7 @@ const PushActivationCard: React.FC<{
     if (permission === 'denied' && !active) {
         return (
             <div className="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning-strong">
                     <TriangleAlert className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
@@ -65,7 +65,7 @@ const PushActivationCard: React.FC<{
         return (
             <div className="rounded-xl border border-success/40 bg-success/10 p-3.5">
                 <div className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success-strong">
                         <Check className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
