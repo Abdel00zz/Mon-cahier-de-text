@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { DateField } from '@/components/ui/DateField';
 import { EditableCell } from '@/components/ui/EditableCell';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
 import { logger } from '@/utils/logger';
@@ -80,7 +81,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="m-entry-list relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -93,7 +94,12 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
             <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
 
             <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border/40 md:pr-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-background text-foreground focus:ring-primary/30 font-mono" />
+                <DateField
+                    name="date"
+                    value={formData.date || ''}
+                    onChange={(value) => setFormData(prev => ({ ...prev, date: value }))}
+                    className="min-h-11 text-center border-border bg-background text-foreground focus:ring-primary/30 font-mono"
+                />
                 {formData.date && (
                     <button
                         type="button"

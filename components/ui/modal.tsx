@@ -54,7 +54,6 @@ export function Modal({
   }
 
   const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md
-
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className={cn(mwClass, className)}>

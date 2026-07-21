@@ -9,6 +9,8 @@ import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
 import { LocaleProvider } from './i18n/LocaleProvider';
+import { useIsMobile } from './hooks/useIsMobile';
+import { MobileShell } from './components/ui/MobileShell';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -96,6 +98,7 @@ const App: React.FC = () => {
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
   const { config, isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
+  const isMobile = useIsMobile();
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
   const scrollPositionsRef = useRef<Record<string, number>>({});
@@ -194,15 +197,31 @@ const App: React.FC = () => {
 
   const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : view;
 
-    const appSurface = (
+    const contentSurface = (
+      <div key={routeKey} className="min-h-screen relative z-10">
+        <Suspense fallback={<AppBootSkeleton />}>
+          {renderContent()}
+        </Suspense>
+      </div>
+    );
+
+    const appSurface = isMobile ? (
+      <MobileShell
+        title={view === 'settings' ? 'Réglages' : view === 'editor' && activeClass ? activeClass.name : 'Accueil'}
+        subtitle={view === 'editor' && activeClass ? activeClass.subject : 'Cahier de textes'}
+        activeTab={view === 'editor' ? 'editor' : view === 'settings' ? 'settings' : 'dashboard'}
+        hasActiveClass={!!activeClass}
+        onDashboard={handleBackToDashboard}
+        onEditor={() => activeClass && setView('editor')}
+        onSettings={handleOpenSettings}
+      >
+        {contentSurface}
+      </MobileShell>
+    ) : (
       /* overflow-x-clip (et non -hidden) : masque tout débordement horizontal
          sans créer de conteneur de scroll, afin de préserver la barre d’outils sticky. */
       <div className="min-h-screen bg-background text-foreground relative overflow-x-clip">
-        <div key={routeKey} className="min-h-screen relative z-10">
-          <Suspense fallback={<AppBootSkeleton />}>
-            {renderContent()}
-          </Suspense>
-        </div>
+        {contentSurface}
       </div>
     );
 
