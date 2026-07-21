@@ -16,6 +16,8 @@ import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
 import { TriangleAlert, CircleCheck, Info } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { DateField } from '@/components/ui/DateField';
+import { TimetableMobile } from './TimetableMobile';
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -154,8 +156,16 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
             )}
 
+            <TimetableMobile
+                classes={classes}
+                config={config}
+                onChange={onChange}
+                onCreateClass={onCreateClass}
+                onRequestCreate={setPendingCreate}
+            />
+
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
-            <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
+            <div className="hidden overflow-hidden rounded-md border border-border bg-card shadow-sm md:block">
                 <div className="overflow-x-auto">
                 <table className="rtl-table w-full min-w-[46rem] border-separate border-spacing-0 text-xs">
                     <thead>
@@ -308,11 +318,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
             <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
-                <input
-                    type="date"
+                <DateField
                     value={config.schoolYearStart ?? calendar.anneeScolaire.debut}
-                    onChange={e => setSchoolYearStart(e.target.value)}
-                    className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    onChange={setSchoolYearStart}
+                    className="border-border/80"
                 />
                 <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
             </div>
@@ -455,11 +464,10 @@ const AssessmentsPlanner: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     </span>
                                     <span className="text-[11px] font-bold text-muted-foreground font-mono">S{a.semestre}</span>
                                     {a.duree && <span className="text-[10px] text-muted-foreground/60 font-mono">{a.duree}</span>}
-                                    <input
-                                        type="date"
+                                    <DateField
                                         value={a.dateISO}
-                                        onChange={e => setAssessmentDate(a.id, e.target.value)}
-                                        className={`ml-auto h-8 rounded-md border px-2 text-xs text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 ${custom ? 'border-primary text-primary' : 'border-border/80'}`}
+                                        onChange={dateISO => setAssessmentDate(a.id, dateISO)}
+                                        className={`ml-auto h-10 rounded-md text-xs ${custom ? 'border-primary text-primary' : 'border-border/80'}`}
                                         title={a.fenetre ? t('schedule.officialWindow', { value: a.fenetre }) : undefined}
                                     />
                                     {custom && (
