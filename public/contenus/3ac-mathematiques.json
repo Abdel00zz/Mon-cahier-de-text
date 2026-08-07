@@ -1,0 +1,17 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 3AC Mathématiques (Maroc).",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Développement et factorisation — identités remarquables", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Les racines carrées", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Théorème de Thalès", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Trigonométrie du triangle rectangle", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Équations et inéquations du premier degré", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Systèmes de deux équations à deux inconnues", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Fonctions linéaires et fonctions affines", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Repère dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Équation d'une droite", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : Vecteurs et translation", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Statistiques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : Géométrie dans l'espace", "sections": [] }
+  ]
+}

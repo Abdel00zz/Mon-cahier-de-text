@@ -1,0 +1,297 @@
+import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { getRedis, KEYS } from './_lib/redis.js';
+import { PushEntry, configureVapid, sendToEntry } from './_lib/webpush.js';
+import {
+    ADMIN_COOKIE,
+    ADMIN_MAX_AGE,
+    clearCookie,
+    requireAdmin,
+    safeEqualStrings,
+    setCookie,
+    signSession,
+} from './_lib/auth.js';
+import type { AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
+import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
+import {
+    getOfficialStudentEventsFile,
+    validateOfficialStudentEventsFile,
+    type OfficialStudentEventsFile,
+} from '../utils/officialStudentEvents.js';
+
+interface AdminBody {
+    action?: string;
+    code?: string;
+    phone?: string;
+    blocked?: boolean;
+    title?: string;
+    message?: string;
+    calendar?: HolidayCalendar;
+    officialEvents?: OfficialStudentEventsFile;
+    classId?: string;
+    assessmentId?: string;
+    date?: string;
+}
+
+interface ClassesBlob {
+    classes: ClassInfo[];
+    schedules: ClassSchedule[];
+    classMeta: Record<string, { updatedAt: string }>;
+    updatedAt: string;
+    settings?: Partial<AppConfig>;
+    settingsUpdatedAt?: string;
+}
+
+interface StoredUser {
+    phone: string;
+    nom: string;
+    prenom: string;
+    createdAt: string;
+    lastSyncAt?: string;
+    blocked?: boolean;
+}
+
+const handleAdminLogin = async (body: AdminBody, res: ApiResponse) => {
+    const expected = process.env.ADMIN_SECRET;
+    if (!expected || expected.length < 6) {
+        throw new HttpError(500, "ADMIN_SECRET non configuré sur le serveur.");
+    }
+    if (typeof body.code !== 'string' || !safeEqualStrings(body.code, expected)) {
+        throw new HttpError(401, "Code d'accès incorrect.");
+    }
+    const token = await signSession({ role: 'admin' }, ADMIN_MAX_AGE);
+    setCookie(res, ADMIN_COOKIE, token, ADMIN_MAX_AGE);
+    res.status(200).json({ ok: true });
+};
+
+const handleOverview = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const snapshots = (await redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots)) ?? {};
+    const teachers = Object.values(snapshots).sort((a, b) => {
+        const aTime = a.lastSyncAt ?? '';
+        const bTime = b.lastSyncAt ?? '';
+        return bTime.localeCompare(aTime);
+    });
+    res.status(200).json({ teachers });
+};
+
+const validISO = (value: unknown): value is string =>
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+const validateCalendar = (value: unknown): HolidayCalendar => {
+    if (!value || typeof value !== 'object') throw new HttpError(400, 'Calendrier invalide.');
+    const calendar = value as HolidayCalendar;
+    if (!calendar.anneeScolaire || !validISO(calendar.anneeScolaire.debut) || !validISO(calendar.anneeScolaire.fin)) {
+        throw new HttpError(400, 'Année scolaire invalide.');
+    }
+    if (!Array.isArray(calendar.joursFeries) || calendar.joursFeries.some(item => !validISO(item.date) || !item.nom)) {
+        throw new HttpError(400, 'Liste des jours fériés invalide.');
+    }
+    if (!Array.isArray(calendar.vacances) || calendar.vacances.some(item => !validISO(item.debut) || !validISO(item.fin) || item.fin < item.debut || !item.nom)) {
+        throw new HttpError(400, 'Liste des vacances invalide.');
+    }
+    return {
+        ...calendar,
+        version: Math.max(1, Number(calendar.version) || 1),
+        pays: calendar.pays || 'MA',
+        fuseau: calendar.fuseau || 'Africa/Casablanca',
+        joursFeries: [...calendar.joursFeries].sort((a, b) => a.date.localeCompare(b.date)),
+        vacances: [...calendar.vacances].sort((a, b) => a.debut.localeCompare(b.debut)),
+    };
+};
+
+const handleGetCalendar = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const calendar = (await redis.get<HolidayCalendar>(KEYS.adminCalendar)) ?? getBundledCalendar();
+    res.status(200).json({ calendar });
+};
+
+const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
+    const calendar = validateCalendar(body.calendar);
+    const redis = await getRedis();
+    const saved = { ...calendar, version: calendar.version + 1 };
+    await redis.set(KEYS.adminCalendar, saved);
+    res.status(200).json({ ok: true, calendar: saved });
+};
+
+const handleGetOfficialEvents = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const officialEvents = (await redis.get<OfficialStudentEventsFile>(KEYS.adminOfficialEvents))
+        ?? getOfficialStudentEventsFile();
+    res.status(200).json({ officialEvents });
+};
+
+const handleSaveOfficialEvents = async (body: AdminBody, res: ApiResponse) => {
+    let validated: OfficialStudentEventsFile;
+    try {
+        validated = validateOfficialStudentEventsFile(body.officialEvents);
+    } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : 'Bulletin officiel JSON invalide.');
+    }
+    const redis = await getRedis();
+    const saved = { ...validated, version: validated.version + 1 };
+    await redis.set(KEYS.adminOfficialEvents, saved);
+    res.status(200).json({ ok: true, officialEvents: saved });
+};
+
+const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
+
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    const [user, classesBlob, snapshot] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+    ];
+
+    if (!user && !snapshot) throw new HttpError(404, 'Enseignant introuvable.');
+
+    res.status(200).json({
+        user: user
+            ? { phone: user.phone, nom: user.nom, prenom: user.prenom, createdAt: user.createdAt, lastSyncAt: user.lastSyncAt ?? null }
+            : null,
+        classes: classesBlob?.classes ?? [],
+        schedules: classesBlob?.schedules ?? [],
+        classMeta: classesBlob?.classMeta ?? {},
+        snapshot: snapshot ?? null,
+        assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+    });
+};
+
+const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    if (!body.classId || !body.assessmentId) throw new HttpError(400, 'Classe et devoir requis.');
+    if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
+    const redis = await getRedis();
+    const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    if (!blob) throw new HttpError(404, 'Données de l\'enseignant introuvables.');
+    const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
+    const forClass = { ...(assessmentDates[body.classId] ?? {}) };
+    if (body.date) forClass[body.assessmentId] = body.date;
+    else delete forClass[body.assessmentId];
+    assessmentDates[body.classId] = forClass;
+    const now = new Date().toISOString();
+    await redis.set(KEYS.classes(phone), {
+        ...blob,
+        settings: { ...(blob.settings ?? {}), assessmentDates },
+        settingsUpdatedAt: now,
+        updatedAt: now,
+    });
+    res.status(200).json({ ok: true, assessmentDates });
+};
+
+/**
+ * Cahier complet d'une classe (lecture seule) : permet à l'admin d'inspecter
+ * les chapitres, la dernière séance saisie et son contenu exact.
+ */
+const handleClassLessons = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    const classId = getQueryParam(req, 'classId');
+    if (!phone || !classId) throw new HttpError(400, 'Paramètres phone et classId requis.');
+    const redis = await getRedis();
+    const blob = await redis.get<{ lessonsData: unknown; updatedAt: string }>(KEYS.lessons(phone, classId));
+    if (!blob) throw new HttpError(404, 'Aucun cahier synchronisé pour cette classe.');
+    res.status(200).json(blob);
+};
+
+/* ── Actions de gestion (bloquer / supprimer / notifier un enseignant) ────── */
+
+const requirePhone = (body: AdminBody): string => {
+    if (typeof body.phone !== 'string' || !body.phone) throw new HttpError(400, 'Téléphone manquant.');
+    return body.phone;
+};
+
+/** Bloque ou débloque un compte : le login est refusé tant que blocked=true. */
+const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const redis = await getRedis();
+    const user = await redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone));
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    const blocked = body.blocked !== false;
+    await redis.set(KEYS.user(phone), { ...user, blocked });
+    res.status(200).json({ ok: true, blocked });
+};
+
+/** Suppression définitive : compte + classes + tous les cahiers + snapshot + push. */
+const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const redis = await getRedis();
+    const classesBlob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+
+    const pipeline = redis.pipeline();
+    pipeline.del(KEYS.user(phone));
+    pipeline.del(KEYS.classes(phone));
+    for (const cls of classesBlob?.classes ?? []) {
+        pipeline.del(KEYS.lessons(phone, cls.id));
+    }
+    pipeline.hdel(KEYS.adminSnapshots, phone);
+    pipeline.hdel(KEYS.pushSubs, phone);
+    await pipeline.exec();
+    res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
+};
+
+/** Notification push directe de l'admin vers le téléphone d'un enseignant. */
+const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const message = typeof body.message === 'string' ? body.message.trim().slice(0, 300) : '';
+    if (!message) throw new HttpError(400, 'Message manquant.');
+    if (!configureVapid()) throw new HttpError(500, 'Clés VAPID non configurées sur le serveur.');
+
+    const redis = await getRedis();
+    const entry = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
+    if (!entry || entry.subs.length === 0) {
+        throw new HttpError(400, "Cet enseignant n'a activé les notifications sur aucun appareil.");
+    }
+    const { survivingSubs, sent } = await sendToEntry(entry, {
+        title: (body.title || 'Message de l’administration').slice(0, 80),
+        body: message,
+        url: '/',
+        kind: 'admin',
+        tag: `cdt-admin-${Date.now()}`,
+        timestamp: Date.now(),
+    });
+    await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
+    res.status(200).json({ ok: sent > 0, sent });
+};
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
+    res.setHeader('Cache-Control', 'no-store');
+    try {
+        if (req.method === 'POST') {
+            const body = parseBody<AdminBody>(req.body);
+            if (body.action === 'login') return await handleAdminLogin(body, res);
+            if (body.action === 'logout') {
+                clearCookie(res, ADMIN_COOKIE);
+                return res.status(200).json({ ok: true });
+            }
+            // actions de gestion : session admin requise
+            await requireAdmin(req);
+            if (body.action === 'blockTeacher') return await handleBlockTeacher(body, res);
+            if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
+            if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
+            if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
+            if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
+            if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
+            throw new HttpError(400, 'Action inconnue.');
+        }
+
+        if (req.method === 'GET') {
+            await requireAdmin(req);
+            const action = getQueryParam(req, 'action');
+            if (action === 'overview') return await handleOverview(res);
+            if (action === 'teacher') return await handleTeacherDetail(req, res);
+            if (action === 'calendar') return await handleGetCalendar(res);
+            if (action === 'officialEvents') return await handleGetOfficialEvents(res);
+            if (action === 'lessons') return await handleClassLessons(req, res);
+            throw new HttpError(400, 'Action inconnue.');
+        }
+
+        throw new HttpError(405, 'Méthode non autorisée.');
+    } catch (error) {
+        sendError(res, error);
+    }
+}

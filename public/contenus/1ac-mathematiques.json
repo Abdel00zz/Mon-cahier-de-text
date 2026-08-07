@@ -1,0 +1,18 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 1AC Mathématiques (Maroc). Chapitres seuls : le professeur remplit sections et contenus à sa manière.",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Opérations sur les nombres entiers naturels et décimaux", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Les nombres en écriture fractionnaire", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Les nombres relatifs", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Équations", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : La proportionnalité", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Droites parallèles et droites perpendiculaires", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Les angles", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Le triangle", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Droites remarquables dans un triangle", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : La symétrie centrale", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Le parallélogramme", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : Périmètres et aires", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 13 : Prisme droit et cylindre de révolution", "sections": [] }
+  ]
+}

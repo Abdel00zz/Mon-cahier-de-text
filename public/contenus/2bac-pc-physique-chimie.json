@@ -1,0 +1,18 @@
+[
+    {
+      "type": "chapter",
+      "title": "Ondes mécaniques progressives",
+      "items": [
+        {
+          "type": "cours",
+          "title": "Définition d'une onde mécanique",
+          "description": "Notion d'onde et de milieu de propagation."
+        },
+        {
+          "type": "exercice",
+          "title": "Exercices d'application",
+          "description": "Calcul de la célérité d'une onde."
+        }
+      ]
+    }
+  ]

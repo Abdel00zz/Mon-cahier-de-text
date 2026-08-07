@@ -1,0 +1,52 @@
+{
+  "_commentaire": "Calendrier scolaire Maroc (multi-années). 2026/2027 : transcrit de la liste officielle des vacances (ملحق رقم 1). Dates religieuses = estimations (observation lunaire الرؤية الشرعية) : corriger ici puis redéployer. Champs date au format YYYY-MM-DD. Les bornes de vacances sont INCLUSES.",
+  "version": 2,
+  "pays": "MA",
+  "fuseau": "Africa/Casablanca",
+  "anneeScolaire": { "libelle": "2025-2026", "debut": "2025-09-08", "fin": "2026-07-04" },
+  "anneesScolaires": [
+    { "libelle": "2025-2026", "debut": "2025-09-08", "fin": "2026-07-04" },
+    { "libelle": "2026-2027", "debut": "2026-09-07", "fin": "2027-07-03" }
+  ],
+  "joursFeries": [
+    { "date": "2025-09-04", "nom": "Aïd al-Mawlid (1er jour)", "type": "religieux", "approximatif": true },
+    { "date": "2025-09-05", "nom": "Aïd al-Mawlid (2e jour)", "type": "religieux", "approximatif": true },
+    { "date": "2025-11-06", "nom": "Anniversaire de la Marche Verte", "type": "national" },
+    { "date": "2025-11-18", "nom": "Fête de l'Indépendance", "type": "national" },
+    { "date": "2026-01-01", "nom": "Nouvel An", "type": "national" },
+    { "date": "2026-01-11", "nom": "Manifeste de l'Indépendance", "type": "national" },
+    { "date": "2026-01-14", "nom": "Nouvel An Amazigh (Yennayer)", "type": "national" },
+    { "date": "2026-03-20", "nom": "Aïd al-Fitr (1er jour)", "type": "religieux", "approximatif": true },
+    { "date": "2026-03-21", "nom": "Aïd al-Fitr (2e jour)", "type": "religieux", "approximatif": true },
+    { "date": "2026-05-01", "nom": "Fête du Travail", "type": "national" },
+    { "date": "2026-05-27", "nom": "Aïd al-Adha (1er jour)", "type": "religieux", "approximatif": true },
+    { "date": "2026-05-28", "nom": "Aïd al-Adha (2e jour)", "type": "religieux", "approximatif": true },
+    { "date": "2026-06-17", "nom": "Nouvel An de l'Hégire (1er Moharram 1448)", "type": "religieux", "approximatif": true },
+
+    { "date": "2026-10-31", "nom": "Aïd Al Wahda (Fête de l'Unité)", "type": "national" },
+    { "date": "2026-11-06", "nom": "Anniversaire de la Marche Verte", "type": "national" },
+    { "date": "2026-11-18", "nom": "Fête de l'Indépendance", "type": "national" },
+    { "date": "2027-01-01", "nom": "Nouvel An", "type": "national" },
+    { "date": "2027-01-11", "nom": "Manifeste de l'Indépendance", "type": "national" },
+    { "date": "2027-01-14", "nom": "Nouvel An Amazigh (Yennayer)", "type": "national" },
+    { "date": "2027-05-01", "nom": "Fête du Travail", "type": "national" },
+    { "date": "2027-06-05", "nom": "Nouvel An de l'Hégire (1er Moharram 1449)", "type": "religieux", "approximatif": true }
+  ],
+  "vacances": [
+    { "nom": "Vacances d'automne", "debut": "2025-10-19", "fin": "2025-10-26" },
+    { "nom": "Vacances de fin de 1re période", "debut": "2025-12-07", "fin": "2025-12-14" },
+    { "nom": "Vacances de mi-année", "debut": "2026-01-25", "fin": "2026-02-01" },
+    { "nom": "Vacances de printemps", "debut": "2026-03-15", "fin": "2026-03-22" },
+    { "nom": "Vacances de mai", "debut": "2026-05-03", "fin": "2026-05-10" },
+    { "nom": "Vacances d'été 2026", "debut": "2026-07-05", "fin": "2026-09-06" },
+
+    { "nom": "1re pause interstitielle (الفترة البينية الأولى)", "debut": "2026-10-18", "fin": "2026-10-25" },
+    { "nom": "2e pause interstitielle (الفترة البينية الثانية)", "debut": "2026-12-06", "fin": "2026-12-13" },
+    { "nom": "Vacances de mi-année scolaire", "debut": "2027-01-24", "fin": "2027-01-31" },
+    { "nom": "Aïd al-Fitr — 29 Ramadan → 2 Chawwal 1448 (estimé)", "debut": "2027-03-08", "fin": "2027-03-11" },
+    { "nom": "3e pause interstitielle (الفترة البينية الثالثة)", "debut": "2027-03-21", "fin": "2027-03-28" },
+    { "nom": "4e pause interstitielle (الفترة البينية الرابعة)", "debut": "2027-05-09", "fin": "2027-05-16" },
+    { "nom": "Aïd al-Adha — 9 → 11 Dhou al-Hijja 1448 (estimé)", "debut": "2027-05-15", "fin": "2027-05-17" },
+    { "nom": "Vacances d'été 2027", "debut": "2027-07-04", "fin": "2027-09-05" }
+  ]
+}

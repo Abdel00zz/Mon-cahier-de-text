@@ -1,0 +1,19 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 2AC Mathématiques (Maroc).",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Les nombres rationnels — introduction et comparaison", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Somme et différence de deux nombres rationnels", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Produit et quotient de deux nombres rationnels", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Les puissances", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Calcul littéral", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Équations", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Ordre et opérations", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Théorème de Pythagore", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Triangle rectangle et cercle", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : La symétrie axiale", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : La translation", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : La proportionnalité", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 13 : Statistiques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 14 : Pyramide et cône de révolution", "sections": [] }
+  ]
+}

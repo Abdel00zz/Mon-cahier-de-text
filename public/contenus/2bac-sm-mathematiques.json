@@ -1,0 +1,18 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 2BAC Sciences Maths (A et B) · Mathématiques (Maroc).",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Limites et continuité", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Dérivation et étude des fonctions", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Les suites numériques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Fonctions logarithmiques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Fonctions exponentielles", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Les nombres complexes", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Équations différentielles", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Fonctions primitives et calcul intégral", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Arithmétique dans Z", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : Structures algébriques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Espaces vectoriels", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : Calcul des probabilités", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 13 : Géométrie dans l'espace", "sections": [] }
+  ]
+}

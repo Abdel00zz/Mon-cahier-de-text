@@ -1,0 +1,19 @@
+{
+  "_commentaire": "Squelette MINIMAL du programme officiel — 1BAC Sciences Mathématiques · Mathématiques (Maroc).",
+  "lessonsData": [
+    { "type": "chapter", "title": "Chapitre 1 : Notions de logique", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Ensembles et applications", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Généralités sur les fonctions", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Le barycentre dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Le produit scalaire et ses applications", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Trigonométrie", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : La rotation dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Limites d'une fonction", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : La dérivation et ses applications", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : Étude des fonctions", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Les suites numériques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : Arithmétique dans IN", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 13 : Dénombrement", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 14 : Géométrie dans l'espace", "sections": [] }
+  ]
+}

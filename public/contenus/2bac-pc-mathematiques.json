@@ -1,0 +1,49 @@
+{
+  "lessonsData": [
+    {
+      "type": "chapter",
+      "title": "Chapitre 1 : Limites et continuité",
+      "sections": [
+        { "name": "I. Limites d'une fonction", "items": [
+          { "type": "activité", "title": "Activité d'introduction : notion de limite" },
+          { "type": "définition", "number": "1", "title": "Limite finie en un point" },
+          { "type": "proposition", "number": "1", "title": "Opérations sur les limites" },
+          { "type": "exercice", "number": "1", "title": "Calculs de limites usuelles" }
+        ]},
+        { "name": "II. Continuité", "items": [
+          { "type": "définition", "number": "2", "title": "Continuité en un point, sur un intervalle" },
+          { "type": "théorème", "number": "1", "title": "Théorème des valeurs intermédiaires (TVI)" },
+          { "type": "application", "title": "Application du TVI : existence de solutions" }
+        ]}
+      ]
+    },
+    {
+      "type": "chapter",
+      "title": "Chapitre 2 : Dérivabilité et étude des fonctions",
+      "sections": [
+        { "name": "I. Dérivabilité", "items": [
+          { "type": "définition", "number": "1", "title": "Nombre dérivé, fonction dérivée" },
+          { "type": "proposition", "number": "1", "title": "Dérivées des fonctions usuelles et opérations" }
+        ]},
+        { "name": "II. Étude de fonctions", "items": [
+          { "type": "théorème", "number": "1", "title": "Monotonie et signe de la dérivée" },
+          { "type": "exercice", "number": "1", "title": "Étude complète d'une fonction" }
+        ]}
+      ]
+    },
+    {
+      "type": "chapter",
+      "title": "Chapitre 3 : Suites numériques",
+      "sections": [
+        { "name": "I. Généralités et récurrence", "items": [
+          { "type": "définition", "number": "1", "title": "Suites arithmétiques et géométriques (rappels)" },
+          { "type": "théorème", "number": "1", "title": "Principe de récurrence" }
+        ]},
+        { "name": "II. Limites de suites", "items": [
+          { "type": "théorème", "number": "2", "title": "Convergence des suites monotones" },
+          { "type": "exercice", "number": "1", "title": "Suites récurrentes $u_{n+1} = f(u_n)$" }
+        ]}
+      ]
+    }
+  ]
+}

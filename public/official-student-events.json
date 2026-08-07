@@ -1,0 +1,394 @@
+{
+  "version": 1,
+  "schoolYear": "2026-2027",
+  "source": {
+    "title": "Décision ministérielle n° 047.26 relative à l'organisation de l'année scolaire 2026-2027",
+    "date": "2026-07-03",
+    "language": "ar",
+    "note": "Transcription ciblée des jalons concernant directement les élèves du collège et du lycée qualifiant."
+  },
+  "events": [
+    {
+      "id": "rentree-effective-secondaire",
+      "category": "school",
+      "title": "Début effectif des cours",
+      "start": "2026-09-07",
+      "levels": ["all-secondary"],
+      "dateKind": "fixed",
+      "studentAction": "Reprise normale des cours selon l'emploi du temps.",
+      "sourcePage": 6
+    },
+    {
+      "id": "s1-last-assessments",
+      "category": "assessment",
+      "title": "Derniers contrôles continus du semestre 1",
+      "start": "2027-01-04",
+      "end": "2027-01-09",
+      "levels": ["all-secondary"],
+      "dateKind": "window",
+      "studentAction": "Prévoir les révisions et finaliser les évaluations du premier semestre.",
+      "sourcePage": 11
+    },
+    {
+      "id": "s1-report-cards",
+      "category": "result",
+      "title": "Remise des résultats du semestre 1",
+      "start": "2027-01-23",
+      "levels": ["all-secondary"],
+      "dateKind": "fixed",
+      "studentAction": "Analyser les résultats et préparer les besoins de soutien du semestre 2.",
+      "sourcePage": 11
+    },
+    {
+      "id": "college-local-exam-3ac",
+      "category": "exam",
+      "title": "Examen local unifié - 3AC",
+      "start": "2027-01-18",
+      "end": "2027-01-19",
+      "levels": ["3ac"],
+      "dateKind": "fixed",
+      "studentAction": "Préparation à l'examen local de fin du premier semestre.",
+      "sourcePage": 11
+    },
+    {
+      "id": "college-s2-last-assessments",
+      "category": "assessment",
+      "title": "Derniers contrôles continus du semestre 2",
+      "start": "2027-06-14",
+      "end": "2027-06-19",
+      "levels": ["college", "tc", "1bac"],
+      "dateKind": "window",
+      "studentAction": "Achever les évaluations avant la phase de soutien et de clôture.",
+      "sourcePage": 11
+    },
+    {
+      "id": "college-regional-preparation-3ac",
+      "category": "support",
+      "title": "Préparation collective à l'examen régional - 3AC",
+      "start": "2027-06-21",
+      "end": "2027-06-22",
+      "levels": ["3ac"],
+      "dateKind": "fixed",
+      "studentAction": "Révisions collectives ciblées avant l'examen régional.",
+      "sourcePage": 11
+    },
+    {
+      "id": "college-regional-exam-3ac",
+      "category": "exam",
+      "title": "Examen régional unifié - 3AC",
+      "start": "2027-06-23",
+      "end": "2027-06-24",
+      "levels": ["3ac"],
+      "dateKind": "fixed",
+      "studentAction": "Passage de l'examen régional du certificat du cycle collégial.",
+      "sourcePage": 11
+    },
+    {
+      "id": "college-results-s2",
+      "category": "result",
+      "title": "Remise des résultats de fin d'année",
+      "start": "2027-07-03",
+      "levels": ["college", "tc"],
+      "dateKind": "fixed",
+      "studentAction": "Consultation des résultats et, selon le niveau, de l'orientation.",
+      "sourcePage": 12
+    },
+    {
+      "id": "first-bac-regional-preparation",
+      "category": "support",
+      "title": "Préparation collective à l'examen régional - 1BAC",
+      "start": "2027-05-24",
+      "end": "2027-05-27",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Programme de révision collective avant la session normale.",
+      "sourcePage": 13
+    },
+    {
+      "id": "first-bac-regional-regular",
+      "category": "exam",
+      "title": "Examen régional - session normale 1BAC",
+      "start": "2027-05-28",
+      "end": "2027-05-29",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Passage des épreuves régionales de la session normale.",
+      "sourcePage": 13
+    },
+    {
+      "id": "first-bac-regional-resit",
+      "category": "exam",
+      "title": "Examen régional - session de rattrapage 1BAC",
+      "start": "2027-06-28",
+      "end": "2027-06-29",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Session de rattrapage de l'examen régional.",
+      "sourcePage": 13
+    },
+    {
+      "id": "first-bac-results",
+      "category": "result",
+      "title": "Résultats de l'examen régional - 1BAC",
+      "start": "2027-07-08",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Consultation des résultats régionaux.",
+      "sourcePage": 13
+    },
+    {
+      "id": "second-bac-last-assessments",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - 2BAC",
+      "start": "2027-05-17",
+      "end": "2027-05-22",
+      "levels": ["2bac"],
+      "dateKind": "window",
+      "studentAction": "Finaliser le contrôle continu avant la préparation au national.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-national-preparation",
+      "category": "support",
+      "title": "Préparation collective à l'examen national - 2BAC",
+      "start": "2027-05-24",
+      "end": "2027-05-29",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Révisions collectives ciblées pour la session normale.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-national-regular",
+      "category": "exam",
+      "title": "Examen national du baccalauréat - session normale",
+      "start": "2027-06-01",
+      "end": "2027-06-03",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Passage des épreuves nationales de la session normale.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-regular-results",
+      "category": "result",
+      "title": "Résultats du baccalauréat - session normale",
+      "start": "2027-06-19",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Consultation des résultats de la session normale.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-resit-preparation",
+      "category": "support",
+      "title": "Préparation collective au rattrapage du baccalauréat",
+      "start": "2027-06-21",
+      "end": "2027-06-30",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Révisions ciblées pour les élèves concernés par le rattrapage.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-national-resit",
+      "category": "exam",
+      "title": "Examen national du baccalauréat - rattrapage",
+      "start": "2027-07-01",
+      "end": "2027-07-03",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Passage des épreuves nationales de rattrapage.",
+      "sourcePage": 14
+    },
+    {
+      "id": "second-bac-resit-results",
+      "category": "result",
+      "title": "Résultats du baccalauréat - rattrapage",
+      "start": "2027-07-10",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Consultation des résultats de la session de rattrapage.",
+      "sourcePage": 14
+    },
+    {
+      "id": "support-remediation-college-lycee",
+      "category": "support",
+      "title": "Soutien, remédiation et activités parallèles",
+      "start": "2027-06-20",
+      "end": "2027-06-26",
+      "levels": ["college", "tc", "1bac"],
+      "dateKind": "window",
+      "studentAction": "Exploiter les résultats des évaluations pour consolider les acquis.",
+      "sourcePage": 6
+    },
+    {
+      "id": "science-olympiads-1bac-1",
+      "category": "competition",
+      "title": "Olympiades de physique, biologie et chimie - épreuve 1",
+      "start": "2027-01-08",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Épreuve de sélection pour les élèves inscrits.",
+      "sourcePage": 15
+    },
+    {
+      "id": "science-olympiads-1bac-2",
+      "category": "competition",
+      "title": "Olympiades de physique, biologie et chimie - épreuve 2",
+      "start": "2027-02-05",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Deuxième épreuve de sélection.",
+      "sourcePage": 15
+    },
+    {
+      "id": "science-olympiads-1bac-3",
+      "category": "competition",
+      "title": "Olympiades de physique, biologie et chimie - épreuve 3",
+      "start": "2027-03-05",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Troisième épreuve de sélection.",
+      "sourcePage": 15
+    },
+    {
+      "id": "science-olympiads-1bac-4",
+      "category": "competition",
+      "title": "Olympiades de physique, biologie et chimie - épreuve 4",
+      "start": "2027-04-02",
+      "levels": ["1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Quatrième épreuve de sélection.",
+      "sourcePage": 15
+    },
+    {
+      "id": "math-olympiad-secondary-1",
+      "category": "competition",
+      "title": "Olympiade nationale de mathématiques - épreuve 1",
+      "start": "2027-01-08",
+      "levels": ["tc-scientific", "1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Épreuve de mathématiques pour les élèves sélectionnés.",
+      "sourcePage": 15
+    },
+    {
+      "id": "math-olympiad-secondary-2",
+      "category": "competition",
+      "title": "Olympiade nationale de mathématiques - épreuve 2",
+      "start": "2027-02-12",
+      "levels": ["tc-scientific", "1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Deuxième épreuve de mathématiques.",
+      "sourcePage": 15
+    },
+    {
+      "id": "regional-math-olympiad-3ac",
+      "category": "competition",
+      "title": "Finale de l'olympiade régionale de mathématiques - 3AC",
+      "start": "2027-05-01",
+      "end": "2027-05-31",
+      "levels": ["3ac"],
+      "dateKind": "indicative",
+      "studentAction": "Finale régionale, date précise communiquée ultérieurement.",
+      "sourcePage": 15
+    },
+    {
+      "id": "educational-robotics-3ac",
+      "category": "competition",
+      "title": "Finale de robotique éducative - 3AC",
+      "start": "2027-05-01",
+      "end": "2027-05-31",
+      "levels": ["3ac"],
+      "dateKind": "indicative",
+      "studentAction": "Compétition liée à la technologie, date précise à confirmer.",
+      "sourcePage": 16
+    },
+    {
+      "id": "general-science-technology-2bac",
+      "category": "competition",
+      "title": "Concours général des sciences et technologies - 2BAC",
+      "start": "2027-07-01",
+      "end": "2027-07-31",
+      "levels": ["2bac"],
+      "dateKind": "indicative",
+      "studentAction": "Mathématiques, physique-chimie, SVT ou sciences de l'ingénieur.",
+      "sourcePage": 16
+    },
+    {
+      "id": "youth-science-challenge-stage-1",
+      "category": "competition",
+      "title": "Défi jeunesse en sciences et technologies - étape 1",
+      "start": "2027-03-21",
+      "end": "2027-03-28",
+      "levels": ["all-secondary"],
+      "dateKind": "window",
+      "studentAction": "Première étape pendant la troisième pause interstitielle.",
+      "sourcePage": 16
+    },
+    {
+      "id": "youth-science-challenge-stage-2",
+      "category": "competition",
+      "title": "Défi jeunesse en sciences et technologies - étape 2",
+      "start": "2027-05-09",
+      "end": "2027-05-16",
+      "levels": ["all-secondary"],
+      "dateKind": "window",
+      "studentAction": "Deuxième étape pendant la quatrième pause interstitielle.",
+      "sourcePage": 16
+    },
+    {
+      "id": "programming-robotics-secondary",
+      "category": "competition",
+      "title": "Compétitions nationales de programmation et robotique",
+      "start": "2027-05-01",
+      "end": "2027-06-30",
+      "levels": ["2ac", "3ac", "tc-scientific"],
+      "dateKind": "indicative",
+      "studentAction": "Pour les élèves inscrits de 2AC, 3AC et tronc commun scientifique.",
+      "sourcePage": 17
+    },
+    {
+      "id": "national-reading-competitions",
+      "category": "competition",
+      "title": "Concours nationaux de lecture",
+      "start": "2027-05-01",
+      "end": "2027-07-31",
+      "levels": ["all-secondary"],
+      "dateKind": "indicative",
+      "studentAction": "Participation ouverte aux élèves du public et du privé.",
+      "sourcePage": 17
+    },
+    {
+      "id": "arabic-reading-challenge",
+      "category": "competition",
+      "title": "Défi de lecture arabe",
+      "start": "2027-04-01",
+      "end": "2027-05-31",
+      "levels": ["all-secondary"],
+      "dateKind": "indicative",
+      "studentAction": "Participation ouverte à tous les niveaux du secondaire.",
+      "sourcePage": 17
+    },
+    {
+      "id": "end-study-2bac",
+      "category": "school",
+      "title": "Fin des cours - 2BAC",
+      "start": "2027-05-29",
+      "levels": ["2bac"],
+      "dateKind": "fixed",
+      "studentAction": "Fin des cours ordinaires et passage vers les échéances nationales.",
+      "sourcePage": 6
+    },
+    {
+      "id": "end-study-college-tc-1bac",
+      "category": "school",
+      "title": "Fin des cours",
+      "start": "2027-06-26",
+      "levels": ["college", "tc", "1bac"],
+      "dateKind": "fixed",
+      "studentAction": "Clôture des cours après les activités de soutien et de remédiation.",
+      "sourcePage": 6
+    }
+  ]
+}
