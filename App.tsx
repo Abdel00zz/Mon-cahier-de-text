@@ -114,7 +114,7 @@ const App: React.FC = () => {
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const [notificationVersion, setNotificationVersion] = useState(0);
-  const notificationFeed = useNotificationFeed(classes, config, notificationVersion);
+  const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar', notificationVersion);
 
   const saveCurrentScroll = useCallback(() => {
     scrollPositionsRef.current[getScrollKey(view, activeClass)] = window.scrollY;

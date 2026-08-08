@@ -1,5 +1,6 @@
-import { AppConfig, ClassInfo, Indices, LessonsData } from '../types';
+import { AppConfig, AppLocale, ClassInfo, Indices, LessonsData } from '../types';
 import { formatClassDisplayName } from '../constants';
+import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { flattenLessons, migrateLessonsData } from './dataUtils';
 import { DateWarning, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
@@ -140,8 +141,10 @@ const toUTC = (iso: string): number => {
 const fromUTC = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
 const addDaysISO = (iso: string, days: number): string => fromUTC(toUTC(iso) + days * DAY_MS);
 
-const WEEKDAY_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-const weekdayFr = (iso: string): string => WEEKDAY_FR[new Date(toUTC(iso)).getUTCDay()];
+const weekdayLabel = (iso: string, locale: AppLocale): string => {
+    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
+    return new Intl.DateTimeFormat(localeCode, { weekday: 'long' }).format(new Date(toUTC(iso)));
+};
 
 /** jours d'école réels de la classe : jour d'emploi du temps, hors férié/vacances/absence prof. */
 const isClassSchoolDay = (
@@ -187,8 +190,9 @@ const findMissedSessions = (
  * concrète : une date à corriger, une séance non consignée, un cahier jamais
  * démarré, des impressions en attente, l'emploi du temps absent.
  */
-export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): ClassSignal[] => {
+export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, locale: AppLocale = 'fr'): ClassSignal[] => {
     const signals: ClassSignal[] = [];
+    const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const ignored = readIgnoredActionIds(classInfo.id);
     const className = formatClassDisplayName(classInfo.name);
     const lessons = readClassLessons(classInfo.id);
@@ -216,7 +220,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
             action: 'class',
             classId: classInfo.id,
             className,
-            title: `Date du ${formatDateFR(date)} à vérifier`,
+            title: t('notifications.signal.dateTitle', { date: formatDateFR(date) }),
             detail: warnings.map(warning => warning.message).join(' '),
             date,
             targetIndices: indicesList[0],
@@ -235,10 +239,10 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
             action: 'class',
             classId: classInfo.id,
             className,
-            title: `Séance du ${weekdayFr(last)} ${formatDateFR(last)} non consignée`,
+            title: t('notifications.signal.missedTitle', { weekday: weekdayLabel(last, locale), date: formatDateFR(last) }),
             detail: missed.length > 1
-                ? `${missed.length} séances prévues à l'emploi du temps sont passées sans entrée datée ces 14 derniers jours.`
-                : `Cette séance figurait à l'emploi du temps mais aucun contenu ne porte sa date.`,
+                ? t('notifications.signal.missedMany', { count: missed.length })
+                : t('notifications.signal.missedOne'),
             date: last,
             ignored: ignored.has(id),
         });
@@ -259,8 +263,8 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
             action: 'class',
             classId: classInfo.id,
             className,
-            title: 'Cahier non démarré',
-            detail: `L'année a commencé le ${formatDateFR(year.debut)} et aucune séance n'est encore datée dans ce cahier.`,
+            title: t('notifications.signal.neverStartedTitle'),
+            detail: t('notifications.signal.neverStartedDetail', { date: formatDateFR(year.debut) }),
             ignored: ignored.has(id),
         });
     }
@@ -274,8 +278,8 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
             action: 'timetable',
             classId: classInfo.id,
             className,
-            title: 'Emploi du temps à compléter',
-            detail: 'Sans créneaux, ni le contrôle des dates ni le suivi des séances ne peuvent fonctionner pour cette classe.',
+            title: t('notifications.signal.scheduleTitle'),
+            detail: t('notifications.signal.scheduleDetail'),
             ignored: ignored.has(id),
         });
     }
@@ -294,8 +298,9 @@ const levelKey = (name: string): string =>
  * Signaux transversaux (toutes classes) : écart de progression entre classes
  * parallèles et rappel de sauvegarde exportée.
  */
-export const collectCrossClassSignals = (classes: ClassInfo[]): ClassSignal[] => {
+export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale = 'fr'): ClassSignal[] => {
     const signals: ClassSignal[] = [];
+    const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
 
     // Écart de progression entre classes du même niveau (≥ 25 points)
     const byLevel = new Map<string, { classInfo: ClassInfo; completion: number; totalItems: number }[]>();
@@ -322,8 +327,14 @@ export const collectCrossClassSignals = (classes: ClassInfo[]): ClassSignal[] =>
             action: 'class',
             classId: lagger.classInfo.id,
             className: formatClassDisplayName(lagger.classInfo.name),
-            title: 'Progression en retrait sur ce niveau',
-            detail: `${formatClassDisplayName(lagger.classInfo.name)} est à ${lagger.completion}% contre ${leader.completion}% pour ${formatClassDisplayName(leader.classInfo.name)}, un écart de ${gap} points entre groupes parallèles.`,
+            title: t('notifications.signal.progressTitle'),
+            detail: t('notifications.signal.progressDetail', {
+                className: formatClassDisplayName(lagger.classInfo.name),
+                completion: lagger.completion,
+                leaderCompletion: leader.completion,
+                leaderName: formatClassDisplayName(leader.classInfo.name),
+                gap,
+            }),
             ignored: ignored.has(id),
         });
     }
@@ -353,8 +364,10 @@ export const collectCrossClassSignals = (classes: ClassInfo[]): ClassSignal[] =>
             action: 'export',
             classId: '',
             className: '',
-            title: daysSinceExport === null ? 'Aucune sauvegarde exportée' : `Dernière sauvegarde il y a ${daysSinceExport} jours`,
-            detail: 'Vos cahiers évoluent : exportez une copie JSON depuis « Importer / exporter » (rappel mensuel).',
+            title: daysSinceExport === null
+                ? t('notifications.signal.backupNone')
+                : t('notifications.signal.backupLast', { count: daysSinceExport }),
+            detail: t('notifications.signal.backupDetail'),
             ignored: ignored.has(id),
         });
     }

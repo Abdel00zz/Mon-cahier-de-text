@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
+import { getClassVisual } from '@/utils/classVisuals';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -21,14 +22,11 @@ import {
   PieChart,
   Undo2,
   User,
-  X,
+  Users,
   ChevronRight,
   ChevronDown,
   ArrowLeft,
-  Search,
 } from '@/components/ui/icons';
-import { UpcomingAssessment } from '@/utils/assessments';
-import { UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
 import { computeProgressionStats } from '@/utils/progression';
 import { getNewDates, readPrintMeta } from '@/utils/printMeta';
 import { JournalEntry, opLabel, readJournal, timeAgoFr } from '@/utils/journal';
@@ -44,24 +42,74 @@ import {
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 
-type Tone = 'blue' | 'red' | 'green' | 'gold' | 'default';
-
-const KIND_VISUAL: Record<ClassSignal['kind'], { icon: React.ComponentType<{ className?: string }>; tone: Tone }> = {
-  'date': { icon: CalendarCheck, tone: 'blue' },
-  'missed-session': { icon: Clock, tone: 'gold' },
-  'assessment-week': { icon: CalendarCheck, tone: 'gold' },
-  'absences': { icon: User, tone: 'red' },
-  'never-started': { icon: BookOpen, tone: 'blue' },
-  'schedule': { icon: CalendarRange, tone: 'blue' },
-  'progress-gap': { icon: PieChart, tone: 'gold' },
-  'backup': { icon: Database, tone: 'default' },
+const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
+  'date': CalendarCheck,
+  'missed-session': Clock,
+  'assessment-week': CalendarCheck,
+  'absences': User,
+  'never-started': BookOpen,
+  'schedule': CalendarRange,
+  'progress-gap': PieChart,
+  'backup': Database,
 };
 
-const ACTION_LABEL: Record<ClassSignal['action'], string> = {
-  class: 'Ouvrir le cahier',
-  timetable: 'Emploi du temps',
-  evaluations: 'Évaluations',
-  export: 'Exporter une copie',
+const ClassIdentityIcon: React.FC<{
+  classInfo?: ClassInfo;
+  fallback: React.ComponentType<{ className?: string }>;
+  compact?: boolean;
+}> = ({ classInfo, fallback: FallbackIcon, compact = false }) => {
+  const visual = classInfo ? getClassVisual(classInfo.name) : null;
+  const Icon = classInfo ? Users : FallbackIcon;
+
+  return (
+    <span
+      className={cn(
+        'flex shrink-0 items-center justify-center rounded-full',
+        compact ? 'h-7 w-7' : 'h-9 w-9',
+        visual?.iconSurfaceClass ?? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300'
+      )}
+      aria-hidden
+    >
+      <Icon className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+    </span>
+  );
+};
+
+const SignalCard: React.FC<{
+  signal: ClassSignal;
+  classInfo?: ClassInfo;
+  actionLabel: string;
+  ignoreLabel: string;
+  onIgnore: () => void;
+  onResolve: () => void;
+}> = ({ signal, classInfo, actionLabel, ignoreLabel, onIgnore, onResolve }) => {
+  const visual = classInfo ? getClassVisual(classInfo.name) : null;
+
+  return (
+    <article className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-3.5 text-card-foreground shadow-2xs transition-colors hover:border-primary/35 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 items-start gap-3">
+        <ClassIdentityIcon classInfo={classInfo} fallback={SIGNAL_FALLBACK_ICON[signal.kind]} />
+        <div className="min-w-0">
+          {signal.className && (
+            <p className={cn('mb-0.5 text-[10px] font-bold uppercase tracking-wide', visual?.iconClass ?? 'text-muted-foreground')}>
+              {signal.className}
+            </p>
+          )}
+          <h3 className="truncate text-xs font-bold text-foreground">{signal.title}</h3>
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{signal.detail}</p>
+        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border/60 pt-2 sm:border-t-0 sm:pt-0">
+        <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+          {ignoreLabel}
+        </button>
+        <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90">
+          {actionLabel}
+        </button>
+      </div>
+    </article>
+  );
 };
 
 const EmptyState: React.FC<{ title: string; description: string }> = ({ title, description }) => (
@@ -187,12 +235,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     urgent: true,
-    normal: true,
-    upcoming: true,
   });
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const { corrections, ignoredCorrections, assessments, officialEvents, attentionCount } = feed;
+  const { corrections, ignoredCorrections, assessments, officialEvents } = feed;
+  const classById = useMemo(() => new Map(classes.map((classInfo) => [classInfo.id, classInfo])), [classes]);
+  const actionLabels: Record<ClassSignal['action'], string> = {
+    class: t('notifications.action.openClass'),
+    timetable: t('notifications.action.schedule'),
+    evaluations: t('notifications.action.evaluations'),
+    export: t('notifications.action.export'),
+  };
 
   const classOverviews = useMemo<ClassOverview[]>(() => classes.map(classInfo => {
     const lessons = readClassLessons(classInfo.id);
@@ -225,14 +277,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     : classes.find(classInfo => classInfo.id === selectedClassId) ?? null;
   const classFilterValue = selectedClass?.id ?? 'all';
 
-  const filteredCorrections = useMemo(() => {
-    let list = selectedClass ? corrections.filter(s => s.classId === selectedClass.id) : corrections;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(s => s.title.toLowerCase().includes(q) || s.detail.toLowerCase().includes(q) || (s.className && s.className.toLowerCase().includes(q)));
-    }
-    return list;
-  }, [corrections, selectedClass, searchQuery]);
+  useEffect(() => {
+    if (selectedClassId === 'all' || selectedClass) return;
+    setSelectedClassId('all');
+  }, [selectedClass, selectedClassId]);
+
+  const filteredCorrections = selectedClass ? corrections.filter(signal => signal.classId === selectedClass.id) : corrections;
 
   const filteredIgnored = selectedClass ? ignoredCorrections.filter(s => s.classId === selectedClass.id) : ignoredCorrections;
   const filteredAssessments = selectedClass ? assessments.filter(i => i.classId === selectedClass.id) : assessments;
@@ -261,7 +311,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const menuItems: AxisMenuItem[] = [
     {
       id: 'priorites',
-      label: 'À traiter',
+      label: t('notifications.priorities'),
       subtitle: 'Alertes, absents, séances à consigner',
       icon: CircleAlert,
       count: filteredCorrections.length,
@@ -270,7 +320,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     },
     {
       id: 'echeances',
-      label: 'Échéances & Devoirs',
+      label: t('notifications.deadlines'),
       subtitle: 'Contrôles continus & événements officiels',
       icon: CalendarCheck,
       count: filteredAssessments.length + filteredOfficial.length,
@@ -278,7 +328,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     },
     {
       id: 'calendrier',
-      label: 'Calendrier des séances',
+      label: t('notifications.calendar'),
       subtitle: 'Vue d\'ensemble temporelle',
       icon: CalendarDays,
       count: 0,
@@ -286,7 +336,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     },
     {
       id: 'classes',
-      label: 'Synthèse par Classe',
+      label: t('notifications.classes'),
       subtitle: 'Avancement & impressions nécessaires',
       icon: GraduationCap,
       count: filteredOverviews.length,
@@ -294,7 +344,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     },
     {
       id: 'activite',
-      label: 'Journal d\'activités',
+      label: t('notifications.activity'),
       subtitle: 'Traçabilité des modifications',
       icon: History,
       count: filteredActivity.length,
@@ -303,7 +353,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     ...(filteredIgnored.length > 0
       ? [{
           id: 'ignores' as AxisId,
-          label: 'Exceptions ignorées',
+          label: t('notifications.ignored'),
           subtitle: 'Alertes masquées réactivables',
           icon: Undo2,
           count: filteredIgnored.length,
@@ -371,7 +421,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     ids.add(signal.id);
     writeIgnoredActionIds(signal.classId, ids);
     onMutate();
-    toast.info('Point conservé comme exception, réactivable depuis l’onglet « Exceptions ».');
+    toast.info(t('notifications.ignoredToast'));
   };
 
   const restoreSignal = (signal: ClassSignal) => {
@@ -661,15 +711,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-extrabold text-foreground font-display tracking-tight flex items-center gap-2">
-                Centre de notifications
+                {t('notifications.centerTitle')}
                 {filteredAttention > 0 && (
                   <span className="rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[10px] font-extrabold px-2 py-0.5 border border-red-200 dark:border-red-900/50">
-                    {filteredAttention} urgente{filteredAttention > 1 ? 's' : ''}
+                    {t('notifications.toHandle', { count: filteredAttention })}
                   </span>
                 )}
               </h1>
               <p className="text-xs text-muted-foreground">
-                {selectedClass ? `Filtre actif : ${formatClassDisplayName(selectedClass.name)}` : 'Toutes les classes d\'enseignement'}
+                {selectedClass
+                  ? t('notifications.activeFilter', { className: formatClassDisplayName(selectedClass.name) })
+                  : t('notifications.allTeachingClasses')}
               </p>
             </div>
           </div>
@@ -677,8 +729,9 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           <div className="flex items-center gap-2">
             {/* Filter class */}
             <div className="w-full sm:w-60">
+              <label htmlFor="notifications-class-filter" className="sr-only">{t('notifications.filterByClass')}</label>
               <Select value={classFilterValue} onValueChange={handleClassFilterChange}>
-                <SelectTrigger className="w-full bg-zinc-50 dark:bg-zinc-850 border-zinc-200 dark:border-zinc-800 h-9 text-xs rounded-xl focus:ring-blue-500/20">
+                <SelectTrigger id="notifications-class-filter" aria-label={t('notifications.filterByClass')} className="w-full bg-zinc-50 dark:bg-zinc-850 border-zinc-200 dark:border-zinc-800 h-9 text-xs rounded-xl focus:ring-blue-500/20">
                   <SelectValue placeholder={t('notifications.allClasses')} />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-xl">
@@ -729,7 +782,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 className="md:hidden flex items-center gap-1.5 text-xs font-bold text-primary mb-4 cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Retour au menu</span>
+                <span>{t('notifications.backToMenu')}</span>
               </button>
             )}
 
@@ -748,15 +801,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <CircleAlert className="h-4 w-4 text-destructive" />
-                          Points d'attention & Séances à consigner
+                          {t('notifications.toHandle', { count: filteredCorrections.length })}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Actions recommandées pour maintenir vos cahiers de textes à jour.
+                          {t('notifications.priorityHint')}
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-                        {filteredCorrections.length} alerte{filteredCorrections.length > 1 ? 's' : ''}
-                      </span>
                     </div>
 
                     {filteredCorrections.length === 0 ? (
@@ -766,7 +816,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       />
                     ) : (
                       <div className="space-y-4">
-                        {/* Group 1: Urgent (Absences & Missed) */}
                         {urgentCorrections.length > 0 && (
                           <div className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/30 dark:bg-red-950/20 overflow-hidden">
                             <button
@@ -776,7 +825,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             >
                               <span className="flex items-center gap-2">
                                 <span className="h-2 w-2 rounded-full bg-red-500" />
-                                Urgence élevée & Absences ({urgentCorrections.length})
+                                {t('notifications.urgent')} ({urgentCorrections.length})
                               </span>
                               <ChevronDown
                                 className={cn(
@@ -787,51 +836,18 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             </button>
 
                             {expandedGroups.urgent && (
-                              <div className="p-3 grid gap-3 sm:grid-cols-1">
+                              <div className="grid gap-2.5 p-3">
                                 {urgentCorrections.map(signal => {
-                                  const visual = KIND_VISUAL[signal.kind];
-                                  const Icon = visual.icon;
                                   return (
-                                    <div
+                                    <SignalCard
                                       key={signal.id}
-                                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-white dark:bg-zinc-900 p-3.5 shadow-2xs border border-zinc-200/80 dark:border-zinc-800"
-                                    >
-                                      <div className="flex items-start gap-3 min-w-0">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400">
-                                          <Icon className="h-4 w-4" />
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-2 mb-0.5">
-                                            {signal.className && (
-                                              <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.2 text-[9px] font-bold text-zinc-700 dark:text-zinc-300 uppercase">
-                                                {signal.className}
-                                              </span>
-                                            )}
-                                            <span className="text-xs font-bold text-foreground truncate">
-                                              {signal.title}
-                                            </span>
-                                          </div>
-                                          <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">
-                                            {signal.detail}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-zinc-100 dark:border-zinc-800">
-                                        <button
-                                          onClick={() => ignoreSignal(signal)}
-                                          className="h-7 px-2.5 rounded-lg text-xs font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-                                        >
-                                          Ignorer
-                                        </button>
-                                        <button
-                                          onClick={() => resolveSignal(signal)}
-                                          className="h-7 px-3 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-2xs cursor-pointer"
-                                        >
-                                          {ACTION_LABEL[signal.action]}
-                                        </button>
-                                      </div>
-                                    </div>
+                                      signal={signal}
+                                      classInfo={classById.get(signal.classId)}
+                                      actionLabel={actionLabels[signal.action]}
+                                      ignoreLabel={t('notifications.ignore')}
+                                      onIgnore={() => ignoreSignal(signal)}
+                                      onResolve={() => resolveSignal(signal)}
+                                    />
                                   );
                                 })}
                               </div>
@@ -839,76 +855,19 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </div>
                         )}
 
-                        {/* Group 2: Standard (Progress & Dates) */}
                         {standardCorrections.length > 0 && (
-                          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-850/50 overflow-hidden">
-                            <button
-                              type="button"
-                              onClick={() => toggleGroup('normal')}
-                              className="w-full px-4 py-2.5 flex items-center justify-between bg-zinc-100/70 dark:bg-zinc-800/70 text-foreground text-xs font-extrabold cursor-pointer"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                                Recommandations de saisie ({standardCorrections.length})
-                              </span>
-                              <ChevronDown
-                                className={cn(
-                                  'h-4 w-4 transition-transform',
-                                  expandedGroups.normal ? 'rotate-180' : ''
-                                )}
+                          <div className="grid gap-2.5">
+                            {standardCorrections.map(signal => (
+                              <SignalCard
+                                key={signal.id}
+                                signal={signal}
+                                classInfo={classById.get(signal.classId)}
+                                actionLabel={actionLabels[signal.action]}
+                                ignoreLabel={t('notifications.ignore')}
+                                onIgnore={() => ignoreSignal(signal)}
+                                onResolve={() => resolveSignal(signal)}
                               />
-                            </button>
-
-                            {expandedGroups.normal && (
-                              <div className="p-3 space-y-2.5">
-                                {standardCorrections.map(signal => {
-                                  const visual = KIND_VISUAL[signal.kind];
-                                  const Icon = visual.icon;
-                                  return (
-                                    <div
-                                      key={signal.id}
-                                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-white dark:bg-zinc-900 p-3.5 shadow-2xs border border-zinc-200/80 dark:border-zinc-800"
-                                    >
-                                      <div className="flex items-start gap-3 min-w-0">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-                                          <Icon className="h-4 w-4" />
-                                        </div>
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-2 mb-0.5">
-                                            {signal.className && (
-                                              <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.2 text-[9px] font-bold text-zinc-700 dark:text-zinc-300 uppercase">
-                                                {signal.className}
-                                              </span>
-                                            )}
-                                            <span className="text-xs font-bold text-foreground truncate">
-                                              {signal.title}
-                                            </span>
-                                          </div>
-                                          <p className="text-[11px] text-muted-foreground leading-snug">
-                                            {signal.detail}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-zinc-100 dark:border-zinc-800">
-                                        <button
-                                          onClick={() => ignoreSignal(signal)}
-                                          className="h-7 px-2.5 rounded-lg text-xs font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-                                        >
-                                          Ignorer
-                                        </button>
-                                        <button
-                                          onClick={() => resolveSignal(signal)}
-                                          className="h-7 px-3 rounded-lg text-xs font-bold bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 cursor-pointer"
-                                        >
-                                          {ACTION_LABEL[signal.action]}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
+                            ))}
                           </div>
                         )}
                       </div>
@@ -923,7 +882,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <CalendarCheck className="h-4 w-4 text-blue-600" />
-                          Contrôles continu & Devoirs
+                          {t('notifications.deadlines')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Évaluations à venir et dates officielles du calendrier scolaire.
@@ -948,10 +907,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             className="flex flex-col justify-between rounded-xl bg-white dark:bg-zinc-900 p-3.5 text-left border border-zinc-200/80 dark:border-zinc-800 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
                           >
                             <div>
-                              <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-[10px] font-bold uppercase">
-                                  {formatClassDisplayName(item.className)}
-                                </span>
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <ClassIdentityIcon classInfo={classById.get(item.classId)} fallback={CalendarCheck} compact />
+                                  <span className="truncate text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                    {formatClassDisplayName(item.className)}
+                                  </span>
+                                </div>
                                 <span
                                   className={cn(
                                     'rounded-full px-2 py-0.5 text-[10px] font-bold',
@@ -1008,7 +970,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <CalendarDays className="h-4 w-4 text-primary" />
-                          Calendrier des séances & événements
+                          {t('notifications.calendar')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Visualisation globale par date de votre progression.
@@ -1028,7 +990,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <GraduationCap className="h-4 w-4 text-primary" />
-                          Synthèse de progression par classe
+                          {t('notifications.classes')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           État d'avancement des cahiers et impressions en attente.
@@ -1044,10 +1006,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           className="flex flex-col justify-between rounded-2xl bg-card p-4 border border-border text-card-foreground shadow-2xs hover:border-primary/50 text-left transition-all cursor-pointer group"
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                                {overview.className}
-                              </h3>
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <ClassIdentityIcon classInfo={overview.classInfo} fallback={GraduationCap} compact />
+                                <h3 className="truncate text-xs font-bold text-foreground transition-colors group-hover:text-primary">
+                                  {overview.className}
+                                </h3>
+                              </div>
                               <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
                                 {overview.completionRate}%
                               </span>
@@ -1087,7 +1052,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <History className="h-4 w-4 text-blue-600" />
-                          Journal des modifications & Traçabilité
+                          {t('notifications.activity')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Historique chronologique des ajouts, modifications de dates et réorganisations.
@@ -1132,9 +1097,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                   className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 shrink-0">
-                                      <History className="h-3.5 w-3.5" />
-                                    </div>
+                                    <ClassIdentityIcon classInfo={classById.get(entry.classId)} fallback={History} compact />
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-xs font-bold text-foreground truncate">
@@ -1172,7 +1135,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       <div>
                         <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
                           <Undo2 className="h-4 w-4 text-blue-600" />
-                          Exceptions & Alertes masquées
+                          {t('notifications.ignored')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Liste des alertes que vous avez choisi d'ignorer temporairement.
@@ -1188,8 +1151,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ) : (
                       <div className="divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
                         {filteredIgnored.map(signal => (
-                          <div key={signal.id} className="p-3.5 flex items-center justify-between gap-3">
-                            <div className="min-w-0">
+                          <div key={signal.id} className="flex items-center justify-between gap-3 p-3.5">
+                            <div className="flex min-w-0 items-center gap-2.5">
+                              <ClassIdentityIcon classInfo={classById.get(signal.classId)} fallback={SIGNAL_FALLBACK_ICON[signal.kind]} compact />
+                              <div className="min-w-0">
                               <h3 className="text-xs font-bold text-foreground truncate">
                                 {signal.title}
                               </h3>
@@ -1197,12 +1162,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 {signal.className && <span className="font-semibold mr-1">{signal.className} •</span>}
                                 {signal.detail}
                               </p>
+                              </div>
                             </div>
                             <button
                               onClick={() => restoreSignal(signal)}
                               className="h-7 px-3 rounded-lg text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/60 border border-blue-200 dark:border-blue-900 transition-colors cursor-pointer shrink-0"
                             >
-                              Réactiver
+                              {t('notifications.restore')}
                             </button>
                           </div>
                         ))}

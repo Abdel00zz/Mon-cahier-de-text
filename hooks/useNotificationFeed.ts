@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { AppConfig, ClassInfo } from '@/types';
+import { AppConfig, AppLocale, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
+import { translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useRecentPastAssessments, useUpcomingAssessments } from '@/hooks/useAssessments';
 import { useUpcomingOfficialStudentEvents, UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
 import { UpcomingAssessment } from '@/utils/assessments';
@@ -24,6 +25,7 @@ export interface NotificationFeed {
 export const useNotificationFeed = (
   classes: ClassInfo[],
   config: AppConfig,
+  locale: AppLocale,
   refreshKey = 0,
 ): NotificationFeed => {
   const assessments = useUpcomingAssessments(classes, config, 14);
@@ -31,10 +33,11 @@ export const useNotificationFeed = (
   const officialEvents = useUpcomingOfficialStudentEvents(classes, 30);
 
   return useMemo(() => {
+    const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const classNameById = new Map(classes.map(c => [c.id, formatClassDisplayName(c.name)]));
     const all: ClassSignal[] = [
-      ...classes.flatMap(classInfo => collectClassSignals(classInfo, config)),
-      ...collectCrossClassSignals(classes),
+      ...classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale)),
+      ...collectCrossClassSignals(classes, locale),
     ];
 
     for (const item of assessments.filter(a => a.inDays <= 7)) {
@@ -45,8 +48,10 @@ export const useNotificationFeed = (
         action: 'evaluations',
         classId: item.classId,
         className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
-        title: `${item.label.split(', Semestre ')[0]} ${item.inDays <= 0 ? "aujourd'hui" : item.inDays === 1 ? 'demain' : `dans ${item.inDays} jours`}`,
-        detail: `Prévu le ${formatDateFR(item.dateISO)}, préparez le sujet et vérifiez la date depuis les évaluations de la classe.`,
+        title: item.inDays <= 0
+          ? t('notifications.signal.assessmentToday', { label: item.label.split(', Semestre ')[0] })
+          : t('notifications.signal.assessmentFuture', { label: item.label.split(', Semestre ')[0], count: item.inDays }),
+        detail: t('notifications.signal.assessmentDetail', { date: formatDateFR(item.dateISO) }),
         date: item.dateISO,
         ignored: readIgnoredActionIds(item.classId).has(id),
       });
@@ -56,15 +61,23 @@ export const useNotificationFeed = (
       const saisi = config.assessmentAbsences?.[item.classId]?.[item.id];
       if (saisi) continue;
       const id = `absences:${item.classId}:${item.id}:${item.dateISO}`;
-      const whenLabel = item.daysAgo === 0 ? "aujourd'hui" : item.daysAgo === 1 ? 'hier' : `il y a ${item.daysAgo} jours`;
+      const whenLabel = item.daysAgo === 0
+        ? t('notifications.signal.today')
+        : item.daysAgo === 1
+          ? t('notifications.signal.yesterday')
+          : t('notifications.signal.daysAgo', { count: item.daysAgo });
       all.push({
         id,
         kind: 'absences',
         action: 'evaluations',
         classId: item.classId,
         className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
-        title: item.daysAgo === 0 ? 'Absents du devoir du jour à consigner' : 'Absents du devoir à consigner',
-        detail: `${item.label.split(', Semestre ')[0]} ${whenLabel} (${formatDateFR(item.dateISO)}), saisissez les élèves absents dès la séance, même « aucun absent » compte.`,
+        title: item.daysAgo === 0 ? t('notifications.signal.absenceToday') : t('notifications.signal.absencePending'),
+        detail: t('notifications.signal.absenceDetail', {
+          label: item.label.split(', Semestre ')[0],
+          when: whenLabel,
+          date: formatDateFR(item.dateISO),
+        }),
         date: item.dateISO,
         ignored: readIgnoredActionIds(item.classId).has(id),
       });
@@ -80,5 +93,5 @@ export const useNotificationFeed = (
       officialEvents,
       attentionCount: corrections.length + urgentOfficial,
     };
-  }, [classes, config, assessments, pastAssessments, officialEvents, refreshKey]);
+  }, [classes, config, assessments, pastAssessments, officialEvents, locale, refreshKey]);
 };
