@@ -1,21 +1,6 @@
-import type { ComponentType } from 'react';
 import { normalizeOfficialClassName } from '../constants';
-import {
-    Book,
-    BookOpen,
-    FlaskConical,
-    GraduationCap,
-    Network,
-    PieChart,
-    School,
-    Sigma,
-    TestTube,
-} from '../components/ui/icons';
-
-type ClassIcon = ComponentType<{ className?: string }>;
 
 export interface ClassVisual {
-    icon: ClassIcon;
     /** Fond de l'icône, commun aux cartes et à la vue liste. */
     iconSurfaceClass: string;
     /** Couleur de l'icône et du numéro de groupe éventuel. */
@@ -25,7 +10,6 @@ export interface ClassVisual {
 }
 
 const visual = (
-    icon: ClassIcon,
     color: string,
     cardHoverClass: string,
 ): ClassVisual => {
@@ -49,7 +33,7 @@ const visual = (
         pink: { iconSurfaceClass: 'bg-pink-50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-300', iconClass: 'text-pink-600 dark:text-pink-300' },
         stone: { iconSurfaceClass: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', iconClass: 'text-stone-600 dark:text-stone-300' },
     };
-    return { icon, ...colors[color], cardHoverClass };
+    return { ...colors[color], cardHoverClass };
 };
 
 /*
@@ -57,40 +41,40 @@ const visual = (
  * scientifique 1 » et « … 2 » restent donc instantanément identifiables.
  */
 const CLASS_VISUALS: Record<string, ClassVisual> = {
-    '1AC': visual(BookOpen, 'sky', 'hover:border-sky-300 dark:hover:border-sky-700'),
-    '2AC': visual(GraduationCap, 'blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    '3AC': visual(School, 'indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
-    'Tronc commun scientifique': visual(FlaskConical, 'emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    'Tronc commun lettres': visual(Book, 'rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
-    'Tronc commun technologique': visual(Network, 'cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
-    '1BAC Sc. Expérimentales': visual(TestTube, 'lime', 'hover:border-lime-300 dark:hover:border-lime-700'),
-    '1BAC Sc. Mathématiques': visual(Sigma, 'violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    '1BAC Lettres': visual(BookOpen, 'amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
-    '1BAC Sc. Économiques': visual(PieChart, 'orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
-    '2BAC PC': visual(FlaskConical, 'red', 'hover:border-red-300 dark:hover:border-red-700'),
-    '2BAC SVT': visual(TestTube, 'teal', 'hover:border-teal-300 dark:hover:border-teal-700'),
-    '2BAC Sc. Maths A': visual(Sigma, 'purple', 'hover:border-purple-300 dark:hover:border-purple-700'),
-    '2BAC Sc. Maths B': visual(Sigma, 'fuchsia', 'hover:border-fuchsia-300 dark:hover:border-fuchsia-700'),
-    '2BAC Sc. Économiques': visual(PieChart, 'yellow', 'hover:border-yellow-300 dark:hover:border-yellow-700'),
-    '2BAC Sc. Gestion Comptable': visual(PieChart, 'blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    '2BAC Lettres': visual(Book, 'pink', 'hover:border-pink-300 dark:hover:border-pink-700'),
-    '2BAC Sc. Humaines': visual(GraduationCap, 'stone', 'hover:border-stone-300 dark:hover:border-stone-700'),
-    'MPSI': visual(Sigma, 'blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    'PCSI': visual(FlaskConical, 'cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
-    'MP': visual(Sigma, 'violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    'PSI': visual(Network, 'indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
-    'TSI': visual(Network, 'orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
-    'ECS': visual(PieChart, 'emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    'ECT': visual(PieChart, 'amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
+    '1AC': visual('sky', 'hover:border-sky-300 dark:hover:border-sky-700'),
+    '2AC': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
+    '3AC': visual('indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
+    'Tronc commun scientifique': visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
+    'Tronc commun lettres': visual('rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
+    'Tronc commun technologique': visual('cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
+    '1BAC Sc. Expérimentales': visual('lime', 'hover:border-lime-300 dark:hover:border-lime-700'),
+    '1BAC Sc. Mathématiques': visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
+    '1BAC Lettres': visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
+    '1BAC Sc. Économiques': visual('orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
+    '2BAC PC': visual('red', 'hover:border-red-300 dark:hover:border-red-700'),
+    '2BAC SVT': visual('teal', 'hover:border-teal-300 dark:hover:border-teal-700'),
+    '2BAC Sc. Maths A': visual('purple', 'hover:border-purple-300 dark:hover:border-purple-700'),
+    '2BAC Sc. Maths B': visual('fuchsia', 'hover:border-fuchsia-300 dark:hover:border-fuchsia-700'),
+    '2BAC Sc. Économiques': visual('yellow', 'hover:border-yellow-300 dark:hover:border-yellow-700'),
+    '2BAC Sc. Gestion Comptable': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
+    '2BAC Lettres': visual('pink', 'hover:border-pink-300 dark:hover:border-pink-700'),
+    '2BAC Sc. Humaines': visual('stone', 'hover:border-stone-300 dark:hover:border-stone-700'),
+    'MPSI': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
+    'PCSI': visual('cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
+    'MP': visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
+    'PSI': visual('indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
+    'TSI': visual('orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
+    'ECS': visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
+    'ECT': visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
 };
 
 const LEVELS = Object.keys(CLASS_VISUALS).sort((left, right) => right.length - left.length);
 const FALLBACKS = [
-    visual(GraduationCap, 'blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    visual(BookOpen, 'violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    visual(FlaskConical, 'emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    visual(Sigma, 'amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
-    visual(School, 'rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
+    visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
+    visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
+    visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
+    visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
+    visual('rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
 ] as const;
 
 const hashText = (value: string): number =>

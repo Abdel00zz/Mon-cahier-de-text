@@ -7,7 +7,7 @@ import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
 import { EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Plus, BookOpen } from '@/components/ui/icons';
+import { Plus } from '@/components/ui/icons';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
@@ -1033,27 +1033,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             searchQuery={searchQuery}
             setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
           />
-          {/* Proposition de programme prédéfini (cahier vide + contenu disponible) */}
-          {predefinedOffer && lessonsData.length === 0 && (
-            <div className="mx-auto mb-3 flex w-full max-w-2xl flex-col items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-center sm:flex-row sm:text-left print:hidden shadow-sm">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm border border-slate-200 text-primary">
-                <BookOpen className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-slate-900 font-display">{predefinedOffer.titre}</p>
-                <p className="text-xs text-slate-600">
-                  Un programme prêt à l'emploi existe pour cette classe — chargez-le puis adaptez-le, ou ignorez-le.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleLoadPredefined}
-                className="h-10 shrink-0 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Charger le programme
-              </button>
-            </div>
-          )}
           {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
@@ -1074,6 +1053,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               getDateWarnings={getDateWarnings}
               searchQuery={searchQuery}
               focusKey={sessionFocusKey}
+              predefinedProgramTitle={predefinedOffer?.titre}
+              onLoadPredefined={predefinedOffer ? handleLoadPredefined : undefined}
             />
           </main>
         </div>

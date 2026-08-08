@@ -11,7 +11,6 @@ import { EditableCell } from '@/components/ui/EditableCell';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
-import { BookOpen } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 /* Accent sobre pour les interactions du tableau. */
@@ -169,6 +168,9 @@ interface MainTableProps {
   searchQuery?: string;
   /** rangée à rejoindre automatiquement après une suggestion de séance */
   focusKey?: string | null;
+  /** programme officiel proposé lorsque le cahier est encore vide */
+  predefinedProgramTitle?: string;
+  onLoadPredefined?: () => void;
 }
 
 interface FlatDataItem {
@@ -391,21 +393,55 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
 
 SessionGroupRow.displayName = 'SessionGroupRow';
 
-/* État vide — invite claire à l'action, dans le même esprit signature */
-const EmptyState: React.FC<{ onOpenAddContentModal: (indices?: Indices) => void }> = ({ onOpenAddContentModal }) => (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-t-none rounded-b-xl border border-t-0 border-dashed border-primary/20 bg-primary/5 px-6 py-16 text-center shadow-sm">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm border border-slate-200 text-primary">
-            <BookOpen className="h-5 w-5" />
-        </div>
-        <h3 className="text-base font-bold text-slate-900 font-display">Le cahier de textes est vide</h3>
-        <p className="max-w-sm text-sm text-slate-600">
-            Ajoutez un premier chapitre pour commencer à construire la progression.
-        </p>
-        <Button onClick={() => onOpenAddContentModal()} className="mt-1" variant="default">
-            Créer un chapitre
-        </Button>
-    </div>
-);
+/* État vide — une seule décision, sans bannière concurrente. */
+const EmptyState: React.FC<{
+  onOpenAddContentModal: (indices?: Indices) => void;
+  predefinedProgramTitle?: string;
+  onLoadPredefined?: () => void;
+}> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
+    const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
+
+    return (
+        <section className="rounded-xl border border-slate-200 bg-white px-5 py-12 shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:px-8 sm:py-14">
+            <div className="mx-auto flex max-w-xl flex-col items-center text-center">
+                <img
+                    src="/icons/icon-192.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="h-16 w-16 rounded-2xl shadow-sm ring-1 ring-slate-900/5"
+                />
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">Cahier de textes</p>
+                <h3 className="mt-2 text-xl font-bold text-slate-900 font-display">Commencez votre progression</h3>
+                <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">
+                    {canLoadPredefined
+                        ? 'Un programme officiel est disponible pour cette classe. Chargez-le, ou créez votre propre chapitre.'
+                        : 'Créez un premier chapitre pour organiser vos cours et construire votre progression.'}
+                </p>
+
+                {canLoadPredefined && (
+                    <p className="mt-4 max-w-md text-sm font-semibold text-slate-800">{predefinedProgramTitle}</p>
+                )}
+
+                <div className="mt-6 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
+                    {canLoadPredefined && (
+                        <Button type="button" onClick={onLoadPredefined} className="w-full sm:w-auto" variant="default">
+                            Charger le programme officiel
+                        </Button>
+                    )}
+                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">ou</span>}
+                    <Button
+                        type="button"
+                        onClick={() => onOpenAddContentModal()}
+                        className="w-full sm:w-auto"
+                        variant={canLoadPredefined ? 'outline' : 'default'}
+                    >
+                        Créer un chapitre
+                    </Button>
+                </div>
+            </div>
+        </section>
+    );
+};
 
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
@@ -424,6 +460,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   getDateWarnings,
   searchQuery,
   focusKey,
+  predefinedProgramTitle,
+  onLoadPredefined,
 }) => {
   const editingKey = editingIndices ? makeKey(editingIndices) : null;
   const flatData = useMemo(() => {
@@ -585,7 +623,13 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
 
   if (!lessonsData || lessonsData.length === 0) {
-      return <EmptyState onOpenAddContentModal={onOpenAddContentModal} />;
+      return (
+          <EmptyState
+              onOpenAddContentModal={onOpenAddContentModal}
+              predefinedProgramTitle={predefinedProgramTitle}
+              onLoadPredefined={onLoadPredefined}
+          />
+      );
   }
 
   return (

@@ -4,7 +4,7 @@ import { formatClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { NextSessionInfo } from '@/utils/timetable';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { ChevronRight, Settings, Trash2 } from '@/components/ui/icons';
+import { ChevronRight, Settings, Trash2, Users } from '@/components/ui/icons';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -30,7 +30,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
     const [confirmDelete, setConfirmDelete] = useState(false);
     const displayName = formatClassDisplayName(classInfo.name);
     const visual = getClassVisual(classInfo.name);
-    const ClassIcon = visual.icon;
 
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -52,7 +51,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
             className="group relative flex min-h-14 cursor-pointer items-center gap-2.5 rounded-[20px] border border-border bg-card text-card-foreground px-4 py-3 shadow-2xs transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:min-h-[58px]"
         >
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${visual.iconSurfaceClass}`} aria-hidden>
-                <ClassIcon className="h-4 w-4" />
+                <Users className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

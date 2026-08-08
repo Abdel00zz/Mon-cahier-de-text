@@ -2,7 +2,8 @@ import React from 'react';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck } from '@/components/ui/icons';
+import { CalendarCheck, X } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 import {
     Sheet,
     SheetContent,
@@ -32,6 +33,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     onConfigChange,
 }) => {
     const className = formatClassDisplayName(classInfo.name);
+    const { t } = useLocale();
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -40,7 +42,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                 className="max-h-[95dvh] flex flex-col overflow-hidden rounded-t-[1.5rem] border-t p-0 sm:inset-x-4 sm:mx-auto sm:max-w-5xl"
                 aria-label={`Évaluations de ${className}`}
             >
-                <SheetHeader className="shrink-0 sticky top-0 z-30 border-b border-border/80 bg-card/95 px-4 py-4 text-left backdrop-blur-xl sm:px-6">
+                <SheetHeader className="shrink-0 sticky top-0 z-30 border-b border-border/80 bg-card/95 px-4 py-4 text-start backdrop-blur-xl sm:px-6">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
@@ -54,9 +56,10 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                             size="icon"
                             onClick={() => onOpenChange(false)}
                             className="h-8 w-8 shrink-0 rounded-full"
+                            aria-label={t('common.close')}
                         >
-                            <span className="sr-only">Fermer</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            <span className="sr-only">{t('common.close')}</span>
+                            <X className="h-4 w-4" />
                         </Button>
                     </div>
                 </SheetHeader>

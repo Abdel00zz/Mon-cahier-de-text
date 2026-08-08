@@ -50,10 +50,13 @@ const DialogContent = React.forwardRef<
       {!hideClose && (
         <DialogPrimitive.Close
           aria-label={t('common.close')}
-          className="dialog-close absolute right-3 top-3 z-30 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-zinc-400 transition-colors hover:border-zinc-200 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:right-4 sm:top-4"
+          className={cn(
+            "dialog-close absolute top-3 z-30 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-zinc-400 transition-colors hover:border-zinc-200 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:top-4",
+            isRtl ? "left-3 sm:left-4" : "right-3 sm:right-4",
+          )}
         >
           <X className="h-4 w-4" strokeWidth={2} />
-          <span className="sr-only">Fermer la fenêtre</span>
+          <span className="sr-only">{t('common.close')}</span>
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
@@ -68,7 +71,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex min-w-0 flex-col space-y-1 pr-10 text-left",
+      "flex min-w-0 flex-col space-y-1 pe-10 text-start",
       className
     )}
     {...props}

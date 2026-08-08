@@ -4,7 +4,7 @@ import { formatClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { NextSessionInfo } from '@/utils/timetable';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Trash2, Settings } from '@/components/ui/icons';
+import { Trash2, Settings, Users } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface ClassCardProps {
@@ -73,7 +73,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 
     const displayName = formatClassDisplayName(classInfo.name);
     const visual = getClassVisual(classInfo.name);
-    const ClassIcon = visual.icon;
     
     let mainName = displayName;
     let groupNum = '';
@@ -129,7 +128,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                 {/* Class Title */}
                 <div className="flex-1 flex flex-col items-center justify-center text-center mt-1 mb-2">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2.5 ${visual.iconSurfaceClass}`}>
-                        <ClassIcon className="w-5 h-5" />
+                        <Users className="w-5 h-5" />
                     </div>
                     <h3
                         className={`text-sm sm:text-base font-bold text-foreground transition-colors tracking-tight ${isArabic ? 'font-ar text-sm' : 'font-display'}`}

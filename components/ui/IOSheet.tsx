@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface IOSheetProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const IOSheet: React.FC<IOSheetProps> = ({
   showGrabber = true,
 }) => {
   const { impact } = useHapticFeedback();
+  const { isRtl, t } = useLocale();
 
   useEffect(() => {
     if (isOpen) {
@@ -54,8 +56,9 @@ export const IOSheet: React.FC<IOSheetProps> = ({
 
       {/* Sheet iOS avec Grabber */}
       <div
+        dir={isRtl ? 'rtl' : 'ltr'}
         className={cn(
-          'relative z-10 w-full flex flex-col overflow-hidden rounded-t-[28px] bg-card text-card-foreground shadow-2xl animate-spring-slide-up border-t border-border sm:mx-auto sm:max-w-2xl',
+          'rtl-flow relative z-10 w-full flex flex-col overflow-hidden rounded-t-[28px] bg-card text-card-foreground shadow-2xl animate-spring-slide-up border-t border-border sm:mx-auto sm:max-w-2xl',
           maxHeight,
           className
         )}
@@ -69,8 +72,8 @@ export const IOSheet: React.FC<IOSheetProps> = ({
 
         {/* Header sans ligne décorative horizontale */}
         {(title || subtitle) && (
-          <div className="relative flex items-center justify-between px-6 pt-2 pb-2 shrink-0">
-            <div className="min-w-0 flex-1 pr-10">
+          <div className="relative flex items-center justify-between px-6 pt-2 pb-2 shrink-0 text-start">
+            <div className="min-w-0 flex-1 pe-10">
               {title && (
                 <h2 className="truncate text-lg font-bold tracking-tight text-foreground">
                   {title}
@@ -87,8 +90,11 @@ export const IOSheet: React.FC<IOSheetProps> = ({
                 impact('light');
                 onClose();
               }}
-              className="absolute right-5 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground active:scale-95"
-              aria-label="Fermer"
+              className={cn(
+                'absolute top-2 flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground active:scale-95',
+                isRtl ? 'left-5' : 'right-5',
+              )}
+              aria-label={t('common.close')}
             >
               <X className="h-4 w-4" />
             </button>
