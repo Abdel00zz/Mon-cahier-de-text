@@ -109,7 +109,7 @@ const devApiMockPlugin = (): Plugin => {
                     }
                     return send(res, 200, classesBlob ?? {
                         classes: [], schedules: [], timetable: [], settings: {},
-                        settingsUpdatedAt: '', classMeta: {}, updatedAt: '',
+                        settingsUpdatedAt: '', classMeta: {}, deletedClasses: {}, updatedAt: '',
                     });
                 }
                 if (req.method === 'POST') {
@@ -117,11 +117,36 @@ const devApiMockPlugin = (): Plugin => {
                     try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
                     const now = new Date().toISOString();
                     const classMeta: Record<string, { updatedAt: string }> = { ...((classesBlob?.classMeta as any) ?? {}) };
+                    const deletedClasses: Record<string, { deletedAt: string }> = {
+                        ...((classesBlob?.deletedClasses as Record<string, { deletedAt: string }> | undefined) ?? {}),
+                    };
+                    for (const id of body.deletedClassIds ?? []) {
+                        if (typeof id === 'string' && id) deletedClasses[id] = { deletedAt: now };
+                    }
+                    if (Array.isArray(body.deletedClasses)) {
+                        for (const entry of body.deletedClasses) {
+                            if (typeof entry?.id === 'string' && entry.id) {
+                                deletedClasses[entry.id] = { deletedAt: typeof entry.deletedAt === 'string' ? entry.deletedAt : now };
+                            }
+                        }
+                    } else if (body.deletedClasses && typeof body.deletedClasses === 'object') {
+                        for (const [id, tombstone] of Object.entries(body.deletedClasses)) {
+                            if (id) {
+                                deletedClasses[id] = {
+                                    deletedAt: typeof (tombstone as any)?.deletedAt === 'string' ? (tombstone as any).deletedAt : now,
+                                };
+                            }
+                        }
+                    }
+                    const deletedIds = new Set(Object.keys(deletedClasses));
+                    const requestedClasses = Array.isArray(body.classes) ? body.classes : ((classesBlob?.classes as any[]) ?? []);
+                    const classes = requestedClasses.filter(classInfo => !deletedIds.has(classInfo?.id));
                     for (const entry of body.lessons ?? []) {
+                        if (deletedIds.has(entry.classId)) continue;
                         lessonsByClass.set(entry.classId, { lessonsData: entry.lessonsData, updatedAt: entry.updatedAt || now });
                         classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
                     }
-                    for (const id of body.deletedClassIds ?? []) {
+                    for (const id of deletedIds) {
                         lessonsByClass.delete(id);
                         delete classMeta[id];
                     }
@@ -129,15 +154,16 @@ const devApiMockPlugin = (): Plugin => {
                         devSnapshot = { ...body.snapshot, phone: DEV_PHONE, lastSyncAt: now };
                     }
                     classesBlob = {
-                        classes: body.classes ?? (classesBlob?.classes as any) ?? [],
-                        schedules: body.schedules ?? (classesBlob?.schedules as any) ?? [],
-                        timetable: body.timetable ?? (classesBlob?.timetable as any) ?? [],
+                        classes,
+                        schedules: (body.schedules ?? (classesBlob?.schedules as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
+                        timetable: (body.timetable ?? (classesBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
                         settings: body.settings ?? (classesBlob?.settings as any) ?? {},
                         settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((classesBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
+                        deletedClasses,
                         updatedAt: now,
                     };
-                    return send(res, 200, { ok: true, serverTime: now, classMeta });
+                    return send(res, 200, { ok: true, serverTime: now, classMeta, deletedClasses });
                 }
                 send(res, 405, { error: 'Méthode non autorisée.' });
             });

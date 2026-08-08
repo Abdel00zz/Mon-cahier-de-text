@@ -1,9 +1,10 @@
 import { memo, MouseEvent, FC, useState } from 'react';
 import { ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
+import { getClassVisual } from '@/utils/classVisuals';
 import { NextSessionInfo } from '@/utils/timetable';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Trash2, Settings, BookOpen, Users } from '@/components/ui/icons';
+import { Trash2, Settings } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface ClassCardProps {
@@ -71,6 +72,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     };
 
     const displayName = formatClassDisplayName(classInfo.name);
+    const visual = getClassVisual(classInfo.name);
+    const ClassIcon = visual.icon;
     
     let mainName = displayName;
     let groupNum = '';
@@ -86,7 +89,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     return (
         <div
             onClick={handleCardClick}
-            className="card-press group relative flex min-h-[140px] cursor-pointer flex-col overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground shadow-2xs transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 sm:min-h-[155px]"
+            className={`card-press group relative flex min-h-[140px] cursor-pointer flex-col overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 sm:min-h-[155px]`}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
@@ -125,16 +128,16 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 
                 {/* Class Title */}
                 <div className="flex-1 flex flex-col items-center justify-center text-center mt-1 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2.5 text-primary">
-                        <Users className="w-5 h-5" />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2.5 ${visual.iconSurfaceClass}`}>
+                        <ClassIcon className="w-5 h-5" />
                     </div>
                     <h3
-                        className={`text-sm sm:text-base font-bold text-foreground transition-colors group-hover:text-primary tracking-tight ${isArabic ? 'font-ar text-sm' : 'font-display'}`}
+                        className={`text-sm sm:text-base font-bold text-foreground transition-colors tracking-tight ${isArabic ? 'font-ar text-sm' : 'font-display'}`}
                         title={displayName}
                     >
                         {formatSuperscript(mainName)}
                         {groupNum && (
-                            <span className="font-itim text-lg text-primary ml-1.5 opacity-90">{groupNum}</span>
+                            <span className={`font-itim text-lg ml-1.5 opacity-90 ${visual.iconClass}`}>{groupNum}</span>
                         )}
                     </h3>
                 </div>
@@ -179,4 +182,3 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 };
 
 export const ClassCard = memo(ClassCardComponent);
-

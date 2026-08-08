@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useImmer } from 'use-immer';
 import { ClassInfo } from '../types';
 import { logger } from '../utils/logger';
-import { markClassDirty, markClassDeleted, markClassesListDirty, subscribe, touchClassSyncMeta } from '../utils/syncBus';
+import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
 import { normalizeOfficialClassName } from '../constants';
 
 const STORAGE_KEY  = 'classManager_v1';
@@ -14,6 +14,22 @@ export const useClassManager = () => {
     const [isLoading, setIsLoading] = useState(true);
     // Guard: skip the persistence effect until after the initial load completes
     const [ready, setReady] = useState(false);
+    const skipNextPersistRef = useRef(true);
+
+    /**
+     * La liste est la source de vérité structurelle : l'écrire avant d'émettre
+     * l'évènement de synchro évite qu'un rechargement ou un push immédiat lise
+     * encore la liste précédente.
+     */
+    const persistClassesNow = useCallback((nextClasses: ClassInfo[], markDirty = true) => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(nextClasses));
+            if (markDirty) markClassesListDirty();
+            notifyClassesChanged();
+        } catch (err) {
+            logger.error('Failed to persist classes', err);
+        }
+    }, []);
 
     // ── Initial load ────────────────────────────────────────────────────────
     useEffect(() => {
@@ -69,35 +85,35 @@ export const useClassManager = () => {
     // ── Persist to localStorage whenever classes mutate (after init) ────────
     // We serialize the *committed state* value, NOT an immer draft proxy,
     // which avoids the proxy-serialisation bug present in the old saveClasses.
-    const skipFirstPersistRef = useRef(true);
     useEffect(() => {
         if (!ready) return;
-        if (skipFirstPersistRef.current) {
-            skipFirstPersistRef.current = false;
+        if (skipNextPersistRef.current) {
+            skipNextPersistRef.current = false;
             return;
         }
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(classes));
-            markClassesListDirty();
-        } catch (err) {
-            logger.error('Failed to persist classes', err);
-        }
-    }, [classes, ready]);
+        persistClassesNow(classes);
+    }, [classes, persistClassesNow, ready]);
 
     // ── Rechargement quand un pull cloud a réécrit le localStorage ─────────
     useEffect(() => {
-        return subscribe('pull-applied', () => {
+        const reload = () => {
             try {
                 const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
                 if (!Array.isArray(stored)) {
                     throw new Error('Stored classes are not an array');
                 }
-                skipFirstPersistRef.current = true; // ne pas re-marquer dirty ce rechargement
+                skipNextPersistRef.current = true; // ne pas re-marquer dirty ce rechargement
                 setClasses(() => stored);
             } catch (err) {
-                logger.error('Failed to reload classes after cloud pull', err);
+                logger.error('Failed to reload classes after storage change', err);
             }
-        });
+        };
+        const unsubscribePull = subscribe('pull-applied', reload);
+        const unsubscribeClasses = subscribe('classes-changed', reload);
+        return () => {
+            unsubscribePull();
+            unsubscribeClasses();
+        };
     }, [setClasses]);
 
     // ── Mutations ───────────────────────────────────────────────────────────
@@ -110,13 +126,16 @@ export const useClassManager = () => {
                 createdAt: new Date().toISOString(),
                 color:     '',
             };
-            setClasses(d => { d.push(newClass); });
+            const nextClasses = [...classes, newClass];
+            persistClassesNow(nextClasses);
+            skipNextPersistRef.current = true;
+            setClasses(() => nextClasses);
             localStorage.setItem(`${DATA_PREFIX}${newClass.id}`, JSON.stringify([]));
             touchClassSyncMeta(newClass.id);
             markClassDirty(newClass.id);
             return newClass;
         },
-        [setClasses],
+        [classes, persistClassesNow, setClasses],
     );
 
     const deleteClass = useCallback(
@@ -125,24 +144,27 @@ export const useClassManager = () => {
             // carte) — pas de `window.confirm` ici, sinon double confirmation.
             const target = classes.find(c => c.id === classId);
             if (!target) return;
-            setClasses(d => {
-                const i = d.findIndex(c => c.id === classId);
-                if (i !== -1) d.splice(i, 1);
-            });
+            const nextClasses = classes.filter(c => c.id !== classId);
+            persistClassesNow(nextClasses, false);
+            skipNextPersistRef.current = true;
+            setClasses(() => nextClasses);
             localStorage.removeItem(`${DATA_PREFIX}${classId}`);
             markClassDeleted(classId);
         },
-        [classes, setClasses],
+        [classes, persistClassesNow, setClasses],
     );
 
     const updateClass = useCallback(
         (classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {
-            setClasses(d => {
-                const c = d.find(x => x.id === classId);
-                if (c) Object.assign(c, updates);
-            });
+            const nextClasses = classes.map(classInfo =>
+                classInfo.id === classId ? { ...classInfo, ...updates } : classInfo
+            );
+            if (nextClasses.every((classInfo, index) => classInfo === classes[index])) return;
+            persistClassesNow(nextClasses);
+            skipNextPersistRef.current = true;
+            setClasses(() => nextClasses);
         },
-        [setClasses],
+        [classes, persistClassesNow, setClasses],
     );
 
     return { classes, addClass, deleteClass, updateClass, isLoading };

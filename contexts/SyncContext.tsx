@@ -65,6 +65,37 @@ const readLocalConfig = (): Partial<AppConfig> => {
     }
 };
 
+/** Nettoie les références d'une classe supprimée, même si la suppression vient d'un autre appareil. */
+const removeDeletedClassReferences = (
+    config: Partial<AppConfig>,
+    deletedIds: Set<string>,
+): { config: Partial<AppConfig>; changed: boolean } => {
+    if (deletedIds.size === 0) return { config, changed: false };
+
+    const next = { ...config };
+    let changed = false;
+    const filterByClass = <T extends { classId: string }>(entries: T[] | undefined): T[] | undefined => {
+        if (!entries) return entries;
+        const filtered = entries.filter(entry => !deletedIds.has(entry.classId));
+        if (filtered.length !== entries.length) changed = true;
+        return filtered;
+    };
+    next.timetable = filterByClass(next.timetable);
+    next.schedules = filterByClass(next.schedules);
+
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents'] as const) {
+        const records = next[key];
+        if (!records) continue;
+        const filtered = { ...records };
+        for (const classId of deletedIds) delete filtered[classId];
+        if (Object.keys(filtered).length !== Object.keys(records).length) {
+            (next as Record<string, unknown>)[key] = filtered;
+            changed = true;
+        }
+    }
+    return { config: next, changed };
+};
+
 interface RemoteLessonsBlob {
     lessonsData?: LessonsData;
     updatedAt?: string;
@@ -106,6 +137,8 @@ interface ServerClassesBlob {
     settings?: SyncableSettings;
     settingsUpdatedAt?: string;
     classMeta: Record<string, { updatedAt: string }>;
+    /** Suppressions durables : empêchent un appareil périmé de recréer une classe. */
+    deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
 }
 
@@ -114,6 +147,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
     const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
     const debounceRef = useRef<number | null>(null);
+    const scheduledPushAtRef = useRef<number | null>(null);
     const pushingRef = useRef(false);
     const userRef = useRef(user);
     userRef.current = user;
@@ -234,6 +268,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // métadonnées portées par le premier lot uniquement
                         settings: includeSettings ? extractSyncableSettings(config) : undefined,
                         settingsUpdatedAt: includeSettings ? settingsUpdatedAt : undefined,
+                        // Nouveau format horodaté ; deletedClassIds reste envoyé
+                        // pour que les déploiements serveur précédents le comprennent.
+                        deletedClasses: isFirst ? work.deletedClasses : [],
                         deletedClassIds: isFirst ? work.deletedClassIds : [],
                         lessons: batches[i].map(({ classId, lessonsData, updatedAt }) => ({ classId, lessonsData, updatedAt })),
                         snapshot: isFirst ? snapshot : undefined,
@@ -282,6 +319,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // liste/settings/suppressions portées par le 1er lot
                     listVersion: failure.firstBatch ? 0 : work.listVersion,
                     deletedClassIds: failure.firstBatch ? [] : work.deletedClassIds,
+                    deletedClasses: failure.firstBatch ? [] : work.deletedClasses,
                 });
             }
             setSyncStatus('error');
@@ -290,8 +328,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // 401 (reconnexion) et 413 (cahier trop gros) : inutile d'insister.
             if (failure.status >= 500 || failure.status === 429) {
                 if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+                scheduledPushAtRef.current = Date.now() + 60_000;
                 debounceRef.current = window.setTimeout(() => {
                     debounceRef.current = null;
+                    scheduledPushAtRef.current = null;
                     void push();
                 }, 60_000);
             }
@@ -305,9 +345,17 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const schedulePush = useCallback(
         (delayMs: number = PUSH_DEBOUNCE_MS) => {
+            const targetAt = Date.now() + delayMs;
+            // Une suppression a une priorité plus haute : une modification de
+            // réglage qui suit ne doit pas repousser son envoi de 20 secondes.
+            if (debounceRef.current !== null && scheduledPushAtRef.current !== null && scheduledPushAtRef.current <= targetAt) {
+                return;
+            }
             if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+            scheduledPushAtRef.current = targetAt;
             debounceRef.current = window.setTimeout(() => {
                 debounceRef.current = null;
+                scheduledPushAtRef.current = null;
                 void push();
             }, delayMs);
         },
@@ -318,6 +366,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (debounceRef.current !== null) {
             window.clearTimeout(debounceRef.current);
             debounceRef.current = null;
+            scheduledPushAtRef.current = null;
         }
         void push();
     }, [push]);
@@ -344,7 +393,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const localClasses = readLocalClasses();
                 const syncMeta = readSyncMeta();
 
-                if ((server.classes?.length ?? 0) === 0 && localClasses.length > 0) {
+                const remoteDeletedIds = new Set(Object.keys(server.deletedClasses ?? {}));
+                const pendingDeletedIds = new Set(getPendingWork().deletedClassIds);
+                const deletedIds = new Set([...remoteDeletedIds, ...pendingDeletedIds]);
+                const localVisibleClasses = localClasses.filter(classInfo => !deletedIds.has(classInfo.id));
+
+                if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && localVisibleClasses.length > 0) {
                     // Première association : des cahiers locaux existent mais le
                     // cloud est vide. Proposition NON bloquante (toast avec action)
                     // — l'app conseille, le prof décide, rien n'est interrompu.
@@ -366,9 +420,20 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return;
                 }
 
-                const mergedClasses = [...localClasses];
-                let localChanged = false;
+                const mergedClasses = [...localVisibleClasses];
+                let localChanged = mergedClasses.length !== localClasses.length;
                 const conflictNames: string[] = [];
+
+                // Un tombstone cloud est définitif pour cet identifiant. On
+                // retire également la copie locale des cours et ses métadonnées
+                // avant toute décision de fusion.
+                for (const classId of deletedIds) {
+                    try { localStorage.removeItem(`classData_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    if (syncMeta[classId]) {
+                        delete syncMeta[classId];
+                        localChanged = true;
+                    }
+                }
 
                 // ── Phase 1 : décisions (synchrone, LWW + détection de conflit) ──
                 interface PullDecision {
@@ -378,7 +443,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     action: 'apply' | 'requeue' | 'none';
                     conflict: boolean;
                 }
-                const decisions: PullDecision[] = (server.classes ?? []).map(serverClass => {
+                const decisions: PullDecision[] = (server.classes ?? [])
+                    .filter(serverClass => !deletedIds.has(serverClass.id))
+                    .map(serverClass => {
                     const serverUpdatedAt = server.classMeta?.[serverClass.id]?.updatedAt;
                     const meta = syncMeta[serverClass.id];
                     const localUpdatedAt = meta?.localUpdatedAt;
@@ -404,7 +471,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 : 'none';
 
                     return { serverClass, serverUpdatedAt, localIndex, action, conflict };
-                });
+                    });
 
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
                 await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict }) => {
@@ -451,7 +518,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 // classes locales inconnues du serveur → à pousser
                 for (const localClass of localClasses) {
-                    if (!(server.classes ?? []).some(c => c.id === localClass.id)) {
+                    if (!deletedIds.has(localClass.id) && !(server.classes ?? []).some(c => c.id === localClass.id)) {
                         markClassDirty(localClass.id);
                         markClassesListDirty();
                     }
@@ -463,7 +530,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  * local), on restaure l'ensemble depuis le cloud. Sinon on
                  * respecte les réglages locaux (l'état push reste par appareil).
                  */
-                const config = readLocalConfig();
+                const localConfig = readLocalConfig();
+                const cleanedConfig = removeDeletedClassReferences(localConfig, deletedIds);
+                const config = cleanedConfig.config;
+                if (cleanedConfig.changed) {
+                    try {
+                        localStorage.setItem('appConfig_v1', JSON.stringify(config));
+                        localChanged = true;
+                    } catch { /* stockage plein */ }
+                }
                 const settings: SyncableSettings | undefined =
                     server.settings ??
                     (server.schedules || server.timetable
@@ -524,7 +599,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const unsubscribeDirty = subscribe('dirty', () => {
             setSyncStatus(current => (current === 'syncing' ? current : 'pending'));
-            schedulePush();
+            schedulePush(getPendingWork().deletedClassIds.length > 0 ? 50 : PUSH_DEBOUNCE_MS);
         });
 
         const handleOnline = () => {
@@ -547,6 +622,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             document.removeEventListener('visibilitychange', flush);
             window.removeEventListener('pagehide', flush);
             if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+            scheduledPushAtRef.current = null;
         };
     }, [authStatus, schedulePush, push]);
 
