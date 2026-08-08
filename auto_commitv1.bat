@@ -124,10 +124,15 @@ if "%DRY_RUN%"=="1" (
 
 echo [INFO] Branche active : %CURRENT_BRANCH%
 choice /C YN /N /M "Basculer vers main pour publier"
-if errorlevel 2 (
-  echo [INFO] Operation annulee : aucune modification n'a ete faite.
-  goto success
-)
+if errorlevel 2 goto main_switch_cancelled
+if errorlevel 1 goto main_switch_accepted
+goto main_switch_cancelled
+
+:main_switch_cancelled
+echo [INFO] Operation annulee : aucune modification n'a ete faite.
+goto success
+
+:main_switch_accepted
 git switch main
 if errorlevel 1 (
   echo [ERREUR] Impossible de basculer vers main. Committez, stash ou resolvez les changements bloques.
@@ -247,10 +252,13 @@ if "%SENSITIVE%"=="1" (
 
 if "%AUTO_CONFIRM%"=="1" goto commit_changes
 choice /C YN /N /M "Creer le commit et pousser vers origin/main"
-if errorlevel 2 (
-  echo [INFO] Operation annulee avant le commit. Les fichiers restent indexes pour revision.
-  goto success
-)
+if errorlevel 2 goto commit_cancelled
+if errorlevel 1 goto commit_changes
+goto commit_cancelled
+
+:commit_cancelled
+echo [INFO] Operation annulee avant le commit. Aucun fichier n'a ete indexe.
+goto success
 
 :commit_changes
 git add -A
