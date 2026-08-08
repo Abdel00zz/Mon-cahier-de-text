@@ -1,7 +1,5 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
-import { useIsMobile } from '@/hooks/useIsMobile';
-import { IOSSearchBar } from '@/components/ui/IOSComponents';
 import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
@@ -11,11 +9,10 @@ import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
 import { ClassInfo, Cycle } from '@/types';
-import { formatClassDisplayName } from '@/constants';
-import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
+import { getBundledCalendar } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { ChevronDown, Plus, Settings, CalendarCheck, BookOpen, Clock, Search, Bell, CircleHelp } from '@/components/ui/icons';
+import { ChevronDown, Plus, CalendarCheck, BookOpen } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -23,21 +20,12 @@ const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module 
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
-    onOpenSettings: () => void;
-    onOpenNotifications?: () => void;
     onOpenEvaluations?: () => void;
-    onOpenGuide?: () => void;
-    notificationsCount?: number;
 }
 
 type ClassDisplayMode = 'list' | 'single' | 'double' | 'triple';
 
-const CLASS_DISPLAY_OPTIONS: Array<{ value: ClassDisplayMode; label: string; description: string }> = [
-    { value: 'list', label: 'Liste', description: 'Sans cartes' },
-    { value: 'single', label: '1 par ligne', description: 'Confort' },
-    { value: 'double', label: '2 par ligne', description: 'Compact' },
-    { value: 'triple', label: '3 par ligne', description: 'Large écran' },
-];
+const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double', 'triple'];
 
 /** Salutation selon l'heure, petite touche vivante, esprit app mobile. */
 const getGreeting = (locale: 'fr' | 'en' | 'ar'): string => {
@@ -99,13 +87,9 @@ const findLatestDate = (data: any): string | null => {
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
-    onOpenSettings,
-    onOpenNotifications,
     onOpenEvaluations,
-    onOpenGuide,
-    notificationsCount = 0,
 }) => {
-    const { locale, t } = useLocale();
+    const { locale, t, isRtl } = useLocale();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -114,8 +98,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', 'double', 100);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [cycleFilter, setCycleFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
@@ -235,17 +217,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const teacherName = (config.defaultTeacherName || '').trim();
 
     const calendar = getBundledCalendar();
-    const today = todayInMorocco();
-    const formattedDate = (() => {
-        try {
-            const [y, m, d] = today.split('-').map(Number);
-            const date = new Date(Date.UTC(y, m - 1, d));
-            return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        } catch {
-            return '';
-        }
-    })();
-
     const calendarWithAbsences = withAbsences(calendar, config.absences);
     const nextSession = (classId: string) =>
         nextSessionInfoForClass(
@@ -253,23 +224,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
             config.timetable,
             config.schedules?.find(s => s.classId === classId)?.slots.map(s => s.weekday) ?? [],
             calendarWithAbsences,
+            locale,
         );
-
-    const todaysSessions = classes
-        .map(c => ({ classInfo: c, session: nextSession(c.id) }))
-        .filter(item => item.session && (item.session.kind === 'now' || item.session.kind === 'today'));
 
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const filteredClasses = visibleClasses.filter(c => {
         if (cycleFilter !== 'all' && c.cycle !== cycleFilter) return false;
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return c.name.toLowerCase().includes(q) || (c.subject && c.subject.toLowerCase().includes(q));
+        return true;
     });
 
-    const currentDisplay = CLASS_DISPLAY_OPTIONS.find(option => option.value === classDisplayMode) ?? CLASS_DISPLAY_OPTIONS[2];
+    const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = classDisplayMode === 'single'
         ? 'grid-cols-1'
         : classDisplayMode === 'triple'
@@ -288,81 +254,65 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-[#F4F6F8] text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8" data-dashboard-root>
+        <div className="min-h-screen bg-transparent text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8" data-dashboard-root>
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-4xl px-4 py-5 sm:px-6 sm:py-8">
-                    <header className="mb-6 sm:mb-8" id="dashboard-header">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="min-w-0 flex-1">
-                                <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
+                <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
+                    <header className="mb-8 space-y-4" id="dashboard-header">
+                        <div className="flex items-center gap-3">
+                            <div className="min-w-0 shrink-0">
+                                <p className={`mb-0.5 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.14em]'}`}>{t('dashboard.teacherSpace')}</p>
+                                <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
                                     {teacherName ? (
                                         <>
-                                            <span className="font-medium">{getGreeting(locale)},</span>{' '}
-                                            <span className="font-itim text-primary text-3xl ml-1">{teacherName}</span>
+                                            <span className="font-medium">{getGreeting(locale)}{locale === 'ar' ? '،' : ','}</span>{' '}
+                                            <span className="text-primary">{teacherName}</span>
                                         </>
                                     ) : (
-                                        <span>{t('dashboard.classes')}</span>
+                                        <span>{t('dashboard.notebook')}</span>
                                     )}
                                 </h1>
                             </div>
                         </div>
 
-                        {classes.length > 0 && (isSearchOpen || availableCycles.length > 1) && (
-                            <div className="mt-8 space-y-6">
-                                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-2 rounded-2xl shadow-sm border-0">
-                                    {isSearchOpen && (
-                                        <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-top-2">
-                                            <IOSSearchBar
-                                                value={searchQuery}
-                                                onChange={setSearchQuery}
-                                                placeholder="Rechercher une classe, une matière..."
-                                            />
-                                        </div>
-                                    )}
-
-                                    {availableCycles.length > 1 && (
-                                        <div className="flex items-center gap-1 overflow-x-auto p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl shrink-0">
-                                            <button
-                                                type="button"
-                                                onClick={() => setCycleFilter('all')}
-                                                className={`px-4 py-2 text-[13px] font-bold rounded-xl transition-all ${
-                                                    cycleFilter === 'all'
-                                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                                                        : 'text-zinc-500 hover:text-zinc-900'
-                                                }`}
-                                            >
-                                                Toutes
-                                            </button>
-                                            {availableCycles.map(c => {
-                                                const labels: Record<string, string> = { college: 'Collège', lycee: 'Lycée', prepa: 'Prépa' };
-                                                return (
-                                                    <button
-                                                        key={c}
-                                                        type="button"
-                                                        onClick={() => setCycleFilter(c)}
-                                                        className={`px-4 py-2 text-[13px] font-bold rounded-xl transition-all ${
-                                                            cycleFilter === c
-                                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                                                                : 'text-zinc-500 hover:text-zinc-900'
-                                                        }`}
-                                                    >
-                                                        {labels[c] || c}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
+                        {classes.length > 0 && availableCycles.length > 1 && (
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setCycleFilter('all')}
+                                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                                        cycleFilter === 'all'
+                                            ? 'bg-primary text-primary-foreground shadow-sm'
+                                            : 'border border-border/65 bg-card/80 text-muted-foreground shadow-2xs hover:border-primary/20 hover:text-foreground dark:bg-zinc-900'
+                                    }`}
+                                >
+                                    {t('dashboard.filterAll')}
+                                </button>
+                                {availableCycles.map(c => {
+                                    return (
+                                        <button
+                                            key={c}
+                                            type="button"
+                                            onClick={() => setCycleFilter(c)}
+                                            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                                                cycleFilter === c
+                                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                                    : 'border border-border/65 bg-card/80 text-muted-foreground shadow-2xs hover:border-primary/20 hover:text-foreground dark:bg-zinc-900'
+                                            }`}
+                                        >
+                                            {t(`cycle.${c}`)}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         )}
                     </header>
 
                     <main>
-                        <section className="mt-6 w-full" aria-labelledby="classes-heading">
-                            <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+                        <section className="w-full" aria-labelledby="classes-heading">
+                            <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
                                 <div className="flex items-center gap-2.5">
                                     <h2 id="classes-heading" className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                                        <span>Mes Classes</span>
+                                        <span>{t('dashboard.classes')}</span>
                                         {filteredClasses.length > 0 && (
                                             <span className="text-zinc-400 dark:text-zinc-500 font-medium text-sm">
                                                 ({filteredClasses.length})
@@ -378,23 +328,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             variant="ghost"
                                             onClick={onOpenEvaluations}
                                             className="h-8 sm:h-8.5 px-2.5 sm:px-3 rounded-full bg-card text-foreground hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 border border-border font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                                            aria-label="Évaluations & Devoirs"
-                                            title="Évaluations & Devoirs"
+                                            aria-label={t('dashboard.evaluations')}
+                                            title={t('dashboard.evaluations')}
                                         >
                                             <CalendarCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                            <span className="hidden sm:inline text-xs">Évaluations</span>
+                                            <span className="hidden sm:inline text-xs">{t('dashboard.evaluations')}</span>
                                         </Button>
                                     )}
 
                                     <Button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
-                                        className="h-8 sm:h-8.5 px-2.5 sm:px-3 rounded-full bg-[#007AFF] hover:bg-[#0062D6] active:bg-[#0052B3] text-white font-bold text-xs flex items-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-xs transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
-                                        aria-label="Ajouter une classe"
-                                        title="Ajouter une classe"
+                                        className="h-8 sm:h-8.5 px-2.5 sm:px-3 rounded-full bg-primary hover:bg-primary/90 active:bg-primary/85 text-primary-foreground font-bold text-xs flex items-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-xs transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+                                        aria-label={t('dashboard.addClass')}
+                                        title={t('dashboard.addClass')}
                                     >
                                         <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                                        <span>Classe</span>
+                                        <span>{t('dashboard.classShort')}</span>
                                     </Button>
 
                                     {classes.length > 0 && (
@@ -404,31 +354,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 onClick={() => setDisplayMenuOpen(open => !open)}
                                                 aria-haspopup="menu"
                                                 aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-8 sm:h-8.5 items-center gap-2 rounded-full bg-white px-3 text-xs font-semibold text-muted-foreground shadow-sm hover:text-zinc-900 active:scale-[0.98] bg-card text-foreground border border-border"
+                                                className="flex h-8 sm:h-8.5 items-center gap-2 rounded-full bg-card/85 px-3 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/20 active:scale-[0.98] border border-border/70"
                                             >
-                                                <span>{displayCopy(currentDisplay.value).label}</span>
+                                                <span>{displayCopy(currentDisplay).label}</span>
                                                 <ChevronDown className={`h-3 w-3 text-zinc-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             {isDisplayMenuOpen && (
                                                 <div
                                                     role="menu"
-                                                    className="absolute right-0 top-[calc(100%+0.4rem)] z-30 w-44 overflow-hidden rounded-[16px] bg-white p-2 shadow-lg dark:bg-zinc-800 border-0"
+                                                    className={`absolute top-[calc(100%+0.4rem)] z-30 w-44 overflow-hidden rounded-[16px] border border-border/70 bg-popover/95 p-2 shadow-[0_16px_40px_rgba(30,64,110,0.12)] backdrop-blur-xl dark:bg-zinc-800 ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                        const isActive = option.value === classDisplayMode;
+                                                        const isActive = option === classDisplayMode;
                                                         return (
                                                             <button
-                                                                key={option.value}
+                                                                key={option}
                                                                 type="button"
                                                                 role="menuitemradio"
                                                                 aria-checked={isActive}
                                                                 onClick={() => {
-                                                                    setClassDisplayMode(option.value);
+                                                                    setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
                                                                 className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors ${isActive ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white'}`}
                                                             >
-                                                                <span className="text-[12px] font-bold">{displayCopy(option.value).label}</span>
+                                                                <span className="text-[12px] font-bold">{displayCopy(option).label}</span>
                                                             </button>
                                                         );
                                                     })}
@@ -439,22 +389,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
                             </div>
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center gap-4 rounded-[24px] bg-white px-6 py-12 text-center shadow-sm bg-card">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                                    <div className="flex flex-col items-center gap-4 rounded-[22px] border border-border/65 bg-card/86 px-6 py-12 text-center shadow-[0_16px_44px_rgba(30,64,110,0.06)] backdrop-blur-sm">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8 text-primary">
                                             <BookOpen className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">Créez vos classes</h3>
+                                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">{t('dashboard.emptyTitle')}</h3>
                                             <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
-                                                Commencez par ajouter vos classes pour organiser votre emploi du temps et vos cahiers de textes.
+                                                {t('dashboard.emptyDescription')}
                                             </p>
-                                        </div>
-                                        <Button onClick={() => setOnboardingOpen(true)} className="mt-4 h-10 rounded-xl px-6 font-bold bg-[#007AFF] hover:bg-[#0062D6] text-white">
-                                            Commencer
+                                            </div>
+                                            <Button onClick={() => setOnboardingOpen(true)} className="mt-4 h-10 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90">
+                                            {t('dashboard.addClass')}
                                         </Button>
                                     </div>
                                 ) : classDisplayMode === 'list' ? (
-                                    <div className="space-y-3" role="list" aria-label="Liste des cahiers">
+                                    <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
@@ -509,6 +459,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
                 teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
+                existingClasses={classes}
                 editingClass={editingClass}
                 onUpdate={(classId, updates) => {
                     updateClass(classId, updates);
@@ -528,4 +479,3 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
     );
 };
-

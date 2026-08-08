@@ -28,15 +28,15 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       maxWidth="sm"
       footer={
         <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl">Modifier la date</Button>
-          <Button type="button" onClick={onConfirm} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm" aria-label="J’ai compris et enregistrer la date">
-            J’ai compris
+          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl">Modifier</Button>
+          <Button type="button" onClick={onConfirm} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm" aria-label="Confirmer la date">
+            Confirmer
           </Button>
         </div>
       }
     >
       <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3" role="status" aria-live="polite">
-        <p className="text-sm font-bold text-amber-900">À vérifier avant de continuer</p>
+        <p className="text-sm font-bold text-amber-900">Vérifiez avant de confirmer</p>
         <ul className="mt-2 divide-y divide-amber-100">
           {distinctWarnings.map((warning, index) => (
             <li key={index} className="flex items-start gap-2 py-2 first:pt-0 last:pb-0">
@@ -46,7 +46,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
           ))}
         </ul>
         <p className="mt-3 text-[11px] font-medium leading-relaxed text-zinc-500">
-          Une séance de rattrapage ou une situation exceptionnelle peut justifier cette date. Confirmez simplement que vous avez pris connaissance de ces points.
+          Une exception peut justifier cette date. Confirmez après vérification.
         </p>
         {onIgnore && (
           <button
@@ -54,7 +54,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
             onClick={onIgnore}
             className="mt-3 min-h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-amber-800 shadow-xs"
           >
-            Conserver comme exception et ne plus signaler cette date
+            Ne plus signaler cette date
           </button>
         )}
       </div>

@@ -33,9 +33,7 @@ export const ArchivesSection: React.FC = () => {
             toast.success(t('archives.created', { year: meta.yearLabel, count: meta.classCount, plural: meta.classCount > 1 && locale !== 'ar' ? 's' : '' }));
             refresh();
         } else {
-            toast.error(
-                'Stockage local insuffisant pour conserver cette archive sur l\'appareil, téléchargez plutôt une sauvegarde totale.'
-            );
+            toast.error(t('archives.storageError'));
         }
     };
 
@@ -45,8 +43,18 @@ export const ArchivesSection: React.FC = () => {
         toast.success(t('archives.deleted'));
     };
 
-    const formatSize = (bytes: number) =>
-        bytes > 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} Mo` : `${Math.max(1, Math.round(bytes / 1000))} Ko`;
+    const formatSize = (bytes: number) => {
+        const megabytes = bytes / 1_000_000;
+        const value = bytes > 1_000_000
+            ? new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(megabytes)
+            : new Intl.NumberFormat(locale).format(Math.max(1, Math.round(bytes / 1000)));
+        return t(bytes > 1_000_000 ? 'archives.sizeMb' : 'archives.sizeKb', { value });
+    };
+
+    const formatClassCount = (count: number) => t(
+        count === 1 ? 'archives.classCount.one' : count === 2 ? 'archives.classCount.two' : 'archives.classCount.many',
+        { count },
+    );
 
     return (
         <div className="mt-4 rounded-2xl border border-border/80 bg-secondary/40 p-4">
@@ -63,7 +71,7 @@ export const ArchivesSection: React.FC = () => {
                     onClick={handleCreate}
                     className="h-10 shrink-0 rounded-full border-border text-xs text-primary transition-all hover:bg-primary hover:text-white"
                 >
-                    <CalendarCheck className="mr-1.5 h-4 w-4" /> {t('archives.action', { year: yearLabel })}
+                    <CalendarCheck className="h-4 w-4" /> {t('archives.action', { year: yearLabel })}
                 </Button>
             </div>
 
@@ -76,9 +84,9 @@ export const ArchivesSection: React.FC = () => {
                         >
                             <div className="min-w-0">
                                 <span className="text-xs font-bold text-foreground font-display">{t('archives.year', { year: meta.yearLabel })}</span>
-                                <span className="ml-2 text-[10px] font-semibold text-muted-foreground/60 font-mono">
-                                    {meta.classCount} classe(s) · {formatSize(meta.bytes)} ·{' '}
-                                    {new Date(meta.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                <span className="ms-2 text-[10px] font-semibold text-muted-foreground/60 font-mono">
+                                    {formatClassCount(meta.classCount)} · {formatSize(meta.bytes)} ·{' '}
+                                    {new Date(meta.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
                             </div>
                             <div className="flex shrink-0 items-center gap-1">

@@ -2,13 +2,13 @@ import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 
 import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
 import { AppBootSkeleton } from './components/ui/PageSkeleton';
-import { ClassInfo } from './types';
+import { AppLocale, ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
-import { LocaleProvider } from './i18n/LocaleProvider';
+import { LocaleProvider, translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
 
 import { useClassManager } from './hooks/useClassManager';
@@ -106,6 +106,7 @@ const App: React.FC = () => {
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
+  const [isSidebarExpanded, setSidebarExpanded] = useState(true);
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
@@ -203,7 +204,7 @@ const App: React.FC = () => {
     }
     // Page d'authentification (uniquement si l'auth est activée).
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
-      return <AuthPage />;
+      return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} />;
     }
     if (view === 'settings') {
       return <SettingsPage onBack={handleBackFromSettings} />;
@@ -226,11 +227,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onSelectClass={handleSelectClass}
-        onOpenSettings={handleOpenSettings}
-        onOpenNotifications={handleOpenNotifications}
         onOpenEvaluations={() => setIsEvaluationsOpen(true)}
-        onOpenGuide={() => setGuideOpen(true)}
-        notificationsCount={notificationFeed.attentionCount}
       />
     );
   };
@@ -267,14 +264,18 @@ const App: React.FC = () => {
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
   const showNavigation = !isAuthView && !isBooting && view !== 'editor';
+  const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div className={`min-h-screen bg-background text-foreground relative overflow-x-clip transition-all ${showNavigation ? 'sm:pl-[72px] pb-16 sm:pb-8' : ''}`}>
+    <div className={`app-canvas min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? (isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`) : ''} pb-16 sm:pb-8`}>
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
           onTabChange={handleTabChange}
           notificationsCount={notificationFeed.attentionCount}
+          isExpanded={isSidebarExpanded}
+          onToggleExpanded={() => setSidebarExpanded(expanded => !expanded)}
+          isRtl={isRtl}
         />
       )}
       <div key={routeKey} className="min-h-screen relative z-10">
@@ -301,8 +302,8 @@ const App: React.FC = () => {
           <IOSheet
             isOpen={isEvaluationsOpen}
             onClose={() => setIsEvaluationsOpen(false)}
-            title="Évaluations"
-            subtitle="Suivi de la classe sélectionnée"
+            title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
+            subtitle={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.selectedClassTracking')}
           >
             <Suspense fallback={<AppBootSkeleton />}>
               <DevoirsView
@@ -322,7 +323,7 @@ const App: React.FC = () => {
 
         <GlobalTooltip />
         <Toaster
-          position="bottom-right"
+          position={isRtl ? 'bottom-left' : 'bottom-right'}
           closeButton
           expand={false}
           gap={5}

@@ -1,4 +1,4 @@
-import { TopLevelItem } from './types';
+import { AppLocale, TopLevelItem } from './types';
 import { Book, TestTube, Home, FileSignature, CheckCheck, CheckSquare } from './components/ui/icons';
 import type { ComponentType } from 'react';
 
@@ -145,6 +145,36 @@ const CLASS_LEVEL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
     'ECT': 'Économie et commerce, option technologique',
 };
 
+/** Libellés de niveau en arabe : les identifiants enregistrés restent stables,
+ * seule leur présentation s'adapte à la langue de l'interface. */
+const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
+    '1AC': 'الأولى إعدادي',
+    '2AC': 'الثانية إعدادي',
+    '3AC': 'الثالثة إعدادي',
+    'Tronc commun scientifique': 'الجذع المشترك العلمي',
+    'Tronc commun lettres': 'الجذع المشترك الآداب',
+    'Tronc commun technologique': 'الجذع المشترك التكنولوجي',
+    '1BAC Sc. Expérimentales': 'الأولى باك · علوم تجريبية',
+    '1BAC Sc. Mathématiques': 'الأولى باك · علوم رياضية',
+    '1BAC Lettres': 'الأولى باك · آداب',
+    '1BAC Sc. Économiques': 'الأولى باك · علوم اقتصادية وتدبير',
+    '2BAC PC': 'الثانية باك · علوم فيزيائية',
+    '2BAC SVT': 'الثانية باك · علوم الحياة والأرض',
+    '2BAC Sc. Maths A': 'الثانية باك · علوم رياضية أ',
+    '2BAC Sc. Maths B': 'الثانية باك · علوم رياضية ب',
+    '2BAC Sc. Économiques': 'الثانية باك · علوم اقتصادية',
+    '2BAC Sc. Gestion Comptable': 'الثانية باك · علوم التدبير المحاسباتي',
+    '2BAC Lettres': 'الثانية باك · آداب',
+    '2BAC Sc. Humaines': 'الثانية باك · علوم إنسانية',
+    'MPSI': 'رياضيات وفيزياء وعلوم المهندس',
+    'PCSI': 'فيزياء وكيمياء وعلوم المهندس',
+    'MP': 'رياضيات وفيزياء',
+    'PSI': 'فيزياء وعلوم المهندس',
+    'TSI': 'تكنولوجيا وعلوم صناعية',
+    'ECS': 'اقتصاد وتجارة · خيار علمي',
+    'ECT': 'اقتصاد وتجارة · خيار تكنولوجي',
+};
+
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
     .sort((left, right) => right.length - left.length);
 
@@ -163,6 +193,19 @@ export const formatClassDisplayName = (name: string): string => {
     const suffix = normalized.slice(level.length).trim();
     const label = CLASS_LEVEL_DISPLAY_NAMES[level];
     return suffix ? `${label} · Gr. ${suffix}` : label;
+};
+
+/** Variante localisée de l'intitulé de classe, sans jamais modifier la valeur stockée. */
+export const formatLocalizedClassDisplayName = (name: string, locale: AppLocale): string => {
+    if (locale !== 'ar') return formatClassDisplayName(name);
+
+    const normalized = (name || '').trim().replace(/\s+/g, ' ');
+    const level = DISPLAY_LEVEL_KEYS.find(key => normalized === key || normalized.startsWith(`${key} `));
+    if (!level) return normalized;
+
+    const suffix = normalized.slice(level.length).trim();
+    const label = CLASS_LEVEL_DISPLAY_NAMES_AR[level] ?? CLASS_LEVEL_DISPLAY_NAMES[level];
+    return suffix ? `${label} · المجموعة ${suffix}` : label;
 };
 
 const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
@@ -197,6 +240,26 @@ export const SUBJECTS = [
     'Informatique',
     'EPS',
 ] as const;
+
+/** Les valeurs métier des matières restent en français ; seule leur lecture est localisée. */
+const SUBJECT_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
+    'Mathématiques': 'الرياضيات',
+    'Physique-Chimie': 'الفيزياء والكيمياء',
+    'Sciences de la Vie et de la Terre': 'علوم الحياة والأرض',
+    'Sciences Économiques': 'العلوم الاقتصادية',
+    'Français': 'اللغة الفرنسية',
+    'Arabe': 'اللغة العربية',
+    'Anglais': 'اللغة الإنجليزية',
+    'Philosophie': 'الفلسفة',
+    'Histoire-Géographie': 'التاريخ والجغرافيا',
+    'Éducation Islamique': 'التربية الإسلامية',
+    'Informatique': 'المعلوميات',
+    'EPS': 'التربية البدنية',
+};
+
+export const formatLocalizedSubjectDisplayName = (subject: string, locale: AppLocale): string => (
+    locale === 'ar' ? (SUBJECT_DISPLAY_NAMES_AR[subject] ?? subject) : subject
+);
 
 // FIX: Changed type from `{[key: string]: ...}` to `Record<TopLevelItem['type'], ...>`.
 // The previous weak key type (`string`) caused `keyof typeof` to resolve to `string | number`,

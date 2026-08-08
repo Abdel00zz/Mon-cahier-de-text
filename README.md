@@ -28,7 +28,7 @@ Un écart est une information à confirmer, jamais une faute et jamais un toast 
 ### Données pédagogiques
 
 ```text
-Cahier de classe
+Cahier de textes
   → dates réellement saisies
   → progression et prochaine séance
   → indicateurs compacts Mes classes + centre de notifications

@@ -63,16 +63,16 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Importer ou exporter"
-      description="Un espace unique pour sauvegarder ce cahier ou restaurer des données"
+      title="Sauvegarde et import"
+      description="Exportez une copie ou restaurez ce cahier."
       maxWidth="xl"
       footer={
         <>
           <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">Fermer</Button>
           {panel === 'export' ? (
-            <Button type="button" onClick={onExport} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">Exporter le cahier</Button>
+            <Button type="button" onClick={onExport} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">Exporter</Button>
           ) : (
-            <Button type="button" onClick={handleImport} disabled={!jsonText} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">Importer les données</Button>
+            <Button type="button" onClick={handleImport} disabled={!jsonText} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">Importer</Button>
           )}
         </>
       }
@@ -105,9 +105,9 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
               <FileDown className="h-5 w-5" aria-hidden />
             </span>
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-zinc-800">Créer une sauvegarde de ce cahier</h3>
+              <h3 className="text-sm font-bold text-zinc-800">Sauvegarder ce cahier</h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                Le fichier JSON contient l’identité de la classe et tout son contenu pédagogique. Conservez-le avant une modification importante ou un changement d’appareil.
+                Le fichier JSON contient la classe et son contenu. Conservez-le avant une modification importante ou un changement d’appareil.
               </p>
             </div>
           </section>
@@ -115,7 +115,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           <section className="space-y-4">
             {message && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2.5 text-xs leading-relaxed text-amber-900" role="status">
-                <p className="font-bold">Vérifiez le fichier</p>
+                <p className="font-bold">Fichier à vérifier</p>
                 <p className="mt-0.5 text-amber-800/90">{message}</p>
               </div>
             )}
@@ -134,7 +134,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
 
             <details className="group rounded-xl bg-zinc-50/65 border border-zinc-200/50 px-3 py-2.5">
               <summary className="cursor-pointer text-[11px] font-bold text-zinc-500 transition-colors hover:text-zinc-800">
-                Coller directement le contenu JSON
+                Coller le contenu JSON
               </summary>
               <Textarea
                 value={jsonText}
@@ -155,8 +155,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 aria-pressed={importMode === 'replace'}
                 className={`min-h-14 rounded-lg px-3 py-2 text-left transition-all duration-150 ${importMode === 'replace' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
               >
-                <span className="block text-xs font-bold">Remplacer le cahier</span>
-                <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Le contenu actuel est remplacé. L’action reste annulable.</span>
+                <span className="block text-xs font-bold">Remplacer</span>
+                <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Remplace le contenu actuel. Action annulable.</span>
               </button>
               <button
                 type="button"
@@ -164,8 +164,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 aria-pressed={importMode === 'append'}
                 className={`min-h-14 rounded-lg px-3 py-2 text-left transition-all duration-150 ${importMode === 'append' ? 'bg-zinc-100/60 text-zinc-800 border border-zinc-300 shadow-xs' : 'bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/50'}`}
               >
-                <span className="block text-xs font-bold">Ajouter à la suite</span>
-                <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Le contenu importé est ajouté après le cahier actuel.</span>
+                <span className="block text-xs font-bold">Ajouter</span>
+                <span className="mt-0.5 block text-[10px] font-medium leading-normal text-zinc-500">Ajoute le contenu après l’existant.</span>
               </button>
             </div>
           </section>

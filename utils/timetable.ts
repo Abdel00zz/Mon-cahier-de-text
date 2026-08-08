@@ -1,4 +1,5 @@
-import { ClassSchedule, TimetableEntry } from '../types.js';
+import { AppLocale, ClassSchedule, TimetableEntry } from '../types.js';
+import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
 
 /** Créneaux horaires de la grille (sans la colonne « 24 h » du modèle papier). */
 export interface HourSlot {
@@ -235,7 +236,7 @@ export const effectiveSchedules = (
      • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
      • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
 
-import { HolidayCalendar, getSchoolYearFor, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate, weekdayLabel } from './calendar.js';
+import { HolidayCalendar, getSchoolYearFor, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate } from './calendar.js';
 
 export interface NextSessionInfo {
     /** now = séance en cours ; season-end = année scolaire terminée (été) */
@@ -243,10 +244,13 @@ export interface NextSessionInfo {
     label: string;
 }
 
-const formatHourLabel = (minutes: number): string => {
+const localeCode = (locale: AppLocale): string => locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
+
+const formatHourLabel = (minutes: number, locale: AppLocale): string => {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    return `${String(h).padStart(2, '0')}h${m ? String(m).padStart(2, '0') : ''}`;
+    const numbers = new Intl.NumberFormat(localeCode(locale), { minimumIntegerDigits: 2, useGrouping: false });
+    return `${numbers.format(h)}:${numbers.format(m)}`;
 };
 
 export const nextSessionInfoForClass = (
@@ -254,6 +258,7 @@ export const nextSessionInfoForClass = (
     timetable: TimetableEntry[] | undefined,
     scheduleWeekdays: number[],
     calendar: HolidayCalendar,
+    locale: AppLocale = 'fr',
     now: Date = new Date()
 ): NextSessionInfo | null => {
     const entries = (timetable ?? []).filter(e => e.classId === classId);
@@ -267,7 +272,7 @@ export const nextSessionInfoForClass = (
     // Hors année scolaire (été entre deux années) : la saison est TERMINÉE -
     // inutile d'afficher une « prochaine séance » qui serait la rentrée suivante.
     if (!isWithinKnownSchoolYear(calendar, todayISO)) {
-        return { kind: 'season-end', label: 'Année scolaire terminée' };
+        return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
     }
 
     const blocksFor = (weekday: number): SessionBlock[] =>
@@ -280,15 +285,18 @@ export const nextSessionInfoForClass = (
         const blocks = blocksFor(now.getDay());
         if (blocks.length === 0) {
             // emploi du temps sans horaires pour cette classe : pas de précision horaire
-            return { kind: 'today', label: "aujourd'hui" };
+            return { kind: 'today', label: translateLocaleMessage(locale, 'dashboard.session.today') };
         }
         const nowMin = now.getHours() * 60 + now.getMinutes();
         const active = blocks.find(b => nowMin >= b.startMin && nowMin < b.endMin);
-        if (active) return { kind: 'now', label: 'en cours' };
+        if (active) return { kind: 'now', label: translateLocaleMessage(locale, 'dashboard.session.now') };
         const upcoming = blocks
             .filter(b => b.startMin > nowMin)
             .sort((a, b) => a.startMin - b.startMin)[0];
-        if (upcoming) return { kind: 'today', label: `aujourd'hui · ${formatHourLabel(upcoming.startMin)}` };
+        if (upcoming) return {
+            kind: 'today',
+            label: `${translateLocaleMessage(locale, 'dashboard.session.today')} · ${formatHourLabel(upcoming.startMin, locale)}`,
+        };
         // toutes les séances du jour sont terminées → occurrence suivante
     }
 
@@ -301,22 +309,25 @@ export const nextSessionInfoForClass = (
      * l'année sans créneau restant), l'année est finie pour cette classe.
      */
     if (next > getSchoolYearFor(calendar, todayISO).fin) {
-        return { kind: 'season-end', label: 'Année scolaire terminée' };
+        return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
     }
 
     const [y, m, d] = next.split('-').map(Number);
     const nextDate = new Date(y, m - 1, d);
     const blocks = blocksFor(nextDate.getDay());
     const time = blocks.length
-        ? ` · ${formatHourLabel(Math.min(...blocks.map(b => b.startMin)))}`
+        ? ` · ${formatHourLabel(Math.min(...blocks.map(b => b.startMin)), locale)}`
         : '';
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const diffDays = Math.round((nextDate.getTime() - startOfToday.getTime()) / 86_400_000);
 
-    if (diffDays === 1) return { kind: 'tomorrow', label: `demain${time}` };
-    if (diffDays <= 6) return { kind: 'weekday', label: `${weekdayLabel(nextDate.getDay())}${time}` };
+    if (diffDays === 1) return { kind: 'tomorrow', label: `${translateLocaleMessage(locale, 'dashboard.session.tomorrow')}${time}` };
+    if (diffDays <= 6) return {
+        kind: 'weekday',
+        label: `${new Intl.DateTimeFormat(localeCode(locale), { weekday: 'long' }).format(nextDate)}${time}`,
+    };
     return {
         kind: 'date',
-        label: `le ${nextDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`,
+        label: nextDate.toLocaleDateString(localeCode(locale), { day: 'numeric', month: 'short' }),
     };
 };

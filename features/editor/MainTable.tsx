@@ -412,15 +412,15 @@ const EmptyState: React.FC<{
                     aria-hidden="true"
                     className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-white"
                 />
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">Cahier de textes</p>
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">Démarrage</p>
                 <p className="mt-3 max-w-md text-base leading-7 text-slate-700">
                     {canLoadPredefined ? (
                         <>
-                            Un <strong className="font-bold text-slate-950">programme officiel</strong> est disponible pour cette classe. Choisissez la façon dont vous souhaitez <strong className="font-bold text-slate-950">démarrer</strong>.
+                            <strong className="font-bold text-slate-950">Programme officiel disponible.</strong> Importez-le ou créez votre propre progression.
                         </>
                     ) : (
                         <>
-                            Votre cahier est prêt. Créez un <strong className="font-bold text-slate-950">premier chapitre</strong> pour organiser votre progression.
+                            Créez votre <strong className="font-bold text-slate-950">premier chapitre</strong> pour démarrer le suivi.
                         </>
                     )}
                 </p>
@@ -428,7 +428,7 @@ const EmptyState: React.FC<{
                 <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
                     {canLoadPredefined && (
                         <Button type="button" onClick={onLoadPredefined} className="w-full shadow-lg shadow-primary/20 sm:w-auto" variant="default">
-                            Charger le programme officiel
+                            Importer le programme
                         </Button>
                     )}
                     {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">ou</span>}

@@ -78,7 +78,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </p>
 
         <section className="space-y-5">
-            <h3 className="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">Vue d'ensemble</h3>
+            <h3 className="text-lg font-bold text-zinc-900">Vue d'ensemble</h3>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
               <div className="rounded-2xl border-0 bg-white p-5 shadow-sm">
                 <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Complétion</div>
@@ -99,7 +99,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </section>
 
         <section className="space-y-5">
-          <h3 className="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">Progression par Chapitre</h3>
+          <h3 className="text-lg font-bold text-zinc-900">Progression par Chapitre</h3>
           <div className="space-y-5 max-h-[35vh] overflow-y-auto pr-2 custom-scrollbar rounded-2xl bg-white p-5 shadow-sm border-0">
             {stats.perChapter.map((chapter, i) => {
               if (chapter.total === 0) return null;
@@ -127,7 +127,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
 
         {warningItems.length > 0 && (
           <section className="space-y-5">
-            <h3 className="text-lg font-bold text-amber-600 border-b border-zinc-100 pb-2 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-amber-600 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
               Repères de calendrier à vérifier ({warningItems.length})
             </h3>

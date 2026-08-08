@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AppConfig, AppLocale, ClassInfo } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useRecentPastAssessments, useUpcomingAssessments } from '@/hooks/useAssessments';
 import { useUpcomingOfficialStudentEvents, UpcomingOfficialStudentEvent } from '@/hooks/useOfficialStudentEvents';
@@ -34,7 +34,11 @@ export const useNotificationFeed = (
 
   return useMemo(() => {
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
-    const classNameById = new Map(classes.map(c => [c.id, formatClassDisplayName(c.name)]));
+    const classNameById = new Map(classes.map(c => [c.id, formatLocalizedClassDisplayName(c.name, locale)]));
+    const assessmentLabel = (item: Pick<UpcomingAssessment, 'type' | 'num'>): string => t(
+      item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework',
+      { number: item.num },
+    );
     const all: ClassSignal[] = [
       ...classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale)),
       ...collectCrossClassSignals(classes, locale),
@@ -47,10 +51,10 @@ export const useNotificationFeed = (
         kind: 'assessment-week',
         action: 'evaluations',
         classId: item.classId,
-        className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
+        className: classNameById.get(item.classId) ?? formatLocalizedClassDisplayName(item.className, locale),
         title: item.inDays <= 0
-          ? t('notifications.signal.assessmentToday', { label: item.label.split(', Semestre ')[0] })
-          : t('notifications.signal.assessmentFuture', { label: item.label.split(', Semestre ')[0], count: item.inDays }),
+          ? t('notifications.signal.assessmentToday', { label: assessmentLabel(item) })
+          : t('notifications.signal.assessmentFuture', { label: assessmentLabel(item), count: item.inDays }),
         detail: t('notifications.signal.assessmentDetail', { date: formatDateFR(item.dateISO) }),
         date: item.dateISO,
         ignored: readIgnoredActionIds(item.classId).has(id),
@@ -71,10 +75,10 @@ export const useNotificationFeed = (
         kind: 'absences',
         action: 'evaluations',
         classId: item.classId,
-        className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
+        className: classNameById.get(item.classId) ?? formatLocalizedClassDisplayName(item.className, locale),
         title: item.daysAgo === 0 ? t('notifications.signal.absenceToday') : t('notifications.signal.absencePending'),
         detail: t('notifications.signal.absenceDetail', {
-          label: item.label.split(', Semestre ')[0],
+          label: assessmentLabel(item),
           when: whenLabel,
           date: formatDateFR(item.dateISO),
         }),

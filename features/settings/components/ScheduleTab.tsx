@@ -2,7 +2,7 @@ import React from 'react';
 import { AppConfig, ClassInfo, Cycle, TimetableEntry } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar } from '@/utils/calendar';
-import { SUBJECT_ABBREV_MAP, formatClassDisplayName } from '@/constants';
+import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import {
     HOUR_SLOTS,
     TIMETABLE_DAYS,
@@ -11,10 +11,9 @@ import {
     getTimetableEntry,
     setTimetableEntry,
 } from '@/utils/timetable';
-import { useClassAssessments } from '@/hooks/useAssessments';
 import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
-import { TriangleAlert, CircleCheck, Info } from '@/components/ui/icons';
+import { TriangleAlert, CircleCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ScheduleTabProps {
@@ -69,6 +68,17 @@ const CLASS_CELL_COLORS = [
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const { locale, t } = useLocale();
+    const hourNumber = React.useMemo(
+        () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, useGrouping: false }),
+        [locale],
+    );
+    const hourLabel = (startMin: number, endMin: number) => locale === 'fr'
+        ? `${String(Math.floor(startMin / 60)).padStart(2, '0')}h–${String(Math.floor(endMin / 60)).padStart(2, '0')}h`
+        : `${hourNumber.format(Math.floor(startMin / 60))}:00–${hourNumber.format(Math.floor(endMin / 60))}:00`;
+    const classLabel = (name: string) => formatLocalizedClassDisplayName(name, locale);
+    const subjectLabel = (subject: string) => locale === 'ar'
+        ? formatLocalizedSubjectDisplayName(subject, locale)
+        : (SUBJECT_ABBREV_MAP[subject] || subject);
     const calendar = getBundledCalendar();
     const timetable = config.timetable ?? [];
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
@@ -154,6 +164,17 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
             )}
 
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm" aria-label={t('schedule.startYear')}>
+                <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
+                <input
+                    type="date"
+                    value={config.schoolYearStart ?? calendar.anneeScolaire.debut}
+                    onChange={e => setSchoolYearStart(e.target.value)}
+                    className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
+            </div>
+
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
             <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
                 <div className="overflow-x-auto">
@@ -170,7 +191,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         hour.lunchBefore ? 'border-l border-l-primary/25' : ''
                                     }`}
                                 >
-                                    {hour.label}
+                                    <span dir="ltr">{hourLabel(hour.startMin, hour.endMin)}</span>
                                 </th>
                             ))}
                         </tr>
@@ -219,18 +240,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     if (merged) assignRun(day.value, hour.index, span, e.target.value || null);
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
-                                                title={classInfo ? `${SUBJECT_ABBREV_MAP[classInfo.subject] || classInfo.subject} · ${formatClassDisplayName(classInfo.name)}` : undefined}
+                                                title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
                                                 className={`h-11 w-full cursor-pointer rounded border px-1.5 text-center text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                                                     classInfo && color
                                                         ? `${color.border} ${color.bg} text-transparent shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
                                                         : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
-                                                aria-label={`${t(`schedule.day.${day.value}`)} ${hour.label}${classInfo ? `, ${formatClassDisplayName(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
+                                                aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
-                                                <option value="" className="text-slate-800">Aucune classe</option>
+                                                <option value="" className="text-slate-800">{t('schedule.noClass')}</option>
                                                 {classes.map(c => (
                                                     <option key={c.id} value={c.id} className="text-slate-800">
-                                                        {SUBJECT_ABBREV_MAP[c.subject] || c.subject} · {formatClassDisplayName(c.name)}
+                                                        {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                     </option>
                                                 ))}
                                                 {onCreateClass && (
@@ -247,8 +268,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className={`pointer-events-none absolute left-2 top-0.5 rounded-full bg-card/80 px-1.5 text-[9px] font-bold leading-4 shadow-sm font-mono ${color?.text ?? 'text-primary'}`}>
-                                                    {span} h
+                                                <span className={`pointer-events-none absolute start-2 top-0.5 rounded-full bg-card/80 px-1.5 text-[9px] font-bold leading-4 shadow-sm font-mono ${color?.text ?? 'text-primary'}`}>
+                                                    {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}
                                         </td>
@@ -265,8 +286,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 horaire officiel, remis à jour en direct. Non bloquant. */}
             <HoursAdvisory classes={classes} timetable={timetable} />
 
-            {/* Récapitulatif par classe : séances (blocs continus) et heures.
-                Repère officiel indicatif (MEN) affiché en douceur, jamais contraignant. */}
+            {/* Récapitulatif compact par classe : séances, heures et état horaire. */}
             <div className="flex flex-wrap gap-2">
                 {classes.map(c => {
                     const { hours, sessions } = weeklyStats(c.id);
@@ -278,18 +298,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm font-sans"
                         >
                             <span className={`h-2 w-2 rounded-full ${colorFor(c.id).dot}`} />
-                            {formatClassDisplayName(c.name)}
+                            {classLabel(c.name)}
                             <span className="text-muted-foreground/60 font-mono">
                                 · {t('schedule.sessionsPerWeek', { count: sessions, plural: sessions > 1 && locale !== 'ar' ? 's' : ''})}
-                                {hours !== sessions ? ` (${hours} h)` : ''}
+                                {hours !== sessions ? ` (${t('schedule.hoursShort', { count: hours })})` : ''}
                             </span>
                             {official && (
                                 <span
                                     className={`font-mono ${matches ? 'text-success-strong' : hours > 0 ? 'text-warning-strong' : 'text-muted-foreground/50'}`}
                                     title={
                                         matches
-                                            ? `Conforme à l'horaire officiel indicatif (${official.context} : ${official.hours} h/sem).`
-                                            : `Horaire officiel indicatif : ${official.hours} h/sem (${official.context}). Vous avez saisi ${hours} h, simple repère, non contraignant.`
+                                            ? t('schedule.officialMatchTitle', { expected: official.hours })
+                                            : t('schedule.officialReferenceTitle', { scheduled: hours, expected: official.hours })
                                     }
                                 >
                                     · {matches ? `✓ ${t('schedule.official')}` : t('schedule.officialShort', { count: official.hours })}
@@ -299,27 +319,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     );
                 })}
             </div>
-            {classes.some(c => getOfficialWeeklyHours(c.cycle, c.name, c.subject)) && (
-                <p className="text-[10px] leading-snug text-muted-foreground/60 font-sans">
-                    « officiel » = horaire hebdomadaire <b>indicatif</b> du MEN pour la matière/niveau, un simple repère
-                    pour vérifier qu'aucun créneau ne manque, jamais une contrainte.
-                </p>
-            )}
-
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
-                <input
-                    type="date"
-                    value={config.schoolYearStart ?? calendar.anneeScolaire.debut}
-                    onChange={e => setSchoolYearStart(e.target.value)}
-                    className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-                <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
-            </div>
-
-            {/* Planning officiel des devoirs, dates indicatives, MODIFIABLES */}
-            <AssessmentsPlanner classes={classes} config={config} onChange={onChange} />
-
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
                 aussitôt sur le créneau qui l'a demandée. */}
             {onCreateClass && (
@@ -336,6 +335,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     defaultCycle={(config.selectedCycles?.[0] as Cycle) ?? 'lycee'}
                     teacherSubjects={config.selectedSubjects}
                     teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
+                    existingClasses={classes}
                 />
             )}
         </div>
@@ -364,129 +364,32 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
     }
 
     return (
-        <div className="space-y-1.5 rounded-lg border border-warning/30 bg-warning/5 p-3">
-            <div className="flex items-center gap-2">
-                <TriangleAlert className="h-4 w-4 shrink-0 text-warning" />
-                <p className="text-xs font-bold text-amber-600">
-                    {t('schedule.hoursCheck', { count: deviations.length })}
-                </p>
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-warning/30 bg-warning/5 px-3 py-2" role="status">
+            <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
+                <TriangleAlert className="h-4 w-4" />
+                <span className="text-xs font-bold">
+                    {t('schedule.hoursCheck', { count: deviations.length, plural: deviations.length > 1 && locale !== 'ar' ? 's' : '' })}
+                </span>
             </div>
-            <ul className="space-y-1 pl-6">
-                {deviations.map(i => (
-                    <li key={i.classId} className="text-[11px] leading-relaxed text-muted-foreground">
-                        <span className="font-bold text-foreground">{i.className}</span> -{' '}
-                        <span className={i.deviation === 'over' ? 'font-bold text-warning' : 'font-bold text-blue-600'}>
-                            {t('schedule.hoursScheduled', { count: i.scheduledHours })}
-                        </span>{' '}
-                        / {i.officialHours} h ({i.officialContext}) :{' '}
-                        {i.deviation === 'over'
-                            ? t('schedule.hoursExtra', { count: i.delta })
-                            : t('schedule.hoursMissing', { count: Math.abs(i.delta), plural: Math.abs(i.delta) > 1 && locale !== 'ar' ? 's' : '' })}
-                        .
-                    </li>
-                ))}
-            </ul>
-            <p className="flex items-start gap-1.5 pl-6 pt-0.5 text-[10px] leading-snug text-muted-foreground/70">
-                <Info className="mt-0.5 h-3 w-3 shrink-0" />
-                {t('schedule.hoursHint')}
-            </p>
-        </div>
-    );
-};
-
-/* ── Planning des devoirs par classe (dates officielles + surcharge prof) ── */
-
-const AssessmentsPlanner: React.FC<ScheduleTabProps> = ({ classes, config, onChange }) => {
-    const { t } = useLocale();
-    const [selectedClassId, setSelectedClassId] = React.useState<string>(classes[0]?.id ?? '');
-    const selectedClass = classes.find(c => c.id === selectedClassId) ?? null;
-    const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
-
-    const setAssessmentDate = (assessmentId: string, dateISO: string) => {
-        const classId = selectedClassId;
-        const next: Record<string, Record<string, string>> = {
-            ...(config.assessmentDates ?? {}),
-            [classId]: { ...(config.assessmentDates?.[classId] ?? {}) },
-        };
-        if (dateISO) next[classId][assessmentId] = dateISO;
-        else delete next[classId][assessmentId];
-        onChange({ assessmentDates: next });
-    };
-
-    const resetClass = () => {
-        const next = { ...(config.assessmentDates ?? {}) };
-        delete next[selectedClassId];
-        onChange({ assessmentDates: next });
-    };
-
-    if (classes.length === 0) return null;
-
-    return (
-        <div className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">{t('schedule.assessments')}</h4>
-                <select
-                    value={selectedClassId}
-                    onChange={e => setSelectedClassId(e.target.value)}
-                    className="h-9 rounded-md border border-border/80 bg-background text-foreground px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 font-bold"
-                >
-                    {classes.map(c => (
-                        <option key={c.id} value={c.id}>{formatClassDisplayName(c.name)}</option>
-                    ))}
-                </select>
-            </div>
-
-            {!hasPlan ? (
-                <p className="rounded-lg bg-secondary px-3 py-2 text-[11px] text-muted-foreground/60 border border-border/30 font-sans">
-                    {t('schedule.assessmentsEmpty')}
-                </p>
-            ) : (
-                <>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground font-sans">
-                        {t('schedule.assessmentsHint')}
-                    </p>
-                    <div className="space-y-1.5">
-                        {assessments.map(a => {
-                            const custom = !!config.assessmentDates?.[selectedClassId]?.[a.id];
-                            return (
-                                <div key={a.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary/70 border border-border/20 px-2.5 py-1.5 hover:bg-secondary transition-colors">
-                                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase font-mono ${a.type === 'controle' ? 'border-success/20 bg-success/10 text-success' : 'border-primary/20 bg-primary/10 text-primary'}`}>
-                                        {a.type === 'controle' ? t('schedule.supervised', { count: a.num }) : t('schedule.homework', { count: a.num })}
-                                    </span>
-                                    <span className="text-[11px] font-bold text-muted-foreground font-mono">S{a.semestre}</span>
-                                    {a.duree && <span className="text-[10px] text-muted-foreground/60 font-mono">{a.duree}</span>}
-                                    <input
-                                        type="date"
-                                        value={a.dateISO}
-                                        onChange={e => setAssessmentDate(a.id, e.target.value)}
-                                        className={`ml-auto h-8 rounded-md border px-2 text-xs text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 ${custom ? 'border-primary text-primary' : 'border-border/80'}`}
-                                        title={a.fenetre ? t('schedule.officialWindow', { value: a.fenetre }) : undefined}
-                                    />
-                                    {custom && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setAssessmentDate(a.id, '')}
-                                            className="text-[11px] font-semibold text-muted-foreground/60 hover:text-destructive"
-                                            title={t('schedule.restoreOfficialDate')}
-                                        >
-                                            ↺
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    {config.assessmentDates?.[selectedClassId] && Object.keys(config.assessmentDates[selectedClassId]).length > 0 && (
-                        <button
-                            type="button"
-                            onClick={resetClass}
-                            className="text-[11px] font-bold text-muted-foreground hover:text-primary font-sans transition-colors cursor-pointer"
+            <div className="flex flex-wrap items-center gap-1.5">
+                {deviations.map(i => {
+                    const isOver = i.deviation === 'over';
+                    const adjustment = Math.abs(i.delta);
+                    return (
+                        <span
+                            key={i.classId}
+                            className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg bg-card px-2.5 py-1.5 text-[11px] leading-snug shadow-2xs"
+                            title={t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}
                         >
-                            {t('schedule.resetDates')}
-                        </button>
-                    )}
-                </>
-            )}
+                            <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
+                            <span className="text-muted-foreground">· {t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}</span>
+                            <span className={`rounded px-1.5 py-0.5 font-semibold ${isOver ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+                                {t(isOver ? 'schedule.hoursExcess' : 'schedule.hoursToAdd', { count: adjustment })}
+                            </span>
+                        </span>
+                    );
+                })}
+            </div>
         </div>
     );
 };

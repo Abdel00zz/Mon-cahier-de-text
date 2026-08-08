@@ -3,6 +3,8 @@ import { Modal } from '@/components/ui/modal';
 import { TriangleAlert, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useLocale } from '@/i18n/LocaleProvider';
+import { cn } from '@/lib/utils';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface ImportPlatformModalProps {
 }
 
 export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen, onClose, onImport }) => {
+  const { isRtl, t } = useLocale();
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -46,13 +49,13 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Importer une sauvegarde complète"
-      description="Remplacement global des données de l'application"
+      title={t('settings.importModal.title')}
+      description={t('settings.importModal.description')}
       maxWidth="xl"
       footer={
         <>
           <Button type="button" onClick={onClose} variant="secondary">
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -60,23 +63,23 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
             variant="destructive"
             disabled={!fileContent || !isConfirmed}
           >
-            Importer et remplacer
+            {t('settings.importModal.importAction')}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <div className="p-4 bg-destructive/10 border-l-4 border-destructive text-destructive rounded-md">
+        <div className={cn('p-4 bg-destructive/10 text-destructive rounded-md', isRtl ? 'border-r-4' : 'border-l-4', 'border-destructive')}>
           <div className="flex">
             <div className="py-1">
-              <TriangleAlert className="mr-3 h-5 w-5 shrink-0 text-destructive" />
+              <TriangleAlert className={cn('h-5 w-5 shrink-0 text-destructive', isRtl ? 'ml-3' : 'mr-3')} />
             </div>
             <div>
-              <p className="font-bold text-sm">Attention : Action irréversible</p>
+              <p className="font-bold text-sm">{t('settings.importModal.irreversibleTitle')}</p>
               <p className="text-xs mt-1 leading-relaxed text-destructive">
-                L'importation d'une sauvegarde globale remplacera{' '}
-                <strong className="uppercase">toutes</strong> vos données actuelles (classes, cours, configuration).
-                Cette action écrasera la base de données locale actuelle.
+                {t('settings.importModal.warningBeforeAll')}
+                <strong>{t('settings.importModal.all')}</strong>
+                {t('settings.importModal.warningAfterAll')}
               </p>
             </div>
           </div>
@@ -89,9 +92,9 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
           >
             <FileUp className="mx-auto mb-2 h-6 w-6" />
             <span className="font-semibold text-sm">
-              {fileName || "Cliquer pour choisir un fichier de sauvegarde globale"}
+              {fileName || t('settings.importModal.chooseFile')}
             </span>
-            <span className="text-xs text-muted-foreground/60 mt-1">Fichier .json uniquement</span>
+            <span className="text-xs text-muted-foreground/60 mt-1">{t('settings.importModal.jsonOnly')}</span>
           </label>
           <input ref={fileInputRef} type="file" id="platform-json-file-input" accept=".json" onChange={handleFileChange} className="sr-only" />
         </div>
@@ -105,7 +108,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
                 className="border-destructive/40 data-[state=checked]:bg-destructive data-[state=checked]:text-destructive-foreground data-[state=checked]:border-destructive"
               />
               <span className="text-xs font-semibold text-destructive select-none">
-                Je comprends que l'importation écrasera définitivement toutes mes données actuelles.
+                {t('settings.importModal.confirm')}
               </span>
             </label>
           </div>

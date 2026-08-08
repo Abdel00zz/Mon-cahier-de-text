@@ -62,8 +62,6 @@ export type SettingsCategory =
 interface SettingMenuItem {
   id: SettingsCategory;
   titleKey: string;
-  defaultTitle: string;
-  subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   group: 'main' | 'support';
 }
@@ -72,56 +70,42 @@ const SETTING_ITEMS: SettingMenuItem[] = [
   {
     id: 'compte',
     titleKey: 'settings.item.account',
-    defaultTitle: 'Compte & Cloud Sync',
-    subtitle: 'Profil enseignant, langue de l\'application et synchronisation cloud',
     icon: User,
     group: 'main',
   },
   {
     id: 'profil',
     titleKey: 'settings.item.profile',
-    defaultTitle: 'Profil & Établissement',
-    subtitle: 'Nom de l\'établissement, académie, province et cycle d\'enseignement',
     icon: School,
     group: 'main',
   },
   {
     id: 'emploi',
     titleKey: 'settings.item.schedule',
-    defaultTitle: 'Emploi du temps',
-    subtitle: 'Jours travaillés, horaires des séances et matières enseignées',
     icon: CalendarRange,
     group: 'main',
   },
   {
     id: 'notifications',
     titleKey: 'settings.item.notifications',
-    defaultTitle: 'Notifications & Alertes',
-    subtitle: 'Rappels de devoirs, contrôles continu et inspections',
     icon: Bell,
     group: 'main',
   },
   {
     id: 'donnees',
     titleKey: 'settings.item.data',
-    defaultTitle: 'Sauvegarde & Données',
-    subtitle: 'Exporter les fichiers, importer des cahiers ou réinitialiser',
     icon: Database,
     group: 'main',
   },
   {
     id: 'archives',
     titleKey: 'settings.item.archives',
-    defaultTitle: 'Archives scolaires',
-    subtitle: 'Consulter et gérer les cahiers de textes des années précédentes',
     icon: FolderOpen,
     group: 'main',
   },
   {
     id: 'assistance',
     titleKey: 'settings.item.support',
-    defaultTitle: 'Support & Web App',
-    subtitle: 'Guide interactif, état du compte, accès multi-appareils',
     icon: CircleHelp,
     group: 'support',
   },
@@ -138,7 +122,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onCreateClass,
   asPage = false,
 }) => {
-  const { isRtl, t } = useLocale();
+  const { locale, isRtl, t } = useLocale();
   const [localConfig, setLocalConfig] = useState(config);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
@@ -187,9 +171,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
+  const sectionTitleClass = isRtl ? 'font-ar-display text-xl leading-tight' : 'font-display';
 
   const languageSection = (
-    <section className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-850 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
+    <section className="rounded-xl border border-border/75 bg-secondary/45 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
       <div className="mb-3 min-w-0 sm:mb-0">
         <h3 className="text-sm font-extrabold text-foreground font-display">{t('language.settings.title')}</h3>
         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
@@ -207,7 +192,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 'flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center transition-all cursor-pointer',
                 active
                   ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20 font-bold'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  : 'border-border/80 bg-card/90 text-muted-foreground hover:border-primary/25 hover:bg-accent/70 hover:text-foreground'
               )}
             >
               <span className={cn('text-sm font-extrabold leading-none', option.value === 'ar' && 'font-ar')}>
@@ -229,12 +214,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <User className="h-5 w-5 text-primary" />
-                Compte & Synchronisation
+                {t('settings.section.accountTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Gérez vos informations de compte, votre langue et l'état de synchronisation cloud.
+                {t('settings.section.accountDescription')}
               </p>
             </div>
             {languageSection}
@@ -246,12 +231,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <School className="h-5 w-5 text-primary" />
-                Profil & Établissement
+                {t('settings.section.profileTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Configurez les détails officiels de votre établissement pour l'en-tête de vos fiches et impressions.
+                {t('settings.section.profileDescription')}
               </p>
             </div>
 
@@ -265,7 +250,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   value={localConfig.establishmentName || ''}
                   onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
                   placeholder={t('settings.establishmentPlaceholder')}
-                  className="h-10 rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 text-sm shadow-none"
+                  className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
                 />
               </div>
 
@@ -288,12 +273,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           : '',
                       }));
                     }}
-                    className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                   >
                     <option value="">{t('settings.chooseAcademy')}</option>
                     {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
                       <option key={academy.id} value={academy.id}>
-                        {academy.label}
+                        {locale === 'ar' ? academy.arabicLabel : academy.label}
                       </option>
                     ))}
                   </select>
@@ -308,15 +293,15 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     value={localConfig.educationProvince ?? ''}
                     disabled={!selectedAcademy}
                     onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                    className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-zinc-100 dark:disabled:bg-zinc-800 disabled:opacity-60"
+                    className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
                   >
                     <option value="">
                       {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
                     </option>
                     {availableProvinces.map(province => (
                       <option key={province.id} value={province.id}>
-                        {province.label}
-                        {province.kind === 'prefecture' ? ' · préfecture' : ''}
+                        {locale === 'ar' ? province.arabicLabel : province.label}
+                        {province.kind === 'prefecture' ? ` · ${t('settings.prefecture')}` : ''}
                       </option>
                     ))}
                   </select>
@@ -332,7 +317,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   value={localConfig.defaultTeacherName || ''}
                   onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
                   placeholder={t('settings.teacherPlaceholder')}
-                  className="h-10 rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 text-sm shadow-none"
+                  className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
                 />
               </div>
 
@@ -352,7 +337,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           'flex min-h-[60px] flex-col items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold transition-all cursor-pointer',
                           active
                             ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
-                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                            : 'border-border/80 bg-card/82 text-muted-foreground hover:border-primary/20 hover:bg-accent/55 hover:text-foreground'
                         )}
                       >
                         <c.icon className="h-4 w-4" />
@@ -370,12 +355,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <CalendarRange className="h-5 w-5 text-primary" />
-                Emploi du temps & Plages
+                {t('settings.section.scheduleTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Définissez la structure de votre emploi du temps hebdomadaire et vos créneaux.
+                {t('settings.section.scheduleDescription')}
               </p>
             </div>
             <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} />
@@ -386,12 +371,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <Bell className="h-5 w-5 text-primary" />
-                Notifications & Alertes
+                {t('settings.section.notificationsTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Recevez des rappels pour vos évaluations, contrôles et échéances importantes.
+                {t('settings.section.notificationsDescription')}
               </p>
             </div>
             <NotificationsTab config={localConfig} onChange={applyLive} />
@@ -402,17 +387,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <Database className="h-5 w-5 text-primary" />
-                Sauvegarde & Restauration
+                {t('settings.section.dataTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Conservez vos données en sécurité ou transférez vos séances vers un autre appareil.
+                {t('settings.section.dataDescription')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col justify-between rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
                 <div>
                   <h4 className="text-sm font-bold text-foreground font-display mb-1">{t('settings.exportTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -429,7 +414,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </Button>
               </div>
 
-              <div className="flex flex-col justify-between rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
                 <div>
                   <h4 className="text-sm font-bold text-foreground font-display mb-1">{t('settings.importTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -440,10 +425,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    onClose();
+                    if (!asPage) onClose();
                     onOpenImport();
                   }}
-                  className="w-full border-zinc-300 dark:border-zinc-700 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                  className="w-full border-border/80 font-bold hover:bg-accent/65 transition-all cursor-pointer"
                 >
                   {t('settings.importAction')}
                 </Button>
@@ -456,12 +441,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <FolderOpen className="h-5 w-5 text-primary" />
-                Archives des Années Scolaires
+                {t('settings.section.archivesTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Consultez et rouvrez les cahiers de textes archivés des années scolaires précédentes.
+                {t('settings.section.archivesDescription')}
               </p>
             </div>
             <ArchivesSection />
@@ -472,17 +457,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-foreground font-display flex items-center gap-2">
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <CircleHelp className="h-5 w-5 text-primary" />
-                Paiements & Assistance
+                {t('settings.section.supportTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Informations d'abonnement, accès Web App et assistance aux enseignants.
+                {t('settings.section.supportDescription')}
               </p>
             </div>
 
             {/* Premium Card */}
-            <div className="rounded-2xl border border-blue-200 dark:border-blue-900/50 bg-gradient-to-br from-blue-50/70 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/20 p-5">
+            <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.055] to-cyan-50/55 p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shrink-0">
@@ -490,10 +475,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   </div>
                   <div>
                     <h3 className="text-sm font-extrabold text-blue-950 dark:text-blue-200 font-display">
-                      Version Éducation Enseignant Pro
+                      {t('settings.support.planTitle')}
                     </h3>
                     <p className="text-xs text-blue-700/80 dark:text-blue-300/80">
-                      Toutes les fonctionnalités sont actives (Cahier interactif, export PDF, sync offline).
+                      {t('settings.support.planDescription')}
                     </p>
                   </div>
                 </div>
@@ -501,24 +486,24 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* List of actions inspired by user screenshot */}
-            <div className="divide-y divide-zinc-200/80 dark:divide-zinc-800 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+            <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-card/86">
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Web App & Multi-supports</h4>
+                  <h4 className="text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Accédez à vos données Cloud Sync depuis votre Mac, votre PC ou votre tablette iOS/Android.
+                    {t('settings.support.devicesDescription')}
                   </p>
                 </div>
                 <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1">
-                  Connecté
+                  {t('settings.support.connected')}
                 </span>
               </div>
 
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Guide d'utilisation interactif</h4>
+                  <h4 className="text-sm font-bold text-foreground">{t('settings.support.guideTitle')}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Consultez les astuces de saisie rapide, le calcul de progression et les raccourcis.
+                    {t('settings.support.guideDescription')}
                   </p>
                 </div>
                 <Button
@@ -531,22 +516,22 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   }}
                   className="text-xs font-bold cursor-pointer"
                 >
-                  Ouvrir le guide
+                  {t('settings.support.openGuide')}
                 </Button>
               </div>
 
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Remarques & Assistance</h4>
+                  <h4 className="text-sm font-bold text-foreground">{t('settings.support.feedbackTitle')}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Une idée d'amélioration ou un conseil pour la gestion des séances ?
+                    {t('settings.support.feedbackDescription')}
                   </p>
                 </div>
                 <a
                   href="mailto:support@cahier-textes.ma"
                   className="text-xs font-bold text-primary hover:underline"
                 >
-                  Contactez-nous
+                  {t('settings.support.contact')}
                 </a>
               </div>
             </div>
@@ -592,9 +577,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
           className="flex h-5 w-5 items-center justify-center rounded-full bg-muted/40 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/50"
-          title={isSidebarCollapsed ? "Déplier le menu" : "Réduire le menu"}
+          title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
-          <ChevronRight className={cn("h-2.5 w-2.5 transition-transform duration-200", !isSidebarCollapsed && "rotate-180")} />
+          <ChevronRight className={cn("h-2.5 w-2.5 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
         </button>
       </div>
 
@@ -612,22 +597,22 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   setActiveCategory(item.id);
                   setMobileSubViewOpen(true);
                 }}
-                title={item.defaultTitle}
+                title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl',
+                  'w-full flex items-center transition-all cursor-pointer group rounded-xl focus:outline-none focus-visible:text-primary',
                   isEffectiveCollapsed
                     ? 'justify-center p-2.5'
-                    : 'gap-3 px-3 py-2 text-left',
+                    : 'justify-start gap-2.5 px-3 py-2 text-start',
                   isActive
-                    ? 'bg-muted/60 text-foreground font-semibold shadow-xs'
-                    : 'hover:bg-muted/40 text-muted-foreground'
+                    ? 'text-primary font-semibold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                      ? 'text-primary scale-105'
                       : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
                   )}
                 >
@@ -635,8 +620,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
                 {!isEffectiveCollapsed && (
                   <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-medium group-hover:text-foreground')}>
-                      {item.defaultTitle}
+                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-medium group-hover:text-foreground')}>
+                      {t(item.titleKey)}
                     </span>
                   </div>
                 )}
@@ -647,8 +632,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       </div>
 
       {/* Paiements et assistance */}
-      <div className="pt-2">
-        <div className="h-px w-full bg-border/50 mb-3" />
+      <div className="pt-5">
         <div className="space-y-0.5">
           {supportMenuItems.map(item => {
             const isActive = activeCategory === item.id;
@@ -661,22 +645,22 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   setActiveCategory(item.id);
                   setMobileSubViewOpen(true);
                 }}
-                title={item.defaultTitle}
+                title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl',
+                  'w-full flex items-center transition-all cursor-pointer group rounded-xl focus:outline-none focus-visible:text-primary',
                   isEffectiveCollapsed
                     ? 'justify-center p-2.5'
-                    : 'gap-3 px-3 py-2 text-left',
+                    : 'justify-start gap-2.5 px-3 py-2 text-start',
                   isActive
-                    ? 'bg-muted/60 text-foreground font-semibold shadow-xs'
-                    : 'hover:bg-muted/40 text-muted-foreground'
+                    ? 'text-primary font-semibold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm scale-105'
+                      ? 'text-primary scale-105'
                       : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
                   )}
                 >
@@ -684,8 +668,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
                 {!isEffectiveCollapsed && (
                   <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-medium group-hover:text-foreground')}>
-                      {item.defaultTitle}
+                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-medium group-hover:text-foreground')}>
+                      {t(item.titleKey)}
                     </span>
                   </div>
                 )}
@@ -700,25 +684,21 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   // Vue Plein Écran (`asPage`)
   if (asPage) {
     return (
-      <div className="rtl-flow min-h-screen bg-zinc-50/70 dark:bg-zinc-950 safe-bottom">
-        <header className="sticky top-0 z-20 border-b border-zinc-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl">
-          <div className="mx-auto max-w-6xl px-4 py-3.5 sm:px-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-extrabold text-foreground font-display tracking-tight">
-                {t('settings.title')}
-              </h1>
-            </div>
+      <div className="rtl-flow app-canvas min-h-screen safe-bottom">
+        <main className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-6 pb-8">
+          <div className="mb-4 flex items-center gap-2 px-1 text-foreground sm:mb-5">
+            <Settings className="h-4.5 w-4.5 text-primary" />
+            <h1 className={cn('font-extrabold tracking-tight', isRtl ? 'font-ar-display text-2xl leading-none' : 'font-display text-lg')}>
+              {t('settings.title')}
+            </h1>
           </div>
-        </header>
 
-        <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-5 pb-8">
           {/* Grille responsive 2 colonnes avec réducteur automatique */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
             {/* Sidebar gauche : Menu des rubriques */}
             <div
               className={cn(
-                'bg-card border border-border rounded-3xl p-3 shadow-xs transition-all duration-300',
+                'bg-card/88 border border-border/75 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.055)] backdrop-blur-sm transition-all duration-300',
                 isEffectiveCollapsed
                   ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                   : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -731,7 +711,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Panneau droit : Contenu de la rubrique sélectionnée */}
             <div
               className={cn(
-                'flex flex-col bg-card border border-border rounded-3xl p-4 sm:p-5 shadow-xs min-h-[500px] transition-all duration-300 text-card-foreground',
+                'flex flex-col bg-card/92 border border-border/75 rounded-2xl p-4 sm:p-5 shadow-[0_12px_32px_rgba(30,64,110,0.055)] backdrop-blur-sm min-h-[500px] transition-all duration-300 text-card-foreground',
                 isEffectiveCollapsed
                   ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                   : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
@@ -753,7 +733,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               </div>
               
               {/* Actions au bas de la zone de contenu (au lieu de la barre fixée) */}
-              <div className="mt-8 pt-5 border-t border-border">
+              <div className="mt-8">
                 {footer}
               </div>
             </div>
@@ -777,10 +757,11 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       description={t('settings.description')}
       maxWidth="4xl"
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[460px]">
+      <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[460px]">
         <div
           className={cn(
-            'md:col-span-5 border-r border-zinc-200/80 dark:border-zinc-800 pr-0 md:pr-4',
+            'md:col-span-5',
+            isRtl ? 'border-l border-border/70 pl-0 md:pl-4' : 'border-r border-border/70 pr-0 md:pr-4',
             mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
         >
@@ -789,7 +770,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
         <div
           className={cn(
-            'md:col-span-7 pl-0 md:pl-2 flex flex-col',
+            'md:col-span-7 flex flex-col',
+            isRtl ? 'pr-0 md:pr-2' : 'pl-0 md:pl-2',
             !mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
         >
@@ -807,7 +789,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </AnimatePresence>
           </div>
           
-          <div className="mt-8 pt-5 border-t border-border">
+          <div className="mt-8">
             {footer}
           </div>
         </div>

@@ -1,10 +1,11 @@
 import { FC, KeyboardEvent, MouseEvent, useState } from 'react';
 import { ClassInfo } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { NextSessionInfo } from '@/utils/timetable';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ChevronRight, Settings, Trash2, Users } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -15,12 +16,13 @@ interface ClassListItemProps {
     onConfigure: () => void;
 }
 
-const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) return 'Vierge';
+const formatDate = (dateString: string | null | undefined, locale: string, emptyLabel: string): string => {
+    if (!dateString) return emptyLabel;
     try {
         const date = new Date(dateString);
         const corrected = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-        return corrected.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        const dateLocale = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
+        return corrected.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' });
     } catch {
         return '---';
     }
@@ -28,7 +30,8 @@ const formatDate = (dateString: string | null | undefined): string => {
 
 export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified, nextSession, onSelect, onDelete, onConfigure }) => {
     const [confirmDelete, setConfirmDelete] = useState(false);
-    const displayName = formatClassDisplayName(classInfo.name);
+    const { locale, t, isRtl } = useLocale();
+    const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
 
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -48,7 +51,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
             tabIndex={0}
             onClick={onSelect}
             onKeyDown={handleKeyDown}
-            className="group relative flex min-h-14 cursor-pointer items-center gap-2.5 rounded-[20px] border border-border bg-card text-card-foreground px-4 py-3 shadow-2xs transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:min-h-[58px]"
+            className="group relative flex min-h-14 cursor-pointer items-center gap-2.5 rounded-[20px] border border-border bg-card text-card-foreground px-4 py-3 text-left shadow-2xs transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:min-h-[58px]"
         >
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${visual.iconSurfaceClass}`} aria-hidden>
                 <Users className="h-4 w-4" />
@@ -63,13 +66,13 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
                     )}
                 </div>
                 <p className={`mt-0.5 truncate text-[11px] font-semibold sm:text-xs ${nextSession?.kind === 'now' ? 'text-emerald-600 dark:text-emerald-400' : nextSession ? 'text-[#007AFF] dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500'}`}>
-                    {nextSession?.label ?? 'Horaire à compléter'}
+                    {nextSession?.label ?? t('dashboard.toSchedule')}
                 </p>
             </div>
 
-            <div className="hidden shrink-0 border-l border-zinc-100 dark:border-zinc-800 pl-3 text-right sm:block">
-                <span className="block text-[10px] font-bold uppercase tracking-wide text-zinc-400">Mis à jour</span>
-                <span className="mt-0.5 block font-mono text-[11px] font-bold text-zinc-600 dark:text-zinc-400">{formatDate(lastModified)}</span>
+            <div className={`hidden shrink-0 dark:border-zinc-800 sm:block ${isRtl ? 'border-r border-zinc-100 pr-3 text-right' : 'border-l border-zinc-100 pl-3 text-right'}`}>
+                <span className="block text-[10px] font-bold uppercase tracking-wide text-zinc-400">{t('dashboard.lastLesson')}</span>
+                <span className="mt-0.5 block font-mono text-[11px] font-bold text-zinc-600 dark:text-zinc-400">{formatDate(lastModified, locale, t('dashboard.none'))}</span>
             </div>
 
             <div className="flex shrink-0 items-center gap-1 sm:opacity-70 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
@@ -77,7 +80,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
                     type="button"
                     onClick={(event) => stopAnd(event, onConfigure)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 active:scale-95"
-                    aria-label={`Modifier ${displayName}`}
+                    aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
                     <Settings className="h-3.5 w-3.5" />
                 </button>
@@ -85,19 +88,19 @@ export const ClassListItem: FC<ClassListItemProps> = ({ classInfo, lastModified,
                     type="button"
                     onClick={(event) => stopAnd(event, () => setConfirmDelete(true))}
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 active:scale-95"
-                    aria-label={`Supprimer ${displayName}`}
+                    aria-label={`${t('dashboard.delete')} ${displayName}`}
                 >
                     <Trash2 className="h-3.5 w-3.5" />
                 </button>
-                <ChevronRight className="h-4 w-4 text-zinc-300 dark:text-zinc-600 sm:ml-0.5" aria-hidden />
+                <ChevronRight className={`h-4 w-4 text-zinc-300 dark:text-zinc-600 ${isRtl ? 'rotate-180 sm:mr-0.5' : 'sm:ml-0.5'}`} aria-hidden />
             </div>
 
             <ConfirmDialog
                 open={confirmDelete}
                 onOpenChange={setConfirmDelete}
-                title={`Supprimer « ${displayName} » ?`}
-                description="Cette action est irréversible : tous les cours de cette classe seront définitivement supprimés."
-                confirmLabel="Supprimer"
+                title={t('dashboard.deleteNotebookTitle', { name: displayName })}
+                description={t('dashboard.deleteNotebookDescription')}
+                confirmLabel={t('dashboard.delete')}
                 onConfirm={onDelete}
             />
         </div>

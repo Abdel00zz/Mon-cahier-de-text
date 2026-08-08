@@ -105,7 +105,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div className="rtl-flow sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
+    <div className="rtl-flow rtl-toolbar sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
       <div className="flex min-w-0 items-center justify-start gap-2">
         <SyncStatusBadge />
       </div>
@@ -134,7 +134,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             className={`relative h-8 w-8 rounded-md border transition-all duration-150 ${searchQuery ? 'border-zinc-300 bg-zinc-100 text-zinc-800 font-bold' : 'border-transparent text-zinc-500 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-800'}`}
           >
             <Search className="h-4 w-4" />
-            {searchQuery && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-zinc-800" />}
+            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-zinc-800" />}
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
@@ -173,7 +173,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           {/* Desktop popover */}
           <div
             id="toolbar-search-panel"
-            className={`absolute hidden sm:block transition-all duration-300 ease-in-out origin-right top-1/2 right-[calc(100%+0.5rem)] -translate-y-1/2 w-48 ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
+            className={`rtl-search-popover absolute hidden sm:block transition-all duration-300 ease-in-out origin-right top-1/2 right-[calc(100%+0.5rem)] -translate-y-1/2 w-48 ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
           >
             <div className="relative w-full">
               <Input
@@ -201,7 +201,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="z-[70] w-56 rounded-lg border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-100/50">
             <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400">
-              Actions rapides
+              Actions
             </DropdownMenuLabel>
 
             {/* Les notifications vivent UNIQUEMENT dans le centre global de
@@ -226,26 +226,26 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
 
             <DropdownMenuItem onClick={onOpenEvaluations} className="flex cursor-pointer items-center gap-2 rounded-md border border-zinc-200/50 bg-zinc-50 px-2.5 py-1.5 text-xs text-zinc-800 transition-colors duration-150 hover:bg-zinc-100/75 focus:bg-zinc-100/75">
               <CalendarCheck className="h-4 w-4 text-zinc-600 shrink-0" />
-              <span className="font-bold">Évaluations de cette classe</span>
+              <span className="font-bold">Évaluations</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator className="my-1 border-t border-zinc-100" />
             
             <DropdownMenuItem onClick={onOpenDataTransfer} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <Database className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span className="font-semibold">Importer / exporter</span>
+              <span className="font-semibold">Données</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenManageLessons} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <ListChecks className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span className="font-semibold">Gérer les chapitres & devoirs</span>
+              <span className="font-semibold">Contenus</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenAnalyse} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <PieChart className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span className="font-semibold">Analyse & progression</span>
+              <span className="font-semibold">Suivi</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="my-1 border-t border-zinc-100" />
             <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400">
-              Sortie
+              Document
             </DropdownMenuLabel>
             <DropdownMenuItem onClick={onPrint} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
               <Printer className="h-3.5 w-3.5 text-zinc-500 shrink-0" />

@@ -47,6 +47,7 @@
   --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --font-ar: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+  --font-ar-display: 'Lateef', 'IBM Plex Sans Arabic', 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
   --font-serif: 'Plus Jakarta Sans', 'Inter', sans-serif;
   --font-slab: 'Plus Jakarta Sans', 'Inter', sans-serif;
   --font-compact: 'Plus Jakarta Sans', 'Inter', sans-serif;
@@ -55,22 +56,22 @@
 
 @layer base {
   :root {
-    /* Bleu académique, encre profonde et papier clair : la vivacité de la
-       palette Twitter est conservée, avec la douceur éditoriale de mini (4). */
-    --background: 240 10% 98.2%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221.2 100% 50%;
+    /* Palette académique douce : bleu ardoise, papier froid et surfaces
+       légèrement teintées. Les contrastes restent nets sans blanc clinique. */
+    --background: 215 38% 97.2%;
+    --foreground: 222 34% 16%;
+    --card: 210 33% 99.2%;
+    --card-foreground: 222 34% 16%;
+    --popover: 210 33% 99.4%;
+    --popover-foreground: 222 34% 16%;
+    --primary: 217 91% 57%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 214 30% 94.5%;
+    --secondary-foreground: 222 28% 20%;
+    --muted: 216 25% 94.8%;
+    --muted-foreground: 216 13% 43%;
+    --accent: 213 40% 94.2%;
+    --accent-foreground: 218 45% 24%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
@@ -82,11 +83,11 @@
     --success-strong: 142 72% 24%;
     --warning-strong: 32 95% 28%;
     --destructive-strong: 0 74% 38%;
-    --scheduled: 210 40% 96.1%;
-    --scheduled-foreground: 221.2 100% 50%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221.2 100% 50%;
+    --scheduled: 214 55% 95%;
+    --scheduled-foreground: 217 91% 50%;
+    --border: 214 24% 87.5%;
+    --input: 214 24% 87.5%;
+    --ring: 217 91% 57%;
     --chart-1: 203 89% 53%;
     --chart-2: 160 100% 36%;
     --chart-3: 262 83% 58%;
@@ -186,6 +187,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at 12% -8%, hsl(var(--primary) / 0.055), transparent 30rem),
+      radial-gradient(circle at 94% 4%, hsl(190 65% 68% / 0.055), transparent 27rem),
+      linear-gradient(180deg, hsl(var(--background)), hsl(215 34% 96.3%));
+    background-attachment: fixed;
     font-family: var(--font-sans);
     font-weight: 500;
     font-feature-settings: 'ss01' 1, 'cv11' 1, 'tnum' 1;
@@ -218,6 +224,12 @@
     line-height: 1.65;
   }
 
+  .font-ar-display {
+    font-family: var(--font-ar-display);
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
   .font-itim {
     font-family: var(--font-itim);
   }
@@ -227,8 +239,11 @@
     letter-spacing: 0;
   }
 
-  html[dir='rtl'] .text-left { text-align: right; }
-  html[dir='rtl'] .text-right { text-align: left; }
+  /* Les utilitaires Tailwind sont dans une couche plus prioritaire que cette
+     base : !important garantit que « gauche/droite » devient bien
+     « début/fin » dans toute l’interface arabe. */
+  html[dir='rtl'] .text-left { text-align: right !important; }
+  html[dir='rtl'] .text-right { text-align: left !important; }
   html[dir='rtl'] input,
   html[dir='rtl'] textarea { text-align: right; }
   html[dir='rtl'] input[type='date'],
@@ -263,11 +278,23 @@
   html[dir='rtl'] .rtl-arrow { transform: scaleX(-1); }
   html[dir='rtl'] .dialog-close { right: auto; left: 0.75rem; }
   html[dir='rtl'] .dialog-header { padding-right: 1rem; padding-left: 2.5rem; }
+  html[dir='rtl'] .fab-safe { right: auto; left: 1rem; }
+  html[dir='rtl'] .rtl-search-popover { right: auto; left: calc(100% + 0.5rem); transform-origin: left center; }
+  html[dir='rtl'] .toolbar-search-indicator { right: auto; left: 0.25rem; }
 
   @media (min-width: 40rem) {
     html[dir='rtl'] .dialog-close { right: auto; left: 1rem; }
     html[dir='rtl'] .dialog-header { padding-right: 1.25rem; padding-left: 3rem; }
   }
+}
+
+/* Toile commune aux pages : une atmosphère unique au lieu d'une succession
+   de fonds blancs/gris différents. Les cartes continuent d'utiliser bg-card. */
+.app-canvas {
+  background:
+    radial-gradient(circle at 12% -8%, hsl(var(--primary) / 0.055), transparent 30rem),
+    radial-gradient(circle at 94% 4%, hsl(190 65% 68% / 0.055), transparent 27rem),
+    linear-gradient(180deg, hsl(var(--background)), hsl(215 34% 96.3%));
 }
 
 
@@ -731,6 +758,11 @@ li[data-sonner-toast] button[data-close-button] {
   color: inherit !important;
   font-size: 0 !important;
   line-height: 0 !important;
+}
+
+html[dir='rtl'] li[data-sonner-toast] button[data-close-button] {
+  right: auto !important;
+  left: 0.5rem !important;
 }
 
 li[data-sonner-toast] button[data-close-button]:hover {

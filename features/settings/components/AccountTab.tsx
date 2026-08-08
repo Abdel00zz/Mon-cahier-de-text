@@ -4,9 +4,9 @@ import { useSync } from '@/contexts/SyncContext';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
 
-const timeAgo = (iso: string, locale: string): string => {
+const timeAgo = (iso: string, locale: string, unknownDate: string): string => {
     const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return 'Date inconnue';
+    if (Number.isNaN(then)) return unknownDate;
     const minutes = Math.floor((Date.now() - then) / 60_000);
     const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' });
     if (minutes < 60) return formatter.format(-Math.max(1, minutes), 'minute');
@@ -36,7 +36,7 @@ export const AccountTab: React.FC = () => {
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">{t('account.sync')}</h4>
                         <p className="mt-1 text-sm font-semibold text-foreground font-sans">{t(`account.status.${syncStatus}`)}</p>
                         {lastSyncAt && (
-                            <p className="text-[11px] text-muted-foreground/60 font-mono">{t('account.lastSync', { time: timeAgo(lastSyncAt, locale) })}</p>
+                            <p className="text-[11px] text-muted-foreground/60 font-mono">{t('account.lastSync', { time: timeAgo(lastSyncAt, locale, t('account.unknownDate')) })}</p>
                         )}
                     </div>
                     <Button type="button" variant="outline" onClick={syncNow} className="h-9 text-xs border-border/80 text-muted-foreground hover:bg-secondary hover:text-foreground">

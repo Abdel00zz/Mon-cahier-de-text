@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AppConfig, ClassInfo } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { ArrowLeft, CalendarCheck, CalendarDays, CalendarRange, Clock, GraduationCap } from '@/components/ui/icons';
-import { getBundledCalendar, loadHolidayCalendar, todayInMorocco, type HolidayCalendar } from '@/utils/calendar';
+import { getBundledCalendar, loadHolidayCalendar, localizeCalendarName, todayInMorocco, type HolidayCalendar } from '@/utils/calendar';
 import { getDaySessionBlocks } from '@/utils/timetable';
 import { collectSessionDates } from '@/utils/printMeta';
 import { readClassLessons } from '@/utils/notificationSignals';
@@ -76,6 +76,18 @@ const eventPriority: Record<CalendarEventKind, number> = {
 
 export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ classes, config, selectedClassId }) => {
   const { locale, isRtl, t } = useLocale();
+  const eventCountLabel = (count: number): string => {
+    if (locale !== 'ar') return `${count} ${t('calendar.events')}`;
+    if (count === 1) return 'حدث واحد';
+    if (count === 2) return 'حدثان';
+    return `${count} أحداث`;
+  };
+  const monthSummaryLabel = (sessions: number, events: number): string => {
+    if (locale !== 'ar') return t('calendar.monthSummary', { sessions, events });
+    const sessionText = sessions === 1 ? 'حصة واحدة' : sessions === 2 ? 'حصتان' : `${sessions} حصص`;
+    const eventText = events === 1 ? 'موعد واحد' : events === 2 ? 'موعدان' : `${events} مواعيد`;
+    return `${sessionText} · ${eventText}`;
+  };
   const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
   const [officialFile, setOfficialFile] = useState<OfficialStudentEventsFile>(() => getOfficialStudentEventsFile());
   const today = todayInMorocco(new Date(), calendar);
@@ -114,7 +126,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       result.push({
         id: `holiday:${holiday.date}:${holiday.nom}`,
         kind: 'holiday',
-        title: holiday.nom,
+        title: localizeCalendarName(holiday.nom, locale),
         start: holiday.date,
         end: holiday.date,
         detail: holiday.type === 'religieux' ? t('calendar.religiousHoliday') : t('calendar.nationalHoliday'),
@@ -126,7 +138,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       result.push({
         id: `vacation:${vacation.debut}:${vacation.nom}`,
         kind: 'vacation',
-        title: vacation.nom,
+        title: localizeCalendarName(vacation.nom, locale),
         start: vacation.debut,
         end: vacation.fin,
         detail: t('calendar.schoolBreak'),
@@ -151,7 +163,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       for (const classInfo of relevantClasses) {
         for (const event of getOfficialStudentEventsForClass(classInfo, undefined, officialFile)) {
           const current = officialById.get(event.id) ?? { event, classNames: new Set<string>() };
-          current.classNames.add(formatClassDisplayName(classInfo.name));
+          current.classNames.add(formatLocalizedClassDisplayName(classInfo.name, locale));
           officialById.set(event.id, current);
         }
       }
@@ -178,15 +190,15 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
           title: t('calendar.plannedAssessment'),
           start: date,
           end: date,
-          detail: formatClassDisplayName(classInfo.name),
+          detail: formatLocalizedClassDisplayName(classInfo.name, locale),
           classId: classInfo.id,
-          className: formatClassDisplayName(classInfo.name),
+          className: formatLocalizedClassDisplayName(classInfo.name, locale),
         });
       }
     }
 
     return result;
-  }, [calendar, config.absences, config.assessmentDates, officialFile, relevantClasses, t]);
+  }, [calendar, config.absences, config.assessmentDates, locale, officialFile, relevantClasses, t]);
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -207,12 +219,12 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             dayEvents.push({
               id: `lesson:${iso}:${block.classId}:${block.startMin}`,
               kind: 'lesson',
-              title: formatClassDisplayName(classInfo.name),
+              title: formatLocalizedClassDisplayName(classInfo.name, locale),
               start: iso,
               end: iso,
-              detail: `${minuteLabel(block.startMin)}–${minuteLabel(block.endMin)}${block.hours > 1 ? ` · ${block.hours} h` : ''}`,
+              detail: `${minuteLabel(block.startMin)}–${minuteLabel(block.endMin)}${block.hours > 1 ? ` · ${block.hours} ${locale === 'ar' ? 'س' : 'h'}` : ''}`,
               classId: block.classId,
-              className: formatClassDisplayName(classInfo.name),
+              className: formatLocalizedClassDisplayName(classInfo.name, locale),
             });
           }
         } else {
@@ -224,12 +236,12 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             dayEvents.push({
               id: `lesson:${iso}:${schedule.classId}`,
               kind: 'lesson',
-              title: formatClassDisplayName(classInfo.name),
+              title: formatLocalizedClassDisplayName(classInfo.name, locale),
               start: iso,
               end: iso,
               detail: t('calendar.sessionCount', { count: slot.sessions ?? 1 }),
               classId: schedule.classId,
-              className: formatClassDisplayName(classInfo.name),
+              className: formatLocalizedClassDisplayName(classInfo.name, locale),
             });
           }
         }
@@ -238,7 +250,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       map.set(iso, dayEvents.sort((a, b) => eventPriority[a.kind] - eventPriority[b.kind] || a.title.localeCompare(b.title)));
     }
     return map;
-  }, [classById, config.schedules, config.timetable, monthCells, selectedClass, staticEvents, t]);
+  }, [classById, config.schedules, config.timetable, locale, monthCells, selectedClass, staticEvents, t]);
 
   /*
    * Dates réellement CONSIGNÉES dans chaque cahier : c'est ce qui transforme
@@ -376,7 +388,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         <div className="min-w-0 text-start sm:text-end">
           <h3 className="truncate font-display text-base font-extrabold capitalize tracking-tight text-zinc-950">{monthLabel}</h3>
           <p className="mt-0.5 text-[10px] font-medium text-zinc-400">
-            {t('calendar.monthSummary', { sessions: monthLessonCount, events: monthMilestoneCount })}
+            {monthSummaryLabel(monthLessonCount, monthMilestoneCount)}
           </p>
         </div>
       </div>
@@ -469,7 +481,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                 role="gridcell"
                 aria-selected={selected}
                 onClick={() => setSelectedDate(iso)}
-                aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${vacation.title}` : ''}, ${visibleEvents.length} ${t('calendar.events')}`}
+                aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${vacation.title}` : ''}, ${eventCountLabel(visibleEvents.length)}`}
                 className={cn(
                   'group relative flex min-h-[62px] min-w-0 flex-col gap-1 p-1.5 text-start transition-colors hover:z-10 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:min-h-[82px] sm:p-2',
                   dayWash,
@@ -554,7 +566,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         <div className="mb-2 flex items-center justify-between gap-2">
           <h4 className="truncate text-[12px] font-bold capitalize text-zinc-900">{selectedDateLabel}</h4>
           <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[9px] font-semibold text-zinc-400 ring-1 ring-inset ring-zinc-200">
-            {selectedEvents.length} {t('calendar.events')}
+            {eventCountLabel(selectedEvents.length)}
           </span>
         </div>
         {selectedEvents.length === 0 ? (

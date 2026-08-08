@@ -19,7 +19,7 @@ export const defaultNotificationSettings = {
 } as const;
 
 const defaultConfig: AppConfig = {
-    applicationLocale: 'fr',
+    applicationLocale: 'ar',
     establishmentName: '',
     defaultTeacherName: '',
     academyRegion: '',
@@ -81,7 +81,7 @@ export const useConfigManager = () => {
                     assessmentDates: loadedConfig.assessmentDates ?? {},
                     pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
                     schoolYearStart: loadedConfig.schoolYearStart,
-                    applicationLocale: loadedConfig.applicationLocale === 'en' || loadedConfig.applicationLocale === 'ar' ? loadedConfig.applicationLocale : 'fr',
+                    applicationLocale: loadedConfig.applicationLocale === 'en' || loadedConfig.applicationLocale === 'ar' ? loadedConfig.applicationLocale : 'ar',
                 }));
             } else {
                 setConfig(currentConfig => ({

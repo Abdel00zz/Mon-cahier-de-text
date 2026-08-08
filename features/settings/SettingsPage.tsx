@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import type { Cycle } from '@/types';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface SettingsPageProps {
     onBack: () => void;
@@ -20,6 +21,7 @@ interface SettingsPageProps {
  * Compte) via `ConfigModal asPage`.
  */
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
+    const { t } = useLocale();
     const { classes, addClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isImportOpen, setImportOpen] = useState(false);
@@ -29,11 +31,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     const handleImport = (fileContent: string) => {
         try {
             const count = restoreBackup(JSON.parse(fileContent));
-            toast.success(`Importation réussie (${count} classe(s)). Rechargement…`);
+            toast.success(t('settings.toast.importSuccess', { count }));
             setTimeout(() => window.location.reload(), 900);
         } catch (error) {
             logger.error('Import failed', error);
-            toast.error(`L'importation a échoué : ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+            toast.error(t('settings.toast.importFailed', {
+                reason: error instanceof Error ? error.message : t('settings.toast.unknownError'),
+            }));
         }
         setImportOpen(false);
     };
@@ -49,10 +53,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 onExportPlatform={() => {
                     try {
                         downloadBackup();
-                        toast.success('Sauvegarde téléchargée.');
+                        toast.success(t('settings.toast.backupDownloaded'));
                     } catch (error) {
                         logger.error('Export failed', error);
-                        toast.error("L'exportation a échoué.");
+                        toast.error(t('settings.toast.exportFailed'));
                     }
                 }}
                 onOpenImport={() => setImportOpen(true)}
@@ -61,7 +65,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                     addClass({
                         ...details,
                         cycle: details.cycle ?? (config.selectedCycles?.[0] as Cycle) ?? 'lycee',
-                        teacherName: config.defaultTeacherName || 'Enseignant',
+                        teacherName: config.defaultTeacherName || t('settings.defaultTeacherName'),
                     })
                 }
             />

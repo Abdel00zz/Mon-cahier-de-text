@@ -163,7 +163,7 @@ const NotificationKind: React.FC<{
 );
 
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onChange }) => {
-    const { locale, t } = useLocale();
+    const { t } = useLocale();
     const settings = config.notificationSettings ?? { ...defaultNotificationSettings };
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -186,7 +186,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 patch({ pushEnabled: true });
                 setMessage(t('notifications.pushEnabled'));
             } else {
-                setMessage(t('notifications.activationFailed', { reason: result.reason ?? 'raison non précisée' }));
+                setMessage(t('notifications.activationFailed', { reason: result.reason ?? t('notifications.unknownReason') }));
             }
         } finally {
             setBusy(false);
@@ -268,7 +268,11 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
                         className="mt-1.5 h-9 w-full rounded-md border border-border/80 bg-card text-foreground px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                        {[1, 2, 3].map(count => <option key={count} value={count}>{t('notifications.delayedSessions', { count, plural: count > 1 && locale !== 'ar' ? 's' : '' })}</option>)}
+                        {[1, 2, 3].map(count => (
+                            <option key={count} value={count}>
+                                {t(count === 1 ? 'notifications.delayedSessions.one' : count === 2 ? 'notifications.delayedSessions.two' : 'notifications.delayedSessions.many', { count })}
+                            </option>
+                        ))}
                     </select>
                 </label>
                 <label className="rounded-xl border border-border bg-card p-3">

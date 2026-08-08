@@ -22,6 +22,7 @@ import { useAuth } from './AuthContext';
 import { logger } from '../utils/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../utils/syncSettings';
 import { effectiveSchedules } from '../utils/timetable';
+import { translateLocaleMessage } from '../i18n/LocaleProvider';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -64,6 +65,9 @@ const readLocalConfig = (): Partial<AppConfig> => {
         return {};
     }
 };
+
+const syncText = (key: string, values: Record<string, string | number> = {}): string =>
+    translateLocaleMessage(readLocalConfig().applicationLocale ?? 'ar', key, values);
 
 /** Nettoie les références d'une classe supprimée, même si la suppression vient d'un autre appareil. */
 const removeDeletedClassReferences = (
@@ -159,12 +163,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (lastErrorKeyRef.current === key) return;
         lastErrorKeyRef.current = key;
         if (status === 401) {
-            toast.error('Session expirée : reconnectez-vous pour reprendre la synchronisation.', { duration: 10_000 });
+            toast.error(syncText('sync.sessionExpired'), { duration: 10_000 });
         } else if (status === 413) {
-            toast.error(message ?? 'Un cahier dépasse la taille maximale de synchronisation (~950 Ko).', { duration: 10_000 });
+            toast.error(message ?? syncText('sync.tooLarge'), { duration: 10_000 });
         } else {
             toast.error(
-                message ? `Synchronisation impossible : ${message}` : 'Synchronisation impossible (erreur serveur). Nouvel essai automatique dans une minute.',
+                message ? syncText('sync.failedWithMessage', { message }) : syncText('sync.failed'),
                 { duration: 8_000 }
             );
         }
@@ -404,11 +408,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // L'application conseille, le professeur décide et rien n'est interrompu.
                     setSyncStatus('synced');
                     toast.info(
-                        `${localClasses.length} cahier(s) présents sur cet appareil ne sont pas encore associés à votre compte.`,
+                        syncText('sync.localNotLinked', { count: localClasses.length }),
                         {
                             duration: 15_000,
                             action: {
-                                label: 'Associer',
+                                label: syncText('sync.linkAction'),
                                 onClick: () => {
                                     localClasses.forEach(c => markClassDirty(c.id));
                                     markClassesListDirty();
@@ -510,8 +514,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (conflictNames.length > 0) {
                     toast.warning(
                         conflictNames.length === 1
-                            ? `« ${conflictNames[0]} » a été modifié sur un autre appareil. La version la plus récente a été conservée ; l'autre est archivée sur cet appareil.`
-                            : `${conflictNames.length} cahiers modifiés sur un autre appareil (${conflictNames.slice(0, 3).join(', ')}${conflictNames.length > 3 ? '…' : ''}). Les versions les plus récentes ont été conservées ; les autres sont archivées.`,
+                            ? syncText('sync.conflictOne', { name: conflictNames[0] })
+                            : syncText('sync.conflictMany', {
+                                count: conflictNames.length,
+                                names: `${conflictNames.slice(0, 3).join(', ')}${conflictNames.length > 3 ? '…' : ''}`,
+                            }),
                         { duration: 10000 }
                     );
                 }

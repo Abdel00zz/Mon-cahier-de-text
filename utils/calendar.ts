@@ -1,4 +1,4 @@
-import { ScheduleSlot } from '../types.js';
+import { AppLocale, ScheduleSlot } from '../types.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel) : sans lui,
 // le runtime lève ERR_IMPORT_ATTRIBUTE_MISSING et la fonction plante au
 // chargement. Vite inline le JSON côté navigateur en le respectant aussi.
@@ -22,6 +22,50 @@ export interface AnneeScolaire {
     debut: string;
     fin: string;
 }
+
+const CALENDAR_NAMES_AR: Record<string, string> = {
+    "Aïd al-Mawlid (1er jour)": 'عيد المولد النبوي (اليوم الأول)',
+    "Aïd al-Mawlid (2e jour)": 'عيد المولد النبوي (اليوم الثاني)',
+    'Anniversaire de la Marche Verte': 'ذكرى المسيرة الخضراء',
+    "Fête de l'Indépendance": 'عيد الاستقلال',
+    'Nouvel An': 'رأس السنة الميلادية',
+    "Manifeste de l'Indépendance": 'ذكرى تقديم وثيقة الاستقلال',
+    'Nouvel An Amazigh (Yennayer)': 'رأس السنة الأمازيغية (إيض يناير)',
+    "Aïd al-Fitr (1er jour)": 'عيد الفطر (اليوم الأول)',
+    "Aïd al-Fitr (2e jour)": 'عيد الفطر (اليوم الثاني)',
+    'Fête du Travail': 'عيد الشغل',
+    "Aïd al-Adha (1er jour)": 'عيد الأضحى (اليوم الأول)',
+    "Aïd al-Adha (2e jour)": 'عيد الأضحى (اليوم الثاني)',
+    "Nouvel An de l'Hégire (1er Moharram 1448)": 'رأس السنة الهجرية (فاتح محرم 1448)',
+    "Nouvel An de l'Hégire (1er Moharram 1449)": 'رأس السنة الهجرية (فاتح محرم 1449)',
+    "Aïd Al Wahda (Fête de l'Unité)": 'عيد الوحدة',
+    "Vacances d'automne": 'العطلة البينية الأولى',
+    'Vacances de fin de 1re période': 'العطلة البينية الثانية',
+    'Vacances de mi-année': 'عطلة منتصف السنة الدراسية',
+    'Vacances de printemps': 'العطلة الربيعية',
+    'Vacances de mai': 'عطلة شهر ماي',
+    '1re pause interstitielle (الفترة البينية الأولى)': 'العطلة البينية الأولى',
+    '2e pause interstitielle (الفترة البينية الثانية)': 'العطلة البينية الثانية',
+    '3e pause interstitielle (الفترة البينية الثالثة)': 'العطلة البينية الثالثة',
+    '4e pause interstitielle (الفترة البينية الرابعة)': 'العطلة البينية الرابعة',
+    'Vacances de mi-année scolaire': 'عطلة منتصف السنة الدراسية',
+    'Aïd al-Fitr, 29 Ramadan → 2 Chawwal 1448 (estimé)': 'عطلة عيد الفطر، من 29 رمضان إلى 2 شوال 1448 (تقديري)',
+    'Aïd al-Adha, 9 → 11 Dhou al-Hijja 1448 (estimé)': 'عطلة عيد الأضحى، من 9 إلى 11 ذي الحجة 1448 (تقديري)',
+};
+
+/** Traduit les intitulés officiels du calendrier sans modifier les données source. */
+export const localizeCalendarName = (name: string, locale: AppLocale): string => {
+    if (locale === 'ar') {
+        const summer = name.match(/^Vacances d'été (\d{4})$/);
+        if (summer) return `العطلة الصيفية ${summer[1]}`;
+        return CALENDAR_NAMES_AR[name] ?? name;
+    }
+    if (locale === 'en') {
+        const summer = name.match(/^Vacances d'été (\d{4})$/);
+        if (summer) return `Summer break ${summer[1]}`;
+    }
+    return name;
+};
 
 export interface HolidayCalendar {
     version: number;

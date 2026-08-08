@@ -203,9 +203,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 mb-4">
           <CalendarCheck className="h-6 w-6" />
         </div>
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Créez d'abord vos classes</h3>
+        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Créez une classe</h3>
         <p className="mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-          Le calendrier des devoirs se construit automatiquement à partir de vos classes et du planning officiel.
+          Le planning des évaluations se construit à partir de vos classes.
         </p>
       </div>
     );
@@ -231,7 +231,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             </span>
             <div className="min-w-0">
               <h2 id="evaluations-class-context" className="text-sm font-bold text-foreground">Classe active</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">Données propres à cette classe.</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Planning et suivi de la classe.</p>
             </div>
           </div>
 
@@ -275,7 +275,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
         {!hasPlan ? (
           <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            Aucun planning de devoirs pour ce niveau et cette matière. Les activités ajoutées ci-dessus restent disponibles.
+            Aucun planning officiel pour ce niveau et cette matière.
           </div>
         ) : (
           <div className="space-y-6">
@@ -350,12 +350,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       onClick={() => alignOnNotebook(link)}
                                       className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-700"
                                     >
-                                      Aligner le calendrier
+                                      Aligner
                                     </button>
                                   )}
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800/60">
+                                <div className="flex items-center gap-2 shrink-0 pt-1.5 sm:pt-0">
                                   {isControle && (
                                     <button
                                       type="button"

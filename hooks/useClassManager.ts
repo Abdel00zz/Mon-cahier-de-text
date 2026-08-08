@@ -15,6 +15,13 @@ export const useClassManager = () => {
     // Guard: skip the persistence effect until after the initial load completes
     const [ready, setReady] = useState(false);
     const skipNextPersistRef = useRef(true);
+    // Les créations groupées (onboarding) doivent toujours partir de la liste
+    // la plus récente, même avant le prochain rendu React.
+    const classesRef = useRef<ClassInfo[]>([]);
+
+    useEffect(() => {
+        classesRef.current = classes;
+    }, [classes]);
 
     /**
      * La liste est la source de vérité structurelle : l'écrire avant d'émettre
@@ -61,6 +68,7 @@ export const useClassManager = () => {
                     }
                     if (!cancelled) {
                         setClasses(normalized);
+                        classesRef.current = normalized;
                         setIsLoading(false);
                         setReady(true);
                     }
@@ -74,6 +82,7 @@ export const useClassManager = () => {
             if (!cancelled) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
                 setClasses([]);
+                classesRef.current = [];
                 setIsLoading(false);
                 setReady(true);
             }
@@ -104,6 +113,7 @@ export const useClassManager = () => {
                 }
                 skipNextPersistRef.current = true; // ne pas re-marquer dirty ce rechargement
                 setClasses(() => stored);
+                classesRef.current = stored;
             } catch (err) {
                 logger.error('Failed to reload classes after storage change', err);
             }
@@ -126,7 +136,8 @@ export const useClassManager = () => {
                 createdAt: new Date().toISOString(),
                 color:     '',
             };
-            const nextClasses = [...classes, newClass];
+            const nextClasses = [...classesRef.current, newClass];
+            classesRef.current = nextClasses;
             persistClassesNow(nextClasses);
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
@@ -135,7 +146,7 @@ export const useClassManager = () => {
             markClassDirty(newClass.id);
             return newClass;
         },
-        [classes, persistClassesNow, setClasses],
+        [persistClassesNow, setClasses],
     );
 
     const deleteClass = useCallback(
@@ -145,6 +156,7 @@ export const useClassManager = () => {
             const target = classes.find(c => c.id === classId);
             if (!target) return;
             const nextClasses = classes.filter(c => c.id !== classId);
+            classesRef.current = nextClasses;
             persistClassesNow(nextClasses, false);
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
@@ -160,6 +172,7 @@ export const useClassManager = () => {
                 classInfo.id === classId ? { ...classInfo, ...updates } : classInfo
             );
             if (nextClasses.every((classInfo, index) => classInfo === classes[index])) return;
+            classesRef.current = nextClasses;
             persistClassesNow(nextClasses);
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);

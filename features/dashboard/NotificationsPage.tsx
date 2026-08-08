@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { AppConfig, ClassInfo } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { AppConfig, AppLocale, ClassInfo } from '@/types';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/icons';
 import { computeProgressionStats } from '@/utils/progression';
 import { getNewDates, readPrintMeta } from '@/utils/printMeta';
-import { JournalEntry, opLabel, readJournal, timeAgoFr } from '@/utils/journal';
+import { JournalEntry, opLabel, readJournal, timeAgo } from '@/utils/journal';
 import {
   ClassSignal,
   readClassLessons,
@@ -37,7 +37,6 @@ import {
   requestEditorModal,
   requestSessionFocus,
   writeIgnoredActionIds,
-  formatDateFR,
 } from '@/utils/notificationSignals';
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
@@ -100,7 +99,7 @@ const SignalCard: React.FC<{
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border/60 pt-2 sm:border-t-0 sm:pt-0">
+      <div className="flex shrink-0 items-center justify-end gap-2 pt-2 sm:pt-0">
         <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
           {ignoreLabel}
         </button>
@@ -114,11 +113,11 @@ const SignalCard: React.FC<{
 
 const EmptyState: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500">
+    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/[0.07] text-primary/65">
       <Check className="h-6 w-6" />
     </div>
-    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{title}</h3>
-    <p className="mt-1 max-w-xs text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">{description}</p>
+    <h3 className="text-sm font-bold text-foreground">{title}</h3>
+    <p className="mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">{description}</p>
   </div>
 );
 
@@ -162,16 +161,26 @@ const activityCategory = (op: string): Exclude<ActivityFilter, 'all'> => {
   return 'content';
 };
 
-const dayLabel = (iso: string): string => {
+type Translate = (key: string, values?: Record<string, string | number>) => string;
+
+const localeCode = (locale: AppLocale): string => locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
+
+const formatLocalizedDate = (iso: string, locale: AppLocale): string => {
+  const date = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(localeCode(locale), { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+};
+
+const dayLabel = (iso: string, locale: AppLocale, t: Translate): string => {
   const date = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const sameDay = (a: Date, b: Date) =>
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  if (sameDay(date, today)) return "Aujourd’hui";
-  if (sameDay(date, yesterday)) return 'Hier';
-  return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (sameDay(date, today)) return t('notifications.signal.today');
+  if (sameDay(date, yesterday)) return t('notifications.signal.yesterday');
+  return date.toLocaleDateString(localeCode(locale), { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
 const groupActivityEntries = (entries: ActivityEntry[]): GroupedActivityEntry[] => {
@@ -179,7 +188,7 @@ const groupActivityEntries = (entries: ActivityEntry[]): GroupedActivityEntry[] 
   for (const entry of entries) {
     const last = groups[groups.length - 1];
     const closeInTime = last && Math.abs(new Date(last.oldestAt).getTime() - new Date(entry.at).getTime()) <= 5 * 60_000;
-    if (last && last.op === entry.op && last.classId === entry.classId && dayLabel(last.at) === dayLabel(entry.at) && closeInTime) {
+    if (last && last.op === entry.op && last.classId === entry.classId && new Date(last.at).toDateString() === new Date(entry.at).toDateString() && closeInTime) {
       last.count += 1;
       last.oldestAt = entry.at;
     } else {
@@ -189,25 +198,20 @@ const groupActivityEntries = (entries: ActivityEntry[]): GroupedActivityEntry[] 
   return groups;
 };
 
-const timeRangeLabel = (entry: GroupedActivityEntry): string => {
+const timeRangeLabel = (entry: GroupedActivityEntry, locale: AppLocale): string => {
   const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-  const latest = new Date(entry.at).toLocaleTimeString('fr-FR', options);
+  const latest = new Date(entry.at).toLocaleTimeString(localeCode(locale), options);
   if (entry.count === 1) return latest;
-  const oldest = new Date(entry.oldestAt).toLocaleTimeString('fr-FR', options);
+  const oldest = new Date(entry.oldestAt).toLocaleTimeString(localeCode(locale), options);
   return `${oldest}–${latest}`;
 };
 
-const ACTIVITY_FILTERS: Array<{ id: ActivityFilter; label: string }> = [
-  { id: 'all', label: 'Tout' },
-  { id: 'content', label: 'Contenu' },
-  { id: 'dates', label: 'Dates' },
-  { id: 'structure', label: 'Structure' },
-];
+const ACTIVITY_FILTERS: ActivityFilter[] = ['all', 'content', 'dates', 'structure'];
 
-const delayLabel = (inDays: number): string => {
-  if (inDays <= 0) return "aujourd'hui";
-  if (inDays === 1) return 'demain';
-  return `dans ${inDays} jours`;
+const delayLabel = (inDays: number, t: Translate): string => {
+  if (inDays <= 0) return t('notifications.relative.today');
+  if (inDays === 1) return t('notifications.relative.tomorrow');
+  return t('notifications.relative.inDays', { count: inDays });
 };
 
 interface NotificationsPageProps {
@@ -227,7 +231,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   onOpenSettings,
   onMutate,
 }) => {
-  const { t } = useLocale();
+  const { locale, t, isRtl } = useLocale();
+  const titleFontClass = isRtl ? 'font-ar-display text-xl leading-tight tracking-normal' : 'font-display';
   const [activeAxis, setActiveAxis] = useState<AxisId>('priorites');
   const [selectedClassId, setSelectedClassId] = useState('all');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
@@ -252,7 +257,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     const printMeta = readPrintMeta(classInfo.id);
     return {
       classInfo,
-      className: formatClassDisplayName(classInfo.name),
+      className: formatLocalizedClassDisplayName(classInfo.name, locale),
       completionRate: stats.completionRate,
       sessionsCount: stats.sessionsCount,
       lastDate: stats.lastDate,
@@ -260,17 +265,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       lastPrintedAt: printMeta.lastPrintedAt,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [classes, feed]);
+  }), [classes, feed, locale]);
 
   const allActivityEntries = useMemo<ActivityEntry[]>(() => classes
     .flatMap(classInfo => readJournal(classInfo.id).map(entry => ({
       ...entry,
       classId: classInfo.id,
-      className: formatClassDisplayName(classInfo.name),
+      className: formatLocalizedClassDisplayName(classInfo.name, locale),
     })))
     .sort((a, b) => b.at.localeCompare(a.at)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [classes, feed]);
+    [classes, feed, locale]);
 
   const selectedClass = selectedClassId === 'all'
     ? null
@@ -298,13 +303,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const groupedActivityDays = useMemo(() => {
     const days: Array<{ label: string; entries: GroupedActivityEntry[] }> = [];
     for (const entry of groupActivityEntries(filteredActivity)) {
-      const label = dayLabel(entry.at);
+      const label = dayLabel(entry.at, locale, t);
       const last = days[days.length - 1];
       if (last?.label === label) last.entries.push(entry);
       else days.push({ label, entries: [entry] });
     }
     return days;
-  }, [filteredActivity]);
+  }, [filteredActivity, locale, t]);
 
   const filteredAttention = filteredCorrections.length + filteredOfficial.filter(i => i.inDays <= 3).length;
 
@@ -312,7 +317,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'priorites',
       label: t('notifications.priorities'),
-      subtitle: 'Alertes, absents, séances à consigner',
+      subtitle: t('notifications.prioritySubtitle'),
       icon: CircleAlert,
       count: filteredCorrections.length,
       group: 'alerts',
@@ -321,7 +326,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'echeances',
       label: t('notifications.deadlines'),
-      subtitle: 'Contrôles continus & événements officiels',
+      subtitle: t('notifications.deadlineSubtitle'),
       icon: CalendarCheck,
       count: filteredAssessments.length + filteredOfficial.length,
       group: 'alerts',
@@ -329,7 +334,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'calendrier',
       label: t('notifications.calendar'),
-      subtitle: 'Vue d\'ensemble temporelle',
+      subtitle: t('notifications.calendarSubtitle'),
       icon: CalendarDays,
       count: 0,
       group: 'planning',
@@ -337,7 +342,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'classes',
       label: t('notifications.classes'),
-      subtitle: 'Avancement & impressions nécessaires',
+      subtitle: t('notifications.classesSubtitle'),
       icon: GraduationCap,
       count: filteredOverviews.length,
       group: 'planning',
@@ -345,7 +350,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'activite',
       label: t('notifications.activity'),
-      subtitle: 'Traçabilité des modifications',
+      subtitle: t('notifications.activitySubtitle'),
       icon: History,
       count: filteredActivity.length,
       group: 'history',
@@ -354,7 +359,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       ? [{
           id: 'ignores' as AxisId,
           label: t('notifications.ignored'),
-          subtitle: 'Alertes masquées réactivables',
+          subtitle: t('notifications.ignoredSubtitle'),
           icon: Undo2,
           count: filteredIgnored.length,
           group: 'history' as const,
@@ -409,7 +414,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
             classId: signal.classId,
             targetIndices: signal.targetIndices,
             expiresAt: Date.now() + 120_000,
-            message: `Date du ${formatDateFR(signal.date)} à vérifier, ouverte depuis les notifications.`,
+            message: t('notifications.focusDate', { date: formatLocalizedDate(signal.date, locale) }),
           });
         }
         openClassById(signal.classId);
@@ -452,28 +457,28 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Top Toggle Header */}
       <div className="flex items-center justify-between px-1 mb-1">
         {!isEffectiveCollapsed && (
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 font-mono">
-            Notifications
+          <span className={cn('font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+            {t('notifications.sidebarLabel')}
           </span>
         )}
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
           className={cn(
-            "p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer",
+            "p-1.5 rounded-xl text-muted-foreground hover:text-primary transition-colors cursor-pointer focus:outline-none",
             isEffectiveCollapsed && "mx-auto"
           )}
-          title={isSidebarCollapsed ? "Déplier le menu" : "Réduire le menu"}
+          title={isSidebarCollapsed ? t('notifications.expandMenu') : t('notifications.collapseMenu')}
         >
-          <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", !isSidebarCollapsed && "rotate-180")} />
+          <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
         </button>
       </div>
 
       {/* Section Alerte & Suivi */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 px-2 mb-1.5 font-mono">
-            Suivi & Priorités
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+            {t('notifications.sidebarTracking')}
           </h3>
         )}
         <div className="space-y-1">
@@ -495,16 +500,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-left',
                   isActive
-                    ? 'bg-amber-100/90 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-bold'
-                    : 'hover:bg-zinc-100/80 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                    ? 'text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'bg-amber-500 text-zinc-950 shadow-xs'
-                      : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/60'
+                      ? 'text-primary scale-105'
+                      : 'bg-primary/[0.07] text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -525,7 +530,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-amber-950 dark:text-amber-100' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -543,11 +548,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-amber-800/80 dark:text-amber-200/80' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isActive ? 'text-amber-700 dark:text-amber-300 opacity-100' : 'text-zinc-400 opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -559,8 +564,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Planification */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 px-2 mb-1.5 font-mono">
-            Planification
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+            {t('notifications.sidebarPlanning')}
           </h3>
         )}
         <div className="space-y-1">
@@ -582,16 +587,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-left',
                   isActive
-                    ? 'bg-amber-100/90 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-bold'
-                    : 'hover:bg-zinc-100/80 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                    ? 'text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'bg-amber-500 text-zinc-950 shadow-xs'
-                      : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/60'
+                      ? 'text-primary scale-105'
+                      : 'bg-primary/[0.07] text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -605,7 +610,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-amber-950 dark:text-amber-100' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -614,11 +619,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-amber-800/80 dark:text-amber-200/80' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isActive ? 'text-amber-700 dark:text-amber-300 opacity-100' : 'text-zinc-400 opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -630,8 +635,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Historique */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground/80 px-2 mb-1.5 font-mono">
-            Historique
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+            {t('notifications.sidebarHistory')}
           </h3>
         )}
         <div className="space-y-1">
@@ -653,16 +658,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-left',
                   isActive
-                    ? 'bg-amber-100/90 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-bold'
-                    : 'hover:bg-zinc-100/80 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
+                    ? 'text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'bg-amber-500 text-zinc-950 shadow-xs'
-                      : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/60'
+                      ? 'text-primary scale-105'
+                      : 'bg-primary/[0.07] text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -676,7 +681,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-amber-950 dark:text-amber-100' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -685,11 +690,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-amber-800/80 dark:text-amber-200/80' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isActive ? 'text-amber-700 dark:text-amber-300 opacity-100' : 'text-zinc-400 opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -701,60 +706,52 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
-      {/* Top Bar Header */}
-      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-border px-4 py-3 sm:px-6">
-        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className={cn('app-canvas min-h-screen text-foreground', isRtl ? 'font-ar' : 'font-sans')}>
+      <main className="mx-auto max-w-6xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
+        <div className="mb-4 flex flex-col justify-between gap-3 px-1 sm:mb-5 sm:flex-row sm:items-end">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs shrink-0">
-              <Bell className="h-5 w-5" />
-            </div>
+            <Bell className="h-5 w-5 shrink-0 text-primary" />
             <div>
-              <h1 className="text-base sm:text-lg font-extrabold text-foreground font-display tracking-tight flex items-center gap-2">
+              <h1 className={cn('flex items-center gap-2 font-extrabold text-foreground', titleFontClass)}>
                 {t('notifications.centerTitle')}
                 {filteredAttention > 0 && (
-                  <span className="rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[10px] font-extrabold px-2 py-0.5 border border-red-200 dark:border-red-900/50">
+                  <span className="rounded-full border border-red-200/80 bg-red-50/80 px-2 py-0.5 text-[10px] font-extrabold text-red-600 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-400">
                     {t('notifications.toHandle', { count: filteredAttention })}
                   </span>
                 )}
               </h1>
               <p className="text-xs text-muted-foreground">
                 {selectedClass
-                  ? t('notifications.activeFilter', { className: formatClassDisplayName(selectedClass.name) })
+                  ? t('notifications.activeFilter', { className: formatLocalizedClassDisplayName(selectedClass.name, locale) })
                   : t('notifications.allTeachingClasses')}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Filter class */}
-            <div className="w-full sm:w-60">
-              <label htmlFor="notifications-class-filter" className="sr-only">{t('notifications.filterByClass')}</label>
-              <Select value={classFilterValue} onValueChange={handleClassFilterChange}>
-                <SelectTrigger id="notifications-class-filter" aria-label={t('notifications.filterByClass')} className="w-full bg-zinc-50 dark:bg-zinc-850 border-zinc-200 dark:border-zinc-800 h-9 text-xs rounded-xl focus:ring-blue-500/20">
-                  <SelectValue placeholder={t('notifications.allClasses')} />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-xl">
-                  <SelectItem value="all" className="text-xs rounded-lg">{t('notifications.allClasses')}</SelectItem>
-                  {classes.map(classInfo => (
-                    <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs rounded-lg">
-                      {formatClassDisplayName(classInfo.name)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="w-full sm:w-60">
+            <label htmlFor="notifications-class-filter" className="sr-only">{t('notifications.filterByClass')}</label>
+            <Select value={classFilterValue} onValueChange={handleClassFilterChange}>
+              <SelectTrigger id="notifications-class-filter" aria-label={t('notifications.filterByClass')} className="h-9 w-full rounded-xl border-border/80 bg-card/75 text-xs shadow-2xs backdrop-blur-sm focus:ring-primary/20">
+                <SelectValue placeholder={t('notifications.allClasses')} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border/80 bg-popover/95 shadow-xl backdrop-blur-xl">
+                <SelectItem value="all" className="rounded-lg text-xs">{t('notifications.allClasses')}</SelectItem>
+                {classes.map(classInfo => (
+                  <SelectItem key={classInfo.id} value={classInfo.id} className="rounded-lg text-xs">
+                    {formatLocalizedClassDisplayName(classInfo.name, locale)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      </header>
 
-      {/* Main Content Layout (Master - Detail pattern with 3s auto-collapse) */}
-      <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-5 pb-24">
+        {/* Main Content Layout (Master - Detail pattern with 3s auto-collapse) */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
           {/* Master Sidebar */}
           <div
             className={cn(
-              'bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl p-3 shadow-xs transition-all duration-300',
+              'bg-card/88 border border-border/70 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm transition-all duration-300',
               isEffectiveCollapsed
                 ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                 : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -767,7 +764,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           {/* Detail Content */}
           <div
             className={cn(
-              'bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-xs min-h-[500px] transition-all duration-300',
+              'bg-card/92 border border-border/70 rounded-2xl p-4 sm:p-5 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm min-h-[500px] transition-all duration-300',
               isEffectiveCollapsed
                 ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                 : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
@@ -781,7 +778,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 onClick={() => setMobileSubViewOpen(false)}
                 className="md:hidden flex items-center gap-1.5 text-xs font-bold text-primary mb-4 cursor-pointer"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} />
                 <span>{t('notifications.backToMenu')}</span>
               </button>
             )}
@@ -799,7 +796,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <CircleAlert className="h-4 w-4 text-destructive" />
                           {t('notifications.toHandle', { count: filteredCorrections.length })}
                         </h2>
@@ -811,8 +808,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
                     {filteredCorrections.length === 0 ? (
                       <EmptyState
-                        title="Tout est à jour !"
-                        description="Aucune séance en retard ni aucune anomalie détectée dans vos cahiers de textes."
+                        title={t('notifications.emptyUpToDateTitle')}
+                        description={t('notifications.emptyUpToDateDescription')}
                       />
                     ) : (
                       <div className="space-y-4">
@@ -878,25 +875,25 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 {/* 2. SECTION : ÉCHÉANCES */}
                 {activeAxis === 'echeances' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                    <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <CalendarCheck className="h-4 w-4 text-blue-600" />
                           {t('notifications.deadlines')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Évaluations à venir et dates officielles du calendrier scolaire.
+                          {t('notifications.deadlineHint')}
                         </p>
                       </div>
                       <span className="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-                        {filteredAssessments.length + filteredOfficial.length} événement(s)
+                        {t('notifications.eventCount', { count: filteredAssessments.length + filteredOfficial.length })}
                       </span>
                     </div>
 
                     {filteredAssessments.length === 0 && filteredOfficial.length === 0 ? (
                       <EmptyState
-                        title="Aucune évaluation programmée"
-                        description="Saisissez des devoirs ou des contrôles continus dans vos fiches de séance pour les voir apparaître ici."
+                        title={t('notifications.noAssessmentTitle')}
+                        description={t('notifications.noAssessmentDescription')}
                       />
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -904,14 +901,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           <button
                             key={`${item.classId}-${item.id}`}
                             onClick={() => openClassById(item.classId)}
-                            className="flex flex-col justify-between rounded-xl bg-white dark:bg-zinc-900 p-3.5 text-left border border-zinc-200/80 dark:border-zinc-800 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
+                            className="flex flex-col justify-between rounded-xl bg-card/86 p-3.5 text-left border border-border/70 shadow-2xs hover:border-primary/30 transition-all cursor-pointer group"
                           >
                             <div>
                               <div className="mb-2 flex items-center justify-between gap-2">
                                 <div className="flex min-w-0 items-center gap-2">
                                   <ClassIdentityIcon classInfo={classById.get(item.classId)} fallback={CalendarCheck} compact />
                                   <span className="truncate text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                                    {formatClassDisplayName(item.className)}
+                                    {formatLocalizedClassDisplayName(item.className, locale)}
                                   </span>
                                 </div>
                                 <span
@@ -922,14 +919,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                       : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
                                   )}
                                 >
-                                  {delayLabel(item.inDays)}
+                                  {delayLabel(item.inDays, t)}
                                 </span>
                               </div>
                               <h3 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                                {item.label.split(', Semestre ')[0]}
+                                {t(item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework', { number: item.num })}
                               </h3>
                               <p className="mt-1 text-[11px] text-muted-foreground">
-                                Date prévue : <span className="font-semibold text-foreground">{formatDateFR(item.dateISO)}</span>
+                                {t('notifications.plannedDate', { date: formatLocalizedDate(item.dateISO, locale) })}
                               </p>
                             </div>
                           </button>
@@ -943,17 +940,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">
                                 <span className="rounded bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 px-2 py-0.5 text-[10px] font-extrabold uppercase">
-                                  Événement officiel
+                                  {t('notifications.officialEvent')}
                                 </span>
                                 <span className="rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 text-[10px] font-bold">
-                                  {delayLabel(item.inDays)}
+                                  {delayLabel(item.inDays, t)}
                                 </span>
                               </div>
                               <h3 className="text-xs font-bold text-purple-950 dark:text-purple-100">
                                 {item.event.title}
                               </h3>
                               <p className="mt-1 text-[11px] text-purple-800/80 dark:text-purple-300/80">
-                                Concerne : {item.classNames.slice(0, 3).map(formatClassDisplayName).join(', ')}
+                                {t('notifications.concerns', { classes: item.classNames.slice(0, 3).map(name => formatLocalizedClassDisplayName(name, locale)).join(', ') })}
                               </p>
                             </div>
                           </div>
@@ -968,12 +965,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <CalendarDays className="h-4 w-4 text-primary" />
                           {t('notifications.calendar')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Visualisation globale par date de votre progression.
+                          {t('notifications.calendarHint')}
                         </p>
                       </div>
                     </div>
@@ -988,12 +985,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <GraduationCap className="h-4 w-4 text-primary" />
                           {t('notifications.classes')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          État d'avancement des cahiers et impressions en attente.
+                          {t('notifications.classesHint')}
                         </p>
                       </div>
                     </div>
@@ -1026,17 +1023,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             </div>
 
                             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                              <span>{overview.sessionsCount} séance(s)</span>
-                              <span>Dernière : {overview.lastDate ? formatDateFR(overview.lastDate) : 'Aucune'}</span>
+                              <span>{t('notifications.sessionCount', { count: overview.sessionsCount })}</span>
+                              <span>{t('notifications.lastSession', { date: overview.lastDate ? formatLocalizedDate(overview.lastDate, locale) : '—' })}</span>
                             </div>
                           </div>
 
-                          <div className="mt-3 pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[11px]">
+                          <div className="mt-3 pt-2.5 flex items-center justify-between text-[11px]">
                             <span className={cn('font-semibold', overview.toPrintCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500')}>
-                              {overview.toPrintCount > 0 ? `${overview.toPrintCount} à imprimer` : 'Impression à jour'}
+                              {overview.toPrintCount > 0 ? t('notifications.toPrint', { count: overview.toPrintCount }) : t('notifications.printUpToDate')}
                             </span>
                             <span className="text-zinc-400 text-[10px]">
-                              {overview.lastPrintedAt ? `Imprimé ${timeAgoFr(overview.lastPrintedAt)}` : 'Non imprimé'}
+                              {overview.lastPrintedAt ? t('notifications.printedAgo', { when: timeAgo(overview.lastPrintedAt, locale) }) : t('notifications.notPrinted')}
                             </span>
                           </div>
                         </button>
@@ -1048,14 +1045,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 {/* 5. SECTION : HISTORIQUE */}
                 {activeAxis === 'activite' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                    <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <History className="h-4 w-4 text-blue-600" />
                           {t('notifications.activity')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Historique chronologique des ajouts, modifications de dates et réorganisations.
+                          {t('notifications.activityHint')}
                         </p>
                       </div>
                     </div>
@@ -1063,30 +1060,30 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                       {ACTIVITY_FILTERS.map(filter => (
                         <button
-                          key={filter.id}
-                          onClick={() => setActivityFilter(filter.id)}
+                          key={filter}
+                          onClick={() => setActivityFilter(filter)}
                           className={cn(
                             'px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer',
-                            activityFilter === filter.id
+                            activityFilter === filter
                               ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
                               : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
                           )}
                         >
-                          {filter.label}
+                          {t(`notifications.activityFilter.${filter}`)}
                         </button>
                       ))}
                     </div>
 
                     {filteredActivity.length === 0 ? (
                       <EmptyState
-                        title="Aucun historique"
-                        description="Les modifications apportées au cahier de textes apparaîtront ici au fur et à mesure."
+                        title={t('notifications.noActivityTitle')}
+                        description={t('notifications.noActivityDescription')}
                       />
                     ) : (
                       <div className="space-y-3">
                         {groupedActivityDays.map((day, dayIndex) => (
-                          <div key={`${day.label}-${dayIndex}`} className="rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-                            <div className="bg-zinc-50 dark:bg-zinc-850 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground border-b border-zinc-100 dark:border-zinc-800">
+                          <div key={`${day.label}-${dayIndex}`} className="overflow-hidden rounded-xl border border-border/70 bg-card/86">
+                            <div className="border-b border-border/55 bg-secondary/45 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                               {day.label}
                             </div>
                             <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -1101,7 +1098,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-xs font-bold text-foreground truncate">
-                                          {opLabel(entry.op)}
+                                          {opLabel(entry.op, locale)}
                                         </span>
                                         {entry.count > 1 && (
                                           <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.2 text-[9px] font-bold text-zinc-600 dark:text-zinc-400">
@@ -1111,12 +1108,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                       </div>
                                       <p className="text-[10px] text-muted-foreground">
                                         {!selectedClass && <span className="font-semibold text-foreground mr-1.5">{entry.className} •</span>}
-                                        {timeAgoFr(entry.at)}
+                                        {timeAgo(entry.at, locale)}
                                       </p>
                                     </div>
                                   </div>
                                   <span className="text-[10px] font-mono text-zinc-400 shrink-0">
-                                    {timeRangeLabel(entry)}
+                                    {timeRangeLabel(entry, locale)}
                                   </span>
                                 </button>
                               ))}
@@ -1131,25 +1128,25 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 {/* 6. SECTION : EXCEPTIONS IGNORÉES */}
                 {activeAxis === 'ignores' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                    <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className="text-base font-bold text-foreground font-display flex items-center gap-2">
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <Undo2 className="h-4 w-4 text-blue-600" />
                           {t('notifications.ignored')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Liste des alertes que vous avez choisi d'ignorer temporairement.
+                          {t('notifications.ignoredHint')}
                         </p>
                       </div>
                     </div>
 
                     {filteredIgnored.length === 0 ? (
                       <EmptyState
-                        title="Aucune exception masquée"
-                        description="Les alertes que vous choisissez d'ignorer apparaîtront ici."
+                        title={t('notifications.noIgnoredTitle')}
+                        description={t('notifications.noIgnoredDescription')}
                       />
                     ) : (
-                      <div className="divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+                      <div className="divide-y divide-border/55 overflow-hidden rounded-2xl border border-border/70 bg-card/86">
                         {filteredIgnored.map(signal => (
                           <div key={signal.id} className="flex items-center justify-between gap-3 p-3.5">
                             <div className="flex min-w-0 items-center gap-2.5">

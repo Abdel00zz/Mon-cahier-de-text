@@ -3,7 +3,6 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { useLocale } from "@/i18n/LocaleProvider"
 
 const Dialog = DialogPrimitive.Root
 
@@ -32,7 +31,10 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, children, hideClose = false, ...props }, ref) => {
-  const { isRtl, t } = useLocale()
+  // Le portail Radix est volontairement autonome : il ne doit pas dépendre
+  // d'un contexte React externe pour pouvoir afficher une modale au démarrage.
+  const isRtl = typeof document !== "undefined" && document.documentElement.dir === "rtl"
+  const closeLabel = isRtl ? "إغلاق" : "Fermer"
   return (
   <DialogPortal>
     <DialogOverlay />
@@ -48,15 +50,15 @@ const DialogContent = React.forwardRef<
       <div aria-hidden className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-zinc-300 sm:hidden" />
       {children}
       {!hideClose && (
-        <DialogPrimitive.Close
-          aria-label={t('common.close')}
+          <DialogPrimitive.Close
+          aria-label={closeLabel}
           className={cn(
             "dialog-close absolute top-3 z-30 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-zinc-400 transition-colors hover:border-zinc-200 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:top-4",
             isRtl ? "left-3 sm:left-4" : "right-3 sm:right-4",
           )}
         >
           <X className="h-4 w-4" strokeWidth={2} />
-          <span className="sr-only">{t('common.close')}</span>
+          <span className="sr-only">{closeLabel}</span>
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
