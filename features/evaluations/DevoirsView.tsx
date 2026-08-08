@@ -9,16 +9,8 @@ import { migrateLessonsData } from '@/utils/dataUtils';
 import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
 import { daysBetweenISO } from '@/utils/assessments';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/utils/assessmentSync';
-import {
-  getOfficialEventEffectiveEnd,
-  getClassSchoolSegment,
-  getOfficialStudentEventsFile,
-  getOfficialStudentEventsForClass,
-  loadOfficialStudentEvents,
-  OfficialStudentEvent,
-  OfficialStudentEventCategory,
-  OfficialStudentEventsFile,
-} from '@/utils/officialStudentEvents';
+import { getClassSchoolSegment } from '@/utils/officialStudentEvents';
+import { getClassVisual } from '@/utils/classVisuals';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +30,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import {
-  BookOpen,
   CalendarCheck,
   CalendarDays,
   CalendarRange,
@@ -46,8 +37,6 @@ import {
   CircleAlert,
   CircleCheck,
   Clock,
-  FlaskConical,
-  GraduationCap,
   Plus,
   Undo2,
   Trash2,
@@ -59,7 +48,6 @@ interface DevoirsViewProps {
   classes: ClassInfo[];
   config: AppConfig;
   onConfigChange: (patch: Partial<AppConfig>) => void;
-  onOpenNotebook: (classInfo: ClassInfo) => void;
   /** Mode contextuel : la classe est déjà connue, aucun sélecteur ni lien de retour. */
   embedded?: boolean;
 }
@@ -94,8 +82,6 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { label: string; tone: 'gre
   missing: { label: 'Non saisi', tone: 'zinc' },
 };
 
-type DevoirsSection = 'planning' | 'official' | 'competitions';
-
 const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { label: string; badgeClass: string }> = {
   evaluation_diagnostic: { label: 'Évaluation diagnostique', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-900/40' },
   olympiade: { label: 'Olympiade', badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-900/40' },
@@ -107,15 +93,6 @@ const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { label: string; ba
   autre: { label: 'Autre activité', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700' },
 };
 
-const OFFICIAL_CATEGORY_CONFIG: Record<OfficialStudentEventCategory, { label: string; badgeClass: string }> = {
-  school: { label: 'Scolarité', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300' },
-  assessment: { label: 'Évaluation', badgeClass: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400' },
-  exam: { label: 'Examen', badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400' },
-  result: { label: 'Résultat', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400' },
-  support: { label: 'Préparation', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400' },
-  competition: { label: 'Concours', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400' },
-};
-
 const formatDateRange = (start: string, end?: string): string => {
   if (!end || end === start) return formatLongDate(start);
   return `${formatLongDate(start)} au ${formatLongDate(end)}`;
@@ -125,30 +102,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   classes,
   config,
   onConfigChange,
-  onOpenNotebook,
   embedded = false,
 }) => {
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
+  const classVisual = selectedClass ? getClassVisual(selectedClass.name) : null;
   const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
-  const [section, setSection] = useState<DevoirsSection>('planning');
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
-  const [showAllOfficial, setShowAllOfficial] = useState(false);
-  const [officialEventsFile, setOfficialEventsFile] = useState<OfficialStudentEventsFile>(() => getOfficialStudentEventsFile());
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
-
-  useEffect(() => {
-    let active = true;
-    loadOfficialStudentEvents().then((file) => {
-      if (active) setOfficialEventsFile(file);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   /* Une classe supprimée ne doit jamais laisser les évaluations sur un contexte obsolète. */
   useEffect(() => {
@@ -169,21 +133,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     [config.pedagogicalEvents, selectedClass]
   );
 
-  const officialEvents = useMemo(
-    () => (selectedClass ? getOfficialStudentEventsForClass(selectedClass, undefined, officialEventsFile) : []),
-    [officialEventsFile, selectedClass]
-  );
-
-  const officialJourney = useMemo(
-    () => officialEvents.filter((event) => event.category !== 'competition'),
-    [officialEvents]
-  );
-
-  const officialCompetitions = useMemo(
-    () => officialEvents.filter((event) => event.category === 'competition'),
-    [officialEvents]
-  );
-
   const classGroups = useMemo(() => {
     const definitions = [
       { id: 'college', label: 'Collège' },
@@ -197,7 +146,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const selectClass = (classId: string) => {
     setSelectedClassId(classId);
-    setShowAllOfficial(false);
     setAbsencesFor(null);
     setEventEditorOpen(false);
   };
@@ -273,25 +221,24 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     <div className={cn('space-y-6 font-sans', embedded ? '' : 'p-2 sm:p-4')}>
       {/* Le planning est toujours filtré par la classe active. */}
       {!embedded && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:flex-row sm:items-end sm:justify-between sm:gap-5 sm:p-4">
+        <section
+          aria-labelledby="evaluations-class-context"
+          className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/25 p-3 text-card-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+        >
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <CalendarCheck className="h-4.5 w-4.5" aria-hidden />
+            <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
+              <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
             </span>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold text-foreground">Évaluations par classe</h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                Les devoirs, absences et activités affichés concernent uniquement la classe choisie.
-              </p>
+              <h2 id="evaluations-class-context" className="text-sm font-bold text-foreground">Classe active</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Données propres à cette classe.</p>
             </div>
           </div>
 
           <div className="w-full shrink-0 sm:w-[min(100%,19rem)]">
-            <label htmlFor="evaluations-class-selector" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Classe active
-            </label>
+            <label htmlFor="evaluations-class-selector" className="sr-only">Choisir la classe active</label>
             <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
-              <SelectTrigger id="evaluations-class-selector" className="h-10 border-border bg-background text-xs font-semibold text-foreground">
+              <SelectTrigger id="evaluations-class-selector" className="h-10 border-border/80 bg-background px-3 text-xs font-semibold text-foreground shadow-xs transition-colors hover:border-primary/35 focus:ring-primary/20">
                 <SelectValue placeholder="Choisir une classe" />
               </SelectTrigger>
               <SelectContent>
@@ -459,43 +406,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 </div>
               )}
 
-              {selectedClass && !embedded && (
-                <button
-                  type="button"
-                  onClick={() => onOpenNotebook(selectedClass)}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline pt-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  Ouvrir le cahier de {selectedClassDisplayName}
-                </button>
-              )}
-
-        {officialJourney && (
-          <div id="parcours-officiel" className="scroll-mt-6">
-            <OfficialEventsPanel
-              className={selectedClassDisplayName}
-              events={officialJourney}
-              source={officialEventsFile}
-              today={today}
-              showAll={showAllOfficial}
-              onToggleAll={() => setShowAllOfficial((value) => !value)}
-            />
-          </div>
-        )}
-
-        {officialCompetitions && (
-          <div id="concours" className="scroll-mt-6">
-            <OfficialEventsPanel
-              className={selectedClassDisplayName}
-              events={officialCompetitions}
-              source={officialEventsFile}
-              today={today}
-              showAll={showAllOfficial}
-              onToggleAll={() => setShowAllOfficial((value) => !value)}
-              competitions
-            />
-          </div>
-        )}
       </div>
 
       {/* Add Pedagogical Event Modal Sheet */}
@@ -656,125 +566,6 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
     )}
   </section>
 );
-
-interface OfficialEventsPanelProps {
-  className: string;
-  events: OfficialStudentEvent[];
-  source: OfficialStudentEventsFile;
-  today: string;
-  showAll: boolean;
-  onToggleAll: () => void;
-  competitions?: boolean;
-}
-
-const OfficialEventsPanel: React.FC<OfficialEventsPanelProps> = ({
-  className,
-  events,
-  source,
-  today,
-  showAll,
-  onToggleAll,
-  competitions = false,
-}) => {
-  const upcoming = events.filter((event) => getOfficialEventEffectiveEnd(event) >= today);
-  const fallbackPast = [...events].filter((event) => getOfficialEventEffectiveEnd(event) < today).slice(-6);
-  const visible = showAll ? events : upcoming.length > 0 ? upcoming.slice(0, 8) : fallbackPast;
-
-  return (
-    <section className="space-y-4">
-      <div className="rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 ring-1 ring-blue-100 dark:ring-blue-900/30">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-            {competitions ? <FlaskConical className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-                {competitions ? 'Concours accessibles' : 'Parcours officiel de l’élève'}
-              </h3>
-              <span className="rounded-md bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-700 dark:text-blue-300">
-                Officiel · 047.26
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {className} · année {source.schoolYear}. Seules les échéances compatibles avec le niveau sont affichées.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Aucun jalon officiel identifié pour ce niveau.
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {visible.map((event) => {
-            const category = OFFICIAL_CATEGORY_CONFIG[event.category];
-            const end = getOfficialEventEffectiveEnd(event);
-            const startsIn = daysBetweenISO(today, event.start);
-            const past = end < today;
-            const ongoing = event.start <= today && end >= today;
-            const timing = ongoing
-              ? 'En cours'
-              : past
-              ? 'Terminé'
-              : startsIn === 0
-              ? "Aujourd'hui"
-              : startsIn === 1
-              ? 'Demain'
-              : `Dans ${startsIn} jours`;
-
-            return (
-              <div
-                key={event.id}
-                className={cn(
-                  'flex flex-col justify-between rounded-2xl bg-white dark:bg-zinc-900 p-5 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 transition-all',
-                  past && 'opacity-60'
-                )}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', category.badgeClass)}>
-                      {category.label}
-                    </span>
-                    <span className={cn(
-                      'text-xs font-bold',
-                      ongoing ? 'text-blue-600 dark:text-blue-400' : past ? 'text-zinc-400' : 'text-purple-600 dark:text-purple-400'
-                    )}>
-                      {timing}
-                    </span>
-                  </div>
-
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug">
-                    {event.title}
-                  </h4>
-                  <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                    {event.studentAction}
-                  </p>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
-                  <span>{formatDateRange(event.start, event.end)}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {events.length > 8 && (
-        <button
-          type="button"
-          onClick={onToggleAll}
-          className="w-full h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-        >
-          {showAll ? 'Afficher seulement les prochains jalons' : `Voir le calendrier complet (${events.length})`}
-        </button>
-      )}
-    </section>
-  );
-};
 
 interface PedagogicalEventEditorProps {
   className: string;

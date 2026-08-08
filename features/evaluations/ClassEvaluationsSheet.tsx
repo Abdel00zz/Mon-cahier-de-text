@@ -69,7 +69,6 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                         classes={[classInfo]}
                         config={config}
                         onConfigChange={onConfigChange}
-                        onOpenNotebook={() => undefined}
                         embedded
                     />
                 </div>

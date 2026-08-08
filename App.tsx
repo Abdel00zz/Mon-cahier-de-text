@@ -301,18 +301,14 @@ const App: React.FC = () => {
           <IOSheet
             isOpen={isEvaluationsOpen}
             onClose={() => setIsEvaluationsOpen(false)}
-            title="Évaluations & Devoirs"
-            subtitle="Suivi des contrôles, devoirs et activités"
+            title="Évaluations"
+            subtitle="Suivi de la classe sélectionnée"
           >
             <Suspense fallback={<AppBootSkeleton />}>
               <DevoirsView
                 classes={classes}
                 config={config}
                 onConfigChange={updateConfig}
-                onOpenNotebook={(c) => {
-                  setIsEvaluationsOpen(false);
-                  handleSelectClass(c);
-                }}
               />
             </Suspense>
           </IOSheet>
