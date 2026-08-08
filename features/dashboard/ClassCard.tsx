@@ -44,10 +44,22 @@ const formatDate = (dateString: string | null | undefined): string => {
     }
 };
 
-const CYCLE_BADGES: Record<string, { label: string; style: string }> = {
-    college: { label: 'Collège', style: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
-    lycee: { label: 'Lycée', style: 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
-    prepa: { label: 'Prépa', style: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' },
+const CYCLE_BADGES: Record<string, { label: string; style: string; focusClass: string }> = {
+    college: {
+        label: 'Collège',
+        style: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+        focusClass: 'focus-visible:border-blue-400 focus-visible:ring-blue-400/45 dark:focus-visible:border-blue-600 dark:focus-visible:ring-blue-500/45',
+    },
+    lycee: {
+        label: 'Lycée',
+        style: 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
+        focusClass: 'focus-visible:border-purple-400 focus-visible:ring-purple-400/45 dark:focus-visible:border-purple-600 dark:focus-visible:ring-purple-500/45',
+    },
+    prepa: {
+        label: 'Prépa',
+        style: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+        focusClass: 'focus-visible:border-amber-400 focus-visible:ring-amber-400/45 dark:focus-visible:border-amber-600 dark:focus-visible:ring-amber-500/45',
+    },
 };
 
 const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSession, onSelect, onDelete, onConfigure }) => {
@@ -88,7 +100,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     return (
         <div
             onClick={handleCardClick}
-            className={`card-press group relative flex min-h-[140px] cursor-pointer flex-col overflow-hidden rounded-[24px] border border-border bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 sm:min-h-[155px]`}
+            className={`card-press group relative flex min-h-[140px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'} sm:min-h-[155px]`}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
@@ -143,8 +155,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
             </div>
 
             {/* Bottom info footer */}
-            <div className="mt-auto border-t border-border/40 bg-zinc-50/80 dark:bg-zinc-900/40 px-4 py-2.5 sm:px-5 flex items-center justify-between rounded-b-[24px]">
-                <div className="min-w-0 pr-2 flex items-center gap-2">
+            <div className="mt-auto flex items-center justify-between rounded-b-2xl border-t border-border/40 bg-zinc-50/80 px-4 py-2.5 dark:bg-zinc-900/40 sm:px-5">
+                <div className="flex min-w-0 items-center gap-2 pr-2">
                     <span
                         className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                             nextSession?.kind === 'now'
@@ -154,12 +166,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                                 : 'bg-zinc-300 dark:bg-zinc-700'
                         }`}
                     />
-                    <div className="min-w-0 flex flex-col justify-center gap-0.5">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 leading-none">Prochaine séance</span>
-                        <span className={`truncate text-[11px] font-bold leading-none ${nextSession?.kind === 'now' ? 'text-emerald-600 dark:text-emerald-400' : nextSession ? 'text-[#007AFF] dark:text-blue-400' : 'text-muted-foreground/70'}`}>
+                    <p className="min-w-0 truncate text-[10px] leading-none">
+                        <span className="font-bold uppercase tracking-wide text-muted-foreground/55">Prochaine séance :</span>{' '}
+                        <span className={`font-semibold ${nextSession?.kind === 'now' ? 'text-emerald-600 dark:text-emerald-400' : nextSession ? 'text-[#007AFF] dark:text-blue-400' : 'text-muted-foreground/70'}`}>
                             {nextSession?.label ?? 'Horaire à définir'}
                         </span>
-                    </div>
+                    </p>
                 </div>
 
                 <div className="shrink-0 flex flex-col justify-center text-right gap-0.5">

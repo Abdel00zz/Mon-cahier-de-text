@@ -22,6 +22,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -141,6 +150,12 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     };
   }, []);
 
+  /* Une classe supprimée ne doit jamais laisser les évaluations sur un contexte obsolète. */
+  useEffect(() => {
+    if (selectedClassId && classes.some((classInfo) => classInfo.id === selectedClassId)) return;
+    setSelectedClassId(classes[0]?.id ?? '');
+  }, [classes, selectedClassId]);
+
   const links = useMemo(() => {
     if (!selectedClass) return [];
     return linkAssessments(assessments, findNotebookAssessments(readLessons(selectedClass.id)), today);
@@ -179,6 +194,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       .map((group) => ({ ...group, classes: classes.filter((item) => getClassSchoolSegment(item) === group.id) }))
       .filter((group) => group.classes.length > 0);
   }, [classes]);
+
+  const selectClass = (classId: string) => {
+    setSelectedClassId(classId);
+    setShowAllOfficial(false);
+    setAbsencesFor(null);
+    setEventEditorOpen(false);
+  };
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
     if (!selectedClass) return;
@@ -249,41 +271,49 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   return (
     <div className={cn('space-y-6 font-sans', embedded ? '' : 'p-2 sm:p-4')}>
-      {/* Selector pills for multi-class mode */}
+      {/* Le planning est toujours filtré par la classe active. */}
       {!embedded && (
-        <div className="space-y-3 bg-card text-card-foreground p-4 rounded-2xl border border-border shadow-xs">
-          {classGroups.map((group) => (
-            <div key={group.id} className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <span className="w-28 shrink-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {group.label}
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {group.classes.map((c) => {
-                  const active = c.id === selectedClass?.id;
-                  const displayName = formatClassDisplayName(c.name);
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedClassId(c.id);
-                        setShowAllOfficial(false);
-                      }}
-                      className={cn(
-                        'h-9 rounded-xl px-4 text-xs font-semibold transition-all duration-200',
-                        active
-                          ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-                      )}
-                    >
-                      {displayName}
-                    </button>
-                  );
-                })}
-              </div>
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3.5 text-card-foreground shadow-xs sm:flex-row sm:items-end sm:justify-between sm:gap-5 sm:p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <CalendarCheck className="h-4.5 w-4.5" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-foreground">Évaluations par classe</h2>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                Les devoirs, absences et activités affichés concernent uniquement la classe choisie.
+              </p>
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className="w-full shrink-0 sm:w-[min(100%,19rem)]">
+            <label htmlFor="evaluations-class-selector" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Classe active
+            </label>
+            <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
+              <SelectTrigger id="evaluations-class-selector" className="h-10 border-border bg-background text-xs font-semibold text-foreground">
+                <SelectValue placeholder="Choisir une classe" />
+              </SelectTrigger>
+              <SelectContent>
+                {classGroups.map((group) => (
+                  <SelectGroup key={group.id}>
+                    <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {group.label}
+                    </SelectLabel>
+                    {group.classes.map((classInfo) => {
+                      const displayName = formatClassDisplayName(classInfo.name);
+                      return (
+                        <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs font-medium">
+                          {classInfo.subject ? `${displayName}, ${classInfo.subject}` : displayName}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
       )}
 
       {/* Section Content */}

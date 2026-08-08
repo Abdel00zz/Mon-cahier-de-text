@@ -313,7 +313,6 @@ const App: React.FC = () => {
                   setIsEvaluationsOpen(false);
                   handleSelectClass(c);
                 }}
-                embedded
               />
             </Suspense>
           </IOSheet>
