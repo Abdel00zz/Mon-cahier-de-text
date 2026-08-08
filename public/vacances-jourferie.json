@@ -43,10 +43,10 @@
     { "nom": "1re pause interstitielle (الفترة البينية الأولى)", "debut": "2026-10-18", "fin": "2026-10-25" },
     { "nom": "2e pause interstitielle (الفترة البينية الثانية)", "debut": "2026-12-06", "fin": "2026-12-13" },
     { "nom": "Vacances de mi-année scolaire", "debut": "2027-01-24", "fin": "2027-01-31" },
-    { "nom": "Aïd al-Fitr — 29 Ramadan → 2 Chawwal 1448 (estimé)", "debut": "2027-03-08", "fin": "2027-03-11" },
+    { "nom": "Aïd al-Fitr, 29 Ramadan → 2 Chawwal 1448 (estimé)", "debut": "2027-03-08", "fin": "2027-03-11" },
     { "nom": "3e pause interstitielle (الفترة البينية الثالثة)", "debut": "2027-03-21", "fin": "2027-03-28" },
     { "nom": "4e pause interstitielle (الفترة البينية الرابعة)", "debut": "2027-05-09", "fin": "2027-05-16" },
-    { "nom": "Aïd al-Adha — 9 → 11 Dhou al-Hijja 1448 (estimé)", "debut": "2027-05-15", "fin": "2027-05-17" },
+    { "nom": "Aïd al-Adha, 9 → 11 Dhou al-Hijja 1448 (estimé)", "debut": "2027-05-15", "fin": "2027-05-17" },
     { "nom": "Vacances d'été 2027", "debut": "2027-07-04", "fin": "2027-09-05" }
   ]
 }

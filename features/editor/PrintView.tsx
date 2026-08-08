@@ -247,10 +247,10 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
 
     const administrativeHeader = (
         <div className="print-header">
-            <div className="print-government">Royaume du Maroc — Ministère de l’Éducation nationale, du Préscolaire et des Sports</div>
+            <div className="print-government">Royaume du Maroc, Ministère de l’Éducation nationale, du Préscolaire et des Sports</div>
             <div className="print-academy">{academyLine}</div>
             <div className="print-province">{provinceLine}</div>
-            <div className="print-header-title">Cahier de textes — Extrait imprimé</div>
+            <div className="print-header-title">Cahier de textes, Extrait imprimé</div>
             <div className="print-institution-grid">
                 <div className="print-institution-field"><span className="print-field-label">Établissement</span><strong className="print-field-value">{config.establishmentName || 'Non renseigné'}</strong></div>
                 <div className="print-institution-field"><span className="print-field-label">Enseignant</span><strong className="print-field-value">{classInfo.teacherName || config.defaultTeacherName || 'Non renseigné'}</strong></div>
@@ -448,7 +448,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         white-space: pre-wrap;
                     }
                     
-                    /* Modern, fluid style for manual separators — même signature que l'écran */
+                    /* Modern, fluid style for manual separators, même signature que l'écran */
                     .print-separator-row {
                         break-inside: avoid;
                         page-break-inside: avoid;
@@ -616,7 +616,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         box-shadow: inset 3px 0 0 var(--print-gold);
                     }
 
-                    /* Zone de signatures — finition de document administratif */
+                    /* Zone de signatures, finition de document administratif */
                     .print-signatures {
                         display: grid;
                         grid-template-columns: 1fr 1fr;
@@ -761,7 +761,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 </tbody>
             </table>
 
-            {/* Signatures — le cahier de textes est un document de contrôle pédagogique */}
+            {/* Signatures, le cahier de textes est un document de contrôle pédagogique */}
             <div className="print-signatures">
                 <div className="print-signature-box">
                     <div className="print-signature-label">Signature du professeur</div>

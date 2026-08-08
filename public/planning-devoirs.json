@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Planning OFFICIEL des devoirs de mathématiques (transcrit des documents ministériels). Les semaines sont relatives au début de chaque semestre (semaine 1 = semaine de la rentrée / de la reprise). type: 'controle' = فرض محروس (devoir surveillé), 'maison' = فرض منزلي (devoir maison). Dates indicatives — le professeur reste libre de les adapter. Modifiable sans rebuild.",
+  "_commentaire": "Planning OFFICIEL des devoirs de mathématiques (transcrit des documents ministériels). Les semaines sont relatives au début de chaque semestre (semaine 1 = semaine de la rentrée / de la reprise). type: 'controle' = فرض محروس (devoir surveillé), 'maison' = فرض منزلي (devoir maison). Dates indicatives, le professeur reste libre de les adapter. Modifiable sans rebuild.",
   "version": 1,
   "matiere": "Mathématiques",
   "plans": [
@@ -143,7 +143,7 @@
     },
     {
       "niveaux": ["2BAC PC", "2BAC SVT"],
-      "libelle": "2e Bac sciences expérimentales — branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
+      "libelle": "2e Bac sciences expérimentales, branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
       "semestres": [
         { "n": 1, "devoirs": [
           { "type": "maison",   "num": 1, "semaine": 2 },

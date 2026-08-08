@@ -141,8 +141,8 @@ const CLASS_LEVEL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
     'MP': 'Mathématiques et physique',
     'PSI': 'Physique et sciences de l’ingénieur',
     'TSI': 'Technologie et sciences industrielles',
-    'ECS': 'Économie et commerce — option scientifique',
-    'ECT': 'Économie et commerce — option technologique',
+    'ECS': 'Économie et commerce, option scientifique',
+    'ECT': 'Économie et commerce, option technologique',
 };
 
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
@@ -203,12 +203,12 @@ export const SUBJECTS = [
 // which broke type narrowing for discriminated unions in `App.tsx`. This change ensures
 // the keys are correctly typed, fixing errors related to `NewContentContext`.
 export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string; icon: ComponentType<{ className?: string }>; color: string; badgeColor?: string; rowColor?: string; autoNumber?: boolean; }> = {
-    // rowColor : fond de la LIGNE de titre du bloc dans la table — chaînes
+    // rowColor : fond de la LIGNE de titre du bloc dans la table, chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
     'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700', rowColor: 'bg-slate-50' },
     'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-rose-600', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', rowColor: 'bg-rose-50/40' },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
-    // type dans le cahier + 1) — réservé aux types récurrents.
+    // type dans le cahier + 1), réservé aux types récurrents.
     'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-600', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', rowColor: 'bg-blue-50/40', autoNumber: true },
     'controle_continu': { name: 'Contrôle continu', icon: FileSignature, color: 'text-indigo-600', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200', rowColor: 'bg-indigo-50/40', autoNumber: true },
     'correction_devoir_maison': { name: 'Correction Devoir maison', icon: CheckCheck, color: 'text-cyan-600', badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-200', rowColor: 'bg-cyan-50/40', autoNumber: true },
@@ -222,9 +222,9 @@ export const GUIDE_FR = `# Guide d'utilisation
 Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'une minute.
 
 ## Bien démarrer
-1. **Composez votre emploi du temps** : Le geste fondateur ! Dans **Paramètres ▸ Emploi du temps**, posez vos créneaux — et créez vos classes **directement depuis la grille** avec « **＋ Créer une classe…** » dans chaque case. Deux minutes suffisent, et tout le reste s'active : progression, alertes de retard, rappels de séance.
+1. **Composez votre emploi du temps** : Le geste fondateur ! Dans **Paramètres ▸ Emploi du temps**, posez vos créneaux, et créez vos classes **directement depuis la grille** avec « **＋ Créer une classe…** » dans chaque case. Deux minutes suffisent, et tout le reste s'active : progression, alertes de retard, rappels de séance.
 2. **Vos classes prennent vie** : Nées de la grille, elles apparaissent dans **Mes classes** avec leur matière, leur prochaine séance et leur dernière mise à jour. Vous pouvez aussi en créer une manuellement via « **Nouveau cahier** ».
-3. **Remplissez le cahier** : Si un programme officiel existe pour le niveau, l'application propose de le pré-charger — acceptez puis adaptez librement. Datez ensuite vos séances au fil des cours.
+3. **Remplissez le cahier** : Si un programme officiel existe pour le niveau, l'application propose de le pré-charger, acceptez puis adaptez librement. Datez ensuite vos séances au fil des cours.
 
 ![Vue réelle du cahier de textes avec son programme organisé](/guide/02-cahier-de-textes.png)
 
@@ -243,16 +243,16 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 ![Recherche globale dans toutes les classes et tous les contenus](/guide/06-recherche-globale.png)
 
 ## L'emploi du temps intelligent
-- **Une couleur par classe** : Chaque classe garde sa teinte dans la grille et le récapitulatif — l'emploi du temps se lit d'un coup d'œil.
+- **Une couleur par classe** : Chaque classe garde sa teinte dans la grille et le récapitulatif, l'emploi du temps se lit d'un coup d'œil.
 - **Séances de 2 h fusionnées** : Deux heures consécutives de la même classe forment **une seule cellule** ; l'application n'attend alors qu'**une** date dans le cahier, pas deux.
-- **Repère officiel** : À côté de chaque classe, « off. X h » rappelle l'horaire hebdomadaire officiel de votre matière — un simple repère indicatif, jamais une contrainte.
+- **Repère officiel** : À côté de chaque classe, « off. X h » rappelle l'horaire hebdomadaire officiel de votre matière, un simple repère indicatif, jamais une contrainte.
 
 ![Composition de l'emploi du temps directement dans la grille](/guide/01-emploi-du-temps.png)
 
 ## Un calendrier qui pense pour vous
-- **Garde-fou des dates** : Une date posée un jour férié, pendant les vacances ou une absence déclenche une simple alerte informative — la saisie n'est jamais bloquée (séance de rattrapage, exception…).
+- **Garde-fou des dates** : Une date posée un jour férié, pendant les vacances ou une absence déclenche une simple alerte informative, la saisie n'est jamais bloquée (séance de rattrapage, exception…).
 - **Alertes en pause automatique** : Vacances, jours fériés et absences suspendent le moteur de retard et les rappels. Aucun reproche pendant les vacances !
-- **Fin d'année sereine** : L'été venu, vos cartes affichent « Année scolaire terminée » — pas de fausse « prochaine séance » vers la rentrée suivante.
+- **Fin d'année sereine** : L'été venu, vos cartes affichent « Année scolaire terminée », pas de fausse « prochaine séance » vers la rentrée suivante.
 - **Absences programmées** : Déclarez un congé ou un arrêt dans **Paramètres ▸ Notifications** : la période est exclue de tous les calculs.
 
 ![Choix d'une date avec explication immédiate des points à vérifier](/guide/04-selection-date.png)
@@ -268,14 +268,14 @@ Votre cahier de textes numérique, pas à pas. Chaque section se lit en moins d'
 ![Planification du prochain contenu à partir du dernier point traité](/guide/07-prochaine-seance.png)
 
 ## Impression intelligente
-- **Nouveautés seulement** : L'application se souvient de ce qui est déjà imprimé et recommande de n'imprimer que le nouveau — économie de papier garantie.
+- **Nouveautés seulement** : L'application se souvient de ce qui est déjà imprimé et recommande de n'imprimer que le nouveau, économie de papier garantie.
 - **Sélection personnalisée** : Cochez précisément les séances à imprimer, date par date, avec badges « Nouvelle / Déjà imprimée ».
-- **Vos réglages mémorisés** : Taille du texte, espacement et numérotation sont retenus par classe — la prochaine impression repart de vos choix.
+- **Vos réglages mémorisés** : Taille du texte, espacement et numérotation sont retenus par classe, la prochaine impression repart de vos choix.
 
 ## Compte, synchro & sauvegarde
-- **Synchronisation automatique** : Dès que vous êtes en ligne, tout se sauvegarde et se synchronise entre vos appareils (pastille de synchro dans l'en-tête). Hors ligne, vous travaillez normalement — la synchro rattrape au retour du réseau.
+- **Synchronisation automatique** : Dès que vous êtes en ligne, tout se sauvegarde et se synchronise entre vos appareils (pastille de synchro dans l'en-tête). Hors ligne, vous travaillez normalement, la synchro rattrape au retour du réseau.
 - **Votre profil** : **Paramètres ▸ Profil** pour modifier établissement, nom et cycle à tout moment.
-- **Sauvegarde de secours** : **Paramètres ▸ Données ▸ Exporter** télécharge tout dans un fichier restaurable via **Importer** — utile avant un changement d'appareil.
+- **Sauvegarde de secours** : **Paramètres ▸ Données ▸ Exporter** télécharge tout dans un fichier restaurable via **Importer**, utile avant un changement d'appareil.
 
 ## Raccourcis clavier
 - Rechercher : \`/\` ou \`Ctrl + K\`
@@ -288,7 +288,7 @@ Développé par Boudouh Abdelmalek (Maroc). Suggestions et aide : [bdh.malek@gma
 `;
 
 
-// دليل كامل بالعربية — نفس بنية الدليل الفرنسي (٩ أقسام متوازية)
+// دليل كامل بالعربية، بنفس بنية الدليل الفرنسي (٩ أقسام متوازية)
 export const GUIDE_AR = `# دليل الاستخدام
 
 هذا **دليل عملي مختصر** لاستعمال دفتر النصوص الرقمي. كل قسم يشرح مهمة أساسية بوضوح وفي أقل من دقيقة.
@@ -315,16 +315,16 @@ export const GUIDE_AR = `# دليل الاستخدام
 ![البحث الشامل في جميع الأقسام ومحتويات الدفاتر](/guide/06-recherche-globale.png)
 
 ## استعمال زمن ذكي
-- **لون لكل قسم** : يحتفظ كل قسم بلونه في الشبكة وفي الملخص — يُقرأ استعمال الزمن بنظرة واحدة.
+- **لون لكل قسم** : يحتفظ كل قسم بلونه في الشبكة وفي الملخص، ويُقرأ استعمال الزمن بنظرة واحدة.
 - **حصص الساعتين مدموجة** : ساعتان متتاليتان لنفس القسم تكوّنان **خلية واحدة** ؛ ولا ينتظر التطبيق حينها سوى تاريخ **واحد** في الدفتر، لا اثنين.
-- **المرجع الرسمي** : بجانب كل قسم، « off. X h » يذكّر بالغلاف الزمني الأسبوعي الرسمي لمادتكم — مجرد إشارة استرشادية، لا قيد أبداً.
+- **المرجع الرسمي** : بجانب كل قسم، « off. X h » يذكّر بالغلاف الزمني الأسبوعي الرسمي لمادتكم، وهو مجرد إشارة استرشادية لا قيد أبداً.
 
 ![إعداد استعمال الزمن مباشرة داخل الشبكة](/guide/01-emploi-du-temps.png)
 
 ## تقويم يفكّر معكم
-- **حارس التواريخ** : تاريخ يصادف عطلة أو عيداً أو غياباً يُطلق تنبيهاً إخبارياً بسيطاً — التسجيل لا يُحظر أبداً (حصة استدراك، استثناء…).
+- **حارس التواريخ** : تاريخ يصادف عطلة أو عيداً أو غياباً يُطلق تنبيهاً إخبارياً بسيطاً، والتسجيل لا يُحظر أبداً (حصة استدراك، استثناء…).
 - **توقّف تلقائي للتنبيهات** : العطل والأعياد والغيابات توقف محرّك التأخر والتذكيرات. لا عتاب خلال العطلة!
-- **نهاية سنة هادئة** : في الصيف، تعرض البطاقات « السنة الدراسية انتهت » — دون « حصة قادمة » وهمية نحو الدخول المقبل.
+- **نهاية سنة هادئة** : في الصيف، تعرض البطاقات « السنة الدراسية انتهت »، دون « حصة قادمة » وهمية نحو الدخول المقبل.
 - **الغيابات المبرمجة** : صرّحوا بإجازة أو توقف في **الإعدادات ▸ الإشعارات** : تُستثنى الفترة من جميع الحسابات.
 
 ![اختيار التاريخ مع توضيح فوري للنقاط التي ينبغي التحقق منها](/guide/04-selection-date.png)
@@ -340,14 +340,14 @@ export const GUIDE_AR = `# دليل الاستخدام
 ![تخطيط المحتوى المقبل انطلاقاً من آخر عنصر تم إنجازه](/guide/07-prochaine-seance.png)
 
 ## الطباعة الذكية
-- **الجديد فقط** : يتذكّر التطبيق ما طُبع سابقاً ويوصي بطباعة الجديد وحده — اقتصاد مضمون في الورق.
+- **الجديد فقط** : يتذكّر التطبيق ما طُبع سابقاً ويوصي بطباعة الجديد وحده، وهذا يضمن اقتصاداً في الورق.
 - **اختيار مخصّص** : اختاروا الحصص المراد طباعتها بدقة، تاريخاً بتاريخ، مع شارات « جديدة / مطبوعة سابقاً ».
-- **إعداداتكم محفوظة** : حجم الخط والتباعد والترقيم تُحفظ لكل قسم — الطباعة القادمة تنطلق من اختياراتكم.
+- **إعداداتكم محفوظة** : حجم الخط والتباعد والترقيم تُحفظ لكل قسم، والطباعة القادمة تنطلق من اختياراتكم.
 
 ## الحساب والمزامنة والنسخ الاحتياطي
-- **مزامنة تلقائية** : بمجرد الاتصال بالإنترنت، يُحفظ كل شيء ويتزامن بين أجهزتكم (مؤشر المزامنة أعلى الشاشة). دون اتصال، تعملون بشكل عادي — وتلتحق المزامنة عند عودة الشبكة.
+- **مزامنة تلقائية** : بمجرد الاتصال بالإنترنت، يُحفظ كل شيء ويتزامن بين أجهزتكم (مؤشر المزامنة أعلى الشاشة). دون اتصال، تعملون بشكل عادي، وتلتحق المزامنة عند عودة الشبكة.
 - **ملفكم الشخصي** : **الإعدادات ▸ الملف الشخصي** لتعديل المؤسسة والاسم والسلك في أي وقت.
-- **نسخة أمان** : **الإعدادات ▸ البيانات ▸ تصدير** يحمّل كل شيء في ملف يُسترجع عبر **استيراد** — مفيد قبل تغيير الجهاز.
+- **نسخة أمان** : **الإعدادات ▸ البيانات ▸ تصدير** يحمّل كل شيء في ملف يُسترجع عبر **استيراد**، وهو مفيد قبل تغيير الجهاز.
 
 ## اختصارات لوحة المفاتيح
 - البحث : \`/\` أو \`Ctrl + K\`

@@ -7,11 +7,11 @@ import {
 } from '@/components/ui/icons';
 
 /*
- * Barre d'actions contextuelle — réinventée pour être CIBLÉE :
- *  — l'en-tête montre CE qui est sélectionné (type + titre), pas juste un compte ;
- *  — « Dater aujourd'hui » en un tap (l'action la plus fréquente du prof en classe) ;
- *  — actions groupées par intention : déplacer · contenu · dates · danger ;
- *  — cibles 48px sur téléphone, icônes plus grandes, défilement horizontal si étroit.
+ * Barre d'actions contextuelle, réinventée pour être CIBLÉE :
+ * L'en-tête montre ce qui est sélectionné (type + titre), pas juste un compte ;
+ * « Dater aujourd'hui » en un tap (l'action la plus fréquente du professeur en classe) ;
+ * Actions groupées par intention : déplacer · contenu · dates · danger ;
+ * Cibles 48px sur téléphone, icônes plus grandes et défilement horizontal si étroit.
  */
 
 interface SelectionBarProps {
@@ -105,7 +105,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   /*
    * Groupes d'actions par intention. Chaque groupe n'est rendu que s'il a au
    * moins un bouton, et les séparateurs sont insérés UNIQUEMENT entre deux
-   * groupes présents — plus de trait orphelin (ex. sélection multiple non
+   * groupes présents, plus de trait orphelin (ex. sélection multiple non
    * datable = seulement « Supprimer », sans divider avant).
    */
   const groups: React.ReactNode[] = [];
@@ -150,7 +150,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         <div className="min-w-0 flex items-baseline gap-2">
           {count === 1 && selectionLabel ? (
             /* barre resserrée : le titre est tronqué (…) et borné pour ne pas
-               étirer la barre — l'info complète reste dans le tableau/l'édition */
+               étirer la barre, l'info complète reste dans le tableau/l'édition */
             <span className="max-w-[9rem] sm:max-w-[13rem] truncate text-xs font-bold text-zinc-800 font-display">
               <MathText source={selectionLabel} cacheKey={selectionLabel} inline>{selectionLabel}</MathText>
             </span>
@@ -175,7 +175,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         </Button>
       </div>
 
-      {/* Actions groupées par intention — dividers seulement entre groupes
+      {/* Actions groupées par intention, dividers seulement entre groupes
           présents ; défilement horizontal sur très petit écran */}
       <div className={`flex items-center gap-1 overflow-x-auto px-2.5 py-2 no-scrollbar ${isPending ? 'opacity-60' : ''}`}>
         {groups.map((group, index) => (

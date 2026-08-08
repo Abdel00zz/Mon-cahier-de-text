@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel — 1BAC Sciences Mathématiques · Mathématiques (Maroc).",
+  "_commentaire": "Squelette MINIMAL du programme officiel, 1BAC Sciences Mathématiques · Mathématiques (Maroc).",
   "lessonsData": [
     { "type": "chapter", "title": "Chapitre 1 : Notions de logique", "sections": [] },
     { "type": "chapter", "title": "Chapitre 2 : Ensembles et applications", "sections": [] },

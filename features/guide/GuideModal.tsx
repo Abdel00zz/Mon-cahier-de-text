@@ -12,11 +12,11 @@ type Lang = 'fr' | 'ar';
 const LANG_KEY = 'guide_lang_v1';
 
 /*
- * Guide REFONDU — esprit « papier doux » :
- *  — UNE langue à la fois (séparation nette FR / AR), choix mémorisé ;
- *  — colonne de lecture étroite et très aérée (respiration entre sections) ;
- *  — sommaire monolingue (latéral sur ordinateur, chips sur mobile) ;
- *  — palette papier chaud (#fdfbf7 / #f4f1ea / #e8e4d9, sauge, terracotta).
+ * Guide REFONDU, esprit « papier doux » :
+ * Une langue à la fois (séparation nette FR / AR), choix mémorisé ;
+ * Colonne de lecture étroite et très aérée (respiration entre sections) ;
+ * Sommaire monolingue (latéral sur ordinateur, chips sur mobile) ;
+ * Palette papier chaud (#fdfbf7 / #f4f1ea / #e8e4d9, sauge, terracotta).
  */
 
 const readLang = (): Lang => {
@@ -139,7 +139,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       const containerRect = container.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();
       // scroll INSTANTANÉ (affectation directe) : les défilements « smooth »
-      // programmés sont annulés dans certains moteurs — la fiabilité prime.
+      // programmés sont annulés dans certains moteurs, la fiabilité prime.
       container.scrollTop = targetRect.top - containerRect.top + container.scrollTop - 16;
     }
     programmaticScrollTimeoutRef.current = window.setTimeout(() => {
@@ -172,7 +172,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
             </span>
             <span className="block text-sm font-semibold text-slate-500 mt-1">
-              {isAr ? 'الأساسيات خطوة بخطوة — ببساطة ووضوح' : "L'essentiel pas à pas — simple et complet"}
+              {isAr ? 'الأساسيات خطوة بخطوة, ببساطة ووضوح' : "L'essentiel pas à pas, simple et complet"}
             </span>
           </div>
 
@@ -207,7 +207,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex h-full flex-1 flex-col overflow-hidden bg-card text-card-foreground">
-        {/* Corps de lecture — colonne centrale très AÉRÉE, une seule langue */}
+        {/* Corps de lecture, colonne centrale très AÉRÉE, une seule langue */}
         <div
           ref={contentRef}
           onScroll={handleScroll}

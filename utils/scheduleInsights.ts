@@ -3,13 +3,13 @@ import { getOfficialWeeklyHours } from './officialHours.js';
 import { getDaySlotRuns, TIMETABLE_DAYS } from './timetable.js';
 
 /**
- * Moteur d'AVIS sur l'emploi du temps — purement indicatif, jamais bloquant.
+ * Moteur d'AVIS sur l'emploi du temps, purement indicatif, jamais bloquant.
  *
  * L'horaire hebdomadaire officiel (MEN) est déjà connu par classe. Ce module
  * confronte les heures RÉELLEMENT saisies dans la grille à cet horaire, et
  * signale calmement les écarts : « vous avez posé 6 h pour 2BAC PC alors que
  * l'officiel est de 5 h ». Le prof reste maître (dédoublements, options,
- * spécificités d'établissement) — c'est une aide, pas une contrainte.
+ * spécificités d'établissement), c'est une aide, pas une contrainte.
  */
 
 type HoursDeviation = 'match' | 'over' | 'under' | 'empty';

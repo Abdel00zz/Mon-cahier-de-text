@@ -19,7 +19,7 @@ interface TableRowProps {
   isNew?: boolean;
   showDescriptions?: boolean;
   descriptionTypes?: string[];
-  /** terme de recherche actif — surligné dans les titres/remarques */
+  /** terme de recherche actif, surligné dans les titres/remarques */
   searchQuery?: string;
   getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
@@ -283,7 +283,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   /*
    * SÉLECTION PLEINE LIGNE : l'état sélectionné s'applique à la rangée
-   * entière (date + contenu + remarque), pas à une seule cellule —
+   * entière (date + contenu + remarque), pas à une seule cellule -
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
   const datedWash = hasWarning
@@ -299,12 +299,12 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? 'hover:bg-primary/[0.07]'
         : 'hover:bg-muted/60';
-  // §G tableau serré : AUCUN padding de cadre — les filets verticaux
+  // §G tableau serré : AUCUN padding de cadre, les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
   const frameClasses = `group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
   
-  // Séparateurs verticaux Date|Contenu|Remarque — filets AFFIRMÉS (2 px) mais
+  // Séparateurs verticaux Date|Contenu|Remarque, filets AFFIRMÉS (2 px) mais
   // harmonieux : ton neutre doux au repos, chaud sur les rangées datées,
   // primaire sur la sélection. Une seule épaisseur partout = rythme régulier.
   const dividerClass = isSelected

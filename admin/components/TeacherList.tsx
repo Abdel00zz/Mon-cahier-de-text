@@ -29,7 +29,7 @@ const SEVERITY_META: Record<LatenessSeverity, { label: string; chip: string; dot
 const SEVERITY_RANK: Record<LatenessSeverity, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
 
 /**
- * Sévérité de retard globale d'un enseignant — mêmes modules purs que le
+ * Sévérité de retard globale d'un enseignant, mêmes modules purs que le
  * client et le cron (aucune règle dupliquée), en tenant compte de ses
  * absences justifiées et de ses seuils personnels.
  */
@@ -137,7 +137,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
             <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground font-display">
-                        Tableau de bord — Enseignants
+                        Tableau de bord, Enseignants
                     </h1>
                     <p className="text-sm text-muted-foreground">
                         {teachers.length} enseignant(s) · progression synchronisée
@@ -260,7 +260,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                 <span>
                                     {Array.from(new Set((teacher.classes ?? []).map(c => c.cycle).filter(Boolean)))
                                         .map(c => CYCLE_LABEL[c as string] ?? c)
-                                        .join(' · ') || '—'}
+                                        .join(' · ') || 'Non renseigné'}
                                 </span>
                                 <span className={inactive ? 'font-bold text-destructive' : ''}>{timeAgo(teacher.lastSyncAt)}</span>
                             </div>

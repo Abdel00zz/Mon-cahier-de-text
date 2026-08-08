@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel — 1AC Mathématiques (Maroc). Chapitres seuls : le professeur remplit sections et contenus à sa manière.",
+  "_commentaire": "Squelette MINIMAL du programme officiel, 1AC Mathématiques (Maroc). Chapitres seuls : le professeur remplit sections et contenus à sa manière.",
   "lessonsData": [
     { "type": "chapter", "title": "Chapitre 1 : Opérations sur les nombres entiers naturels et décimaux", "sections": [] },
     { "type": "chapter", "title": "Chapitre 2 : Les nombres en écriture fractionnaire", "sections": [] },

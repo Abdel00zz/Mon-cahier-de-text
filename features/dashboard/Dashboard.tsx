@@ -39,7 +39,7 @@ const CLASS_DISPLAY_OPTIONS: Array<{ value: ClassDisplayMode; label: string; des
     { value: 'triple', label: '3 par ligne', description: 'Large écran' },
 ];
 
-/** Salutation selon l'heure — petite touche vivante, esprit app mobile. */
+/** Salutation selon l'heure, petite touche vivante, esprit app mobile. */
 const getGreeting = (locale: 'fr' | 'en' | 'ar'): string => {
     const hour = new Date().getHours();
     if (locale === 'en') {

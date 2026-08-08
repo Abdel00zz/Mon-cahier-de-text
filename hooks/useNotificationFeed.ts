@@ -45,8 +45,8 @@ export const useNotificationFeed = (
         action: 'evaluations',
         classId: item.classId,
         className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
-        title: `${item.label.split(' — ')[0]} ${item.inDays <= 0 ? "aujourd'hui" : item.inDays === 1 ? 'demain' : `dans ${item.inDays} jours`}`,
-        detail: `Prévu le ${formatDateFR(item.dateISO)} — préparez le sujet et vérifiez la date depuis les évaluations de la classe.`,
+        title: `${item.label.split(', Semestre ')[0]} ${item.inDays <= 0 ? "aujourd'hui" : item.inDays === 1 ? 'demain' : `dans ${item.inDays} jours`}`,
+        detail: `Prévu le ${formatDateFR(item.dateISO)}, préparez le sujet et vérifiez la date depuis les évaluations de la classe.`,
         date: item.dateISO,
         ignored: readIgnoredActionIds(item.classId).has(id),
       });
@@ -64,7 +64,7 @@ export const useNotificationFeed = (
         classId: item.classId,
         className: classNameById.get(item.classId) ?? formatClassDisplayName(item.className),
         title: item.daysAgo === 0 ? 'Absents du devoir du jour à consigner' : 'Absents du devoir à consigner',
-        detail: `${item.label.split(' — ')[0]} ${whenLabel} (${formatDateFR(item.dateISO)}) — saisissez les élèves absents dès la séance, même « aucun absent » compte.`,
+        detail: `${item.label.split(', Semestre ')[0]} ${whenLabel} (${formatDateFR(item.dateISO)}), saisissez les élèves absents dès la séance, même « aucun absent » compte.`,
         date: item.dateISO,
         ignored: readIgnoredActionIds(item.classId).has(id),
       });

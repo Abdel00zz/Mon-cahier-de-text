@@ -17,7 +17,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
  * Paramètres ▸ Données ▸ Archives des années scolaires.
  * Fige l'état complet de l'année (config + cahiers + journaux) sous une
  * étiquette d'année ; les archives restent consultables, téléchargeables
- * (format ré-importable) et supprimables — la mémoire des années passées.
+ * (format ré-importable) et supprimables, la mémoire des années passées.
  */
 export const ArchivesSection: React.FC = () => {
     const { locale, t } = useLocale();
@@ -34,7 +34,7 @@ export const ArchivesSection: React.FC = () => {
             refresh();
         } else {
             toast.error(
-                'Stockage local insuffisant pour conserver cette archive sur l\'appareil — téléchargez plutôt une sauvegarde totale.'
+                'Stockage local insuffisant pour conserver cette archive sur l\'appareil, téléchargez plutôt une sauvegarde totale.'
             );
         }
     };

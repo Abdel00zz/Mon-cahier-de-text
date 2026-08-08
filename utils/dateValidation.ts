@@ -87,7 +87,7 @@ export const validateSessionDate = (
         });
     }
 
-    // 5. Hors année scolaire — multi-années : valide si la date appartient à
+    // 5. Hors année scolaire, multi-années : valide si la date appartient à
     // N'IMPORTE laquelle des années scolaires connues (2025-2026, 2026-2027...).
     if (!isWithinKnownSchoolYear(calendar, iso)) {
         warnings.push({

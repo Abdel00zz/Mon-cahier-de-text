@@ -15,7 +15,7 @@ export const globalCompletion = (teacher: TeacherSnapshot): number => {
 export const timeAgo = (iso: string | null): string => {
     if (!iso) return 'jamais synchronisé';
     const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return '—';
+    if (Number.isNaN(then)) return 'date inconnue';
     const diffMs = Date.now() - then;
     const minutes = Math.floor(diffMs / 60_000);
     if (minutes < 1) return "à l'instant";

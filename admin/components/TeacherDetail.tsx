@@ -59,7 +59,7 @@ const summarizeChapter = (chapter: any): ChapterSummary => {
 };
 
 const formatDateFr = (iso: string | null): string => {
-    if (!iso) return '—';
+    if (!iso) return 'Non renseignée';
     try {
         const [y, m, d] = iso.split('-').map(Number);
         return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -69,7 +69,7 @@ const formatDateFr = (iso: string | null): string => {
 };
 
 const formatDateTimeFr = (iso: string | null | undefined): string => {
-    if (!iso) return '—';
+    if (!iso) return 'Non renseignée';
     try {
         return new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     } catch {
@@ -79,7 +79,7 @@ const formatDateTimeFr = (iso: string | null | undefined): string => {
 
 /**
  * Chapitres d'une classe : dépliable à la demande (le cahier complet n'est
- * chargé qu'au clic), puis chaque chapitre révèle sa dernière séance —
+ * chargé qu'au clic), puis chaque chapitre révèle sa dernière séance -
  * date, contenu exact et horodatage de synchronisation.
  */
 const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, classId }) => {
@@ -403,7 +403,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                         </div>
                                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
                                             <span>
-                                                {cls.sessionsCount} séance(s) · dernière saisie {cls.lastDate ?? '—'}
+                                                {cls.sessionsCount} séance(s) · dernière saisie {cls.lastDate ?? 'Non renseignée'}
                                             </span>
                                             {lateness.severity !== 'ok' && (
                                                 <span

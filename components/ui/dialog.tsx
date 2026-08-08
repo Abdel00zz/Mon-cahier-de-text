@@ -84,7 +84,7 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    /* Pas de trait séparateur : l'espacement suffit — aucune ligne parasite. */
+    /* Pas de trait séparateur : l'espacement suffit, aucune ligne parasite. */
     className={cn(
       "dialog-footer relative z-10 flex shrink-0 flex-col-reverse gap-1.5 sm:flex-row sm:items-center sm:justify-end sm:gap-2",
       className

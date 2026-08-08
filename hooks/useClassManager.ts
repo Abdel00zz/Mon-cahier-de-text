@@ -141,7 +141,7 @@ export const useClassManager = () => {
     const deleteClass = useCallback(
         (classId: string) => {
             // La confirmation est portée par la couche UI (ConfirmDialog de la
-            // carte) — pas de `window.confirm` ici, sinon double confirmation.
+            // carte), pas de `window.confirm` ici, sinon double confirmation.
             const target = classes.find(c => c.id === classId);
             if (!target) return;
             const nextClasses = classes.filter(c => c.id !== classId);

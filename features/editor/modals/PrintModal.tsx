@@ -29,7 +29,7 @@ interface PrintModalProps {
   totalDates: number;
   /** dates jamais imprimées */
   newDates: string[];
-  /** toutes les dates de séances datées (triées) — pour la sélection à la séance */
+  /** toutes les dates de séances datées (triées), pour la sélection à la séance */
   allDates: string[];
   /** dates déjà imprimées (pour marquer la liste) */
   printedDates: string[];
@@ -174,7 +174,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           Impression intelligente
         </span>
       }
-      description="L'application sait ce qui a déjà été imprimé — n'imprimez que le nécessaire"
+      description="L'application sait ce qui a déjà été imprimé, n'imprimez que le nécessaire"
       maxWidth="md"
       footer={
         <>

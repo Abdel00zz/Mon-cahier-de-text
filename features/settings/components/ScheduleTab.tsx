@@ -23,7 +23,7 @@ interface ScheduleTabProps {
     onChange: (patch: Partial<AppConfig>) => void;
     /**
      * Création AUTOMATIQUE depuis la grille : chaque cellule propose
-     * « + Créer une classe… » — la classe créée est aussitôt posée sur le
+     * « + Créer une classe… », la classe créée est aussitôt posée sur le
      * créneau. Le prof peut ainsi composer tout son emploi du temps d'abord,
      * les classes naissent au fil de la saisie.
      */
@@ -32,7 +32,7 @@ interface ScheduleTabProps {
 
 /*
  * Couleur DISTINCTE par classe (palette papier harmonieuse) : la grille se lit
- * d'un coup d'œil — chaque classe garde sa teinte dans les cellules ET dans le
+ * d'un coup d'œil, chaque classe garde sa teinte dans les cellules ET dans le
  * récapitulatif. Attribution stable par ordre des classes.
  */
 /**
@@ -88,7 +88,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     /*
      * Avis intelligent en TEMPS RÉEL : après chaque modif de la grille, on
      * confronte les heures posées à l'horaire officiel de la classe touchée.
-     * Un dépassement (ou un manque net) déclenche un toast bienveillant — le
+     * Un dépassement (ou un manque net) déclenche un toast bienveillant, le
      * prof reste libre (dédoublement, option), mais il est PRÉVENU de la
      * probable coquille (« 6 h pour 2BAC PC alors que l'officiel est 5 h »).
      */
@@ -116,7 +116,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
 
-    // ZÉRO classe ≠ blocage : la grille reste affichée — les classes se créent
+    // ZÉRO classe ≠ blocage : la grille reste affichée, les classes se créent
     // directement depuis les cases (« + Créer une classe… »). On encourage.
     const noClassesYet = classes.length === 0;
     if (noClassesYet && !onCreateClass) {
@@ -185,7 +185,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     const run = runsByDay.get(day.value)?.get(hour.index);
                                     /*
                                      * FUSION PARFAITE : une séance continue (2 h+) est UNE
-                                     * seule cellule (colSpan) avec UN seul libellé — fini le
+                                     * seule cellule (colSpan) avec UN seul libellé, fini le
                                      * « math | math ». La cellule fusionnée pilote toutes
                                      * ses heures d'un coup (changer/effacer = tout le bloc).
                                      */
@@ -225,9 +225,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         ? `${color.border} ${color.bg} text-transparent shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
                                                         : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
                                                 }`}
-                                                aria-label={`${t(`schedule.day.${day.value}`)} ${hour.label}${classInfo ? ` — ${formatClassDisplayName(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
+                                                aria-label={`${t(`schedule.day.${day.value}`)} ${hour.label}${classInfo ? `, ${formatClassDisplayName(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
-                                                <option value="" className="text-slate-800">—</option>
+                                                <option value="" className="text-slate-800">Aucune classe</option>
                                                 {classes.map(c => (
                                                     <option key={c.id} value={c.id} className="text-slate-800">
                                                         {SUBJECT_ABBREV_MAP[c.subject] || c.subject} · {formatClassDisplayName(c.name)}
@@ -266,7 +266,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             <HoursAdvisory classes={classes} timetable={timetable} />
 
             {/* Récapitulatif par classe : séances (blocs continus) et heures.
-                Repère officiel indicatif (MEN) affiché en douceur — jamais contraignant. */}
+                Repère officiel indicatif (MEN) affiché en douceur, jamais contraignant. */}
             <div className="flex flex-wrap gap-2">
                 {classes.map(c => {
                     const { hours, sessions } = weeklyStats(c.id);
@@ -289,7 +289,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                     title={
                                         matches
                                             ? `Conforme à l'horaire officiel indicatif (${official.context} : ${official.hours} h/sem).`
-                                            : `Horaire officiel indicatif : ${official.hours} h/sem (${official.context}). Vous avez saisi ${hours} h — simple repère, non contraignant.`
+                                            : `Horaire officiel indicatif : ${official.hours} h/sem (${official.context}). Vous avez saisi ${hours} h, simple repère, non contraignant.`
                                     }
                                 >
                                     · {matches ? `✓ ${t('schedule.official')}` : t('schedule.officialShort', { count: official.hours })}
@@ -301,7 +301,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </div>
             {classes.some(c => getOfficialWeeklyHours(c.cycle, c.name, c.subject)) && (
                 <p className="text-[10px] leading-snug text-muted-foreground/60 font-sans">
-                    « officiel » = horaire hebdomadaire <b>indicatif</b> du MEN pour la matière/niveau — un simple repère
+                    « officiel » = horaire hebdomadaire <b>indicatif</b> du MEN pour la matière/niveau, un simple repère
                     pour vérifier qu'aucun créneau ne manque, jamais une contrainte.
                 </p>
             )}
@@ -317,7 +317,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
             </div>
 
-            {/* Planning officiel des devoirs — dates indicatives, MODIFIABLES */}
+            {/* Planning officiel des devoirs, dates indicatives, MODIFIABLES */}
             <AssessmentsPlanner classes={classes} config={config} onChange={onChange} />
 
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
@@ -342,7 +342,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     );
 };
 
-/* ── Avis « heures posées vs officiel » — persistant, temps réel, non bloquant ── */
+/* ── Avis « heures posées vs officiel », persistant, temps réel, non bloquant ── */
 
 const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[] | undefined }> = ({ classes, timetable }) => {
     const { locale, t } = useLocale();
@@ -374,7 +374,7 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
             <ul className="space-y-1 pl-6">
                 {deviations.map(i => (
                     <li key={i.classId} className="text-[11px] leading-relaxed text-muted-foreground">
-                        <span className="font-bold text-foreground">{i.className}</span> —{' '}
+                        <span className="font-bold text-foreground">{i.className}</span> -{' '}
                         <span className={i.deviation === 'over' ? 'font-bold text-warning' : 'font-bold text-blue-600'}>
                             {t('schedule.hoursScheduled', { count: i.scheduledHours })}
                         </span>{' '}

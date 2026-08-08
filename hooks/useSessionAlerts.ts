@@ -9,7 +9,7 @@ import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
 
 /**
- * Rappels locaux de fin de séance — client uniquement, temps réel, aucun
+ * Rappels locaux de fin de séance, client uniquement, temps réel, aucun
  * aller-retour serveur (distinct du cron quotidien `api/notify`).
  *
  * Deux déclencheurs par bloc de séance du jour (blocs fusionnés : une séance
@@ -21,7 +21,7 @@ import { showLocalNotification } from '../utils/push';
  * Signal unique vibration + toast (pas de double signal), alertes simultanées
  * regroupées en un seul message. Silence total les jours fériés, vacances et
  * absences justifiées. Mécanisme désactivable (Configuration ▸ Notifications),
- * spécifique à l'appareil — jamais synchronisé (comme `pushEnabled`).
+ * spécifique à l'appareil, jamais synchronisé (comme `pushEnabled`).
  *
  * Le hook lit la configuration directement depuis le localStorage et se
  * re-planifie sur les événements du syncBus : il reste ainsi à jour quel que
@@ -141,7 +141,7 @@ export const useSessionAlerts = (): void => {
             for (const [endMin, group] of byEnd) {
                 const names = group.map(g => nameOf(g.classId)).join(', ');
 
-                // 1) rappel une minute avant la fin réelle de la séance —
+                // 1) rappel une minute avant la fin réelle de la séance -
                 // triple couche : vibration + toast (app ouverte) + notification
                 // SYSTÈME (volet du téléphone, app en arrière-plan/écran éteint)
                 const reminderDelay = (endMin - 1 - nowMin) * 60_000;

@@ -33,7 +33,7 @@ export type SyncableSettings = Pick<
     notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled' | 'sessionVibration'>;
 };
 
-/** Clés de configuration synchronisées cloud — toute modification de l'une
+/** Clés de configuration synchronisées cloud, toute modification de l'une
  *  d'elles doit marquer le blob classes comme sale (markClassesListDirty). */
 export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'establishmentName',

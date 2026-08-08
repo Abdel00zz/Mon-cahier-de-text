@@ -25,7 +25,7 @@ const Analytics = lazy(() => import('@vercel/analytics/react').then(module => ({
 const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 const DevoirsView = lazy(() => import('./features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 
-// MathJax 4.1.3 (dernière version) — chargé depuis jsDelivr. L'API de démarrage
+// MathJax 4.1.3 (dernière version), chargé depuis jsDelivr. L'API de démarrage
 // de la v4 reste compatible avec `version={3}` de better-react-mathjax (config
 // `window.MathJax`, `startup.promise`, `typesetPromise`). Le composant combiné
 // `tex-mml-chtml` inclut déjà entrée TeX/MathML + sortie CHTML (pas de `loader`).
@@ -50,7 +50,7 @@ const mathJaxConfig = {
       dif: "\\mathrm{d}",
     },
   },
-  // NB : pas d'option `chtml.displayOverflow` — bien que MathJax 4 (chargé
+  // NB : pas d'option `chtml.displayOverflow`, bien que MathJax 4 (chargé
   // ci-dessus) la supporte, le débordement des longues formules sur mobile
   // est géré en CSS (conteneurs overflow-x:auto) ; l'activer changerait la
   // mise en page existante des formules hors-gabarit.
@@ -165,7 +165,7 @@ const App: React.FC = () => {
   }, [saveCurrentScroll]);
 
   // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
-  // de bord) via l'historique — et non systématiquement au tableau de bord.
+  // de bord) via l'historique, et non systématiquement au tableau de bord.
   // Garde : sur un chargement direct de #/parametres, aucun état poussé par
   // l'app → history.back() sortirait du site ; on retombe alors sur l'accueil.
   const handleBackFromSettings = useCallback(() => {
@@ -287,7 +287,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <LocaleProvider locale={config.applicationLocale ?? 'fr'}>
+      <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
         {view === 'editor' ? (
           <Suspense fallback={<AppBootSkeleton />}>
             <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>

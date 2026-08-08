@@ -10,7 +10,7 @@ import { PlannedAssessment } from './assessments.js';
  *   • le N-ième devoir d'un type dans le cahier correspond au N-ième devoir
  *     planifié du même type (même convention que l'auto-numérotation) ;
  *   • si le cahier porte une date différente du calendrier, l'écart est
- *     signalé — le prof peut alors ALIGNER le calendrier sur son choix réel
+ *     signalé, le prof peut alors ALIGNER le calendrier sur son choix réel
  *     (le cahier reste la source de vérité, le calendrier suit).
  * Fonctions pures : aucune dépendance UI, réutilisables partout.
  */

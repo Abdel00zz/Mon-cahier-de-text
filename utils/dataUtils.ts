@@ -9,7 +9,7 @@ type DataItem = TopLevelItem | Section | SubSection | SubSubSection | LessonItem
  * Nombre d'occurrences d'un type récurrent (devoir_maison, controle_continu…)
  * dans tout le cahier : blocs de premier niveau ET éléments imbriqués
  * (EmbeddableTopLevelItem dans les items d'une section). Sert à
- * l'auto-numérotation des titres (« Contrôle continu 2 ») — comptage de
+ * l'auto-numérotation des titres (« Contrôle continu 2 »), comptage de
  * l'arbre réel plutôt qu'un compteur séparé à synchroniser.
  */
 export const countOccurrencesOfType = (data: LessonsData, type: string): number => {

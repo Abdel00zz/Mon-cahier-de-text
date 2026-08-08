@@ -27,7 +27,7 @@ interface ToolbarProps {
   onOpenGuide: () => void;
   onOpenAnalyse: () => void;
   onOpenEvaluations: () => void;
-  /** ouvre la modale d'impression intelligente — l'impression directe est
+  /** ouvre la modale d'impression intelligente, l'impression directe est
       proscrite : le PrintView n'est monté que pendant le circuit du parent */
   onPrint: () => void;
   searchQuery: string;
@@ -205,7 +205,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             </DropdownMenuLabel>
 
             {/* Les notifications vivent UNIQUEMENT dans le centre global de
-                l'accueil (cloche) — aucune entrée ici, à la demande du prof. */}
+                l'accueil (cloche), aucune entrée ici, à la demande du prof. */}
 
             {/* On mobile screens, show undo/redo/save inside the menu */}
             <div className="sm:hidden">

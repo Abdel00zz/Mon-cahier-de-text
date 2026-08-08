@@ -47,7 +47,7 @@ export const fetchOverview = async (): Promise<{ teachers: TeacherSnapshot[] }> 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>
     request(`/api/admin?action=teacher&phone=${encodeURIComponent(phone)}`);
 
-/** Cahier complet d'une classe (lecture seule) — inspection des chapitres. */
+/** Cahier complet d'une classe (lecture seule), inspection des chapitres. */
 export const fetchClassLessons = (
     phone: string,
     classId: string,

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
- * Gestionnaire de tooltip global — remplace Tippy.js (CDN) sans dépendance
+ * Gestionnaire de tooltip global, remplace Tippy.js (CDN) sans dépendance
  * externe. Fonctionne par délégation sur l'attribut `data-tippy-content` déjà
  * présent dans toute l'application : aucun changement requis sur les call
  * sites existants (boutons, icônes...). Désactivé au tactile (pas d'affordance

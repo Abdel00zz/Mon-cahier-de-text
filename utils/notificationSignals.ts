@@ -15,7 +15,7 @@ import {
 } from './calendar';
 
 /*
- * Signaux PRATIQUES du centre de notifications — chaque signal répond à une
+ * Signaux PRATIQUES du centre de notifications, chaque signal répond à une
  * situation concrète du métier d'enseignant et mène à l'endroit où elle se
  * corrige. La mémoire « ignoré » est partagée avec la vérification de dates
  * de l'éditeur (mêmes identifiants, même clé de stockage).
@@ -112,7 +112,7 @@ export interface ClassSignal {
     title: string;
     detail: string;
     date?: string;
-    /** premier élément concerné — cible du focus à l'ouverture du cahier */
+    /** premier élément concerné, cible du focus à l'ouverture du cahier */
     targetIndices?: Indices;
     ignored: boolean;
 }
@@ -265,7 +265,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
         });
     }
 
-    // 4 · Emploi du temps manquant — préalable à tous les contrôles
+    // 4 · Emploi du temps manquant, préalable à tous les contrôles
     if (!hasTimetable) {
         const id = `schedule:${classInfo.id}:missing`;
         signals.push({
@@ -280,7 +280,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
         });
     }
 
-    // L'impression est libre : aucun rappel « à imprimer » — le prof décide
+    // L'impression est libre : aucun rappel « à imprimer », le prof décide
     // seul de quand et de quoi tirer depuis la modale d'impression.
 
     return signals;
@@ -288,7 +288,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig): Cl
 
 /** clé de niveau pour comparer des classes parallèles : nom sans numéro de groupe */
 const levelKey = (name: string): string =>
-    name.trim().toLowerCase().replace(/[\s·–—-]*(?:gr\.?|groupe)?\s*\d+\s*$/i, '').trim();
+    name.trim().toLowerCase().replace(/[-\s·–]*(?:gr\.?|groupe)?\s*\d+\s*$/i, '').trim();
 
 /**
  * Signaux transversaux (toutes classes) : écart de progression entre classes
@@ -323,7 +323,7 @@ export const collectCrossClassSignals = (classes: ClassInfo[]): ClassSignal[] =>
             classId: lagger.classInfo.id,
             className: formatClassDisplayName(lagger.classInfo.name),
             title: 'Progression en retrait sur ce niveau',
-            detail: `${formatClassDisplayName(lagger.classInfo.name)} est à ${lagger.completion}% contre ${leader.completion}% pour ${formatClassDisplayName(leader.classInfo.name)} — un écart de ${gap} points entre groupes parallèles.`,
+            detail: `${formatClassDisplayName(lagger.classInfo.name)} est à ${lagger.completion}% contre ${leader.completion}% pour ${formatClassDisplayName(leader.classInfo.name)}, un écart de ${gap} points entre groupes parallèles.`,
             ignored: ignored.has(id),
         });
     }

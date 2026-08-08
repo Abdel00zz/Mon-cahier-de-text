@@ -1,5 +1,5 @@
 /**
- * Journal des actions d'édition — par classe, persistant, plafonné.
+ * Journal des actions d'édition, par classe, persistant, plafonné.
  * Alimente la ligne « Dernière modification » et le centre global d’activité.
  */
 
@@ -59,7 +59,7 @@ export const appendJournal = (classId: string, op: string): void => {
 
 export const timeAgoFr = (iso: string): string => {
     const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return '—';
+    if (Number.isNaN(then)) return 'date inconnue';
     const minutes = Math.floor((Date.now() - then) / 60_000);
     if (minutes < 1) return "à l'instant";
     if (minutes < 60) return `il y a ${minutes} min`;

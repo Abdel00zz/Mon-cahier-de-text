@@ -59,7 +59,7 @@ const cacheUser = (user: AuthUser | null): void => {
 /**
  * Applique le profil du compte à la configuration locale : le nom devient
  * l'enseignant par défaut, cycles et matières pilotent les filtres. L'étape
- * « Profil » de l'accueil (OnboardingModal) est ainsi déjà remplie — on marque
+ * « Profil » de l'accueil (OnboardingModal) est ainsi déjà remplie, on marque
  * `hasCompletedWelcome` ; l'accueil ne se rouvrira de lui-même que s'il
  * n'existe encore AUCUNE classe (création par lot + emploi du temps).
  * Ne remplace jamais des valeurs déjà présentes.

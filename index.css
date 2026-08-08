@@ -589,7 +589,7 @@ button svg.svg-inline--fa,
 /* Focus */
 .material-focus:focus { outline: 2px solid hsl(var(--accent)); outline-offset: 2px; }
 
-/* Safe areas — utilitaires unifiés */
+/* Safe areas, utilitaires unifiés */
 .safe-bottom  { padding-bottom: env(safe-area-inset-bottom, 16px); }
 .fab-safe     { bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
 

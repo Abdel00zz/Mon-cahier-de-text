@@ -359,7 +359,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
             classId: signal.classId,
             targetIndices: signal.targetIndices,
             expiresAt: Date.now() + 120_000,
-            message: `Date du ${formatDateFR(signal.date)} à vérifier — ouverte depuis les notifications.`,
+            message: `Date du ${formatDateFR(signal.date)} à vérifier, ouverte depuis les notifications.`,
           });
         }
         openClassById(signal.classId);
@@ -371,7 +371,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     ids.add(signal.id);
     writeIgnoredActionIds(signal.classId, ids);
     onMutate();
-    toast.info('Point conservé comme exception — réactivable depuis l’onglet « Exceptions ».');
+    toast.info('Point conservé comme exception, réactivable depuis l’onglet « Exceptions ».');
   };
 
   const restoreSignal = (signal: ClassSignal) => {
@@ -964,7 +964,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 </span>
                               </div>
                               <h3 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                                {item.label.split(' — ')[0]}
+                                {item.label.split(', Semestre ')[0]}
                               </h3>
                               <p className="mt-1 text-[11px] text-muted-foreground">
                                 Date prévue : <span className="font-semibold text-foreground">{formatDateFR(item.dateISO)}</span>

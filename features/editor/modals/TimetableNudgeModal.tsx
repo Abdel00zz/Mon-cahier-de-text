@@ -5,7 +5,7 @@ import { CalendarRange } from '@/components/ui/icons';
 
 interface TimetableNudgeModalProps {
   isOpen: boolean;
-  /** « Passer pour l'instant » — mémorisé pour la session, jamais bloquant */
+  /** « Passer pour l'instant », mémorisé pour la session, jamais bloquant */
   onSkip: () => void;
   /** ouvre Paramètres ▸ Emploi du temps */
   onFill: () => void;
@@ -35,7 +35,7 @@ const TEXTS: Record<Lang, {
   fr: {
     title: 'Emploi du temps en attente',
     message: classLabel =>
-      `Bienvenue dans le cahier de « ${classLabel} » ! Pour qu'il veille sur vous, il ne lui manque que vos créneaux de cours — deux minutes suffisent.`,
+      `Bienvenue dans le cahier de « ${classLabel} » ! Pour qu'il veille sur vous, il ne lui manque que vos créneaux de cours, deux minutes suffisent.`,
     benefits: 'Suivi de progression · alertes de retard · rappels de fin de séance',
     fill: "Renseigner l'emploi du temps",
     skip: "Passer pour l'instant",
@@ -43,7 +43,7 @@ const TEXTS: Record<Lang, {
   ar: {
     title: 'جدول الحصص في الانتظار',
     message: classLabel =>
-      `مرحبًا بكم في دفتر « ${classLabel} » ! لكي يواكبكم الدفتر، لا ينقصه سوى حصصكم الأسبوعية — دقيقتان تكفيان.`,
+      `مرحبًا بكم في دفتر « ${classLabel} » ! لكي يواكبكم الدفتر، لا ينقصه سوى حصصكم الأسبوعية، دقيقتان تكفيان.`,
     benefits: 'تتبّع التقدم · تنبيهات التأخر · تذكير بنهاية الحصة',
     fill: 'تعبئة جدول الحصص',
     skip: 'تخطّي الآن',
@@ -51,7 +51,7 @@ const TEXTS: Record<Lang, {
 };
 
 /**
- * Invitation FLUIDE à renseigner l'emploi du temps — jamais bloquante :
+ * Invitation FLUIDE à renseigner l'emploi du temps, jamais bloquante :
  * affichée une fois par session et par classe, avec un « passer » discret.
  * Bilingue FR/AR (bascule en un tap, rendu RTL pour l'arabe).
  */
@@ -86,7 +86,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       }
     >
       <div className="flex flex-col items-center gap-4 py-2 text-center">
-        {/* Bascule de langue — discrète, en tête */}
+        {/* Bascule de langue, discrète, en tête */}
         <div className="flex w-full justify-end">
           <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-0.5">
             {(['fr', 'ar'] as const).map(l => (

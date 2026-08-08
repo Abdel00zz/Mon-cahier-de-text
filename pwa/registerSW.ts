@@ -2,7 +2,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { toast } from 'sonner';
 
 /**
- * Service worker — mise à jour AUTOMATIQUE et silencieuse (esprit application
+ * Service worker, mise à jour AUTOMATIQUE et silencieuse (esprit application
  * native) : aucune invite, aucun bouton « Recharger », aucun message de
  * confirmation. Dès qu'une nouvelle version est publiée, le SW l'active
  * (skipWaiting + clientsClaim) et la page se recharge d'elle-même, une seule

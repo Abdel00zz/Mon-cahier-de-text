@@ -36,7 +36,7 @@ export interface AppConfig {
     schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
     timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant
     notificationSettings?: NotificationSettings;
-    absences?: AbsencePeriod[];         // certificats de maladie, congés — exclus du calcul de retard
+    absences?: AbsencePeriod[];         // certificats de maladie, congés, exclus du calcul de retard
     schoolYearStart?: string;
     /** dates de devoirs personnalisées par le prof : { [classId]: { [assessmentId]: 'YYYY-MM-DD' } } */
     assessmentDates?: Record<string, Record<string, string>>;
@@ -106,7 +106,7 @@ export interface NotificationSettings {
     inactivityThresholdDays: number;
     quietDuringVacations: boolean;
     /**
-     * rappels locaux de fin de séance (vibration + toast) — spécifique à
+     * rappels locaux de fin de séance (vibration + toast), spécifique à
      * l'appareil, comme `pushEnabled` : exclu de la synchronisation cloud
      */
     sessionVibration?: boolean;
@@ -144,7 +144,7 @@ export interface TeacherSnapshot {
     prenom: string;
     lastSyncAt: string | null;
     notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & { pushEnabled?: boolean };
-    /** absences justifiées (certificats) — le cron n'alerte pas pendant, et les exclut du retard */
+    /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */
     absences?: AbsencePeriod[];
     classes: ClassSnapshot[];
 }

@@ -13,7 +13,7 @@ const CYCLES: { value: Cycle; label: string }[] = [
   { value: 'prepa', label: 'Prépa' },
 ];
 
-/** Force du mot de passe — indicative (le serveur n'exige que 8 caractères). */
+/** Force du mot de passe, indicative (le serveur n'exige que 8 caractères). */
 const passwordStrength = (pw: string): { score: number; label: string; barClass: string; textClass: string } => {
   if (!pw) return { score: 0, label: '', barClass: '', textClass: '' };
   let score = 0;

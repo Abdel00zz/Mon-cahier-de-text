@@ -53,7 +53,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                 />
             </div>
 
-            {/* Colonne Contenu — le "signature moment" : un jalon net entre deux périodes */}
+            {/* Colonne Contenu, le "signature moment" : un jalon net entre deux périodes */}
             <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-r border-zinc-200/80 px-4 py-2.5">
                 <div className="flex-grow border-t border-dashed border-zinc-200" />
 

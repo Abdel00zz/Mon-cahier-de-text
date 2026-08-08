@@ -2,7 +2,7 @@
   "lessonsData": [
     {
       "type": "chapter",
-      "title": "Chapitre 1 : Ensembles de nombres — N, Z, Q, D, R",
+      "title": "Chapitre 1 : Ensembles de nombres, N, Z, Q, D, R",
       "sections": [
         { "name": "I. Les ensembles de nombres", "items": [
           { "type": "activité", "title": "Activité : classer des nombres" },

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Header } from './Header';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
+import { OrientationNudge } from './OrientationNudge';
 import { SelectionBar } from './SelectionBar';
 import { EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -191,7 +192,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Contenu prédéfini : si le cahier est vide et qu'un programme officiel
    * existe pour ce niveau × matière, on le propose (utiliser tel quel,
-   * puis modifier librement — ou l'ignorer et créer son propre contenu).
+   * puis modifier librement, ou l'ignorer et créer son propre contenu).
    */
   const [predefinedOffer, setPredefinedOffer] = useState<PredefinedEntry | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
@@ -213,7 +214,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const content = await loadPredefinedContent(predefinedOffer);
           setState(() => content, 'import-data');
           setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-          toast.success('Programme prédéfini chargé — adaptez-le librement.');
+          toast.success('Programme prédéfini chargé, adaptez-le librement.');
       } catch {
           toast.error('Impossible de charger le contenu prédéfini.');
       }
@@ -241,7 +242,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lessonsData]);
 
-  // Échap : efface la sélection (si aucune modale/édition n'est ouverte — elles gèrent leur propre Échap)
+  // Échap : efface la sélection (si aucune modale/édition n'est ouverte, elles gèrent leur propre Échap)
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
@@ -263,7 +264,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Garde intelligente : à chaque affectation de date, croise la date avec
    * l'emploi du temps de la classe, les jours fériés, les vacances et les
-   * absences du prof. Alerte non bloquante (toast) — le prof reste maître.
+   * absences du prof. Alerte non bloquante (toast), le prof reste maître.
    * `getDateWarnings` est mémoïsé : passé à MainTable (React.memo), une
    * lambda inline casserait la mémoïsation de toute la table.
    */
@@ -288,7 +289,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Exception de date : « Ignorer » dans la vérification de date enregistre
    * le point dans la même mémoire que le centre de notifications de
-   * l'accueil (mêmes identifiants) — il y devient réactivable.
+   * l'accueil (mêmes identifiants), il y devient réactivable.
    */
   const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
     const ids = readIgnoredActionIds(classInfo.id);
@@ -619,7 +620,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   /*
    * Invitation modale FLUIDE (une fois par session et par classe) : proposée
    * après un court délai à l'ouverture d'un cahier sans emploi du temps.
-   * « Passer pour l'instant » la mémorise pour la session — jamais bloquant.
+   * « Passer pour l'instant » la mémorise pour la session, jamais bloquant.
    */
   const [showTimetableNudge, setShowTimetableNudge] = useState(false);
   const timetableNudgeKey = `timetableNudge_v1_${classInfo.id}`;
@@ -964,7 +965,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     if (!title) return typeLabel || 'Élément sélectionné';
     // anti-redondance : si le titre commence déjà par le type, on n'ajoute pas le préfixe.
     if (typeLabel && title.toLowerCase().startsWith(typeLabel.toLowerCase())) return title;
-    return typeLabel ? `${typeLabel} — ${title}` : title;
+    return typeLabel ? `${typeLabel}, ${title}` : title;
   }, [selectedCount, singleSelection]);
 
   // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
@@ -996,7 +997,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
-  // varie (retour à la ligne sur mobile, ouverture de la recherche) — un
+  // varie (retour à la ligne sur mobile, ouverture de la recherche), un
   // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
   const isLoading = isClassLoading || isConfigLoading;
 
@@ -1063,6 +1064,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
         )}
       </div>
+
+      <OrientationNudge suppressed={Boolean(activeModal || selectedCount > 0 || isPrinting)} />
 
       {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}
       {!activeModal && selectedCount === 0 && (

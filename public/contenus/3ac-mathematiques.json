@@ -1,7 +1,7 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel — 3AC Mathématiques (Maroc).",
+  "_commentaire": "Squelette MINIMAL du programme officiel, 3AC Mathématiques (Maroc).",
   "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Développement et factorisation — identités remarquables", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 1 : Développement et factorisation, identités remarquables", "sections": [] },
     { "type": "chapter", "title": "Chapitre 2 : Les racines carrées", "sections": [] },
     { "type": "chapter", "title": "Chapitre 3 : Théorème de Thalès", "sections": [] },
     { "type": "chapter", "title": "Chapitre 4 : Trigonométrie du triangle rectangle", "sections": [] },

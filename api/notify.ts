@@ -59,7 +59,7 @@ const handleTest = async (res: ApiResponse, phone: string) => {
     if (!entry || entry.subs.length === 0) throw new HttpError(400, 'Aucun appareil abonné.');
     const { survivingSubs, sent } = await sendToEntry(entry, {
         title: 'Cahier de textes',
-        body: 'Notification de test — tout fonctionne !',
+        body: 'Notification de test, tout fonctionne !',
         url: '/',
         kind: 'test',
         tag: 'cdt-test',

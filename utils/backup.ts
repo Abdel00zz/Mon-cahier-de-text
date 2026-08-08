@@ -100,7 +100,7 @@ export const restoreBackup = (data: any): number => {
     }
 
     /*
-     * 4) Métadonnées de synchro — la restauration EST une modification locale
+     * 4) Métadonnées de synchro, la restauration EST une modification locale
      * datée de maintenant. Sans cet horodatage, un cloud plus « récent » que la
      * sauvegarde écraserait les données fraîchement restaurées au pull suivant
      * (et l'ancien format v1, sans syncMeta, laisserait toutes les classes

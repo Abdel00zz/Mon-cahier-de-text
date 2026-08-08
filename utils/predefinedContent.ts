@@ -4,7 +4,7 @@ import { prepareImportedLessons } from './importPipeline.js';
 /**
  * Bibliothèque de contenus prédéfinis (public/contenus/) : pour chaque
  * niveau × matière, un JSON de programme officiel que le prof peut charger
- * dans un cahier vide, puis modifier librement — ou ignorer et créer le sien.
+ * dans un cahier vide, puis modifier librement, ou ignorer et créer le sien.
  */
 
 export interface PredefinedEntry {

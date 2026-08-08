@@ -6,7 +6,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 
 const timeAgo = (iso: string, locale: string): string => {
     const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return '—';
+    if (Number.isNaN(then)) return 'Date inconnue';
     const minutes = Math.floor((Date.now() - then) / 60_000);
     const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' });
     if (minutes < 60) return formatter.format(-Math.max(1, minutes), 'minute');

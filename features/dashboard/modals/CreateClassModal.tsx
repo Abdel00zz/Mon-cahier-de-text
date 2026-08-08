@@ -11,13 +11,13 @@ interface CreateClassModalProps {
   onClose: () => void;
   onCreate: (details: { name: string; subject: string; cycle?: Cycle; color?: string; }) => void;
   defaultTeacherName?: string;
-  /** cycle actif du tableau de bord — pré-sélectionné */
+  /** cycle actif du tableau de bord, pré-sélectionné */
   defaultCycle?: Cycle;
-  /** matières de l'enseignant (choisies à l'inscription) — filtrent le choix */
+  /** matières de l'enseignant (choisies à l'inscription), filtrent le choix */
   teacherSubjects?: string[];
   /**
    * cycles de l'enseignant (choisis à l'inscription, modifiables dans les
-   * Paramètres) — un seul cycle : le champ disparaît, il est hérité ;
+   * Paramètres), un seul cycle : le champ disparaît, il est hérité ;
    * plusieurs : le choix est restreint à ces cycles
    */
   teacherCycles?: Cycle[];
@@ -48,8 +48,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
   /*
    * Héritage du profil d'inscription (modifiable dans les Paramètres) :
-   * — une seule matière / un seul cycle → champ masqué, valeur héritée ;
-   * — plusieurs → choix restreint aux valeurs du prof.
+   * Une seule matière ou un seul cycle : champ masqué, valeur héritée ;
+   * Plusieurs choix : choix restreint aux valeurs du professeur.
    * En édition, la valeur actuelle de la classe reste toujours proposée
    * (même si le prof a depuis retiré ce cycle/cette matière de son profil).
    */
@@ -134,7 +134,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={editingClass ? "Configurer la classe" : "Créer une nouvelle classe"}
-      description={editingClass ? "Modifiez les paramètres et la matière de la classe" : "Choisissez le niveau et la matière — le nom est composé automatiquement"}
+      description={editingClass ? "Modifiez les paramètres et la matière de la classe" : "Choisissez le niveau et la matière, le nom est composé automatiquement"}
       maxWidth="md"
       footer={
         <>

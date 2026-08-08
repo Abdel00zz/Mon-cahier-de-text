@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel — 2BAC Sciences Maths (A et B) · Mathématiques (Maroc).",
+  "_commentaire": "Squelette MINIMAL du programme officiel, 2BAC Sciences Maths (A et B) · Mathématiques (Maroc).",
   "lessonsData": [
     { "type": "chapter", "title": "Chapitre 1 : Limites et continuité", "sections": [] },
     { "type": "chapter", "title": "Chapitre 2 : Dérivation et étude des fonctions", "sections": [] },

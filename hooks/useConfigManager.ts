@@ -142,7 +142,7 @@ export const useConfigManager = () => {
          * TOUT réglage synchronisé (emploi du temps, absences, devoirs,
          * établissement, cycles/matières, préférences d'affichage, notifications)
          * voyage avec le blob classes : la liste des clés vient de syncSettings
-         * (source de vérité unique) — plus aucune clé oubliée du circuit.
+         * (source de vérité unique), plus aucune clé oubliée du circuit.
          */
         const touchesSyncable =
             newConfig.notificationSettings !== undefined ||

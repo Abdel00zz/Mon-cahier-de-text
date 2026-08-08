@@ -63,7 +63,7 @@ const areSlotsContiguous = (slotA: number, slotB: number): boolean => {
 /**
  * Nombre de séances CONTINUES formées par un ensemble de créneaux d'un même
  * jour pour une même classe : deux heures qui se suivent (sans pause déjeuner)
- * comptent pour UNE séance de 2 h — le prof ne saisit qu'une ligne datée dans
+ * comptent pour UNE séance de 2 h, le prof ne saisit qu'une ligne datée dans
  * son cahier pour une telle séance, le moteur de retard ne doit donc en
  * attendre qu'une.
  */
@@ -115,7 +115,7 @@ export interface SessionBlock {
 }
 
 /**
- * Blocs de séances d'un jour donné, dans l'ordre chronologique — alimente les
+ * Blocs de séances d'un jour donné, dans l'ordre chronologique, alimente les
  * rappels locaux de fin de séance (une seule alerte par bloc de 2 h, cohérent
  * avec la fusion appliquée au moteur de retard).
  */
@@ -154,7 +154,7 @@ export const getDaySessionBlocks = (
 };
 
 /**
- * Position d'un créneau assigné dans sa séance continue — alimente le
+ * Position d'un créneau assigné dans sa séance continue, alimente le
  * regroupement visuel de la grille (cases soudées + badge « 2 h »).
  */
 export interface SlotRunInfo {
@@ -169,7 +169,7 @@ export interface SlotRunInfo {
  * Pour un jour donné, associe chaque créneau assigné à sa séance continue
  * (mêmes règles de contiguïté que le moteur de retard : même classe, créneaux
  * consécutifs, pause déjeuner exclue). La grille de saisie s'en sert pour
- * afficher les blocs fusionnés exactement comme le calcul les compte —
+ * afficher les blocs fusionnés exactement comme le calcul les compte -
  * ce que le prof voit est ce que le moteur mesure.
  */
 export const getDaySlotRuns = (
@@ -264,7 +264,7 @@ export const nextSessionInfoForClass = (
 
     const todayISO = toISODate(now);
 
-    // Hors année scolaire (été entre deux années) : la saison est TERMINÉE —
+    // Hors année scolaire (été entre deux années) : la saison est TERMINÉE -
     // inutile d'afficher une « prochaine séance » qui serait la rentrée suivante.
     if (!isWithinKnownSchoolYear(calendar, todayISO)) {
         return { kind: 'season-end', label: 'Année scolaire terminée' };
@@ -275,7 +275,7 @@ export const nextSessionInfoForClass = (
             ? getDaySessionBlocks(timetable, weekday).filter(b => b.classId === classId)
             : [];
 
-    // Aujourd'hui — uniquement si c'est un vrai jour de classe (ni férié, ni vacances)
+    // Aujourd'hui, uniquement si c'est un vrai jour de classe (ni férié, ni vacances)
     if (isSchoolDay(todayISO, weekdays, calendar)) {
         const blocks = blocksFor(now.getDay());
         if (blocks.length === 0) {
@@ -298,7 +298,7 @@ export const nextSessionInfoForClass = (
     /*
      * Fin de saison (bis) : encore dans l'année scolaire, mais la prochaine
      * séance possible tombe déjà dans l'année SUIVANTE (derniers jours de
-     * l'année sans créneau restant) — l'année est finie pour cette classe.
+     * l'année sans créneau restant), l'année est finie pour cette classe.
      */
     if (next > getSchoolYearFor(calendar, todayISO).fin) {
         return { kind: 'season-end', label: 'Année scolaire terminée' };

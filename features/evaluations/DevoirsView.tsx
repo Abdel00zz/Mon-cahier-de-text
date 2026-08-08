@@ -195,7 +195,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     if (!link.entry?.date) return;
     setAssessmentDate(link.planned.id, link.entry.date);
     toast.success(
-      `Calendrier aligné sur le cahier : ${link.planned.label.split(' — ')[0]} → ${formatLongDate(link.entry.date)}.`
+      `Calendrier aligné sur le cahier : ${link.planned.label.split(', Semestre ')[0]} → ${formatLongDate(link.entry.date)}.`
     );
   };
 
@@ -512,7 +512,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 });
                 toast.success(
                   names.length > 0
-                    ? `${names.length} absent${names.length > 1 ? 's' : ''} consigné${names.length > 1 ? 's' : ''} — ${absencesFor.planned.label.split(' — ')[0]}.`
+                    ? `${names.length} absent${names.length > 1 ? 's' : ''} consigné${names.length > 1 ? 's' : ''} : ${absencesFor.planned.label.split(', Semestre ')[0]}.`
                     : 'Liste des absents effacée.'
                 );
                 setAbsencesFor(null);
@@ -941,7 +941,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
     <div className="space-y-4">
       <SheetHeader className="text-left">
         <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-          Absents — {link.planned.label.split(' — ')[0]}
+          Absents : {link.planned.label.split(', Semestre ')[0]}
         </SheetTitle>
         <SheetDescription className="text-xs text-zinc-500 dark:text-zinc-400">
           {className} · {formatLongDate(effectiveDate)}
@@ -1005,7 +1005,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
         </div>
 
         <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
-          Astuce : collez une liste « Nom1, Nom2 » — chaque nom devient une étiquette.
+          Astuce : collez une liste « Nom1, Nom2 », chaque nom devient une étiquette.
         </p>
 
         <div className="grid grid-cols-2 gap-3 pt-2">

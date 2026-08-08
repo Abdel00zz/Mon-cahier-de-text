@@ -49,7 +49,7 @@ const devApiMockPlugin = (): Plugin => {
     };
     const hasSession = (req: import('http').IncomingMessage) =>
         /cdt_dev_session=1/.test(req.headers.cookie ?? '');
-    // accepte 06000000, 0600000000, +212 6..., etc. — tolérant sur la saisie dev
+    // accepte 06000000, 0600000000, +212 6..., etc., tolérant sur la saisie dev
     const phoneMatches = (raw: unknown) => {
         const digits = String(raw ?? '').replace(/\D/g, '');
         return digits === '06000000' || digits === '0600000000' || digits === '2126000000' || digits === '212600000000';
@@ -168,7 +168,7 @@ const devApiMockPlugin = (): Plugin => {
                 send(res, 405, { error: 'Méthode non autorisée.' });
             });
 
-            // Interface d'administration (/admin.html) — code d'accès dev : 00000000
+            // Interface d'administration (/admin.html), code d'accès dev : 00000000
             server.middlewares.use('/api/calendar', async (req, res) => {
                 if (req.method === 'GET') return send(res, 200, devCalendar);
                 send(res, 405, { error: 'Methode non autorisee.' });
@@ -315,7 +315,7 @@ export default defineConfig(({ mode }) => {
                     id: '/',
                     name: 'Cahier de Textes Interactif',
                     short_name: 'Cahier',
-                    description: 'Le hub de suivi du programme pour les enseignants : cahier, progression, alertes — même hors connexion.',
+                    description: 'Le hub de suivi du programme pour les enseignants : cahier, progression, alertes, même hors connexion.',
                     lang: 'fr',
                     dir: 'ltr',
                     display: 'standalone',
@@ -325,7 +325,7 @@ export default defineConfig(({ mode }) => {
                     orientation: 'any',
                     start_url: '/',
                     scope: '/',
-                    // Réutilise l'onglet existant au lieu d'en rouvrir un — évite
+                    // Réutilise l'onglet existant au lieu d'en rouvrir un, évite
                     // les doublons quand l'invite native lance l'app.
                     launch_handler: { client_mode: 'navigate-existing' },
                     prefer_related_applications: false,

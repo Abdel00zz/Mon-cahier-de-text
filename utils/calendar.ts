@@ -66,7 +66,7 @@ export const toISODate = (d: Date): string => {
 
 const asISO = (date: string | Date): string => (typeof date === 'string' ? date.slice(0, 10) : toISODate(date));
 
-/** Date du jour dans le fuseau marocain — critique côté serveur (fonctions Vercel en UTC). */
+/** Date du jour dans le fuseau marocain, critique côté serveur (fonctions Vercel en UTC). */
 export const todayInMorocco = (now: Date = new Date(), cal: HolidayCalendar = bundled): string => {
     try {
         // 'en-CA' produit le format YYYY-MM-DD
@@ -105,7 +105,7 @@ const getYears = (cal: HolidayCalendar): AnneeScolaire[] => {
 };
 
 /**
- * Année scolaire contenant la date donnée — ou, hors périodes connues
+ * Année scolaire contenant la date donnée, ou, hors périodes connues
  * (été, dates hors calendrier), l'année la plus proche.
  */
 export const getSchoolYearFor = (cal: HolidayCalendar, dateISO: string): AnneeScolaire => {

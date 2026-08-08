@@ -162,7 +162,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
     if (config) {
       // Types récurrents : titre auto-suggéré « Contrôle continu N » (N =
-      // occurrences existantes dans le cahier + 1). Simple suggestion — le
+      // occurrences existantes dans le cahier + 1). Simple suggestion, le
       // champ reste librement modifiable par le professeur.
       initialData.title = config.autoNumber
         ? `${config.name} ${countOccurrencesOfType(lessonsData, type) + 1}`

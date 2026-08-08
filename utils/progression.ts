@@ -5,7 +5,7 @@ import { flattenLessons } from './dataUtils.js';
  * Un « élément de contenu » est un travail effectué en classe (item, devoir,
  * contrôle…), jamais un conteneur structurel. Le filtre s'appuie sur
  * l'elementType du parcours (fiable) et non sur `data.type` : les Sections
- * n'ont pas de champ `type` et passaient l'ancien filtre — les titres
+ * n'ont pas de champ `type` et passaient l'ancien filtre, les titres
  * structurels gonflaient le dénominateur de complétion.
  */
 const CONTAINER_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);

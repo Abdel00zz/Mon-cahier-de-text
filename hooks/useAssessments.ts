@@ -37,7 +37,7 @@ const useCalendarAndPlanning = () => {
     return { calendar, planning };
 };
 
-/** Devoirs proches (≤ horizon jours) sur toutes les classes — pour la bannière du dashboard. */
+/** Devoirs proches (≤ horizon jours) sur toutes les classes, pour la bannière du dashboard. */
 export const useUpcomingAssessments = (
     classes: ClassInfo[],
     config: AppConfig,
@@ -52,7 +52,7 @@ export const useUpcomingAssessments = (
     }, [calendar, planning, classes, config.assessmentDates, horizonDays]);
 };
 
-/** Devoirs récemment passés (≤ lookback jours) — rappel « absents à consigner » du centre de notifications. */
+/** Devoirs récemment passés (≤ lookback jours), rappel « absents à consigner » du centre de notifications. */
 export const useRecentPastAssessments = (
     classes: ClassInfo[],
     config: AppConfig,
@@ -67,7 +67,7 @@ export const useRecentPastAssessments = (
     }, [calendar, planning, classes, config.assessmentDates, lookbackDays]);
 };
 
-/** Planning complet d'UNE classe (dates officielles + surcharges du prof) — pour l'onglet Emploi du temps. */
+/** Planning complet d'UNE classe (dates officielles + surcharges du prof), pour l'onglet Emploi du temps. */
 export const useClassAssessments = (
     classInfo: ClassInfo | null,
     config: AppConfig

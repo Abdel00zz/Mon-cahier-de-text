@@ -193,7 +193,7 @@ const VIRTUAL_OVERSCAN = 16;
 const TableHeader: React.FC = React.memo(() => {
   const { t } = useLocale();
   return (
-  /* §G : aucun padding externe — les colonnes de l'en-tête restent alignées
+  /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
@@ -393,7 +393,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
 
 SessionGroupRow.displayName = 'SessionGroupRow';
 
-/* État vide — une seule décision, sans bannière concurrente. */
+/* État vide, une seule décision, sans bannière concurrente. */
 const EmptyState: React.FC<{
   onOpenAddContentModal: (indices?: Indices) => void;
   predefinedProgramTitle?: string;
@@ -402,29 +402,32 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="rounded-xl border border-slate-200 bg-white px-5 py-12 shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:px-8 sm:py-14">
-            <div className="mx-auto flex max-w-xl flex-col items-center text-center">
+        <section className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-br from-white via-white to-primary/[0.045] px-5 py-12 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:px-8 sm:py-14">
+            <div aria-hidden="true" className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-primary/[0.055] blur-2xl" />
+            <div aria-hidden="true" className="absolute -bottom-24 -left-12 h-40 w-40 rounded-full bg-primary/[0.035] blur-2xl" />
+            <div className="relative mx-auto flex max-w-xl flex-col items-center text-center">
                 <img
                     src="/icons/icon-192.png"
                     alt=""
                     aria-hidden="true"
-                    className="h-16 w-16 rounded-2xl shadow-sm ring-1 ring-slate-900/5"
+                    className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-white"
                 />
                 <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">Cahier de textes</p>
-                <h3 className="mt-2 text-xl font-bold text-slate-900 font-display">Commencez votre progression</h3>
-                <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">
-                    {canLoadPredefined
-                        ? 'Un programme officiel est disponible pour cette classe. Chargez-le, ou créez votre propre chapitre.'
-                        : 'Créez un premier chapitre pour organiser vos cours et construire votre progression.'}
+                <p className="mt-3 max-w-md text-base leading-7 text-slate-700">
+                    {canLoadPredefined ? (
+                        <>
+                            Un <strong className="font-bold text-slate-950">programme officiel</strong> est disponible pour cette classe. Choisissez la façon dont vous souhaitez <strong className="font-bold text-slate-950">démarrer</strong>.
+                        </>
+                    ) : (
+                        <>
+                            Votre cahier est prêt. Créez un <strong className="font-bold text-slate-950">premier chapitre</strong> pour organiser votre progression.
+                        </>
+                    )}
                 </p>
 
-                {canLoadPredefined && (
-                    <p className="mt-4 max-w-md text-sm font-semibold text-slate-800">{predefinedProgramTitle}</p>
-                )}
-
-                <div className="mt-6 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
+                <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
                     {canLoadPredefined && (
-                        <Button type="button" onClick={onLoadPredefined} className="w-full sm:w-auto" variant="default">
+                        <Button type="button" onClick={onLoadPredefined} className="w-full shadow-lg shadow-primary/20 sm:w-auto" variant="default">
                             Charger le programme officiel
                         </Button>
                     )}

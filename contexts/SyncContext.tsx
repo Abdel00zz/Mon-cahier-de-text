@@ -34,7 +34,7 @@ interface SyncContextValue {
 const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: () => {} });
 
 const PUSH_DEBOUNCE_MS = 20_000;
-/** budget par requête de push — marge confortable sous la limite serveur (~950 Ko) */
+/** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
 const MAX_PUSH_BYTES = 700_000;
 
 const readLocalClasses = (): ClassInfo[] => {
@@ -115,7 +115,7 @@ const fetchLessonsBlob = async (classId: string): Promise<RemoteLessonsBlob | nu
 
 /**
  * Conflit multi-appareils : la version perdante (locale ou cloud) est
- * archivée avant écrasement — aucune donnée n'est jamais détruite en silence.
+ * archivée avant écrasement, aucune donnée n'est jamais détruite en silence.
  * Une seule copie par classe (la plus récente), récupérable via
  * `classDataConflict_v1_{classId}`.
  */
@@ -217,7 +217,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             /*
              * DÉCOUPAGE EN LOTS : le serveur refuse les corps > ~950 Ko (413).
              * Un push monolithique avec plusieurs gros cahiers (programmes
-             * officiels) échouait alors À CHAQUE tentative — c'est la cause
+             * officiels) échouait alors À CHAQUE tentative, c'est la cause
              * du badge « Erreur de synchro » permanent. Chaque lot reste sous
              * ~700 Ko ; un cahier volumineux part seul dans son propre lot.
              */
@@ -401,7 +401,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && localVisibleClasses.length > 0) {
                     // Première association : des cahiers locaux existent mais le
                     // cloud est vide. Proposition NON bloquante (toast avec action)
-                    // — l'app conseille, le prof décide, rien n'est interrompu.
+                    // L'application conseille, le professeur décide et rien n'est interrompu.
                     setSyncStatus('synced');
                     toast.info(
                         `${localClasses.length} cahier(s) présents sur cet appareil ne sont pas encore associés à votre compte.`,

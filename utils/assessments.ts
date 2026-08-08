@@ -9,7 +9,7 @@ import { HolidayCalendar, getSchoolYearFor } from './calendar.js';
  *   • Semestre 1 : la rentrée (année scolaire du calendrier) ;
  *   • Semestre 2 : le lendemain des vacances de mi-année.
  * Les dates calculées sont INDICATIVES et modifiables par le professeur
- * (onglet Emploi du temps) — jamais imposées.
+ * (onglet Emploi du temps), jamais imposées.
  */
 
 export interface PlannedAssessment {
@@ -114,7 +114,7 @@ const TYPE_LABEL: Record<PlanDevoir['type'], string> = {
 /**
  * Dates indicatives de tous les devoirs du plan pour l'année scolaire en
  * cours (celle contenant `today`). Chaque devoir tombe le LUNDI de sa
- * semaine cible — le prof ajuste ensuite librement.
+ * semaine cible, le prof ajuste ensuite librement.
  */
 export const computeAssessmentDates = (
     plan: Plan,
@@ -135,7 +135,7 @@ export const computeAssessmentDates = (
                 semestre: semestre.n,
                 type: devoir.type,
                 num: devoir.num,
-                label: `${TYPE_LABEL[devoir.type]} n°${devoir.num} — Semestre ${semestre.n}`,
+                label: `${TYPE_LABEL[devoir.type]} n°${devoir.num}, Semestre ${semestre.n}`,
                 dateISO: addDaysISO(starts[semestre.n], (devoir.semaine - 1) * 7),
                 duree: devoir.duree,
                 fenetre: devoir.fenetre,
@@ -204,7 +204,7 @@ export interface PastAssessment extends PlannedAssessment {
 
 /**
  * Devoirs du JOUR ou récemment passés : fenêtre [aujourd'hui, -lookback jours].
- * Sert au rappel « absents non consignés » — il apparaît dès la séance du
+ * Sert au rappel « absents non consignés », il apparaît dès la séance du
  * devoir (jour même) puis s'éteint de lui-même après la fenêtre.
  */
 export const getRecentPastAssessments = (

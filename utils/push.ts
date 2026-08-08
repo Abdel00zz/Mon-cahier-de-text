@@ -128,7 +128,7 @@ export const unsubscribeFromPush = async (): Promise<void> => {
 /**
  * Notification système LOCALE (sans serveur) via le service worker : visible
  * dans le volet de notifications du téléphone, même app en arrière-plan ou
- * écran verrouillé — tant que la page vit (rappels de fin de séance).
+ * écran verrouillé, tant que la page vit (rappels de fin de séance).
  * Silencieuse si la permission n'a pas été accordée : les couches vibration
  * et toast restent le signal de base.
  */

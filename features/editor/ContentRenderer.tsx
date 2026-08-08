@@ -198,7 +198,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           {/* Titre */}
           <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-foreground p-0" placeholder="Titre..." highlight={highlight} />
 
-          {/* Description : encadré doux sous le titre — contenu TOUJOURS affiché
+          {/* Description : encadré doux sous le titre, contenu TOUJOURS affiché
               en entier (aucune barre de défilement) ; texte enrichi (gras,
               italique, listes) + LaTeX (les longues formules passent à la
               ligne via displayOverflow: linebreak). */}

@@ -1,13 +1,13 @@
 import React from 'react';
 
 /*
- * Moteur de mise en page des descriptions — hors segments mathématiques :
+ * Moteur de mise en page des descriptions, hors segments mathématiques :
  *   **gras**                       → <strong>
  *   *italique*                     → <em>
  *   « - texte » en début de ligne  → puce (équivalent \itemize)
  *   « 1. texte » en début de ligne → liste numérotée (équivalent \enumerate)
  * Les segments $...$ / $$...$$ sont transmis intacts à MathJax (qui gère
- * \frac, \array, \begin{cases}, matrices, etc. — voir README).
+ * \frac, \array, \begin{cases}, matrices, etc., voir README).
  */
 
 // Split into math vs normal segments, then apply text formatting on normal parts only.
@@ -45,7 +45,7 @@ export function renderDescriptionWithBold(text: string): React.ReactNode[] {
  * Listes à puces (- ) et numérotées (1. ) ligne par ligne, puis gras/italique.
  * Les items de liste sont des BLOCS (display:flex) : dans un conteneur
  * `whitespace-pre-wrap`, un '\n' résiduel juste avant un bloc créerait une
- * ligne vide illogique — on ne l'émet donc jamais autour des items de liste.
+ * ligne vide illogique, on ne l'émet donc jamais autour des items de liste.
  */
 function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
   if (!segment) return [];

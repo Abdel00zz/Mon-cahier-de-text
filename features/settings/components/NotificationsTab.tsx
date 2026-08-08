@@ -11,7 +11,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 type Translate = ReturnType<typeof useLocale>['t'];
 
 /**
- * Carte d'activation des rappels push — le geste explicite qui remplace la
+ * Carte d'activation des rappels push, le geste explicite qui remplace la
  * demande de permission autrefois noyée dans l'onboarding. États clairs :
  * non supporté · installation iOS requise · bloqué (navigateur) · activé ·
  * à activer. Tout en tokens du design system (aucune couleur en dur).
@@ -186,7 +186,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 patch({ pushEnabled: true });
                 setMessage(t('notifications.pushEnabled'));
             } else {
-                setMessage(t('notifications.activationFailed', { reason: result.reason ?? '—' }));
+                setMessage(t('notifications.activationFailed', { reason: result.reason ?? 'raison non précisée' }));
             }
         } finally {
             setBusy(false);

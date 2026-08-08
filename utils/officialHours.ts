@@ -1,11 +1,11 @@
 /**
- * Horaires officiels indicatifs (MEN Maroc) — collège & lycée.
+ * Horaires officiels indicatifs (MEN Maroc), collège & lycée.
  * Source : grilles ministérielles (réforme 2016 collège ; note 43/2006 lycée).
  *
  * IMPORTANT : ces valeurs ne servent qu'à AIDER et ORIENTER le prof (repère
  * doux quand l'emploi du temps saisi s'écarte de l'officiel). Elles ne
  * contraignent jamais un choix : « en principe c'est l'officiel », mais les
- * établissements varient — la donnée reste indicative et surchargeable.
+ * établissements varient, la donnée reste indicative et surchargeable.
  */
 
 type Cycle = 'college' | 'lycee' | 'prepa' | undefined;

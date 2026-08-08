@@ -255,10 +255,10 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
 
   /**
    * État pédagogique d'un jour :
-   *  · `gap`     — séance passée SANS contenu consigné (le trou à combler) ;
-   *  · `done`    — toutes les séances du jour sont consignées ;
-   *  · `planned` — séance à venir ;
-   *  · `none`    — aucun cours ce jour-là.
+   *  · `gap` : séance passée sans contenu consigné (le trou à combler) ;
+   *  · `done` : toutes les séances du jour sont consignées ;
+   *  · `planned` : séance à venir ;
+   *  · `none` : aucun cours ce jour-là.
    */
   const dayStatus = (iso: string, events: CalendarEvent[]): { status: 'gap' | 'done' | 'planned' | 'none'; planned: number; recorded: number } => {
     const lessons = events.filter(event => event.kind === 'lesson');
@@ -436,7 +436,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             const dotEvents = visibleEvents.filter(event => event.kind !== 'holiday' && event.kind !== 'vacation');
 
             /*
-             * FONDS PORTEURS DE SENS — hiérarchie de lecture :
+             * FONDS PORTEURS DE SENS, hiérarchie de lecture :
              *  1. contexte de fermeture (férié / vacances / absence) ;
              *  2. semaine de devoir (rouge doux, demandé) ;
              *  3. état du cahier : trou à combler > jour consigné > à venir.
@@ -523,10 +523,10 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         </div>
       </div>
 
-      {/* Légende — les cases ne portent plus de texte : elle rend les pastilles
+      {/* Légende, les cases ne portent plus de texte : elle rend les pastilles
           et les aplats lisibles d'un coup d'œil. */}
       <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 px-0.5" aria-label={t('calendar.layers')}>
-        {/* États du cahier (fonds) — l'information la plus actionnable d'abord */}
+        {/* États du cahier (fonds), l'information la plus actionnable d'abord */}
         <li className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm border-s-[3px] border-warning bg-warning/[0.14]" aria-hidden />
           <span className="text-[9px] font-semibold text-zinc-500">{t('calendar.legend.gap')}</span>

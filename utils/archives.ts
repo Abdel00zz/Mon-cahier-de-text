@@ -8,7 +8,7 @@ import { getBundledCalendar, getSchoolYearFor, todayInMorocco } from './calendar
  * totale : config + classes + cahiers + journaux + mémoire d'impression)
  * figé au moment de l'archivage et étiqueté par année scolaire. Elle est
  * conservée sur l'appareil, consultable, téléchargeable et restaurable via
- * Paramètres ▸ Données — le prof garde ainsi la trace de ses années écoulées
+ * Paramètres ▸ Données, le prof garde ainsi la trace de ses années écoulées
  * après avoir reparti sur un cahier neuf.
  */
 

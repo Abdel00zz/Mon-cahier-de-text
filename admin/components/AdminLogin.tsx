@@ -33,7 +33,7 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
                     <h1 className="text-xl font-bold text-foreground font-display">
                         Administration
                     </h1>
-                    <p className="mt-1 text-sm text-muted-foreground">Accès réservé — saisissez le code.</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Accès réservé, saisissez le code.</p>
                 </div>
                 <label className="block space-y-1.5">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Code d'accès</span>

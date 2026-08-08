@@ -1,7 +1,7 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel — 2AC Mathématiques (Maroc).",
+  "_commentaire": "Squelette MINIMAL du programme officiel, 2AC Mathématiques (Maroc).",
   "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Les nombres rationnels — introduction et comparaison", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 1 : Les nombres rationnels, introduction et comparaison", "sections": [] },
     { "type": "chapter", "title": "Chapitre 2 : Somme et différence de deux nombres rationnels", "sections": [] },
     { "type": "chapter", "title": "Chapitre 3 : Produit et quotient de deux nombres rationnels", "sections": [] },
     { "type": "chapter", "title": "Chapitre 4 : Les puissances", "sections": [] },
