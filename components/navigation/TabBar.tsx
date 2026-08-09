@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Settings, CircleHelp, Bell, CalendarCheck, ChevronRight } from '@/components/ui/icons';
+import { BookOpen, Settings, CircleHelp, Bell, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -65,23 +65,20 @@ export const TabBar: React.FC<TabBarProps> = ({
         )}
         aria-label={copy.mainNav}
       >
-        <div className={cn('relative flex h-14 items-center justify-center px-3', isExpanded && 'lg:justify-start lg:px-4')}>
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-            <BookOpen className="h-4 w-4" />
-          </span>
-          <div className={cn('ms-2.5 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[158px]')}>
-            <span className="block truncate text-[15px] font-bold tracking-tight text-foreground">{copy.brand}</span>
-            <span className="block truncate text-[10px] font-semibold text-muted-foreground">{copy.teacherSpace}</span>
-          </div>
+        <div className={cn('flex h-14 items-center justify-center px-3', isExpanded && 'lg:justify-start lg:px-4')}>
           <button
             type="button"
             onClick={onToggleExpanded}
-            className={cn('absolute top-3.5 hidden h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 lg:flex', isRtl ? 'left-2' : 'right-2')}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25"
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
-            <ChevronRight className={cn('h-3.5 w-3.5 transition-transform', (isRtl ? !isExpanded : isExpanded) && 'rotate-180')} />
+            <Menu className="h-[15px] w-[15px]" />
           </button>
+          <div className={cn('ms-3 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[158px]')}>
+            <span className="block truncate text-[15px] font-bold tracking-tight text-foreground">{copy.brand}</span>
+            <span className="block truncate text-[10px] font-semibold text-muted-foreground">{copy.teacherSpace}</span>
+          </div>
         </div>
 
         <div className="mt-5 flex flex-1 flex-col gap-1 px-2 lg:px-0">
@@ -106,8 +103,8 @@ export const TabBar: React.FC<TabBarProps> = ({
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <span className="relative flex h-6 w-6 shrink-0 items-center justify-center">
-                  <Icon className={cn('h-[18px] w-[18px] transition-transform duration-200', isActive ? 'scale-105' : '')} />
+                <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                  <Icon className={cn('h-[15px] w-[15px] transition-transform duration-200', isActive ? 'scale-105' : '')} />
                   {count ? (
                     <span className={cn('absolute -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-bold text-destructive-foreground ring-2 ring-white dark:ring-zinc-950', isRtl ? '-left-2' : '-right-2')}>
                       {countLabel(count)}
@@ -134,7 +131,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[18px] w-[18px] shrink-0', activeTab === 'settings' && 'text-amber-700 dark:text-amber-300')} />
+            <Settings className={cn('h-[15px] w-[15px] shrink-0', activeTab === 'settings' && 'text-amber-700 dark:text-amber-300')} />
             <span className={cn('hidden flex-1 text-start text-[13px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' && 'font-bold')}>{copy.settings}</span>
           </button>
           <button
@@ -146,7 +143,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-[18px] w-[18px] shrink-0" />
+            <CircleHelp className="h-[15px] w-[15px] shrink-0" />
             <span className={cn('hidden flex-1 text-start text-[13px] font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
           </button>
         </div>
@@ -170,7 +167,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 className={cn('relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95', isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
               >
                 <div className="relative">
-                  <Icon className={cn('h-5 w-5 transition-transform duration-200', isActive && 'scale-110 stroke-[2.2]')} />
+                  <Icon className={cn('h-[17px] w-[17px] transition-transform duration-200', isActive && 'scale-110 stroke-[2.2]')} />
                   {count ? (
                 <span className={cn('absolute -top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] font-bold text-destructive-foreground ring-2 ring-card', isRtl ? '-left-1' : '-right-1')}>
                       {countLabel(count)}
@@ -188,7 +185,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             onClick={() => goTo('settings')}
             className={cn('relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
           >
-            <Settings className={cn('h-5 w-5 transition-transform duration-200', activeTab === 'settings' && 'scale-110 stroke-[2.2]')} />
+            <Settings className={cn('h-[17px] w-[17px] transition-transform duration-200', activeTab === 'settings' && 'scale-110 stroke-[2.2]')} />
             <span className={cn('mt-0.5 text-[10px] tracking-tight', activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-muted-foreground')}>{copy.settings}</span>
           </button>
         </div>
