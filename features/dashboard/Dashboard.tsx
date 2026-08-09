@@ -8,6 +8,7 @@ import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
+import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
@@ -15,12 +16,16 @@ import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus, CalendarCheck, BookOpen } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
 
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     onOpenEvaluations?: () => void;
+    notificationFeed: NotificationFeed;
+    onOpenNotificationsForClass: (classInfo: ClassInfo) => void;
+    onOpenSchedule?: () => void;
 }
 
 type ClassDisplayMode = 'list' | 'single' | 'double' | 'triple';
@@ -88,12 +93,16 @@ const findLatestDate = (data: any): string | null => {
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     onOpenEvaluations,
+    notificationFeed,
+    onOpenNotificationsForClass,
+    onOpenSchedule,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
+    const [notificationClass, setNotificationClass] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
@@ -103,7 +112,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const displayMenuRef = useRef<HTMLDivElement>(null);
 
     const isLoading = isClassesLoading || isConfigLoading;
-
+    const notificationCounts = useMemo(
+        () => new Map(classes.map(classInfo => [
+            classInfo.id,
+            notificationFeedForClass(notificationFeed, classInfo).totalCount,
+        ])),
+        [classes, notificationFeed],
+    );
     useEffect(() => {
         if (isClassesLoading) return;
 
@@ -414,11 +429,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             >
                                                 <ClassListItem
                                                     classInfo={classInfo}
-                                                    lastModified={lastModifiedDates[classInfo.id]}
-                                                    nextSession={nextSession(classInfo.id)}
                                                     onSelect={() => onSelectClass(classInfo)}
-                                                    onDelete={() => handleDeleteClass(classInfo.id)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onShowNotifications={() => setNotificationClass(classInfo)}
+                                                    notificationCount={notificationCounts.get(classInfo.id) ?? 0}
                                                 />
                                             </div>
                                         ))}
@@ -433,11 +447,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             >
                                                 <ClassCard
                                                     classInfo={classInfo}
-                                                    lastModified={lastModifiedDates[classInfo.id]}
-                                                    nextSession={nextSession(classInfo.id)}
                                                     onSelect={() => onSelectClass(classInfo)}
-                                                    onDelete={() => handleDeleteClass(classInfo.id)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onShowNotifications={() => setNotificationClass(classInfo)}
+                                                    notificationCount={notificationCounts.get(classInfo.id) ?? 0}
                                                 />
                                             </div>
                                         ))}
@@ -465,6 +478,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     updateClass(classId, updates);
                     setEditingClass(null);
                 }}
+                onDelete={editingClass ? () => {
+                    handleDeleteClass(editingClass.id);
+                    setEditingClass(null);
+                } : undefined}
             />
             <OnboardingModal
                 isOpen={isOnboardingOpen}
@@ -475,6 +492,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 classes={classes}
                 onCreateClass={createClass}
                 onOpenNotebook={onSelectClass}
+            />
+            <ClassNotificationsModal
+                isOpen={!!notificationClass}
+                classInfo={notificationClass}
+                config={config}
+                feed={notificationFeed}
+                lastModified={notificationClass ? lastModifiedDates[notificationClass.id] : null}
+                nextSession={notificationClass ? nextSession(notificationClass.id) : null}
+                onClose={() => setNotificationClass(null)}
+                onOpenCenter={onOpenNotificationsForClass}
+                onOpenSchedule={onOpenSchedule}
             />
         </div>
     );

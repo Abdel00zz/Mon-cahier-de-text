@@ -120,6 +120,7 @@ export const History = icon(faClockRotateLeft);
 export const Search = icon(faMagnifyingGlass);
 export const ChevronUp = icon(faChevronUp);
 export const ChevronDown = icon(faChevronDown);
+export const ChevronLeft = icon(faChevronLeft);
 export const ChevronRight = icon(faChevronRight);
 export const MoreVertical = icon(faEllipsisVertical);
 export const FileInput = icon(faFileImport);

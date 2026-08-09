@@ -19,6 +19,9 @@ interface ConfirmDialogProps {
     cancelLabel?: string;
     onConfirm: () => void;
     variant?: 'default' | 'destructive';
+    /** When provided, the user must type this exact text before confirming. */
+    confirmationPhrase?: string;
+    confirmationHint?: string;
 }
 
 export function ConfirmDialog({
@@ -30,10 +33,21 @@ export function ConfirmDialog({
     cancelLabel,
     onConfirm,
     variant = 'destructive',
+    confirmationPhrase,
+    confirmationHint,
 }: ConfirmDialogProps) {
     const { t } = useLocale();
+    const [confirmationValue, setConfirmationValue] = React.useState('');
+    const requiresTypedConfirmation = Boolean(confirmationPhrase);
+    const confirmationIsValid = !requiresTypedConfirmation || confirmationValue === confirmationPhrase;
+
+    React.useEffect(() => {
+        if (!open) setConfirmationValue('');
+    }, [open]);
+
     const handleConfirm = (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (!confirmationIsValid) return;
         onConfirm();
         onOpenChange(false);
     };
@@ -54,6 +68,23 @@ export function ConfirmDialog({
                         {description}
                     </DialogDescription>
                 </DialogHeader>
+                {requiresTypedConfirmation && (
+                    <label className="space-y-1.5">
+                        <span className="block text-xs font-semibold leading-relaxed text-foreground">
+                            {confirmationHint}
+                        </span>
+                        <input
+                            type="text"
+                            value={confirmationValue}
+                            onChange={(event) => setConfirmationValue(event.target.value)}
+                            placeholder={confirmationPhrase}
+                            autoComplete="off"
+                            autoFocus
+                            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                            aria-label={confirmationHint}
+                        />
+                    </label>
+                )}
                 <DialogFooter className="flex flex-col-reverse gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2 sm:pb-0">
                     <Button
                         type="button"
@@ -67,6 +98,7 @@ export function ConfirmDialog({
                         type="button"
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
+                        disabled={!confirmationIsValid}
                         className="w-full rounded-lg h-10 px-5 font-semibold transition-all duration-200 sm:w-auto sm:h-9"
                     >
                         {confirmLabel ?? t('common.confirm')}

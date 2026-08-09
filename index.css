@@ -345,6 +345,133 @@ button svg:is(.lucide, .svg-inline--fa).size-5,
   height: 1.6rem;
 }
 
+/*
+ * Densité de l’espace d’édition uniquement.
+ * - textes et badges du tableau : −10 % ;
+ * - boutons, libellés et icônes de l’éditeur : −12 %.
+ * Les valeurs explicites évitent les doubles réductions provoquées par les
+ * utilitaires Tailwind et neutralisent localement l’agrandissement global des
+ * icônes interactives. L’impression conserve ses propres dimensions.
+ */
+@media screen {
+  [data-editor-table] { font-size: 90%; }
+  [data-editor-table] .text-\[8px\]  { font-size: 7.2px; }
+  [data-editor-table] .text-\[9px\]  { font-size: 8.1px; }
+  [data-editor-table] .text-\[10px\] { font-size: 9px; }
+  [data-editor-table] .text-\[11px\] { font-size: 9.9px; }
+  [data-editor-table] .text-\[12px\] { font-size: 10.8px; }
+  [data-editor-table] .text-\[13px\] { font-size: 11.7px; }
+  [data-editor-table] .text-xs { font-size: 10.8px; line-height: 14.4px; }
+  [data-editor-table] .text-sm { font-size: 12.6px; line-height: 18px; }
+  [data-editor-table] .text-base { font-size: 14.4px; line-height: 21.6px; }
+  [data-editor-table] .text-lg { font-size: 16.2px; line-height: 25.2px; }
+  [data-editor-table] .text-xl { font-size: 18px; line-height: 25.2px; }
+  [data-editor-table] .text-2xl { font-size: 21.6px; line-height: 28.8px; }
+
+  [data-editor-table] [data-slot="badge"] {
+    padding: 3.6px 9px;
+    border-radius: 7.2px;
+    font-size: 9px;
+    line-height: 1.15;
+  }
+
+  /* Tous les boutons de l’application suivent la même réduction de 12 %. */
+  button {
+    font-size: 0.88em;
+  }
+  [data-editor-actions] [role="menuitem"] {
+    gap: 7.04px;
+    padding: 5.28px 8.8px;
+    font-size: 10.56px;
+    line-height: 14.08px;
+  }
+  [data-editor-actions] [role="menuitem"] svg.h-4,
+  [data-editor-actions] [role="menuitem"] svg.size-4 {
+    width: 0.88rem;
+    height: 0.88rem;
+  }
+  [data-editor-actions] [role="menuitem"] svg.h-3\.5 {
+    width: 0.77rem;
+    height: 0.77rem;
+  }
+
+  button.text-\[8px\], button .text-\[8px\] { font-size: 7.04px; }
+  button.text-\[9px\], button .text-\[9px\] { font-size: 7.92px; }
+  button.text-\[10px\], button .text-\[10px\] { font-size: 8.8px; }
+  button.text-\[11px\], button .text-\[11px\] { font-size: 9.68px; }
+  button.text-\[12px\], button .text-\[12px\] { font-size: 10.56px; }
+  button.text-\[13px\], button .text-\[13px\] { font-size: 11.44px; }
+  button.text-xs, button .text-xs { font-size: 10.56px; line-height: 14.08px; }
+  button.text-sm, button .text-sm { font-size: 12.32px; line-height: 17.6px; }
+  button.text-base, button .text-base { font-size: 14.08px; line-height: 21.12px; }
+  button.text-lg, button .text-lg { font-size: 15.84px; line-height: 24.64px; }
+  button[data-slot="button"] { font-size: 11.44px; }
+
+  button.h-14 { height: 3.08rem; }
+  button.h-12 { height: 2.64rem; }
+  button.h-11 { height: 2.42rem; }
+  button.h-10 { height: 2.2rem; }
+  button.h-9  { height: 1.98rem; }
+  button.h-8  { height: 1.76rem; }
+  button.h-7  { height: 1.54rem; }
+  button.h-6  { height: 1.32rem; }
+  button.min-h-11 { min-height: 2.42rem; }
+  button.min-h-10 { min-height: 2.2rem; }
+
+  button.w-14 { width: 3.08rem; }
+  button.w-12 { width: 2.64rem; }
+  button.w-11 { width: 2.42rem; }
+  button.w-10 { width: 2.2rem; }
+  button.w-9  { width: 1.98rem; }
+  button.w-8  { width: 1.76rem; }
+  button.w-7  { width: 1.54rem; }
+  button.w-6  { width: 1.32rem; }
+
+  button.px-6 { padding-inline: 1.32rem; }
+  button.px-5 { padding-inline: 1.1rem; }
+  button.px-4 { padding-inline: 0.88rem; }
+  button.px-3\.5 { padding-inline: 0.77rem; }
+  button.px-3 { padding-inline: 0.66rem; }
+  button.px-2\.5 { padding-inline: 0.55rem; }
+  button.px-2 { padding-inline: 0.44rem; }
+  button.px-1 { padding-inline: 0.22rem; }
+  button.py-2 { padding-block: 0.44rem; }
+  button.py-1\.5 { padding-block: 0.33rem; }
+  button.py-1 { padding-block: 0.22rem; }
+  button.p-4 { padding: 0.88rem; }
+  button.p-3 { padding: 0.66rem; }
+  button.p-2\.5 { padding: 0.55rem; }
+  button.p-2 { padding: 0.44rem; }
+  button.p-1\.5 { padding: 0.33rem; }
+  button.p-1 { padding: 0.22rem; }
+  button.gap-4 { gap: 0.88rem; }
+  button.gap-3 { gap: 0.66rem; }
+  button.gap-2\.5 { gap: 0.55rem; }
+  button.gap-2 { gap: 0.44rem; }
+  button.gap-1\.5 { gap: 0.33rem; }
+  button.gap-1 { gap: 0.22rem; }
+
+  button svg:is(.lucide, .svg-inline--fa).h-6,
+  button svg:is(.lucide, .svg-inline--fa).size-6 {
+    width: 1.32rem;
+    height: 1.32rem;
+  }
+  button svg:is(.lucide, .svg-inline--fa).h-5,
+  button svg:is(.lucide, .svg-inline--fa).size-5 {
+    width: 1.408rem;
+    height: 1.408rem;
+  }
+  button svg:is(.lucide, .svg-inline--fa).h-4,
+  button svg:is(.lucide, .svg-inline--fa).size-4 {
+    width: 1.144rem;
+    height: 1.144rem;
+  }
+  button svg:is(.lucide, .svg-inline--fa).h-3\.5 {
+    width: 0.77rem;
+    height: 0.77rem;
+  }
+}
+
 svg.svg-inline--fa {
   shape-rendering: geometricPrecision;
 }
@@ -415,11 +542,11 @@ button svg.svg-inline--fa,
 .dialog-content[data-state="open"] { animation: dialog-sheet-in 360ms cubic-bezier(.22, 1, .36, 1) both; }
 .dialog-content[data-state="closed"] { animation: dialog-sheet-out 220ms cubic-bezier(.4, 0, 1, 1) both; }
 
-/* Barre d'actions volontairement compacte : le contenu reste la zone
-   principale de la modale, sans gros boutons qui tassent la lecture. */
+/* Barre d'actions compacte sur bureau, mais avec des cibles tactiles
+   confortables dès qu'une modale devient une feuille sur téléphone. */
 .dialog-footer [data-slot="button"] {
-  height: 2rem;
-  min-height: 2rem;
+  height: 2.25rem;
+  min-height: 2.25rem;
   border-radius: .55rem;
   padding-inline: .75rem;
   font-size: .75rem;
@@ -454,8 +581,8 @@ button svg.svg-inline--fa,
 
 @media (max-width: 639px) {
   .dialog-footer [data-slot="button"] {
-    height: 2rem;
-    min-height: 2rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
   }
 
   /* Téléphone : la modale doit privilégier le contenu, pas les grands

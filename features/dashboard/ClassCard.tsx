@@ -1,20 +1,18 @@
-import { memo, MouseEvent, FC, useState } from 'react';
+import { memo, MouseEvent, FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
-import { NextSessionInfo } from '@/utils/timetable';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Trash2, Settings, Users } from '@/components/ui/icons';
+import { Settings, Users, Info } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { cn } from '@/lib/utils';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
-    lastModified: string | null | undefined;
-    nextSession?: NextSessionInfo | null;
     onSelect: () => void;
-    onDelete: () => void;
     onConfigure: () => void;
+    onShowNotifications: () => void;
+    notificationCount: number;
 }
 
 const containsArabic = (text: string): boolean => {
@@ -34,18 +32,6 @@ const formatSuperscript = (text: string) => {
     });
 };
 
-const formatDate = (dateString: string | null | undefined, locale: string, emptyLabel: string): string => {
-    if (!dateString) return emptyLabel;
-    try {
-        const date = new Date(dateString);
-        const corrected = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-        const dateLocale = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
-        return corrected.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' });
-    } catch {
-        return '---';
-    }
-};
-
 const CYCLE_BADGES: Record<string, { style: string; focusClass: string }> = {
     college: {
         style: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
@@ -61,21 +47,26 @@ const CYCLE_BADGES: Record<string, { style: string; focusClass: string }> = {
     },
 };
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextSession, onSelect, onDelete, onConfigure }) => {
-    const [confirmDelete, setConfirmDelete] = useState(false);
+const ClassCardComponent: FC<ClassCardProps> = ({
+    classInfo,
+    onSelect,
+    onConfigure,
+    onShowNotifications,
+    notificationCount,
+}) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
-
-    const handleDeleteClick = (e: MouseEvent) => {
-        e.stopPropagation();
-        impact('medium');
-        setConfirmDelete(true);
-    };
 
     const handleConfigureClick = (e: MouseEvent) => {
         e.stopPropagation();
         impact('light');
         onConfigure();
+    };
+
+    const handleNotificationsClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        impact('light');
+        onShowNotifications();
     };
 
     const handleCardClick = () => {
@@ -98,16 +89,19 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
     const isArabic = containsArabic(mainName);
     const cycleBadge = classInfo.cycle ? CYCLE_BADGES[classInfo.cycle] : null;
     const cycleLabel = classInfo.cycle ? t(`cycle.${classInfo.cycle}`) : '';
+    const notificationButtonLabel = notificationCount > 0
+        ? t('notifications.classButtonLabelCount', { className: displayName, count: notificationCount })
+        : t('notifications.classButtonLabel', { className: displayName });
 
     return (
         <div
             onClick={handleCardClick}
-            className={`card-press group relative flex min-h-[156px] cursor-pointer flex-col overflow-hidden rounded-3xl border border-border/80 bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'} sm:min-h-[168px] text-left`}
+            className={`card-press group relative flex min-h-[112px] cursor-pointer flex-col overflow-hidden rounded-3xl border border-border/80 bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'} sm:min-h-[120px] text-left`}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
         >
-            <div className="flex flex-1 flex-col p-4 sm:p-5">
+            <div className="flex flex-1 flex-col p-3.5 sm:p-4">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                             {cycleBadge && (
@@ -119,32 +113,43 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
 
                     <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity group-hover:opacity-100">
                         <button
+                            type="button"
+                            onClick={handleNotificationsClick}
+                            className="relative flex !h-10 !w-10 items-center justify-center rounded-lg text-primary/70 transition-colors hover:bg-primary/[0.08] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 active:scale-95 sm:!h-8 sm:!w-8 sm:rounded-xl"
+                            title={notificationButtonLabel}
+                            aria-label={notificationButtonLabel}
+                            aria-haspopup="dialog"
+                        >
+                            <Info className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                            {notificationCount > 0 && (
+                                <span className={cn(
+                                    'absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[7px] font-extrabold leading-none text-white ring-1 ring-card',
+                                    notificationCount > 9 ? 'bg-red-500' : 'bg-primary',
+                                )}>
+                                    {notificationCount > 9 ? '9+' : notificationCount}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            type="button"
                             onClick={handleConfigureClick}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 active:scale-95 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                            className="flex !h-10 !w-10 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 active:scale-95 sm:!h-8 sm:!w-8 sm:rounded-xl dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                             title={t('dashboard.edit')}
                             aria-label={`${t('dashboard.edit')} ${displayName}`}
                         >
-                            <Settings className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                            onClick={handleDeleteClick}
-                            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 active:scale-95 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                            title={t('dashboard.delete')}
-                            aria-label={`${t('dashboard.delete')} ${displayName}`}
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Settings className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         </button>
                     </div>
                 </div>
 
-                <div className="mt-5 flex min-w-0 items-center gap-3">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${visual.iconSurfaceClass}`}>
-                        <Users className="h-5 w-5" />
+                <div className="mt-3.5 flex min-w-0 items-center gap-2.5">
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${visual.iconSurfaceClass}`}>
+                        <Users className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
                         <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">{t('dashboard.notebook')}</p>
                         <h3
-                            className={`truncate text-sm font-bold tracking-tight text-foreground transition-colors sm:text-base ${isArabic ? 'font-ar text-sm' : 'font-display'}`}
+                            className={`line-clamp-2 text-sm font-bold leading-tight tracking-tight text-foreground transition-colors sm:text-base ${isArabic ? 'font-ar text-sm' : 'font-display'}`}
                             title={displayName}
                         >
                             {formatSuperscript(mainName)}
@@ -155,41 +160,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, lastModified, nextS
                     </div>
                 </div>
             </div>
-
-            {/* Bottom info footer */}
-            <div className="mt-auto flex items-center justify-between rounded-b-2xl bg-zinc-50/80 px-4 py-2.5 dark:bg-zinc-900/40 sm:px-5">
-                <div className={`flex min-w-0 items-center gap-2 ${isRtl ? 'pl-2' : 'pr-2'}`}>
-                    <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                            nextSession?.kind === 'now'
-                                ? 'bg-emerald-500 animate-pulse'
-                                : nextSession
-                                ? 'bg-[#007AFF]'
-                                : 'bg-zinc-300 dark:bg-zinc-700'
-                        }`}
-                    />
-                    <p className="min-w-0 truncate text-[10px] leading-none">
-                        <span className="font-bold uppercase tracking-wide text-muted-foreground/55">{t('dashboard.nextSessionStatus')}</span>{' '}
-                        <span className={`font-semibold ${nextSession?.kind === 'now' ? 'text-emerald-600 dark:text-emerald-400' : nextSession ? 'text-[#007AFF] dark:text-blue-400' : 'text-muted-foreground/70'}`}>
-                            {nextSession?.label ?? t('dashboard.toSchedule')}
-                        </span>
-                    </p>
-                </div>
-
-                <div className="shrink-0 flex flex-col justify-center gap-0.5 text-right">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 leading-none">{t('dashboard.lastLesson')}</span>
-                    <span className="font-mono text-[11px] font-medium text-muted-foreground/80 leading-none">{formatDate(lastModified, locale, t('dashboard.none'))}</span>
-                </div>
-            </div>
-
-            <ConfirmDialog
-                open={confirmDelete}
-                onOpenChange={setConfirmDelete}
-                title={t('dashboard.deleteNotebookTitle', { name: displayName })}
-                description={t('dashboard.deleteNotebookDescription')}
-                confirmLabel={t('dashboard.delete')}
-                onConfirm={onDelete}
-            />
         </div>
     );
 };

@@ -68,6 +68,14 @@ const SETTINGS_HASH = '#/parametres';
 const NOTIFICATIONS_HASH = '#/notifications';
 
 const getClassRoute = (classId: string) => `#/classe/${encodeURIComponent(classId)}`;
+const getNotificationsRoute = (classId?: string | null) =>
+  classId ? `${NOTIFICATIONS_HASH}?class=${encodeURIComponent(classId)}` : NOTIFICATIONS_HASH;
+
+const readNotificationClassId = (): string | null => {
+  if (!window.location.hash.startsWith(NOTIFICATIONS_HASH)) return null;
+  const query = window.location.hash.split('?')[1] ?? '';
+  return new URLSearchParams(query).get('class');
+};
 
 const readStoredClass = (classId: string): ClassInfo | null => {
   try {
@@ -83,7 +91,7 @@ const readStoredClass = (classId: string): ClassInfo | null => {
 
 const readRouteSnapshot = (): RouteSnapshot => {
   if (window.location.hash === SETTINGS_HASH) return { view: 'settings', activeClass: null };
-  if (window.location.hash === NOTIFICATIONS_HASH) return { view: 'notifications', activeClass: null };
+  if (window.location.hash.startsWith(NOTIFICATIONS_HASH)) return { view: 'notifications', activeClass: null };
   const match = window.location.hash.match(/^#\/classe\/([^/]+)$/);
   if (!match) return { view: 'dashboard', activeClass: null };
 
@@ -159,10 +167,25 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
   }, [saveCurrentScroll]);
 
+  const handleOpenSchedule = useCallback(() => {
+    try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* navigation conservée */ }
+    handleOpenSettings();
+  }, [handleOpenSettings]);
+
   const handleOpenNotifications = useCallback(() => {
     saveCurrentScroll();
     setView('notifications');
     window.history.pushState({ route: 'notifications' }, '', NOTIFICATIONS_HASH);
+  }, [saveCurrentScroll]);
+
+  const handleOpenNotificationsForClass = useCallback((classInfo: ClassInfo) => {
+    saveCurrentScroll();
+    setView('notifications');
+    window.history.pushState(
+      { route: 'notifications', classId: classInfo.id },
+      '',
+      getNotificationsRoute(classInfo.id),
+    );
   }, [saveCurrentScroll]);
 
   // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
@@ -215,6 +238,7 @@ const App: React.FC = () => {
           classes={classes}
           config={config}
           feed={notificationFeed}
+          initialClassId={readNotificationClassId()}
           onSelectClass={handleSelectClass}
           onOpenSettings={handleOpenSettings}
           onMutate={() => setNotificationVersion(v => v + 1)}
@@ -228,11 +252,18 @@ const App: React.FC = () => {
       <Dashboard
         onSelectClass={handleSelectClass}
         onOpenEvaluations={() => setIsEvaluationsOpen(true)}
+        notificationFeed={notificationFeed}
+        onOpenNotificationsForClass={handleOpenNotificationsForClass}
+        onOpenSchedule={handleOpenSchedule}
       />
     );
   };
 
-  const routeKey = view === 'editor' && activeClass ? `editor-${activeClass.id}` : view;
+  const routeKey = view === 'editor' && activeClass
+    ? `editor-${activeClass.id}`
+    : view === 'notifications'
+      ? `notifications-${readNotificationClassId() ?? 'all'}`
+      : view;
 
   const activeTab: TabType = isEvaluationsOpen
     ? 'evaluations'

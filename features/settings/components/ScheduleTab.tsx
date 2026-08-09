@@ -129,6 +129,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     // ZÉRO classe ≠ blocage : la grille reste affichée, les classes se créent
     // directement depuis les cases (« + Créer une classe… »). On encourage.
     const noClassesYet = classes.length === 0;
+    // Dès qu'une classe existe, la grille sert à FINIR sa configuration : on
+    // évite de répéter « créer une classe » dans chacune des 48 cases.
+    const canCreateFromSchedule = !!onCreateClass && noClassesYet;
     if (noClassesYet && !onCreateClass) {
         return (
             <div className="rounded-md border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
@@ -174,6 +177,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 />
                 <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
             </div>
+
+            {/* État de complétude et volumes horaires avant la saisie de la grille. */}
+            <HoursAdvisory classes={classes} timetable={timetable} />
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
             <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
@@ -254,7 +260,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                     </option>
                                                 ))}
-                                                {onCreateClass && (
+                                                {canCreateFromSchedule && (
                                                     <option value="__create__" className="text-slate-800 font-bold">
                                                         ＋ {t('schedule.createClass')}
                                                     </option>
@@ -281,10 +287,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </table>
                 </div>
             </div>
-
-            {/* Avis intelligent PERSISTANT : écarts entre heures posées et
-                horaire officiel, remis à jour en direct. Non bloquant. */}
-            <HoursAdvisory classes={classes} timetable={timetable} />
 
             {/* Récapitulatif compact par classe : séances, heures et état horaire. */}
             <div className="flex flex-wrap gap-2">
@@ -348,10 +350,11 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
     const { locale, t } = useLocale();
     const insights = React.useMemo(() => computeScheduleInsights(classes, timetable), [classes, timetable]);
     // on ne signale que les classes dont l'officiel est connu ET qui s'écartent
+    const unplanned = insights.filter(i => i.deviation === 'empty');
     const deviations = insights.filter(i => i.officialHours !== null && (i.deviation === 'over' || i.deviation === 'under'));
     const conform = insights.filter(i => i.officialHours !== null && i.deviation === 'match' && i.scheduledHours > 0);
 
-    if (deviations.length === 0) {
+    if (unplanned.length === 0 && deviations.length === 0) {
         if (conform.length === 0) return null;
         return (
             <div className="flex items-center gap-2 rounded-lg border border-success/25 bg-success/10 px-3 py-2">
@@ -364,14 +367,43 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-warning/30 bg-warning/5 px-3 py-2" role="status">
-            <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
-                <TriangleAlert className="h-4 w-4" />
-                <span className="text-xs font-bold">
-                    {t('schedule.hoursCheck', { count: deviations.length, plural: deviations.length > 1 && locale !== 'ar' ? 's' : '' })}
-                </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
+        <div className="space-y-2 rounded-xl border border-warning/30 bg-warning/5 px-3 py-2.5" role="status">
+            {unplanned.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
+                        <TriangleAlert className="h-4 w-4" />
+                        <span className="text-xs font-bold">
+                            {t('schedule.classesToPlan', { count: unplanned.length, plural: unplanned.length > 1 && locale !== 'ar' ? 's' : '' })}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        {unplanned.map(i => (
+                            <span
+                                key={i.classId}
+                                className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg bg-card px-2.5 py-1.5 text-[11px] leading-snug shadow-2xs"
+                            >
+                                <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
+                                <span className="text-muted-foreground">· {t('schedule.noSlotsPlanned')}</span>
+                                {i.officialHours !== null && (
+                                    <span className="rounded bg-blue-50 px-1.5 py-0.5 font-semibold text-blue-700">
+                                        {t('schedule.hoursToAdd', { count: i.officialHours })}
+                                    </span>
+                                )}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {deviations.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
+                        <TriangleAlert className="h-4 w-4" />
+                        <span className="text-xs font-bold">
+                            {t('schedule.hoursCheck', { count: deviations.length, plural: deviations.length > 1 && locale !== 'ar' ? 's' : '' })}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
                 {deviations.map(i => {
                     const isOver = i.deviation === 'over';
                     const adjustment = Math.abs(i.delta);
@@ -389,7 +421,9 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
                         </span>
                     );
                 })}
+                    </div>
+                </div>
+            )}
             </div>
-        </div>
     );
 };

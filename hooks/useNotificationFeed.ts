@@ -22,6 +22,35 @@ export interface NotificationFeed {
   attentionCount: number;
 }
 
+export interface ClassNotificationFeed extends NotificationFeed {
+  totalCount: number;
+}
+
+/**
+ * Filtre unique utilisé par le centre et les aperçus des cartes de classe.
+ * Les cartes ne recalculent jamais les alertes : elles consomment exactement
+ * le même flux que le centre de notifications.
+ */
+export const notificationFeedForClass = (
+  feed: NotificationFeed,
+  classInfo: Pick<ClassInfo, 'id' | 'name'>,
+): ClassNotificationFeed => {
+  const corrections = feed.corrections.filter(signal => signal.classId === classInfo.id);
+  const ignoredCorrections = feed.ignoredCorrections.filter(signal => signal.classId === classInfo.id);
+  const assessments = feed.assessments.filter(item => item.classId === classInfo.id);
+  const officialEvents = feed.officialEvents.filter(item => item.classNames.includes(classInfo.name));
+  const urgentOfficial = officialEvents.filter(item => item.inDays <= 3).length;
+
+  return {
+    corrections,
+    ignoredCorrections,
+    assessments,
+    officialEvents,
+    attentionCount: corrections.length + urgentOfficial,
+    totalCount: corrections.length + assessments.length + officialEvents.length,
+  };
+};
+
 export const useNotificationFeed = (
   classes: ClassInfo[],
   config: AppConfig,

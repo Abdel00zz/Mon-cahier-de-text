@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, Cycle } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
-import { CalendarDays, CircleCheck, Eye, EyeOff, Loader2, TriangleAlert } from '@/components/ui/icons';
+import { Bell, CalendarCheck, CircleCheck, Eye, EyeOff, ListChecks, Loader2, Plus, Printer, TriangleAlert, User } from '@/components/ui/icons';
 import { SUBJECTS } from '@/constants';
 import { AppLocale } from '@/types';
 
@@ -20,6 +20,7 @@ const AUTH_COPY = {
     plan: 'Alertes au bon moment', planDetail: 'Retards et dates à vérifier.',
     record: 'Progression calculée', recordDetail: 'Sans double saisie.',
     assessments: 'Prochaine étape claire', assessmentsDetail: 'Reprenez au bon endroit.',
+    printTitle: 'Impression haute qualité', printDetail: 'Imprimez votre cahier de textes avec une mise en page nette, prête à archiver.',
     offline: 'Hors ligne', automaticSync: 'Synchronisation automatique', languageLabel: 'Choisir la langue',
     heroAlt: 'Enseignant préparant ses prochaines séances dans une salle de classe',
     teacherSpace: 'Espace enseignant', welcome: 'Bon retour', createSpace: 'Créez votre espace',
@@ -44,6 +45,7 @@ const AUTH_COPY = {
     plan: 'تنبيهات في وقتها', planDetail: 'تأخر وتواريخ تحتاج التحقق.',
     record: 'تقدّم محسوب تلقائياً', recordDetail: 'دون إدخال المعطيات مرتين.',
     assessments: 'خطوتك المقبلة واضحة', assessmentsDetail: 'استأنف من المكان الصحيح.',
+    printTitle: 'طباعة عالية الجودة', printDetail: 'اطبع دفتر النصوص بتنسيق واضح وجاهز للأرشفة.',
     offline: 'يعمل دون اتصال', automaticSync: 'مزامنة تلقائية', languageLabel: 'اختيار اللغة',
     heroAlt: 'أستاذ يحضّر حصصه المقبلة داخل قاعة دراسية',
     teacherSpace: 'فضاء الأستاذ', welcome: 'مرحباً بعودتك', createSpace: 'أنشئ فضاءك',
@@ -252,17 +254,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             <p className="mt-2.5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-zinc-300">{copy.promiseDetail}</p>
           </div>
 
-          <div className="mt-auto grid grid-cols-3 gap-3 pt-6">
+          <div className="mt-auto grid grid-cols-2 gap-3 pt-6 xl:grid-cols-4">
             {[
-              { icon: TriangleAlert, title: copy.plan },
-              { icon: CircleCheck, title: copy.record },
-              { icon: CalendarDays, title: copy.assessments },
+              { icon: Bell, title: copy.plan },
+              { icon: ListChecks, title: copy.record },
+              { icon: CalendarCheck, title: copy.assessments },
+              { icon: Printer, title: copy.printTitle },
             ].map(item => (
               <div key={item.title} className="flex min-w-0 items-center gap-2.5 rounded-lg border border-border/70 bg-card/82 p-3 shadow-2xs backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-950">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#2468bd] dark:bg-blue-950 dark:text-blue-300">
                   <item.icon className="h-3.5 w-3.5" />
                 </span>
-                <span className="truncate text-[11px] font-extrabold text-[#173a63] dark:text-zinc-100">{item.title}</span>
+                <span className="line-clamp-2 text-[11px] font-extrabold leading-snug text-[#173a63] dark:text-zinc-100">{item.title}</span>
               </div>
             ))}
           </div>
@@ -308,6 +311,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             <p className={`text-[10px] font-extrabold text-primary ${isRtl ? '' : 'uppercase tracking-[0.14em]'}`}>{copy.teacherSpace}</p>
             <h2 className={`mt-3 font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2.35rem] leading-[1.3]' : 'text-[1.75rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{isRegister ? copy.createDetail : copy.welcomeDetail}</p>
+            {!isRegister && (
+              <div className="mt-4 flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/65 px-3 py-2.5 text-start dark:border-blue-900/45 dark:bg-blue-950/25">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-card text-primary shadow-2xs dark:bg-zinc-900">
+                  <Printer className="h-3.5 w-3.5" />
+                </span>
+                <p className="text-[11px] font-semibold leading-snug text-slate-700 dark:text-zinc-200">
+                  <span className="font-extrabold text-[#173a63] dark:text-blue-200">{copy.printTitle} · </span>
+                  {copy.printDetail}
+                </p>
+              </div>
+            )}
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
@@ -479,7 +493,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
               <div className="absolute inset-0 bg-background/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               {isSubmitting ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {copy.wait}</>
-              ) : isRegister ? copy.createMyAccount : copy.signIn}
+              ) : (
+                <>
+                  {isRegister ? <Plus className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                  {isRegister ? copy.createMyAccount : copy.signIn}
+                </>
+              )}
             </button>
           </form>
         </motion.div>

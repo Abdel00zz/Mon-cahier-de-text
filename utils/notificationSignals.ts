@@ -269,17 +269,37 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
         });
     }
 
-    // 4 · Emploi du temps manquant, préalable à tous les contrôles
-    if (!hasTimetable) {
-        const id = `schedule:${classInfo.id}:missing`;
+    // 4 · Emploi du temps incomplet : même signal dans le centre et dans le
+    // suivi de classe, avec le volume exact à ajouter ou à retirer.
+    const scheduleNeedsAttention = hours.deviation === 'empty' || hours.deviation === 'under' || hours.deviation === 'over';
+    if (scheduleNeedsAttention) {
+        const id = `schedule:${classInfo.id}:${hours.deviation}:${hours.scheduledHours}:${hours.officialHours ?? 'unknown'}`;
+        const adjustment = Math.abs(hours.delta);
+        const detail = hours.deviation === 'empty'
+            ? hours.officialHours !== null
+                ? t('notifications.signal.scheduleEmptyDetail', { missing: hours.officialHours })
+                : t('notifications.signal.scheduleDetail')
+            : hours.deviation === 'under'
+                ? t('notifications.signal.scheduleUnderDetail', {
+                    scheduled: hours.scheduledHours,
+                    expected: hours.officialHours ?? 0,
+                    missing: adjustment,
+                })
+                : t('notifications.signal.scheduleOverDetail', {
+                    scheduled: hours.scheduledHours,
+                    expected: hours.officialHours ?? 0,
+                    excess: adjustment,
+                });
         signals.push({
             id,
             kind: 'schedule',
             action: 'timetable',
             classId: classInfo.id,
             className,
-            title: t('notifications.signal.scheduleTitle'),
-            detail: t('notifications.signal.scheduleDetail'),
+            title: hours.deviation === 'over'
+                ? t('notifications.signal.scheduleAdjustTitle')
+                : t('notifications.signal.scheduleTitle'),
+            detail,
             ignored: ignored.has(id),
         });
     }

@@ -39,7 +39,7 @@ import {
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { NotificationCalendar } from './NotificationCalendar';
-import { NotificationFeed } from '@/hooks/useNotificationFeed';
+import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -218,6 +218,7 @@ interface NotificationsPageProps {
   classes: ClassInfo[];
   config: AppConfig;
   feed: NotificationFeed;
+  initialClassId?: string | null;
   onSelectClass: (classInfo: ClassInfo) => void;
   onOpenSettings: () => void;
   onMutate: () => void;
@@ -227,14 +228,21 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   classes,
   config,
   feed,
+  initialClassId,
   onSelectClass,
   onOpenSettings,
   onMutate,
 }) => {
   const { locale, t, isRtl } = useLocale();
   const titleFontClass = isRtl ? 'font-ar-display text-xl leading-tight tracking-normal' : 'font-display';
-  const [activeAxis, setActiveAxis] = useState<AxisId>('priorites');
-  const [selectedClassId, setSelectedClassId] = useState('all');
+  const initialClass = initialClassId ? classes.find(classInfo => classInfo.id === initialClassId) ?? null : null;
+  const initialFeed = initialClass ? notificationFeedForClass(feed, initialClass) : null;
+  const [activeAxis, setActiveAxis] = useState<AxisId>(() =>
+    initialFeed && initialFeed.corrections.length === 0 && (initialFeed.assessments.length + initialFeed.officialEvents.length) > 0
+      ? 'echeances'
+      : 'priorites',
+  );
+  const [selectedClassId, setSelectedClassId] = useState(initialClass?.id ?? 'all');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -285,13 +293,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   useEffect(() => {
     if (selectedClassId === 'all' || selectedClass) return;
     setSelectedClassId('all');
+    window.history.replaceState({ route: 'notifications' }, '', '#/notifications');
   }, [selectedClass, selectedClassId]);
 
-  const filteredCorrections = selectedClass ? corrections.filter(signal => signal.classId === selectedClass.id) : corrections;
-
-  const filteredIgnored = selectedClass ? ignoredCorrections.filter(s => s.classId === selectedClass.id) : ignoredCorrections;
-  const filteredAssessments = selectedClass ? assessments.filter(i => i.classId === selectedClass.id) : assessments;
-  const filteredOfficial = selectedClass ? officialEvents.filter(i => i.classNames.includes(selectedClass.name)) : officialEvents;
+  const selectedFeed = selectedClass ? notificationFeedForClass(feed, selectedClass) : null;
+  const filteredCorrections = selectedFeed?.corrections ?? corrections;
+  const filteredIgnored = selectedFeed?.ignoredCorrections ?? ignoredCorrections;
+  const filteredAssessments = selectedFeed?.assessments ?? assessments;
+  const filteredOfficial = selectedFeed?.officialEvents ?? officialEvents;
   const filteredOverviews = selectedClass ? classOverviews.filter(o => o.classInfo.id === selectedClass.id) : classOverviews;
   const activitySource = selectedClass
     ? allActivityEntries.filter(entry => entry.classId === selectedClass.id)
@@ -311,7 +320,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     return days;
   }, [filteredActivity, locale, t]);
 
-  const filteredAttention = filteredCorrections.length + filteredOfficial.filter(i => i.inDays <= 3).length;
+  const filteredAttention = selectedFeed?.attentionCount ?? feed.attentionCount;
 
   const menuItems: AxisMenuItem[] = [
     {
@@ -374,6 +383,15 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const handleClassFilterChange = (nextClassId: string) => {
     setSelectedClassId(nextClassId);
+    const nextClass = classes.find(classInfo => classInfo.id === nextClassId) ?? null;
+    const nextFeed = nextClass ? notificationFeedForClass(feed, nextClass) : null;
+    setActiveAxis(
+      nextFeed && nextFeed.corrections.length === 0 && (nextFeed.assessments.length + nextFeed.officialEvents.length) > 0
+        ? 'echeances'
+        : 'priorites',
+    );
+    const hash = nextClass ? `#/notifications?class=${encodeURIComponent(nextClass.id)}` : '#/notifications';
+    window.history.replaceState({ route: 'notifications', classId: nextClass?.id }, '', hash);
   };
 
   const openClassById = (classId: string) => {

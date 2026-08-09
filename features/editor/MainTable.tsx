@@ -638,6 +638,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   return (
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
+      data-editor-table
       className="rtl-table mx-0 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.07)] sm:rounded-xl"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
