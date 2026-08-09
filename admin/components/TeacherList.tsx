@@ -43,6 +43,7 @@ const teacherSeverity = (teacher: TeacherSnapshot): LatenessSeverity =>
                 calendar,
                 sessionsCount: cls.sessionsCount ?? 0,
                 lastDate: cls.lastDate,
+                from: teacher.schoolYearStart,
                 settings: teacher.notifyPrefs,
                 absences: teacher.absences,
             }),

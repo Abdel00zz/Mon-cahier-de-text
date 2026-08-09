@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Download, Trash2, CalendarCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import type { AppConfig } from '@/types';
 
 /**
  * Paramètres ▸ Données ▸ Archives des années scolaires.
@@ -19,11 +20,11 @@ import { useLocale } from '@/i18n/LocaleProvider';
  * étiquette d'année ; les archives restent consultables, téléchargeables
  * (format ré-importable) et supprimables, la mémoire des années passées.
  */
-export const ArchivesSection: React.FC = () => {
+export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ schoolYearStart }) => {
     const { locale, t } = useLocale();
     const [archives, setArchives] = useState<ArchiveMeta[]>(() => listArchives());
     const [pendingDelete, setPendingDelete] = useState<ArchiveMeta | null>(null);
-    const yearLabel = currentYearLabel();
+    const yearLabel = currentYearLabel(schoolYearStart);
 
     const refresh = () => setArchives(listArchives());
 

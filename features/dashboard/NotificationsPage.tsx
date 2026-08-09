@@ -35,6 +35,7 @@ import {
   requestSessionFocus,
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
+import { consumeNotificationsAxis, type NotificationsAxisId } from '@/utils/notificationNavigation';
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 
@@ -118,7 +119,7 @@ const EmptyState: React.FC<{ title: string; description: string }> = ({ title, d
   </div>
 );
 
-type AxisId = 'priorites' | 'echeances' | 'calendrier' | 'classes' | 'activite' | 'ignores';
+type AxisId = NotificationsAxisId;
 
 interface AxisMenuItem {
   id: AxisId;
@@ -228,9 +229,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 }) => {
   const { locale, t, isRtl } = useLocale();
   const titleFontClass = isRtl ? 'font-ar-display text-xl leading-tight tracking-normal' : 'font-display';
-  const [activeAxis, setActiveAxis] = useState<AxisId>('priorites');
+  const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
+  const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
-  const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
+  const [mobileSubViewOpen, setMobileSubViewOpen] = useState(requestedAxis !== null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Le centre global ne consomme que les insights transversaux. Les alertes

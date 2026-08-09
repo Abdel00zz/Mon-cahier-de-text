@@ -1,5 +1,5 @@
 import { AppConfig, ClassInfo } from '../types.js';
-import { HolidayCalendar, getSchoolYearFor } from './calendar.js';
+import { HolidayCalendar, getEffectiveSchoolYear } from './calendar.js';
 
 /**
  * Moteur du planning OFFICIEL des devoirs (فروض محروسة/منزلية).
@@ -119,9 +119,10 @@ const TYPE_LABEL: Record<PlanDevoir['type'], string> = {
 export const computeAssessmentDates = (
     plan: Plan,
     cal: HolidayCalendar,
-    today: string
+    today: string,
+    schoolYearStart?: string,
 ): PlannedAssessment[] => {
-    const year = getSchoolYearFor(cal, today);
+    const year = getEffectiveSchoolYear(cal, schoolYearStart, today);
     const starts: Record<1 | 2, string> = {
         1: mondayOf(year.debut),
         2: mondayOf(semester2Start(cal, year.debut, year.fin)),
@@ -172,7 +173,7 @@ export interface UpcomingAssessment extends PlannedAssessment {
 export const getUpcomingAssessments = (
     classes: ClassInfo[],
     planning: PlanningFile,
-    config: Pick<AppConfig, 'assessmentDates'>,
+    config: Pick<AppConfig, 'assessmentDates' | 'schoolYearStart'>,
     cal: HolidayCalendar,
     today: string,
     horizonDays = 14
@@ -182,7 +183,7 @@ export const getUpcomingAssessments = (
         const plan = findPlanFor(planning, classInfo);
         if (!plan) continue;
         const dates = applyOverrides(
-            computeAssessmentDates(plan, cal, today),
+            computeAssessmentDates(plan, cal, today, config.schoolYearStart),
             config.assessmentDates?.[classInfo.id]
         );
         for (const assessment of dates) {
@@ -210,7 +211,7 @@ export interface PastAssessment extends PlannedAssessment {
 export const getRecentPastAssessments = (
     classes: ClassInfo[],
     planning: PlanningFile,
-    config: Pick<AppConfig, 'assessmentDates'>,
+    config: Pick<AppConfig, 'assessmentDates' | 'schoolYearStart'>,
     cal: HolidayCalendar,
     today: string,
     lookbackDays = 10
@@ -220,7 +221,7 @@ export const getRecentPastAssessments = (
         const plan = findPlanFor(planning, classInfo);
         if (!plan) continue;
         const dates = applyOverrides(
-            computeAssessmentDates(plan, cal, today),
+            computeAssessmentDates(plan, cal, today, config.schoolYearStart),
             config.assessmentDates?.[classInfo.id]
         );
         for (const assessment of dates) {

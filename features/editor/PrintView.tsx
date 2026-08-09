@@ -16,6 +16,7 @@ import {
 } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
+import { schoolYearLabelFromDate } from '@/utils/calendar';
 import { getAcademyById } from '@/utils/moroccoEducation';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
@@ -49,10 +50,8 @@ const LINE_SPACINGS: Record<'compact' | 'normal' | 'aere', { line: number; cellP
 };
 
 const getSchoolYearLabel = (schoolYearStart: string | undefined, fallbackDate: string | undefined): string => {
-    const configuredYear = Number.parseInt(schoolYearStart?.match(/\d{4}/)?.[0] ?? '', 10);
-    const fallbackYear = Number.parseInt(fallbackDate?.match(/\d{4}/)?.[0] ?? '', 10);
-    const startYear = Number.isFinite(configuredYear) ? configuredYear : (Number.isFinite(fallbackYear) ? fallbackYear : new Date().getFullYear());
-    return `${startYear} – ${startYear + 1}`;
+    const source = schoolYearStart ?? fallbackDate ?? new Date().toISOString().slice(0, 10);
+    return schoolYearLabelFromDate(source).replace('-', ' – ');
 };
 
 interface FlatDataItem {

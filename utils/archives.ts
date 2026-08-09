@@ -1,5 +1,5 @@
 import { FullBackup, buildFullBackup } from './backup.js';
-import { getBundledCalendar, getSchoolYearFor, todayInMorocco } from './calendar.js';
+import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from './calendar.js';
 
 /**
  * Archives des années scolaires PASSÉES.
@@ -39,11 +39,11 @@ const writeIndex = (list: ArchiveMeta[]): void => {
     localStorage.setItem(INDEX_KEY, JSON.stringify(list));
 };
 
-/** Libellé de l'année scolaire courante d'après le calendrier officiel. */
-export const currentYearLabel = (): string => {
+/** Libellé de l'année scolaire effective (rentrée choisie ou calendrier officiel). */
+export const currentYearLabel = (schoolYearStart?: string): string => {
     try {
         const calendar = getBundledCalendar();
-        return getSchoolYearFor(calendar, todayInMorocco()).libelle;
+        return getEffectiveSchoolYear(calendar, schoolYearStart, todayInMorocco()).libelle;
     } catch {
         const year = new Date().getFullYear();
         return `${year}-${year + 1}`;

@@ -26,5 +26,6 @@ export const KEYS = {
   pushSubs: 'push:subs',
   adminCalendar: 'admin:calendar',
   adminOfficialEvents: 'admin:official-events',
+  adminMessages: (phone: string) => `admin:messages:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;

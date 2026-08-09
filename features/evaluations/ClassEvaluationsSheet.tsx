@@ -7,7 +7,6 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import {
     Sheet,
     SheetContent,
-    SheetDescription,
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';

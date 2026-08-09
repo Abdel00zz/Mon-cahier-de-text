@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppConfig, ClassInfo, LessonsData, PedagogicalEvent, PedagogicalEventType } from '@/types';
 import { formatClassDisplayName } from '@/constants';
@@ -11,8 +10,6 @@ import { daysBetweenISO } from '@/utils/assessments';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/utils/assessmentSync';
 import { getClassSchoolSegment } from '@/utils/officialStudentEvents';
 import { getClassVisual } from '@/utils/classVisuals';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -31,12 +28,9 @@ import {
 } from '@/components/ui/sheet';
 import {
   CalendarCheck,
-  CalendarDays,
-  CalendarRange,
   Check,
   CircleAlert,
   CircleCheck,
-  Clock,
   Plus,
   Undo2,
   Trash2,
@@ -266,7 +260,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       {/* Section Content */}
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <PedagogicalEventsSection
-          className={selectedClassDisplayName}
           events={pedagogicalEvents}
           onAdd={() => setEventEditorOpen(true)}
           onToggle={togglePedagogicalEvent}
@@ -466,7 +459,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 };
 
 interface PedagogicalEventsSectionProps {
-  className: string;
   events: PedagogicalEvent[];
   onAdd: () => void;
   onToggle: (eventId: string) => void;
@@ -474,7 +466,6 @@ interface PedagogicalEventsSectionProps {
 }
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
-  className,
   events,
   onAdd,
   onToggle,

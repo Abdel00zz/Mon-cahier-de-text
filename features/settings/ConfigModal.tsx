@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, FC } from 'react';
+import React, { useState, useEffect, FC } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, Cycle } from '@/types';
@@ -23,11 +23,7 @@ import {
   FolderOpen,
   CircleHelp,
   ChevronRight,
-  ArrowLeft,
-  Info,
   CircleCheck,
-  FileText,
-  Printer,
 } from '@/components/ui/icons';
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -50,7 +46,7 @@ interface ConfigModalProps {
   asPage?: boolean;
 }
 
-export type SettingsCategory =
+type SettingsCategory =
   | 'compte'
   | 'profil'
   | 'emploi'
@@ -449,7 +445,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 {t('settings.section.archivesDescription')}
               </p>
             </div>
-            <ArchivesSection />
+            <ArchivesSection schoolYearStart={config.schoolYearStart} />
           </div>
         );
 

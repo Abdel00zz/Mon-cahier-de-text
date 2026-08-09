@@ -246,7 +246,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 schedules,
                 config.notificationSettings,
                 readLessonsCached,
-                config.absences
+                config.absences,
+                config.schoolYearStart,
             );
 
             const pushedIds: string[] = [];

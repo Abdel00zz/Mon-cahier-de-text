@@ -29,7 +29,7 @@ export interface NotificationFeed {
   attentionCount: number;
 }
 
-export interface UpcomingPedagogicalEvent {
+interface UpcomingPedagogicalEvent {
   classId: string;
   className: string;
   event: PedagogicalEvent;

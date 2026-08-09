@@ -15,7 +15,7 @@ import {
 import {
     HolidayCalendar,
     getBundledCalendar,
-    getSchoolYearFor,
+    getEffectiveSchoolYear,
     isHoliday,
     isVacation,
     todayInMorocco,
@@ -204,7 +204,7 @@ const findMissedSessions = (
     const weekdays = new Set((config.timetable ?? []).filter(e => e.classId === classInfo.id).map(e => e.day));
     if (weekdays.size === 0) return [];
 
-    const year = getSchoolYearFor(calendar, today);
+    const year = getEffectiveSchoolYear(calendar, config.schoolYearStart, today);
     const missed: string[] = [];
     for (let back = 1; back <= lookbackDays; back += 1) {
         const iso = addDaysISO(today, -back);
@@ -283,7 +283,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
     const stats = computeProgressionStats(lessons);
     const hours = computeClassHoursInsight(classInfo, config.timetable);
     const hasTimetable = hours.deviation !== 'empty';
-    const year = getSchoolYearFor(calendar, today);
+    const year = getEffectiveSchoolYear(calendar, config.schoolYearStart, today);
     const yearStartedSince = Math.floor((toUTC(today) - toUTC(year.debut)) / DAY_MS);
 
     // 3 · Cahier jamais démarré alors que l'année a commencé (≥ 7 jours)

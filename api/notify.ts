@@ -119,6 +119,7 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
                     sessionsCount: c.sessionsCount,
                     lastDate: c.lastDate,
                     today,
+                    from: snapshot.schoolYearStart,
                     absences: snapshot.absences,
                     settings: prefs
                         ? { gapThreshold: prefs.gapThreshold, inactivityThresholdDays: prefs.inactivityThresholdDays }

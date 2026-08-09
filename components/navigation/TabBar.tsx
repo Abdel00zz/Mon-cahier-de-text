@@ -59,8 +59,8 @@ export const TabBar: React.FC<TabBarProps> = ({
     <>
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden w-[76px] flex-col border-border/70 bg-card py-3 text-card-foreground print:hidden dark:bg-zinc-950 sm:flex',
-          isRtl ? 'right-0 border-l shadow-[-1px_0_0_rgba(15,23,42,0.04)]' : 'left-0 border-r shadow-[1px_0_0_rgba(15,23,42,0.04)]',
+          'fixed inset-y-0 z-40 hidden w-[76px] flex-col bg-background/70 py-3 text-card-foreground backdrop-blur-xl print:hidden sm:flex',
+          isRtl ? 'right-0' : 'left-0',
           isExpanded ? 'lg:w-[248px]' : 'lg:w-[76px]',
         )}
         aria-label={copy.mainNav}

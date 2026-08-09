@@ -35,6 +35,7 @@ const devApiMockPlugin = (): Plugin => {
     let devOfficialEvents: OfficialStudentEventsFile = structuredClone(getOfficialStudentEventsFile());
     const lessonsByClass = new Map<string, unknown>();
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
+    let devAdminMessages: Array<{ id: string; title: string; body: string; createdAt: string; acknowledgedAt?: string }> = [];
 
     const readBody = (req: import('http').IncomingMessage): Promise<string> =>
         new Promise(resolve => {
@@ -179,6 +180,25 @@ const devApiMockPlugin = (): Plugin => {
                 send(res, 405, { error: 'Methode non autorisee.' });
             });
 
+            server.middlewares.use('/api/messages', async (req, res) => {
+                if (!hasSession(req)) return send(res, 401, { error: 'Non connecté.' });
+                if (req.method === 'GET') {
+                    return send(res, 200, { messages: devAdminMessages.filter(message => !message.acknowledgedAt) });
+                }
+                if (req.method === 'POST') {
+                    let body: Record<string, unknown> = {};
+                    try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
+                    if (body.action !== 'acknowledge' || typeof body.messageId !== 'string') {
+                        return send(res, 400, { error: 'Action inconnue.' });
+                    }
+                    const index = devAdminMessages.findIndex(message => message.id === body.messageId);
+                    if (index === -1) return send(res, 404, { error: 'Message introuvable.' });
+                    devAdminMessages[index] = { ...devAdminMessages[index], acknowledgedAt: new Date().toISOString() };
+                    return send(res, 200, { ok: true, message: devAdminMessages[index] });
+                }
+                send(res, 405, { error: 'Methode non autorisee.' });
+            });
+
             server.middlewares.use('/api/admin', async (req, res) => {
                 const hasAdmin = /cdt_dev_admin=1/.test(req.headers.cookie ?? '');
                 if (req.method === 'POST') {
@@ -198,7 +218,21 @@ const devApiMockPlugin = (): Plugin => {
                     if (!hasAdmin) return send(res, 401, { error: 'Session admin requise.' });
                     if (body.action === 'blockTeacher') return send(res, 200, { ok: true, blocked: body.blocked !== false });
                     if (body.action === 'deleteTeacher') return send(res, 200, { ok: true, deletedClasses: lessonsByClass.size });
-                    if (body.action === 'notifyTeacher') return send(res, 200, { ok: true, sent: 1 });
+                    if (body.action === 'notifyTeacher') {
+                        const content = typeof body.message === 'string' ? body.message.trim().slice(0, 1_200) : '';
+                        if (!content) return send(res, 400, { error: 'Message manquant.' });
+                        const title = typeof body.title === 'string' && body.title.trim()
+                            ? body.title.trim().slice(0, 80)
+                            : 'Message de la direction';
+                        const message = {
+                            id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                            title,
+                            body: content,
+                            createdAt: new Date().toISOString(),
+                        };
+                        devAdminMessages = [message, ...devAdminMessages].slice(0, 60);
+                        return send(res, 200, { ok: true, sent: 0, message });
+                    }
                     if (body.action === 'saveCalendar' && body.calendar && typeof body.calendar === 'object') {
                         devCalendar = {
                             ...(body.calendar as HolidayCalendar),
@@ -242,6 +276,7 @@ const devApiMockPlugin = (): Plugin => {
                     }
                     if (action === 'calendar') return send(res, 200, { calendar: devCalendar });
                     if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
+                    if (action === 'messages') return send(res, 200, { adminMessages: devAdminMessages.slice(0, 20) });
                     if (action === 'teacher') {
                         return send(res, 200, {
                             user: { ...DEV_USER, createdAt: new Date().toISOString(), lastSyncAt: (devSnapshot as any)?.lastSyncAt ?? null },
@@ -250,6 +285,7 @@ const devApiMockPlugin = (): Plugin => {
                             classMeta: (classesBlob?.classMeta as any) ?? {},
                             snapshot: devSnapshot,
                             assessmentDates: (classesBlob?.settings as any)?.assessmentDates ?? {},
+                            adminMessages: devAdminMessages,
                         });
                     }
                     if (action === 'lessons') {

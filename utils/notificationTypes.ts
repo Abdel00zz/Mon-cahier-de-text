@@ -17,6 +17,8 @@ export interface PushNotificationPayload {
   /** Deux notifications de meme tag se remplacent au lieu de s'empiler. */
   tag?: string;
   timestamp?: number;
+  /** Identifiant du message persistant, pour ouvrir immédiatement la modale si l'app est active. */
+  messageId?: string;
 }
 
 export const isPushNotificationKind = (value: unknown): value is PushNotificationKind =>

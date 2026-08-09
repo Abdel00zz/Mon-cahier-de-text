@@ -15,10 +15,7 @@ import {
 
 interface SelectionBarProps {
   count: number;
-  /** description courte de la sélection (badge type + titre) pour un seul élément */
-  selectionLabel?: string | null;
   hasDate: boolean;
-  sharedDate?: string | null;
   canAdd: boolean;
   canAssignDate: boolean;
   canDescription: boolean;
@@ -77,9 +74,7 @@ const Divider: FC = () => <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
-  selectionLabel,
   hasDate,
-  sharedDate,
   canAdd,
   canAssignDate,
   canDescription,

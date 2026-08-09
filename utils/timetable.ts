@@ -236,7 +236,7 @@ export const effectiveSchedules = (
      • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
      • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
 
-import { HolidayCalendar, getSchoolYearFor, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate } from './calendar.js';
+import { HolidayCalendar, getEffectiveSchoolYear, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate } from './calendar.js';
 
 export interface NextSessionInfo {
     /** now = séance en cours ; season-end = année scolaire terminée (été) */
@@ -259,7 +259,8 @@ export const nextSessionInfoForClass = (
     scheduleWeekdays: number[],
     calendar: HolidayCalendar,
     locale: AppLocale = 'fr',
-    now: Date = new Date()
+    now: Date = new Date(),
+    schoolYearStart?: string,
 ): NextSessionInfo | null => {
     const entries = (timetable ?? []).filter(e => e.classId === classId);
     const weekdays = entries.length
@@ -268,10 +269,14 @@ export const nextSessionInfoForClass = (
     if (weekdays.length === 0) return null;
 
     const todayISO = toISODate(now);
+    const effectiveYear = getEffectiveSchoolYear(calendar, schoolYearStart, todayISO);
 
-    // Hors année scolaire (été entre deux années) : la saison est TERMINÉE -
-    // inutile d'afficher une « prochaine séance » qui serait la rentrée suivante.
-    if (!isWithinKnownSchoolYear(calendar, todayISO)) {
+    // Hors de l'année choisie : inutile d'annoncer une séance avant la rentrée
+    // personnalisée ou après sa fin.
+    const isWithinYear = schoolYearStart
+        ? todayISO >= effectiveYear.debut && todayISO <= effectiveYear.fin
+        : isWithinKnownSchoolYear(calendar, todayISO);
+    if (!isWithinYear) {
         return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
     }
 
@@ -300,7 +305,7 @@ export const nextSessionInfoForClass = (
         // toutes les séances du jour sont terminées → occurrence suivante
     }
 
-    const next = nextSchoolDay(todayISO, weekdays, calendar);
+    const next = nextSchoolDay(todayISO, weekdays, calendar, effectiveYear.fin);
     if (!next) return null;
 
     /*
@@ -308,7 +313,7 @@ export const nextSessionInfoForClass = (
      * séance possible tombe déjà dans l'année SUIVANTE (derniers jours de
      * l'année sans créneau restant), l'année est finie pour cette classe.
      */
-    if (next > getSchoolYearFor(calendar, todayISO).fin) {
+    if (next > effectiveYear.fin) {
         return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
     }
 

@@ -148,7 +148,19 @@ export interface TeacherSnapshot {
     notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & { pushEnabled?: boolean };
     /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */
     absences?: AbsencePeriod[];
+    /** rentrée choisie par l'enseignant, référence commune des calculs annuels */
+    schoolYearStart?: string;
     classes: ClassSnapshot[];
+}
+
+/** Message unidirectionnel de la direction, visible par son seul destinataire. */
+export interface AdminMessage {
+    id: string;
+    title: string;
+    body: string;
+    createdAt: string;
+    /** Accusé explicite de l'enseignant via le bouton « J'ai compris ». */
+    acknowledgedAt?: string;
 }
 
 export type TopLevelType = 

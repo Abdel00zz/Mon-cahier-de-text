@@ -1,11 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "index.tsx",
     "admin/index.tsx",
     "api/admin.ts",
     "api/auth.ts",
     "api/calendar.ts",
+    "api/messages.ts",
     "api/notify.ts",
     "api/official-events.ts",
     "api/send-email.ts",

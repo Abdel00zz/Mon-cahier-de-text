@@ -935,9 +935,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
   const hasSelectedDate = selectedDates.length > 0;
-  const sharedSelectedDate = selectedDates.length > 0 && selectedDates.every(date => date === selectedDates[0])
-      ? selectedDates[0]
-      : null;
   const selectedCount = selectedIndices.length;
   const singleSelection = selectedItemsData[0];
   const canAddAfterSelection = selectedCount === 1 && !!singleSelection?.canAddAfter;
@@ -949,24 +946,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const reorderTarget = selectedCount === 1 && !selectedIndices[0]?.isSeparator ? selectedIndices[0] : null;
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
   const canMoveDown = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'down');
-
-  // En-tête contextuel de la barre de sélection : type (en français) + titre.
-  const selectionLabel = useMemo(() => {
-    if (selectedCount !== 1 || !singleSelection?.item) return null;
-    const item: any = singleSelection.item;
-    const rawType: string = item.type || '';
-    // libellé français : blocs de haut niveau via TOP_LEVEL_TYPE_CONFIG
-    // (chapter → « Chapitre »), sinon le type est déjà un mot français.
-    const typeLabel = rawType
-      ? (TOP_LEVEL_TYPE_CONFIG[rawType as keyof typeof TOP_LEVEL_TYPE_CONFIG]?.name
-          ?? rawType.charAt(0).toUpperCase() + rawType.slice(1))
-      : '';
-    const title = (item.title || item.name || '').trim();
-    if (!title) return typeLabel || 'Élément sélectionné';
-    // anti-redondance : si le titre commence déjà par le type, on n'ajoute pas le préfixe.
-    if (typeLabel && title.toLowerCase().startsWith(typeLabel.toLowerCase())) return title;
-    return typeLabel ? `${typeLabel}, ${title}` : title;
-  }, [selectedCount, singleSelection]);
 
   // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
   // (donc aussi la garde intelligente sur la date du jour).
@@ -1082,9 +1061,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       {!activeModal && (
         <SelectionBar
           count={selectedCount}
-          selectionLabel={selectionLabel}
           hasDate={hasSelectedDate}
-          sharedDate={sharedSelectedDate}
           canAdd={canAddAfterSelection}
           canAssignDate={canAssignDateSelection}
           canDescription={canDescribeSelection}

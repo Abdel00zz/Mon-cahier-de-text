@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
-import { ChevronRight, Info, Settings, Users } from '@/components/ui/icons';
+import { ChevronRight, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -26,9 +26,12 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const { impact } = useHapticFeedback();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
-    const notificationButtonLabel = notificationCount > 0
-        ? t('notifications.classButtonLabelCount', { className: displayName, count: notificationCount })
-        : t('notifications.classButtonLabel', { className: displayName });
+    const issueStatus = notificationCount === 0
+        ? t('notifications.classIssueCount.none')
+        : notificationCount === 1
+            ? t('notifications.classIssueCount.one', { count: notificationCount })
+            : t('notifications.classIssueCount.many', { count: notificationCount });
+    const notificationButtonLabel = `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`;
 
     const selectClass = () => {
         impact('light');
@@ -41,7 +44,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
 
     return (
         <article
-            className="group relative flex min-h-[62px] overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
+            className="group relative flex min-h-[68px] overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
         >
             <button
                 type="button"
@@ -65,32 +68,32 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
                 className={cn(
-                    'grid shrink-0 grid-cols-2 bg-muted/20',
+                    'flex shrink-0 bg-muted/20',
                     isRtl ? 'border-r border-border/70' : 'border-l border-border/70',
                 )}
             >
                 <button
                     type="button"
+                    onClick={() => runAction(onConfigure)}
+                    className="flex min-h-[66px] w-11 touch-manipulation items-center justify-center text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-muted sm:w-12"
+                    aria-label={`${t('dashboard.edit')} ${displayName}`}
+                >
+                    <Settings className="h-[15px] w-[15px]" />
+                </button>
+                <button
+                    type="button"
                     onClick={() => runAction(onShowNotifications)}
-                    className="relative flex min-h-[60px] w-11 touch-manipulation items-center justify-center text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/15 sm:w-12"
+                    className="flex min-h-[66px] w-[7.25rem] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/70 px-1.5 text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/15 sm:w-32 sm:px-2"
                     aria-label={notificationButtonLabel}
                     title={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className="h-[15px] w-[15px]" />
-                    {notificationCount > 0 && (
-                        <span className={cn('absolute top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-extrabold leading-none text-white ring-2 ring-card', isRtl ? 'left-1.5' : 'right-1.5')}>
-                            {notificationCount > 9 ? '9+' : notificationCount}
+                    <span className="min-w-0 text-center leading-tight">
+                        <span className="block text-[9px] font-extrabold sm:text-[10px]">{t('dashboard.classStatus')}</span>
+                        <span className={`mt-0.5 line-clamp-2 text-[7.5px] font-semibold leading-[1.12] sm:text-[8px] ${notificationCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                            ({issueStatus})
                         </span>
-                    )}
-                </button>
-                <button
-                    type="button"
-                    onClick={() => runAction(onConfigure)}
-                    className="flex min-h-[60px] w-11 touch-manipulation items-center justify-center border-s border-border/70 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-muted sm:w-12"
-                    aria-label={`${t('dashboard.edit')} ${displayName}`}
-                >
-                    <Settings className="h-[15px] w-[15px]" />
+                    </span>
                 </button>
             </div>
         </article>

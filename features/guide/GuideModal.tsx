@@ -98,8 +98,6 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [lang, setLangState] = useState<Lang>(readLang);
   const [activeSection, setActiveSection] = useState<string>('sec-0');
-  const isProgrammaticScrollRef = useRef(false);
-  const programmaticScrollTimeoutRef = useRef<number | null>(null);
 
   const setLang = (next: Lang) => {
     setLangState(next);
@@ -120,35 +118,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
   const isAr = lang === 'ar';
   const html = useMemo(() => toHtml(isAr ? GUIDE_AR : GUIDE_FR, lang), [lang, isAr]);
 
-  const tocItems = useMemo(() => {
-    const source = isAr ? GUIDE_AR : GUIDE_FR;
-    return source
-      .split('\n')
-      .filter(l => l.startsWith('## '))
-      .map((l, i) => ({ label: l.replace('## ', '').trim(), id: `sec-${i}` }));
-  }, [isAr]);
-
-  const handleScrollTo = (sectionId: string) => {
-    isProgrammaticScrollRef.current = true;
-    if (programmaticScrollTimeoutRef.current) window.clearTimeout(programmaticScrollTimeoutRef.current);
-    setActiveSection(sectionId);
-
-    const container = contentRef.current;
-    const target = document.getElementById(`${lang}-${sectionId}`);
-    if (container && target) {
-      const containerRect = container.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-      // scroll INSTANTANÉ (affectation directe) : les défilements « smooth »
-      // programmés sont annulés dans certains moteurs, la fiabilité prime.
-      container.scrollTop = targetRect.top - containerRect.top + container.scrollTop - 16;
-    }
-    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
-      isProgrammaticScrollRef.current = false;
-    }, 150);
-  };
-
   const handleScroll = () => {
-    if (isProgrammaticScrollRef.current) return;
     const container = contentRef.current;
     if (!container) return;
     let current = activeSection;

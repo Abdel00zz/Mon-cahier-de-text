@@ -126,6 +126,3 @@ export const timeAgo = (iso: string, locale: AppLocale = 'fr'): string => {
     const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
     return new Date(iso).toLocaleDateString(localeCode);
 };
-
-/** Compatibilité pour les anciens appels. */
-export const timeAgoFr = (iso: string): string => timeAgo(iso, 'fr');

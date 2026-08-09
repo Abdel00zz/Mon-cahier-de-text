@@ -1,4 +1,6 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
+import { randomUUID } from 'node:crypto';
+import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages } from './_lib/adminMessages.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { PushEntry, configureVapid, sendToEntry } from './_lib/webpush.js';
 import {
@@ -10,7 +12,7 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
 import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -142,10 +144,12 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     pipeline.get(KEYS.user(phone));
     pipeline.get(KEYS.classes(phone));
     pipeline.hget(KEYS.adminSnapshots, phone);
-    const [user, classesBlob, snapshot] = (await pipeline.exec()) as [
+    pipeline.get(KEYS.adminMessages(phone));
+    const [user, classesBlob, snapshot, messages] = (await pipeline.exec()) as [
         StoredUser | null,
         ClassesBlob | null,
         TeacherSnapshot | null,
+        AdminMessage[] | null,
     ];
 
     if (!user && !snapshot) throw new HttpError(404, 'Enseignant introuvable.');
@@ -159,7 +163,21 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
         assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+        adminMessages: recentAdminMessages(messages),
     });
+};
+
+/** Rafraîchissement léger des accusés, sans recharger classes ni cahiers. */
+const handleTeacherMessages = async (req: ApiRequest, res: ApiResponse) => {
+    const phone = getQueryParam(req, 'phone');
+    if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.adminMessages(phone));
+    const [user, messages] = (await pipeline.exec()) as [StoredUser | null, AdminMessage[] | null];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    res.status(200).json({ adminMessages: recentAdminMessages(messages) });
 };
 
 const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
@@ -230,6 +248,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     }
     pipeline.hdel(KEYS.adminSnapshots, phone);
     pipeline.hdel(KEYS.pushSubs, phone);
+    pipeline.del(KEYS.adminMessages(phone));
     await pipeline.exec();
     res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
 };
@@ -237,25 +256,46 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
 /** Notification push directe de l'admin vers le téléphone d'un enseignant. */
 const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
-    const message = typeof body.message === 'string' ? body.message.trim().slice(0, 300) : '';
-    if (!message) throw new HttpError(400, 'Message manquant.');
-    if (!configureVapid()) throw new HttpError(500, 'Clés VAPID non configurées sur le serveur.');
+    const content = typeof body.message === 'string' ? body.message.trim().slice(0, 1_200) : '';
+    if (!content) throw new HttpError(400, 'Message manquant.');
+    const title = typeof body.title === 'string' && body.title.trim()
+        ? body.title.trim().slice(0, 80)
+        : 'Message de la direction';
 
     const redis = await getRedis();
-    const entry = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
-    if (!entry || entry.subs.length === 0) {
-        throw new HttpError(400, "Cet enseignant n'a activé les notifications sur aucun appareil.");
+    const [user, storedMessages, entry] = await Promise.all([
+        redis.get<StoredUser>(KEYS.user(phone)),
+        redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
+        redis.hget<PushEntry>(KEYS.pushSubs, phone),
+    ]);
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+
+    const message: AdminMessage = {
+        id: `admin-${randomUUID()}`,
+        title,
+        body: content,
+        createdAt: new Date().toISOString(),
+    };
+    const messages = [message, ...normalizeAdminMessages(storedMessages)]
+        .slice(0, MAX_ADMIN_MESSAGES_PER_TEACHER);
+    await redis.set(KEYS.adminMessages(phone), messages);
+
+    // Le message reste disponible dans l'application même sans abonnement push.
+    if (!entry || entry.subs.length === 0 || !configureVapid()) {
+        return res.status(200).json({ ok: true, sent: 0, message });
     }
+
     const { survivingSubs, sent } = await sendToEntry(entry, {
-        title: (body.title || 'Message de l’administration').slice(0, 80),
-        body: message,
+        title: 'Direction administrative',
+        body: title,
         url: '/',
         kind: 'admin',
-        tag: `cdt-admin-${Date.now()}`,
+        tag: `cdt-admin-${message.id}`,
         timestamp: Date.now(),
+        messageId: message.id,
     });
     await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
-    res.status(200).json({ ok: sent > 0, sent });
+    res.status(200).json({ ok: true, sent, message });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
@@ -284,6 +324,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             const action = getQueryParam(req, 'action');
             if (action === 'overview') return await handleOverview(res);
             if (action === 'teacher') return await handleTeacherDetail(req, res);
+            if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);
             if (action === 'officialEvents') return await handleGetOfficialEvents(res);
             if (action === 'lessons') return await handleClassLessons(req, res);

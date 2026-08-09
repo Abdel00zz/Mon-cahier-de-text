@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppConfig, ClassInfo, Cycle, TimetableEntry } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
-import { getBundledCalendar } from '@/utils/calendar';
+import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import {
     HOUR_SLOTS,
@@ -80,6 +80,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         ? formatLocalizedSubjectDisplayName(subject, locale)
         : (SUBJECT_ABBREV_MAP[subject] || subject);
     const calendar = getBundledCalendar();
+    const effectiveSchoolYear = getEffectiveSchoolYear(
+        calendar,
+        config.schoolYearStart,
+        todayInMorocco(new Date(), calendar),
+    );
+    const schoolYearStart = config.schoolYearStart ?? effectiveSchoolYear.debut;
     const timetable = config.timetable ?? [];
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
     const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
@@ -171,11 +177,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
                 <input
                     type="date"
-                    value={config.schoolYearStart ?? calendar.anneeScolaire.debut}
+                    value={schoolYearStart}
                     onChange={e => setSchoolYearStart(e.target.value)}
                     className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
-                <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: calendar.anneeScolaire.libelle })}</span>
+                <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: effectiveSchoolYear.libelle })}</span>
             </div>
 
             {/* État de complétude et volumes horaires avant la saisie de la grille. */}

@@ -103,13 +103,15 @@ export const computeTeacherSnapshot = (
     schedules: ClassSchedule[] | undefined,
     notificationSettings: NotificationSettings | undefined,
     readLessons: (classId: string) => LessonsData,
-    absences?: AbsencePeriod[]
+    absences?: AbsencePeriod[],
+    schoolYearStart?: string,
 ): TeacherSnapshot => ({
     phone: user.phone,
     nom: user.nom,
     prenom: user.prenom,
     lastSyncAt: new Date().toISOString(),
     absences: absences && absences.length > 0 ? absences : undefined,
+    schoolYearStart,
     notifyPrefs: notificationSettings
         ? {
               gapThreshold: notificationSettings.gapThreshold,

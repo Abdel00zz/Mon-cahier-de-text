@@ -160,5 +160,3 @@ export const User = icon(faUser);
 export const Loader2 = icon(faSpinner);
 export const Users = icon(faUsers);
 export const Menu = icon(faBars);
-// Alias pour la TabBar navigation
-export const LayoutDashboard = icon(faHouse);

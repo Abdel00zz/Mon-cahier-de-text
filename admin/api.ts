@@ -1,4 +1,4 @@
-import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
@@ -9,6 +9,7 @@ export interface TeacherDetail {
     classMeta: Record<string, { updatedAt: string }>;
     snapshot: TeacherSnapshot | null;
     assessmentDates: Record<string, Record<string, string>>;
+    adminMessages: AdminMessage[];
 }
 
 const request = async (input: string, init?: RequestInit) => {
@@ -47,6 +48,12 @@ export const fetchOverview = async (): Promise<{ teachers: TeacherSnapshot[] }> 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>
     request(`/api/admin?action=teacher&phone=${encodeURIComponent(phone)}`);
 
+/** Accusés de réception, chargé séparément de la fiche complète du professeur. */
+export const fetchTeacherMessages = async (phone: string): Promise<AdminMessage[]> => {
+    const data = await request(`/api/admin?action=messages&phone=${encodeURIComponent(phone)}`);
+    return Array.isArray(data?.adminMessages) ? data.adminMessages as AdminMessage[] : [];
+};
+
 /** Cahier complet d'une classe (lecture seule), inspection des chapitres. */
 export const fetchClassLessons = (
     phone: string,
@@ -70,7 +77,7 @@ export const deleteTeacher = (phone: string): Promise<{ ok: boolean; deletedClas
     postAdmin({ action: 'deleteTeacher', phone });
 
 /** Notification push directe vers le(s) téléphone(s) de l'enseignant. */
-export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number }> =>
+export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number; message: AdminMessage }> =>
     postAdmin({ action: 'notifyTeacher', phone, message, title });
 
 export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>

@@ -10,7 +10,8 @@ import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
 import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
-import { getBundledCalendar } from '@/utils/calendar';
+import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
+import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus, BookOpen } from '@/components/ui/icons';
@@ -22,15 +23,15 @@ interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     notificationFeed: NotificationFeed;
     onOpenSchedule?: () => void;
+    onOpenNotifications?: () => void;
 }
 
-type ClassDisplayMode = 'list' | 'single' | 'double' | 'triple';
+type ClassDisplayMode = 'list' | 'single' | 'double';
 
-const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double', 'triple'];
+const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 
 /** Salutation selon l'heure, petite touche vivante, esprit app mobile. */
-const getGreeting = (locale: 'fr' | 'en' | 'ar'): string => {
-    const hour = new Date().getHours();
+const getGreeting = (locale: 'fr' | 'en' | 'ar', hour: number): string => {
     if (locale === 'en') {
         if (hour < 5) return 'Good evening';
         if (hour < 13) return 'Good morning';
@@ -45,6 +46,9 @@ const getGreeting = (locale: 'fr' | 'en' | 'ar'): string => {
     if (hour < 18) return 'Bon après-midi';
     return 'Bonsoir';
 };
+
+const personalize = (message: string, teacherName: string, locale: 'fr' | 'en' | 'ar'): string =>
+    teacherName ? `${message}${locale === 'ar' ? '، ' : ', '}${teacherName}` : message;
 
 const readLessons = (classId: string) => {
     try {
@@ -90,6 +94,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     notificationFeed,
     onOpenSchedule,
+    onOpenNotifications,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
@@ -104,6 +109,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [cycleFilter, setCycleFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
+    const [now, setNow] = useState(() => new Date());
+
+    useEffect(() => {
+        if (!CLASS_DISPLAY_OPTIONS.includes(classDisplayMode)) {
+            setClassDisplayMode('double');
+        }
+    }, [classDisplayMode, setClassDisplayMode]);
+
+    useEffect(() => {
+        const refreshClock = () => setNow(new Date());
+        const timer = window.setInterval(refreshClock, 60_000);
+        const refreshWhenVisible = () => {
+            if (document.visibilityState === 'visible') refreshClock();
+        };
+        document.addEventListener('visibilitychange', refreshWhenVisible);
+        return () => {
+            window.clearInterval(timer);
+            document.removeEventListener('visibilitychange', refreshWhenVisible);
+        };
+    }, []);
 
     const isLoading = isClassesLoading || isConfigLoading;
     const notificationCounts = useMemo(
@@ -237,7 +262,94 @@ export const Dashboard: React.FC<DashboardProps> = ({
             config.schedules?.find(s => s.classId === classId)?.slots.map(s => s.weekday) ?? [],
             calendarWithAbsences,
             locale,
+            now,
+            config.schoolYearStart,
         );
+
+    const todayISO = todayInMorocco(now, calendar);
+    const holidayToday = calendar.joursFeries.find(item => item.date === todayISO);
+    const vacationToday = calendar.vacances.find(item => todayISO >= item.debut && todayISO <= item.fin);
+    const assessmentsThisWeek = notificationFeed.assessments.filter(item => {
+        const inDays = daysBetweenISO(todayISO, item.dateISO);
+        return inDays >= 0 && inDays <= 6;
+    }).length;
+    const sessionStates = classes.map(classInfo => nextSession(classInfo.id)?.kind).filter(Boolean);
+    const hasCurrentSession = sessionStates.includes('now');
+    const hasSessionToday = sessionStates.includes('today');
+    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
+    let currentHour = now.getHours();
+    try {
+        currentHour = Number(new Intl.DateTimeFormat('en-GB', {
+            timeZone: calendar.fuseau,
+            hour: '2-digit',
+            hourCycle: 'h23',
+        }).format(now));
+    } catch {
+        // Le fuseau local du navigateur reste un repli sûr.
+    }
+    const todayLabel = new Intl.DateTimeFormat(localeCode, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        timeZone: calendar.fuseau,
+    }).format(now);
+    const vacationEndLabel = vacationToday
+        ? new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${vacationToday.fin}T12:00:00Z`))
+        : '';
+    const timeDetailKey = currentHour < 13
+        ? 'dashboard.welcome.morningDetail'
+        : currentHour < 18
+            ? 'dashboard.welcome.afternoonDetail'
+            : 'dashboard.welcome.eveningDetail';
+    const welcome = (() => {
+        if (classes.length === 0) {
+            return {
+                eyebrow: t('dashboard.welcome.startLabel'),
+                title: t('dashboard.welcome.startTitle'),
+                detail: t('dashboard.welcome.startDetail'),
+            };
+        }
+        if (holidayToday) {
+            return {
+                eyebrow: localizeCalendarName(holidayToday.nom, locale),
+                title: personalize(t('dashboard.welcome.holidayTitle'), teacherName, locale),
+                detail: t('dashboard.welcome.holidayDetail'),
+            };
+        }
+        if (vacationToday) {
+            return {
+                eyebrow: localizeCalendarName(vacationToday.nom, locale),
+                title: personalize(t('dashboard.welcome.vacationTitle'), teacherName, locale),
+                detail: t('dashboard.welcome.vacationDetail', { date: vacationEndLabel }),
+            };
+        }
+        if (assessmentsThisWeek > 0) {
+            return {
+                eyebrow: t('dashboard.welcome.assessmentsLabel'),
+                title: t(assessmentsThisWeek === 1 ? 'dashboard.welcome.assessmentTitleOne' : 'dashboard.welcome.assessmentTitleMany', { count: assessmentsThisWeek }),
+                detail: t('dashboard.welcome.assessmentsDetail'),
+            };
+        }
+        if (hasCurrentSession) {
+            return {
+                eyebrow: t('dashboard.welcome.nowLabel'),
+                title: t('dashboard.welcome.nowTitle'),
+                detail: t('dashboard.welcome.nowDetail'),
+            };
+        }
+        if (hasSessionToday) {
+            return {
+                eyebrow: t('dashboard.welcome.todayLabel'),
+                title: t('dashboard.welcome.todayTitle'),
+                detail: t('dashboard.welcome.todayDetail'),
+            };
+        }
+        return {
+            eyebrow: todayLabel,
+            title: personalize(getGreeting(locale, currentHour), teacherName, locale),
+            detail: t(timeDetailKey),
+        };
+    })();
 
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -248,18 +360,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     });
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
-    const classGridClass = classDisplayMode === 'single'
+    const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1'
-        : classDisplayMode === 'triple'
-            ? 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
-            : 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2';
+        : 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
             list: ['dashboard.display.list', 'dashboard.display.listDescription'],
             single: ['dashboard.display.single', 'dashboard.display.singleDescription'],
             double: ['dashboard.display.double', 'dashboard.display.doubleDescription'],
-            triple: ['dashboard.display.triple', 'dashboard.display.tripleDescription'],
         };
         const [labelKey, descriptionKey] = keys[value];
         return { label: t(labelKey), description: t(descriptionKey) };
@@ -271,18 +380,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
                     <header className="mb-8 space-y-4" id="dashboard-header">
                         <div className="flex items-center gap-3">
-                            <div className="min-w-0 shrink-0">
-                                <p className={`mb-0.5 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.14em]'}`}>{t('dashboard.teacherSpace')}</p>
-                                <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
-                                    {teacherName ? (
-                                        <>
-                                            <span className="font-medium">{getGreeting(locale)}{locale === 'ar' ? '،' : ','}</span>{' '}
-                                            <span className="text-primary">{teacherName}</span>
-                                        </>
-                                    ) : (
-                                        <span>{t('dashboard.notebook')}</span>
-                                    )}
-                                </h1>
+                            <div className="min-w-0">
+                                <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
+                                <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">{welcome.title}</h1>
+                                <p className="mt-1 max-w-2xl text-xs font-medium leading-relaxed text-muted-foreground sm:text-[13px]">{welcome.detail}</p>
                             </div>
                         </div>
 
@@ -363,7 +464,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     className={`absolute top-[calc(100%+0.4rem)] z-30 w-44 overflow-hidden rounded-[16px] border border-border/70 bg-popover/95 p-2 shadow-[0_16px_40px_rgba(30,64,110,0.12)] backdrop-blur-xl dark:bg-zinc-800 ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                        const isActive = option === classDisplayMode;
+                                                        const isActive = option === currentDisplay;
                                                         return (
                                                             <button
                                                                 key={option}
@@ -401,7 +502,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             {t('dashboard.addClass')}
                                         </Button>
                                     </div>
-                                ) : classDisplayMode === 'list' ? (
+                                ) : currentDisplay === 'list' ? (
                                     <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
@@ -486,6 +587,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onClose={() => setNotificationClass(null)}
                 onSelectClass={onSelectClass}
                 onOpenSchedule={onOpenSchedule}
+                onOpenNotifications={onOpenNotifications}
             />
         </div>
     );

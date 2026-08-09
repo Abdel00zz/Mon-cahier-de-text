@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, notifyTeacher, saveAssessmentDate, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type PlannedAssessment } from '../../utils/assessments';
 import { completionColor, timeAgo } from '../utils';
-import type { ClassInfo, ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
+import { Button } from '../../components/ui/button';
+import { Modal } from '../../components/ui/modal';
+import type { AdminMessage, ClassInfo, ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
 
@@ -188,6 +190,7 @@ const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null
         calendar,
         sessionsCount: snapshot.sessionsCount,
         lastDate: snapshot.lastDate,
+        from: teacher?.schoolYearStart,
         settings: teacher?.notifyPrefs,
         absences: teacher?.absences,
     });
@@ -196,7 +199,8 @@ const AssessmentDateEditor: React.FC<{
     phone: string;
     classes: ClassInfo[];
     initial: Record<string, Record<string, string>>;
-}> = ({ phone, classes, initial }) => {
+    schoolYearStart?: string;
+}> = ({ phone, classes, initial, schoolYearStart }) => {
     const [dates, setDates] = useState(initial);
     const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
     const [message, setMessage] = useState('');
@@ -208,12 +212,12 @@ const AssessmentDateEditor: React.FC<{
             const next = classes.flatMap(classInfo => {
                 const plan = findPlanFor(planning, classInfo);
                 if (!plan) return [];
-                return applyOverrides(computeAssessmentDates(plan, calendar, today), initial[classInfo.id])
+                return applyOverrides(computeAssessmentDates(plan, calendar, today, schoolYearStart), initial[classInfo.id])
                     .map(item => ({ ...item, classId: classInfo.id, className: classInfo.name }));
             });
             setRows(next.sort((a, b) => a.dateISO.localeCompare(b.dateISO)));
         });
-    }, [classes, initial]);
+    }, [classes, initial, schoolYearStart]);
 
     const change = async (row: PlannedAssessment & { classId: string }, date: string) => {
         setDates(current => ({ ...current, [row.classId]: { ...(current[row.classId] ?? {}), [row.id]: date } }));
@@ -243,6 +247,34 @@ const AssessmentDateEditor: React.FC<{
     );
 };
 
+const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages }) => {
+    if (messages.length === 0) return null;
+    return (
+        <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
+            <div className="mb-3">
+                <h2 className="text-sm font-black text-foreground">Messages de la direction</h2>
+                <p className="text-[11px] text-muted-foreground">Accusés de réception du professeur sélectionné.</p>
+            </div>
+            <div className="space-y-2">
+                {messages.slice(0, 12).map(message => (
+                    <article key={message.id} className="rounded-xl bg-secondary/55 p-3">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="min-w-0">
+                                <h3 className="text-xs font-bold text-foreground">{message.title}</h3>
+                                <p className="mt-1 whitespace-pre-wrap text-[11px] leading-relaxed text-muted-foreground">{message.body}</p>
+                            </div>
+                            <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${message.acknowledgedAt ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
+                                {message.acknowledgedAt ? `Compris le ${formatDateTimeFr(message.acknowledgedAt)}` : 'En attente'}
+                            </span>
+                        </div>
+                        <p className="mt-2 text-[10px] text-muted-foreground">Envoyé le {formatDateTimeFr(message.createdAt)}</p>
+                    </article>
+                ))}
+            </div>
+        </section>
+    );
+};
+
 export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({ phone, onBack }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -250,6 +282,9 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const [actionMessage, setActionMessage] = useState<string | null>(null);
     const [isBlocked, setIsBlocked] = useState<boolean>(false);
     const [busy, setBusy] = useState(false);
+    const [isMessageModalOpen, setMessageModalOpen] = useState(false);
+    const [messageTitle, setMessageTitle] = useState('Message de la direction');
+    const [messageBody, setMessageBody] = useState('');
 
     const runAction = async (fn: () => Promise<string>) => {
         setBusy(true);
@@ -263,12 +298,19 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
         }
     };
 
-    const handleNotify = () =>
+    const handleSendMessage = () =>
         runAction(async () => {
-            const message = window.prompt('Message à envoyer sur le téléphone de cet enseignant :');
-            if (!message?.trim()) return 'Envoi annulé.';
-            const result = await notifyTeacher(phone, message.trim());
-            return result.ok ? `Notification envoyée (${result.sent} appareil(s)).` : "Aucun appareil n'a reçu la notification.";
+            if (!messageBody.trim()) throw new Error('Le message ne peut pas être vide.');
+            const result = await notifyTeacher(phone, messageBody.trim(), messageTitle.trim());
+            setData(current => current
+                ? { ...current, adminMessages: [result.message, ...(current.adminMessages ?? [])] }
+                : current
+            );
+            setMessageBody('');
+            setMessageModalOpen(false);
+            return result.sent > 0
+                ? `Message envoyé (${result.sent} appareil(s) notifié(s)).`
+                : 'Message enregistré. Il s’affichera à la prochaine ouverture de l’application.';
         });
 
     const handleBlock = () =>
@@ -294,19 +336,38 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
 
     useEffect(() => {
         let cancelled = false;
-        setIsLoading(true);
-        fetchTeacher(phone)
-            .then(result => {
-                if (!cancelled) setData(result);
-            })
-            .catch(err => {
+        const load = async (showLoading: boolean) => {
+            if (showLoading) setIsLoading(true);
+            try {
+                const result = await fetchTeacher(phone);
+                if (!cancelled) {
+                    setData(result);
+                    setError(null);
+                }
+            } catch (err) {
                 if (!cancelled) setError(err instanceof Error ? err.message : 'Erreur de chargement.');
-            })
-            .finally(() => {
-                if (!cancelled) setIsLoading(false);
-            });
+            } finally {
+                if (!cancelled && showLoading) setIsLoading(false);
+            }
+        };
+        void load(true);
+
+        // Un accusé est une petite donnée : on ne recharge jamais les classes
+        // ni les cahiers pendant ce rafraîchissement limité à la fiche visible.
+        const refreshWhenVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+            void fetchTeacherMessages(phone)
+                .then(adminMessages => {
+                    if (!cancelled) setData(current => current ? { ...current, adminMessages } : current);
+                })
+                .catch(() => undefined);
+        };
+        document.addEventListener('visibilitychange', refreshWhenVisible);
+        const interval = window.setInterval(refreshWhenVisible, 30_000);
         return () => {
             cancelled = true;
+            document.removeEventListener('visibilitychange', refreshWhenVisible);
+            window.clearInterval(interval);
         };
     }, [phone]);
 
@@ -342,11 +403,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         {/* Actions d'administration */}
                         <div className="mt-3 flex flex-wrap gap-2">
                             <button
-                                onClick={handleNotify}
+                                onClick={() => setMessageModalOpen(true)}
                                 disabled={busy}
                                 className="h-9 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                             >
-                                📣 Notifier le téléphone
+                                📣 Envoyer un message
                             </button>
                             <button
                                 onClick={handleBlock}
@@ -368,7 +429,55 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         )}
                     </header>
 
-                    <AssessmentDateEditor phone={phone} classes={data.classes} initial={data.assessmentDates ?? {}} />
+                    <AdminMessagesHistory messages={data.adminMessages ?? []} />
+
+                    <AssessmentDateEditor
+                        phone={phone}
+                        classes={data.classes}
+                        initial={data.assessmentDates ?? {}}
+                        schoolYearStart={data.snapshot?.schoolYearStart}
+                    />
+
+                    <Modal
+                        isOpen={isMessageModalOpen}
+                        onClose={() => !busy && setMessageModalOpen(false)}
+                        title="Message à l’enseignant"
+                        description="Le professeur le recevra sous la signature « Direction administrative » et devra confirmer sa lecture."
+                        maxWidth="lg"
+                        footer={(
+                            <div className="flex w-full justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setMessageModalOpen(false)} disabled={busy}>Annuler</Button>
+                                <Button type="button" onClick={() => void handleSendMessage()} disabled={busy || !messageBody.trim()}>
+                                    {busy ? 'Envoi…' : 'Envoyer'}
+                                </Button>
+                            </div>
+                        )}
+                    >
+                        <div className="space-y-4">
+                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
+                                Objet
+                                <input
+                                    value={messageTitle}
+                                    onChange={event => setMessageTitle(event.target.value)}
+                                    maxLength={80}
+                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    placeholder="Message de la direction"
+                                />
+                            </label>
+                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
+                                Message
+                                <textarea
+                                    value={messageBody}
+                                    onChange={event => setMessageBody(event.target.value)}
+                                    maxLength={1200}
+                                    rows={7}
+                                    className="w-full resize-y rounded-lg border bg-background px-3 py-2 text-sm font-normal"
+                                    placeholder="Rédigez le message destiné à cet enseignant…"
+                                    autoFocus
+                                />
+                            </label>
+                        </div>
+                    </Modal>
 
                     {snapshotClasses.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">

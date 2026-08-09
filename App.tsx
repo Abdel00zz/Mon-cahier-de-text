@@ -10,10 +10,9 @@ import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
 import { LocaleProvider, translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
+import { useAdminMessages } from './hooks/useAdminMessages';
 
 import { useClassManager } from './hooks/useClassManager';
-import { IOSheet } from './components/ui/IOSheet';
-import { GuideModal } from './features/guide/GuideModal';
 import { TabBar, TabType } from './components/navigation/TabBar';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -21,6 +20,9 @@ const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ d
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const NotificationsPage = lazy(() => import('./features/dashboard/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 const AuthPage = lazy(() => import('./features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
+const GuideModal = lazy(() => import('./features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
+const IOSheet = lazy(() => import('./components/ui/IOSheet').then(module => ({ default: module.IOSheet })));
+const AdminMessageModal = lazy(() => import('./features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
 const Analytics = () => null;
 const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 const DevoirsView = lazy(() => import('./features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
@@ -109,6 +111,7 @@ const App: React.FC = () => {
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus } = useAuth();
+  const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
   const scrollPositionsRef = useRef<Record<string, number>>({});
@@ -231,6 +234,7 @@ const App: React.FC = () => {
         onSelectClass={handleSelectClass}
         notificationFeed={notificationFeed}
         onOpenSchedule={handleOpenSchedule}
+        onOpenNotifications={handleOpenNotifications}
       />
     );
   };
@@ -304,25 +308,36 @@ const App: React.FC = () => {
 
         {/* Sheet Globale iOS Évaluations */}
         {isEvaluationsOpen && (
-          <IOSheet
-            isOpen={isEvaluationsOpen}
-            onClose={() => setIsEvaluationsOpen(false)}
-            title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
-            subtitle={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.selectedClassTracking')}
-          >
-            <Suspense fallback={<AppBootSkeleton />}>
-              <DevoirsView
-                classes={classes}
-                config={config}
-                onConfigChange={updateConfig}
-              />
-            </Suspense>
-          </IOSheet>
+          <Suspense fallback={null}>
+            <IOSheet
+              isOpen={isEvaluationsOpen}
+              onClose={() => setIsEvaluationsOpen(false)}
+              title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
+              subtitle={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.selectedClassTracking')}
+            >
+              <Suspense fallback={<AppBootSkeleton />}>
+                <DevoirsView
+                  classes={classes}
+                  config={config}
+                  onConfigChange={updateConfig}
+                />
+              </Suspense>
+            </IOSheet>
+          </Suspense>
         )}
 
         {isGuideOpen && (
           <Suspense fallback={null}>
             <GuideModal isOpen onClose={() => setGuideOpen(false)} />
+          </Suspense>
+        )}
+
+        {adminMessages[0] && (
+          <Suspense fallback={null}>
+            <AdminMessageModal
+              message={adminMessages[0]}
+              onAcknowledge={acknowledgeAdminMessage}
+            />
           </Suspense>
         )}
 

@@ -2,6 +2,7 @@ import { AppConfig, ClassInfo } from '../types.js';
 import { formatClassDisplayName } from '../constants.js';
 import {
     HolidayCalendar,
+    getEffectiveSchoolYear,
     getBundledCalendar,
     isWithinKnownSchoolYear,
     weekdayLabel,
@@ -87,12 +88,20 @@ export const validateSessionDate = (
         });
     }
 
-    // 5. Hors année scolaire, multi-années : valide si la date appartient à
-    // N'IMPORTE laquelle des années scolaires connues (2025-2026, 2026-2027...).
-    if (!isWithinKnownSchoolYear(calendar, iso)) {
+    // 5. Si le professeur a choisi sa rentrée, elle devient la référence
+    // stricte. Sinon, on conserve la validation multi-années du calendrier.
+    const selectedYear = config.schoolYearStart
+        ? getEffectiveSchoolYear(calendar, config.schoolYearStart, iso)
+        : null;
+    const isInSchoolYear = selectedYear
+        ? iso >= selectedYear.debut && iso <= selectedYear.fin
+        : isWithinKnownSchoolYear(calendar, iso);
+    if (!isInSchoolYear) {
         warnings.push({
             type: 'out-of-year',
-            message: `Cette date est en dehors des années scolaires connues du calendrier.`,
+            message: selectedYear
+                ? `Cette date est en dehors de l’année scolaire ${selectedYear.libelle}.`
+                : `Cette date est en dehors des années scolaires connues du calendrier.`,
         });
     }
 

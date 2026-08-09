@@ -64,16 +64,20 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Cahier de textes';
     const kind: PushNotificationKind = isPushNotificationKind(payload.kind) ? payload.kind : 'lateness';
     const targetUrl = payload.url || '/';
-    event.waitUntil(
-        self.registration.showNotification(title, {
+    const showNotification = self.registration.showNotification(title, {
             body: payload.body || 'Vous avez une mise à jour à faire.',
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
             tag: payload.tag || defaultNotificationTag(kind),
             vibrate: kind === 'admin' ? [220, 100, 220] : [180, 90, 180],
             data: { url: targetUrl, kind, timestamp: payload.timestamp || Date.now() },
-        } as NotificationOptions & { vibrate: number[] })
-    );
+        } as NotificationOptions & { vibrate: number[] });
+    const notifyOpenClients = kind === 'admin' && typeof payload.messageId === 'string'
+        ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+            windows.forEach(client => client.postMessage({ type: 'admin-message', messageId: payload.messageId }));
+        })
+        : Promise.resolve();
+    event.waitUntil(Promise.all([showNotification, notifyOpenClients]));
 });
 
 self.addEventListener('notificationclick', event => {

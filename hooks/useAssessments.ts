@@ -49,7 +49,7 @@ export const useUpcomingAssessments = (
         if (!calendar || !planning) return [];
         const today = todayInMorocco(new Date(), calendar);
         return getUpcomingAssessments(classes, planning as any, config, calendar, today, horizonDays);
-    }, [calendar, planning, classes, config.assessmentDates, horizonDays]);
+    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, horizonDays]);
 };
 
 /** Devoirs récemment passés (≤ lookback jours), rappel « absents à consigner » du centre de notifications. */
@@ -64,7 +64,7 @@ export const useRecentPastAssessments = (
         if (!calendar || !planning) return [];
         const today = todayInMorocco(new Date(), calendar);
         return getRecentPastAssessments(classes, planning as any, config, calendar, today, lookbackDays);
-    }, [calendar, planning, classes, config.assessmentDates, lookbackDays]);
+    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, lookbackDays]);
 };
 
 /** Planning complet d'UNE classe (dates officielles + surcharges du prof), pour l'onglet Emploi du temps. */
@@ -79,8 +79,8 @@ export const useClassAssessments = (
         const plan = findPlanFor(planning as any, classInfo);
         if (!plan) return { assessments: [], hasPlan: false };
         const today = todayInMorocco(new Date(), calendar);
-        const base = computeAssessmentDates(plan as any, calendar, today);
+        const base = computeAssessmentDates(plan as any, calendar, today, config.schoolYearStart);
         const withOverrides = applyOverrides(base, config.assessmentDates?.[classInfo.id]);
         return { assessments: withOverrides, hasPlan: true };
-    }, [calendar, planning, classInfo, config.assessmentDates]);
+    }, [calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart]);
 };
