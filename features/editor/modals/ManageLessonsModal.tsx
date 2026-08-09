@@ -1,11 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppConfig, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
-import { TriangleAlert, Trash2, GripVertical, ArrowUp, ArrowDown, FolderOpen } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, Book, FolderOpen, Plus, Trash2, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { DescriptionVisibilityControl, DescriptionMode } from '@/features/settings/components/DescriptionVisibilityControl';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ManageLessonsModalProps {
   isOpen: boolean;
@@ -16,33 +19,106 @@ interface ManageLessonsModalProps {
   onConfigChange: (patch: Partial<AppConfig>) => void;
 }
 
-export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, onClose, onUpdate, lessons, config, onConfigChange }) => {
+interface PendingDelete {
+  index: number;
+  item: TopLevelItem;
+  nestedCount: number;
+}
+
+const countNestedContents = (value: unknown): number => {
+  if (!value || typeof value !== 'object') return 0;
+  const node = value as Record<string, unknown>;
+  return ['sections', 'subsections', 'subsubsections', 'items'].reduce((total, key) => {
+    const children = node[key];
+    if (!Array.isArray(children)) return total;
+    return total + children.reduce((sum, child) => sum + 1 + countNestedContents(child), 0);
+  }, 0);
+};
+
+export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
+  isOpen,
+  onClose,
+  onUpdate,
+  lessons,
+  config,
+  onConfigChange,
+}) => {
+  const { t } = useLocale();
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
   const [localDesc, setLocalDesc] = useState<{ mode: DescriptionMode; types: string[] }>({ mode: 'all', types: [] });
-  const dragItem = useRef<number | null>(null);
-  const dragOverItem = useRef<number | null>(null);
+  const [chapterTitle, setChapterTitle] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const listEndRef = useRef<HTMLDivElement | null>(null);
+  const stableKeys = useRef(new WeakMap<TopLevelItem, string>());
 
   useEffect(() => {
-    if (isOpen) {
-      setLocalLessons([...lessons]);
-      setLocalDesc({
-        mode: config.screenDescriptionMode ?? 'all',
-        types: config.screenDescriptionTypes ?? [],
-      });
-    }
+    if (!isOpen) return;
+    setLocalLessons([...lessons]);
+    setLocalDesc({
+      mode: config.screenDescriptionMode ?? 'all',
+      types: config.screenDescriptionTypes ?? [],
+    });
+    setChapterTitle('');
+    setCreateError('');
+    setPendingDelete(null);
   }, [isOpen, lessons, config.screenDescriptionMode, config.screenDescriptionTypes]);
 
-  const handleDelete = (index: number) => {
-    setLocalLessons(current => current.filter((_, i) => i !== index));
+  const lessonsChanged = localLessons.length !== lessons.length
+    || localLessons.some((item, index) => item !== lessons[index]);
+  const descriptionsChanged = localDesc.mode !== (config.screenDescriptionMode ?? 'all')
+    || localDesc.types.length !== (config.screenDescriptionTypes ?? []).length
+    || localDesc.types.some(type => !(config.screenDescriptionTypes ?? []).includes(type));
+  const hasChanges = lessonsChanged || descriptionsChanged;
+
+  const itemKey = (item: TopLevelItem): string => {
+    if (item._tempId) return item._tempId;
+    const existing = stableKeys.current.get(item);
+    if (existing) return existing;
+    const key = crypto.randomUUID();
+    stableKeys.current.set(item, key);
+    return key;
+  };
+
+  const addChapter = (event: React.FormEvent) => {
+    event.preventDefault();
+    const title = chapterTitle.trim();
+    if (!title) {
+      setCreateError(t('manageLessons.chapterRequired'));
+      return;
+    }
+    const duplicate = localLessons.some(item => item.type === 'chapter' && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase());
+    if (duplicate) {
+      setCreateError(t('manageLessons.chapterDuplicate'));
+      return;
+    }
+
+    setLocalLessons(current => [
+      ...current,
+      { type: 'chapter', title, sections: [], _tempId: crypto.randomUUID() },
+    ]);
+    setChapterTitle('');
+    setCreateError('');
+    window.requestAnimationFrame(() => listEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+  };
+
+  const requestDelete = (index: number) => {
+    const item = localLessons[index];
+    if (!item) return;
+    setPendingDelete({ index, item, nestedCount: countNestedContents(item) });
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    setLocalLessons(current => current.filter((_, index) => index !== pendingDelete.index));
+    setPendingDelete(null);
   };
 
   const moveUp = (index: number) => {
     if (index === 0) return;
     setLocalLessons(current => {
       const copy = [...current];
-      const temp = copy[index];
-      copy[index] = copy[index - 1];
-      copy[index - 1] = temp;
+      [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
       return copy;
     });
   };
@@ -51,172 +127,182 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({ isOpen, 
     if (index === localLessons.length - 1) return;
     setLocalLessons(current => {
       const copy = [...current];
-      const temp = copy[index];
-      copy[index] = copy[index + 1];
-      copy[index + 1] = temp;
+      [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
       return copy;
     });
   };
 
-  const handleDragStart = (e: React.DragEvent<HTMLLIElement>, index: number) => {
-    dragItem.current = index;
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragEnter = (index: number) => {
-    dragOverItem.current = index;
-    const newList = [...localLessons];
-    if (dragItem.current === null) return;
-    const draggedItemContent = newList.splice(dragItem.current, 1)[0];
-    newList.splice(dragOverItem.current, 0, draggedItemContent);
-    dragItem.current = dragOverItem.current;
-    setLocalLessons(newList);
-  };
-  
-  const handleDragEnd = () => {
-    dragItem.current = null;
-    dragOverItem.current = null;
-  };
-
   const handleSubmit = () => {
-    onConfigChange({ screenDescriptionMode: localDesc.mode, screenDescriptionTypes: localDesc.types });
-    onUpdate(localLessons);
+    if (descriptionsChanged) {
+      onConfigChange({ screenDescriptionMode: localDesc.mode, screenDescriptionTypes: localDesc.types });
+    }
+    if (lessonsChanged) {
+      onUpdate(localLessons);
+      return;
+    }
+    onClose();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Gérer les chapitres & devoirs"
-      description="Réorganisez vos contenus principaux ou supprimez-les. Utilisez les flèches sur mobile ou le glisser-déposer."
-      maxWidth="xl"
-      footer={
-        <>
-          <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
-            Annuler
-          </Button>
-          <Button 
-            type="button" 
-            onClick={handleSubmit} 
-            className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm"
-          >
-            Enregistrer
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <DescriptionVisibilityControl
-          context="screen"
-          mode={localDesc.mode}
-          types={localDesc.types}
-          onChange={setLocalDesc}
-        />
-
-        {localLessons.length > 0 ? (
-          <ul className="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
-            {localLessons.map((item, index) => {
-              const config = TOP_LEVEL_TYPE_CONFIG[item.type];
-
-              // Defensive check for corrupted data
-              if (!config) {
-                return (
-                  <li 
-                    key={index} 
-                    className="flex items-center gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-2.5"
-                  >
-                    <TriangleAlert className="mr-2 h-4 w-4 flex-shrink-0 text-rose-600" />
-                    <span className="flex-grow text-rose-800 text-xs font-semibold truncate">Contenu corrompu: "{item.title}"</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(index)}
-                      className="w-7 h-7 p-0 flex items-center justify-center rounded-lg"
-                      title="Supprimer cet élément corrompu"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </li>
-                );
-              }
-
-              return (
-                <li 
-                  key={index} 
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragEnter={() => handleDragEnter(index)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={(e) => e.preventDefault()}
-                  className="flex items-center justify-between gap-3 p-2 rounded-xl bg-white border border-zinc-200 cursor-grab active:cursor-grabbing hover:bg-zinc-50 hover:border-zinc-300 transition-all duration-150 select-none shadow-xs"
-                >
-                  {/* Left drag handle and title */}
-                  <div className="flex items-center min-w-0 flex-1 gap-2.5">
-                    <div className="hidden sm:flex items-center text-zinc-400 cursor-grab px-1 py-1 hover:text-zinc-600">
-                      <GripVertical className="h-3 w-3" />
-                    </div>
-                    <div className="p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg flex-shrink-0 flex items-center justify-center w-8 h-8">
-                      <config.icon className={`${config.color} h-4 w-4`} />
-                    </div>
-                    <span className="flex-grow text-zinc-800 text-xs font-semibold truncate pr-1">
-                      <MathText source={item.title} cacheKey={`manage-${item.title}`} inline>
-                        {item.title || 'Sans titre'}
-                      </MathText>
-                    </span>
-                  </div>
-
-                  {/* Right actions: Reorder buttons & delete */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    {/* Up button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={index === 0}
-                      onClick={() => moveUp(index)}
-                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-30 disabled:hover:bg-white"
-                      title="Monter"
-                    >
-                      <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
-                    </Button>
-
-                    {/* Down button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={index === localLessons.length - 1}
-                      onClick={() => moveDown(index)}
-                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 disabled:opacity-30 disabled:hover:bg-white"
-                      title="Descendre"
-                    >
-                      <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
-                    </Button>
-
-                    <div className="h-4 w-[1px] bg-zinc-200 mx-0.5"></div>
-
-                    {/* Delete button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => handleDelete(index)}
-                      className="h-8 w-8 p-0 flex items-center justify-center rounded-lg bg-white hover:bg-rose-50 border border-zinc-200 hover:border-rose-200 hover:text-rose-600 text-zinc-400 transition-colors duration-150 shadow-xs cursor-pointer"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <div className="rounded-lg border border-dashed border-zinc-300 bg-white py-8 text-center font-medium italic text-zinc-500">
-            <FolderOpen className="mx-auto mb-2 h-5 w-5 text-zinc-400" />
-            Aucun contenu principal à organiser.
-          </div>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={t('manageLessons.title')}
+        description={t('manageLessons.description')}
+        maxWidth="xl"
+        bodyClassName="bg-white"
+        footerClassName="bg-white"
+        footer={(
+          <>
+            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!hasChanges}
+              className="rounded-xl bg-primary px-5 font-semibold shadow-sm hover:bg-primary/90"
+            >
+              {t('common.save')}
+            </Button>
+          </>
         )}
-      </div>
-    </Modal>
+      >
+        <div className="space-y-5">
+          <section className="rounded-xl border border-zinc-200/70 bg-zinc-50/65 p-3 sm:p-4">
+            <div className="mb-3 flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-primary shadow-xs">
+                <Book className="h-4.5 w-4.5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-zinc-800">{t('manageLessons.createTitle')}</h3>
+                <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-zinc-500">{t('manageLessons.createHint')}</p>
+              </div>
+            </div>
+            <form onSubmit={addChapter} className="flex flex-col gap-2 sm:flex-row">
+              <div className="min-w-0 flex-1">
+                <Input
+                  value={chapterTitle}
+                  onChange={event => {
+                    setChapterTitle(event.target.value);
+                    if (createError) setCreateError('');
+                  }}
+                  maxLength={160}
+                  placeholder={t('manageLessons.chapterPlaceholder')}
+                  aria-label={t('manageLessons.chapterPlaceholder')}
+                  aria-invalid={!!createError}
+                  className="h-11 rounded-lg border-zinc-200 bg-white text-sm"
+                />
+                {createError && <p className="mt-1.5 text-[10px] font-semibold text-rose-600" role="alert">{createError}</p>}
+              </div>
+              <Button type="submit" disabled={!chapterTitle.trim()} className="h-11 shrink-0 rounded-lg px-4 font-semibold sm:min-w-28">
+                <Plus className="h-3.5 w-3.5" />
+                {t('manageLessons.addChapter')}
+              </Button>
+            </form>
+          </section>
+
+          <details className="group rounded-xl border border-zinc-200/60 bg-zinc-50/65 px-3 py-2.5">
+            <summary className="cursor-pointer text-[11px] font-bold text-zinc-500 transition-colors hover:text-zinc-800">
+              {t('manageLessons.descriptionSettings')}
+            </summary>
+            <DescriptionVisibilityControl
+              context="screen"
+              mode={localDesc.mode}
+              types={localDesc.types}
+              onChange={setLocalDesc}
+              className="mt-3 border-0 bg-transparent p-0 shadow-none"
+            />
+          </details>
+
+          <section>
+            <div className="mb-2 flex items-center justify-between gap-3 px-0.5">
+              <h3 className="font-mono text-[10px] font-extrabold uppercase tracking-wide text-zinc-500">
+                {t('manageLessons.contents')}
+              </h3>
+              <span className="rounded-md bg-zinc-100 px-2 py-1 font-mono text-[9px] font-bold text-zinc-500">
+                {localLessons.length}
+              </span>
+            </div>
+
+            {localLessons.length > 0 ? (
+              <ul className="space-y-2">
+                {localLessons.map((item, index) => {
+                  const itemConfig = TOP_LEVEL_TYPE_CONFIG[item.type];
+                  const nestedCount = countNestedContents(item);
+
+                  if (!itemConfig) {
+                    return (
+                      <li key={itemKey(item)} className="flex items-center gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-2.5">
+                        <TriangleAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-rose-800">
+                          {t('manageLessons.corrupted', { title: item.title })}
+                        </span>
+                        <Button type="button" variant="destructive" onClick={() => requestDelete(index)} className="h-10 w-10 rounded-lg p-0 sm:h-9 sm:w-9" title={t('manageLessons.delete')}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li
+                      key={itemKey(item)}
+                      className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50/60"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-100 bg-zinc-50">
+                        <itemConfig.icon className={`${itemConfig.color} h-4 w-4`} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-semibold text-zinc-800">
+                          <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
+                        </span>
+                        <span className="mt-0.5 block truncate text-[9px] font-medium text-zinc-400">
+                          {t(`manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
+                        </span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1">
+                        <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9 sm:w-9" title={t('manageLessons.moveUp')}>
+                          <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
+                        </Button>
+                        <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9 sm:w-9" title={t('manageLessons.moveDown')}>
+                          <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
+                        </Button>
+                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 text-zinc-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:h-9 sm:w-9" title={t('manageLessons.delete')}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-8 text-center">
+                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-zinc-400" />
+                <p className="text-xs font-bold text-zinc-600">{t('manageLessons.emptyTitle')}</p>
+                <p className="mt-1 text-[10px] font-medium text-zinc-400">{t('manageLessons.emptyHint')}</p>
+              </div>
+            )}
+            <div ref={listEndRef} />
+          </section>
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={open => { if (!open) setPendingDelete(null); }}
+        title={t('manageLessons.deleteTitle')}
+        description={pendingDelete
+          ? t('manageLessons.deleteDescription', {
+              title: pendingDelete.item.title || t('manageLessons.untitled'),
+              count: pendingDelete.nestedCount,
+            })
+          : ''}
+        confirmLabel={t('manageLessons.deleteConfirm')}
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
+    </>
   );
 };

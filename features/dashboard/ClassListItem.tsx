@@ -46,7 +46,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
 
     return (
         <article
-            className="group relative flex min-h-[68px] overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
+            className="group relative flex min-h-[68px] overflow-hidden rounded-[10px] border border-border/80 bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
         >
             <button
                 type="button"

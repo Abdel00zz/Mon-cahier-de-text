@@ -12,6 +12,13 @@ export interface TeacherDetail {
     adminMessages: AdminMessage[];
 }
 
+/** Données de pilotage réservées à la vue d'ensemble administrative. */
+export type AdminTeacherSummary = TeacherSnapshot & {
+    blocked: boolean;
+    pendingMessages: number;
+    lastMessageAt: string | null;
+};
+
 const request = async (input: string, init?: RequestInit) => {
     const response = await fetch(input, { credentials: 'same-origin', ...init });
     const data = await response.json().catch(() => ({}));
@@ -35,14 +42,14 @@ export const adminLogout = (): Promise<void> =>
         body: JSON.stringify({ action: 'logout' }),
     }).then(() => undefined);
 
-export const fetchOverview = async (): Promise<{ teachers: TeacherSnapshot[] }> => {
+export const fetchOverview = async (): Promise<{ teachers: AdminTeacherSummary[] }> => {
     const data = await request('/api/admin?action=overview');
     // validation de frontière : une réponse inattendue (proxy, dev sans API,
     // hash corrompu) ne doit jamais propager `undefined` dans l'interface
     if (!Array.isArray(data?.teachers)) {
         throw new Error('Réponse du serveur invalide (vue d\'ensemble indisponible).');
     }
-    return { teachers: data.teachers as TeacherSnapshot[] };
+    return { teachers: data.teachers as AdminTeacherSummary[] };
 };
 
 export const fetchTeacher = (phone: string): Promise<TeacherDetail> =>

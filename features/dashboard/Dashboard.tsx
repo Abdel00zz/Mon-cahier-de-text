@@ -47,9 +47,6 @@ const getGreeting = (locale: 'fr' | 'en' | 'ar', hour: number): string => {
     return 'Bonsoir';
 };
 
-const personalize = (message: string, teacherName: string, locale: 'fr' | 'en' | 'ar'): string =>
-    teacherName ? `${message}${locale === 'ar' ? '، ' : ', '}${teacherName}` : message;
-
 const readLessons = (classId: string) => {
     try {
         const raw = localStorage.getItem(`classData_v1_${classId}`);
@@ -301,26 +298,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
         : currentHour < 18
             ? 'dashboard.welcome.afternoonDetail'
             : 'dashboard.welcome.eveningDetail';
-    const welcome = (() => {
+    const welcome: { eyebrow: string; title: string; detail: string; personalize: boolean } = (() => {
         if (classes.length === 0) {
             return {
                 eyebrow: t('dashboard.welcome.startLabel'),
                 title: t('dashboard.welcome.startTitle'),
                 detail: t('dashboard.welcome.startDetail'),
+                personalize: false,
             };
         }
         if (holidayToday) {
             return {
                 eyebrow: localizeCalendarName(holidayToday.nom, locale),
-                title: personalize(t('dashboard.welcome.holidayTitle'), teacherName, locale),
+                title: t('dashboard.welcome.holidayTitle'),
                 detail: t('dashboard.welcome.holidayDetail'),
+                personalize: true,
             };
         }
         if (vacationToday) {
             return {
                 eyebrow: localizeCalendarName(vacationToday.nom, locale),
-                title: personalize(t('dashboard.welcome.vacationTitle'), teacherName, locale),
+                title: t('dashboard.welcome.vacationTitle'),
                 detail: t('dashboard.welcome.vacationDetail', { date: vacationEndLabel }),
+                personalize: true,
             };
         }
         if (assessmentsThisWeek > 0) {
@@ -328,6 +328,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.assessmentsLabel'),
                 title: t(assessmentsThisWeek === 1 ? 'dashboard.welcome.assessmentTitleOne' : 'dashboard.welcome.assessmentTitleMany', { count: assessmentsThisWeek }),
                 detail: t('dashboard.welcome.assessmentsDetail'),
+                personalize: false,
             };
         }
         if (hasCurrentSession) {
@@ -335,6 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.nowLabel'),
                 title: t('dashboard.welcome.nowTitle'),
                 detail: t('dashboard.welcome.nowDetail'),
+                personalize: false,
             };
         }
         if (hasSessionToday) {
@@ -342,14 +344,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.todayLabel'),
                 title: t('dashboard.welcome.todayTitle'),
                 detail: t('dashboard.welcome.todayDetail'),
+                personalize: false,
             };
         }
         return {
             eyebrow: todayLabel,
-            title: personalize(getGreeting(locale, currentHour), teacherName, locale),
+            title: getGreeting(locale, currentHour),
             detail: t(timeDetailKey),
+            personalize: true,
         };
     })();
+    const teacherNameIsArabic = /[\u0600-\u06FF]/.test(teacherName);
 
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -382,7 +387,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div className="flex items-center gap-3">
                             <div className="min-w-0">
                                 <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
-                                <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">{welcome.title}</h1>
+                                <h1 className="flex flex-wrap items-baseline gap-x-1 text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
+                                    <span>{welcome.title}{welcome.personalize && teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
+                                    {welcome.personalize && teacherName && (
+                                        <span
+                                            dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
+                                            className={`${teacherNameIsArabic ? 'font-teacher-ar text-[1.18em]' : 'font-teacher-latin text-[0.88em]'} text-blue-600 dark:text-blue-400`}
+                                        >
+                                            {teacherName}
+                                        </span>
+                                    )}
+                                </h1>
                                 <p className="mt-1 max-w-2xl text-xs font-medium leading-relaxed text-muted-foreground sm:text-[13px]">{welcome.detail}</p>
                             </div>
                         </div>

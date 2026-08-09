@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { TeacherSnapshot } from '../types';
+import type { AdminTeacherSummary } from './api';
 import { adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
 import { TeacherList } from './components/TeacherList';
@@ -16,7 +16,7 @@ type View =
 
 export const AdminApp: React.FC = () => {
     const [view, setView] = useState<View>({ name: 'locked' });
-    const [teachers, setTeachers] = useState<TeacherSnapshot[]>([]);
+    const [teachers, setTeachers] = useState<AdminTeacherSummary[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [bootChecked, setBootChecked] = useState(false);
 
@@ -61,7 +61,17 @@ export const AdminApp: React.FC = () => {
         );
     }
     if (view.name === 'locked') return <AdminLogin onSuccess={loadOverview} />;
-    if (view.name === 'teacher') return <TeacherDetail phone={view.phone} onBack={() => setView({ name: 'overview' })} />;
+    if (view.name === 'teacher') {
+        return (
+            <TeacherDetail
+                phone={view.phone}
+                onBack={() => {
+                    setView({ name: 'overview' });
+                    void loadOverview();
+                }}
+            />
+        );
+    }
     if (view.name === 'calendar') return <CalendarManager onBack={() => setView({ name: 'overview' })} />;
     if (view.name === 'bulletin') return <OfficialBulletinManager onBack={() => setView({ name: 'overview' })} />;
 

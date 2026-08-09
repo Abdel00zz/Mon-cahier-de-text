@@ -97,12 +97,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     return (
         <article
-            className={`group relative flex min-h-[164px] flex-col overflow-hidden rounded-xl border border-border/80 bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:shadow-md sm:min-h-[172px]`}
+            className={`group relative flex min-h-[154px] flex-col overflow-hidden rounded-[10px] border border-border/75 bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:shadow-md sm:min-h-[160px]`}
         >
             <button
                 type="button"
                 onClick={handleCardClick}
-                className={`flex min-h-[118px] w-full min-w-0 flex-1 touch-manipulation flex-col p-3 text-center outline-none transition-colors hover:bg-muted/25 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset active:bg-muted/50 sm:p-3.5 ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'}`}
+                className={`flex min-h-[106px] w-full min-w-0 flex-1 touch-manipulation flex-col p-2.5 text-center outline-none transition-colors hover:bg-muted/20 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset active:bg-muted/45 sm:p-3 ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'}`}
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <div className="flex min-h-5 items-center">
@@ -113,7 +113,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     ) : null}
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center px-1 py-1.5 text-center">
-                    <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
+                    <div className={`mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
                         <Users className="h-5 w-5" />
                     </div>
                     <h3
@@ -131,12 +131,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="grid min-h-14 w-full shrink-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] border-t border-border/70 bg-muted/20"
+                className="grid min-h-12 w-full shrink-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] border-t border-border/55 bg-muted/10"
             >
                 <button
                     type="button"
                     onClick={handleConfigureClick}
-                    className="flex min-h-14 touch-manipulation items-center justify-center gap-1.5 px-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 active:bg-muted sm:px-3 sm:text-xs"
+                    className="flex min-h-12 touch-manipulation items-center justify-center gap-1.5 px-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted/55 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-muted sm:px-2.5 sm:text-[11px]"
                     title={t('dashboard.classSettings')}
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
@@ -146,12 +146,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <button
                     type="button"
                     onClick={handleNotificationsClick}
-                    className="flex min-h-14 min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/70 px-1.5 text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 active:bg-primary/15 sm:px-2"
+                    className="flex min-h-12 min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/55 px-1.5 text-primary transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/12 sm:px-2"
                     title={notificationButtonLabel}
                     aria-label={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className="h-[19px] w-[19px] shrink-0" />
+                    <Info className="h-[18px] w-[18px] shrink-0" />
                     {issueStatus && (
                         <span className="min-w-0 text-center text-[8px] font-semibold leading-[1.15] text-red-600 dark:text-red-400 sm:text-[9px]">
                             ({issueStatus})

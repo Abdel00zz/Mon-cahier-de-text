@@ -127,7 +127,23 @@ const handleAdminLogin = async (body: AdminBody, res: ApiResponse) => {
 const handleOverview = async (res: ApiResponse) => {
     const redis = await getRedis();
     const snapshots = (await redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots)) ?? {};
-    const teachers = Object.values(snapshots).sort((a, b) => {
+    const entries = Object.entries(snapshots);
+    const pipeline = redis.pipeline();
+    for (const [phone] of entries) {
+        pipeline.get(KEYS.user(phone));
+        pipeline.get(KEYS.adminMessages(phone));
+    }
+    const records = await pipeline.exec() as Array<StoredUser | AdminMessage[] | null>;
+    const teachers = entries.map(([, snapshot], index) => {
+        const user = records[index * 2] as StoredUser | null;
+        const messages = normalizeAdminMessages(records[index * 2 + 1]);
+        return {
+            ...snapshot,
+            blocked: user?.blocked === true,
+            pendingMessages: messages.filter(message => !message.acknowledgedAt).length,
+            lastMessageAt: messages[0]?.createdAt ?? null,
+        };
+    }).sort((a, b) => {
         const aTime = a.lastSyncAt ?? '';
         const bTime = b.lastSyncAt ?? '';
         return bTime.localeCompare(aTime);

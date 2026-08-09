@@ -370,7 +370,16 @@ const devApiMockPlugin = (): Plugin => {
                     const url = new URL(req.url ?? '/', 'http://localhost');
                     const action = url.searchParams.get('action');
                     if (action === 'overview') {
-                        return send(res, 200, { teachers: devSnapshot ? [devSnapshot] : [] });
+                        return send(res, 200, {
+                            teachers: devSnapshot
+                                ? [{
+                                    ...devSnapshot,
+                                    blocked: devTeacherBlocked,
+                                    pendingMessages: devAdminMessages.filter(message => !message.acknowledgedAt).length,
+                                    lastMessageAt: devAdminMessages[0]?.createdAt ?? null,
+                                }]
+                                : [],
+                        });
                     }
                     if (action === 'calendar') return send(res, 200, { calendar: devCalendar });
                     if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
