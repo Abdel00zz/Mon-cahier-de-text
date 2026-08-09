@@ -55,9 +55,11 @@ export const useConfigManager = () => {
                     loadedConfig.printDescriptionMode === 'all' || loadedConfig.printDescriptionMode === 'none' || loadedConfig.printDescriptionMode === 'custom'
                         ? loadedConfig.printDescriptionMode
                         : loadedConfig.printShowDescriptions === false ? 'none' : 'all';
+                const loadedTeacherName = loadedConfig.defaultTeacherName === 'Prof Dev' ? '' : (loadedConfig.defaultTeacherName ?? '');
                 setConfig(() => ({
                     ...defaultConfig,
                     ...loadedConfig,
+                    defaultTeacherName: loadedTeacherName,
                     printShowDescriptions: loadedConfig.printShowDescriptions ?? (loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : true)),
                     screenDescriptionMode: loadedConfig.screenDescriptionMode ?? 'all',
                     screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0

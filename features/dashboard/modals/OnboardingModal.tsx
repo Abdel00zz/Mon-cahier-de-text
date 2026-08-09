@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { ScheduleTab } from '@/features/settings/components/ScheduleTab';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
-import { Bell, GraduationCap, School, FlaskConical, Trash2, Plus, ChevronRight } from '@/components/ui/icons';
+import { Bell, GraduationCap, School, FlaskConical, Trash2, Plus, ChevronRight, ChevronLeft } from '@/components/ui/icons';
 
 type Lang = 'fr' | 'ar';
 const LANG_KEY = 'onboarding_lang_v1';
@@ -285,10 +285,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         }
     };
     
+    const isStep1Valid = !!(config.defaultTeacherName && config.defaultTeacherName.trim().length > 0);
+    const isStep2Valid = hasClasses;
+
     const renderStepIndicators = () => (
         <div className="mb-4 flex items-center gap-1.5" aria-label={t.step(step, 3)}>
             {[1, 2, 3].map(i => (
-                <div key={i} className={`h-1 flex-1 rounded-sm ${step >= i ? 'bg-[#0056D2]' : 'bg-muted'}`} />
+                <div key={i} className={`h-1 flex-1 rounded-sm transition-colors duration-200 ${step >= i ? 'bg-[#0056D2]' : 'bg-muted'}`} />
             ))}
         </div>
     );
@@ -298,10 +301,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             hideClose={true}
-            maxWidth="2xl"
-            className="flex max-h-[92dvh] flex-col overflow-hidden rounded-t-lg sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg"
-            bodyClassName="custom-scrollbar overflow-y-auto !px-4 !py-4 sm:!px-5 sm:!py-4"
-            footerClassName="!flex-row !items-center !justify-between bg-background !px-4 !py-3 sm:!px-5 sm:!py-3"
+            maxWidth="4xl"
+            className="flex max-h-[94dvh] flex-col overflow-hidden rounded-t-xl sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-xl shadow-2xl"
+            bodyClassName="custom-scrollbar overflow-y-auto !px-4 !py-4 sm:!px-6 sm:!py-5"
+            footerClassName="!flex-row !items-center !justify-between border-t border-border/60 bg-card/90 backdrop-blur-md !px-4 !py-3 sm:!px-6 sm:!py-3.5"
             footer={
                 <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full items-center justify-between gap-3">
                     <Button
@@ -309,25 +312,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         variant="ghost"
                         size="sm"
                         onClick={step === 1 ? onClose : () => setStep(current => current - 1)}
-                        className="h-8 px-2 text-xs font-medium text-muted-foreground"
+                        className="h-9 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer inline-flex items-center gap-1.5"
                     >
+                        {step > 1 && (isAr ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />)}
                         {step === 1 ? t.later : t.back}
                     </Button>
                     {step < 3 ? (
                         <Button
                             type="button"
                             size="sm"
-                            className="h-8 px-3.5 text-xs bg-[#0056D2] hover:bg-[#0047b3] text-white"
+                            disabled={step === 1 ? !isStep1Valid : !isStep2Valid}
+                            className="h-9 px-4 text-xs font-semibold bg-[#0056D2] hover:bg-[#0047b3] text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                             onClick={() => setStep(current => current + 1)}
                         >
                             {t.next}
-                            <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                            {isAr ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                         </Button>
                     ) : (
                         <Button
                             type="button"
                             size="sm"
-                            className="h-8 px-3.5 text-xs bg-[#0056D2] hover:bg-[#0047b3] text-white"
+                            className="h-9 px-4 text-xs font-semibold bg-[#0056D2] hover:bg-[#0047b3] text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                             disabled={!hasClasses || finishing}
                             onClick={async () => {
                                 if (finishing) return;
@@ -342,6 +347,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                             }}
                         >
                             {finishing ? (isAr ? 'جارٍ التفعيل…' : 'Activation…') : t.start}
+                            {isAr ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                         </Button>
                     )}
                 </div>

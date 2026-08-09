@@ -254,8 +254,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const classGridClass = classDisplayMode === 'single'
         ? 'grid-cols-1'
         : classDisplayMode === 'triple'
-            ? 'grid-cols-2 md:grid-cols-3'
-            : 'grid-cols-2';
+            ? 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
+            : 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {

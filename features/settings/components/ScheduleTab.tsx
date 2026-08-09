@@ -182,18 +182,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             <HoursAdvisory classes={classes} timetable={timetable} />
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
-            <div className="overflow-hidden rounded-md border border-border bg-card shadow-sm">
-                <div className="overflow-x-auto">
-                <table className="rtl-table w-full min-w-[46rem] border-separate border-spacing-0 text-xs">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+                <div className="overflow-x-auto custom-scrollbar">
+                <table className="rtl-table w-full min-w-[48rem] border-separate border-spacing-0 text-xs">
                     <thead>
                         <tr>
-                            <th className="sticky left-0 z-20 border-b border-r border-border bg-secondary px-3 py-3 text-left font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 border-b border-border bg-muted/80 px-3 py-3 text-start font-semibold uppercase tracking-wider text-muted-foreground font-mono`}>
                                 {t('schedule.day')}
                             </th>
                             {HOUR_SLOTS.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border bg-secondary px-2 py-3 text-center font-semibold text-muted-foreground font-mono ${
+                                    className={`border-b border-border bg-muted/80 px-2 py-3 text-center font-semibold text-muted-foreground font-mono ${
                                         hour.lunchBefore ? 'border-l border-l-primary/25' : ''
                                     }`}
                                 >
@@ -204,8 +204,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     </thead>
                     <tbody>
                         {TIMETABLE_DAYS.map((day, dayIndex) => (
-                            <tr key={day.value} className="group transition-colors hover:bg-secondary/20">
-                                <td className={`sticky left-0 z-10 border-r border-border bg-card px-3 py-2.5 font-bold text-foreground transition-colors group-hover:bg-secondary/40 ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
+                            <tr key={day.value} className="group transition-colors hover:bg-muted/30">
+                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-border bg-card px-3 py-2.5 font-bold text-foreground transition-colors group-hover:bg-muted/50 ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
                                     {t(`schedule.day.${day.value}`)}
                                 </td>
                                 {HOUR_SLOTS.map(hour => {

@@ -292,6 +292,7 @@ export default defineConfig(({ mode }) => {
             port: 3000,
             host: true,
             strictPort: true,
+            allowedHosts: true,
             hmr: {
                 clientPort: 3000,
             },

@@ -12,6 +12,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Compatibilite : les anciens raccourcis utilisent maintenant le moteur v2.
+& "$PSScriptRoot\auto_commitv2.ps1" @PSBoundParameters
+exit $LASTEXITCODE
+
 function Write-Header {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Cyan

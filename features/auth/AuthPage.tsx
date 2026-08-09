@@ -20,10 +20,10 @@ const AUTH_COPY = {
     plan: 'Alertes au bon moment', planDetail: 'Retards et dates à vérifier.',
     record: 'Progression calculée', recordDetail: 'Sans double saisie.',
     assessments: 'Prochaine étape claire', assessmentsDetail: 'Reprenez au bon endroit.',
-    printTitle: 'Impression haute qualité', printDetail: 'Imprimez votre cahier de textes avec une mise en page nette, prête à archiver.',
+    printTitle: 'Impression haute qualité', printDetail: 'Imprimez votre cahier de textes avec une mise en page nette, prête à le donner à la direction, ou à l’inspecteur, et prête à archiver.',
     offline: 'Hors ligne', automaticSync: 'Synchronisation automatique', languageLabel: 'Choisir la langue',
     heroAlt: 'Enseignant préparant ses prochaines séances dans une salle de classe',
-    teacherSpace: 'Espace enseignant', welcome: 'Bon retour', createSpace: 'Créez votre espace',
+    teacherSpace: '- Espace enseignant', welcome: 'Bon retour', createSpace: 'Créez votre espace',
     welcomeDetail: 'Retrouvez vos alertes utiles, la progression de vos classes et la prochaine séance à préparer.',
     createDetail: 'Créez votre compte, puis ajoutez votre emploi du temps pour activer automatiquement le suivi.',
     login: 'Connexion', createAccount: 'Créer un compte', name: 'Nom', firstName: 'Prénom',
@@ -45,10 +45,10 @@ const AUTH_COPY = {
     plan: 'تنبيهات في وقتها', planDetail: 'تأخر وتواريخ تحتاج التحقق.',
     record: 'تقدّم محسوب تلقائياً', recordDetail: 'دون إدخال المعطيات مرتين.',
     assessments: 'خطوتك المقبلة واضحة', assessmentsDetail: 'استأنف من المكان الصحيح.',
-    printTitle: 'طباعة عالية الجودة', printDetail: 'اطبع دفتر النصوص بتنسيق واضح وجاهز للأرشفة.',
+    printTitle: 'طباعة عالية الجودة', printDetail: 'اطبع دفتر النصوص بتنسيق واضح، جاهز للتقديم للإدارة أو المفتش وجاهز للأرشفة.',
     offline: 'يعمل دون اتصال', automaticSync: 'مزامنة تلقائية', languageLabel: 'اختيار اللغة',
     heroAlt: 'أستاذ يحضّر حصصه المقبلة داخل قاعة دراسية',
-    teacherSpace: 'فضاء الأستاذ', welcome: 'مرحباً بعودتك', createSpace: 'أنشئ فضاءك',
+    teacherSpace: '- فضاء الأستاذ', welcome: 'مرحباً بعودتك', createSpace: 'أنشئ فضاءك',
     welcomeDetail: 'اطّلع على التنبيهات المفيدة، وتقدّم أقسامك، والحصة التي تحتاج إلى التحضير.',
     createDetail: 'أنشئ حسابك، ثم أضف استعمال الزمن لتعمل المتابعة والتنبيهات تلقائياً.',
     login: 'تسجيل الدخول', createAccount: 'إنشاء حساب', name: 'النسب', firstName: 'الاسم الشخصي',
@@ -286,8 +286,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           transition={{ duration: 0.3, ease: 'easeOut' }}
           className="text-card-foreground"
         >
+          {/* Header section (above tabs) */}
+          <header className="mb-5 sm:mb-6">
+            <p className={`text-xs font-extrabold text-primary ${isRtl ? '' : 'uppercase tracking-[0.14em]'}`}>{copy.teacherSpace}</p>
+            <h2 className={`mt-2 font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2.25rem] leading-[1.3]' : 'text-[1.75rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {isRegister ? copy.createDetail : (
+                isRtl ? (
+                  <>
+                    اطّلع على التنبيهات المفيدة، وتقدّم أقسامك، والحصة التي تحتاج إلى التحضير.اطبع دفتر النصوص بتنسيق واضح، <strong className="font-bold text-foreground">جاهز للتقديم للإدارة، أو المفتش إلخ...</strong> و<strong className="font-bold text-foreground">جاهز للأرشفة</strong>.
+                  </>
+                ) : (
+                  <>
+                    Retrouvez vos alertes utiles, la progression de vos classes et la prochaine séance à préparer. Imprimez votre cahier de textes avec une mise en page nette, <strong className="font-bold text-foreground">prête à le donner à la direction, ou à l’inspecteur etc...</strong> et <strong className="font-bold text-foreground">prête à archiver</strong>.
+                  </>
+                )
+              )}
+            </p>
+          </header>
+
           {/* Segment/Tab Control */}
-          <div className="mb-7 grid grid-cols-2 gap-1 rounded-lg bg-secondary/65 p-1 sm:mb-10 dark:bg-zinc-900">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-secondary/65 p-1 sm:mb-8 dark:bg-zinc-900">
             {(['login', 'register'] as const).map(value => (
               <button
                 key={value}
@@ -306,23 +325,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
               </button>
             ))}
           </div>
-
-          <header className="mb-6 sm:mb-8">
-            <p className={`text-[10px] font-extrabold text-primary ${isRtl ? '' : 'uppercase tracking-[0.14em]'}`}>{copy.teacherSpace}</p>
-            <h2 className={`mt-3 font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2.35rem] leading-[1.3]' : 'text-[1.75rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{isRegister ? copy.createDetail : copy.welcomeDetail}</p>
-            {!isRegister && (
-              <section className="mt-4 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50/65 px-3 py-2.5 text-start lg:hidden dark:border-blue-900/45 dark:bg-blue-950/25" aria-label={copy.printTitle}>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-card text-primary shadow-2xs dark:bg-zinc-900">
-                  <Printer className="h-3.5 w-3.5" aria-hidden />
-                </span>
-                <p className="pt-0.5 text-[11px] font-semibold leading-snug text-slate-700 sm:text-xs dark:text-zinc-200">
-                  <span className="font-extrabold text-[#173a63] dark:text-blue-200">{copy.printTitle} · </span>
-                  {copy.printDetail}
-                </p>
-              </section>
-            )}
-          </header>
 
           <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4" aria-busy={isSubmitting}>
             {/* Nom + Prénom (inscription) */}

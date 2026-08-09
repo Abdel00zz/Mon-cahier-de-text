@@ -69,7 +69,10 @@ const applyProfileToConfig = (user: AuthUser): void => {
     const raw = localStorage.getItem('appConfig_v1');
     const config = raw ? JSON.parse(raw) : {};
     if (!config.defaultTeacherName && (user.nom || user.prenom)) {
-      config.defaultTeacherName = `${user.prenom ?? ''} ${user.nom ?? ''}`.trim();
+      const fullName = `${user.prenom ?? ''} ${user.nom ?? ''}`.trim();
+      if (fullName !== 'Prof Dev' && fullName !== 'Dev Prof') {
+        config.defaultTeacherName = fullName;
+      }
     }
     if (user.cycles?.length && !(config.selectedCycles?.length)) {
       config.selectedCycles = user.cycles;

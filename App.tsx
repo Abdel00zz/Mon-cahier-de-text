@@ -21,7 +21,7 @@ const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ d
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const NotificationsPage = lazy(() => import('./features/dashboard/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 const AuthPage = lazy(() => import('./features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
-const Analytics = lazy(() => import('@vercel/analytics/react').then(module => ({ default: module.Analytics })));
+const Analytics = () => null;
 const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 const DevoirsView = lazy(() => import('./features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 

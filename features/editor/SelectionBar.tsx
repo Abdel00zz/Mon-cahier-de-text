@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
 import { Button } from '@/components/ui/button';
-import { MathText } from '@/components/ui/math-text';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
   FileText, Pencil, Trash2, X,
@@ -46,33 +45,35 @@ const ActionButton: FC<{
   icon: IconType;
   onClick: () => void;
   title: string;
+  label?: string;
   danger?: boolean;
   accent?: boolean;
   disabled?: boolean;
-}> = ({ icon: Icon, onClick, title, danger = false, accent = false, disabled = false }) => (
+}> = ({ icon: Icon, onClick, title, label, danger = false, accent = false, disabled = false }) => (
   <Button
     variant="ghost"
-    size="icon"
+    size="sm"
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 cursor-pointer disabled:pointer-events-none disabled:opacity-20 sm:h-10 sm:w-10 ${
+    className={`group relative flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2.5 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 active:scale-95 ${
       danger
-        ? 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
+        ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400'
         : accent
-          ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground'
-          : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'
+          ? 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90'
+          : 'text-foreground/80 hover:bg-muted hover:text-foreground'
     }`}
     aria-label={title}
   >
-    <Icon className="h-4.5 w-4.5 transition-transform duration-200 group-hover:scale-105" />
+    <Icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+    {label && <span className="text-xs font-semibold whitespace-nowrap">{label}</span>}
     <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 border border-zinc-800 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
       {title}
     </span>
   </Button>
 );
 
-const Divider: FC = () => <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-zinc-200" />;
+const Divider: FC = () => <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-border/60" />;
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
@@ -126,7 +127,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   if (contentActions.length > 0) groups.push(<React.Fragment key="content">{contentActions}</React.Fragment>);
 
   const dateActions: React.ReactNode[] = [];
-  if (canAssignDate && onAssignToday) dateActions.push(<ActionButton key="today" icon={CalendarCheck} onClick={onAssignToday} title="Dater aujourd'hui" accent />);
+  if (canAssignDate && onAssignToday) dateActions.push(<ActionButton key="today" icon={CalendarCheck} onClick={onAssignToday} title="Dater aujourd'hui" label="Aujourd'hui" accent />);
   if (canAssignDate) dateActions.push(<ActionButton key="pick" icon={CalendarDays} onClick={onAssignDate} title="Choisir une date…" />);
   if (hasDate) dateActions.push(<ActionButton key="clear" icon={CalendarX} onClick={onClearDate} title="Dissocier la date" />);
   if (dateActions.length > 0) groups.push(<React.Fragment key="dates">{dateActions}</React.Fragment>);
@@ -139,45 +140,24 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 z-[60] w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-xl border border-zinc-200 bg-white/98 shadow-xl shadow-zinc-200/40 backdrop-blur-md sm:bottom-6 print:hidden"
+      className="fixed bottom-4 left-1/2 z-[60] flex items-center gap-1.5 max-w-[calc(100vw-1.25rem)] -translate-x-1/2 rounded-full border border-border/80 bg-card/95 p-1.5 text-card-foreground shadow-2xl backdrop-blur-md sm:bottom-6 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
       aria-label="Actions sur la sélection"
     >
-      {/* En-tête contextuel : QUOI est sélectionné */}
-      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 pb-1.5 pt-2">
-        <div className="min-w-0 flex items-baseline gap-2">
-          {count === 1 && selectionLabel ? (
-            /* barre resserrée : le titre est tronqué (…) et borné pour ne pas
-               étirer la barre, l'info complète reste dans le tableau/l'édition */
-            <span className="max-w-[9rem] sm:max-w-[13rem] truncate text-xs font-bold text-zinc-800 font-display">
-              <MathText source={selectionLabel} cacheKey={selectionLabel} inline>{selectionLabel}</MathText>
-            </span>
-          ) : (
-            <span className="text-xs font-bold text-zinc-800 font-display">{count} éléments sélectionnés</span>
-          )}
-          {hasDate && sharedDate && (
-            <span className="shrink-0 text-[10px] font-bold text-zinc-700 font-mono bg-zinc-100 px-1.5 py-0.5 rounded-full border border-zinc-200/50">
-              {sharedDate}
-            </span>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClear}
-          title="Fermer (Échap)"
-          className="h-6 w-6 shrink-0 rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-800 cursor-pointer"
-          aria-label="Effacer la sélection"
-        >
-          <X className="h-3.5 w-3.5" />
-        </Button>
+      {/* Badge indicateur de nombre (ex: 4 ou x4) */}
+      <div
+        className="flex shrink-0 h-8 min-w-8 items-center justify-center rounded-full bg-primary/15 text-primary px-2.5 text-xs font-black font-mono tracking-tight"
+        title={`${count} élément${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}`}
+      >
+        {count > 1 ? `×${count}` : '1'}
       </div>
 
-      {/* Actions groupées par intention, dividers seulement entre groupes
-          présents ; défilement horizontal sur très petit écran */}
-      <div className={`flex items-center gap-1 overflow-x-auto px-2.5 py-2 no-scrollbar ${isPending ? 'opacity-60' : ''}`}>
+      <Divider />
+
+      {/* Actions groupées par intention */}
+      <div className={`flex items-center gap-1 overflow-x-auto no-scrollbar ${isPending ? 'opacity-60' : ''}`}>
         {groups.map((group, index) => (
           <React.Fragment key={index}>
             {index > 0 && <Divider />}
@@ -185,6 +165,20 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           </React.Fragment>
         ))}
       </div>
+
+      <Divider />
+
+      {/* Bouton Fermer X */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onClear}
+        title="Fermer la sélection (Échap)"
+        className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer active:scale-95"
+        aria-label="Effacer la sélection"
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
