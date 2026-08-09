@@ -36,6 +36,7 @@ const devApiMockPlugin = (): Plugin => {
     const lessonsByClass = new Map<string, unknown>();
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
     let devAdminMessages: Array<{ id: string; title: string; body: string; createdAt: string; acknowledgedAt?: string }> = [];
+    let devTeacherBlocked = false;
 
     const readBody = (req: import('http').IncomingMessage): Promise<string> =>
         new Promise(resolve => {
@@ -62,13 +63,15 @@ const devApiMockPlugin = (): Plugin => {
         configureServer(server) {
             server.middlewares.use('/api/auth', async (req, res) => {
                 if (req.method === 'GET') {
-                    if (hasSession(req)) return send(res, 200, { user: sessionUser ?? DEV_USER });
+                    if (hasSession(req) && !devTeacherBlocked) return send(res, 200, { user: sessionUser ?? DEV_USER });
+                    if (devTeacherBlocked) return send(res, 401, { error: 'Ce compte est bloqué par la direction.' });
                     return send(res, 401, { error: 'Non connecté.' });
                 }
                 if (req.method === 'POST') {
                     let body: Record<string, unknown> = {};
                     try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
                     if (body.action === 'login') {
+                        if (devTeacherBlocked) return send(res, 401, { error: 'Ce compte est bloqué par la direction.' });
                         if (phoneMatches(body.phone) && body.password === DEV_PASSWORD) {
                             sessionUser = DEV_USER;
                             res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
@@ -98,7 +101,7 @@ const devApiMockPlugin = (): Plugin => {
             });
 
             server.middlewares.use('/api/sync', async (req, res) => {
-                if (!hasSession(req)) return send(res, 401, { error: 'Non connecté.' });
+                if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
                 if (req.method === 'GET') {
                     const url = new URL(req.url ?? '/', 'http://localhost');
                     const classId = url.searchParams.get('classId');
@@ -141,7 +144,18 @@ const devApiMockPlugin = (): Plugin => {
                     }
                     const deletedIds = new Set(Object.keys(deletedClasses));
                     const requestedClasses = Array.isArray(body.classes) ? body.classes : ((classesBlob?.classes as any[]) ?? []);
-                    const classes = requestedClasses.filter(classInfo => !deletedIds.has(classInfo?.id));
+                    const existingClasses = (classesBlob?.classes as Array<{ id?: string }> | undefined) ?? [];
+                    const adminClassOverrides = { ...((classesBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
+                    const classesById = new Map<string, unknown>();
+                    for (const classInfo of existingClasses) {
+                        if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
+                    }
+                    for (const classInfo of requestedClasses) {
+                        if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
+                    }
+                    const classes = Array.from(classesById.entries())
+                        .filter(([classId]) => !deletedIds.has(classId))
+                        .map(([classId, classInfo]) => adminClassOverrides[classId] ?? classInfo);
                     for (const entry of body.lessons ?? []) {
                         if (deletedIds.has(entry.classId)) continue;
                         lessonsByClass.set(entry.classId, { lessonsData: entry.lessonsData, updatedAt: entry.updatedAt || now });
@@ -150,6 +164,7 @@ const devApiMockPlugin = (): Plugin => {
                     for (const id of deletedIds) {
                         lessonsByClass.delete(id);
                         delete classMeta[id];
+                        delete adminClassOverrides[id];
                     }
                     if (body.snapshot && typeof body.snapshot === 'object') {
                         devSnapshot = { ...body.snapshot, phone: DEV_PHONE, lastSyncAt: now };
@@ -161,6 +176,7 @@ const devApiMockPlugin = (): Plugin => {
                         settings: body.settings ?? (classesBlob?.settings as any) ?? {},
                         settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((classesBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
+                        adminClassOverrides,
                         deletedClasses,
                         updatedAt: now,
                     };
@@ -181,7 +197,7 @@ const devApiMockPlugin = (): Plugin => {
             });
 
             server.middlewares.use('/api/messages', async (req, res) => {
-                if (!hasSession(req)) return send(res, 401, { error: 'Non connecté.' });
+                if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
                 if (req.method === 'GET') {
                     return send(res, 200, { messages: devAdminMessages.filter(message => !message.acknowledgedAt) });
                 }
@@ -216,8 +232,90 @@ const devApiMockPlugin = (): Plugin => {
                         return send(res, 200, { ok: true });
                     }
                     if (!hasAdmin) return send(res, 401, { error: 'Session admin requise.' });
-                    if (body.action === 'blockTeacher') return send(res, 200, { ok: true, blocked: body.blocked !== false });
+                    if (body.action === 'blockTeacher') {
+                        devTeacherBlocked = body.blocked !== false;
+                        return send(res, 200, { ok: true, blocked: devTeacherBlocked });
+                    }
                     if (body.action === 'deleteTeacher') return send(res, 200, { ok: true, deletedClasses: lessonsByClass.size });
+                    if (body.action === 'upsertTeacherClass') {
+                        const input = body.classInfo as Record<string, unknown> | undefined;
+                        const name = typeof input?.name === 'string' ? input.name.trim().slice(0, 120) : '';
+                        const subject = typeof input?.subject === 'string' ? input.subject.trim().slice(0, 120) : '';
+                        if (!name || !subject) return send(res, 400, { error: 'Nom de classe et matière requis.' });
+                        const existingClasses = ((classesBlob?.classes as any[]) ?? []);
+                        const requestedId = typeof input?.id === 'string' && input.id ? input.id : undefined;
+                        const existing = requestedId ? existingClasses.find(item => item.id === requestedId) : undefined;
+                        if (requestedId && !existing) return send(res, 404, { error: 'Classe introuvable.' });
+                        const now = new Date().toISOString();
+                        const classInfo = {
+                            id: requestedId ?? crypto.randomUUID(),
+                            name,
+                            subject,
+                            cycle: ['college', 'lycee', 'prepa'].includes(String(input?.cycle)) ? input?.cycle : (existing?.cycle ?? 'college'),
+                            teacherName: `${DEV_USER.prenom} ${DEV_USER.nom}`,
+                            createdAt: existing?.createdAt ?? now,
+                            color: '',
+                        };
+                        const classes = existing
+                            ? existingClasses.map(item => item.id === classInfo.id ? classInfo : item)
+                            : [...existingClasses, classInfo];
+                        const classMeta = { ...((classesBlob?.classMeta as Record<string, unknown>) ?? {}), [classInfo.id]: { updatedAt: now } };
+                        const adminClassOverrides = { ...((classesBlob?.adminClassOverrides as Record<string, unknown>) ?? {}), [classInfo.id]: classInfo };
+                        classesBlob = {
+                            ...(classesBlob ?? {}),
+                            classes,
+                            schedules: (classesBlob?.schedules as any) ?? [],
+                            timetable: (classesBlob?.timetable as any) ?? [],
+                            settings: (classesBlob?.settings as any) ?? {},
+                            classMeta,
+                            adminClassOverrides,
+                            updatedAt: now,
+                        };
+                        if (!existing) lessonsByClass.set(classInfo.id, { lessonsData: [], updatedAt: now });
+                        if (devSnapshot) {
+                            const snapshot = devSnapshot as any;
+                            const prior = (snapshot.classes ?? []).find((item: any) => item.id === classInfo.id);
+                            const classSnapshot = prior
+                                ? { ...prior, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle, updatedAt: now }
+                                : { id: classInfo.id, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle, totalItems: 0, plannedCount: 0, completionRate: 0, sessionsCount: 0, lastDate: null, weekdays: [], sessionsPerWeek: 0, updatedAt: now };
+                            devSnapshot = { ...snapshot, classes: prior ? snapshot.classes.map((item: any) => item.id === classInfo.id ? classSnapshot : item) : [...(snapshot.classes ?? []), classSnapshot] };
+                        }
+                        return send(res, 200, { ok: true, classInfo, created: !existing });
+                    }
+                    if (body.action === 'deleteTeacherClass') {
+                        const classId = typeof body.classId === 'string' ? body.classId : '';
+                        const existingClasses = ((classesBlob?.classes as any[]) ?? []);
+                        if (!classId || !existingClasses.some(item => item.id === classId)) return send(res, 404, { error: 'Classe introuvable.' });
+                        const now = new Date().toISOString();
+                        const classMeta = { ...((classesBlob?.classMeta as Record<string, unknown>) ?? {}) };
+                        delete classMeta[classId];
+                        const adminClassOverrides = { ...((classesBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
+                        delete adminClassOverrides[classId];
+                        const deletedClasses = { ...((classesBlob?.deletedClasses as Record<string, unknown>) ?? {}), [classId]: { deletedAt: now } };
+                        const settings = { ...((classesBlob?.settings as Record<string, any>) ?? {}) };
+                        for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents']) {
+                            if (settings[key]) {
+                                settings[key] = { ...settings[key] };
+                                delete settings[key][classId];
+                            }
+                        }
+                        classesBlob = {
+                            ...(classesBlob ?? {}),
+                            classes: existingClasses.filter(item => item.id !== classId),
+                            schedules: ((classesBlob?.schedules as any[]) ?? []).filter(item => item.classId !== classId),
+                            timetable: ((classesBlob?.timetable as any[]) ?? []).filter(item => item.classId !== classId),
+                            settings,
+                            classMeta,
+                            adminClassOverrides,
+                            deletedClasses,
+                            updatedAt: now,
+                        };
+                        lessonsByClass.delete(classId);
+                        if (devSnapshot) {
+                            devSnapshot = { ...(devSnapshot as any), classes: ((devSnapshot as any).classes ?? []).filter((item: any) => item.id !== classId) };
+                        }
+                        return send(res, 200, { ok: true, classId });
+                    }
                     if (body.action === 'notifyTeacher') {
                         const content = typeof body.message === 'string' ? body.message.trim().slice(0, 1_200) : '';
                         if (!content) return send(res, 400, { error: 'Message manquant.' });
@@ -279,7 +377,7 @@ const devApiMockPlugin = (): Plugin => {
                     if (action === 'messages') return send(res, 200, { adminMessages: devAdminMessages.slice(0, 20) });
                     if (action === 'teacher') {
                         return send(res, 200, {
-                            user: { ...DEV_USER, createdAt: new Date().toISOString(), lastSyncAt: (devSnapshot as any)?.lastSyncAt ?? null },
+                            user: { ...DEV_USER, createdAt: new Date().toISOString(), lastSyncAt: (devSnapshot as any)?.lastSyncAt ?? null, blocked: devTeacherBlocked },
                             classes: (classesBlob?.classes as any) ?? [],
                             schedules: (classesBlob?.schedules as any) ?? [],
                             classMeta: (classesBlob?.classMeta as any) ?? {},

@@ -1,9 +1,9 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, Cycle, LessonsData, TeacherSnapshot } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
 export interface TeacherDetail {
-    user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null } | null;
+    user: { phone: string; nom: string; prenom: string; createdAt: string; lastSyncAt: string | null; blocked?: boolean } | null;
     classes: ClassInfo[];
     schedules: ClassSchedule[];
     classMeta: Record<string, { updatedAt: string }>;
@@ -75,6 +75,24 @@ export const blockTeacher = (phone: string, blocked: boolean): Promise<{ ok: boo
 /** Suppression définitive du compte et de toutes ses données cloud. */
 export const deleteTeacher = (phone: string): Promise<{ ok: boolean; deletedClasses: number }> =>
     postAdmin({ action: 'deleteTeacher', phone });
+
+export type ManagedClassInput = {
+    id?: string;
+    name: string;
+    subject: string;
+    cycle: Cycle;
+};
+
+/** Crée ou met à jour une classe, attribuée uniquement au professeur sélectionné. */
+export const upsertTeacherClass = (
+    phone: string,
+    classInfo: ManagedClassInput,
+): Promise<{ ok: boolean; classInfo: ClassInfo; created: boolean }> =>
+    postAdmin({ action: 'upsertTeacherClass', phone, classInfo });
+
+/** Supprime la classe et son cahier cloud, y compris sur les appareils hors ligne. */
+export const deleteTeacherClass = (phone: string, classId: string): Promise<{ ok: boolean; classId: string }> =>
+    postAdmin({ action: 'deleteTeacherClass', phone, classId });
 
 /** Notification push directe vers le(s) téléphone(s) de l'enseignant. */
 export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number; message: AdminMessage }> =>

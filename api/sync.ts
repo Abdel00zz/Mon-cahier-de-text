@@ -12,6 +12,8 @@ interface ClassesBlob {
     settings?: Record<string, unknown>;
     settingsUpdatedAt?: string;
     classMeta: Record<string, { updatedAt: string }>;
+    /** Les champs imposés par la direction ne peuvent pas être écrasés par un appareil non synchronisé. */
+    adminClassOverrides?: Record<string, ClassInfo>;
     /** Tombstones durables : un client ancien ne peut pas recréer une classe supprimée. */
     deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
@@ -108,9 +110,17 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         if (!known || tombstone.deletedAt >= known.deletedAt) deletedClasses[id] = tombstone;
     }
     const deletedClassIds = new Set(Object.keys(deletedClasses));
-    // La suppression gagne systématiquement contre une liste envoyée par un
-    // appareil qui n'a pas encore téléchargé le tombstone.
-    const classes = requestedClasses.filter(classInfo => !deletedClassIds.has(classInfo.id));
+    const requestedById = new Map(requestedClasses.map(classInfo => [classInfo.id, classInfo]));
+    const existingById = new Map((existing.classes ?? []).map(classInfo => [classInfo.id, classInfo]));
+    const adminClassOverrides = { ...(existing.adminClassOverrides ?? {}) };
+    // La liste locale peut être périmée lorsqu'un administrateur vient d'ajouter
+    // ou d'éditer une classe. On conserve donc toutes les classes serveur non
+    // supprimées, puis l'override administratif garde ses champs prioritaires.
+    const classIds = new Set([...existingById.keys(), ...requestedById.keys()]);
+    const classes = Array.from(classIds)
+        .filter(classId => !deletedClassIds.has(classId))
+        .map(classId => adminClassOverrides[classId] ?? requestedById.get(classId) ?? existingById.get(classId)!)
+        .filter(Boolean);
 
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };
     const validClassIds = new Set(classes.map(c => c.id));
@@ -127,6 +137,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
 
     for (const id of deletedClassIds) {
         delete classMeta[id];
+        delete adminClassOverrides[id];
     }
     // purge des métadonnées orphelines (classe absente de la liste poussée)
     for (const id of Object.keys(classMeta)) {
@@ -146,6 +157,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             ? (typeof body.settingsUpdatedAt === 'string' && body.settingsUpdatedAt ? body.settingsUpdatedAt : now)
             : (existing.settingsUpdatedAt ?? ''),
         classMeta,
+        adminClassOverrides,
         deletedClasses,
         updatedAt: now,
     };

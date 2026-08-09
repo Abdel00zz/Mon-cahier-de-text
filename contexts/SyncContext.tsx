@@ -141,6 +141,8 @@ interface ServerClassesBlob {
     settings?: SyncableSettings;
     settingsUpdatedAt?: string;
     classMeta: Record<string, { updatedAt: string }>;
+    /** Classes administrées : leurs métadonnées restent prioritaires sur une copie locale périmée. */
+    adminClassOverrides?: Record<string, ClassInfo>;
     /** Suppressions durables : empêchent un appareil périmé de recréer une classe. */
     deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
@@ -450,6 +452,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     localIndex: number;
                     action: 'apply' | 'requeue' | 'none';
                     conflict: boolean;
+                    hasAdminOverride: boolean;
+                    serverIsNewer: boolean;
                 }
                 const decisions: PullDecision[] = (server.classes ?? [])
                     .filter(serverClass => !deletedIds.has(serverClass.id))
@@ -470,26 +474,32 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         !!serverUpdatedAt && !!localUpdatedAt && !!lastSyncedAt &&
                         serverUpdatedAt > lastSyncedAt && localUpdatedAt > lastSyncedAt &&
                         serverUpdatedAt !== localUpdatedAt;
+                    const hasAdminOverride = !!server.adminClassOverrides?.[serverClass.id];
 
                     const action: PullDecision['action'] =
-                        localIndex === -1 || serverIsNewer
+                        localIndex === -1 || serverIsNewer || hasAdminOverride
                             ? 'apply'
                             : localUpdatedAt && (!serverUpdatedAt || localUpdatedAt > serverUpdatedAt)
                                 ? 'requeue' // modifications locales jamais poussées : on les remet en file
                                 : 'none';
 
-                    return { serverClass, serverUpdatedAt, localIndex, action, conflict };
+                    return { serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer };
                     });
 
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
-                await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict }) => {
+                await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer }) => {
                     if (action === 'apply') {
                         // le cloud va remplacer le local : archiver la version locale perdante
                         if (conflict) {
                             backupConflictVersion(serverClass.id, readLocalLessons(serverClass.id), 'local');
                             conflictNames.push(serverClass.name);
                         }
-                        const blob = await fetchLessonsBlob(serverClass.id);
+                        // Les champs d'une classe administrée doivent se mettre à jour
+                        // même lorsqu'une saisie de cours locale est plus récente. Dans
+                        // ce cas, on conserve le cahier local et on applique seulement
+                        // ses métadonnées (nom, matière, cycle).
+                        const shouldFetchLessons = localIndex === -1 || serverIsNewer;
+                        const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id) : null;
                         if (blob) {
                             localStorage.setItem(
                                 `classData_v1_${serverClass.id}`,
@@ -504,6 +514,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         } else {
                             mergedClasses[localIndex] = { ...mergedClasses[localIndex], ...serverClass };
                         }
+                        if (hasAdminOverride || localIndex !== -1) localChanged = true;
                     } else if (action === 'requeue') {
                         // le local va écraser le cloud au prochain push : archiver la version cloud perdante
                         if (conflict) {

@@ -2,7 +2,7 @@ import { memo, FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
-import { Settings, Users } from '@/components/ui/icons';
+import { Info, Settings, Users } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -86,12 +86,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const isArabic = containsArabic(mainName);
     const cycleBadge = classInfo.cycle ? CYCLE_BADGES[classInfo.cycle] : null;
     const cycleLabel = classInfo.cycle ? t(`cycle.${classInfo.cycle}`) : '';
-    const issueStatus = notificationCount === 0
-        ? t('notifications.classIssueCount.none')
-        : notificationCount === 1
-            ? t('notifications.classIssueCount.one', { count: notificationCount })
-            : t('notifications.classIssueCount.many', { count: notificationCount });
-    const notificationButtonLabel = `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`;
+    const issueStatus = notificationCount === 1
+        ? t('notifications.classIssueCount.one', { count: notificationCount })
+        : notificationCount > 1
+            ? t('notifications.classIssueCount.many', { count: notificationCount })
+            : null;
+    const notificationButtonLabel = issueStatus
+        ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
+        : t('notifications.classButtonLabel', { className: displayName });
 
     return (
         <article
@@ -149,12 +151,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     aria-label={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <span className="min-w-0 text-center leading-tight">
-                        <span className="block text-[10px] font-extrabold sm:text-[11px]">{t('dashboard.classStatus')}</span>
-                        <span className={`mt-0.5 block text-[8px] font-semibold leading-[1.15] sm:text-[9px] ${notificationCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    <Info className="h-[19px] w-[19px] shrink-0" />
+                    {issueStatus && (
+                        <span className="min-w-0 text-center text-[8px] font-semibold leading-[1.15] text-red-600 dark:text-red-400 sm:text-[9px]">
                             ({issueStatus})
                         </span>
-                    </span>
+                    )}
                 </button>
             </div>
         </article>

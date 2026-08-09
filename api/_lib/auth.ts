@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { ApiRequest, ApiResponse, HttpError } from './http.js';
+import { getRedis, KEYS } from './redis.js';
 
 const scrypt = promisify(scryptCallback) as (
   password: string,
@@ -115,6 +116,14 @@ export const requireUser = async (req: ApiRequest): Promise<{ phone: string }> =
   const payload = token ? await verifySession(token) : null;
   if (!payload?.phone) {
     throw new HttpError(401, 'Session expirée. Veuillez vous reconnecter.');
+  }
+  const redis = await getRedis();
+  const user = await redis.get<{ blocked?: boolean }>(KEYS.user(payload.phone));
+  if (!user) {
+    throw new HttpError(401, 'Compte introuvable. Veuillez vous reconnecter.');
+  }
+  if (user.blocked) {
+    throw new HttpError(401, 'Ce compte est bloqué par la direction.');
   }
   return { phone: payload.phone };
 };

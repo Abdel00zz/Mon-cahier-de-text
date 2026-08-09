@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
-import { ChevronRight, Settings, Users } from '@/components/ui/icons';
+import { ChevronRight, Info, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -26,12 +26,14 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const { impact } = useHapticFeedback();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
-    const issueStatus = notificationCount === 0
-        ? t('notifications.classIssueCount.none')
-        : notificationCount === 1
-            ? t('notifications.classIssueCount.one', { count: notificationCount })
-            : t('notifications.classIssueCount.many', { count: notificationCount });
-    const notificationButtonLabel = `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`;
+    const issueStatus = notificationCount === 1
+        ? t('notifications.classIssueCount.one', { count: notificationCount })
+        : notificationCount > 1
+            ? t('notifications.classIssueCount.many', { count: notificationCount })
+            : null;
+    const notificationButtonLabel = issueStatus
+        ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
+        : t('notifications.classButtonLabel', { className: displayName });
 
     const selectClass = () => {
         impact('light');
@@ -83,17 +85,17 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 <button
                     type="button"
                     onClick={() => runAction(onShowNotifications)}
-                    className="flex min-h-[66px] w-[7.25rem] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/70 px-1.5 text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/15 sm:w-32 sm:px-2"
+                    className={`${issueStatus ? 'w-[7.25rem] px-1.5 sm:w-32 sm:px-2' : 'w-12 px-2 sm:w-14'} flex min-h-[66px] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/70 text-primary transition-[width,background-color] hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/15`}
                     aria-label={notificationButtonLabel}
                     title={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <span className="min-w-0 text-center leading-tight">
-                        <span className="block text-[9px] font-extrabold sm:text-[10px]">{t('dashboard.classStatus')}</span>
-                        <span className={`mt-0.5 line-clamp-2 text-[7.5px] font-semibold leading-[1.12] sm:text-[8px] ${notificationCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    <Info className="h-[19px] w-[19px] shrink-0" />
+                    {issueStatus && (
+                        <span className="line-clamp-2 min-w-0 text-center text-[7.5px] font-semibold leading-[1.12] text-red-600 dark:text-red-400 sm:text-[8px]">
                             ({issueStatus})
                         </span>
-                    </span>
+                    )}
                 </button>
             </div>
         </article>

@@ -12,7 +12,7 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, TeacherSnapshot } from '../types.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableEntry, TeacherSnapshot } from '../types.js';
 import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -32,12 +32,18 @@ interface AdminBody {
     classId?: string;
     assessmentId?: string;
     date?: string;
+    classInfo?: Partial<ClassInfo>;
 }
 
 interface ClassesBlob {
     classes: ClassInfo[];
     schedules: ClassSchedule[];
+    timetable?: TimetableEntry[];
     classMeta: Record<string, { updatedAt: string }>;
+    /** Champs de classe imposés par la direction, conservés face à un appareil périmé. */
+    adminClassOverrides?: Record<string, ClassInfo>;
+    /** Suppressions durables, appliquées au prochain pull de l'enseignant. */
+    deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
     settings?: Partial<AppConfig>;
     settingsUpdatedAt?: string;
@@ -51,6 +57,59 @@ interface StoredUser {
     lastSyncAt?: string;
     blocked?: boolean;
 }
+
+const VALID_CYCLES = new Set<Cycle>(['college', 'lycee', 'prepa']);
+
+const requiredText = (value: unknown, label: string, maxLength = 120): string => {
+    if (typeof value !== 'string') throw new HttpError(400, `${label} manquant.`);
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.length > maxLength) throw new HttpError(400, `${label} invalide.`);
+    return trimmed;
+};
+
+const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: string): Partial<AppConfig> => {
+    const next = { ...(settings ?? {}) };
+    next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
+    next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents'] as const) {
+        if (!next[key]) continue;
+        const records = { ...next[key] };
+        delete records[classId];
+        next[key] = records as never;
+    }
+    return next;
+};
+
+const updateSnapshotClass = (
+    snapshot: TeacherSnapshot | null,
+    classInfo: ClassInfo,
+    now: string,
+): TeacherSnapshot | null => {
+    if (!snapshot) return null;
+    const existing = snapshot.classes.find(item => item.id === classInfo.id);
+    const nextClass: ClassSnapshot = existing
+        ? { ...existing, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle, updatedAt: now }
+        : {
+            id: classInfo.id,
+            name: classInfo.name,
+            subject: classInfo.subject,
+            cycle: classInfo.cycle,
+            totalItems: 0,
+            plannedCount: 0,
+            completionRate: 0,
+            sessionsCount: 0,
+            lastDate: null,
+            weekdays: [],
+            sessionsPerWeek: 0,
+            updatedAt: now,
+        };
+    return {
+        ...snapshot,
+        classes: existing
+            ? snapshot.classes.map(item => item.id === classInfo.id ? nextClass : item)
+            : [...snapshot.classes, nextClass],
+    };
+};
 
 const handleAdminLogin = async (body: AdminBody, res: ApiResponse) => {
     const expected = process.env.ADMIN_SECRET;
@@ -156,7 +215,14 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
 
     res.status(200).json({
         user: user
-            ? { phone: user.phone, nom: user.nom, prenom: user.prenom, createdAt: user.createdAt, lastSyncAt: user.lastSyncAt ?? null }
+            ? {
+                phone: user.phone,
+                nom: user.nom,
+                prenom: user.prenom,
+                createdAt: user.createdAt,
+                lastSyncAt: user.lastSyncAt ?? null,
+                blocked: user.blocked === true,
+            }
             : null,
         classes: classesBlob?.classes ?? [],
         schedules: classesBlob?.schedules ?? [],
@@ -200,6 +266,117 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
         updatedAt: now,
     });
     res.status(200).json({ ok: true, assessmentDates });
+};
+
+/** Création ou édition d'une classe affectée à l'enseignant sélectionné. */
+const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const input = body.classInfo;
+    if (!input || typeof input !== 'object') throw new HttpError(400, 'Informations de classe manquantes.');
+
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    const [user, storedBlob, storedSnapshot] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+
+    const existingClasses = storedBlob?.classes ?? [];
+    const requestedId = typeof input.id === 'string' && input.id.trim() ? input.id.trim() : undefined;
+    const existing = requestedId ? existingClasses.find(item => item.id === requestedId) : undefined;
+    if (requestedId && !existing) throw new HttpError(404, 'Classe introuvable.');
+
+    const now = new Date().toISOString();
+    const classInfo: ClassInfo = {
+        id: requestedId ?? randomUUID(),
+        name: requiredText(input.name, 'Nom de classe'),
+        subject: requiredText(input.subject, 'Matière'),
+        cycle: VALID_CYCLES.has(input.cycle as Cycle) ? input.cycle as Cycle : (existing?.cycle ?? 'college'),
+        teacherName: `${user.prenom} ${user.nom}`.trim(),
+        createdAt: existing?.createdAt ?? now,
+        color: '',
+    };
+    const classes = existing
+        ? existingClasses.map(item => item.id === classInfo.id ? classInfo : item)
+        : [...existingClasses, classInfo];
+    const adminClassOverrides = { ...(storedBlob?.adminClassOverrides ?? {}), [classInfo.id]: classInfo };
+    const classMeta = { ...(storedBlob?.classMeta ?? {}), [classInfo.id]: { updatedAt: now } };
+    const deletedClasses = { ...(storedBlob?.deletedClasses ?? {}) };
+    delete deletedClasses[classInfo.id];
+
+    const write = redis.pipeline();
+    write.set(KEYS.classes(phone), {
+        classes,
+        schedules: storedBlob?.schedules ?? [],
+        timetable: storedBlob?.timetable ?? [],
+        settings: storedBlob?.settings ?? {},
+        settingsUpdatedAt: storedBlob?.settingsUpdatedAt ?? '',
+        classMeta,
+        adminClassOverrides,
+        deletedClasses,
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    if (!existing) {
+        write.set(KEYS.lessons(phone, classInfo.id), { lessonsData: [], updatedAt: now });
+    }
+    const nextSnapshot = updateSnapshotClass(storedSnapshot, classInfo, now);
+    if (nextSnapshot) write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({ ok: true, classInfo, created: !existing });
+};
+
+/** Suppression d'une classe depuis la direction, avec tombstone pour les appareils hors ligne. */
+const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe');
+    const redis = await getRedis();
+    const pipeline = redis.pipeline();
+    pipeline.get(KEYS.user(phone));
+    pipeline.get(KEYS.classes(phone));
+    pipeline.hget(KEYS.adminSnapshots, phone);
+    const [user, storedBlob, storedSnapshot] = (await pipeline.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    if (!storedBlob?.classes.some(item => item.id === classId)) throw new HttpError(404, 'Classe introuvable.');
+
+    const now = new Date().toISOString();
+    const classes = storedBlob.classes.filter(item => item.id !== classId);
+    const classMeta = { ...(storedBlob.classMeta ?? {}) };
+    delete classMeta[classId];
+    const adminClassOverrides = { ...(storedBlob.adminClassOverrides ?? {}) };
+    delete adminClassOverrides[classId];
+    const deletedClasses = { ...(storedBlob.deletedClasses ?? {}), [classId]: { deletedAt: now } };
+    const nextSnapshot = storedSnapshot
+        ? { ...storedSnapshot, classes: storedSnapshot.classes.filter(item => item.id !== classId) }
+        : null;
+
+    const write = redis.pipeline();
+    write.set(KEYS.classes(phone), {
+        ...storedBlob,
+        classes,
+        schedules: (storedBlob.schedules ?? []).filter(entry => entry.classId !== classId),
+        timetable: (storedBlob.timetable ?? []).filter(entry => entry.classId !== classId),
+        settings: cleanClassSettings(storedBlob.settings, classId),
+        settingsUpdatedAt: now,
+        classMeta,
+        adminClassOverrides,
+        deletedClasses,
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    write.del(KEYS.lessons(phone, classId));
+    if (nextSnapshot) write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({ ok: true, classId });
 };
 
 /**
@@ -316,6 +493,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
             if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
+            if (body.action === 'upsertTeacherClass') return await handleUpsertTeacherClass(body, res);
+            if (body.action === 'deleteTeacherClass') return await handleDeleteTeacherClass(body, res);
             throw new HttpError(400, 'Action inconnue.');
         }
 

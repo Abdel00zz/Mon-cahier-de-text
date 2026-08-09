@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type PlannedAssessment } from '../../utils/assessments';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
-import type { AdminMessage, ClassInfo, ClassSnapshot, LessonsData, TeacherSnapshot } from '../../types';
+import type { AdminMessage, ClassInfo, ClassSnapshot, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
 
@@ -285,6 +285,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const [isMessageModalOpen, setMessageModalOpen] = useState(false);
     const [messageTitle, setMessageTitle] = useState('Message de la direction');
     const [messageBody, setMessageBody] = useState('');
+    const [isClassModalOpen, setClassModalOpen] = useState(false);
+    const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
+    const [className, setClassName] = useState('');
+    const [classSubject, setClassSubject] = useState('');
+    const [classCycle, setClassCycle] = useState<Cycle>('college');
 
     const runAction = async (fn: () => Promise<string>) => {
         setBusy(true);
@@ -334,6 +339,84 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             return `Compte supprimé (${result.deletedClasses} classe(s) effacée(s)).`;
         });
 
+    const openClassModal = (classInfo?: ClassInfo) => {
+        setEditingClass(classInfo ?? null);
+        setClassName(classInfo?.name ?? '');
+        setClassSubject(classInfo?.subject ?? '');
+        setClassCycle(classInfo?.cycle ?? 'college');
+        setClassModalOpen(true);
+    };
+
+    const handleSaveClass = () =>
+        runAction(async () => {
+            const name = className.trim();
+            const subject = classSubject.trim();
+            if (!name || !subject) throw new Error('Le nom de la classe et la matière sont requis.');
+            const result = await upsertTeacherClass(phone, {
+                id: editingClass?.id,
+                name,
+                subject,
+                cycle: classCycle,
+            });
+            setData(current => {
+                if (!current) return current;
+                const classes = editingClass
+                    ? current.classes.map(item => item.id === result.classInfo.id ? result.classInfo : item)
+                    : [...current.classes, result.classInfo];
+                const snapshot = current.snapshot
+                    ? {
+                        ...current.snapshot,
+                        classes: current.snapshot.classes.some(item => item.id === result.classInfo.id)
+                            ? current.snapshot.classes.map(item => item.id === result.classInfo.id
+                                ? { ...item, name: result.classInfo.name, subject: result.classInfo.subject, cycle: result.classInfo.cycle }
+                                : item)
+                            : [...current.snapshot.classes, {
+                                id: result.classInfo.id,
+                                name: result.classInfo.name,
+                                subject: result.classInfo.subject,
+                                cycle: result.classInfo.cycle,
+                                totalItems: 0,
+                                plannedCount: 0,
+                                completionRate: 0,
+                                sessionsCount: 0,
+                                lastDate: null,
+                                weekdays: [],
+                                sessionsPerWeek: 0,
+                                updatedAt: result.classInfo.createdAt,
+                            }],
+                    }
+                    : current.snapshot;
+                return { ...current, classes, snapshot };
+            });
+            setClassModalOpen(false);
+            setEditingClass(null);
+            return result.created
+                ? 'Classe ajoutée. Elle apparaîtra au prochain rafraîchissement de l’application du professeur.'
+                : 'Classe mise à jour. Les informations administratives seront appliquées au prochain rafraîchissement.';
+        });
+
+    const handleDeleteClass = (classInfo: ClassInfo) =>
+        runAction(async () => {
+            if (!window.confirm(`Supprimer définitivement la classe « ${classInfo.name} » et son cahier cloud ?`)) {
+                return 'Suppression de classe annulée.';
+            }
+            await deleteTeacherClass(phone, classInfo.id);
+            setData(current => current
+                ? {
+                    ...current,
+                    classes: current.classes.filter(item => item.id !== classInfo.id),
+                    assessmentDates: Object.fromEntries(
+                        Object.entries(current.assessmentDates ?? {}).filter(([classId]) => classId !== classInfo.id)
+                    ),
+                    snapshot: current.snapshot
+                        ? { ...current.snapshot, classes: current.snapshot.classes.filter(item => item.id !== classInfo.id) }
+                        : null,
+                }
+                : current
+            );
+            return `Classe « ${classInfo.name} » supprimée.`;
+        });
+
     useEffect(() => {
         let cancelled = false;
         const load = async (showLoading: boolean) => {
@@ -342,6 +425,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                 const result = await fetchTeacher(phone);
                 if (!cancelled) {
                     setData(result);
+                    setIsBlocked(result.user?.blocked === true);
                     setError(null);
                 }
             } catch (err) {
@@ -371,7 +455,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
         };
     }, [phone]);
 
-    const snapshotClasses = data?.snapshot?.classes ?? [];
+    const classes = data?.classes ?? [];
+    const snapshotsByClassId = new Map((data?.snapshot?.classes ?? []).map(classSnapshot => [classSnapshot.id, classSnapshot]));
 
     return (
         <div className="mx-auto max-w-4xl p-4 sm:p-8">
@@ -479,14 +564,76 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         </div>
                     </Modal>
 
-                    {snapshotClasses.length === 0 ? (
+                    <Modal
+                        isOpen={isClassModalOpen}
+                        onClose={() => !busy && setClassModalOpen(false)}
+                        title={editingClass ? 'Modifier la classe' : 'Ajouter une classe'}
+                        description="La classe est affectée au professeur sélectionné. Les informations administratives sont protégées contre les anciennes copies hors ligne."
+                        maxWidth="lg"
+                        footer={(
+                            <div className="flex w-full justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setClassModalOpen(false)} disabled={busy}>Annuler</Button>
+                                <Button type="button" onClick={() => void handleSaveClass()} disabled={busy || !className.trim() || !classSubject.trim()}>
+                                    {busy ? 'Enregistrement…' : editingClass ? 'Enregistrer' : 'Ajouter la classe'}
+                                </Button>
+                            </div>
+                        )}
+                    >
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
+                                Classe
+                                <input
+                                    value={className}
+                                    onChange={event => setClassName(event.target.value)}
+                                    maxLength={120}
+                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    placeholder="Ex. 1ère année collège"
+                                    autoFocus
+                                />
+                            </label>
+                            <label className="block space-y-1.5 text-xs font-bold text-foreground">
+                                Matière
+                                <input
+                                    value={classSubject}
+                                    onChange={event => setClassSubject(event.target.value)}
+                                    maxLength={120}
+                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    placeholder="Ex. Mathématiques"
+                                />
+                            </label>
+                            <label className="block space-y-1.5 text-xs font-bold text-foreground sm:col-span-2">
+                                Cycle
+                                <select
+                                    value={classCycle}
+                                    onChange={event => setClassCycle(event.target.value as Cycle)}
+                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                >
+                                    <option value="college">Collège</option>
+                                    <option value="lycee">Lycée qualifiant</option>
+                                    <option value="prepa">Classes préparatoires</option>
+                                </select>
+                            </label>
+                        </div>
+                    </Modal>
+
+                    <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
+                        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <h2 className="text-sm font-black text-foreground">Classes attribuées</h2>
+                                <p className="mt-1 text-[11px] text-muted-foreground">Ajoutez, modifiez ou retirez une classe pour cet enseignant. La suppression efface aussi son cahier cloud.</p>
+                            </div>
+                            <Button type="button" size="sm" onClick={() => openClassModal()} disabled={busy}>+ Ajouter une classe</Button>
+                        </div>
+
+                    {classes.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-muted-foreground">
-                            Aucune classe synchronisée.
+                            Aucune classe attribuée.
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {snapshotClasses.map(cls => {
-                                const lateness = latenessBadge(cls, data?.snapshot);
+                            {classes.map(cls => {
+                                const snapshot = snapshotsByClassId.get(cls.id);
+                                const lateness = snapshot ? latenessBadge(snapshot, data?.snapshot) : null;
                                 return (
                                     <div key={cls.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                                         <div className="flex flex-wrap items-start justify-between gap-2">
@@ -494,27 +641,31 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                 <div className="font-semibold text-foreground">{cls.name}</div>
                                                 <div className="text-xs text-muted-foreground">
                                                     {cls.subject}
-                                                    {cls.sessionsPerWeek > 0 && ` · ${cls.sessionsPerWeek} séance(s)/sem.`}
+                                                    {snapshot && snapshot.sessionsPerWeek > 0 && ` · ${snapshot.sessionsPerWeek} séance(s)/sem.`}
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-lg font-black text-primary">{cls.completionRate}%</div>
-                                                <div className="text-[10px] text-muted-foreground">
-                                                    {cls.plannedCount}/{cls.totalItems} éléments
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-right">
+                                                    <div className="text-lg font-black text-primary">{snapshot?.completionRate ?? 0}%</div>
+                                                    <div className="text-[10px] text-muted-foreground">
+                                                        {snapshot ? `${snapshot.plannedCount}/${snapshot.totalItems} éléments` : 'En attente de synchro'}
+                                                    </div>
                                                 </div>
+                                                <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
+                                                <button onClick={() => void handleDeleteClass(cls)} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
                                             </div>
                                         </div>
                                         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
                                             <div
-                                                className={`h-full rounded-full ${completionColor(cls.completionRate)}`}
-                                                style={{ width: `${cls.completionRate}%` }}
+                                                className={`h-full rounded-full ${completionColor(snapshot?.completionRate ?? 0)}`}
+                                                style={{ width: `${snapshot?.completionRate ?? 0}%` }}
                                             />
                                         </div>
                                         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
                                             <span>
-                                                {cls.sessionsCount} séance(s) · dernière saisie {cls.lastDate ?? 'Non renseignée'}
+                                                {snapshot ? `${snapshot.sessionsCount} séance(s) · dernière saisie ${snapshot.lastDate ?? 'Non renseignée'}` : 'En attente de la première synchronisation'}
                                             </span>
-                                            {lateness.severity !== 'ok' && (
+                                            {lateness && lateness.severity !== 'ok' && (
                                                 <span
                                                     className={`rounded-full px-2 py-0.5 font-semibold text-white ${
                                                         lateness.severity === 'critical'
@@ -536,6 +687,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                             })}
                         </div>
                     )}
+                    </section>
                 </>
             )}
         </div>
