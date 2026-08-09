@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
 import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
@@ -13,18 +13,14 @@ import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar } from '@/utils/calendar';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { ChevronDown, Plus, CalendarCheck, BookOpen } from '@/components/ui/icons';
+import { ChevronDown, Plus, BookOpen } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
 
-const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
-
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
-    onOpenEvaluations?: () => void;
     notificationFeed: NotificationFeed;
-    onOpenNotificationsForClass: (classInfo: ClassInfo) => void;
     onOpenSchedule?: () => void;
 }
 
@@ -92,9 +88,7 @@ const findLatestDate = (data: any): string | null => {
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
-    onOpenEvaluations,
     notificationFeed,
-    onOpenNotificationsForClass,
     onOpenSchedule,
 }) => {
     const { locale, t, isRtl } = useLocale();
@@ -115,7 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const notificationCounts = useMemo(
         () => new Map(classes.map(classInfo => [
             classInfo.id,
-            notificationFeedForClass(notificationFeed, classInfo).totalCount,
+            notificationFeedForClass(notificationFeed, classInfo).attentionCount,
         ])),
         [classes, notificationFeed],
     );
@@ -128,7 +122,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             dates[classInfo.id] = findLatestDate(lessons);
         });
         setLastModifiedDates(dates);
-    }, [classes, isClassesLoading]);
+    }, [classes, isClassesLoading, notificationFeed]);
 
     useEffect(() => {
         if (!isDisplayMenuOpen) return;
@@ -211,13 +205,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (config.pedagogicalEvents?.[classId]) {
             const next = { ...config.pedagogicalEvents }; delete next[classId]; patch.pedagogicalEvents = next;
         }
+        if (config.notificationDismissals?.[classId]) {
+            const next = { ...config.notificationDismissals }; delete next[classId]; patch.notificationDismissals = next;
+        }
         if (config.timetable?.some(e => e.classId === classId)) {
             const nextTimetable = config.timetable.filter(e => e.classId !== classId);
             patch.timetable = nextTimetable;
             patch.schedules = deriveSchedules(nextTimetable);
         }
         if (Object.keys(patch).length > 0) updateConfig(patch);
-    }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.timetable, updateConfig]);
+    }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.notificationDismissals, config.timetable, updateConfig]);
 
     const availableCycles = useMemo(() => {
         const set = new Set<string>();
@@ -337,20 +334,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    {onOpenEvaluations && (
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            onClick={onOpenEvaluations}
-                                            className="h-8 sm:h-8.5 px-2.5 sm:px-3 rounded-full bg-card text-foreground hover:bg-emerald-50/80 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 border border-border font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
-                                            aria-label={t('dashboard.evaluations')}
-                                            title={t('dashboard.evaluations')}
-                                        >
-                                            <CalendarCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                            <span className="hidden sm:inline text-xs">{t('dashboard.evaluations')}</span>
-                                        </Button>
-                                    )}
-
                                     <Button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
@@ -501,7 +484,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 lastModified={notificationClass ? lastModifiedDates[notificationClass.id] : null}
                 nextSession={notificationClass ? nextSession(notificationClass.id) : null}
                 onClose={() => setNotificationClass(null)}
-                onOpenCenter={onOpenNotificationsForClass}
+                onSelectClass={onSelectClass}
                 onOpenSchedule={onOpenSchedule}
             />
         </div>

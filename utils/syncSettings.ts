@@ -28,6 +28,7 @@ export type SyncableSettings = Pick<
     | 'assessmentAbsences'
     | 'pedagogicalEvents'
     | 'schoolYearStart'
+    | 'notificationDismissals'
 > & {
     /** préférences de notification hors états locaux à l'appareil (push, vibration) */
     notify?: Omit<NonNullable<AppConfig['notificationSettings']>, 'pushEnabled' | 'sessionVibration'>;
@@ -56,6 +57,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'assessmentAbsences',
     'pedagogicalEvents',
     'schoolYearStart',
+    'notificationDismissals',
 ];
 
 export const extractSyncableSettings = (config: Partial<AppConfig>): SyncableSettings => {

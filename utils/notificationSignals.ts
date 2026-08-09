@@ -7,6 +7,12 @@ import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
 import { readJournal } from './journal';
 import {
+    markClassesListDirty,
+    notifyConfigChanged,
+    notifyNotificationsChanged,
+    touchSettingsSyncMeta,
+} from './syncBus';
+import {
     HolidayCalendar,
     getBundledCalendar,
     getSchoolYearFor,
@@ -16,7 +22,7 @@ import {
 } from './calendar';
 
 /*
- * Signaux PRATIQUES du centre de notifications, chaque signal répond à une
+ * Signaux pratiques du moteur de suivi, chaque signal répond à une
  * situation concrète du métier d'enseignant et mène à l'endroit où elle se
  * corrige. La mémoire « ignoré » est partagée avec la vérification de dates
  * de l'éditeur (mêmes identifiants, même clé de stockage).
@@ -60,18 +66,39 @@ export const requestEditorModal = (payload: EditorModalPayload): void => {
 
 export const readIgnoredActionIds = (classId: string): Set<string> => {
     try {
-        const raw = localStorage.getItem(`${ACTIONS_IGNORED_KEY_PREFIX}${classId || GLOBAL_SCOPE}`);
+        const scope = classId || GLOBAL_SCOPE;
+        const raw = localStorage.getItem(`${ACTIONS_IGNORED_KEY_PREFIX}${scope}`);
         const parsed = raw ? JSON.parse(raw) : [];
-        return new Set(Array.isArray(parsed) ? parsed.filter(value => typeof value === 'string') : []);
+        const config = JSON.parse(localStorage.getItem('appConfig_v1') || '{}') as Pick<AppConfig, 'notificationDismissals'>;
+        const synced = config.notificationDismissals?.[scope] ?? [];
+        return new Set([
+            ...(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []),
+            ...(Array.isArray(synced) ? synced.filter((value): value is string => typeof value === 'string') : []),
+        ]);
     } catch {
         return new Set();
     }
 };
 
 export const writeIgnoredActionIds = (classId: string, ids: Set<string>): void => {
+    const scope = classId || GLOBAL_SCOPE;
+    const values = Array.from(ids).slice(-100);
     try {
-        localStorage.setItem(`${ACTIONS_IGNORED_KEY_PREFIX}${classId || GLOBAL_SCOPE}`, JSON.stringify(Array.from(ids).slice(-100)));
+        // Clé historique conservée pour compatibilité hors connexion/import.
+        localStorage.setItem(`${ACTIONS_IGNORED_KEY_PREFIX}${scope}`, JSON.stringify(values));
+        const config = JSON.parse(localStorage.getItem('appConfig_v1') || '{}') as AppConfig;
+        localStorage.setItem('appConfig_v1', JSON.stringify({
+            ...config,
+            notificationDismissals: {
+                ...(config.notificationDismissals ?? {}),
+                [scope]: values,
+            },
+        }));
+        touchSettingsSyncMeta();
+        markClassesListDirty();
+        notifyConfigChanged();
     } catch { /* stockage indisponible : l'état reste valable pour la session */ }
+    notifyNotificationsChanged();
 };
 
 export const dateActionId = (classId: string, date: string, warnings: DateWarning[]): string =>
@@ -107,6 +134,9 @@ export interface ClassSignal {
     id: string;
     kind: SignalKind;
     action: SignalAction;
+    /** propriétaire canonique : une alerte de classe n'apparaît que dans son modal i ;
+     *  un insight global appartient uniquement au centre de pilotage. */
+    scope: 'class' | 'global';
     classId: string;
     /** nom complet affichable de la classe (vide pour un signal global) */
     className: string;
@@ -218,6 +248,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             id,
             kind: 'date',
             action: 'class',
+            scope: 'class',
             classId: classInfo.id,
             className,
             title: t('notifications.signal.dateTitle', { date: formatDateFR(date) }),
@@ -237,6 +268,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             id,
             kind: 'missed-session',
             action: 'class',
+            scope: 'class',
             classId: classInfo.id,
             className,
             title: t('notifications.signal.missedTitle', { weekday: weekdayLabel(last, locale), date: formatDateFR(last) }),
@@ -261,6 +293,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             id,
             kind: 'never-started',
             action: 'class',
+            scope: 'class',
             classId: classInfo.id,
             className,
             title: t('notifications.signal.neverStartedTitle'),
@@ -269,8 +302,8 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
         });
     }
 
-    // 4 · Emploi du temps incomplet : même signal dans le centre et dans le
-    // suivi de classe, avec le volume exact à ajouter ou à retirer.
+    // 4 · Emploi du temps incomplet : alerte propre au suivi de cette classe,
+    // avec le volume exact à ajouter ou à retirer.
     const scheduleNeedsAttention = hours.deviation === 'empty' || hours.deviation === 'under' || hours.deviation === 'over';
     if (scheduleNeedsAttention) {
         const id = `schedule:${classInfo.id}:${hours.deviation}:${hours.scheduledHours}:${hours.officialHours ?? 'unknown'}`;
@@ -294,6 +327,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             id,
             kind: 'schedule',
             action: 'timetable',
+            scope: 'class',
             classId: classInfo.id,
             className,
             title: hours.deviation === 'over'
@@ -327,7 +361,9 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
     for (const classInfo of classes) {
         const stats = computeProgressionStats(readClassLessons(classInfo.id));
         if (stats.totalItems < 5) continue; // trop peu de contenu pour comparer
-        const key = levelKey(classInfo.name);
+        // Ne jamais comparer deux matières/cycles différents qui portent un
+        // libellé de niveau similaire.
+        const key = `${classInfo.cycle ?? ''}|${classInfo.subject.trim().toLowerCase()}|${levelKey(classInfo.name)}`;
         const group = byLevel.get(key) ?? [];
         group.push({ classInfo, completion: stats.completionRate, totalItems: stats.totalItems });
         byLevel.set(key, group);
@@ -337,14 +373,22 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
         const sorted = [...group].sort((a, b) => b.completion - a.completion);
         const leader = sorted[0];
         const lagger = sorted[sorted.length - 1];
+        // Un pourcentage n'est comparable que si les deux cahiers reposent sur
+        // des volumes de programme proches. Sinon le centre montre les données
+        // brutes sans produire un faux signal de retard.
+        const comparableVolume = Math.min(leader.totalItems, lagger.totalItems) / Math.max(leader.totalItems, lagger.totalItems);
+        if (comparableVolume < 0.8) continue;
         const gap = leader.completion - lagger.completion;
         if (gap < 25) continue;
-        const ignored = readIgnoredActionIds(lagger.classInfo.id);
-        const id = `gap:${lagger.classInfo.id}:${Math.round(gap / 10)}`;
+        const ignored = readIgnoredActionIds(GLOBAL_SCOPE);
+        // Identifiant stable : l'insight ne réapparaît pas seulement parce que
+        // le pourcentage varie de quelques points.
+        const id = `gap:${leader.classInfo.id}:${lagger.classInfo.id}`;
         signals.push({
             id,
             kind: 'progress-gap',
             action: 'class',
+            scope: 'global',
             classId: lagger.classInfo.id,
             className: formatClassDisplayName(lagger.classInfo.name),
             title: t('notifications.signal.progressTitle'),
@@ -382,6 +426,7 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
             id,
             kind: 'backup',
             action: 'export',
+            scope: 'global',
             classId: '',
             className: '',
             title: daysSinceExport === null

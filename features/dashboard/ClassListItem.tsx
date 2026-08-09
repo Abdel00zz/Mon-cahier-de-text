@@ -1,9 +1,11 @@
-import { FC, KeyboardEvent, MouseEvent } from 'react';
+import { FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { ChevronRight, Info, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { cn } from '@/lib/utils';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -21,84 +23,76 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     notificationCount,
 }) => {
     const { locale, t, isRtl } = useLocale();
+    const { impact } = useHapticFeedback();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
     const notificationButtonLabel = notificationCount > 0
         ? t('notifications.classButtonLabelCount', { className: displayName, count: notificationCount })
         : t('notifications.classButtonLabel', { className: displayName });
 
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onSelect();
-        }
+    const selectClass = () => {
+        impact('light');
+        onSelect();
     };
-    const stopAnd = (event: React.SyntheticEvent, action: () => void) => {
-        event.stopPropagation();
-        if (event.nativeEvent) {
-            event.nativeEvent.stopImmediatePropagation?.();
-        }
+    const runAction = (action: () => void) => {
+        impact('light');
         action();
     };
 
     return (
-        <div
-            role="button"
-            tabIndex={0}
-            onClick={onSelect}
-            onKeyDown={handleKeyDown}
-            className="group relative flex min-h-14 cursor-pointer items-center gap-2.5 rounded-[20px] border border-border bg-card text-card-foreground px-4 py-3 text-left shadow-2xs transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:min-h-[58px]"
+        <article
+            className="group relative flex min-h-[62px] overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
         >
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${visual.iconSurfaceClass}`} aria-hidden>
-                <Users className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                    <h3 className="truncate font-display text-xs font-bold text-zinc-900 dark:text-zinc-100 sm:text-sm">{displayName}</h3>
+            <button
+                type="button"
+                onClick={selectClass}
+                className="flex min-w-0 flex-1 touch-manipulation items-center gap-2.5 px-3 py-2.5 text-start outline-none transition-colors hover:bg-muted/25 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 active:bg-muted/50 sm:px-4"
+                aria-label={t('dashboard.openClass', { className: displayName })}
+            >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${visual.iconSurfaceClass}`} aria-hidden>
+                    <Users className="h-4 w-4" />
                 </div>
-                <p className="mt-0.5 truncate text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 sm:text-xs">
-                    {classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : t('dashboard.notebook')}
-                </p>
-            </div>
+                <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-display text-xs font-bold text-zinc-900 dark:text-zinc-100 sm:text-sm">{displayName}</h3>
+                    <p className="mt-0.5 truncate text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 sm:text-xs">
+                        {classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : t('dashboard.notebook')}
+                    </p>
+                </div>
+                <ChevronRight className={`h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600 ${isRtl ? 'rotate-180' : ''}`} aria-hidden />
+            </button>
 
             <div
-                className="relative z-20 flex shrink-0 items-center gap-1 sm:opacity-70 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-                onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
+                role="group"
+                aria-label={t('dashboard.classActions', { className: displayName })}
+                className={cn(
+                    'grid shrink-0 grid-cols-2 bg-muted/20',
+                    isRtl ? 'border-r border-border/70' : 'border-l border-border/70',
+                )}
             >
                 <button
                     type="button"
-                    onClick={(event) => stopAnd(event, onShowNotifications)}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="relative flex !h-10 !w-10 items-center justify-center rounded-lg text-primary/80 transition-colors hover:bg-primary/[0.08] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 active:scale-95 sm:!h-8 sm:!w-8 sm:rounded-xl cursor-pointer"
+                    onClick={() => runAction(onShowNotifications)}
+                    className="relative flex min-h-[60px] w-11 touch-manipulation items-center justify-center text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/15 sm:w-12"
                     aria-label={notificationButtonLabel}
                     title={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                    <Info className="h-[15px] w-[15px]" />
                     {notificationCount > 0 && (
-                        <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 text-[7px] font-extrabold leading-none text-white ring-1 ring-card">
+                        <span className={cn('absolute top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-extrabold leading-none text-white ring-2 ring-card', isRtl ? 'left-1.5' : 'right-1.5')}>
                             {notificationCount > 9 ? '9+' : notificationCount}
                         </span>
                     )}
                 </button>
                 <button
                     type="button"
-                    onClick={(event) => stopAnd(event, onConfigure)}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="flex !h-10 !w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 sm:!h-8 sm:!w-8 sm:rounded-lg cursor-pointer"
+                    onClick={() => runAction(onConfigure)}
+                    className="flex min-h-[60px] w-11 touch-manipulation items-center justify-center border-s border-border/70 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-muted sm:w-12"
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                    <Settings className="h-[15px] w-[15px]" />
                 </button>
-                <ChevronRight className={`h-4 w-4 text-zinc-300 dark:text-zinc-600 ${isRtl ? 'rotate-180 sm:mr-0.5' : 'sm:ml-0.5'}`} aria-hidden />
             </div>
-        </div>
+        </article>
     );
 };

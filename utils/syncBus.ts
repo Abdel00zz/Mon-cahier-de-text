@@ -2,7 +2,7 @@
 // (Editor, useClassManager, ConfigModal) du consommateur (useCloudSync).
 // État module-level : les marqueurs "dirty" survivent aux démontages de composants.
 
-export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed';
+export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed' | 'notifications-changed';
 
 const listeners = new Map<SyncEvent, Set<() => void>>();
 const SYNC_PENDING_KEY = 'syncPending_v1';
@@ -195,6 +195,12 @@ export const notifyClassesChanged = (): void => {
 /** Synchronise les instances locales de configuration entre les vues. */
 export const notifyConfigChanged = (): void => {
     emit('config-changed');
+};
+
+/** Rafraîchit les projections de notifications après une mutation locale
+ *  (ignoré/restauré, métadonnée d'impression, etc.) sans coupler l'UI au stockage. */
+export const notifyNotificationsChanged = (): void => {
+    emit('notifications-changed');
 };
 
 /** Purge la file mémoire avant qu'un autre compte ne soit connecté. */

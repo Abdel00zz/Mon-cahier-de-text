@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { Bell, CalendarCheck, CalendarRange, Check, CircleAlert, CircleCheck, Clock, Info } from '@/components/ui/icons';
+import { CalendarCheck, CalendarRange, Check, CircleAlert, CircleCheck, Clock, Info } from '@/components/ui/icons';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
@@ -8,6 +8,13 @@ import { AppConfig, ClassInfo } from '@/types';
 import { NextSessionInfo } from '@/utils/timetable';
 import { computeClassHoursInsight } from '@/utils/scheduleInsights';
 import { cn } from '@/lib/utils';
+import {
+  ClassSignal,
+  readIgnoredActionIds,
+  requestEditorModal,
+  requestSessionFocus,
+  writeIgnoredActionIds,
+} from '@/utils/notificationSignals';
 
 interface ClassNotificationsModalProps {
   isOpen: boolean;
@@ -17,7 +24,7 @@ interface ClassNotificationsModalProps {
   lastModified: string | null | undefined;
   nextSession?: NextSessionInfo | null;
   onClose: () => void;
-  onOpenCenter: (classInfo: ClassInfo) => void;
+  onSelectClass: (classInfo: ClassInfo) => void;
   onOpenSchedule?: () => void;
 }
 
@@ -48,7 +55,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
   lastModified,
   nextSession,
   onClose,
-  onOpenCenter,
+  onSelectClass,
   onOpenSchedule,
 }) => {
   const { locale, t, isRtl } = useLocale();
@@ -64,12 +71,52 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
   if (!classInfo || !summary || !timetableInsight) return null;
 
   const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
-  const deadlineCount = summary.assessments.length + summary.officialEvents.length;
+  const deadlineCount = summary.assessments.length + summary.pedagogicalEvents.length + summary.officialEvents.length;
   const scheduleSignals = summary.corrections.filter(signal => signal.kind === 'schedule');
   const otherPriorities = summary.corrections.filter(signal => signal.kind !== 'schedule');
   const prioritySignals = [...scheduleSignals, ...otherPriorities];
   const isEmpty = prioritySignals.length === 0 && deadlineCount === 0;
   const scheduleIsConform = timetableInsight.deviation === 'match' && timetableInsight.officialHours !== null;
+  const actionLabel = (signal: ClassSignal): string => {
+    if (signal.action === 'timetable') return t('notifications.action.schedule');
+    if (signal.action === 'evaluations') return t('notifications.action.evaluations');
+    return t('notifications.action.openClass');
+  };
+  const openEvaluations = () => {
+    requestEditorModal({ classId: classInfo.id, modal: 'evaluations', expiresAt: Date.now() + 120_000 });
+    onClose();
+    onSelectClass(classInfo);
+  };
+  const resolveSignal = (signal: ClassSignal) => {
+    if (signal.action === 'timetable') {
+      onClose();
+      onOpenSchedule?.();
+      return;
+    }
+    if (signal.action === 'evaluations') {
+      openEvaluations();
+      return;
+    } else if (signal.kind === 'date' && signal.targetIndices && signal.date) {
+      requestSessionFocus({
+        classId: classInfo.id,
+        targetIndices: signal.targetIndices,
+        expiresAt: Date.now() + 120_000,
+        message: t('notifications.focusDate', { date: formatDate(signal.date, locale) }),
+      });
+    }
+    onClose();
+    onSelectClass(classInfo);
+  };
+  const ignoreSignal = (signal: ClassSignal) => {
+    const ids = readIgnoredActionIds(classInfo.id);
+    ids.add(signal.id);
+    writeIgnoredActionIds(classInfo.id, ids);
+  };
+  const restoreSignal = (signal: ClassSignal) => {
+    const ids = readIgnoredActionIds(classInfo.id);
+    ids.delete(signal.id);
+    writeIgnoredActionIds(classInfo.id, ids);
+  };
 
   return (
     <Modal
@@ -88,64 +135,50 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
       )}
       description={<span className="sr-only">{t('notifications.classSummaryDescription')}</span>}
       footer={(
-        <>
-          <button
-            type="button"
-            onClick={onClose}
-            className="!h-11 shrink-0 rounded-xl border border-border/80 bg-card px-3 text-xs font-bold text-muted-foreground transition-colors hover:border-primary/25 hover:text-foreground sm:!h-9 sm:px-4"
-          >
-            {t('common.close')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onOpenCenter(classInfo);
-            }}
-            className="inline-flex !h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:!h-9 sm:flex-none sm:px-4"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            <span className="truncate">{t('notifications.openFilteredCenter')}</span>
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={onClose}
+          className="!h-11 w-full rounded-xl border border-border/80 bg-card px-4 text-xs font-bold text-foreground transition-colors hover:border-primary/25 sm:!h-9 sm:w-auto"
+        >
+          {t('common.close')}
+        </button>
       )}
     >
       <div className="space-y-2">
         {prioritySignals.length > 0 && (
           <section aria-label={t('notifications.priorities')}>
             <div className="max-h-[min(31dvh,15rem)] space-y-1.5 overflow-y-auto pe-1 overscroll-contain">
-              {prioritySignals.map(signal => signal.kind === 'schedule' ? (
-                <article key={signal.id} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border border-warning/30 bg-gradient-to-br from-warning/14 via-warning/8 to-card px-3 py-2.5 shadow-[0_6px_18px_rgba(180,83,9,0.08)]">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card/90 text-warning-strong shadow-2xs">
-                    <CalendarRange className="h-3.5 w-3.5" />
+              {prioritySignals.map(signal => (
+                <article
+                  key={signal.id}
+                  className={cn(
+                    'grid grid-cols-[2rem_minmax(0,1fr)] gap-2.5 rounded-xl border px-3 py-2.5 shadow-2xs',
+                    signal.kind === 'schedule'
+                      ? 'border-warning/30 bg-gradient-to-br from-warning/14 via-warning/8 to-card'
+                      : 'border-border/70 bg-card/85',
+                  )}
+                >
+                  <span className={cn('flex h-8 w-8 items-center justify-center rounded-lg bg-card/90', signal.kind === 'schedule' ? 'text-warning-strong' : 'text-red-500')}>
+                    {signal.kind === 'schedule' ? <CalendarRange className="h-3.5 w-3.5" /> : <CircleAlert className="h-3.5 w-3.5" />}
                   </span>
                   <div className="min-w-0">
-                    <h4 className="line-clamp-2 text-xs font-extrabold leading-snug text-foreground">{signal.title}</h4>
-                    <p className="mt-0.5 line-clamp-2 text-[10px] font-medium leading-snug text-muted-foreground">{signal.detail}</p>
-                  </div>
-                  {onOpenSchedule && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onOpenSchedule();
-                      }}
-                      className="inline-flex !h-10 shrink-0 items-center gap-1.5 rounded-xl border border-warning/30 bg-card/90 px-2.5 text-[11px] font-extrabold text-warning-strong shadow-2xs transition-colors hover:border-warning/55 hover:bg-card sm:!h-8"
-                      aria-label={t('schedule.openPlanner')}
-                      title={t('schedule.openPlanner')}
-                    >
-                      <CalendarRange className="h-3 w-3" />
-                      {t('schedule.complete')}
-                    </button>
-                  )}
-                </article>
-              ) : (
-                <article key={signal.id} className="rounded-xl border border-border/70 bg-card/85 px-3 py-2 shadow-2xs">
-                  <div className="flex items-start gap-2">
-                    <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
-                    <div className="min-w-0">
-                      <h4 className="line-clamp-2 text-xs font-extrabold leading-snug text-foreground">{signal.title}</h4>
-                      <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">{signal.detail}</p>
+                    <h4 className="text-xs font-extrabold leading-snug text-foreground">{signal.title}</h4>
+                    <p className="mt-0.5 text-[10px] font-medium leading-snug text-muted-foreground">{signal.detail}</p>
+                    <div className="mt-2 flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => ignoreSignal(signal)}
+                        className="inline-flex min-h-9 items-center rounded-lg px-2.5 text-[10px] font-bold text-muted-foreground hover:bg-muted hover:text-foreground sm:min-h-8"
+                      >
+                        {t('notifications.ignore')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resolveSignal(signal)}
+                        className="inline-flex min-h-9 items-center rounded-lg bg-primary px-2.5 text-[10px] font-extrabold text-primary-foreground sm:min-h-8"
+                      >
+                        {actionLabel(signal)}
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -222,7 +255,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
             <h3 className="mb-1.5 text-[11px] font-extrabold text-foreground">{t('notifications.deadlines')}</h3>
             <div className="space-y-1.5">
                   {summary.assessments.map(item => (
-                    <article key={`${item.classId}-${item.id}-${item.dateISO}`} className="flex items-start gap-2 rounded-xl border border-border/70 bg-card/85 px-3 py-2">
+                    <button type="button" onClick={openEvaluations} key={`${item.classId}-${item.id}-${item.dateISO}`} className="flex w-full items-start gap-2 rounded-xl border border-border/70 bg-card/85 px-3 py-2 text-start hover:border-primary/30">
                       <CalendarCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                       <div className="min-w-0">
                         <h4 className="line-clamp-2 text-xs font-extrabold leading-snug text-foreground">
@@ -230,7 +263,16 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
                         </h4>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">{t('notifications.plannedDate', { date: formatDate(item.dateISO, locale) })}</p>
                       </div>
-                    </article>
+                    </button>
+                  ))}
+                  {summary.pedagogicalEvents.map(item => (
+                    <button type="button" onClick={openEvaluations} key={`pedagogical-${item.classId}-${item.event.id}`} className="flex w-full items-start gap-2 rounded-xl border border-border/70 bg-card/85 px-3 py-2 text-start hover:border-primary/30">
+                      <CalendarCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <h4 className="line-clamp-2 text-xs font-extrabold leading-snug text-foreground">{item.event.title}</h4>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">{t('notifications.plannedDate', { date: formatDate(item.event.date, locale) })}</p>
+                      </div>
+                    </button>
                   ))}
                   {summary.officialEvents.map(item => (
                     <article key={item.event.id} className="flex items-start gap-2 rounded-xl border border-border/70 bg-card/85 px-3 py-2">
@@ -246,9 +288,21 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
         ) : null}
 
         {summary.ignoredCorrections.length > 0 && (
-          <p className="rounded-xl bg-muted/55 px-3 py-2 text-[10px] font-medium text-muted-foreground">
-            {t('notifications.classIgnoredCount', { count: summary.ignoredCorrections.length })}
-          </p>
+          <details className="rounded-xl border border-border/65 bg-muted/35 px-3 py-2">
+            <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground">
+              {t('notifications.classIgnoredCount', { count: summary.ignoredCorrections.length })}
+            </summary>
+            <div className="mt-2 space-y-1.5">
+              {summary.ignoredCorrections.map(signal => (
+                <div key={signal.id} className="flex items-center justify-between gap-2 rounded-lg bg-card/80 px-2.5 py-2">
+                  <span className="min-w-0 truncate text-[10px] font-semibold text-muted-foreground">{signal.title}</span>
+                  <button type="button" onClick={() => restoreSignal(signal)} className="min-h-8 shrink-0 rounded-lg px-2 text-[10px] font-extrabold text-primary hover:bg-primary/8">
+                    {t('notifications.restore')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </details>
         )}
       </div>
     </Modal>

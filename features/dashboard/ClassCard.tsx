@@ -1,4 +1,4 @@
-import { memo, MouseEvent, FC } from 'react';
+import { memo, FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
@@ -57,27 +57,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
 
-    const stopAction = (e: React.SyntheticEvent, action: () => void) => {
-        e.stopPropagation();
-        if (e.nativeEvent) {
-            e.nativeEvent.stopImmediatePropagation?.();
-        }
-    };
-
-    const handleConfigureClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleConfigureClick = () => {
         impact('light');
         onConfigure();
     };
 
-    const handleNotificationsClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleNotificationsClick = () => {
         impact('light');
         onShowNotifications();
     };
 
-    const handleCardClick = (e?: React.MouseEvent) => {
-        if (e && e.defaultPrevented) return;
+    const handleCardClick = () => {
         impact('light');
         onSelect();
     };
@@ -102,82 +92,78 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         : t('notifications.classButtonLabel', { className: displayName });
 
     return (
-        <div
-            onClick={handleCardClick}
-            className={`card-press group relative flex min-h-[128px] cursor-pointer flex-col overflow-hidden rounded-xl border border-border/80 bg-card text-card-foreground shadow-2xs transition-all duration-300 ${visual.cardHoverClass} hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.985] ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'} sm:min-h-[136px] text-center`}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
+        <article
+            className={`group relative flex min-h-[132px] overflow-hidden rounded-xl border border-border/80 bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:shadow-md sm:min-h-[140px]`}
         >
-            <div className="flex flex-1 flex-col p-3.5 sm:p-4">
-            <div className="flex items-center justify-between gap-2 w-full mb-2.5 relative z-20">
-                <div className="flex items-center gap-1.5 min-w-0">
+            <button
+                type="button"
+                onClick={handleCardClick}
+                className={`flex min-w-0 flex-1 touch-manipulation flex-col p-3.5 text-center outline-none transition-colors hover:bg-muted/25 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset active:bg-muted/50 sm:p-4 ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'}`}
+                aria-label={t('dashboard.openClass', { className: displayName })}
+            >
+                <div className="flex min-h-5 items-center">
                     {cycleBadge ? (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase ${cycleBadge.style}`}>
+                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cycleBadge.style}`}>
                             {cycleLabel}
                         </span>
-                    ) : <div />}
+                    ) : null}
                 </div>
-
-                <div
-                    className="flex shrink-0 items-center gap-1 sm:gap-1.5 opacity-90 transition-opacity group-hover:opacity-100"
-                    onClick={(e) => e.stopPropagation()}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                >
-                    <button
-                        type="button"
-                        onClick={handleNotificationsClick}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="relative flex h-7 w-7 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg bg-background/80 text-primary transition-all duration-200 border border-border/60 shadow-2xs hover:bg-primary/10 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-90 cursor-pointer"
-                        title={notificationButtonLabel}
-                        aria-label={notificationButtonLabel}
-                        aria-haspopup="dialog"
+                <div className="flex flex-1 flex-col items-center justify-center px-1 py-2 text-center">
+                    <div className={`mb-2.5 flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
+                        <Users className="h-6 w-6" />
+                    </div>
+                    <h3
+                        className={`line-clamp-2 text-base font-bold leading-tight tracking-tight text-foreground transition-colors sm:text-lg ${isArabic ? 'font-ar' : 'font-display'}`}
+                        title={displayName}
                     >
-                        <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        {formatSuperscript(mainName)}
+                        {groupNum && (
+                            <span className={`${isRtl ? 'mr-1.5' : 'ml-1.5'} font-itim text-lg font-bold opacity-90 ${visual.iconClass}`}>{groupNum}</span>
+                        )}
+                    </h3>
+                </div>
+            </button>
+
+            <div
+                role="group"
+                aria-label={t('dashboard.classActions', { className: displayName })}
+                className={cn(
+                    'flex w-[54px] shrink-0 flex-col bg-muted/20',
+                    isRtl ? 'border-r border-border/70' : 'border-l border-border/70',
+                )}
+            >
+                <button
+                    type="button"
+                    onClick={handleNotificationsClick}
+                    className="flex min-h-[58px] flex-1 touch-manipulation items-center justify-center text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 active:bg-primary/15"
+                    title={notificationButtonLabel}
+                    aria-label={notificationButtonLabel}
+                    aria-haspopup="dialog"
+                >
+                    <span className="relative flex h-5 w-5 items-center justify-center">
+                        <Info className="h-[15px] w-[15px]" />
                         {notificationCount > 0 && (
                             <span className={cn(
-                                'absolute -top-1 -right-1 flex h-3.5 min-w-3.5 sm:h-4 sm:min-w-4 items-center justify-center rounded-full px-1 text-[7px] sm:text-[8px] font-extrabold leading-none text-white ring-2 ring-card shadow-xs',
+                                'absolute -top-2 flex h-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[8px] font-extrabold leading-none text-white ring-2 ring-card shadow-xs',
+                                isRtl ? '-left-2' : '-right-2',
                                 notificationCount > 9 ? 'bg-red-500' : 'bg-primary',
                             )}>
                                 {notificationCount > 9 ? '9+' : notificationCount}
                             </span>
                         )}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleConfigureClick}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="flex h-7 w-7 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-lg bg-background/80 text-muted-foreground transition-all duration-200 border border-border/60 shadow-2xs hover:bg-muted hover:text-foreground hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-90 cursor-pointer"
-                        title={t('dashboard.edit')}
-                        aria-label={`${t('dashboard.edit')} ${displayName}`}
-                    >
-                        <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex flex-1 flex-col items-center justify-center text-center py-2 px-1">
-                <div className={`mb-2.5 flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
-                    <Users className="h-6 w-6" />
-                </div>
-                <h3
-                    className={`line-clamp-2 text-base font-bold leading-tight tracking-tight text-foreground transition-colors sm:text-lg ${isArabic ? 'font-ar' : 'font-display'}`}
-                    title={displayName}
+                    </span>
+                </button>
+                <button
+                    type="button"
+                    onClick={handleConfigureClick}
+                    className="flex min-h-[58px] flex-1 touch-manipulation items-center justify-center border-t border-border/70 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 active:bg-muted"
+                    title={t('dashboard.edit')}
+                    aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    {formatSuperscript(mainName)}
-                    {groupNum && (
-                        <span className={`${isRtl ? 'mr-1.5' : 'ml-1.5'} font-itim text-lg font-bold opacity-90 ${visual.iconClass}`}>{groupNum}</span>
-                    )}
-                </h3>
+                    <Settings className="h-[15px] w-[15px]" />
+                </button>
             </div>
-            </div>
-        </div>
+        </article>
     );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Settings, CircleHelp, Bell, CalendarCheck, Menu } from '@/components/ui/icons';
+import { BookOpen, Settings, CircleHelp, PieChart, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -19,18 +19,18 @@ interface TabBarProps {
 const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
   { id: 'dashboard', icon: BookOpen },
   { id: 'evaluations', icon: CalendarCheck },
-  { id: 'notifications', icon: Bell },
+  { id: 'notifications', icon: PieChart },
 ];
 
 const NAV_COPY = {
   fr: {
-    brand: 'Cahier de textes', teacherSpace: 'Espace enseignant', organisation: 'Organisation',
-    dashboard: 'Classes', evaluations: 'Évaluations', notifications: 'Alertes', settings: 'Paramètres', help: 'Guide',
+    brand: 'Cahier de textes', teacherSpace: 'Espace enseignant',
+    dashboard: 'Classes', evaluations: 'Évaluations', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
     collapse: 'Réduire la barre latérale', expand: 'Développer la barre latérale', mainNav: 'Navigation principale', mobileNav: 'Navigation principale mobile',
   },
   ar: {
-    brand: 'دفتر النصوص الرقمي', teacherSpace: 'فضاء الأستاذ', organisation: 'التنظيم',
-    dashboard: 'الأقسام', evaluations: 'التقويمات', notifications: 'التنبيهات', settings: 'الإعدادات', help: 'الدليل',
+    brand: 'دفتر النصوص الرقمي', teacherSpace: 'فضاء الأستاذ',
+    dashboard: 'الأقسام', evaluations: 'التقويمات', notifications: 'القيادة', settings: 'الإعدادات', help: 'الدليل',
     collapse: 'تصغير الشريط الجانبي', expand: 'توسيع الشريط الجانبي', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل الرئيسي على الهاتف',
   },
 } as const;
@@ -81,8 +81,7 @@ export const TabBar: React.FC<TabBarProps> = ({
           </div>
         </div>
 
-        <div className="mt-5 flex flex-1 flex-col gap-1 px-2 lg:px-0">
-          <p className={cn('hidden px-5 pb-1 text-[10px] font-bold text-muted-foreground/75', isExpanded && 'lg:block')}>{copy.organisation}</p>
+        <div className="mt-4 flex flex-1 flex-col gap-1 px-2 lg:px-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

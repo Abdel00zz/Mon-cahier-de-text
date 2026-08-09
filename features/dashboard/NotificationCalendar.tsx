@@ -16,7 +16,7 @@ import {
   type OfficialStudentEventsFile,
 } from '@/utils/officialStudentEvents';
 
-type CalendarEventKind = 'lesson' | 'holiday' | 'vacation' | 'official' | 'absence' | 'assessment';
+type CalendarEventKind = 'lesson' | 'holiday' | 'vacation' | 'official' | 'absence' | 'assessment' | 'pedagogical';
 type CalendarLayer = 'all' | 'schedule' | 'breaks' | 'official';
 
 interface CalendarEvent {
@@ -56,11 +56,12 @@ const EVENT_TONE: Record<CalendarEventKind, { dot: string; wash: string; text: s
   official: { dot: 'bg-warning', wash: 'bg-warning/15', text: 'text-warning-strong' },
   absence: { dot: 'bg-muted-foreground', wash: 'bg-muted', text: 'text-muted-foreground' },
   assessment: { dot: 'bg-destructive', wash: 'bg-destructive/10', text: 'text-destructive-strong' },
+  pedagogical: { dot: 'bg-violet-500', wash: 'bg-violet-500/10', text: 'text-violet-700 dark:text-violet-300' },
 };
 
 const layerMatches = (event: CalendarEvent, layer: CalendarLayer): boolean => {
   if (layer === 'all') return true;
-  if (layer === 'schedule') return event.kind === 'lesson' || event.kind === 'assessment';
+  if (layer === 'schedule') return event.kind === 'lesson' || event.kind === 'assessment' || event.kind === 'pedagogical';
   if (layer === 'breaks') return event.kind === 'holiday' || event.kind === 'vacation' || event.kind === 'absence';
   return event.kind === 'official';
 };
@@ -71,7 +72,8 @@ const eventPriority: Record<CalendarEventKind, number> = {
   absence: 2,
   official: 3,
   assessment: 4,
-  lesson: 5,
+  pedagogical: 5,
+  lesson: 6,
 };
 
 export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ classes, config, selectedClassId }) => {
@@ -195,10 +197,23 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
           className: formatLocalizedClassDisplayName(classInfo.name, locale),
         });
       }
+      for (const event of config.pedagogicalEvents?.[classInfo.id] ?? []) {
+        if (event.status !== 'planned') continue;
+        result.push({
+          id: `pedagogical:${classInfo.id}:${event.id}`,
+          kind: 'pedagogical',
+          title: event.title,
+          start: event.date,
+          end: event.endDate ?? event.date,
+          detail: formatLocalizedClassDisplayName(classInfo.name, locale),
+          classId: classInfo.id,
+          className: formatLocalizedClassDisplayName(classInfo.name, locale),
+        });
+      }
     }
 
     return result;
-  }, [calendar, config.absences, config.assessmentDates, locale, officialFile, relevantClasses, t]);
+  }, [calendar, config.absences, config.assessmentDates, config.pedagogicalEvents, locale, officialFile, relevantClasses, t]);
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -355,12 +370,14 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     if (event.kind === 'vacation') return t('calendar.vacation');
     if (event.kind === 'absence') return t('calendar.absence');
     if (event.kind === 'assessment') return t('calendar.assessment');
+    if (event.kind === 'pedagogical') return t('calendar.pedagogical');
     return t(`calendar.category.${event.category ?? 'school'}`);
   };
 
   const iconFor = (event: CalendarEvent) => {
     if (event.kind === 'lesson') return GraduationCap;
     if (event.kind === 'assessment') return CalendarCheck;
+    if (event.kind === 'pedagogical') return CalendarCheck;
     if (event.kind === 'official') return CalendarRange;
     if (event.kind === 'holiday' || event.kind === 'vacation') return CalendarDays;
     return Clock;
@@ -564,6 +581,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         {([
           { kind: 'lesson' as const, label: t('calendar.lesson') },
           { kind: 'assessment' as const, label: t('calendar.assessment') },
+          { kind: 'pedagogical' as const, label: t('calendar.pedagogical') },
           { kind: 'official' as const, label: t('calendar.category.school') },
           { kind: 'holiday' as const, label: t('calendar.holiday') },
           { kind: 'vacation' as const, label: t('calendar.vacation') },

@@ -36,6 +36,8 @@ export interface AppConfig {
     schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
     timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant
     notificationSettings?: NotificationSettings;
+    /** signaux masqués par portée (`classId` ou `_global_`), synchronisés entre appareils */
+    notificationDismissals?: Record<string, string[]>;
     absences?: AbsencePeriod[];         // certificats de maladie, congés, exclus du calcul de retard
     schoolYearStart?: string;
     /** dates de devoirs personnalisées par le prof : { [classId]: { [assessmentId]: 'YYYY-MM-DD' } } */

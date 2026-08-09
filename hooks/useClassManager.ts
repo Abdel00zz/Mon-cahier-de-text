@@ -161,6 +161,9 @@ export const useClassManager = () => {
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
             localStorage.removeItem(`${DATA_PREFIX}${classId}`);
+            localStorage.removeItem(`editJournal_v1_${classId}`);
+            localStorage.removeItem(`printMeta_v1_${classId}`);
+            localStorage.removeItem(`editor_actions_ignored_v1_${classId}`);
             markClassDeleted(classId);
         },
         [classes, persistClassesNow, setClasses],

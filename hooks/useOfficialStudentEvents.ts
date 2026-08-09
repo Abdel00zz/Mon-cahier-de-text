@@ -13,6 +13,7 @@ import {
 
 export interface UpcomingOfficialStudentEvent {
     event: OfficialStudentEvent;
+    classIds: string[];
     classNames: string[];
     inDays: number;
 }
@@ -32,13 +33,14 @@ export const useUpcomingOfficialStudentEvents = (
 
     return useMemo(() => {
         const today = todayInMorocco(new Date(), getBundledCalendar());
-        const grouped = new Map<string, { event: OfficialStudentEvent; classNames: Set<string> }>();
+        const grouped = new Map<string, { event: OfficialStudentEvent; classIds: Set<string>; classNames: Set<string> }>();
         for (const classInfo of classes) {
             for (const event of getOfficialStudentEventsForClass(classInfo, undefined, file)) {
                 const end = getOfficialEventEffectiveEnd(event);
                 const untilStart = daysBetweenISO(today, event.start);
                 if (end < today || untilStart > horizonDays) continue;
-                const current = grouped.get(event.id) ?? { event, classNames: new Set<string>() };
+                const current = grouped.get(event.id) ?? { event, classIds: new Set<string>(), classNames: new Set<string>() };
+                current.classIds.add(classInfo.id);
                 current.classNames.add(classInfo.name);
                 grouped.set(event.id, current);
             }
@@ -46,10 +48,10 @@ export const useUpcomingOfficialStudentEvents = (
         return [...grouped.values()]
             .map(item => ({
                 event: item.event,
+                classIds: [...item.classIds].sort(),
                 classNames: [...item.classNames].sort(),
                 inDays: Math.max(0, daysBetweenISO(today, item.event.start)),
             }))
             .sort((a, b) => a.inDays - b.inDays || a.event.title.localeCompare(b.event.title));
     }, [classes, file, horizonDays]);
 };
-

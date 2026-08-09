@@ -68,15 +68,6 @@ const SETTINGS_HASH = '#/parametres';
 const NOTIFICATIONS_HASH = '#/notifications';
 
 const getClassRoute = (classId: string) => `#/classe/${encodeURIComponent(classId)}`;
-const getNotificationsRoute = (classId?: string | null) =>
-  classId ? `${NOTIFICATIONS_HASH}?class=${encodeURIComponent(classId)}` : NOTIFICATIONS_HASH;
-
-const readNotificationClassId = (): string | null => {
-  if (!window.location.hash.startsWith(NOTIFICATIONS_HASH)) return null;
-  const query = window.location.hash.split('?')[1] ?? '';
-  return new URLSearchParams(query).get('class');
-};
-
 const readStoredClass = (classId: string): ClassInfo | null => {
   try {
     const classes = JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[];
@@ -122,8 +113,7 @@ const App: React.FC = () => {
   useSessionAlerts();
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
-  const [notificationVersion, setNotificationVersion] = useState(0);
-  const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar', notificationVersion);
+  const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
 
   const saveCurrentScroll = useCallback(() => {
     scrollPositionsRef.current[getScrollKey(view, activeClass)] = window.scrollY;
@@ -178,16 +168,6 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'notifications' }, '', NOTIFICATIONS_HASH);
   }, [saveCurrentScroll]);
 
-  const handleOpenNotificationsForClass = useCallback((classInfo: ClassInfo) => {
-    saveCurrentScroll();
-    setView('notifications');
-    window.history.pushState(
-      { route: 'notifications', classId: classInfo.id },
-      '',
-      getNotificationsRoute(classInfo.id),
-    );
-  }, [saveCurrentScroll]);
-
   // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
   // de bord) via l'historique, et non systématiquement au tableau de bord.
   // Garde : sur un chargement direct de #/parametres, aucun état poussé par
@@ -238,10 +218,8 @@ const App: React.FC = () => {
           classes={classes}
           config={config}
           feed={notificationFeed}
-          initialClassId={readNotificationClassId()}
           onSelectClass={handleSelectClass}
           onOpenSettings={handleOpenSettings}
-          onMutate={() => setNotificationVersion(v => v + 1)}
         />
       );
     }
@@ -251,9 +229,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onSelectClass={handleSelectClass}
-        onOpenEvaluations={() => setIsEvaluationsOpen(true)}
         notificationFeed={notificationFeed}
-        onOpenNotificationsForClass={handleOpenNotificationsForClass}
         onOpenSchedule={handleOpenSchedule}
       />
     );
@@ -261,9 +237,7 @@ const App: React.FC = () => {
 
   const routeKey = view === 'editor' && activeClass
     ? `editor-${activeClass.id}`
-    : view === 'notifications'
-      ? `notifications-${readNotificationClassId() ?? 'all'}`
-      : view;
+    : view;
 
   const activeTab: TabType = isEvaluationsOpen
     ? 'evaluations'

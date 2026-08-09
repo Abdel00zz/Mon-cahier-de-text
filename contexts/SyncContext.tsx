@@ -87,7 +87,7 @@ const removeDeletedClassReferences = (
     next.timetable = filterByClass(next.timetable);
     next.schedules = filterByClass(next.schedules);
 
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'notificationDismissals'] as const) {
         const records = next[key];
         if (!records) continue;
         const filtered = { ...records };
@@ -433,6 +433,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // avant toute décision de fusion.
                 for (const classId of deletedIds) {
                     try { localStorage.removeItem(`classData_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    try { localStorage.removeItem(`editJournal_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    try { localStorage.removeItem(`printMeta_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    try { localStorage.removeItem(`editor_actions_ignored_v1_${classId}`); } catch { /* stockage indisponible */ }
                     if (syncMeta[classId]) {
                         delete syncMeta[classId];
                         localChanged = true;

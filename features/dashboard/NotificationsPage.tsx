@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -6,9 +6,7 @@ import { AppConfig, AppLocale, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Bell,
   BookOpen,
   CalendarCheck,
   CalendarDays,
@@ -24,7 +22,6 @@ import {
   User,
   Users,
   ChevronRight,
-  ChevronDown,
   ArrowLeft,
 } from '@/components/ui/icons';
 import { computeProgressionStats } from '@/utils/progression';
@@ -39,7 +36,7 @@ import {
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { NotificationCalendar } from './NotificationCalendar';
-import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
+import { NotificationFeed } from '@/hooks/useNotificationFeed';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -218,39 +215,29 @@ interface NotificationsPageProps {
   classes: ClassInfo[];
   config: AppConfig;
   feed: NotificationFeed;
-  initialClassId?: string | null;
   onSelectClass: (classInfo: ClassInfo) => void;
   onOpenSettings: () => void;
-  onMutate: () => void;
 }
 
 export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   classes,
   config,
   feed,
-  initialClassId,
   onSelectClass,
   onOpenSettings,
-  onMutate,
 }) => {
   const { locale, t, isRtl } = useLocale();
   const titleFontClass = isRtl ? 'font-ar-display text-xl leading-tight tracking-normal' : 'font-display';
-  const initialClass = initialClassId ? classes.find(classInfo => classInfo.id === initialClassId) ?? null : null;
-  const initialFeed = initialClass ? notificationFeedForClass(feed, initialClass) : null;
-  const [activeAxis, setActiveAxis] = useState<AxisId>(() =>
-    initialFeed && initialFeed.corrections.length === 0 && (initialFeed.assessments.length + initialFeed.officialEvents.length) > 0
-      ? 'echeances'
-      : 'priorites',
-  );
-  const [selectedClassId, setSelectedClassId] = useState(initialClass?.id ?? 'all');
+  const [activeAxis, setActiveAxis] = useState<AxisId>('priorites');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    urgent: true,
-  });
 
-  const { corrections, ignoredCorrections, assessments, officialEvents } = feed;
+  // Le centre global ne consomme que les insights transversaux. Les alertes
+  // opérationnelles et les évaluations d'une classe appartiennent à son modal i.
+  const corrections = feed.insights;
+  const ignoredCorrections = feed.ignoredInsights;
+  const officialEvents = feed.officialEvents;
   const classById = useMemo(() => new Map(classes.map((classInfo) => [classInfo.id, classInfo])), [classes]);
   const actionLabels: Record<ClassSignal['action'], string> = {
     class: t('notifications.action.openClass'),
@@ -285,26 +272,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [classes, feed, locale]);
 
-  const selectedClass = selectedClassId === 'all'
-    ? null
-    : classes.find(classInfo => classInfo.id === selectedClassId) ?? null;
-  const classFilterValue = selectedClass?.id ?? 'all';
-
-  useEffect(() => {
-    if (selectedClassId === 'all' || selectedClass) return;
-    setSelectedClassId('all');
-    window.history.replaceState({ route: 'notifications' }, '', '#/notifications');
-  }, [selectedClass, selectedClassId]);
-
-  const selectedFeed = selectedClass ? notificationFeedForClass(feed, selectedClass) : null;
-  const filteredCorrections = selectedFeed?.corrections ?? corrections;
-  const filteredIgnored = selectedFeed?.ignoredCorrections ?? ignoredCorrections;
-  const filteredAssessments = selectedFeed?.assessments ?? assessments;
-  const filteredOfficial = selectedFeed?.officialEvents ?? officialEvents;
-  const filteredOverviews = selectedClass ? classOverviews.filter(o => o.classInfo.id === selectedClass.id) : classOverviews;
-  const activitySource = selectedClass
-    ? allActivityEntries.filter(entry => entry.classId === selectedClass.id)
-    : allActivityEntries.slice(0, 50);
+  const filteredCorrections = corrections;
+  const filteredIgnored = ignoredCorrections;
+  const filteredOfficial = officialEvents;
+  const filteredOverviews = classOverviews;
+  const activitySource = allActivityEntries.slice(0, 50);
   const filteredActivity = activityFilter === 'all'
     ? activitySource
     : activitySource.filter(entry => activityCategory(entry.op) === activityFilter);
@@ -320,7 +292,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     return days;
   }, [filteredActivity, locale, t]);
 
-  const filteredAttention = selectedFeed?.attentionCount ?? feed.attentionCount;
+  const filteredAttention = feed.attentionCount;
 
   const menuItems: AxisMenuItem[] = [
     {
@@ -337,7 +309,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       label: t('notifications.deadlines'),
       subtitle: t('notifications.deadlineSubtitle'),
       icon: CalendarCheck,
-      count: filteredAssessments.length + filteredOfficial.length,
+      count: filteredOfficial.length,
       group: 'alerts',
     },
     {
@@ -375,24 +347,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         }]
       : []),
   ];
-
-  useEffect(() => {
-    onMutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleClassFilterChange = (nextClassId: string) => {
-    setSelectedClassId(nextClassId);
-    const nextClass = classes.find(classInfo => classInfo.id === nextClassId) ?? null;
-    const nextFeed = nextClass ? notificationFeedForClass(feed, nextClass) : null;
-    setActiveAxis(
-      nextFeed && nextFeed.corrections.length === 0 && (nextFeed.assessments.length + nextFeed.officialEvents.length) > 0
-        ? 'echeances'
-        : 'priorites',
-    );
-    const hash = nextClass ? `#/notifications?class=${encodeURIComponent(nextClass.id)}` : '#/notifications';
-    window.history.replaceState({ route: 'notifications', classId: nextClass?.id }, '', hash);
-  };
 
   const openClassById = (classId: string) => {
     const classInfo = classes.find(item => item.id === classId);
@@ -440,28 +394,20 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   };
 
   const ignoreSignal = (signal: ClassSignal) => {
-    const ids = readIgnoredActionIds(signal.classId);
+    const storageScope = signal.scope === 'global' ? '' : signal.classId;
+    const ids = readIgnoredActionIds(storageScope);
     ids.add(signal.id);
-    writeIgnoredActionIds(signal.classId, ids);
-    onMutate();
+    writeIgnoredActionIds(storageScope, ids);
     toast.info(t('notifications.ignoredToast'));
   };
 
   const restoreSignal = (signal: ClassSignal) => {
-    const ids = readIgnoredActionIds(signal.classId);
+    const storageScope = signal.scope === 'global' ? '' : signal.classId;
+    const ids = readIgnoredActionIds(storageScope);
     ids.delete(signal.id);
-    writeIgnoredActionIds(signal.classId, ids);
-    onMutate();
+    writeIgnoredActionIds(storageScope, ids);
     if (activeAxis === 'ignores' && filteredIgnored.length <= 1) setActiveAxis('priorites');
   };
-
-  const toggleGroup = (groupId: string) => {
-    setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
-  };
-
-  // Grouping priorities into Urgent vs Standard for collapsible behavior
-  const urgentCorrections = useMemo(() => filteredCorrections.filter(s => s.kind === 'absences' || s.kind === 'missed-session'), [filteredCorrections]);
-  const standardCorrections = useMemo(() => filteredCorrections.filter(s => s.kind !== 'absences' && s.kind !== 'missed-session'), [filteredCorrections]);
 
   // Master Sidebar Menu items grouped
   const alertsGroup = menuItems.filter(i => i.group === 'alerts');
@@ -726,41 +672,20 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   return (
     <div className={cn('app-canvas min-h-screen text-foreground', isRtl ? 'font-ar' : 'font-sans')}>
       <main className="mx-auto max-w-6xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
-        <div className="mb-4 flex flex-col justify-between gap-3 px-1 sm:mb-5 sm:flex-row sm:items-end">
+        <div className="mb-4 flex items-end justify-between gap-3 px-1 sm:mb-5">
           <div className="flex items-center gap-3">
-            <Bell className="h-5 w-5 shrink-0 text-primary" />
+            <PieChart className="h-5 w-5 shrink-0 text-primary" />
             <div>
               <h1 className={cn('flex items-center gap-2 font-extrabold text-foreground', titleFontClass)}>
                 {t('notifications.centerTitle')}
                 {filteredAttention > 0 && (
                   <span className="rounded-full border border-red-200/80 bg-red-50/80 px-2 py-0.5 text-[10px] font-extrabold text-red-600 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-400">
-                    {t('notifications.toHandle', { count: filteredAttention })}
+                    {t('notifications.attentionCount', { count: filteredAttention })}
                   </span>
                 )}
               </h1>
-              <p className="text-xs text-muted-foreground">
-                {selectedClass
-                  ? t('notifications.activeFilter', { className: formatLocalizedClassDisplayName(selectedClass.name, locale) })
-                  : t('notifications.allTeachingClasses')}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('notifications.allTeachingClasses')}</p>
             </div>
-          </div>
-
-          <div className="w-full sm:w-60">
-            <label htmlFor="notifications-class-filter" className="sr-only">{t('notifications.filterByClass')}</label>
-            <Select value={classFilterValue} onValueChange={handleClassFilterChange}>
-              <SelectTrigger id="notifications-class-filter" aria-label={t('notifications.filterByClass')} className="h-9 w-full rounded-xl border-border/80 bg-card/75 text-xs shadow-2xs backdrop-blur-sm focus:ring-primary/20">
-                <SelectValue placeholder={t('notifications.allClasses')} />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-border/80 bg-popover/95 shadow-xl backdrop-blur-xl">
-                <SelectItem value="all" className="rounded-lg text-xs">{t('notifications.allClasses')}</SelectItem>
-                {classes.map(classInfo => (
-                  <SelectItem key={classInfo.id} value={classInfo.id} className="rounded-lg text-xs">
-                    {formatLocalizedClassDisplayName(classInfo.name, locale)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -815,7 +740,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center justify-between pb-1">
                       <div>
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
-                          <CircleAlert className="h-4 w-4 text-destructive" />
+                          <PieChart className={cn('h-4 w-4', filteredCorrections.length > 0 ? 'text-amber-600' : 'text-primary')} />
                           {t('notifications.toHandle', { count: filteredCorrections.length })}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -830,61 +755,18 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         description={t('notifications.emptyUpToDateDescription')}
                       />
                     ) : (
-                      <div className="space-y-4">
-                        {urgentCorrections.length > 0 && (
-                          <div className="rounded-2xl border border-red-200/80 dark:border-red-900/40 bg-red-50/30 dark:bg-red-950/20 overflow-hidden">
-                            <button
-                              type="button"
-                              onClick={() => toggleGroup('urgent')}
-                              className="w-full px-4 py-2.5 flex items-center justify-between bg-red-100/50 dark:bg-red-900/30 text-red-900 dark:text-red-200 text-xs font-extrabold cursor-pointer"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-red-500" />
-                                {t('notifications.urgent')} ({urgentCorrections.length})
-                              </span>
-                              <ChevronDown
-                                className={cn(
-                                  'h-4 w-4 transition-transform',
-                                  expandedGroups.urgent ? 'rotate-180' : ''
-                                )}
-                              />
-                            </button>
-
-                            {expandedGroups.urgent && (
-                              <div className="grid gap-2.5 p-3">
-                                {urgentCorrections.map(signal => {
-                                  return (
-                                    <SignalCard
-                                      key={signal.id}
-                                      signal={signal}
-                                      classInfo={classById.get(signal.classId)}
-                                      actionLabel={actionLabels[signal.action]}
-                                      ignoreLabel={t('notifications.ignore')}
-                                      onIgnore={() => ignoreSignal(signal)}
-                                      onResolve={() => resolveSignal(signal)}
-                                    />
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {standardCorrections.length > 0 && (
-                          <div className="grid gap-2.5">
-                            {standardCorrections.map(signal => (
-                              <SignalCard
-                                key={signal.id}
-                                signal={signal}
-                                classInfo={classById.get(signal.classId)}
-                                actionLabel={actionLabels[signal.action]}
-                                ignoreLabel={t('notifications.ignore')}
-                                onIgnore={() => ignoreSignal(signal)}
-                                onResolve={() => resolveSignal(signal)}
-                              />
-                            ))}
-                          </div>
-                        )}
+                      <div className="grid gap-2.5">
+                        {filteredCorrections.map(signal => (
+                          <SignalCard
+                            key={signal.id}
+                            signal={signal}
+                            classInfo={classById.get(signal.classId)}
+                            actionLabel={actionLabels[signal.action]}
+                            ignoreLabel={t('notifications.ignore')}
+                            onIgnore={() => ignoreSignal(signal)}
+                            onResolve={() => resolveSignal(signal)}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -904,52 +786,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         </p>
                       </div>
                       <span className="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-                        {t('notifications.eventCount', { count: filteredAssessments.length + filteredOfficial.length })}
+                        {t('notifications.eventCount', { count: filteredOfficial.length })}
                       </span>
                     </div>
 
-                    {filteredAssessments.length === 0 && filteredOfficial.length === 0 ? (
+                    {filteredOfficial.length === 0 ? (
                       <EmptyState
                         title={t('notifications.noAssessmentTitle')}
                         description={t('notifications.noAssessmentDescription')}
                       />
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {filteredAssessments.map(item => (
-                          <button
-                            key={`${item.classId}-${item.id}`}
-                            onClick={() => openClassById(item.classId)}
-                            className="flex flex-col justify-between rounded-xl bg-card/86 p-3.5 text-left border border-border/70 shadow-2xs hover:border-primary/30 transition-all cursor-pointer group"
-                          >
-                            <div>
-                              <div className="mb-2 flex items-center justify-between gap-2">
-                                <div className="flex min-w-0 items-center gap-2">
-                                  <ClassIdentityIcon classInfo={classById.get(item.classId)} fallback={CalendarCheck} compact />
-                                  <span className="truncate text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                                    {formatLocalizedClassDisplayName(item.className, locale)}
-                                  </span>
-                                </div>
-                                <span
-                                  className={cn(
-                                    'rounded-full px-2 py-0.5 text-[10px] font-bold',
-                                    item.inDays <= 3
-                                      ? 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300'
-                                      : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
-                                  )}
-                                >
-                                  {delayLabel(item.inDays, t)}
-                                </span>
-                              </div>
-                              <h3 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                                {t(item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework', { number: item.num })}
-                              </h3>
-                              <p className="mt-1 text-[11px] text-muted-foreground">
-                                {t('notifications.plannedDate', { date: formatLocalizedDate(item.dateISO, locale) })}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-
                         {filteredOfficial.map(item => (
                           <div
                             key={`official-${item.event.id}`}
@@ -993,7 +840,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       </div>
                     </div>
                     <div className="rounded-2xl border border-border bg-card p-2 text-card-foreground">
-                      <NotificationCalendar classes={classes} config={config} selectedClassId={classFilterValue} />
+                      <NotificationCalendar classes={classes} config={config} selectedClassId="all" />
                     </div>
                   </div>
                 )}
@@ -1125,7 +972,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                         )}
                                       </div>
                                       <p className="text-[10px] text-muted-foreground">
-                                        {!selectedClass && <span className="font-semibold text-foreground mr-1.5">{entry.className} •</span>}
+                                        <span className="font-semibold text-foreground mr-1.5">{entry.className} •</span>
                                         {timeAgo(entry.at, locale)}
                                       </p>
                                     </div>
