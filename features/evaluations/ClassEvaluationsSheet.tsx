@@ -64,7 +64,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                     </div>
                 </SheetHeader>
 
-                <div className="flex-1 min-h-0 custom-scrollbar overflow-y-auto px-3 py-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] sm:px-6 sm:py-6">
+                <div className="evaluation-scrollbar flex-1 min-h-0 overflow-y-auto px-3 py-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] sm:px-6 sm:py-6">
                     <DevoirsView
                         classes={[classInfo]}
                         config={config}

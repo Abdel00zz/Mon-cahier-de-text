@@ -228,13 +228,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
   const renderLanguageSwitch = () => (
     <div dir="ltr" className="flex rounded-lg border border-border/75 bg-card/88 p-0.5 shadow-2xs backdrop-blur-sm" role="group" aria-label={copy.languageLabel}>
-      <button type="button" onClick={() => onLocaleChange('ar')} aria-pressed={displayLocale === 'ar'} className={`min-h-8 rounded-md px-2.5 text-[11px] font-bold transition-colors ${displayLocale === 'ar' ? 'bg-[#174f9e] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>العربية</button>
-      <button type="button" onClick={() => onLocaleChange('fr')} aria-pressed={displayLocale === 'fr'} className={`min-h-8 rounded-md px-2.5 text-[11px] font-bold transition-colors ${displayLocale === 'fr' ? 'bg-[#174f9e] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>FR</button>
+      <button type="button" onClick={() => onLocaleChange('ar')} aria-pressed={displayLocale === 'ar'} className={`min-h-10 rounded-md px-2.5 text-[11px] font-bold transition-colors ${displayLocale === 'ar' ? 'bg-[#174f9e] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>العربية</button>
+      <button type="button" onClick={() => onLocaleChange('fr')} aria-pressed={displayLocale === 'fr'} className={`min-h-10 rounded-md px-2.5 text-[11px] font-bold transition-colors ${displayLocale === 'fr' ? 'bg-[#174f9e] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>FR</button>
     </div>
   );
 
   return (
-    <div dir={isRtl ? 'rtl' : 'ltr'} lang={displayLocale} className={`app-canvas min-h-dvh p-0 text-foreground sm:p-4 ${isRtl ? 'font-ar' : ''}`}>
+    <div dir={isRtl ? 'rtl' : 'ltr'} lang={displayLocale} className={`app-canvas min-h-dvh p-0 text-foreground sm:p-3 md:p-4 ${isRtl ? 'font-ar' : ''}`}>
       <div className="mx-auto grid min-h-dvh w-full max-w-[1480px] overflow-hidden bg-card/94 sm:min-h-[calc(100dvh-2rem)] sm:rounded-xl sm:border sm:border-border/75 sm:shadow-[0_28px_80px_rgba(30,64,110,0.11)] lg:grid-cols-[1.08fr_0.92fr] dark:border-zinc-800 dark:bg-zinc-950">
         <aside className="relative hidden overflow-hidden border-e border-border/70 bg-secondary/48 px-8 py-7 text-foreground lg:flex lg:flex-col xl:px-10 xl:py-8 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
           <div className="flex items-center justify-between gap-4">
@@ -245,7 +245,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           </div>
 
           <div className="relative mt-6 overflow-hidden rounded-xl bg-slate-200 shadow-[0_14px_30px_rgba(30,58,95,0.13)]">
-            <img src="/auth/teacher-planning-hero.webp" alt={copy.heroAlt} className="h-[260px] w-full object-cover xl:h-[310px]" loading="eager" decoding="async" />
+            <img src="/auth/teacher-planning-hero.webp" alt={copy.heroAlt} className="h-[240px] w-full object-cover xl:h-[280px]" loading="eager" decoding="async" />
             <span className="absolute bottom-3 end-3 rounded-md border border-white/50 bg-slate-950/55 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">{copy.teacherAccess}</span>
           </div>
 
@@ -265,17 +265,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-[#2468bd] dark:bg-blue-950 dark:text-blue-300">
                   <item.icon className="h-3.5 w-3.5" />
                 </span>
-                <span className="line-clamp-2 text-[11px] font-extrabold leading-snug text-[#173a63] dark:text-zinc-100">{item.title}</span>
+                <span className={item.icon === Printer ? 'line-clamp-3 text-[10px] font-extrabold leading-snug text-[#173a63] dark:text-zinc-100' : 'line-clamp-2 text-[11px] font-extrabold leading-snug text-[#173a63] dark:text-zinc-100'}>{item.title}</span>
               </div>
             ))}
           </div>
         </aside>
 
-        <main className="relative flex min-w-0 items-center justify-center bg-card/88 px-6 py-8 sm:px-10 lg:px-12 xl:px-16 dark:bg-zinc-950">
+        <main className="relative flex min-w-0 items-start justify-center bg-card/88 px-4 py-5 sm:px-8 sm:py-8 lg:items-center lg:px-12 xl:px-16 dark:bg-zinc-950">
           <div className="w-full max-w-[520px]">
-            <div className="mb-8 flex items-center justify-between gap-4 lg:hidden">
+            <div className="mb-6 flex items-center justify-between gap-3 sm:mb-8 lg:hidden">
               <div className="flex min-w-0 items-center text-[#1d4291]">
-                <span className={`truncate font-extrabold ${isRtl ? 'font-ar-display text-2xl' : 'text-base'}`}>{copy.brand}</span>
+                <span className={`truncate font-extrabold ${isRtl ? 'font-ar-display text-[1.7rem]' : 'text-lg tracking-tight'}`}>{copy.brand}</span>
               </div>
               {renderLanguageSwitch()}
             </div>
@@ -287,13 +287,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           className="text-card-foreground"
         >
           {/* Segment/Tab Control */}
-          <div className="mb-10 grid grid-cols-2 gap-1 rounded-lg bg-secondary/65 p-1 dark:bg-zinc-900">
+          <div className="mb-7 grid grid-cols-2 gap-1 rounded-lg bg-secondary/65 p-1 sm:mb-10 dark:bg-zinc-900">
             {(['login', 'register'] as const).map(value => (
               <button
                 key={value}
                 type="button"
                 onClick={() => switchMode(value)}
-                className={`relative rounded-md py-2 text-xs font-bold transition-colors focus:outline-none ${mode === value ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`relative min-h-11 rounded-md px-2 py-2 text-xs font-bold transition-colors focus:outline-none ${mode === value ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 {mode === value && (
                   <motion.span
@@ -307,24 +307,24 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             ))}
           </div>
 
-          <header className="mb-8">
+          <header className="mb-6 sm:mb-8">
             <p className={`text-[10px] font-extrabold text-primary ${isRtl ? '' : 'uppercase tracking-[0.14em]'}`}>{copy.teacherSpace}</p>
             <h2 className={`mt-3 font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2.35rem] leading-[1.3]' : 'text-[1.75rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{isRegister ? copy.createDetail : copy.welcomeDetail}</p>
             {!isRegister && (
-              <div className="mt-4 flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50/65 px-3 py-2.5 text-start dark:border-blue-900/45 dark:bg-blue-950/25">
+              <section className="mt-4 flex items-start gap-2.5 rounded-lg border border-blue-100 bg-blue-50/65 px-3 py-2.5 text-start lg:hidden dark:border-blue-900/45 dark:bg-blue-950/25" aria-label={copy.printTitle}>
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-card text-primary shadow-2xs dark:bg-zinc-900">
-                  <Printer className="h-3.5 w-3.5" />
+                  <Printer className="h-3.5 w-3.5" aria-hidden />
                 </span>
-                <p className="text-[11px] font-semibold leading-snug text-slate-700 dark:text-zinc-200">
+                <p className="pt-0.5 text-[11px] font-semibold leading-snug text-slate-700 sm:text-xs dark:text-zinc-200">
                   <span className="font-extrabold text-[#173a63] dark:text-blue-200">{copy.printTitle} · </span>
                   {copy.printDetail}
                 </p>
-              </div>
+              </section>
             )}
           </header>
 
-          <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
+          <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4" aria-busy={isSubmitting}>
             {/* Nom + Prénom (inscription) */}
             <AnimatePresence initial={false}>
               {isRegister && (
@@ -334,7 +334,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="grid grid-cols-2 gap-3 overflow-hidden"
+                  className="grid grid-cols-1 gap-3 overflow-hidden min-[390px]:grid-cols-2"
                 >
                   <label className="block">
                     <span className={`mb-1.5 block text-[11px] font-bold text-muted-foreground ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.name}</span>

@@ -97,7 +97,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                   'relative flex h-11 w-full items-center justify-center rounded-xl px-3 text-muted-foreground transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 lg:h-12',
                   isExpanded && 'lg:justify-start lg:gap-3 lg:px-5',
                   isActive
-                    ? cn('bg-amber-100/90 text-amber-950 dark:bg-amber-500/15 dark:text-amber-200', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none')
+                    ? cn('bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none')
                     : 'hover:bg-muted/75 hover:text-foreground',
                 )}
                 aria-label={copy[tab.id]}
@@ -106,7 +106,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                   <Icon className={cn('h-[15px] w-[15px] transition-transform duration-200', isActive ? 'scale-105' : '')} />
                   {count ? (
-                    <span className={cn('absolute -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-bold text-destructive-foreground ring-2 ring-white dark:ring-zinc-950', isRtl ? '-left-2' : '-right-2')}>
+                    <span className={cn('absolute -top-[3px] flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-0.5 text-[7px] font-bold leading-none text-destructive-foreground ring-[1.5px] ring-white dark:ring-zinc-950', isRtl ? '-left-1.5' : '-right-1.5')}>
                       {countLabel(count)}
                     </span>
                   ) : null}
@@ -126,12 +126,12 @@ export const TabBar: React.FC<TabBarProps> = ({
             className={cn(
               'flex h-11 w-full items-center justify-center rounded-xl px-3 text-muted-foreground transition-colors hover:bg-muted/75 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               isExpanded && 'lg:justify-start lg:gap-3 lg:px-5',
-              activeTab === 'settings' && cn('bg-amber-100/90 text-amber-950 dark:bg-amber-500/15 dark:text-amber-200', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none'),
+              activeTab === 'settings' && cn('bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none'),
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[15px] w-[15px] shrink-0', activeTab === 'settings' && 'text-amber-700 dark:text-amber-300')} />
+            <Settings className={cn('h-[15px] w-[15px] shrink-0', activeTab === 'settings' && 'text-primary')} />
             <span className={cn('hidden flex-1 text-start text-[13px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' && 'font-bold')}>{copy.settings}</span>
           </button>
           <button
@@ -169,7 +169,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 <div className="relative">
                   <Icon className={cn('h-[17px] w-[17px] transition-transform duration-200', isActive && 'scale-110 stroke-[2.2]')} />
                   {count ? (
-                <span className={cn('absolute -top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] font-bold text-destructive-foreground ring-2 ring-card', isRtl ? '-left-1' : '-right-1')}>
+                <span className={cn('absolute -top-[3px] flex h-3 min-w-3 items-center justify-center rounded-full bg-destructive px-0.5 text-[7px] font-bold leading-none text-destructive-foreground ring-[1.5px] ring-card', isRtl ? '-left-1' : '-right-1')}>
                       {countLabel(count)}
                     </span>
                   ) : null}
