@@ -32,6 +32,13 @@ const ACTIONS_IGNORED_KEY_PREFIX = 'editor_actions_ignored_v1_';
 /** classe virtuelle des signaux globaux (sauvegarde…) */
 const GLOBAL_SCOPE = '_global_';
 
+/**
+ * Les alertes structurelles d'emploi du temps ne sont pas des rappels : elles
+ * conditionnent le calcul des prochaines séances, le contrôle des dates et la
+ * progression. Elles restent donc actives jusqu'à correction de la grille.
+ */
+const isDismissibleActionId = (id: string): boolean => !id.startsWith('schedule:');
+
 /** Signal de focus lu par l'éditeur à l'ouverture d'un cahier :
     sélectionne et surligne l'élément visé (deep-link de notification). */
 export const SESSION_FOCUS_KEY = 'session_focus_v1';
@@ -74,7 +81,7 @@ export const readIgnoredActionIds = (classId: string): Set<string> => {
         return new Set([
             ...(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []),
             ...(Array.isArray(synced) ? synced.filter((value): value is string => typeof value === 'string') : []),
-        ]);
+        ].filter(isDismissibleActionId));
     } catch {
         return new Set();
     }
@@ -82,7 +89,9 @@ export const readIgnoredActionIds = (classId: string): Set<string> => {
 
 export const writeIgnoredActionIds = (classId: string, ids: Set<string>): void => {
     const scope = classId || GLOBAL_SCOPE;
-    const values = Array.from(ids).slice(-100);
+    // Invariant métier : même une ancienne version de l'application ne peut
+    // réinjecter une alerte d'emploi du temps dans les éléments masqués.
+    const values = Array.from(ids).filter(isDismissibleActionId).slice(-100);
     try {
         // Clé historique conservée pour compatibilité hors connexion/import.
         localStorage.setItem(`${ACTIONS_IGNORED_KEY_PREFIX}${scope}`, JSON.stringify(values));
@@ -145,6 +154,8 @@ export interface ClassSignal {
     date?: string;
     /** premier élément concerné, cible du focus à l'ouverture du cahier */
     targetIndices?: Indices;
+    /** false pour un prérequis structurel qui doit rester visible jusqu'à résolution */
+    dismissible: boolean;
     ignored: boolean;
 }
 
@@ -241,7 +252,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
 
     // 1 · Dates saisies en conflit avec le calendrier ou l'emploi du temps
     for (const [date, indicesList] of entriesByDate) {
-        const warnings = validateSessionDate(date, classInfo, config);
+        const warnings = validateSessionDate(date, classInfo, config, locale);
         if (warnings.length === 0) continue;
         const id = dateActionId(classInfo.id, date, warnings);
         signals.push({
@@ -255,6 +266,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             detail: warnings.map(warning => warning.message).join(' '),
             date,
             targetIndices: indicesList[0],
+            dismissible: true,
             ignored: ignored.has(id),
         });
     }
@@ -276,6 +288,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
                 ? t('notifications.signal.missedMany', { count: missed.length })
                 : t('notifications.signal.missedOne'),
             date: last,
+            dismissible: true,
             ignored: ignored.has(id),
         });
     }
@@ -298,6 +311,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
             className,
             title: t('notifications.signal.neverStartedTitle'),
             detail: t('notifications.signal.neverStartedDetail', { date: formatDateFR(year.debut) }),
+            dismissible: true,
             ignored: ignored.has(id),
         });
     }
@@ -334,7 +348,10 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
                 ? t('notifications.signal.scheduleAdjustTitle')
                 : t('notifications.signal.scheduleTitle'),
             detail,
-            ignored: ignored.has(id),
+            dismissible: false,
+            // Ne jamais dériver cet état de la mémoire « ignoré » : le signal
+            // disparaît uniquement lorsque computeClassHoursInsight est conforme.
+            ignored: false,
         });
     }
 
@@ -399,6 +416,7 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
                 leaderName: formatClassDisplayName(leader.classInfo.name),
                 gap,
             }),
+            dismissible: true,
             ignored: ignored.has(id),
         });
     }
@@ -433,6 +451,7 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
                 ? t('notifications.signal.backupNone')
                 : t('notifications.signal.backupLast', { count: daysSinceExport }),
             detail: t('notifications.signal.backupDetail'),
+            dismissible: true,
             ignored: ignored.has(id),
         });
     }

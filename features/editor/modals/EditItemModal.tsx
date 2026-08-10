@@ -12,6 +12,7 @@ import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
   TestTube, Home, FileSignature, CheckCheck, CheckSquare, Sigma, CircleAlert,
 } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -65,7 +66,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex select-none items-start gap-3 rounded-xl border p-2.5 text-left transition-all duration-150 ${
+      className={`relative flex select-none items-start gap-3 rounded-xl border p-2.5 text-start transition-all duration-150 ${
         disabled
           ? 'bg-zinc-50/50 border-zinc-100 opacity-40 cursor-not-allowed'
           : 'bg-white hover:bg-zinc-50/80 border-zinc-200 hover:border-zinc-300 active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
@@ -98,6 +99,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   lessonsData,
   selectedIndices,
 }) => {
+  const { t, isRtl } = useLocale();
   const [stage, setStage] = useState<'select' | 'form'>('select');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
@@ -125,33 +127,33 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   }, [selectedIndices, lessonsData, isOpen]);
 
   const targetLocationLabel = useMemo(() => {
-    if (!selectedIndices || !isOpen) return "À la fin du cahier de textes";
+    if (!selectedIndices || !isOpen) return t('addContent.atEnd');
     try {
       const { item } = findItem(lessonsData, selectedIndices);
-      if (!item) return "À la fin du cahier de textes";
+      if (!item) return t('addContent.atEnd');
       const itemAny = item as any;
-      const displayTitle = itemAny.title || itemAny.name || itemAny.content || (itemAny.type ? `${itemAny.type.charAt(0).toUpperCase() + itemAny.type.slice(1)}` : 'Élément');
-      return `Après l'élément : "${displayTitle}"`;
+      const displayTitle = itemAny.title || itemAny.name || itemAny.content || (itemAny.type ? t(`contentType.${itemAny.type}`) : t('addContent.item'));
+      return t('addContent.afterItem', { title: displayTitle });
     } catch {
-      return "À la fin du cahier de textes";
+      return t('addContent.atEnd');
     }
-  }, [selectedIndices, lessonsData, isOpen]);
+  }, [selectedIndices, lessonsData, isOpen, t]);
 
-  let modalTitle = 'Ajouter du contenu';
+  let modalTitle = t('addContent.title');
   if (stage !== 'select' && selectedType) {
     const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
     if (config) {
-      modalTitle = `Ajouter : ${config.name}`;
+      modalTitle = t('addContent.addType', { type: t(`manageLessons.type.${selectedType}`) });
     } else if (selectedType === 'section') {
-      modalTitle = "Ajouter : Section";
+      modalTitle = t('addContent.addType', { type: t('addContent.section') });
     } else if (selectedType === 'subsection') {
-      modalTitle = "Ajouter : Sous-section";
+      modalTitle = t('addContent.addType', { type: t('addContent.subsection') });
     } else if (selectedType === 'subsubsection') {
-      modalTitle = "Ajouter : Sous-sous-section";
+      modalTitle = t('addContent.addType', { type: t('addContent.subsubsection') });
     } else if (selectedType === 'item') {
-      modalTitle = "Ajouter : Élément";
+      modalTitle = t('addContent.addType', { type: t('addContent.item') });
     } else if (selectedType === 'separator') {
-      modalTitle = "Ajouter : Séparateur";
+      modalTitle = t('addContent.addType', { type: t('addContent.separator') });
     }
   }
 
@@ -164,9 +166,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       // Types récurrents : titre auto-suggéré « Contrôle continu N » (N =
       // occurrences existantes dans le cahier + 1). Simple suggestion, le
       // champ reste librement modifiable par le professeur.
+      const localizedName = t(`manageLessons.type.${type}`);
       initialData.title = config.autoNumber
-        ? `${config.name} ${countOccurrencesOfType(lessonsData, type) + 1}`
-        : config.name;
+        ? `${localizedName} ${countOccurrencesOfType(lessonsData, type) + 1}`
+        : localizedName;
     } else if (type === 'item') {
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.
       const anchorType = selectedElementType === 'item' && selectedItem && (selectedItem as any).type;
@@ -203,10 +206,11 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     if (!selectedType) return null;
     const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
     if (config) {
+      const localizedName = t(`manageLessons.type.${selectedType}`);
       return (
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
-            <label htmlFor="title" className={labelClasses}>Titre pour "{config.name}"</label>
+            <label htmlFor="title" className={labelClasses}>{t('addContent.titleFor', { type: localizedName })}</label>
             <Input
               ref={initialFocusRef}
               type="text"
@@ -214,7 +218,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               value={formData.title || ''}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
-              placeholder={`Ex: ${config.name} de mathématiques`}
+              placeholder={t('addContent.topLevelPlaceholder', { type: localizedName })}
               className="h-10 rounded-lg border-border"
             />
           </div>
@@ -227,10 +231,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       case 'subsubsection':
         const structureLabel =
           selectedType === 'section'
-            ? 'Nom de la section'
+            ? t('addContent.sectionName')
             : selectedType === 'subsection'
-              ? 'Nom de la sous-section'
-              : 'Nom de la sous-sous-section';
+              ? t('addContent.subsectionName')
+              : t('addContent.subsubsectionName');
         return (
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
@@ -242,7 +246,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                placeholder="Ex: Définitions et propriétés"
+                placeholder={t('addContent.structurePlaceholder')}
                 className="h-10 rounded-lg border-border"
               />
             </div>
@@ -253,56 +257,56 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           <div className="space-y-4 py-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="itemType" className={labelClasses}>Type de contenu *</label>
+                <label htmlFor="itemType" className={labelClasses}>{t('addContent.contentType')} *</label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
                   required
                 >
                   <SelectTrigger id="itemType" ref={selectFocusRef as any} className="h-10 rounded-lg border-border shadow-none">
-                    <SelectValue placeholder="Choisir..." />
+                    <SelectValue placeholder={t('addContent.choose')} />
                   </SelectTrigger>
                   <SelectContent>
                     {UNIQUE_LESSON_ITEM_TYPES.map(type => (
                       <SelectItem key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                        {t(`contentType.${type}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="itemNumber" className={labelClasses}>Numéro</label>
+                <label htmlFor="itemNumber" className={labelClasses}>{t('addContent.number')}</label>
                 <Input
                   ref={initialFocusRef}
                   type="text"
                   id="itemNumber"
                   value={formData.number || ''}
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  placeholder="Ex: 1, 1.2, A..."
+                  placeholder={t('addContent.numberPlaceholder')}
                   className="h-10 rounded-lg border-border"
                 />
               </div>
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="itemTitle" className={labelClasses}>Titre de l'élément</label>
+              <label htmlFor="itemTitle" className={labelClasses}>{t('addContent.itemTitle')}</label>
               <Input
                 type="text"
                 id="itemTitle"
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Saisir un titre optionnel..."
+                placeholder={t('addContent.optionalTitlePlaceholder')}
                 className="h-10 rounded-lg border-border"
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="itemDescription" className={labelClasses}>Description / Contenu (LaTeX supporté)</label>
+              <label htmlFor="itemDescription" className={labelClasses}>{t('addContent.descriptionLabel')}</label>
               <Textarea
                 id="itemDescription"
                 rows={4}
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Ex: Établir que la fonction f est continue sur $$[0, +\infty[$$..."
+                placeholder={t('addContent.descriptionPlaceholder')}
                 className="rounded-xl border-border"
               />
             </div>
@@ -312,19 +316,19 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
         return (
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
-              <label htmlFor="separatorContent" className={labelClasses}>Texte du séparateur</label>
+              <label htmlFor="separatorContent" className={labelClasses}>{t('addContent.separatorText')}</label>
               <Input
                 ref={initialFocusRef}
                 type="text"
                 id="separatorContent"
                 value={formData.content || ''}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Ex: Travail effectué, Fin de séance, etc."
+                placeholder={t('addContent.separatorPlaceholder')}
                 className="h-10 rounded-lg border-border"
               />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="separatorDate" className={labelClasses}>Date du séparateur (optionnelle)</label>
+              <label htmlFor="separatorDate" className={labelClasses}>{t('addContent.separatorDate')}</label>
               <Input
                 type="date"
                 id="separatorDate"
@@ -369,9 +373,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           size="sm"
           onClick={() => setStage('select')}
           className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-zinc-100 flex-shrink-0 cursor-pointer"
-          aria-label="Retour à la sélection"
+          aria-label={t('addContent.back')}
         >
-          <ArrowLeft className="h-3.5 w-3.5 text-zinc-500" />
+          <ArrowLeft className={`h-3.5 w-3.5 text-zinc-500 ${isRtl ? 'rotate-180' : ''}`} />
         </Button>
       )}
       <span className="truncate">{modalTitle}</span>
@@ -385,27 +389,27 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       title={titleNode}
       description={
         stage === 'select' 
-          ? "Choisissez l'élément à insérer dans votre progression pédagogique" 
-          : "Renseignez les détails de l'élément à ajouter"
+          ? t('addContent.selectHint')
+          : t('addContent.formHint')
       }
       maxWidth={stage === 'select' ? "2xl" : "lg"}
       footer={
         stage === 'form' ? (
           <>
             <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
-              Annuler
+              {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
               form="add-content-form" 
               className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm text-primary-foreground"
             >
-              Insérer
+              {t('addContent.insert')}
             </Button>
           </>
         ) : (
           <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
-            Fermer
+            {t('common.close')}
           </Button>
         )
       }
@@ -416,98 +420,98 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           <MapPin className="h-3 w-3" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-zinc-700">Point d'insertion ciblé</div>
+          <div className="font-bold text-zinc-700">{t('addContent.insertionPoint')}</div>
           <div className="truncate mt-0.5 text-zinc-400 font-medium">{targetLocationLabel}</div>
         </div>
       </div>
 
       {stage === 'select' ? (
-        <div className="space-y-5 py-1 overflow-y-auto custom-scrollbar max-h-[50vh] pr-1">
+        <div className="custom-scrollbar max-h-[50vh] space-y-5 overflow-y-auto py-1 pe-1">
           {/* Group 1: Cours & Structures */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
-              Structures & Cours
+            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              {t('addContent.groupStructures')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <CategoryCard
                 icon={Book}
-                label="Chapitre"
-                description="Ajoute un grand chapitre de cours à la racine"
+                label={t('manageLessons.type.chapter')}
+                description={t('addContent.chapterHint')}
                 colorClass="text-zinc-800"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
-                label="Section"
-                description="Ajoute une partie au chapitre ou bloc sélectionné"
+                label={t('addContent.section')}
+                description={t('addContent.sectionHint')}
                 colorClass="text-zinc-700"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
-                tooltip="Sélectionnez un chapitre ou une section"
+                tooltip={t('addContent.sectionTooltip')}
               />
               <CategoryCard
                 icon={Network}
-                label="Sous-section"
-                description="Ajoute un niveau sous la section sélectionnée"
+                label={t('addContent.subsection')}
+                description={t('addContent.subsectionHint')}
                 colorClass="text-zinc-700"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
-                tooltip="Sélectionnez une section"
+                tooltip={t('addContent.subsectionTooltip')}
               />
               <CategoryCard
                 icon={Network}
-                label="Sous-sous-section"
-                description="Ajoute un niveau sous la sous-section sélectionnée"
+                label={t('addContent.subsubsection')}
+                description={t('addContent.subsubsectionHint')}
                 colorClass="text-zinc-700"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
-                tooltip="Sélectionnez une sous-section"
+                tooltip={t('addContent.subsubsectionTooltip')}
               />
               <CategoryCard
                 icon={ListTree}
-                label="Élément"
-                description="Ajoute un exercice, cours, méthode, application..."
+                label={t('addContent.item')}
+                description={t('addContent.itemHint')}
                 colorClass="text-zinc-600"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
-                tooltip="Sélectionnez une section pour insérer un élément"
+                tooltip={t('addContent.itemTooltip')}
               />
               <CategoryCard
                 icon={GripHorizontal}
-                label="Séparateur"
-                description="Insère une démarcation chronologique de séance"
+                label={t('addContent.separator')}
+                description={t('addContent.separatorHint')}
                 colorClass="text-zinc-400"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
-                tooltip="Sélectionnez un élément pour ajouter un séparateur après"
+                tooltip={t('addContent.separatorTooltip')}
               />
             </div>
           </div>
 
           {/* Group 2: Évaluations & Devoirs */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
-              Évaluations & Devoirs
+            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              {t('addContent.groupAssessments')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <CategoryCard
                 icon={TestTube}
-                label="Évaluation diagnostique"
-                description="Évaluer les prérequis en début de chapitre"
+                label={t('manageLessons.type.evaluation_diagnostic')}
+                description={t('addContent.diagnosticHint')}
                 colorClass="text-zinc-750"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
-                label="Devoir maison"
-                description="Planifier un travail personnel hors-classe"
+                label={t('manageLessons.type.devoir_maison')}
+                description={t('addContent.homeworkHint')}
                 colorClass="text-zinc-750"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
-                label="Contrôle continu"
-                description="Ajouter un devoir surveillé ou un quiz régulier"
+                label={t('manageLessons.type.controle_continu')}
+                description={t('addContent.assessmentHint')}
                 colorClass="text-zinc-750"
                 onClick={() => handleSelectType('controle_continu')}
               />
@@ -516,21 +520,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
           {/* Group 3: Corrections */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
-              Corrections d'épreuves
+            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              {t('addContent.groupCorrections')}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <CategoryCard
                 icon={CheckCheck}
-                label="Correction Devoir maison"
-                description="Ajouter le corrigé complet d'un DM"
+                label={t('manageLessons.type.correction_devoir_maison')}
+                description={t('addContent.homeworkCorrectionHint')}
                 colorClass="text-emerald-700"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
                 icon={CheckSquare}
-                label="Correction Contrôle continu"
-                description="Ajouter le barème et corrigé d'un contrôle"
+                label={t('manageLessons.type.correction_controle_continu')}
+                description={t('addContent.assessmentCorrectionHint')}
                 colorClass="text-zinc-750"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
@@ -538,7 +542,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col h-full max-h-[55vh] overflow-y-auto custom-scrollbar pr-1">
+        <div className="custom-scrollbar flex h-full max-h-[55vh] flex-col overflow-y-auto pe-1">
           <form id="add-content-form" onSubmit={handleSubmit} className="space-y-4 pb-2">
             {renderForm()}
           </form>
@@ -549,9 +553,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-zinc-600 flex items-center gap-1.5 uppercase tracking-wider">
                   <Sigma className="h-3 w-3" />
-                  <span>Aperçu LaTeX en temps réel</span>
+                  <span>{t('descriptionModal.preview')}</span>
                 </span>
-                <span className="text-[9px] text-zinc-400 font-medium">Auto-généré</span>
+                <span className="text-[9px] text-zinc-400 font-medium">{t('descriptionModal.generated')}</span>
               </div>
               <div className="bg-white p-3 rounded-lg border border-zinc-200 shadow-inner text-xs text-zinc-800 leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
                 <MathJax hideUntilTypeset="first">

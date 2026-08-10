@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppConfig, TopLevelItem } from '@/types';
 import { Modal } from '@/components/ui/modal';
-import { ArrowDown, ArrowUp, Book, FolderOpen, Plus, Trash2, TriangleAlert } from '@/components/ui/icons';
+import { ArrowDown, ArrowUp, ChevronDown, FolderOpen, Trash2, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
@@ -46,10 +45,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const { t } = useLocale();
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
   const [localDesc, setLocalDesc] = useState<{ mode: DescriptionMode; types: string[] }>({ mode: 'all', types: [] });
-  const [chapterTitle, setChapterTitle] = useState('');
-  const [createError, setCreateError] = useState('');
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const listEndRef = useRef<HTMLDivElement | null>(null);
   const stableKeys = useRef(new WeakMap<TopLevelItem, string>());
 
   useEffect(() => {
@@ -59,8 +55,6 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       mode: config.screenDescriptionMode ?? 'all',
       types: config.screenDescriptionTypes ?? [],
     });
-    setChapterTitle('');
-    setCreateError('');
     setPendingDelete(null);
   }, [isOpen, lessons, config.screenDescriptionMode, config.screenDescriptionTypes]);
 
@@ -78,28 +72,6 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
     const key = crypto.randomUUID();
     stableKeys.current.set(item, key);
     return key;
-  };
-
-  const addChapter = (event: React.FormEvent) => {
-    event.preventDefault();
-    const title = chapterTitle.trim();
-    if (!title) {
-      setCreateError(t('manageLessons.chapterRequired'));
-      return;
-    }
-    const duplicate = localLessons.some(item => item.type === 'chapter' && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase());
-    if (duplicate) {
-      setCreateError(t('manageLessons.chapterDuplicate'));
-      return;
-    }
-
-    setLocalLessons(current => [
-      ...current,
-      { type: 'chapter', title, sections: [], _tempId: crypto.randomUUID() },
-    ]);
-    setChapterTitle('');
-    setCreateError('');
-    window.requestAnimationFrame(() => listEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
   };
 
   const requestDelete = (index: number) => {
@@ -155,79 +127,36 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         footerClassName="bg-white"
         footer={(
           <>
-            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
+            <Button type="button" onClick={onClose} variant="secondary" className="rounded-lg">
               {t('common.cancel')}
             </Button>
             <Button
               type="button"
               onClick={handleSubmit}
               disabled={!hasChanges}
-              className="rounded-xl bg-primary px-5 font-semibold shadow-sm hover:bg-primary/90"
+              className="rounded-lg bg-primary px-5 font-semibold shadow-sm hover:bg-primary/90"
             >
               {t('common.save')}
             </Button>
           </>
         )}
       >
-        <div className="space-y-5">
-          <section className="rounded-xl border border-zinc-200/70 bg-zinc-50/65 p-3 sm:p-4">
-            <div className="mb-3 flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-primary shadow-xs">
-                <Book className="h-4.5 w-4.5" aria-hidden />
-              </span>
+        <div className="space-y-4">
+          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/55">
+            <div className="flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-3 py-3 sm:px-4">
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-zinc-800">{t('manageLessons.createTitle')}</h3>
-                <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-zinc-500">{t('manageLessons.createHint')}</p>
+                <h3 className="text-sm font-bold text-zinc-800">{t('manageLessons.contents')}</h3>
+                <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-zinc-500">
+                  {t('manageLessons.orderHint')}
+                </p>
               </div>
-            </div>
-            <form onSubmit={addChapter} className="flex flex-col gap-2 sm:flex-row">
-              <div className="min-w-0 flex-1">
-                <Input
-                  value={chapterTitle}
-                  onChange={event => {
-                    setChapterTitle(event.target.value);
-                    if (createError) setCreateError('');
-                  }}
-                  maxLength={160}
-                  placeholder={t('manageLessons.chapterPlaceholder')}
-                  aria-label={t('manageLessons.chapterPlaceholder')}
-                  aria-invalid={!!createError}
-                  className="h-11 rounded-lg border-zinc-200 bg-white text-sm"
-                />
-                {createError && <p className="mt-1.5 text-[10px] font-semibold text-rose-600" role="alert">{createError}</p>}
-              </div>
-              <Button type="submit" disabled={!chapterTitle.trim()} className="h-11 shrink-0 rounded-lg px-4 font-semibold sm:min-w-28">
-                <Plus className="h-3.5 w-3.5" />
-                {t('manageLessons.addChapter')}
-              </Button>
-            </form>
-          </section>
-
-          <details className="group rounded-xl border border-zinc-200/60 bg-zinc-50/65 px-3 py-2.5">
-            <summary className="cursor-pointer text-[11px] font-bold text-zinc-500 transition-colors hover:text-zinc-800">
-              {t('manageLessons.descriptionSettings')}
-            </summary>
-            <DescriptionVisibilityControl
-              context="screen"
-              mode={localDesc.mode}
-              types={localDesc.types}
-              onChange={setLocalDesc}
-              className="mt-3 border-0 bg-transparent p-0 shadow-none"
-            />
-          </details>
-
-          <section>
-            <div className="mb-2 flex items-center justify-between gap-3 px-0.5">
-              <h3 className="font-mono text-[10px] font-extrabold uppercase tracking-wide text-zinc-500">
-                {t('manageLessons.contents')}
-              </h3>
-              <span className="rounded-md bg-zinc-100 px-2 py-1 font-mono text-[9px] font-bold text-zinc-500">
-                {localLessons.length}
+              <span className="shrink-0 font-mono text-[10px] font-bold text-zinc-400">
+                {t('manageLessons.itemsCount', { count: localLessons.length })}
               </span>
             </div>
 
             {localLessons.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2 p-2 sm:p-3">
                 {localLessons.map((item, index) => {
                   const itemConfig = TOP_LEVEL_TYPE_CONFIG[item.type];
                   const nestedCount = countNestedContents(item);
@@ -249,7 +178,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   return (
                     <li
                       key={itemKey(item)}
-                      className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-xs transition-colors hover:border-zinc-300 hover:bg-zinc-50/60"
+                      className="flex items-center gap-2.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-2 shadow-xs transition-colors hover:border-zinc-300 sm:px-3"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-100 bg-zinc-50">
                         <itemConfig.icon className={`${itemConfig.color} h-4 w-4`} />
@@ -262,14 +191,16 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                           {t(`manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
                         </span>
                       </span>
-                      <span className="flex shrink-0 items-center gap-1">
-                        <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9 sm:w-9" title={t('manageLessons.moveUp')}>
-                          <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
-                        </Button>
-                        <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9 sm:w-9" title={t('manageLessons.moveDown')}>
-                          <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
-                        </Button>
-                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-11 w-10 rounded-lg border border-zinc-200 bg-white p-0 text-zinc-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:h-9 sm:w-9" title={t('manageLessons.delete')}>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <span className="flex overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                          <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-11 w-9 rounded-none border-0 p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
+                            <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
+                          </Button>
+                          <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-11 w-9 rounded-none border-0 border-s border-zinc-200 p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9" title={t('manageLessons.moveDown')} aria-label={t('manageLessons.moveDown')}>
+                            <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
+                          </Button>
+                        </span>
+                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-11 w-9 rounded-lg border border-zinc-200 bg-white p-0 text-zinc-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:h-9" title={t('manageLessons.delete')} aria-label={t('manageLessons.delete')}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </span>
@@ -278,14 +209,27 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                 })}
               </ul>
             ) : (
-              <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-8 text-center">
+              <div className="m-3 rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-8 text-center">
                 <FolderOpen className="mx-auto mb-2 h-5 w-5 text-zinc-400" />
                 <p className="text-xs font-bold text-zinc-600">{t('manageLessons.emptyTitle')}</p>
                 <p className="mt-1 text-[10px] font-medium text-zinc-400">{t('manageLessons.emptyHint')}</p>
               </div>
             )}
-            <div ref={listEndRef} />
           </section>
+
+          <details className="group overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50/55">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-white px-3 py-3 text-[11px] font-bold text-zinc-600 transition-colors hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
+              {t('manageLessons.descriptionSettings')}
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <DescriptionVisibilityControl
+              context="screen"
+              mode={localDesc.mode}
+              types={localDesc.types}
+              onChange={setLocalDesc}
+              className="border-0 border-t border-zinc-200 bg-transparent p-3 shadow-none"
+            />
+          </details>
         </div>
       </Modal>
 
@@ -294,7 +238,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         onOpenChange={open => { if (!open) setPendingDelete(null); }}
         title={t('manageLessons.deleteTitle')}
         description={pendingDelete
-          ? t('manageLessons.deleteDescription', {
+          ? t(pendingDelete.nestedCount > 0 ? 'manageLessons.deleteDescription' : 'manageLessons.deleteDescriptionEmpty', {
               title: pendingDelete.item.title || t('manageLessons.untitled'),
               count: pendingDelete.nestedCount,
             })

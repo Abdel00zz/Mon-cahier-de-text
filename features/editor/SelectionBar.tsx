@@ -4,6 +4,7 @@ import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
   FileText, Pencil, Trash2, X,
 } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 /*
  * Barre d'actions contextuelle, réinventée pour être CIBLÉE :
@@ -94,7 +95,9 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   onMoveDown,
   isPending = false,
 }) => {
+  const { t, locale } = useLocale();
   if (count === 0) return null;
+  const formattedCount = new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(count);
 
   const showMove = (canMoveUp || canMoveDown) && onMoveUp && onMoveDown;
 
@@ -109,27 +112,27 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   if (showMove) {
     groups.push(
       <React.Fragment key="move">
-        <ActionButton icon={ArrowUp} onClick={onMoveUp!} title="Monter" disabled={!canMoveUp} />
-        <ActionButton icon={ArrowDown} onClick={onMoveDown!} title="Descendre" disabled={!canMoveDown} />
+        <ActionButton icon={ArrowUp} onClick={onMoveUp!} title={t('selection.moveUp')} disabled={!canMoveUp} />
+        <ActionButton icon={ArrowDown} onClick={onMoveDown!} title={t('selection.moveDown')} disabled={!canMoveDown} />
       </React.Fragment>
     );
   }
 
   const contentActions: React.ReactNode[] = [];
-  if (canAdd) contentActions.push(<ActionButton key="add" icon={Plus} onClick={onAdd} title="Ajouter après" />);
-  if (canEdit && onEdit) contentActions.push(<ActionButton key="edit" icon={Pencil} onClick={onEdit} title="Modifier" />);
+  if (canAdd) contentActions.push(<ActionButton key="add" icon={Plus} onClick={onAdd} title={t('selection.addAfter')} />);
+  if (canEdit && onEdit) contentActions.push(<ActionButton key="edit" icon={Pencil} onClick={onEdit} title={t('selection.edit')} />);
   if (canDescription) contentActions.push(<ActionButton key="desc" icon={FileText} onClick={onDescription} title={descriptionLabel} />);
   if (contentActions.length > 0) groups.push(<React.Fragment key="content">{contentActions}</React.Fragment>);
 
   const dateActions: React.ReactNode[] = [];
-  if (canAssignDate && onAssignToday) dateActions.push(<ActionButton key="today" icon={CalendarCheck} onClick={onAssignToday} title="Dater aujourd'hui" label="Aujourd'hui" accent />);
-  if (canAssignDate) dateActions.push(<ActionButton key="pick" icon={CalendarDays} onClick={onAssignDate} title="Choisir une date…" />);
-  if (hasDate) dateActions.push(<ActionButton key="clear" icon={CalendarX} onClick={onClearDate} title="Dissocier la date" />);
+  if (canAssignDate && onAssignToday) dateActions.push(<ActionButton key="today" icon={CalendarCheck} onClick={onAssignToday} title={t('selection.dateToday')} label={t('selection.today')} accent />);
+  if (canAssignDate) dateActions.push(<ActionButton key="pick" icon={CalendarDays} onClick={onAssignDate} title={t('selection.chooseDate')} />);
+  if (hasDate) dateActions.push(<ActionButton key="clear" icon={CalendarX} onClick={onClearDate} title={t('selection.unassignDate')} />);
   if (dateActions.length > 0) groups.push(<React.Fragment key="dates">{dateActions}</React.Fragment>);
 
   groups.push(
     <React.Fragment key="danger">
-      <ActionButton icon={Trash2} onClick={onDelete} title="Supprimer" danger />
+      <ActionButton icon={Trash2} onClick={onDelete} title={t('selection.delete')} danger />
     </React.Fragment>
   );
 
@@ -139,14 +142,14 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
-      aria-label="Actions sur la sélection"
+      aria-label={t('selection.actionsAria')}
     >
       {/* Badge indicateur de nombre (ex: 4 ou x4) */}
       <div
         className="flex shrink-0 h-8 min-w-8 items-center justify-center rounded-full bg-primary/15 text-primary px-2.5 text-xs font-black font-mono tracking-tight"
-        title={`${count} élément${count > 1 ? 's' : ''} sélectionné${count > 1 ? 's' : ''}`}
+        title={t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount })}
       >
-        {count > 1 ? `×${count}` : '1'}
+        {count > 1 ? `×${formattedCount}` : formattedCount}
       </div>
 
       <Divider />
@@ -168,9 +171,9 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         variant="ghost"
         size="icon"
         onClick={onClear}
-        title="Fermer la sélection (Échap)"
+        title={t('selection.closeShortcut')}
         className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer active:scale-95"
-        aria-label="Effacer la sélection"
+        aria-label={t('selection.clearAria')}
       >
         <X className="h-4 w-4" />
       </Button>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
 import { BookOpen, TriangleAlert } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ContentRendererProps {
   data: any;
@@ -26,6 +27,7 @@ const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; c
 );
 
 export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, onCellUpdate, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
+  const { t } = useLocale();
   const handleUpdate = (field: string) => (value: string) => {
     onCellUpdate(indices, field, value);
   };
@@ -39,7 +41,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         return (
             <div className="text-lg font-bold font-slab text-center py-3 text-destructive flex items-center justify-center gap-3">
                 <TriangleAlert className="h-5 w-5" />
-                <span>Erreur: Type de contenu inconnu</span>
+                <span>{t('editor.unknownContent')}</span>
             </div>
         );
     }

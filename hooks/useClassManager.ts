@@ -141,6 +141,8 @@ export const useClassManager = () => {
             persistClassesNow(nextClasses);
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
+            // Conserver l'écran vide « créer / charger ». Le diagnostic est
+            // injecté au premier ajout ou au chargement d'un contenu prédéfini.
             localStorage.setItem(`${DATA_PREFIX}${newClass.id}`, JSON.stringify([]));
             touchClassSyncMeta(newClass.id);
             markClassDirty(newClass.id);

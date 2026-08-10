@@ -32,6 +32,7 @@ const LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) =>
 const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
 
 const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, getDateWarnings }) => {
+    const { t } = useLocale();
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
     const titleRef = useRef<HTMLInputElement>(null);
     const rootRef = useRef<HTMLFormElement>(null);
@@ -99,7 +100,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                         onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
                         className="text-[10px] font-bold text-muted-foreground/60 hover:text-destructive transition-colors font-sans"
                     >
-                        Dissocier la date
+                        {t('editor.unassignDate')}
                     </button>
                 )}
             </div>
@@ -107,17 +108,17 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr]">
                     <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
                       <SelectTrigger className="min-h-11 border-border bg-card text-foreground">
-                        <SelectValue placeholder="Type..." />
+                        <SelectValue placeholder={t('editor.type')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</SelectItem>)}
+                        {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder="Page" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder={t('editor.page')} className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder="Titre de l'élément" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Description / contenu..." />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder={t('editor.title')} className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder={t('editor.description')} />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
@@ -130,19 +131,19 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
 
                 <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
                     <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
-                        <kbd className="rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">Échap</kbd> annule
-                        <kbd className="ml-2 rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">⌘/Ctrl+Entrée</kbd> sauvegarde
+                        <kbd className="rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd> {t('common.cancel')}
+                        <kbd className="ms-2 rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">⌘/Ctrl+Enter</kbd> {t('toolbar.save')}
                     </span>
                     <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
-                        <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">Annuler</Button>
+                        <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">{t('common.cancel')}</Button>
                         <Button type="submit" variant="default" size="sm" className="min-h-10" disabled={!isDirty}>
-                            {isDirty ? 'Enregistrer' : 'Aucun changement'}
+                            {isDirty ? t('common.save') : t('common.noChanges')}
                         </Button>
                     </div>
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder="Remarque..." />
+                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder={t('editor.remark')} />
             </div>
         </form>
     );
@@ -204,7 +205,7 @@ const TableHeader: React.FC = React.memo(() => {
         <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-r border-slate-200 px-3 py-2.5 text-center">
-        <span className="font-compact text-[11px] font-black uppercase tracking-[0.045em] text-slate-600">Contenu pédagogique</span>
+        <span className="font-compact text-[11px] font-black uppercase tracking-[0.045em] text-slate-600">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
         <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.04em] text-slate-500">{t('editor.remark')}</span>
@@ -399,6 +400,7 @@ const EmptyState: React.FC<{
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
 }> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
+    const { t } = useLocale();
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
@@ -412,15 +414,15 @@ const EmptyState: React.FC<{
                     aria-hidden="true"
                     className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-white"
                 />
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">Démarrage</p>
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">{t('emptyNotebook.label')}</p>
                 <p className="mt-3 max-w-md text-base leading-7 text-slate-700">
                     {canLoadPredefined ? (
                         <>
-                            <strong className="font-bold text-slate-950">Programme officiel disponible.</strong> Importez-le ou créez votre propre progression.
+                            <strong className="font-bold text-slate-950">{t('emptyNotebook.programAvailable')}</strong> {t('emptyNotebook.programHint')}
                         </>
                     ) : (
                         <>
-                            Créez votre <strong className="font-bold text-slate-950">premier chapitre</strong> pour démarrer le suivi.
+                            {t('emptyNotebook.createPrefix')} <strong className="font-bold text-slate-950">{t('emptyNotebook.firstChapter')}</strong> {t('emptyNotebook.createSuffix')}
                         </>
                     )}
                 </p>
@@ -428,17 +430,17 @@ const EmptyState: React.FC<{
                 <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
                     {canLoadPredefined && (
                         <Button type="button" onClick={onLoadPredefined} className="w-full shadow-lg shadow-primary/20 sm:w-auto" variant="default">
-                            Importer le programme
+                            {t('emptyNotebook.importProgram')}
                         </Button>
                     )}
-                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">ou</span>}
+                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{t('emptyNotebook.or')}</span>}
                     <Button
                         type="button"
                         onClick={() => onOpenAddContentModal()}
                         className="w-full sm:w-auto"
                         variant={canLoadPredefined ? 'outline' : 'default'}
                     >
-                        Créer un chapitre
+                        {t('emptyNotebook.createChapter')}
                     </Button>
                 </div>
             </div>

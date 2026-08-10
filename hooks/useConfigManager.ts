@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
-import { AppConfig } from '../types';
+import { AppConfig, AppLocale } from '../types';
 import { logger } from '../utils/logger';
 import { effectiveSchedules } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
+
+const normalizeApplicationLocale = (value: unknown): AppLocale =>
+    value === 'fr' || value === 'en' || value === 'ar' ? value : 'ar';
 
 export const defaultNotificationSettings = {
     enabled: true,
@@ -46,6 +49,11 @@ const defaultConfig: AppConfig = {
 export const useConfigManager = () => {
     const [config, setConfig] = useImmer<AppConfig>(defaultConfig);
     const [isLoading, setIsLoading] = useState(true);
+    const configRef = useRef<AppConfig>(defaultConfig);
+
+    useEffect(() => {
+        configRef.current = config;
+    }, [config]);
 
     useEffect(() => {
         try {
@@ -85,7 +93,7 @@ export const useConfigManager = () => {
                     assessmentDates: loadedConfig.assessmentDates ?? {},
                     pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
                     schoolYearStart: loadedConfig.schoolYearStart,
-                    applicationLocale: loadedConfig.applicationLocale === 'en' || loadedConfig.applicationLocale === 'ar' ? loadedConfig.applicationLocale : 'ar',
+                    applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
                 }));
             } else {
                 setConfig(currentConfig => ({
@@ -119,6 +127,7 @@ export const useConfigManager = () => {
                     setConfig(draft => {
                         Object.assign(draft, loaded);
                         draft.schedules = effectiveSchedules(loaded);
+                        draft.applicationLocale = normalizeApplicationLocale(loaded.applicationLocale);
                     });
                 }
             } catch (error) {
@@ -134,14 +143,18 @@ export const useConfigManager = () => {
     }, [setConfig]);
 
     const updateConfig = useCallback((newConfig: Partial<AppConfig>) => {
-        setConfig(draft => {
-            Object.assign(draft, newConfig);
-            try {
-                localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(draft));
-            } catch (error) {
-                logger.error("Failed to save config to localStorage", error);
-            }
-        });
+        // La persistance doit précéder l'événement `config-changed` : plusieurs
+        // vues possèdent leur propre instance du hook et relisent le stockage
+        // dès cet événement. Une écriture différée par React les faisait donc
+        // relire l'ancienne valeur et imposait un second clic à l'utilisateur.
+        const nextConfig: AppConfig = { ...configRef.current, ...newConfig };
+        configRef.current = nextConfig;
+        try {
+            localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
+        } catch (error) {
+            logger.error("Failed to save config to localStorage", error);
+        }
+        setConfig(() => nextConfig);
         /*
          * TOUT réglage synchronisé (emploi du temps, absences, devoirs,
          * établissement, cycles/matières, préférences d'affichage, notifications)

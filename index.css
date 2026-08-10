@@ -200,7 +200,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-width: 320px;
-    min-height: 100dvh;
+    min-height: var(--app-viewport-height, 100dvh);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
@@ -789,6 +789,84 @@ button svg.svg-inline--fa,
 /* Safe areas, utilitaires unifiés */
 .safe-bottom  { padding-bottom: env(safe-area-inset-bottom, 16px); }
 .fab-safe     { bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+
+/* Couche Apple/iOS : comportement natif sans désactiver le zoom ni les
+   réglages d'accessibilité du système. La classe est posée au démarrage et
+   couvre aussi iPadOS lorsqu'il utilise un user-agent de bureau. */
+html[data-platform='ios'] {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+html[data-platform='ios'] body,
+html[data-platform='ios'] .font-sans,
+html[data-platform='ios'] .font-display {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', var(--font-sans);
+}
+
+html[data-platform='ios'][dir='rtl'] body,
+html[data-platform='ios'][dir='rtl'] .font-ar,
+html[data-platform='ios'][dir='rtl'] .font-ar-display {
+  font-family: var(--font-ar);
+}
+
+html[data-platform='ios'] button,
+html[data-platform='ios'] [role='button'] {
+  -webkit-touch-callout: none;
+}
+
+#root,
+.app-canvas {
+  min-height: var(--app-viewport-height, 100dvh);
+}
+
+.app-with-mobile-nav {
+  padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-keyboard='open'] .mobile-tab-bar {
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, calc(100% + 2rem), 0);
+}
+
+@media (min-width: 640px) {
+  .app-with-mobile-nav { padding-bottom: 2rem; }
+}
+
+@media (pointer: coarse) and (max-width: 767px) {
+  /* 44 pt : cible minimale recommandée par les Human Interface Guidelines. */
+  [data-slot='button'],
+  .dialog-content button,
+  .sheet-content button,
+  [role='toolbar'] button,
+  .mobile-tab-bar button {
+    min-height: 2.75rem;
+  }
+
+  [data-slot='button'][data-size='icon'],
+  .dialog-content button[aria-label],
+  .sheet-content button[aria-label] {
+    min-width: 2.75rem;
+  }
+
+  /* Safari iOS agrandit automatiquement une page lorsque le contrôle actif
+     est inférieur à 16 px ; cette règle évite ce zoom parasite. */
+  html[data-platform='ios'] input,
+  html[data-platform='ios'] select,
+  html[data-platform='ios'] textarea {
+    font-size: 16px;
+  }
+
+  html[data-platform='ios'] .custom-scrollbar {
+    scrollbar-width: none;
+  }
+
+  html[data-platform='ios'] .custom-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
 
 /* Print styles (kept for functionality) */
 @media screen {

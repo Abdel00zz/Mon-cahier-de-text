@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface DateReviewModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface DateReviewModalProps {
 
 /** Étape unique avant toute écriture d'une date qui mérite une vérification. */
 export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, warnings, onModify, onConfirm, onIgnore }) => {
+  const { t, locale } = useLocale();
   const distinctWarnings = warnings.filter(
     (warning, index, all) => all.findIndex(item => item.message === warning.message) === index,
   );
@@ -23,20 +25,22 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
     <Modal
       isOpen={isOpen}
       onClose={onModify}
-      title="Vérification de la date"
-      description={date ? `Date choisie : ${date.split('-').reverse().join('/')}` : undefined}
+      title={t('dateReview.title')}
+      description={date ? t('dateReview.selectedDate', {
+        date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(new Date(`${date}T12:00:00Z`)),
+      }) : undefined}
       maxWidth="sm"
       footer={
         <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl">Modifier</Button>
-          <Button type="button" onClick={onConfirm} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm" aria-label="Confirmer la date">
-            Confirmer
+          <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl">{t('dateReview.modify')}</Button>
+          <Button type="button" onClick={onConfirm} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm" aria-label={t('dateReview.confirmAria')}>
+            {t('common.confirm')}
           </Button>
         </div>
       }
     >
       <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3" role="status" aria-live="polite">
-        <p className="text-sm font-bold text-amber-900">Vérifiez avant de confirmer</p>
+        <p className="text-sm font-bold text-amber-900">{t('dateReview.check')}</p>
         <ul className="mt-2 divide-y divide-amber-100">
           {distinctWarnings.map((warning, index) => (
             <li key={index} className="flex items-start gap-2 py-2 first:pt-0 last:pb-0">
@@ -46,7 +50,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
           ))}
         </ul>
         <p className="mt-3 text-[11px] font-medium leading-relaxed text-zinc-500">
-          Une exception peut justifier cette date. Confirmez après vérification.
+          {t('dateReview.hint')}
         </p>
         {onIgnore && (
           <button
@@ -54,7 +58,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
             onClick={onIgnore}
             className="mt-3 min-h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-amber-800 shadow-xs"
           >
-            Ne plus signaler cette date
+            {t('dateReview.ignore')}
           </button>
         )}
       </div>

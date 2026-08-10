@@ -1,12 +1,13 @@
-import { AppConfig, ClassInfo } from '../types.js';
-import { formatClassDisplayName } from '../constants.js';
+import { AppConfig, AppLocale, ClassInfo } from '../types.js';
+import { formatLocalizedClassDisplayName } from '../constants.js';
 import {
     HolidayCalendar,
     getEffectiveSchoolYear,
     getBundledCalendar,
     isWithinKnownSchoolYear,
-    weekdayLabel,
+    localizeCalendarName,
 } from './calendar.js';
+import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
 
 /**
  * Moteur de validation intelligente des dates de séance.
@@ -38,15 +39,18 @@ export const validateSessionDate = (
     date: string,
     classInfo: Pick<ClassInfo, 'id' | 'name'>,
     config: Pick<AppConfig, 'schedules' | 'absences' | 'schoolYearStart'>,
+    locale: AppLocale = 'fr',
     calendar: HolidayCalendar = getBundledCalendar()
 ): DateWarning[] => {
+    const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
+    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
     const warnings: DateWarning[] = [];
     const iso = (date || '').slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return warnings;
     const [year, month, day] = iso.split('-').map(Number);
     const parsed = new Date(Date.UTC(year, month - 1, day));
     if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) {
-        return [{ type: 'invalid', message: 'Cette date n’existe pas dans le calendrier.' }];
+        return [{ type: 'invalid', message: t('dateWarning.invalid') }];
     }
 
     // 1. Emploi du temps : le prof enseigne-t-il cette classe ce jour-là ?
@@ -56,7 +60,10 @@ export const validateSessionDate = (
         if (!schedule.slots.some(slot => slot.weekday === weekday)) {
             warnings.push({
                 type: 'not-scheduled',
-                message: `D'après votre emploi du temps, vous n'enseignez pas « ${formatClassDisplayName(classInfo.name)} » le ${weekdayLabel(weekday)}.`,
+                message: t('dateWarning.notScheduled', {
+                    className: formatLocalizedClassDisplayName(classInfo.name, locale),
+                    weekday: new Intl.DateTimeFormat(localeCode, { weekday: 'long', timeZone: 'UTC' }).format(parsed),
+                }),
             });
         }
     }
@@ -66,7 +73,10 @@ export const validateSessionDate = (
     if (ferie) {
         warnings.push({
             type: 'holiday',
-            message: `Cette date est un jour férié : ${ferie.nom}${ferie.approximatif ? ' (date estimée)' : ''}.`,
+            message: t('dateWarning.holiday', {
+                name: localizeCalendarName(ferie.nom, locale),
+                estimate: ferie.approximatif ? t('dateWarning.estimated') : '',
+            }),
         });
     }
 
@@ -75,7 +85,7 @@ export const validateSessionDate = (
     if (vacance) {
         warnings.push({
             type: 'vacation',
-            message: `Cette date tombe pendant « ${vacance.nom} ».`,
+            message: t('dateWarning.vacation', { name: localizeCalendarName(vacance.nom, locale) }),
         });
     }
 
@@ -84,7 +94,7 @@ export const validateSessionDate = (
     if (absence) {
         warnings.push({
             type: 'absence',
-            message: `Vous étiez absent(e) à cette date${absence.motif ? ` (${absence.motif})` : ''}.`,
+            message: t('dateWarning.absence', { reason: absence.motif ? ` (${absence.motif})` : '' }),
         });
     }
 
@@ -100,8 +110,8 @@ export const validateSessionDate = (
         warnings.push({
             type: 'out-of-year',
             message: selectedYear
-                ? `Cette date est en dehors de l’année scolaire ${selectedYear.libelle}.`
-                : `Cette date est en dehors des années scolaires connues du calendrier.`,
+                ? t('dateWarning.outOfYear', { year: selectedYear.libelle })
+                : t('dateWarning.outOfKnownYears'),
         });
     }
 

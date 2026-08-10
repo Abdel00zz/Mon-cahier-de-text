@@ -15,7 +15,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "dialog-overlay fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "dialog-overlay fixed inset-0 z-50 bg-slate-950/32 backdrop-blur-[6px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -42,18 +42,18 @@ const DialogContent = React.forwardRef<
       ref={ref}
       dir={isRtl ? "rtl" : "ltr"}
       className={cn(
-        "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(100dvh-0.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-2xl rounded-b-none border border-zinc-200/90 bg-white p-0 text-zinc-900 shadow-[0_-18px_55px_rgba(15,23,42,0.18)] outline-none will-change-transform data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2.5rem)] sm:w-[calc(100vw-2rem)] sm:rounded-2xl sm:border-zinc-200/80 sm:shadow-[0_28px_90px_rgba(15,23,42,0.18),0_4px_18px_rgba(15,23,42,0.08)] sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+        "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(var(--app-viewport-height,100dvh)-0.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[1.5rem] rounded-b-none border border-white/65 bg-card/96 p-0 text-card-foreground shadow-[0_-18px_55px_rgba(15,23,42,0.18)] outline-none backdrop-blur-[28px] backdrop-saturate-[1.8] will-change-transform data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full dark:border-white/10 sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2.5rem)] sm:w-[calc(100vw-2rem)] sm:rounded-2xl sm:border-border/80 sm:shadow-[0_28px_90px_rgba(15,23,42,0.18),0_4px_18px_rgba(15,23,42,0.08)] sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
         className
       )}
       {...props}
     >
-      <div aria-hidden className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-zinc-300 sm:hidden" />
+      <div aria-hidden className="absolute left-1/2 top-2 h-1.5 w-9 -translate-x-1/2 rounded-full bg-muted-foreground/25 sm:hidden" />
       {children}
       {!hideClose && (
           <DialogPrimitive.Close
           aria-label={closeLabel}
           className={cn(
-            "dialog-close absolute top-2 z-30 inline-flex !h-11 !w-11 items-center justify-center rounded-xl border border-transparent text-zinc-400 transition-colors hover:border-zinc-200 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:top-4 sm:!h-8 sm:!w-8 sm:rounded-lg",
+            "dialog-close absolute top-2 z-30 inline-flex !h-11 !w-11 items-center justify-center rounded-full border border-transparent bg-muted/75 text-muted-foreground transition-[background-color,color,transform] hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:top-4 sm:!h-8 sm:!w-8",
             isRtl ? "left-3 sm:left-4" : "right-3 sm:right-4",
           )}
         >

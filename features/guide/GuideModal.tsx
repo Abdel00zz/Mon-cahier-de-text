@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_FR, GUIDE_AR } from '@/constants';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface GuideModalProps {
   isOpen: boolean;
@@ -19,11 +20,12 @@ const LANG_KEY = 'guide_lang_v1';
  * Palette papier chaud (#fdfbf7 / #f4f1ea / #e8e4d9, sauge, terracotta).
  */
 
-const readLang = (): Lang => {
+const readLang = (fallback: Lang): Lang => {
   try {
-    return localStorage.getItem(LANG_KEY) === 'ar' ? 'ar' : 'fr';
+    const saved = localStorage.getItem(LANG_KEY);
+    return saved === 'ar' || saved === 'fr' ? saved : fallback;
   } catch {
-    return 'fr';
+    return fallback;
   }
 };
 
@@ -95,8 +97,9 @@ const toHtml = (markdown: string, prefix: Lang): string => {
 };
 
 export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
+  const { locale } = useLocale();
   const contentRef = useRef<HTMLDivElement>(null);
-  const [lang, setLangState] = useState<Lang>(readLang);
+  const [lang, setLangState] = useState<Lang>(() => readLang(locale === 'ar' ? 'ar' : 'fr'));
   const [activeSection, setActiveSection] = useState<string>('sec-0');
 
   const setLang = (next: Lang) => {

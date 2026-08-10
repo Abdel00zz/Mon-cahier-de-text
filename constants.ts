@@ -269,7 +269,7 @@ export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], { name: string;
     // rowColor : fond de la LIGNE de titre du bloc dans la table, chaînes
     // Tailwind COMPLÈTES uniquement (règle d'or n°8 : jamais d'interpolation).
     'chapter': { name: 'Chapitre', icon: Book, color: 'text-red-700', rowColor: 'bg-slate-50' },
-    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-rose-600', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', rowColor: 'bg-rose-50/40' },
+    'evaluation_diagnostic': { name: 'Évaluation diagnostique', icon: TestTube, color: 'text-rose-600', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200', rowColor: 'bg-rose-50/40', autoNumber: true },
     // autoNumber : titre pré-rempli « {nom} N » (N = occurrences existantes du
     // type dans le cahier + 1), réservé aux types récurrents.
     'devoir_maison': { name: 'Devoir maison', icon: Home, color: 'text-blue-600', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200', rowColor: 'bg-blue-50/40', autoNumber: true },

@@ -4,8 +4,10 @@ import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import { SyncProvider } from './contexts/SyncContext';
 import { initPwa } from './pwa/registerSW';
+import { initApplePlatform } from './utils/applePlatform';
 import './index.css';
 
+initApplePlatform();
 initPwa();
 
 const rootElement = document.getElementById('root');

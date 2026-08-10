@@ -77,9 +77,10 @@ const SignalCard: React.FC<{
   classInfo?: ClassInfo;
   actionLabel: string;
   ignoreLabel: string;
+  mustResolveLabel: string;
   onIgnore: () => void;
   onResolve: () => void;
-}> = ({ signal, classInfo, actionLabel, ignoreLabel, onIgnore, onResolve }) => {
+}> = ({ signal, classInfo, actionLabel, ignoreLabel, mustResolveLabel, onIgnore, onResolve }) => {
   const visual = classInfo ? getClassVisual(classInfo.name) : null;
 
   return (
@@ -98,9 +99,13 @@ const SignalCard: React.FC<{
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-2 pt-2 sm:pt-0">
-        <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
-          {ignoreLabel}
-        </button>
+        {signal.dismissible ? (
+          <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+            {ignoreLabel}
+          </button>
+        ) : (
+          <span className="px-2.5 text-xs font-bold text-warning-strong">{mustResolveLabel}</span>
+        )}
         <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90">
           {actionLabel}
         </button>
@@ -396,6 +401,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   };
 
   const ignoreSignal = (signal: ClassSignal) => {
+    if (!signal.dismissible) return;
     const storageScope = signal.scope === 'global' ? '' : signal.classId;
     const ids = readIgnoredActionIds(storageScope);
     ids.add(signal.id);
@@ -765,6 +771,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             classInfo={classById.get(signal.classId)}
                             actionLabel={actionLabels[signal.action]}
                             ignoreLabel={t('notifications.ignore')}
+                            mustResolveLabel={t('notifications.mustResolve')}
                             onIgnore={() => ignoreSignal(signal)}
                             onResolve={() => resolveSignal(signal)}
                           />

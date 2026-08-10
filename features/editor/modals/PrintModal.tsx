@@ -7,6 +7,7 @@ import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { DescriptionVisibilityControl } from '@/features/settings/components/DescriptionVisibilityControl';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 export type PrintMode = 'new' | 'all' | 'custom';
 export type PrintHeaderMode = 'first' | 'all' | 'none';
@@ -61,6 +62,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   onConfigChange,
   onPrint,
 }) => {
+  const { t, locale } = useLocale();
+  const number = React.useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
+  const sessionCountLabel = (count: number) => t(count === 1 ? 'print.sessionOne' : 'print.sessionMany', { count: number.format(count) });
   const printedCount = totalDates - newDates.length;
   const hasHistory = lastPrintedAt !== null;
   const recommendNew = hasHistory && newDates.length > 0;
@@ -137,27 +141,27 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   }> = [
     {
       value: 'new',
-      label: 'Nouvelles',
-      title: 'Nouveautés seulement',
+      label: t('print.modeNew'),
+      title: t('print.newOnly'),
       subtitle: newDates.length > 0
-        ? `${newDates.length} séance${newDates.length > 1 ? 's' : ''} jamais imprimée${newDates.length > 1 ? 's' : ''}, avec le contexte utile.`
-        : 'Aucune nouvelle séance depuis la dernière impression.',
-      badge: recommendNew ? 'Recommandé' : undefined,
+        ? t(newDates.length === 1 ? 'print.newSubtitleOne' : 'print.newSubtitleMany', { count: number.format(newDates.length) })
+        : t('print.noNew'),
+      badge: recommendNew ? t('print.recommended') : undefined,
       disabled: newDates.length === 0,
       icon: CalendarCheck,
     },
     {
       value: 'all',
-      label: 'Complet',
-      title: 'Document complet',
-      subtitle: 'Tout le cahier, y compris les séances déjà imprimées.',
+      label: t('print.modeAll'),
+      title: t('print.fullDocument'),
+      subtitle: t('print.fullSubtitle'),
       icon: FileText,
     },
     {
       value: 'custom',
-      label: 'Sélection',
-      title: 'Sélection personnalisée',
-      subtitle: 'Choisissez précisément les séances à imprimer.',
+      label: t('print.modeCustom'),
+      title: t('print.customTitle'),
+      subtitle: t('print.customSubtitle'),
       disabled: allDates.length === 0,
       icon: CalendarDays,
     },
@@ -171,25 +175,25 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       title={
         <span className="flex items-center gap-2">
           <Printer className="h-4 w-4 text-zinc-700" />
-          Impression intelligente
+          {t('print.title')}
         </span>
       }
-      description="L'application sait ce qui a déjà été imprimé, n'imprimez que le nécessaire"
+      description={t('print.description')}
       maxWidth="md"
       footer={
         <>
-          <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
           <Button
             type="button"
             disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0)}
             onClick={() => onPrint(mode, { pageNumbers, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
             className="px-3.5 font-semibold"
           >
-            {isPrinting ? 'Préparation…' : <>Imprimer · {mode === 'new'
-              ? `${newDates.length} séance${newDates.length > 1 ? 's' : ''}`
+            {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
+              ? sessionCountLabel(newDates.length)
               : mode === 'custom'
-                ? `${selectedDates.size} séance${selectedDates.size > 1 ? 's' : ''}`
-                : 'complet'}</>}
+                ? sessionCountLabel(selectedDates.size)
+                : t('print.complete')}</>}
           </Button>
         </>
       }
@@ -199,28 +203,28 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
           <div className="grid grid-cols-3 divide-x divide-zinc-100 text-center">
             <div className="flex items-baseline justify-center gap-1.5 px-2 py-2.5">
-              <span className="text-sm font-black text-zinc-800">{totalDates}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">Séances</span>
+              <span className="text-sm font-black text-zinc-800">{number.format(totalDates)}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">{t('print.sessions')}</span>
             </div>
             <div className="flex items-baseline justify-center gap-1.5 px-2 py-2.5">
-              <span className="text-sm font-black text-zinc-500">{printedCount}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">Imprimées</span>
+              <span className="text-sm font-black text-zinc-500">{number.format(printedCount)}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-400">{t('print.printed')}</span>
             </div>
             <div className="flex items-baseline justify-center gap-1.5 bg-emerald-50/70 px-2 py-2.5">
-              <span className="text-sm font-black text-emerald-700">{newDates.length}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-700">Nouvelles</span>
+              <span className="text-sm font-black text-emerald-700">{number.format(newDates.length)}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-700">{t('print.new')}</span>
             </div>
           </div>
           {lastPrintedAt && (
             <p className="border-t border-zinc-100 px-3 py-1.5 text-center text-[9px] font-medium text-zinc-400">
-              Dernière impression · {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
+              {t('print.lastPrint')} · {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
             </p>
           )}
         </div>
 
         {/* Choix du mode */}
         <div className="rounded-lg border border-zinc-200 bg-white p-2">
-          <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1" role="tablist" aria-label="Type d'impression">
+          <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1" role="tablist" aria-label={t('print.typeAria')}>
             {printModes.map(item => {
               const Icon = item.icon;
               const selected = mode === item.value;
@@ -261,7 +265,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             ))}
             {newDates.length > 12 && (
               <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600">
-                +{newDates.length - 12} autres
+                {t('print.otherCount', { count: number.format(newDates.length - 12) })}
               </span>
             )}
           </div>
@@ -272,10 +276,10 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <div className="space-y-2 rounded-lg border border-zinc-200 bg-white p-2.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-zinc-700">
-                Séances à imprimer ({selectedDates.size}/{allDates.length})
+                {t('print.sessionsToPrint', { selected: number.format(selectedDates.size), total: number.format(allDates.length) })}
               </span>
               <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500">
-                <button type="button" onClick={() => setSelectedDates(new Set(allDates))} className="hover:text-zinc-800 transition-colors">Tout</button>
+                <button type="button" onClick={() => setSelectedDates(new Set(allDates))} className="hover:text-zinc-800 transition-colors">{t('print.all')}</button>
                 <span className="text-zinc-200">|</span>
                 <button
                   type="button"
@@ -283,13 +287,13 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                   disabled={newDates.length === 0}
                   className="hover:text-zinc-800 disabled:opacity-40 transition-colors"
                 >
-                  Nouveautés
+                  {t('print.newOnlyShort')}
                 </button>
                 <span className="text-zinc-200">|</span>
-                <button type="button" onClick={() => setSelectedDates(new Set())} className="hover:text-zinc-800 transition-colors">Rien</button>
+                <button type="button" onClick={() => setSelectedDates(new Set())} className="hover:text-zinc-800 transition-colors">{t('print.none')}</button>
               </div>
             </div>
-            <div className="max-h-48 space-y-1 overflow-y-auto custom-scrollbar pr-1">
+            <div className="custom-scrollbar max-h-48 space-y-1 overflow-y-auto pe-1">
               {allDates.map(date => {
                 const isNew = !printedSet.has(date);
                 return (
@@ -303,11 +307,11 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                     />
                     <span className="text-xs font-semibold text-zinc-700">{formatDateDDMMYYYY(date)}</span>
                     <span
-                      className={`ml-auto rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border ${
+                      className={`ms-auto rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border ${
                         isNew ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-zinc-100 border-zinc-200/50 text-zinc-500'
                       }`}
                     >
-                      {isNew ? 'Nouvelle' : 'Déjà imprimée'}
+                      {isNew ? t('print.newSingle') : t('print.alreadyPrinted')}
                     </span>
                   </label>
                 );
@@ -319,31 +323,31 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         {/* Mise en page : taille du texte et aération des lignes */}
         <div className="space-y-2.5 rounded-lg border border-zinc-200 bg-white p-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-bold text-zinc-700">Taille du texte</span>
+            <span className="text-xs font-bold text-zinc-700">{t('print.textSize')}</span>
             <Segmented
               value={textSize}
               onChange={(v) => setTextSize(v as any)}
               options={[
-                { value: 's', label: 'Petit' },
-                { value: 'm', label: 'Normal' },
-                { value: 'l', label: 'Grand' },
+                { value: 's', label: t('print.small') },
+                { value: 'm', label: t('print.normal') },
+                { value: 'l', label: t('print.large') },
               ]}
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-bold text-zinc-700">Espacement des lignes</span>
+            <span className="text-xs font-bold text-zinc-700">{t('print.lineSpacing')}</span>
             <Segmented
               value={lineSpacing}
               onChange={(v) => setLineSpacing(v as any)}
               options={[
-                { value: 'compact', label: 'Compact' },
-                { value: 'normal', label: 'Normal' },
-                { value: 'aere', label: 'Aéré' },
+                { value: 'compact', label: t('print.compact') },
+                { value: 'normal', label: t('print.normal') },
+                { value: 'aere', label: t('print.airy') },
               ]}
             />
           </div>
           <p className="text-[10px] leading-snug text-zinc-400">
-            « Compact » économise le papier ; « Aéré » facilite les annotations manuscrites.
+            {t('print.spacingHint')}
           </p>
         </div>
 
@@ -359,9 +363,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex cursor-pointer items-start justify-between gap-2.5 rounded-lg border border-zinc-200 bg-white p-2.5">
             <span>
-              <span className="block text-[11px] font-bold text-zinc-700">Numéroter les pages</span>
+              <span className="block text-[11px] font-bold text-zinc-700">{t('print.pageNumbers')}</span>
               <span className="mt-0.5 block text-[9px] leading-snug text-zinc-400">
-                Ajoute « Page X / N » dans le pied de page.
+                {t('print.pageNumbersHint')}
               </span>
             </span>
             <Switch
@@ -372,14 +376,14 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           </label>
 
           <div className="space-y-2 rounded-lg border border-zinc-200 bg-white p-2.5">
-            <span className="block text-[11px] font-bold text-zinc-700">En-tête du document</span>
+            <span className="block text-[11px] font-bold text-zinc-700">{t('print.header')}</span>
             <Segmented
               value={headerMode}
               onChange={(v) => setHeaderMode(v as PrintHeaderMode)}
               options={[
-                { value: 'first', label: '1re page' },
-                { value: 'all', label: 'Toutes' },
-                { value: 'none', label: 'Aucun' },
+                { value: 'first', label: t('print.firstPage') },
+                { value: 'all', label: t('print.allPages') },
+                { value: 'none', label: t('print.noHeader') },
               ]}
             />
           </div>

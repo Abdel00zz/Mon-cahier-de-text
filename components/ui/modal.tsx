@@ -65,7 +65,7 @@ export function Modal({
         {(title || description) && (
           <DialogHeader
             className={cn(
-              "modal-header shrink-0 bg-card text-card-foreground px-5 pt-5 pb-2 sm:px-6 sm:pt-6",
+              "modal-header shrink-0 bg-card/82 text-card-foreground px-5 pt-5 pb-2 backdrop-blur-2xl backdrop-saturate-150 sm:bg-card sm:px-6 sm:pt-6",
               headerClassName,
             )}
           >
@@ -75,7 +75,7 @@ export function Modal({
         )}
         <div
           className={cn(
-            "modal-body custom-scrollbar min-h-0 min-w-0 scroll-pb-20 overflow-y-auto overscroll-contain bg-background/50 px-5 py-4 [overflow-anchor:none] sm:px-6 sm:py-5",
+            "modal-body custom-scrollbar min-h-0 min-w-0 scroll-pb-20 overflow-y-auto overscroll-contain bg-background/62 px-5 py-4 [overflow-anchor:none] sm:px-6 sm:py-5",
             !(title || description) && "pt-12",
             bodyClassName,
           )}
@@ -85,7 +85,7 @@ export function Modal({
         {footer && (
           <DialogFooter
             className={cn(
-              "modal-footer bg-card text-card-foreground px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-4",
+              "modal-footer bg-card/84 text-card-foreground px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-2xl backdrop-saturate-150 sm:bg-card sm:px-6 sm:py-4",
               footerClassName,
             )}
           >

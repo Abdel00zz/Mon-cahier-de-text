@@ -39,6 +39,8 @@ import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatClassDisplayName, normalizeOfficialClassName } from '@/constants';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
+import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -117,6 +119,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings }) => {
+  const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
 
@@ -193,7 +196,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * Contenu prédéfini : si le cahier est vide et qu'un programme officiel
    * existe pour ce niveau × matière, on le propose (utiliser tel quel,
    * puis modifier librement, ou l'ignorer et créer son propre contenu).
-   */
+  */
   const [predefinedOffer, setPredefinedOffer] = useState<PredefinedEntry | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   useEffect(() => {
@@ -212,13 +215,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (!predefinedOffer) return;
       try {
           const content = await loadPredefinedContent(predefinedOffer);
-          setState(() => content, 'import-data');
+          setState(
+            () => withStarterDiagnostic(content, config.applicationLocale ?? 'ar'),
+            'import-data',
+          );
           setEditorState(draft => { draft.saveStatus = 'unsaved'; });
           toast.success('Programme prédéfini chargé, adaptez-le librement.');
       } catch {
           toast.error('Impossible de charger le contenu prédéfini.');
       }
-  }, [predefinedOffer, setState, setEditorState]);
+  }, [predefinedOffer, config.applicationLocale, setState, setEditorState]);
 
   /*
    * Journal des actions : chaque opération d'édition (operationType du
@@ -269,8 +275,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * lambda inline casserait la mémoïsation de toute la table.
    */
   const getDateWarnings = useCallback(
-    (date: string) => validateSessionDate(date, classInfo, config),
-    [classInfo, config]
+    (date: string) => validateSessionDate(date, classInfo, config, locale),
+    [classInfo, config, locale]
   );
 
   const requestDateCommit = useCallback((date: string, commit: () => void) => {
@@ -313,11 +319,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       resetState(migrateLessonsData(lessons), 'initial-load');
     } catch (error) {
       logger.error("Failed to load data from localStorage", error);
-      showNotification("Erreur lors du chargement des donnees.", "error");
+      showNotification(t('editorNotice.loadError'), "error");
     } finally {
       setEditorState(draft => { draft.isClassLoading = false; });
     }
-  }, [resetState, getStorageKey, showNotification, setEditorState]);
+  }, [resetState, getStorageKey, showNotification, setEditorState, t]);
 
   const saveData = useCallback(() => {
     setEditorState(draft => { draft.saveStatus = 'saving'; });
@@ -332,10 +338,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }), 500);
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);
-      showNotification("Erreur de sauvegarde.", "error");
+      showNotification(t('editorNotice.saveError'), "error");
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     }
-  }, [lessonsData, getStorageKey, classInfo.id, showNotification, setEditorState]);
+  }, [lessonsData, getStorageKey, classInfo.id, showNotification, setEditorState, t]);
 
   const handleExportData = useCallback(() => {
     try {
@@ -351,12 +357,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         appendJournal(classInfo.id, 'export-data');
-        showNotification("Donnees exportees avec succes!", "success");
+        showNotification(t('editorNotice.exportSuccess'), "success");
     } catch (error) {
         logger.error("Failed to export data", error);
-        showNotification("Erreur lors de l'exportation.", "error");
+        showNotification(t('editorNotice.exportError'), "error");
     }
-  }, [classInfo, lessonsData, showNotification]);
+  }, [classInfo, lessonsData, showNotification, t]);
 
   const handleClassInfoChange = useCallback((newInfo: Partial<ClassInfo>) => {
     const normalizedInfo = newInfo.name !== undefined
@@ -373,10 +379,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             markClassesListDirty();
         } catch (e) {
             logger.error("Failed to update class info in storage", e);
-            showNotification("Erreur de mise a jour des infos de la classe", "error");
+            showNotification(t('editorNotice.classUpdateError'), "error");
         }
     });
-  }, [setEditorState, showNotification]);
+  }, [setEditorState, showNotification, t]);
 
   useEffect(() => {
     if (isClassLoading || isConfigLoading || saveStatus === 'saved') return;
@@ -520,7 +526,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, _tempId: newId };
-          setState(draft => addTopLevelItem(draft, newItem, insertAfterIndex), 'add-top-level');
+          setState(draft => {
+              // Garder l'accueil vide jusqu'au premier choix. Ensuite, le
+              // diagnostic devient automatiquement le premier bloc du cahier.
+              if (draft.length === 0 && type !== 'evaluation_diagnostic') {
+                  addTopLevelItem(draft, createStarterDiagnostic(config.applicationLocale ?? 'ar'));
+              }
+              addTopLevelItem(draft, newItem, insertAfterIndex);
+          }, 'add-top-level');
           notificationMessage = "Element principal ajoute.";
           addNewItemHighlight(newId);
       } else if (type === 'section' && anchor) {
@@ -578,7 +591,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       setSelectionState(createSelectionState());
       handleModalClose();
-  }, [selectedIndices, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
+  }, [selectedIndices, config.applicationLocale, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -647,7 +660,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
       const classId = classInfo.id;
       if (lessonsData.length === 0) {
-          showNotification('Aucun contenu à imprimer dans ce cahier.', 'info');
+          showNotification(t('editorNotice.noPrintContent'), 'info');
           return;
       }
       const allDates = collectSessionDates(lessonsData);
@@ -658,14 +671,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       let datesToRecord: string[] = allDates;
       if (mode === 'new') {
           if (newDates.length === 0) {
-              showNotification('Aucune nouvelle séance à imprimer.', 'info');
+              showNotification(t('editorNotice.noNewSession'), 'info');
               return;
           }
           selection = filterLessonsByDates(lessonsData, newDates);
           datesToRecord = newDates;
       } else if (mode === 'custom') {
           if (!selectedDates || selectedDates.length === 0) {
-              showNotification('Sélectionnez au moins une séance.', 'info');
+              showNotification(t('editorNotice.selectSession'), 'info');
               return;
           }
           // La modale peut être restée ouverte pendant une synchronisation ou
@@ -673,7 +686,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const currentDates = new Set(allDates);
           const validSelectedDates = Array.from(new Set(selectedDates.filter(date => currentDates.has(date)))).sort();
           if (validSelectedDates.length === 0) {
-              showNotification('Les dates sélectionnées ne sont plus disponibles.', 'info');
+              showNotification(t('editorNotice.selectionUnavailable'), 'info');
               return;
           }
           selection = filterLessonsByDates(lessonsData, validSelectedDates);
@@ -709,7 +722,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
               const started = await printDocument('cahier-de-textes');
               if (!started) {
-                  showNotification('Le service d’impression est indisponible. Aucune séance n’a été marquée comme imprimée.', 'error');
+                  showNotification(t('editorNotice.printUnavailable'), 'error');
                   return;
               }
 
@@ -718,11 +731,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               // finale de l’utilisateur ; l’état est donc nommé « lancé ».
               const historySaved = recordPrint(classId, datesToRecord);
               if (!historySaved) {
-                  showNotification('Impression lancée, mais l’historique local n’a pas pu être sauvegardé.', 'warning');
+                  showNotification(t('editorNotice.printHistoryError'), 'warning');
               }
           } catch (error) {
               logger.error('Échec inattendu du circuit d’impression.', error);
-              showNotification('Impossible de préparer l’impression. Aucune séance n’a été marquée comme imprimée.', 'error');
+              showNotification(t('editorNotice.printPrepareError'), 'error');
           } finally {
               isPrintingRef.current = false;
               setIsPrinting(false);
@@ -741,7 +754,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           printLaunchTimerRef.current = null;
           void launchPrint();
       }, selection ? 120 : 60);
-  }, [classInfo.id, lessonsData, setEditorState, showNotification]);
+  }, [classInfo.id, lessonsData, setEditorState, showNotification, t]);
 
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
       if (selectedIndices.length !== 1) return;
@@ -941,7 +954,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
   const canEditSelection = selectedCount === 1 && !!singleSelection?.canInlineEdit;
   const canDescribeSelection = selectedCount === 1 && !!singleSelection?.canDescription;
-  const descriptionLabel = singleSelection?.description ? 'Modifier description' : 'Ajouter description';
+  const descriptionLabel = singleSelection?.description
+    ? t('descriptionModal.editTitle')
+    : t('descriptionModal.addTitle');
 
   const reorderTarget = selectedCount === 1 && !selectedIndices[0]?.isSeparator ? selectedIndices[0] : null;
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
@@ -971,8 +986,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           draft.activeModal = null;
           draft.saveStatus = 'unsaved';
       });
-      showNotification(description.trim() ? "Description mise a jour." : "Description effacee.", "success");
-  }, [selectedIndices, setState, setEditorState, showNotification]);
+      showNotification(t(description.trim() ? 'editorNotice.descriptionUpdated' : 'editorNotice.descriptionCleared'), "success");
+  }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
@@ -1052,7 +1067,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           type="button"
           onClick={() => handleOpenAddContentModal()}
           className="fab-safe fixed right-4 z-[55] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/25 transition-transform active:scale-95 sm:hidden print:hidden"
-          aria-label="Ajouter du contenu"
+          aria-label={t('addContent.title')}
         >
           <Plus className="h-6 w-6" />
         </button>
@@ -1158,9 +1173,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       <ConfirmDialog
         open={confirmBulkDelete}
         onOpenChange={setConfirmBulkDelete}
-        title={`Supprimer ${selectedIndices.length} élément(s) ?`}
-        description="Les éléments sélectionnés seront retirés du cahier (annulable via Annuler/Ctrl+Z)."
-        confirmLabel="Supprimer"
+        title={t(selectedIndices.length === 1 ? 'bulkDelete.titleOne' : 'bulkDelete.titleMany', { count: selectedIndices.length })}
+        description={t('bulkDelete.description')}
+        confirmLabel={t('selection.delete')}
         onConfirm={executeBulkDelete}
       />
     </div>

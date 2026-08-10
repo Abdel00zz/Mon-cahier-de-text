@@ -39,7 +39,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             <SheetContent
                 side="bottom"
                 className="max-h-[95dvh] flex flex-col overflow-hidden rounded-t-[1.5rem] border-t p-0 sm:inset-x-4 sm:mx-auto sm:max-w-5xl"
-                aria-label={`Évaluations de ${className}`}
+                aria-label={t('evaluationsSheet.aria', { className })}
             >
                 <SheetHeader className="shrink-0 sticky top-0 z-30 border-b border-border/80 bg-card/95 px-4 py-4 text-start backdrop-blur-xl sm:px-6">
                     <div className="flex items-center justify-between gap-3">
@@ -47,7 +47,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
                                 <CalendarCheck className="h-5 w-5 stroke-[2.5]" aria-hidden />
                             </span>
-                            <SheetTitle className="truncate text-lg font-bold">Évaluations · {className}</SheetTitle>
+                            <SheetTitle className="truncate text-lg font-bold">{t('evaluationsSheet.title', { className })}</SheetTitle>
                         </div>
                         <Button
                             type="button"

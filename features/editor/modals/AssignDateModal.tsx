@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MathJax } from 'better-react-mathjax';
 import { Indices } from '@/types';
-import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG } from '@/constants';
+import { TYPE_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { todayInMorocco } from '@/utils/calendar';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface SelectedItemPreview {
   indices: Indices;
@@ -41,8 +42,8 @@ const isoFromOffset = (offset: number) => {
   return addDaysISO(todayInMorocco(), offset);
 };
 
-const formatDateFr = (dateStr?: string) => {
-  if (!dateStr) return 'Sans date';
+const formatShortDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) => {
+  if (!dateStr) return emptyLabel;
   try {
     const parts = dateStr.split('-');
     if (parts.length === 3) {
@@ -50,18 +51,18 @@ const formatDateFr = (dateStr?: string) => {
       const m = Number(parts[1]);
       const d = Number(parts[2]);
       const dateObj = new Date(y, m - 1, d);
-      return dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      return dateObj.toLocaleDateString(localeCode, { day: 'numeric', month: 'short' });
     }
     const dObj = new Date(dateStr);
     if (isNaN(dObj.getTime())) return dateStr;
-    return dObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return dObj.toLocaleDateString(localeCode, { day: 'numeric', month: 'short' });
   } catch {
     return dateStr;
   }
 };
 
-const formatFullDateFr = (dateStr?: string) => {
-  if (!dateStr) return 'Aucune date sélectionnée';
+const formatFullDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) => {
+  if (!dateStr) return emptyLabel;
   try {
     const parts = dateStr.split('-');
     if (parts.length === 3) {
@@ -69,11 +70,11 @@ const formatFullDateFr = (dateStr?: string) => {
       const m = Number(parts[1]);
       const d = Number(parts[2]);
       const dateObj = new Date(y, m - 1, d);
-      return dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      return dateObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     }
     const dObj = new Date(dateStr);
     if (isNaN(dObj.getTime())) return dateStr;
-    return dObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return dObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   } catch {
     return dateStr;
   }
@@ -93,6 +94,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
   getDateWarnings,
   initialDate,
 }) => {
+  const { t, locale, isRtl } = useLocale();
+  const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
+  const number = useMemo(() => new Intl.NumberFormat(localeCode), [localeCode]);
   const [actionType, setActionType] = useState<'associate' | 'dissociate'>('associate');
   const [selectedDate, setSelectedDate] = useState(() => isoFromOffset(0));
 
@@ -116,14 +120,14 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
       const config = TOP_LEVEL_TYPE_CONFIG[type];
       return {
-        text: config.name.slice(0, 10) + (config.name.length > 10 ? '.' : ''),
+        text: t(`manageLessons.type.${type}`),
         color: config.badgeColor || 'bg-secondary text-secondary-foreground border-border',
         icon: config.icon
       };
     }
 
     const normalizedType = TYPE_MAP[type.toLowerCase()] || type;
-    const text = BADGE_TEXT_MAP[normalizedType] || normalizedType;
+    const text = t(`contentType.short.${normalizedType}`);
     const color = BADGE_COLOR_MAP[normalizedType] || 'bg-secondary text-secondary-foreground border-border';
 
     return { text, color, icon: null };
@@ -147,13 +151,13 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Planification & Affectation"
-      description={`${selectedCount} élément${selectedCount > 1 ? 's' : ''} sélectionné${selectedCount > 1 ? 's' : ''}`}
+      title={t('assignDate.title')}
+      description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="md"
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
           <Button type="button" variant="secondary" onClick={onClose} className="px-3 text-xs font-semibold">
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -165,9 +169,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             }`}
           >
             {actionType === 'associate' ? (
-              <span>Appliquer la date</span>
+              <span>{t('assignDate.applyDate')}</span>
             ) : (
-              <span>Dissocier les dates</span>
+              <span>{t('assignDate.removeDates')}</span>
             )}
           </Button>
         </div>
@@ -185,7 +189,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 : 'text-zinc-500 hover:text-zinc-800'
             }`}
           >
-            <CalendarPlus className="h-3 w-3" /> Affecter
+            <CalendarPlus className="h-3 w-3" /> {t('assignDate.assign')}
           </button>
           <button
             type="button"
@@ -196,7 +200,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 : 'text-zinc-500 hover:text-red-600'
             }`}
           >
-            <CalendarMinus className="h-3 w-3" /> Dissocier
+            <CalendarMinus className="h-3 w-3" /> {t('assignDate.unassign')}
           </button>
         </div>
 
@@ -204,7 +208,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         {actionType === 'associate' ? (
           <div className="space-y-3.5 animate-fade-in text-center max-w-sm mx-auto py-1">
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-              Saisir ou choisir la date
+              {t('assignDate.chooseDate')}
             </span>
             
             {/* Centered Date Input */}
@@ -218,13 +222,13 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               />
               {/* Intelligent date readout / Capteur intelligent */}
               <span className="text-xs font-semibold text-zinc-600 capitalize">
-                {formatFullDateFr(selectedDate)}
+                {formatFullDate(selectedDate, localeCode, t('assignDate.noDateSelected'))}
               </span>
             </div>
 
             {/* Garde intelligente : conflits emploi du temps / fériés / vacances / absences */}
             {dateWarnings.length > 0 && (
-              <div className="mx-auto max-w-sm space-y-1 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-left animate-fade-in" role="status">
+              <div className="mx-auto max-w-sm space-y-1 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-start animate-fade-in" role="status">
                 {dateWarnings.map((warning, i) => (
                   <p key={i} className="flex items-start gap-1.5 text-[11px] font-medium leading-snug text-amber-800">
                     <span aria-hidden className="mt-0.5 shrink-0 text-amber-600">⚠</span>
@@ -232,7 +236,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   </p>
                 ))}
                 <p className="pl-4 text-[10px] text-amber-600/95 font-medium mt-1">
-                  Vous pouvez tout de même affecter cette date (séance de rattrapage, exception...).
+                  {t('assignDate.warningOverride')}
                 </p>
               </div>
             )}
@@ -248,7 +252,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 }`}
                 onClick={() => setSelectedDate(isoFromOffset(-1))}
               >
-                Hier
+                {t('assignDate.yesterday')}
               </Button>
               <Button
                 type="button"
@@ -259,7 +263,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 }`}
                 onClick={() => setSelectedDate(isoFromOffset(0))}
               >
-                Aujourd'hui
+                {t('assignDate.today')}
               </Button>
               <Button
                 type="button"
@@ -270,7 +274,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                 }`}
                 onClick={() => setSelectedDate(isoFromOffset(1))}
               >
-                Demain
+                {t('assignDate.tomorrow')}
               </Button>
             </div>
           </div>
@@ -279,9 +283,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-100 text-rose-600 mb-0.5">
               <CalendarX className="h-4 w-4" />
             </div>
-            <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">Suppression des dates</h4>
+            <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">{t('assignDate.removeTitle')}</h4>
             <p className="text-[11px] text-rose-600 font-medium leading-relaxed max-w-xs mx-auto">
-              Les dates de planification de vos éléments sélectionnés seront effacées. Ils deviendront non datés.
+              {t('assignDate.removeHint')}
             </p>
           </div>
         )}
@@ -289,8 +293,8 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         {/* Compact selected items list preview with transition preview */}
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-1">
-            <span>Aperçu du contenu</span>
-            <span>Changement</span>
+            <span>{t('assignDate.preview')}</span>
+            <span>{t('assignDate.change')}</span>
           </div>
           
           <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-1.5 space-y-1">
@@ -312,7 +316,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                         variant="outline"
                         className={`text-[8.5px] font-bold uppercase py-0 px-1 h-4 rounded flex items-center gap-0.5 flex-shrink-0 ${badge.color}`}
                       >
-                        {badge.icon && <badge.icon className="mr-0.5 h-2 w-2" />}
+                        {badge.icon && <badge.icon className="me-0.5 h-2 w-2" />}
                         {badge.text}
                       </Badge>
                     )}
@@ -323,7 +327,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                           {previewItem.title}
                         </MathJax>
                       ) : (
-                        <span>{previewItem.title || 'Élément sans titre'}</span>
+                        <span>{previewItem.title || t('assignDate.untitled')}</span>
                       )}
                     </div>
                   </div>
@@ -331,22 +335,22 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   {/* Right Side: Visual state change representation */}
                   <div className="flex items-center gap-1 text-[10px] font-bold flex-shrink-0">
                       <span className="text-zinc-400 font-semibold">
-                      {formatDateFr(previewItem.date)}
+                      {formatShortDate(previewItem.date, localeCode, t('assignDate.noDate'))}
                     </span>
 
                     {isDateable && (
                       <div className="flex items-center gap-1 animate-fade-in">
-                        <ChevronRight className="h-2 w-2 text-zinc-300" />
+                        <ChevronRight className={`h-2 w-2 text-zinc-300 ${isRtl ? 'rotate-180' : ''}`} />
                         {actionType === 'associate' ? (
                           <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-zinc-800 font-bold shadow-xs">
-                            {formatDateFr(selectedDate)}
+                            {formatShortDate(selectedDate, localeCode, t('assignDate.noDate'))}
                           </span>
                         ) : previewItem.date ? (
                           <span className="px-1.5 py-0.5 rounded-md bg-red-50 border border-red-100 text-red-600 font-bold shadow-xs line-through">
-                            {formatDateFr(previewItem.date)}
+                            {formatShortDate(previewItem.date, localeCode, t('assignDate.noDate'))}
                           </span>
                         ) : (
-                          <span className="text-zinc-400 font-medium italic">Sans changement</span>
+                          <span className="text-zinc-400 font-medium italic">{t('assignDate.noChange')}</span>
                         )}
                       </div>
                     )}
@@ -357,7 +361,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
             {remainingItemsCount > 0 && (
               <div className="text-center py-1 text-[10px] font-bold text-zinc-400 italic">
-                + {remainingItemsCount} autre{remainingItemsCount > 1 ? 's' : ''} élément{remainingItemsCount > 1 ? 's' : ''} sélectionné{remainingItemsCount > 1 ? 's' : ''}
+                {t(remainingItemsCount === 1 ? 'assignDate.moreOne' : 'assignDate.moreMany', { count: number.format(remainingItemsCount) })}
               </div>
             )}
           </div>

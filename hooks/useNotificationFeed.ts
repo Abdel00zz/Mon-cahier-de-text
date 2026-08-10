@@ -134,6 +134,7 @@ export const useNotificationFeed = (
           date: formatDateFR(item.dateISO),
         }),
         date: item.dateISO,
+        dismissible: true,
         ignored: readIgnoredActionIds(item.classId).has(id),
       });
     }

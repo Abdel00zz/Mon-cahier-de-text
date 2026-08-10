@@ -22,6 +22,7 @@ import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificat
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     notificationFeed: NotificationFeed;
+    accountTeacherName?: string;
     onOpenSchedule?: () => void;
     onOpenNotifications?: () => void;
 }
@@ -90,6 +91,7 @@ const findLatestDate = (data: any): string | null => {
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     notificationFeed,
+    accountTeacherName = '',
     onOpenSchedule,
     onOpenNotifications,
 }) => {
@@ -107,6 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
     const [now, setNow] = useState(() => new Date());
+    const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
 
     useEffect(() => {
         if (!CLASS_DISPLAY_OPTIONS.includes(classDisplayMode)) {
@@ -202,13 +205,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const created = addClass({
             ...details,
             cycle: details.cycle ?? selectedCycle,
-            teacherName: config.defaultTeacherName || 'Enseignant',
+            teacherName: teacherName || t('settings.defaultTeacherName'),
         });
         if (details.cycle && details.cycle !== selectedCycle) {
             setSelectedCycle(details.cycle);
         }
         return created;
-    }, [addClass, config.defaultTeacherName, selectedCycle, setSelectedCycle]);
+    }, [addClass, selectedCycle, setSelectedCycle, t, teacherName]);
 
     const handleCreateClass = (details: { name: string; subject: string; cycle?: Cycle }) => {
         createClass(details);
@@ -247,8 +250,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (isLoading) {
         return <DashboardSkeleton />;
     }
-
-    const teacherName = (config.defaultTeacherName || '').trim();
 
     const calendar = getBundledCalendar();
     const calendarWithAbsences = withAbsences(calendar, config.absences);
@@ -290,21 +291,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
         month: 'long',
         timeZone: calendar.fuseau,
     }).format(now);
-    const vacationEndLabel = vacationToday
-        ? new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${vacationToday.fin}T12:00:00Z`))
+    const vacationResumeISO = vacationToday
+        ? (() => {
+            const nextDay = new Date(`${vacationToday.fin}T12:00:00Z`);
+            nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+            const calendarResume = nextDay.toISOString().slice(0, 10);
+            return config.schoolYearStart && config.schoolYearStart > vacationToday.fin
+                ? config.schoolYearStart
+                : calendarResume;
+        })()
+        : '';
+    const vacationResumeLabel = vacationResumeISO
+        ? new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${vacationResumeISO}T12:00:00Z`))
         : '';
     const timeDetailKey = currentHour < 13
         ? 'dashboard.welcome.morningDetail'
         : currentHour < 18
             ? 'dashboard.welcome.afternoonDetail'
             : 'dashboard.welcome.eveningDetail';
-    const welcome: { eyebrow: string; title: string; detail: string; personalize: boolean } = (() => {
+    const welcome: { eyebrow: string; title: string; detail: string } = (() => {
         if (classes.length === 0) {
             return {
                 eyebrow: t('dashboard.welcome.startLabel'),
                 title: t('dashboard.welcome.startTitle'),
                 detail: t('dashboard.welcome.startDetail'),
-                personalize: false,
             };
         }
         if (holidayToday) {
@@ -312,15 +322,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: localizeCalendarName(holidayToday.nom, locale),
                 title: t('dashboard.welcome.holidayTitle'),
                 detail: t('dashboard.welcome.holidayDetail'),
-                personalize: true,
             };
         }
         if (vacationToday) {
             return {
                 eyebrow: localizeCalendarName(vacationToday.nom, locale),
-                title: t('dashboard.welcome.vacationTitle'),
-                detail: t('dashboard.welcome.vacationDetail', { date: vacationEndLabel }),
-                personalize: true,
+                title: '',
+                detail: t('dashboard.welcome.vacationDetail', { date: vacationResumeLabel }),
             };
         }
         if (assessmentsThisWeek > 0) {
@@ -328,7 +336,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.assessmentsLabel'),
                 title: t(assessmentsThisWeek === 1 ? 'dashboard.welcome.assessmentTitleOne' : 'dashboard.welcome.assessmentTitleMany', { count: assessmentsThisWeek }),
                 detail: t('dashboard.welcome.assessmentsDetail'),
-                personalize: false,
             };
         }
         if (hasCurrentSession) {
@@ -336,7 +343,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.nowLabel'),
                 title: t('dashboard.welcome.nowTitle'),
                 detail: t('dashboard.welcome.nowDetail'),
-                personalize: false,
             };
         }
         if (hasSessionToday) {
@@ -344,16 +350,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 eyebrow: t('dashboard.welcome.todayLabel'),
                 title: t('dashboard.welcome.todayTitle'),
                 detail: t('dashboard.welcome.todayDetail'),
-                personalize: false,
             };
         }
         return {
             eyebrow: todayLabel,
-            title: getGreeting(locale, currentHour),
+            title: '',
             detail: t(timeDetailKey),
-            personalize: true,
         };
     })();
+    const greeting = getGreeting(locale, currentHour);
     const teacherNameIsArabic = /[\u0600-\u06FF]/.test(teacherName);
 
     const visibleClasses = [...classes]
@@ -388,17 +393,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div className="min-w-0">
                                 <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
                                 <h1 className="flex flex-wrap items-baseline gap-x-1 text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
-                                    <span>{welcome.title}{welcome.personalize && teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
-                                    {welcome.personalize && teacherName && (
+                                    <span>{greeting}{teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
+                                    {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className={`${teacherNameIsArabic ? 'font-teacher-ar text-[1.18em]' : 'font-teacher-latin text-[0.88em]'} text-blue-600 dark:text-blue-400`}
+                                            className={`${teacherNameIsArabic ? 'font-teacher-ar text-[1.28em] leading-none' : 'font-teacher-latin text-[0.92em] leading-none'} font-normal text-blue-600 dark:text-blue-400`}
                                         >
                                             {teacherName}
                                         </span>
                                     )}
                                 </h1>
-                                <p className="mt-1 max-w-2xl text-xs font-medium leading-relaxed text-muted-foreground sm:text-[13px]">{welcome.detail}</p>
+                                <p className="mt-1 max-w-2xl text-xs font-medium leading-relaxed text-muted-foreground sm:text-[13px]">
+                                    {welcome.title && <span className="font-bold text-zinc-600 dark:text-zinc-300">{welcome.title}</span>}
+                                    {welcome.title && welcome.detail && <span aria-hidden="true"> · </span>}
+                                    <span>{welcome.detail}</span>
+                                </p>
                             </div>
                         </div>
 
@@ -567,7 +576,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     setEditingClass(null);
                 }}
                 onCreate={handleCreateClass}
-                defaultTeacherName={config.defaultTeacherName}
+                defaultTeacherName={teacherName}
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
                 teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}

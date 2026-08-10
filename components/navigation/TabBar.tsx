@@ -149,10 +149,10 @@ export const TabBar: React.FC<TabBarProps> = ({
       </nav>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 text-card-foreground backdrop-blur-2xl print:hidden sm:hidden"
+        className="mobile-tab-bar fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] z-40 overflow-hidden rounded-[22px] border border-white/70 bg-card/78 text-card-foreground shadow-[0_14px_42px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.04] backdrop-blur-[28px] backdrop-saturate-[1.8] transition-[transform,opacity] duration-200 print:hidden dark:border-white/10 dark:bg-zinc-900/78 sm:hidden"
         aria-label={copy.mobileNav}
       >
-        <div className="mx-auto flex h-14 max-w-md items-center justify-around px-2 pb-[max(0.25rem,env(safe-area-inset-bottom,0px))]">
+        <div className="mx-auto flex h-[3.65rem] max-w-md items-center justify-around px-2">
           {tabs.filter(tab => tab.id !== 'evaluations').map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -163,7 +163,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => goTo(tab.id)}
-                className={cn('relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95', isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
+                className={cn('relative flex min-h-11 flex-1 flex-col items-center justify-center rounded-2xl py-1 transition-all duration-200 active:scale-95', isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
               >
                 <div className="relative">
                   <Icon className={cn('h-[17px] w-[17px] transition-transform duration-200', isActive && 'scale-110 stroke-[2.2]')} />
@@ -182,7 +182,7 @@ export const TabBar: React.FC<TabBarProps> = ({
           <button
             type="button"
             onClick={() => goTo('settings')}
-            className={cn('relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-200 active:scale-95', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
+            className={cn('relative flex min-h-11 flex-1 flex-col items-center justify-center rounded-2xl py-1 transition-all duration-200 active:scale-95', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
           >
             <Settings className={cn('h-[17px] w-[17px] transition-transform duration-200', activeTab === 'settings' && 'scale-110 stroke-[2.2]')} />
             <span className={cn('mt-0.5 text-[10px] tracking-tight', activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-muted-foreground')}>{copy.settings}</span>

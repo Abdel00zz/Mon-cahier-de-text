@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { AppConfig, ClassInfo, LessonsData, Indices } from '@/types';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
@@ -33,13 +34,16 @@ interface EditorModalsProps {
   classInfo: ClassInfo;
 }
 
-const ModalFallback = () => (
-  <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-[3px] animate-fade-in">
-    <div className="rounded-lg border border-slate-200/80 bg-card/98 px-4 py-3 text-sm font-medium text-card-foreground shadow-[0_18px_48px_rgba(15,23,42,0.16)] animate-slide-in-up">
-      Chargement…
+const ModalFallback = () => {
+  const { t } = useLocale();
+  return (
+    <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-[3px] animate-fade-in">
+      <div className="rounded-lg border border-slate-200/80 bg-card/98 px-4 py-3 text-sm font-medium text-card-foreground shadow-[0_18px_48px_rgba(15,23,42,0.16)] animate-slide-in-up">
+        {t('common.loading')}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const EditorModals: React.FC<EditorModalsProps> = ({
   activeModal,

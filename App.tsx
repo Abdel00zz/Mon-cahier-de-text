@@ -110,7 +110,7 @@ const App: React.FC = () => {
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
-  const { status: authStatus } = useAuth();
+  const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
@@ -233,6 +233,7 @@ const App: React.FC = () => {
       <Dashboard
         onSelectClass={handleSelectClass}
         notificationFeed={notificationFeed}
+        accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOpenSchedule={handleOpenSchedule}
         onOpenNotifications={handleOpenNotifications}
       />
@@ -276,7 +277,7 @@ const App: React.FC = () => {
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div className={`app-canvas min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? (isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`) : ''} pb-16 sm:pb-8`}>
+    <div className={`app-canvas min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`} app-with-mobile-nav` : ''} sm:pb-8`}>
       {showNavigation && (
         <TabBar
           activeTab={activeTab}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { AppConfig, ClassInfo, LessonsData, PedagogicalEvent, PedagogicalEventType } from '@/types';
+import { AppConfig, AppLocale, ClassInfo, LessonsData, PedagogicalEvent, PedagogicalEventType } from '@/types';
 import { formatClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/utils/dataUtils';
@@ -37,6 +37,7 @@ import {
   Users,
   X,
 } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface DevoirsViewProps {
   classes: ClassInfo[];
@@ -56,10 +57,10 @@ const readLessons = (classId: string): LessonsData => {
   }
 };
 
-const formatLongDate = (iso: string): string => {
+const formatLongDate = (iso: string, locale: AppLocale): string => {
   try {
     const [y, m, d] = iso.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('fr-FR', {
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -69,27 +70,27 @@ const formatLongDate = (iso: string): string => {
   }
 };
 
-const STATUS_STYLE: Record<AssessmentLink['status'], { label: string; tone: 'green' | 'amber' | 'blue' | 'zinc' }> = {
-  done: { label: 'Dans le cahier', tone: 'green' },
-  mismatch: { label: 'Écart avec le cahier', tone: 'amber' },
-  upcoming: { label: 'À venir', tone: 'blue' },
-  missing: { label: 'Non saisi', tone: 'zinc' },
+const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: 'green' | 'amber' | 'blue' | 'zinc' }> = {
+  done: { labelKey: 'evaluations.status.done', tone: 'green' },
+  mismatch: { labelKey: 'evaluations.status.mismatch', tone: 'amber' },
+  upcoming: { labelKey: 'evaluations.status.upcoming', tone: 'blue' },
+  missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
 };
 
-const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { label: string; badgeClass: string }> = {
-  evaluation_diagnostic: { label: 'Évaluation diagnostique', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-900/40' },
-  olympiade: { label: 'Olympiade', badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-900/40' },
-  concours: { label: 'Concours', badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-900/40' },
-  soutien: { label: 'Soutien', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40' },
-  remediation: { label: 'Remédiation', badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-900/40' },
-  examen_blanc: { label: 'Examen blanc', badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-900/40' },
-  rattrapage: { label: 'Rattrapage', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40' },
-  autre: { label: 'Autre activité', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700' },
+const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; badgeClass: string }> = {
+  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-900/40' },
+  olympiade: { labelKey: 'evaluations.event.olympiade', badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-900/40' },
+  concours: { labelKey: 'evaluations.event.concours', badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-900/40' },
+  soutien: { labelKey: 'evaluations.event.soutien', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40' },
+  remediation: { labelKey: 'evaluations.event.remediation', badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-900/40' },
+  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-900/40' },
+  rattrapage: { labelKey: 'evaluations.event.rattrapage', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40' },
+  autre: { labelKey: 'evaluations.event.autre', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700' },
 };
 
-const formatDateRange = (start: string, end?: string): string => {
-  if (!end || end === start) return formatLongDate(start);
-  return `${formatLongDate(start)} au ${formatLongDate(end)}`;
+const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
+  if (!end || end === start) return formatLongDate(start, locale);
+  return `${formatLongDate(start, locale)} ${rangeSeparator} ${formatLongDate(end, locale)}`;
 };
 
 export const DevoirsView: React.FC<DevoirsViewProps> = ({
@@ -98,6 +99,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   onConfigChange,
   embedded = false,
 }) => {
+  const { t, locale } = useLocale();
+  const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
@@ -129,14 +132,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const classGroups = useMemo(() => {
     const definitions = [
-      { id: 'college', label: 'Collège' },
-      { id: 'lycee', label: 'Lycée qualifiant' },
-      { id: 'unknown', label: 'Autres classes' },
+      { id: 'college', label: t('evaluations.group.college') },
+      { id: 'lycee', label: t('evaluations.group.lycee') },
+      { id: 'unknown', label: t('evaluations.group.other') },
     ] as const;
     return definitions
       .map((group) => ({ ...group, classes: classes.filter((item) => getClassSchoolSegment(item) === group.id) }))
       .filter((group) => group.classes.length > 0);
-  }, [classes]);
+  }, [classes, t]);
 
   const selectClass = (classId: string) => {
     setSelectedClassId(classId);
@@ -159,7 +162,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     if (!link.entry?.date) return;
     setAssessmentDate(link.planned.id, link.entry.date);
     toast.success(
-      `Calendrier aligné sur le cahier : ${link.planned.label.split(', Semestre ')[0]} → ${formatLongDate(link.entry.date)}.`
+      t('evaluations.alignedToast', {
+        assessment: t(link.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: link.planned.num }),
+        date: formatLongDate(link.entry.date, locale),
+      })
     );
   };
 
@@ -176,7 +182,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const addPedagogicalEvent = (event: PedagogicalEvent) => {
     savePedagogicalEvents([...pedagogicalEvents, event]);
     setEventEditorOpen(false);
-    toast.success(`${PEDAGOGICAL_EVENT_CONFIG[event.type].label} ajoutée au parcours de ${selectedClassDisplayName}.`);
+    toast.success(t('evaluations.eventAddedToast', {
+      event: t(PEDAGOGICAL_EVENT_CONFIG[event.type].labelKey),
+      className: selectedClassDisplayName,
+    }));
   };
 
   const togglePedagogicalEvent = (eventId: string) => {
@@ -197,9 +206,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 mb-4">
           <CalendarCheck className="h-6 w-6" />
         </div>
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Créez une classe</h3>
+        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{t('evaluations.createClass')}</h3>
         <p className="mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-          Le planning des évaluations se construit à partir de vos classes.
+          {t('evaluations.createClassHint')}
         </p>
       </div>
     );
@@ -224,16 +233,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
             </span>
             <div className="min-w-0">
-              <h2 id="evaluations-class-context" className="text-sm font-bold text-foreground">Classe active</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">Planning et suivi de la classe.</p>
+              <h2 id="evaluations-class-context" className="text-sm font-bold text-foreground">{t('evaluations.activeClass')}</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">{t('evaluations.activeClassHint')}</p>
             </div>
           </div>
 
           <div className="w-full shrink-0 sm:w-[min(100%,19rem)]">
-            <label htmlFor="evaluations-class-selector" className="sr-only">Choisir la classe active</label>
+            <label htmlFor="evaluations-class-selector" className="sr-only">{t('evaluations.chooseClass')}</label>
             <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
               <SelectTrigger id="evaluations-class-selector" className="h-10 border-border/80 bg-background px-3 text-xs font-semibold text-foreground shadow-xs transition-colors hover:border-primary/35 focus:ring-primary/20">
-                <SelectValue placeholder="Choisir une classe" />
+                <SelectValue placeholder={t('evaluations.chooseClass')} />
               </SelectTrigger>
               <SelectContent>
                 {classGroups.map((group) => (
@@ -268,7 +277,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
         {!hasPlan ? (
           <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            Aucun planning officiel pour ce niveau et cette matière.
+            {t('evaluations.noOfficialPlan')}
           </div>
         ) : (
           <div className="space-y-6">
@@ -279,7 +288,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                       <section key={sem} className="space-y-3">
                         <div className="flex items-center justify-between">
                           <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                            Semestre {sem}
+                            {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
                         </div>
 
@@ -306,8 +315,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                         : 'bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-900/40'
                                     )}
                                   >
-                                    {isControle ? `Surveillé ${a.num}` : `Maison ${a.num}`}
-                                    {a.duree && <span className="ml-1 opacity-70 font-medium text-[11px]">· {a.duree}</span>}
+                                    {t(isControle ? 'evaluations.supervised' : 'evaluations.homework', { number: a.num })}
+                                    {a.duree && <span className="ms-1 text-[11px] font-medium opacity-70">· {a.duree}</span>}
                                   </span>
 
                                   {link.status !== 'upcoming' && (
@@ -321,19 +330,23 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                     >
                                       {link.status === 'done' && <Check className="h-3 w-3" />}
                                       {link.status === 'mismatch' && <CircleAlert className="h-3 w-3" />}
-                                      {status.label}
+                                      {t(status.labelKey)}
                                     </span>
                                   )}
 
                                   {link.status === 'upcoming' && inDays >= 0 && inDays <= 14 && (
                                     <span className="text-xs font-bold text-red-600 dark:text-red-400">
-                                      {inDays === 0 ? "aujourd'hui" : inDays === 1 ? 'demain' : `dans ${inDays} j`}
+                                      {inDays === 0
+                                        ? t('evaluations.today')
+                                        : inDays === 1
+                                          ? t('evaluations.tomorrow')
+                                          : t('evaluations.inDays', { count: number.format(inDays) })}
                                     </span>
                                   )}
 
                                   {link.status === 'mismatch' && link.entry?.date && (
                                     <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                                      cahier : {formatLongDate(link.entry.date)}
+                                      {t('evaluations.notebookDate', { date: formatLongDate(link.entry.date, locale) })}
                                     </span>
                                   )}
 
@@ -343,7 +356,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       onClick={() => alignOnNotebook(link)}
                                       className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-700"
                                     >
-                                      Aligner
+                                      {t('evaluations.align')}
                                     </button>
                                   )}
                                 </div>
@@ -361,7 +374,9 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       )}
                                     >
                                       <Users className="h-3.5 w-3.5" />
-                                      {absents.length > 0 ? `${absents.length} absent${absents.length > 1 ? 's' : ''}` : 'Absents'}
+                                      {absents.length > 0
+                                        ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
+                                        : t('evaluations.absentees')}
                                     </button>
                                   )}
 
@@ -374,15 +389,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                         'h-8 rounded-lg border bg-zinc-50 dark:bg-zinc-800 px-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
                                         custom ? 'border-blue-600 font-bold text-blue-600 dark:text-blue-400' : 'border-zinc-200 dark:border-zinc-700'
                                       )}
-                                      title={a.fenetre ? `Fenêtre indicative : ${a.fenetre}` : 'Ajuster la date'}
-                                      aria-label={`Date du devoir ${a.label}`}
+                                      title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
+                                      aria-label={t('evaluations.assessmentDateAria', { assessment: t(isControle ? 'evaluations.supervised' : 'evaluations.homework', { number: a.num }) })}
                                     />
                                     {custom && (
                                       <button
                                         type="button"
                                         onClick={() => setAssessmentDate(a.id, '')}
                                         className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                        title="Revenir à la date indicative"
+                                        title={t('evaluations.restoreDate')}
                                       >
                                         <Undo2 className="h-3.5 w-3.5" />
                                       </button>
@@ -445,8 +460,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 });
                 toast.success(
                   names.length > 0
-                    ? `${names.length} absent${names.length > 1 ? 's' : ''} consigné${names.length > 1 ? 's' : ''} : ${absencesFor.planned.label.split(', Semestre ')[0]}.`
-                    : 'Liste des absents effacée.'
+                    ? t(names.length === 1 ? 'evaluations.absenceSavedOne' : 'evaluations.absenceSavedMany', {
+                        count: number.format(names.length),
+                        assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
+                      })
+                    : t('evaluations.absenceCleared')
                 );
                 setAbsencesFor(null);
               }}
@@ -470,11 +488,13 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   onAdd,
   onToggle,
   onDelete,
-}) => (
-  <section className="space-y-3">
+}) => {
+  const { t, locale } = useLocale();
+  return (
+    <section className="space-y-3">
     <div className="flex items-center justify-between gap-3">
       <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-        Activités pédagogiques
+        {t('evaluations.activities')}
       </h3>
     </div>
 
@@ -484,7 +504,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
         onClick={onAdd}
         className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-6 text-sm font-semibold text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:hover:border-zinc-700 dark:hover:text-zinc-300 transition-colors"
       >
-        <Plus className="h-4 w-4" /> Ajouter une activité
+        <Plus className="h-4 w-4" /> {t('evaluations.addActivity')}
       </button>
     ) : (
       <div className="grid gap-3">
@@ -509,7 +529,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
                       : 'border-zinc-200 bg-white text-zinc-400 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800'
                   )}
-                  aria-label={done ? `Rouvrir ${event.title}` : `Marquer ${event.title} comme réalisé`}
+                  aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
                   {done ? <CircleCheck className="h-4 w-4" /> : <CalendarCheck className="h-4 w-4" />}
                 </button>
@@ -517,15 +537,15 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', config.badgeClass)}>
-                      {config.label}
+                      {t(config.labelKey)}
                     </span>
-                    {done && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Réalisé</span>}
+                    {done && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('evaluations.completed')}</span>}
                   </div>
                   <h4 className={cn('text-sm font-bold text-zinc-900 dark:text-zinc-100', done && 'line-through text-zinc-500')}>
                     {event.title}
                   </h4>
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    {formatDateRange(event.date, event.endDate)}
+                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
                   </p>
                   {event.note && (
                     <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
@@ -539,7 +559,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 type="button"
                 onClick={() => onDelete(event.id)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-colors"
-                aria-label={`Supprimer ${event.title}`}
+                aria-label={t('evaluations.deleteEventAria', { title: event.title })}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -551,12 +571,13 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
           onClick={onAdd}
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-3 text-xs font-semibold text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:hover:border-zinc-700 dark:hover:text-zinc-300 transition-colors"
         >
-          <Plus className="h-4 w-4" /> Ajouter une activité
+          <Plus className="h-4 w-4" /> {t('evaluations.addActivity')}
         </button>
       </div>
     )}
-  </section>
-);
+    </section>
+  );
+};
 
 interface PedagogicalEventEditorProps {
   className: string;
@@ -566,30 +587,31 @@ interface PedagogicalEventEditorProps {
 }
 
 const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ className, today, onCancel, onSave }) => {
+  const { t } = useLocale();
   const [type, setType] = useState<PedagogicalEventType>('evaluation_diagnostic');
-  const [title, setTitle] = useState(PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic.label);
+  const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic.labelKey));
   const [date, setDate] = useState(today);
   const [endDate, setEndDate] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
   const changeType = (nextType: PedagogicalEventType) => {
-    const previousDefault = PEDAGOGICAL_EVENT_CONFIG[type].label;
+    const previousDefault = t(PEDAGOGICAL_EVENT_CONFIG[type].labelKey);
     setType(nextType);
-    if (!title.trim() || title === previousDefault) setTitle(PEDAGOGICAL_EVENT_CONFIG[nextType].label);
+    if (!title.trim() || title === previousDefault) setTitle(t(PEDAGOGICAL_EVENT_CONFIG[nextType].labelKey));
   };
 
   const submit = () => {
     if (!title.trim()) {
-      setError('Donnez un titre clair à cette activité.');
+      setError(t('evaluations.eventTitleRequired'));
       return;
     }
     if (!date) {
-      setError('Choisissez la date de début.');
+      setError(t('evaluations.startDateRequired'));
       return;
     }
     if (endDate && endDate < date) {
-      setError('La date de fin doit être postérieure ou égale à la date de début.');
+      setError(t('evaluations.endDateInvalid'));
       return;
     }
     onSave({
@@ -606,16 +628,16 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
 
   return (
     <div className="space-y-4">
-      <SheetHeader className="text-left">
-        <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Ajouter une activité</SheetTitle>
+      <SheetHeader className="text-start">
+        <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('evaluations.addActivity')}</SheetTitle>
         <SheetDescription className="text-xs text-zinc-500 dark:text-zinc-400">
-          {className} · événement créé par le professeur
+          {t('evaluations.teacherEvent', { className })}
         </SheetDescription>
       </SheetHeader>
 
       <div className="space-y-4 pt-2">
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Type d'activité</span>
+          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.activityType')}</span>
           <select
             value={type}
             onChange={(event) => changeType(event.target.value as PedagogicalEventType)}
@@ -623,14 +645,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
           >
             {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, config]) => (
               <option key={value} value={value}>
-                {config.label}
+                {t(config.labelKey)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Titre</span>
+          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.titleLabel')}</span>
           <input
             value={title}
             onChange={(event) => {
@@ -638,14 +660,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
               setError('');
             }}
             className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            placeholder="Ex. Diagnostic des prérequis du chapitre 1"
+            placeholder={t('evaluations.titlePlaceholder')}
             autoFocus
           />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Début</span>
+            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.start')}</span>
             <input
               type="date"
               value={date}
@@ -658,7 +680,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
           </label>
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-              Fin <span className="font-normal text-zinc-400">(facultatif)</span>
+              {t('evaluations.end')} <span className="font-normal text-zinc-400">({t('evaluations.optional')})</span>
             </span>
             <input
               type="date"
@@ -675,14 +697,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
 
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-            Consigne / Note <span className="font-normal text-zinc-400">(facultatif)</span>
+            {t('evaluations.note')} <span className="font-normal text-zinc-400">({t('evaluations.optional')})</span>
           </span>
           <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
             rows={3}
             className="w-full resize-none rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            placeholder="Compétences visées, élèves concernés, matériel..."
+            placeholder={t('evaluations.notePlaceholder')}
           />
         </label>
 
@@ -698,14 +720,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
             onClick={onCancel}
             className="h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
-            Annuler
+            {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
             className="h-10 rounded-xl bg-zinc-900 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm"
           >
-            Ajouter
+            {t('evaluations.add')}
           </button>
         </div>
       </div>
@@ -730,6 +752,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
   onCancel,
   onSave,
 }) => {
+  const { t, locale } = useLocale();
   const [names, setNames] = useState<string[]>(initialNames);
   const [draft, setDraft] = useState('');
 
@@ -740,8 +763,9 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
       .filter(Boolean);
     if (parts.length === 0) return;
     setNames((prev) => {
-      const seen = new Set(prev.map((n) => n.toLocaleLowerCase('fr')));
-      const additions = parts.filter((p) => !seen.has(p.toLocaleLowerCase('fr')));
+      const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
+      const seen = new Set(prev.map((n) => n.toLocaleLowerCase(localeCode)));
+      const additions = parts.filter((p) => !seen.has(p.toLocaleLowerCase(localeCode)));
       return [...prev, ...additions];
     });
     setDraft('');
@@ -751,13 +775,13 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
 
   return (
     <div className="space-y-4">
-      <SheetHeader className="text-left">
+      <SheetHeader className="text-start">
         <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-          Absents : {link.planned.label.split(', Semestre ')[0]}
+          {t('evaluations.absencesTitle', { assessment: t(link.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: link.planned.num }) })}
         </SheetTitle>
         <SheetDescription className="text-xs text-zinc-500 dark:text-zinc-400">
-          {className} · {formatLongDate(effectiveDate)}
-          {updatedAt && ` · mise à jour le ${new Date(updatedAt).toLocaleDateString('fr-FR')}`}
+          {className} · {formatLongDate(effectiveDate, locale)}
+          {updatedAt && ` · ${t('evaluations.updatedOn', { date: new Date(updatedAt).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA') })}`}
         </SheetDescription>
       </SheetHeader>
 
@@ -774,7 +798,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
                   type="button"
                   onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
                   className="rounded-full text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
-                  aria-label={`Retirer ${name}`}
+                  aria-label={t('evaluations.removeStudentAria', { name })}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -802,7 +826,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
               }
             }}
             onBlur={() => commitDraft(draft)}
-            placeholder="Nom de l'élève, puis Entrée…"
+            placeholder={t('evaluations.studentPlaceholder')}
             className="h-10 flex-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             autoFocus
           />
@@ -810,14 +834,14 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             type="button"
             onClick={() => commitDraft(draft)}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-            aria-label="Ajouter l'élève"
+            aria-label={t('evaluations.addStudentAria')}
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
         <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
-          Astuce : collez une liste « Nom1, Nom2 », chaque nom devient une étiquette.
+          {t('evaluations.pasteHint')}
         </p>
 
         <div className="grid grid-cols-2 gap-3 pt-2">
@@ -826,14 +850,14 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             onClick={onCancel}
             className="h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
-            Annuler
+            {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(names)}
             className="h-10 rounded-xl bg-zinc-900 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm"
           >
-            Enregistrer {names.length > 0 ? `(${names.length})` : ''}
+            {t('common.save')} {names.length > 0 ? `(${new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length)})` : ''}
           </button>
         </div>
       </div>

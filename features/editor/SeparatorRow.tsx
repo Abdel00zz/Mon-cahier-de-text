@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Indices, Separator } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface SeparatorRowProps {
     data: Separator;
@@ -15,6 +16,7 @@ interface SeparatorRowProps {
 const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
 
 const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onCellUpdate, onDelete, isNew = false }) => {
+    const { t } = useLocale();
     const separatorIndices: Indices = { ...indices, isSeparator: true };
 
     const contentRef = useRef<HTMLDivElement>(null);
@@ -49,7 +51,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
                     className="bg-transparent text-zinc-400 text-[11px] font-semibold rounded-md border border-dashed border-zinc-200 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-300 hover:border-zinc-400 cursor-pointer text-center w-full max-w-[100px] font-mono"
-                    title="Modifier la date du séparateur"
+                    title={t('separator.editDate')}
                 />
             </div>
 
@@ -78,7 +80,8 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                         variant="ghost" size="icon"
                         
                         onClick={() => onDelete(separatorIndices)}
-                        data-tippy-content="Supprimer le séparateur"
+                        data-tippy-content={t('separator.delete')}
+                        aria-label={t('separator.delete')}
                         className="h-9 w-9 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
