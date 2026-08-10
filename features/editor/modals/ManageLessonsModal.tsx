@@ -142,6 +142,23 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         )}
       >
         <div className="space-y-4">
+          <details open className="group overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/55">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-white px-3.5 py-2.5 text-xs font-bold text-zinc-700 transition-colors hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-blue-600" />
+                {t('manageLessons.descriptionSettings')}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <DescriptionVisibilityControl
+              context="screen"
+              mode={localDesc.mode}
+              types={localDesc.types}
+              onChange={setLocalDesc}
+              className="border-0 border-t border-zinc-200 bg-transparent p-3 shadow-none"
+            />
+          </details>
+
           <section className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/55">
             <div className="flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-3 py-3 sm:px-4">
               <div className="min-w-0">
@@ -216,20 +233,6 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
               </div>
             )}
           </section>
-
-          <details className="group overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50/55">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-white px-3 py-3 text-[11px] font-bold text-zinc-600 transition-colors hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
-              {t('manageLessons.descriptionSettings')}
-              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" aria-hidden />
-            </summary>
-            <DescriptionVisibilityControl
-              context="screen"
-              mode={localDesc.mode}
-              types={localDesc.types}
-              onChange={setLocalDesc}
-              className="border-0 border-t border-zinc-200 bg-transparent p-3 shadow-none"
-            />
-          </details>
         </div>
       </Modal>
 

@@ -221,27 +221,22 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : undefined;
 
   return (
-    <div className={cn('space-y-6 font-sans', embedded ? '' : 'p-2 sm:p-4')}>
+    <div className={cn('space-y-3 font-sans', embedded ? '' : 'p-0')}>
       {/* Le planning est toujours filtré par la classe active. */}
       {!embedded && (
         <section
           aria-labelledby="evaluations-class-context"
-          className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/25 p-3 text-card-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+          className="flex items-center gap-2 rounded-2xl border border-white/60 bg-white/[0.42] p-2 text-card-foreground shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.36]"
         >
-          <div className="flex min-w-0 items-center gap-3">
-            <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
-              <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
-            </span>
-            <div className="min-w-0">
-              <h2 id="evaluations-class-context" className="text-sm font-bold text-foreground">{t('evaluations.activeClass')}</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">{t('evaluations.activeClassHint')}</p>
-            </div>
-          </div>
+          <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
+            <Users className={cn('h-3.5 w-3.5', classVisual?.iconClass)} aria-hidden />
+          </span>
 
-          <div className="w-full shrink-0 sm:w-[min(100%,19rem)]">
+          <div className="min-w-0 flex-1">
+            <h2 id="evaluations-class-context" className="sr-only">{t('evaluations.activeClass')}</h2>
             <label htmlFor="evaluations-class-selector" className="sr-only">{t('evaluations.chooseClass')}</label>
             <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
-              <SelectTrigger id="evaluations-class-selector" className="h-10 border-border/80 bg-background px-3 text-xs font-semibold text-foreground shadow-xs transition-colors hover:border-primary/35 focus:ring-primary/20">
+              <SelectTrigger id="evaluations-class-selector" className="h-9 border-white/55 bg-white/[0.48] px-3 text-xs font-semibold text-foreground shadow-none backdrop-blur-md transition-colors hover:bg-white/70 focus:ring-primary/20 dark:border-white/10 dark:bg-slate-900/50">
                 <SelectValue placeholder={t('evaluations.chooseClass')} />
               </SelectTrigger>
               <SelectContent>
@@ -267,7 +262,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       )}
 
       {/* Section Content */}
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <PedagogicalEventsSection
           events={pedagogicalEvents}
           onAdd={() => setEventEditorOpen(true)}
@@ -276,23 +271,23 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         />
 
         {!hasPlan ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-xl border border-dashed border-zinc-300/80 bg-white/[0.42] p-3 text-center text-xs text-zinc-500 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-400">
             {t('evaluations.noOfficialPlan')}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
                   {semesters.map((sem) => {
                     const ofSemester = links.filter((l) => l.planned.semestre === sem);
                     if (ofSemester.length === 0) return null;
                     return (
-                      <section key={sem} className="space-y-3">
+                      <section key={sem} className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                          <h3 className="px-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
                             {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
                         </div>
 
-                        <div className="grid gap-2.5">
+                        <div className="grid gap-1.5">
                           {ofSemester.map((link) => {
                             const a = link.planned;
                             const inDays = daysBetweenISO(today, a.dateISO);
@@ -304,25 +299,25 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                             return (
                               <div
                                 key={a.id}
-                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl bg-white dark:bg-zinc-900 p-3 px-3.5 shadow-2xs ring-1 ring-zinc-200/80 dark:ring-zinc-800 transition-all hover:ring-zinc-300 dark:hover:ring-zinc-700"
+                                className="flex flex-col gap-1.5 rounded-2xl border border-white/60 bg-white/[0.5] px-3 py-2 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/[0.7] dark:border-white/10 dark:bg-slate-900/[0.48] dark:hover:bg-slate-900/[0.65] sm:flex-row sm:items-center sm:justify-between"
                               >
-                                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                                   <span
                                     className={cn(
-                                      'inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wide',
+                                      'inline-flex items-center rounded-lg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.05em]',
                                       isControle
                                         ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/80 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-900/40'
                                         : 'bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-900/40'
                                     )}
                                   >
                                     {t(isControle ? 'evaluations.supervised' : 'evaluations.homework', { number: a.num })}
-                                    {a.duree && <span className="ms-1 text-[11px] font-medium opacity-70">· {a.duree}</span>}
+                                    {a.duree && <span className="ms-1 text-[9px] font-bold opacity-70">· {a.duree}</span>}
                                   </span>
 
                                   {link.status !== 'upcoming' && (
                                     <span
                                       className={cn(
-                                        'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold border',
+                                        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border',
                                         status.tone === 'green' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40',
                                         status.tone === 'amber' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40',
                                         status.tone === 'zinc' && 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
@@ -335,7 +330,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   )}
 
                                   {link.status === 'upcoming' && inDays >= 0 && inDays <= 14 && (
-                                    <span className="text-xs font-bold text-red-600 dark:text-red-400">
+                                    <span className="text-[11px] font-bold text-red-600 dark:text-red-400">
                                       {inDays === 0
                                         ? t('evaluations.today')
                                         : inDays === 1
@@ -345,7 +340,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   )}
 
                                   {link.status === 'mismatch' && link.entry?.date && (
-                                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                                       {t('evaluations.notebookDate', { date: formatLongDate(link.entry.date, locale) })}
                                     </span>
                                   )}
@@ -354,26 +349,26 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => alignOnNotebook(link)}
-                                      className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-700"
+                                      className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-700"
                                     >
                                       {t('evaluations.align')}
                                     </button>
                                   )}
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0 pt-1.5 sm:pt-0">
+                                <div className="flex items-center gap-1.5 shrink-0 sm:pt-0">
                                   {isControle && (
                                     <button
                                       type="button"
                                       onClick={() => setAbsencesFor(link)}
                                       className={cn(
-                                        'inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors',
+                                        'inline-flex h-8 items-center gap-1 rounded-lg border px-2 text-[10px] font-semibold transition-colors',
                                         absents.length > 0
                                           ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-900/40'
                                           : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300'
                                       )}
                                     >
-                                      <Users className="h-3.5 w-3.5" />
+                                      <Users className="h-3 w-3" />
                                       {absents.length > 0
                                         ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
                                         : t('evaluations.absentees')}
@@ -386,7 +381,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 rounded-lg border bg-zinc-50 dark:bg-zinc-800 px-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+                                        'h-8 rounded-lg border bg-white/45 px-2 text-[10px] font-semibold text-zinc-900 backdrop-blur-md dark:bg-zinc-800/70 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
                                         custom ? 'border-blue-600 font-bold text-blue-600 dark:text-blue-400' : 'border-zinc-200 dark:border-zinc-700'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
@@ -396,10 +391,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => setAssessmentDate(a.id, '')}
-                                        className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                         title={t('evaluations.restoreDate')}
                                       >
-                                        <Undo2 className="h-3.5 w-3.5" />
+                                        <Undo2 className="h-3 w-3" />
                                       </button>
                                     )}
                                   </div>
@@ -491,23 +486,22 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 }) => {
   const { t, locale } = useLocale();
   return (
-    <section className="space-y-3">
-    <div className="flex items-center justify-between gap-3">
-      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+    <section className="space-y-2">
+    <div className="flex items-center justify-between gap-3 px-0.5">
+      <h3 className="text-xs font-bold tracking-[-0.01em] text-zinc-800 dark:text-zinc-100">
         {t('evaluations.activities')}
       </h3>
-    </div>
-
-    {events.length === 0 ? (
       <button
         type="button"
         onClick={onAdd}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-6 text-sm font-semibold text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:hover:border-zinc-700 dark:hover:text-zinc-300 transition-colors"
+        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/60 bg-white/[0.48] px-3 text-[10px] font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/80 hover:text-zinc-900 dark:border-white/10 dark:bg-slate-900/55 dark:text-zinc-300 dark:hover:bg-slate-800"
       >
-        <Plus className="h-4 w-4" /> {t('evaluations.addActivity')}
+        <Plus className="h-3.5 w-3.5" /> {t('evaluations.add')}
       </button>
-    ) : (
-      <div className="grid gap-3">
+    </div>
+
+    {events.length > 0 && (
+      <div className="grid gap-2">
         {events.map((event) => {
           const config = PEDAGOGICAL_EVENT_CONFIG[event.type];
           const done = event.status === 'done';
@@ -515,7 +509,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
             <div
               key={event.id}
               className={cn(
-                'flex items-start justify-between gap-3 rounded-2xl bg-white dark:bg-zinc-900 p-4 ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm transition-all',
+                'flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/[0.5] p-3 shadow-sm backdrop-blur-xl transition-all dark:border-white/10 dark:bg-slate-900/[0.48]',
                 done && 'opacity-60 bg-zinc-50/50 dark:bg-zinc-900/50'
               )}
             >
@@ -535,20 +529,20 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 </button>
 
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
                     <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', config.badgeClass)}>
                       {t(config.labelKey)}
                     </span>
                     {done && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('evaluations.completed')}</span>}
                   </div>
-                  <h4 className={cn('text-sm font-bold text-zinc-900 dark:text-zinc-100', done && 'line-through text-zinc-500')}>
+                  <h4 className={cn('text-xs font-bold text-zinc-900 dark:text-zinc-100', done && 'line-through text-zinc-500')}>
                     {event.title}
                   </h4>
-                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
                     {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
                   </p>
                   {event.note && (
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-500 line-clamp-2 dark:text-zinc-400">
                       {event.note}
                     </p>
                   )}
@@ -566,13 +560,6 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
             </div>
           );
         })}
-        <button
-          type="button"
-          onClick={onAdd}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 py-3 text-xs font-semibold text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:hover:border-zinc-700 dark:hover:text-zinc-300 transition-colors"
-        >
-          <Plus className="h-4 w-4" /> {t('evaluations.addActivity')}
-        </button>
       </div>
     )}
     </section>

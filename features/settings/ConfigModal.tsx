@@ -321,7 +321,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                   {t('settings.cycle')}
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {CYCLES.map(c => {
                     const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
                     return (
@@ -330,14 +330,19 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         type="button"
                         onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
                         className={cn(
-                          'flex min-h-[60px] flex-col items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold transition-all cursor-pointer',
+                          'group relative flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 text-start transition-all duration-200 outline-none',
                           active
-                            ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
-                            : 'border-border/80 bg-card/82 text-muted-foreground hover:border-primary/20 hover:bg-accent/55 hover:text-foreground'
+                            ? 'border-[#0b57d0] bg-[#e8f0fe] text-[#001d35] font-semibold dark:border-[#a8c7fa] dark:bg-[#004a77]/60 dark:text-[#c2e7ff]'
+                            : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-300 dark:hover:bg-slate-800'
                         )}
                       >
-                        <c.icon className="h-4 w-4" />
-                        {t(`settings.cycle.${c.key}`)}
+                        <div className={cn(
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
+                          active ? 'bg-[#0b57d0] text-white dark:bg-[#a8c7fa] dark:text-[#001d35]' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        )}>
+                          <c.icon className="h-5 w-5" />
+                        </div>
+                        <span className="text-xs font-bold leading-snug">{t(`settings.cycle.${c.key}`)}</span>
                       </button>
                     );
                   })}

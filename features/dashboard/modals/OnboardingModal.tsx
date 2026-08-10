@@ -9,6 +9,7 @@ import { ScheduleTab } from '@/features/settings/components/ScheduleTab';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { Bell, GraduationCap, School, FlaskConical, Trash2, Plus, ChevronRight, ChevronLeft } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
 
 type Lang = 'fr' | 'ar';
 const LANG_KEY = 'onboarding_lang_v1';
@@ -410,8 +411,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                             </div>
                             
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-foreground">{t.teachingCycle}</label>
-                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                <label className="mb-2.5 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t.teachingCycle}</label>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {CYCLES.map(c => {
                                         const active = cycle === c.key;
                                         return (
@@ -419,16 +420,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                                 key={c.key}
                                                 type="button"
                                                 onClick={() => handleCycleChange(c.key)}
-                                                className={`flex h-10 items-center gap-2 rounded-lg border px-2.5 text-left transition-all ${
+                                                className={cn(
+                                                    'group relative flex min-h-[72px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-3.5 text-start transition-all duration-200 outline-none',
                                                     active
-                                                        ? 'border-[#0056D2] bg-blue-50/50 text-[#0056D2] shadow-sm dark:bg-[#0056D2]/10'
-                                                        : 'border-border bg-background hover:border-border/80 hover:bg-muted/50 text-foreground'
-                                                }`}
+                                                        ? 'border-[#0b57d0] bg-[#e8f0fe] text-[#001d35] shadow-xs dark:border-[#a8c7fa] dark:bg-[#004a77]/60 dark:text-[#c2e7ff]'
+                                                        : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-300 dark:hover:bg-slate-800'
+                                                )}
                                             >
-                                                <div className={`rounded-md p-1 ${active ? 'bg-[#0056D2]/10' : 'bg-muted'}`}>
-                                                    <c.icon className="h-3.5 w-3.5" />
+                                                <div className={cn(
+                                                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105',
+                                                    active
+                                                        ? 'bg-[#0b57d0] text-white dark:bg-[#a8c7fa] dark:text-[#001d35]'
+                                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                                )}>
+                                                    <c.icon className="h-6 w-6" />
                                                 </div>
-                                                <span className="text-xs font-medium">{t.cycleLabels[c.key]}</span>
+                                                <div className="min-w-0 flex-1">
+                                                    <span className="block text-sm font-bold leading-tight">{t.cycleLabels[c.key]}</span>
+                                                    <span className="mt-0.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                        {c.key === 'college' ? (isAr ? 'من الأولى إلى الثالثة إعدادي' : '1AC à 3AC') : c.key === 'lycee' ? (isAr ? 'الجذع المشترك والبكالوريا' : 'TC, 1BAC, 2BAC') : (isAr ? 'الأقسام التحضيرية للمدارس العليا' : 'CPGE (1ère & 2ème année)')}
+                                                    </span>
+                                                </div>
                                             </button>
                                         );
                                     })}

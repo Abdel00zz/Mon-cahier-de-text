@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Bell, CalendarCheck, CircleCheck, Eye, EyeOff, ListChecks, Loader2, Plus, Printer, TriangleAlert, User } from '@/components/ui/icons';
 import { SUBJECTS } from '@/constants';
 import { AppLocale } from '@/types';
+import { cn } from '@/lib/utils';
 
 type Mode = 'login' | 'register';
 type AuthLocale = Extract<AppLocale, 'ar' | 'fr'>;
@@ -14,18 +15,24 @@ const CYCLES: Cycle[] = ['college', 'lycee', 'prepa'];
 const AUTH_COPY = {
   fr: {
     brand: 'Cahier de textes en ligne', online: 'En ligne', teacherAccess: 'Accès enseignant',
-    organisation: "L’essentiel du guide", promise: 'Il sait où vous en êtes et vous alerte au bon moment.',
+    organisation: "L’essentiel du guide", promise: 'Il sait où vous en êtes et vous alerte au bon moment',
     promiseDetail: "L’application croise cahier, emploi du temps et calendrier pour signaler l’utile, éviter les fausses alertes et préparer la prochaine séance.",
+    featureHighlights: [
+      { text: 'Cahier de textes au design raffiné et très bien structuré', desc: 'Une interface claire, ergonomique et sans superflu.' },
+      { text: 'Le cahier numérique rend le remplissage simple, rapide et agréable', desc: 'Saisie intuitive sans double travail ni perte de temps.' },
+      { text: 'Accès fluide depuis votre téléphone, ordinateur, tablette, etc.', desc: 'Disponible sur tous vos appareils, en ligne ou hors connexion.' },
+      { text: 'Une technologie de pointe utilisée dans les grandes institutions éducatives', desc: 'Calcul automatique des progressions et alertes intelligentes.' },
+    ],
     today: 'Circuit pédagogique', nextSessions: 'Votre prochaine séance est déjà prête',
-    plan: 'Alertes au bon moment', planDetail: 'Retards et dates à vérifier.',
-    record: 'Progression calculée', recordDetail: 'Sans double saisie.',
-    assessments: 'Prochaine étape claire', assessmentsDetail: 'Reprenez au bon endroit.',
+    plan: 'Alertes au bon moment', planDetail: 'Retards et dates à vérifier',
+    record: 'Progression calculée', recordDetail: 'Sans double saisie',
+    assessments: 'Prochaine étape claire', assessmentsDetail: 'Reprenez au bon endroit',
     printTitle: 'Impression haute qualité', printDetail: 'Imprimez votre cahier de textes avec une mise en page nette, prête à le donner à la direction, ou à l’inspecteur, et prête à archiver.',
     offline: 'Hors ligne', automaticSync: 'Synchronisation automatique', languageLabel: 'Choisir la langue',
     heroAlt: 'Enseignant préparant ses prochaines séances dans une salle de classe',
-    teacherSpace: '- Espace enseignant', welcome: 'Bon retour', createSpace: 'Créez votre espace',
-    welcomeDetail: 'Retrouvez vos alertes utiles, la progression de vos classes et la prochaine séance à préparer.',
-    createDetail: 'Créez votre compte, puis ajoutez votre emploi du temps pour activer automatiquement le suivi.',
+    teacherSpace: '', welcome: 'Cahier de textes en ligne · Bon retour', createSpace: 'Créez votre espace',
+    welcomeDetail: 'Retrouvez vos alertes utiles, la progression de vos classes et la prochaine séance à préparer',
+    createDetail: 'Créez votre compte, puis ajoutez votre emploi du temps pour activer automatiquement le suivi',
     login: 'Connexion', createAccount: 'Créer un compte', name: 'Nom', firstName: 'Prénom',
     phone: 'Téléphone', password: 'Mot de passe', confirmPassword: 'Confirmer le mot de passe',
     showPassword: 'Afficher le mot de passe', hidePassword: 'Masquer le mot de passe', capsLock: 'Verr. maj. activée',
@@ -39,18 +46,24 @@ const AUTH_COPY = {
   },
   ar: {
     brand: 'دفتر النصوص الرقمي', online: 'رقمي', teacherAccess: 'فضاء الأستاذ',
-    organisation: 'خلاصة دليل الاستخدام', promise: 'يعرف أين توقّفت، وينبّهك في الوقت المناسب.',
+    organisation: 'خلاصة دليل الاستخدام', promise: 'يعرف أين توقّفت، وينبّهك في الوقت المناسب',
     promiseDetail: 'يربط الدفتر باستعمال الزمن والتقويم، فيكشف ما يستحق الانتباه، ويتجنب التنبيهات الخاطئة، ويحدّد بداية الحصة المقبلة.',
+    featureHighlights: [
+      { text: 'دفتر نصوص بتصميم راقٍ ومُنظَّم جدّاً', desc: 'واجهة عصرية مريحة للعين ومبسطة لأقصى درجة.' },
+      { text: 'الدفتر الرقمي يجعل مهمة ملء دفتر النصوص سهلة وممتعة', desc: 'إدخال سريع وتلقائي دون تكرار أو مجهود زائد.' },
+      { text: 'التمكن من الفتح والمتابعة من خلال هاتفك، حاسوبك، إلخ...', desc: 'متاح على جميع أجهزتك الذكية مع مزامنة فورية.' },
+      { text: 'تكنولوجيا جد متقدمة مستعملة في أبرز المؤسسات التعليمية العالمية', desc: 'حساب تلقائي للتقدم وتنبيهات ذكية ومزامنة آمنة.' },
+    ],
     today: 'المسار التربوي', nextSessions: 'حصتك المقبلة جاهزة للتحضير',
-    plan: 'تنبيهات في وقتها', planDetail: 'تأخر وتواريخ تحتاج التحقق.',
-    record: 'تقدّم محسوب تلقائياً', recordDetail: 'دون إدخال المعطيات مرتين.',
-    assessments: 'خطوتك المقبلة واضحة', assessmentsDetail: 'استأنف من المكان الصحيح.',
+    plan: 'تنبيهات في وقتها', planDetail: 'تأخر وتواريخ تحتاج التحقق',
+    record: 'تقدّم محسوب تلقائياً', recordDetail: 'دون إدخال المعطيات مرتين',
+    assessments: 'خطوتك المقبلة واضحة', assessmentsDetail: 'استأنف من المكان الصحيح',
     printTitle: 'طباعة عالية الجودة', printDetail: 'اطبع دفتر النصوص بتنسيق واضح، جاهز للتقديم للإدارة أو المفتش وجاهز للأرشفة.',
     offline: 'يعمل دون اتصال', automaticSync: 'مزامنة تلقائية', languageLabel: 'اختيار اللغة',
     heroAlt: 'أستاذ يحضّر حصصه المقبلة داخل قاعة دراسية',
-    teacherSpace: '- فضاء الأستاذ', welcome: 'مرحباً بعودتك', createSpace: 'أنشئ فضاءك',
-    welcomeDetail: 'اطّلع على التنبيهات المفيدة، وتقدّم أقسامك، والحصة التي تحتاج إلى التحضير.',
-    createDetail: 'أنشئ حسابك، ثم أضف استعمال الزمن لتعمل المتابعة والتنبيهات تلقائياً.',
+    teacherSpace: '', welcome: 'دفتر النصوص الرقمي · مرحباً بعودتك', createSpace: 'أنشئ فضاءك',
+    welcomeDetail: 'اطّلع على التنبيهات المفيدة، وتقدّم أقسامك، والحصة التي تحتاج إلى التحضير',
+    createDetail: 'أنشئ حسابك، ثم أضف استعمال الزمن لتعمل المتابعة والتنبيهات تلقائياً',
     login: 'تسجيل الدخول', createAccount: 'إنشاء حساب', name: 'النسب', firstName: 'الاسم الشخصي',
     phone: 'رقم الهاتف', password: 'كلمة المرور', confirmPassword: 'تأكيد كلمة المرور',
     showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور', capsLock: 'مفتاح الأحرف الكبيرة مفعّل',
@@ -141,7 +154,7 @@ const PasswordInput: React.FC<{
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          className="h-11 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold pe-10 text-xs transition-colors"
+          className="h-10.5 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold pe-10 text-xs sm:text-[13px] transition-colors shadow-2xs"
         />
         <button
           type="button"
@@ -244,14 +257,30 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             {renderLanguageSwitch()}
           </div>
 
-          <div className="relative mt-6 overflow-hidden rounded-xl bg-slate-200 shadow-[0_14px_30px_rgba(30,58,95,0.13)]">
+          <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200 shadow-[0_14px_30px_rgba(30,58,95,0.13)] dark:border-zinc-800">
             <img src="/auth/teacher-planning-hero.webp" alt={copy.heroAlt} className="h-[240px] w-full object-cover xl:h-[280px]" loading="eager" decoding="async" />
-            <span className="absolute bottom-3 end-3 rounded-md border border-white/50 bg-slate-950/55 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">{copy.teacherAccess}</span>
+            {copy.teacherAccess && (
+              <span className="absolute bottom-3 end-3 rounded-md border border-white/50 bg-slate-950/55 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">{copy.teacherAccess}</span>
+            )}
           </div>
 
-          <div className="mt-6">
-            <h2 className={`font-extrabold text-[#1d4291] dark:text-blue-300 ${isRtl ? 'font-ar-display text-[2rem] leading-[1.35] xl:text-[2.35rem]' : 'font-display text-[1.55rem] leading-tight tracking-tight xl:text-[1.8rem]'}`}>{copy.promise}</h2>
-            <p className="mt-2.5 max-w-2xl text-sm leading-7 text-slate-600 dark:text-zinc-300">{copy.promiseDetail}</p>
+          <div className="mt-5 space-y-2.5">
+            <h2 className={`font-extrabold text-[#1d4291] dark:text-blue-300 ${isRtl ? 'font-ar-display text-[1.85rem] leading-[1.3]' : 'font-display text-[1.45rem] leading-tight tracking-tight'}`}>{copy.promise}</h2>
+            <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300">{copy.promiseDetail}</p>
+            
+            <div className="grid grid-cols-1 gap-2 pt-1">
+              {copy.featureHighlights.map((feat, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 rounded-xl border border-blue-100/80 bg-white/80 p-2.5 shadow-2xs transition-all hover:border-blue-200 dark:border-zinc-800 dark:bg-zinc-950/80">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0b57d0] text-white dark:bg-[#a8c7fa] dark:text-[#001d35]">
+                    <CircleCheck className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold leading-snug text-slate-900 dark:text-slate-100">{feat.text}</p>
+                    <p className="mt-0.5 text-[11px] leading-normal text-slate-500 dark:text-slate-400">{feat.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mt-auto grid grid-cols-2 gap-3 pt-6 xl:grid-cols-4">
@@ -288,8 +317,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
         >
           {/* Header section (above tabs) */}
           <header className="mb-5 sm:mb-6">
-            <p className={`text-xs font-extrabold text-primary ${isRtl ? '' : 'uppercase tracking-[0.14em]'}`}>{copy.teacherSpace}</p>
-            <h2 className={`mt-2 font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2.25rem] leading-[1.3]' : 'text-[1.75rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
+            <h2 className={`font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2rem] leading-[1.3]' : 'text-[1.6rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {isRegister ? copy.createDetail : (
                 isRtl ? (
@@ -306,18 +334,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           </header>
 
           {/* Segment/Tab Control */}
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-secondary/65 p-1 sm:mb-8 dark:bg-zinc-900">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 sm:mb-8 dark:bg-zinc-800/80">
             {(['login', 'register'] as const).map(value => (
               <button
                 key={value}
                 type="button"
                 onClick={() => switchMode(value)}
-                className={`relative min-h-11 rounded-md px-2 py-2 text-xs font-bold transition-colors focus:outline-none ${mode === value ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`relative min-h-10.5 rounded-md px-2 py-2 text-xs font-bold transition-colors focus:outline-none ${mode === value ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
               >
                 {mode === value && (
                   <motion.span
                     layoutId="auth-tab"
-                    className="absolute inset-0 rounded-md border border-border/75 bg-card shadow-2xs dark:border-zinc-700 dark:bg-zinc-800"
+                    className="absolute inset-0 rounded-md border border-slate-200/50 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-700"
                     transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
                   />
                 )}
@@ -345,7 +373,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                       onChange={e => setNom(e.target.value)}
                       autoComplete="family-name"
                       placeholder={isRtl ? 'العلمي' : 'Benali'}
-                      className="h-11 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs transition-colors"
+                      className="h-10.5 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs sm:text-[13px] transition-colors shadow-2xs"
                     />
                   </label>
                   <label className="block">
@@ -355,7 +383,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                       onChange={e => setPrenom(e.target.value)}
                       autoComplete="given-name"
                       placeholder={isRtl ? 'سلمى' : 'Malek'}
-                      className="h-11 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs transition-colors"
+                      className="h-10.5 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs sm:text-[13px] transition-colors shadow-2xs"
                     />
                   </label>
                 </motion.div>
@@ -378,9 +406,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                   placeholder="06 12 34 56 78"
                   required
                   aria-describedby={error ? errorId : undefined}
-                  className="h-11 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs transition-colors pe-10"
+                  className="h-10.5 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs sm:text-[13px] transition-colors pe-10 shadow-2xs"
                 />
-                {phoneValid && <CircleCheck className="pointer-events-none absolute end-3 top-1/2 h-5 w-5 -translate-y-1/2 text-success animate-fade-in" />}
+                {phoneValid && <CircleCheck className="pointer-events-none absolute end-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-success animate-fade-in" />}
               </div>
             </label>
 
@@ -426,7 +454,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                   {/* Cycles */}
                   <div className="pt-1.5">
                     <span className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">{copy.cycles}</span>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                       {CYCLES.map(cycle => {
                         const active = cycles.includes(cycle);
                         return (
@@ -435,11 +463,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                             type="button"
                             onClick={() => toggleCycle(cycle)}
                             aria-pressed={active}
-                            className={`min-h-9 rounded-lg border text-[11px] font-bold transition-all active:scale-95 cursor-pointer ${
+                            className={cn(
+                              'flex min-h-[52px] w-full items-center justify-center rounded-2xl border-2 px-3 py-2 text-xs font-bold transition-all active:scale-[0.98] cursor-pointer outline-none',
                               active
-                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                                : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:bg-muted'
-                            }`}
+                                ? 'border-[#0b57d0] bg-[#e8f0fe] text-[#001d35] dark:border-[#a8c7fa] dark:bg-[#004a77] dark:text-[#c2e7ff]'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-300'
+                            )}
                           >
                             {CYCLE_LABELS[displayLocale][cycle]}
                           </button>
@@ -490,14 +519,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative mt-4 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary text-xs font-bold text-white shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 sm:text-sm"
+              className="group relative mt-4 flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary text-[13px] font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <div className="absolute inset-0 bg-background/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               {isSubmitting ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {copy.wait}</>
               ) : (
                 <>
-                  {isRegister ? <Plus className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                  {isRegister ? <Plus className="h-4 w-4" /> : <User className="h-4 w-4" />}
                   {isRegister ? copy.createMyAccount : copy.signIn}
                 </>
               )}

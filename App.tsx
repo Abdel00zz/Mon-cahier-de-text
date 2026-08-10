@@ -314,7 +314,6 @@ const App: React.FC = () => {
               isOpen={isEvaluationsOpen}
               onClose={() => setIsEvaluationsOpen(false)}
               title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
-              subtitle={translateLocaleMessage(config.applicationLocale ?? 'ar', 'evaluations.selectedClassTracking')}
             >
               <Suspense fallback={<AppBootSkeleton />}>
                 <DevoirsView

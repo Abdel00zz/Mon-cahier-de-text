@@ -93,24 +93,24 @@ export const TabBar: React.FC<TabBarProps> = ({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'relative flex h-11 w-full items-center justify-center rounded-xl px-3 text-muted-foreground transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 lg:h-12',
-                  isExpanded && 'lg:justify-start lg:gap-3 lg:px-5',
+                  'relative flex h-11 w-full items-center justify-center rounded-full px-3 transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0b57d0]/30 lg:h-12',
+                  isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-5',
                   isActive
-                    ? cn('bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none')
-                    : 'hover:bg-muted/75 hover:text-foreground',
+                    ? 'bg-[#c2e7ff] text-[#001d35] font-semibold dark:bg-[#004a77] dark:text-[#c2e7ff]'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                  <Icon className={cn('h-[15px] w-[15px] transition-transform duration-200', isActive ? 'scale-105' : '')} />
+                  <Icon className={cn('h-[18px] w-[18px] transition-transform duration-200', isActive ? 'scale-110 text-[#0b57d0] dark:text-[#a8c7fa]' : '')} />
                   {count ? (
-                    <span className={cn('absolute -top-[3px] flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-0.5 text-[7px] font-bold leading-none text-destructive-foreground ring-[1.5px] ring-white dark:ring-zinc-950', isRtl ? '-left-1.5' : '-right-1.5')}>
+                    <span className={cn('absolute -top-[3px] flex h-4 min-w-4 items-center justify-center rounded-full bg-[#b3261e] px-1 text-[8px] font-bold leading-none text-white ring-2 ring-white dark:bg-[#f2b8b5] dark:text-[#601410] dark:ring-[#1e1f20]', isRtl ? '-left-2' : '-right-2')}>
                       {countLabel(count)}
                     </span>
                   ) : null}
                 </span>
-                <span className={cn('hidden min-w-0 flex-1 truncate text-start text-[13px]', isExpanded && 'lg:block', isActive ? 'font-bold text-primary' : 'font-medium')}>
+                <span className={cn('hidden min-w-0 flex-1 truncate text-start text-sm', isExpanded && 'lg:block', isActive ? 'font-bold text-[#001d35] dark:text-[#c2e7ff]' : 'font-medium')}>
                   {copy[tab.id]}
                 </span>
               </button>
@@ -118,41 +118,41 @@ export const TabBar: React.FC<TabBarProps> = ({
           })}
         </div>
 
-        <div className="px-2 pb-2 lg:px-0">
+        <div className="px-2 pb-2 lg:px-2">
           <button
             type="button"
             onClick={() => goTo('settings')}
             className={cn(
-              'flex h-11 w-full items-center justify-center rounded-xl px-3 text-muted-foreground transition-colors hover:bg-muted/75 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              isExpanded && 'lg:justify-start lg:gap-3 lg:px-5',
-              activeTab === 'settings' && cn('bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary', isRtl ? 'lg:rounded-l-full lg:rounded-r-none' : 'lg:rounded-r-full lg:rounded-l-none'),
+              'flex h-11 w-full items-center justify-center rounded-full px-3 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0b57d0]/30 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+              isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-5',
+              activeTab === 'settings' && 'bg-[#c2e7ff] text-[#001d35] font-semibold dark:bg-[#004a77] dark:text-[#c2e7ff]',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[15px] w-[15px] shrink-0', activeTab === 'settings' && 'text-primary')} />
-            <span className={cn('hidden flex-1 text-start text-[13px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' && 'font-bold')}>{copy.settings}</span>
+            <Settings className={cn('h-[18px] w-[18px] shrink-0', activeTab === 'settings' && 'text-[#0b57d0] dark:text-[#a8c7fa]')} />
+            <span className={cn('hidden flex-1 text-start text-sm font-medium', isExpanded && 'lg:block', activeTab === 'settings' && 'font-bold text-[#001d35] dark:text-[#c2e7ff]')}>{copy.settings}</span>
           </button>
           <button
             type="button"
             onClick={() => goTo('help')}
             className={cn(
-              'mt-1 flex h-11 w-full items-center justify-center rounded-xl px-3 text-muted-foreground transition-colors hover:bg-muted/75 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              isExpanded && 'lg:justify-start lg:gap-3 lg:px-5',
+              'mt-1 flex h-11 w-full items-center justify-center rounded-full px-3 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0b57d0]/30 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+              isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-5',
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-[15px] w-[15px] shrink-0" />
-            <span className={cn('hidden flex-1 text-start text-[13px] font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
+            <CircleHelp className="h-[18px] w-[18px] shrink-0" />
+            <span className={cn('hidden flex-1 text-start text-sm font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
           </button>
         </div>
       </nav>
 
       <nav
-        className="mobile-tab-bar fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] z-40 overflow-hidden rounded-[22px] border border-white/70 bg-card/78 text-card-foreground shadow-[0_14px_42px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.04] backdrop-blur-[28px] backdrop-saturate-[1.8] transition-[transform,opacity] duration-200 print:hidden dark:border-white/10 dark:bg-zinc-900/78 sm:hidden"
+        className="mobile-tab-bar fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-40 overflow-hidden rounded-full border border-slate-200/80 bg-white/90 text-slate-900 shadow-lg ring-1 ring-slate-900/5 backdrop-blur-xl transition-[transform,opacity] duration-200 print:hidden dark:border-slate-800 dark:bg-[#1e1f20]/90 dark:text-slate-100 sm:hidden"
         aria-label={copy.mobileNav}
       >
-        <div className="mx-auto flex h-[3.65rem] max-w-md items-center justify-around px-2">
+        <div className="mx-auto flex h-14 max-w-md items-center justify-around px-2">
           {tabs.filter(tab => tab.id !== 'evaluations').map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -163,29 +163,25 @@ export const TabBar: React.FC<TabBarProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => goTo(tab.id)}
-                className={cn('relative flex min-h-11 flex-1 flex-col items-center justify-center rounded-2xl py-1 transition-all duration-200 active:scale-95', isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
+                className={cn('relative flex h-10 flex-1 flex-col items-center justify-center rounded-full py-1 transition-all duration-200 active:scale-95', isActive ? 'bg-[#c2e7ff] text-[#001d35] font-bold dark:bg-[#004a77] dark:text-[#c2e7ff]' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400')}
               >
                 <div className="relative">
-                  <Icon className={cn('h-[17px] w-[17px] transition-transform duration-200', isActive && 'scale-110 stroke-[2.2]')} />
+                  <Icon className={cn('h-5 w-5 transition-transform duration-200', isActive && 'scale-105 stroke-[2.2] text-[#0b57d0] dark:text-[#a8c7fa]')} />
                   {count ? (
-                <span className={cn('absolute -top-[3px] flex h-3 min-w-3 items-center justify-center rounded-full bg-destructive px-0.5 text-[7px] font-bold leading-none text-destructive-foreground ring-[1.5px] ring-card', isRtl ? '-left-1' : '-right-1')}>
+                    <span className={cn('absolute -top-[3px] flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#b3261e] px-1 text-[8px] font-bold leading-none text-white ring-2 ring-white dark:bg-[#f2b8b5] dark:text-[#601410]', isRtl ? '-left-1' : '-right-1')}>
                       {countLabel(count)}
                     </span>
                   ) : null}
                 </div>
-                <span className={cn('mt-0.5 text-[10px] tracking-tight', isActive ? 'font-bold text-primary' : 'font-medium text-muted-foreground')}>
-                  {copy[tab.id]}
-                </span>
               </button>
             );
           })}
           <button
             type="button"
             onClick={() => goTo('settings')}
-            className={cn('relative flex min-h-11 flex-1 flex-col items-center justify-center rounded-2xl py-1 transition-all duration-200 active:scale-95', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground hover:text-foreground')}
+            className={cn('relative flex h-10 flex-1 flex-col items-center justify-center rounded-full py-1 transition-all duration-200 active:scale-95', activeTab === 'settings' ? 'bg-[#c2e7ff] text-[#001d35] font-bold dark:bg-[#004a77] dark:text-[#c2e7ff]' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400')}
           >
-            <Settings className={cn('h-[17px] w-[17px] transition-transform duration-200', activeTab === 'settings' && 'scale-110 stroke-[2.2]')} />
-            <span className={cn('mt-0.5 text-[10px] tracking-tight', activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-muted-foreground')}>{copy.settings}</span>
+            <Settings className={cn('h-5 w-5 transition-transform duration-200', activeTab === 'settings' && 'scale-105 stroke-[2.2] text-[#0b57d0] dark:text-[#a8c7fa]')} />
           </button>
         </div>
       </nav>

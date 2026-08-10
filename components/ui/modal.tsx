@@ -22,6 +22,7 @@ interface ModalProps {
   bodyClassName?: string
   footerClassName?: string
   hideClose?: boolean
+  swipeToDismiss?: boolean
 }
 
 const maxWidthClassMap: Record<string, string> = {
@@ -48,6 +49,7 @@ export function Modal({
   bodyClassName,
   footerClassName,
   hideClose = false,
+  swipeToDismiss = true,
 }: ModalProps) {
   const onChange = (open: boolean) => {
     if (!open && onClose) {
@@ -61,11 +63,11 @@ export function Modal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
-      <DialogContent className={cn(mwClass, className)} hideClose={hideClose}>
+      <DialogContent className={cn(mwClass, className)} hideClose={hideClose} onSwipeDown={swipeToDismiss ? onClose : undefined}>
         {(title || description) && (
           <DialogHeader
             className={cn(
-              "modal-header shrink-0 bg-card/82 text-card-foreground px-5 pt-5 pb-2 backdrop-blur-2xl backdrop-saturate-150 sm:bg-card sm:px-6 sm:pt-6",
+              "modal-header shrink-0 border-b border-slate-200/50 bg-white/50 px-6 pt-6 pb-4 text-slate-900 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-100 backdrop-blur-md",
               headerClassName,
             )}
           >
@@ -75,8 +77,9 @@ export function Modal({
         )}
         <div
           className={cn(
-            "modal-body custom-scrollbar min-h-0 min-w-0 scroll-pb-20 overflow-y-auto overscroll-contain bg-background/62 px-5 py-4 [overflow-anchor:none] sm:px-6 sm:py-5",
+            "modal-body custom-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-6 py-5 [overflow-anchor:none]",
             !(title || description) && "pt-12",
+            !footer && "pb-[calc(1.25rem+env(safe-area-inset-bottom))]",
             bodyClassName,
           )}
         >
@@ -85,7 +88,7 @@ export function Modal({
         {footer && (
           <DialogFooter
             className={cn(
-              "modal-footer bg-card/84 text-card-foreground px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-2xl backdrop-saturate-150 sm:bg-card sm:px-6 sm:py-4",
+              "modal-footer border-t border-slate-200/50 bg-white/50 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 text-slate-900 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-100 backdrop-blur-md",
               footerClassName,
             )}
           >

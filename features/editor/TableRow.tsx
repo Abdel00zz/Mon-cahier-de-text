@@ -129,7 +129,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
 
     return (
-      <div className={`flex h-full min-h-[44px] w-full flex-col items-center justify-center py-1.5 px-2 transition-colors duration-150 ${bgClass}`}>
+      <div className={`flex h-full min-h-[52px] w-full flex-col items-center justify-center px-2 py-1.5 transition-colors duration-200 ${bgClass}`}>
         {isMiddle && <DateCard dateStr={dateStr} hasWarning={hasWarning} />}
       </div>
     );
@@ -137,7 +137,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
   // Not merged
   return (
-    <div className={`flex h-full min-h-[44px] w-full flex-col items-center justify-center py-1.5 px-2 transition-colors duration-150 ${bgClass}`}>
+    <div className={`flex h-full min-h-[52px] w-full flex-col items-center justify-center px-2 py-1.5 transition-colors duration-200 ${bgClass}`}>
       <DateCard dateStr={dateStr} hasWarning={hasWarning} />
     </div>
   );
@@ -289,8 +289,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-warning/[0.07]'
     : hasAssignedDate
-      ? 'bg-zinc-50/40'
-      : 'bg-card';
+      ? 'bg-white/[0.28] dark:bg-slate-950/[0.2]'
+      : 'bg-white/[0.18] dark:bg-slate-950/[0.12]';
   const rowWash = isSelected ? 'bg-primary/[0.085]' : datedWash;
   const hoverWash = isSelected
     ? ''
@@ -312,8 +312,8 @@ const TableRowComponent: FC<TableRowProps> = ({
     : hasAssignedDate
       ? hasWarning
         ? 'border-r border-warning/40'
-        : 'border-r border-zinc-200/90'
-      : 'border-r border-border/80';
+        : 'border-r border-white/65 dark:border-white/10'
+      : 'border-r border-white/55 dark:border-white/10';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
@@ -321,8 +321,8 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? hasWarning
           ? 'md:border-r md:border-warning/40'
-          : 'md:border-r md:border-zinc-200/90'
-        : 'md:border-r md:border-border/80';
+          : 'md:border-r md:border-white/65 dark:border-white/10'
+        : 'md:border-r md:border-white/55 dark:border-white/10';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;

@@ -97,27 +97,27 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     return (
         <article
-            className={`group relative flex min-h-[154px] flex-col overflow-hidden rounded-[10px] border border-border/75 bg-card text-card-foreground shadow-2xs transition-[border-color,box-shadow,transform] duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:shadow-md sm:min-h-[160px]`}
+            className={`group relative flex min-h-[160px] flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white text-slate-900 shadow-xs transition-all duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-100 sm:min-h-[170px]`}
         >
             <button
                 type="button"
                 onClick={handleCardClick}
-                className={`flex min-h-[106px] w-full min-w-0 flex-1 touch-manipulation flex-col p-2.5 text-center outline-none transition-colors hover:bg-muted/20 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset active:bg-muted/45 sm:p-3 ${cycleBadge?.focusClass ?? 'focus-visible:ring-primary/35'}`}
+                className={`flex min-h-[110px] w-full min-w-0 flex-1 touch-manipulation flex-col p-3 text-center outline-none transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30 sm:p-4`}
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <div className="flex min-h-5 items-center">
                     {cycleBadge ? (
-                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cycleBadge.style}`}>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cycleBadge.style}`}>
                             {cycleLabel}
                         </span>
                     ) : null}
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center px-1 py-1.5 text-center">
-                    <div className={`mb-1.5 flex h-9 w-9 items-center justify-center rounded-lg shadow-sm transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
+                    <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-2xl shadow-2xs transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
                         <Users className="h-5 w-5" />
                     </div>
                     <h3
-                        className={`line-clamp-2 text-base font-bold leading-tight tracking-tight text-foreground transition-colors sm:text-lg ${isArabic ? 'font-ar' : 'font-display'}`}
+                        className={`line-clamp-2 text-base font-bold leading-tight tracking-tight text-slate-900 transition-colors dark:text-slate-100 sm:text-lg ${isArabic ? 'font-ar' : 'font-display'}`}
                         title={displayName}
                     >
                         {formatSuperscript(mainName)}
@@ -131,29 +131,29 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="grid min-h-12 w-full shrink-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] border-t border-border/55 bg-muted/10"
+                className="grid min-h-12 w-full shrink-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] border-t border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/30"
             >
                 <button
                     type="button"
                     onClick={handleConfigureClick}
-                    className="flex min-h-12 touch-manipulation items-center justify-center gap-1.5 px-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted/55 hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-muted sm:px-2.5 sm:text-[11px]"
+                    className="flex min-h-12 touch-manipulation items-center justify-center gap-1.5 px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30 active:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                     title={t('dashboard.classSettings')}
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="h-[14px] w-[14px] shrink-0" />
+                    <Settings className="h-4 w-4 shrink-0 text-slate-500" />
                     <span className="truncate">{t('dashboard.classSettings')}</span>
                 </button>
                 <button
                     type="button"
                     onClick={handleNotificationsClick}
-                    className="flex min-h-12 min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border/55 px-1.5 text-primary transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/35 active:bg-primary/12 sm:px-2"
+                    className="flex min-h-12 min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-slate-100 px-2 text-[#0b57d0] transition-colors hover:bg-[#e8f0fe] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30 active:bg-[#d2e3fc] dark:border-slate-800 dark:text-[#a8c7fa] dark:hover:bg-[#004a77]/40"
                     title={notificationButtonLabel}
                     aria-label={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className="h-[18px] w-[18px] shrink-0" />
+                    <Info className="h-4 w-4 shrink-0" />
                     {issueStatus && (
-                        <span className="min-w-0 text-center text-[8px] font-semibold leading-[1.15] text-red-600 dark:text-red-400 sm:text-[9px]">
+                        <span className="min-w-0 text-center text-[9px] font-semibold leading-[1.15] text-[#b3261e] dark:text-[#f2b8b5]">
                             ({issueStatus})
                         </span>
                     )}

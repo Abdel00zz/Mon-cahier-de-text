@@ -185,6 +185,52 @@ export const loadOfficialStudentEvents = async (force = false): Promise<Official
     return cached;
 };
 
+const ARABIC_EVENT_TITLES: Record<string, string> = {
+    'rentree-effective-secondaire': 'الانطلاق الفعلي للدراسة',
+    's1-last-assessments': 'آخر فروض المراقبة المستمرة للدورة الأولى',
+    's1-report-cards': 'تسليم نتائج الدورة الأولى',
+    'college-local-exam-3ac': 'الامتحان المحلي الموحد - الثالثة إعدادي',
+    'college-s2-last-assessments': 'آخر فروض المراقبة المستمرة للدورة الثانية',
+    'college-regional-preparation': 'التأطير الجماعي للامتحان الجهوي - الثالثة إعدادي',
+    'college-regional-exam-3ac': 'الامتحان الجهوي الموحد - الثالثة إعدادي',
+    'college-results-s2': 'تسليم نتائج نهاية السنة الدراسية',
+    'first-bac-regional-preparation': 'التأطير الجماعي للامتحان الجهوي - الأولى بكالوريا',
+    'first-bac-regional-regular': 'الامتحان الجهوي - الدورة العادية (الأولى بكالوريا)',
+    'first-bac-regional-resit': 'الامتحان الجهوي - الدورة الاستدراكية (الأولى بكالوريا)',
+    'first-bac-results': 'نتائج الامتحان الجهوي - الأولى بكالوريا',
+    'second-bac-last-assessments': 'آخر فروض المراقبة المستمرة - الثانية بكالوريا',
+    'second-bac-national-preparation': 'التأطير الجماعي للامتحان الوطني - الثانية بكالوريا',
+    'second-bac-national-regular': 'الامتحان الوطني للبكالوريا - الدورة العادية',
+    'second-bac-regular-results': 'نتائج البكالوريا - الدورة العادية',
+    'second-bac-resit-preparation': 'الدعم والتأطير الجماعي للدورة الاستدراكية',
+    'second-bac-national-resit': 'الامتحان الوطني للبكالوريا - الدورة الاستدراكية',
+    'second-bac-resit-results': 'نتائج البكالوريا - الدورة الاستدراكية',
+    'support-remediation-college-lycee': 'أنشطة الدعم وتثبيت التعلمات',
+    'science-olympiads-1bac-1': 'أولمبياد العلوم (الفيزياء، الكيمياء، الحياة والأرض) - المرحلة 1',
+    'science-olympiads-1bac-2': 'أولمبياد العلوم - المرحلة 2',
+    'science-olympiads-1bac-3': 'أولمبياد العلوم - المرحلة 3',
+    'science-olympiads-1bac-4': 'أولمبياد العلوم - المرحلة 4',
+    'math-olympiad-secondary-1': 'الأولمبياد الوطنية في الرياضيات - المرحلة 1',
+    'math-olympiad-secondary-2': 'الأولمبياد الوطنية في الرياضيات - المرحلة 2',
+    'regional-math-olympiad-3ac': 'النهائي الجهوي لأولمبياد الرياضيات - الثالثة إعدادي',
+    'educational-robotics-3ac': 'النهائيات الوطنية للروبوتيات التربوية - الثالثة إعدادي',
+    'general-science-technology-2bac': 'المباراة العامة للعلوم والتقنيات - الثانية بكالوريا',
+    'youth-science-challenge-stage-1': 'تحدي الشباب للعلوم والتقنيات - المحطة الأولى',
+    'youth-science-challenge-stage-2': 'تحدي الشباب للعلوم والتقنيات - المحطة الثانية',
+    'programming-robotics-secondary': 'المسابقات الوطنية للبرمجة والروبوتيات',
+    'national-reading-competitions': 'المسابقات الوطنية القعدية في القرائية',
+    'arabic-reading-challenge': 'تحدي القراءة العربي',
+    'end-study-2bac': 'تاريخ إنهاء الدراسة - الثانية بكالوريا',
+    'end-study-college-tc-1bac': 'تاريخ إنهاء الدراسة (الإعدادي، الجذع المشترك والأولى بكالوريا)',
+};
+
+export const getLocalizedEventTitle = (event: OfficialStudentEvent, locale: string): string => {
+    if (locale === 'ar' && ARABIC_EVENT_TITLES[event.id]) {
+        return ARABIC_EVENT_TITLES[event.id];
+    }
+    return event.title;
+};
+
 export const getOfficialStudentEventsForClass = (
     classInfo: Pick<ClassInfo, 'name' | 'cycle'>,
     category?: OfficialStudentEventCategory,

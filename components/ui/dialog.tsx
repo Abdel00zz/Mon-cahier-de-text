@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss"
 
 const Dialog = DialogPrimitive.Root
 
@@ -15,7 +16,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "dialog-overlay fixed inset-0 z-50 bg-slate-950/32 backdrop-blur-[6px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "dialog-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 transition-all duration-300",
       className
     )}
     {...props}
@@ -25,39 +26,58 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   hideClose?: boolean;
+  /** Active la fermeture tactile sur la poignée ou l'en-tête de la feuille mobile. */
+  onSwipeDown?: () => void;
 }
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, hideClose = false, ...props }, ref) => {
-  // Le portail Radix est volontairement autonome : il ne doit pas dépendre
-  // d'un contexte React externe pour pouvoir afficher une modale au démarrage.
+>(({ className, children, hideClose = false, onSwipeDown, style, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...props }, ref) => {
   const isRtl = typeof document !== "undefined" && document.documentElement.dir === "rtl"
   const closeLabel = isRtl ? "إغلاق" : "Fermer"
+  const swipe = useSwipeToDismiss({ onDismiss: onSwipeDown ?? (() => undefined), enabled: Boolean(onSwipeDown) })
   return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       dir={isRtl ? "rtl" : "ltr"}
-      className={cn(
-        "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(var(--app-viewport-height,100dvh)-0.5rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[1.5rem] rounded-b-none border border-white/65 bg-card/96 p-0 text-card-foreground shadow-[0_-18px_55px_rgba(15,23,42,0.18)] outline-none backdrop-blur-[28px] backdrop-saturate-[1.8] will-change-transform data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full dark:border-white/10 sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2.5rem)] sm:w-[calc(100vw-2rem)] sm:rounded-2xl sm:border-border/80 sm:shadow-[0_28px_90px_rgba(15,23,42,0.18),0_4px_18px_rgba(15,23,42,0.08)] sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
-        className
-      )}
-      {...props}
-    >
-      <div aria-hidden className="absolute left-1/2 top-2 h-1.5 w-9 -translate-x-1/2 rounded-full bg-muted-foreground/25 sm:hidden" />
+        className={cn(
+          "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(var(--app-viewport-height,100dvh)-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[28px] rounded-b-none border border-slate-200/50 bg-white/90 p-0 text-slate-900 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18)] outline-none backdrop-blur-2xl transition-all duration-300 will-change-transform data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full dark:border-slate-800/50 dark:bg-slate-950/90 dark:text-slate-100 sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[calc(100vw-2rem)] sm:rounded-[28px] pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:shadow-[0_28px_64px_-16px_rgba(0,0,0,0.22)] sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+          swipe.isDragging && "select-none",
+          className
+        )}
+        style={{ ...style, ...swipe.dragStyle }}
+        onPointerDown={(event) => {
+          onPointerDown?.(event);
+          if (!event.defaultPrevented) swipe.onPointerDown(event);
+        }}
+        onPointerMove={(event) => {
+          onPointerMove?.(event);
+          if (!event.defaultPrevented) swipe.onPointerMove(event);
+        }}
+        onPointerUp={(event) => {
+          onPointerUp?.(event);
+          if (!event.defaultPrevented) swipe.onPointerUp(event);
+        }}
+        onPointerCancel={(event) => {
+          onPointerCancel?.(event);
+          if (!event.defaultPrevented) swipe.onPointerCancel(event);
+        }}
+        {...props}
+      >
+      <div data-swipe-dismiss-handle aria-hidden className="absolute left-1/2 top-2.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-slate-300/80 dark:bg-slate-700 sm:hidden" />
       {children}
       {!hideClose && (
-          <DialogPrimitive.Close
+        <DialogPrimitive.Close
           aria-label={closeLabel}
           className={cn(
-            "dialog-close absolute top-2 z-30 inline-flex !h-11 !w-11 items-center justify-center rounded-full border border-transparent bg-muted/75 text-muted-foreground transition-[background-color,color,transform] hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:top-4 sm:!h-8 sm:!w-8",
-            isRtl ? "left-3 sm:left-4" : "right-3 sm:right-4",
+            "dialog-close absolute top-3.5 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-all hover:bg-slate-200 hover:text-slate-900 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/30 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100 sm:top-4",
+            isRtl ? "left-4" : "right-4",
           )}
         >
-          <X className="h-4 w-4" strokeWidth={2} />
+          <X className="h-4 w-4" strokeWidth={2.2} />
           <span className="sr-only">{closeLabel}</span>
         </DialogPrimitive.Close>
       )}
@@ -73,7 +93,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex min-w-0 flex-col space-y-1 pe-10 text-start",
+      "flex min-w-0 flex-col space-y-1 pe-12 text-start",
       className
     )}
     {...props}
@@ -86,9 +106,8 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    /* Pas de trait séparateur : l'espacement suffit, aucune ligne parasite. */
     className={cn(
-      "dialog-footer relative z-10 flex shrink-0 flex-col-reverse gap-1.5 sm:flex-row sm:items-center sm:justify-end sm:gap-2",
+      "dialog-footer relative z-10 flex shrink-0 flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-2.5",
       className
     )}
     {...props}
@@ -103,7 +122,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "font-display text-[15px] font-extrabold leading-tight tracking-[-0.018em] text-zinc-900 sm:text-base",
+      "font-display text-base font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-lg",
       className
     )}
     {...props}
@@ -117,7 +136,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("max-w-2xl text-[11px] font-medium leading-relaxed text-zinc-500 sm:text-xs", className)}
+    className={cn("max-w-2xl text-xs font-normal leading-relaxed text-slate-500 dark:text-slate-400 sm:text-sm", className)}
     {...props}
   />
 ))

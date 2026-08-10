@@ -427,7 +427,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const renderSidebar = (
     <div className="space-y-4 transition-all duration-300">
       {/* Top Toggle Header */}
-      <div className="flex items-center justify-between px-1 mb-1">
+      <div className={cn("flex items-center px-1 mb-1", isEffectiveCollapsed ? "justify-center" : "justify-between")}>
         {!isEffectiveCollapsed && (
           <span className={cn('font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarLabel')}
@@ -436,10 +436,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className={cn(
-            "p-1.5 rounded-xl text-muted-foreground hover:text-primary transition-colors cursor-pointer focus:outline-none",
-            isEffectiveCollapsed && "mx-auto"
-          )}
+          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-primary transition-colors cursor-pointer focus:outline-none flex shrink-0 items-center justify-center"
           title={isSidebarCollapsed ? t('notifications.expandMenu') : t('notifications.collapseMenu')}
         >
           <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
@@ -702,10 +699,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           {/* Master Sidebar */}
           <div
             className={cn(
-              'bg-card/88 border border-border/70 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm transition-all duration-300',
+              'bg-card/88 border border-border/70 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm transition-all duration-300 overflow-hidden flex flex-col',
               isEffectiveCollapsed
                 ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
-                : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
+                : 'md:col-span-4 lg:col-span-3 xl:col-span-3',
               mobileSubViewOpen ? 'hidden md:block' : 'block'
             )}
           >
@@ -718,7 +715,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
               'bg-card/92 border border-border/70 rounded-2xl p-4 sm:p-5 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm min-h-[500px] transition-all duration-300',
               isEffectiveCollapsed
                 ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
-                : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
+                : 'md:col-span-8 lg:col-span-9 xl:col-span-9',
               !mobileSubViewOpen ? 'hidden md:block' : 'block'
             )}
           >

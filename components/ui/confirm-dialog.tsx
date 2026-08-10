@@ -59,18 +59,18 @@ export function ConfirmDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-3 border-slate-200/80 bg-card/98 p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] sm:max-w-[420px] sm:gap-4 sm:p-5">
-                <DialogHeader className="gap-1.5">
-                    <DialogTitle className="text-lg font-extrabold font-display leading-tight tracking-normal text-foreground">
+            <DialogContent className="gap-4 border-slate-200/80 bg-white p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18)] dark:bg-[#1e1f20] sm:max-w-[440px]">
+                <DialogHeader className="gap-2">
+                    <DialogTitle className="text-lg font-bold font-display leading-tight text-slate-900 dark:text-slate-100">
                         {title}
                     </DialogTitle>
-                    <DialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+                    <DialogDescription className="text-sm font-normal leading-relaxed text-slate-500 dark:text-slate-400">
                         {description}
                     </DialogDescription>
                 </DialogHeader>
                 {requiresTypedConfirmation && (
-                    <label className="space-y-1.5">
-                        <span className="block text-xs font-semibold leading-relaxed text-foreground">
+                    <label className="space-y-1.5 pt-1">
+                        <span className="block text-xs font-medium leading-relaxed text-slate-700 dark:text-slate-300">
                             {confirmationHint}
                         </span>
                         <input
@@ -80,17 +80,17 @@ export function ConfirmDialog({
                             placeholder={confirmationPhrase}
                             autoComplete="off"
                             autoFocus
-                            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm font-medium text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                            className="flex h-11 w-full rounded-2xl border border-slate-200 bg-[#f0f4f9] px-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus-visible:bg-white focus-visible:border-[#0b57d0] focus-visible:ring-4 focus-visible:ring-[#0b57d0]/15 dark:border-slate-700 dark:bg-[#282a2c] dark:text-slate-100"
                             aria-label={confirmationHint}
                         />
                     </label>
                 )}
-                <DialogFooter className="flex flex-col-reverse gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2 sm:pb-0">
+                <DialogFooter className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end sm:gap-2">
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={handleCancel}
-                        className="w-full rounded-lg h-10 font-semibold transition-all duration-200 sm:w-auto sm:h-9"
+                        className="w-full rounded-full h-10 px-5 font-medium transition-all sm:w-auto"
                     >
                         {cancelLabel ?? t('common.cancel')}
                     </Button>
@@ -99,7 +99,7 @@ export function ConfirmDialog({
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
                         disabled={!confirmationIsValid}
-                        className="w-full rounded-lg h-10 px-5 font-semibold transition-all duration-200 sm:w-auto sm:h-9"
+                        className="w-full rounded-full h-10 px-6 font-medium transition-all sm:w-auto"
                     >
                         {confirmLabel ?? t('common.confirm')}
                     </Button>
