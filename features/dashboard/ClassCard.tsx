@@ -76,7 +76,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     
     let mainName = displayName;
     let groupNum = '';
-    const groupSeparator = locale === 'ar' ? ' · المجموعة ' : ' · Gr. ';
+    const groupSeparator = locale === 'ar' ? ' ' : ' ';
     if (displayName.includes(groupSeparator)) {
         const parts = displayName.split(groupSeparator);
         mainName = parts[0];
@@ -84,8 +84,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     }
 
     const isArabic = containsArabic(mainName);
-    const cycleBadge = classInfo.cycle ? CYCLE_BADGES[classInfo.cycle] : null;
-    const cycleLabel = classInfo.cycle ? t(`cycle.${classInfo.cycle}`) : '';
     const issueStatus = notificationCount === 1
         ? t('notifications.classIssueCount.one', { count: notificationCount })
         : notificationCount > 1
@@ -102,13 +100,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Subtle glow background */}
             <div className={`absolute -left-10 -top-10 h-32 w-32 rounded-full blur-2xl transition-all pointer-events-none opacity-30 group-hover:opacity-60 ${visual.iconSurfaceClass}`} />
 
-            {/* Header */}
-            <div className="relative z-10 flex min-h-12 items-center justify-between gap-2">
-                {cycleBadge ? (
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${visual.iconSurfaceClass} border border-current/15 shadow-2xs`}>
-                        {cycleLabel}
-                    </span>
-                ) : <div />}
+            {/* Header — icône centrée, sans badge de cycle */}
+            <div className="relative z-10 flex items-center justify-center">
                 <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-inner transition-transform duration-300 group-hover:scale-110 ${visual.iconSurfaceClass}`}>
                     <Users className="h-6 w-6" />
                 </div>

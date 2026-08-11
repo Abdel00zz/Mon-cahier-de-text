@@ -92,7 +92,7 @@ export const formatClassDisplayName = (name: string): string => {
 
   const suffix = normalized.slice(level.length).trim();
   const label = CLASS_LEVEL_DISPLAY_NAMES[level];
-  return suffix ? `${label} · Gr. ${suffix}` : label;
+  return suffix ? `${label} ${suffix}` : label;
 };
 
 interface LocalizedClassDisplayOptions {
