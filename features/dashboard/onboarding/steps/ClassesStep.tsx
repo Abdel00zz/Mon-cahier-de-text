@@ -29,9 +29,9 @@ export const ClassesStep = memo<ClassesStepProps>(({ classes, cycle, lang, copy,
                     onClick={controller.add}
                     disabled={controller.isAdding}
                     aria-busy={controller.isAdding}
-                    className="h-10 rounded-lg bg-[#5064df] px-3.5 font-semibold text-white shadow-sm hover:bg-[#4357c9]"
+                    className="inline-flex h-11 items-center gap-2 rounded-full bg-slate-900 px-5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-black hover:shadow-[0_6px_18px_rgba(0,0,0,0.25)] active:scale-[0.97] disabled:bg-slate-400 disabled:shadow-none"
                 >
-                    <Plus className="me-2 h-4 w-4" />
+                    <Plus className="h-4 w-4" />
                     {controller.isAdding ? copy.addingClass : copy.addClass}
                 </Button>
             </div>

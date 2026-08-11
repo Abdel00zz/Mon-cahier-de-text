@@ -37,7 +37,7 @@ import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, Su
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, formatClassDisplayName, normalizeOfficialClassName } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
@@ -1191,7 +1191,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         isOpen={showTimetableNudge}
         onSkip={dismissTimetableNudge}
         onFill={fillTimetableFromNudge}
-        classLabel={formatClassDisplayName(classInfo.name)}
+        className={classInfo.name}
       />
 
       <ConfirmDialog

@@ -59,18 +59,18 @@ const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
   'Tronc commun scientifique': 'الجذع المشترك العلمي',
   'Tronc commun lettres': 'الجذع المشترك الآداب',
   'Tronc commun technologique': 'الجذع المشترك التكنولوجي',
-  '1BAC Sc. Expérimentales': 'الأولى باك · علوم تجريبية',
-  '1BAC Sc. Mathématiques': 'الأولى باك · علوم رياضية',
-  '1BAC Lettres': 'الأولى باك · آداب',
-  '1BAC Sc. Économiques': 'الأولى باك · علوم اقتصادية وتدبير',
-  '2BAC PC': 'الثانية باك · علوم فيزيائية',
-  '2BAC SVT': 'الثانية باك · علوم الحياة والأرض',
-  '2BAC Sc. Maths A': 'الثانية باك · علوم رياضية أ',
-  '2BAC Sc. Maths B': 'الثانية باك · علوم رياضية ب',
-  '2BAC Sc. Économiques': 'الثانية باك · علوم اقتصادية',
-  '2BAC Sc. Gestion Comptable': 'الثانية باك · علوم التدبير المحاسباتي',
-  '2BAC Lettres': 'الثانية باك · آداب',
-  '2BAC Sc. Humaines': 'الثانية باك · علوم إنسانية',
+  '1BAC Sc. Expérimentales': 'الأولى بكالوريا · علوم تجريبية',
+  '1BAC Sc. Mathématiques': 'الأولى بكالوريا · علوم رياضية',
+  '1BAC Lettres': 'الأولى بكالوريا · آداب',
+  '1BAC Sc. Économiques': 'الأولى بكالوريا · علوم اقتصادية وتدبير',
+  '2BAC PC': 'الثانية بكالوريا · علوم فيزيائية',
+  '2BAC SVT': 'الثانية بكالوريا · علوم الحياة والأرض',
+  '2BAC Sc. Maths A': 'الثانية بكالوريا · علوم رياضية أ',
+  '2BAC Sc. Maths B': 'الثانية بكالوريا · علوم رياضية ب',
+  '2BAC Sc. Économiques': 'الثانية بكالوريا · علوم اقتصادية',
+  '2BAC Sc. Gestion Comptable': 'الثانية بكالوريا · علوم التدبير المحاسباتي',
+  '2BAC Lettres': 'الثانية بكالوريا · آداب',
+  '2BAC Sc. Humaines': 'الثانية بكالوريا · علوم إنسانية',
   'MPSI': 'رياضيات وفيزياء وعلوم المهندس',
   'PCSI': 'فيزياء وكيمياء وعلوم المهندس',
   'MP': 'رياضيات وفيزياء',
@@ -95,7 +95,16 @@ export const formatClassDisplayName = (name: string): string => {
   return suffix ? `${label} · Gr. ${suffix}` : label;
 };
 
-export const formatLocalizedClassDisplayName = (name: string, locale: AppLocale): string => {
+interface LocalizedClassDisplayOptions {
+  /** Préfixe « قسم » pour une classe créée ; masqué dans les sélecteurs de niveaux. */
+  includeClassPrefix?: boolean;
+}
+
+export const formatLocalizedClassDisplayName = (
+  name: string,
+  locale: AppLocale,
+  { includeClassPrefix = true }: LocalizedClassDisplayOptions = {},
+): string => {
   if (locale !== 'ar') return formatClassDisplayName(name);
 
   const normalized = (name || '').trim().replace(/\s+/g, ' ');
@@ -104,7 +113,8 @@ export const formatLocalizedClassDisplayName = (name: string, locale: AppLocale)
 
   const suffix = normalized.slice(level.length).trim();
   const label = CLASS_LEVEL_DISPLAY_NAMES_AR[level] ?? CLASS_LEVEL_DISPLAY_NAMES[level];
-  return suffix ? `${label} · المجموعة ${suffix}` : label;
+  const classLabel = suffix ? `${label} ${suffix}` : label;
+  return includeClassPrefix ? `قسم ${classLabel}` : classLabel;
 };
 
 const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [

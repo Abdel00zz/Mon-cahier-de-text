@@ -1,6 +1,6 @@
 import React from 'react';
 import { ClassInfo } from '@/types';
-import { formatClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { School, User } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -12,16 +12,21 @@ interface HeaderProps {
 
 const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
 
-const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (value: string) => void }> = ({ value, displayValue = value, onSave }) => {
+const EditableHeader: React.FC<{
+  value: string;
+  displayValue?: string;
+  locale: 'fr' | 'en' | 'ar';
+  onSave: (value: string) => void;
+}> = ({ value, displayValue = value, locale, onSave }) => {
   const handleBlur = (event: React.FocusEvent<HTMLSpanElement>) => {
     const nextValue = (event.currentTarget.textContent || '').trim();
     onSave(nextValue);
-    event.currentTarget.textContent = formatClassDisplayName(nextValue);
+    event.currentTarget.textContent = formatLocalizedClassDisplayName(nextValue, locale);
   };
   const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
     if (event.key === 'Escape') {
       event.preventDefault();
-      event.currentTarget.textContent = value;
+      event.currentTarget.textContent = displayValue;
       event.currentTarget.blur();
     }
     if (event.key === 'Enter') {
@@ -32,7 +37,7 @@ const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (
   const handleFocus = (event: React.FocusEvent<HTMLSpanElement>) => {
     event.currentTarget.textContent = value;
   };
-  const isArabic = containsArabic(value);
+  const isArabic = containsArabic(displayValue);
 
   return (
     <span
@@ -41,6 +46,7 @@ const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (
       onBlur={handleBlur}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
+      dir={isArabic ? 'rtl' : 'ltr'}
       className={`inline-block -mx-1.5 -my-0.5 rounded-md px-1.5 py-0.5 text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-bold tracking-tight'}`}
     >
       {displayValue}
@@ -49,7 +55,7 @@ const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (
 };
 
 export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange }) => {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <div className="rtl-flow group relative mb-2 mt-1 px-0 py-2 sm:mt-2 sm:py-3">
@@ -58,7 +64,8 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
           <h1 className="flex min-w-0 items-center justify-start text-start font-bold tracking-tight text-lg font-black leading-tight tracking-[-0.035em] text-foreground sm:text-2xl">
             <EditableHeader
               value={classInfo.name}
-              displayValue={formatClassDisplayName(classInfo.name)}
+              displayValue={formatLocalizedClassDisplayName(classInfo.name, locale)}
+              locale={locale}
               onSave={(value) => onClassInfoChange({ name: value })}
             />
           </h1>
@@ -74,9 +81,6 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
             </span>
           </div>
 
-          <p className="mt-1.5 text-start text-[10px] font-medium text-muted-foreground/65 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
-            {t('editor.editClass')}
-          </p>
         </header>
       </div>
     </div>

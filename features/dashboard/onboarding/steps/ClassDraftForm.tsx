@@ -55,7 +55,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                         <SelectGroup key={group.key}>
                                             <SelectLabel className="py-2 text-xs font-bold text-slate-400 sm:text-sm">{copy.levelGroupLabels[group.key]}</SelectLabel>
                                             {group.levels.map(level => (
-                                                <SelectItem key={level} value={level}>{formatLocalizedClassDisplayName(level, lang)}</SelectItem>
+                                                <SelectItem key={level} value={level}>{formatLocalizedClassDisplayName(level, lang, { includeClassPrefix: false })}</SelectItem>
                                             ))}
                                         </SelectGroup>
                                     ))}

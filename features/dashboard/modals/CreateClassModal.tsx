@@ -104,7 +104,7 @@ const COPY: Record<ModalLanguage, {
     customSubjectPlaceholder: 'أدخل المادة…',
     switchToOfficial: 'العودة إلى اللائحة الرسمية ←',
     createCustom: 'المستوى غير موجود؟ أنشئ قسماً مخصصاً',
-    cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
+    cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
 };
 
@@ -313,7 +313,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 <SelectContent>
                   {levels.map(l => (
                     <SelectItem key={l} value={l} className="text-xs leading-snug">
-                      {formatLocalizedClassDisplayName(l, language)}
+                      {formatLocalizedClassDisplayName(l, language, { includeClassPrefix: false })}
                     </SelectItem>
                   ))}
                 </SelectContent>
