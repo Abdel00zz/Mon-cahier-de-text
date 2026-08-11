@@ -21,6 +21,7 @@ interface StoredUser {
   createdAt: string;
   cycles?: Cycle[];
   subjects?: string[];
+  hasCompletedWelcome?: boolean;
   lastSyncAt?: string;
   blocked?: boolean;
 }
@@ -60,6 +61,7 @@ const publicUser = (user: StoredUser) => ({
   prenom: user.prenom,
   cycles: user.cycles ?? [],
   subjects: user.subjects ?? [],
+  hasCompletedWelcome: user.hasCompletedWelcome === true,
 });
 
 const handleRegister = async (body: AuthBody, res: ApiResponse) => {
@@ -79,6 +81,7 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
     createdAt: new Date().toISOString(),
     cycles,
     subjects,
+    hasCompletedWelcome: false,
   };
 
   const created = await redis.set(KEYS.user(phone), user, { nx: true });
@@ -135,6 +138,18 @@ const handleMe = async (req: ApiRequest, res: ApiResponse) => {
   res.status(200).json({ user: publicUser(user) });
 };
 
+/** Le marqueur d'accueil appartient au compte, pas à un appareil donné. */
+const handleCompleteWelcome = async (req: ApiRequest, res: ApiResponse) => {
+  const { phone } = await requireUser(req);
+  const redis = await getRedis();
+  const user = await redis.get<StoredUser>(KEYS.user(phone));
+  if (!user) throw new HttpError(404, 'Compte introuvable.');
+
+  const updatedUser: StoredUser = { ...user, hasCompletedWelcome: true };
+  await redis.set(KEYS.user(phone), updatedUser);
+  res.status(200).json({ user: publicUser(updatedUser) });
+};
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   res.setHeader('Cache-Control', 'no-store');
   try {
@@ -157,6 +172,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       case 'logout':
         clearCookie(res, SESSION_COOKIE);
         return res.status(200).json({ ok: true });
+      case 'completeWelcome':
+        return await handleCompleteWelcome(req, res);
       default:
         throw new HttpError(400, 'Action inconnue.');
     }

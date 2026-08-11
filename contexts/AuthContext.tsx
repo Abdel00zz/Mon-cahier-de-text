@@ -4,12 +4,14 @@ import { clearLocalWorkspace } from '../utils/workspace';
 
 export type Cycle = 'college' | 'lycee' | 'prepa';
 
-interface AuthUser {
+export interface AuthUser {
   phone: string;
   nom: string;
   prenom: string;
   cycles?: Cycle[];
   subjects?: string[];
+  /** Marqueur serveur : l'accueil a été terminé ou ignoré par ce compte. */
+  hasCompletedWelcome?: boolean;
 }
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous' | 'offline';
@@ -28,6 +30,7 @@ interface AuthContextValue {
   status: AuthStatus;
   login: (phone: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  completeWelcome: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -57,34 +60,46 @@ const cacheUser = (user: AuthUser | null): void => {
 };
 
 /**
- * Applique le profil du compte à la configuration locale : le nom devient
- * l'enseignant par défaut, cycles et matières pilotent les filtres. L'étape
- * « Profil » de l'accueil (OnboardingModal) est ainsi déjà remplie, on marque
- * `hasCompletedWelcome` ; l'accueil ne se rouvrira de lui-même que s'il
- * n'existe encore AUCUNE classe (création par lot + emploi du temps).
- * Ne remplace jamais des valeurs déjà présentes.
+ * Hydrate la configuration locale depuis le compte authentifié : nom, cycles
+ * et matières renseignés à l'inscription préremplissent l'accueil. Le statut
+ * d'accueil n'est jamais validé ici : seul son achèvement explicite le fait.
  */
 const applyProfileToConfig = (user: AuthUser): void => {
   try {
     const raw = localStorage.getItem('appConfig_v1');
     const config = raw ? JSON.parse(raw) : {};
-    if (!config.defaultTeacherName && (user.nom || user.prenom)) {
+    const hasLocalProfile = typeof config.defaultTeacherName === 'string' && config.defaultTeacherName.trim().length > 0;
+    let changed = false;
+
+    if (!hasLocalProfile && (user.nom || user.prenom)) {
       const fullName = `${user.prenom ?? ''} ${user.nom ?? ''}`.trim();
       if (fullName !== 'Prof Dev' && fullName !== 'Dev Prof') {
         config.defaultTeacherName = fullName;
+        changed = true;
       }
     }
-    if (user.cycles?.length && !(config.selectedCycles?.length)) {
+
+    // Au premier accès sur cet appareil, le profil du compte est la source de
+    // vérité. Ensuite les choix personnels déjà enregistrés restent intacts.
+    if (user.cycles?.length && (!(config.selectedCycles?.length) || !hasLocalProfile)) {
       config.selectedCycles = user.cycles;
       config.showAllCycles = false;
+      changed = true;
     }
-    if (user.subjects?.length && !(config.selectedSubjects?.length)) {
+    if (user.subjects?.length && (!(config.selectedSubjects?.length) || !hasLocalProfile)) {
       config.selectedSubjects = user.subjects;
       config.showAllSubjects = false;
+      changed = true;
     }
-    config.hasCompletedWelcome = true; // le compte fournit déjà l'essentiel
-    localStorage.setItem('appConfig_v1', JSON.stringify(config));
-    notifyConfigChanged();
+    if (user.hasCompletedWelcome === true && config.hasCompletedWelcome !== true) {
+      config.hasCompletedWelcome = true;
+      changed = true;
+    }
+
+    if (changed) {
+      localStorage.setItem('appConfig_v1', JSON.stringify(config));
+      notifyConfigChanged();
+    }
   } catch {
     // stockage indisponible : la config restera par défaut
   }
@@ -155,8 +170,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(createdUser);
     setStatus('authenticated');
     cacheUser(createdUser);
-    // Cycles + matières choisis à l'inscription → configuration prête sans écran d'accueil.
+    // Les données saisies à l'inscription préremplissent l'accueil.
     applyProfileToConfig({ ...createdUser, cycles: input.cycles, subjects: input.subjects });
+  }, []);
+
+  const completeWelcome = useCallback(async () => {
+    const completedUser = await postAuth({ action: 'completeWelcome' });
+    setUser(completedUser);
+    setStatus('authenticated');
+    cacheUser(completedUser);
+    applyProfileToConfig(completedUser);
   }, []);
 
   const logout = useCallback(async () => {
@@ -177,8 +200,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const value = useMemo(
-    () => ({ user, status, login, register, logout }),
-    [user, status, login, register, logout]
+    () => ({ user, status, login, register, completeWelcome, logout }),
+    [user, status, login, register, completeWelcome, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

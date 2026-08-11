@@ -198,13 +198,13 @@ const TableHeader: React.FC = React.memo(() => {
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-white/65 bg-card/[0.52] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.42] md:block">
+  <div className="hidden border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42] md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-white/65 px-2.5 py-2.5 text-center dark:border-white/10">
+      <div className="flex items-center justify-center border-r border-border/80 px-2.5 py-2.5 text-center">
         <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-r border-white/65 px-3 py-2.5 text-center dark:border-white/10">
+      <div className="flex items-center justify-center border-r border-border/80 px-3 py-2.5 text-center">
         <span className="font-sans text-xs text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
@@ -318,7 +318,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y border-white/60 transition-colors duration-200 dark:border-white/10`,
+                `group relative grid ${TABLE_GRID_CLASS} border-y border-border/70 transition-colors duration-200`,
                 hasWarning
                     ? 'border-warning/[0.5] bg-warning/[0.07]'
                     : 'bg-card/[0.18] dark:bg-slate-950/[0.14]',
@@ -640,7 +640,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
       data-editor-table
-      className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-white/65 bg-card/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.52] sm:rounded-[24px]"
+      className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-border/80 bg-card/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:bg-slate-950/[0.52] sm:rounded-[24px]"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

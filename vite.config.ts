@@ -28,6 +28,7 @@ const devApiMockPlugin = (): Plugin => {
         prenom: 'Prof',
         cycles: ['college', 'lycee'],
         subjects: ['Mathématiques'],
+        hasCompletedWelcome: false,
     };
     let sessionUser: Record<string, unknown> | null = null;
     let classesBlob: Record<string, unknown> | null = null;
@@ -86,8 +87,14 @@ const devApiMockPlugin = (): Plugin => {
                             prenom: String(body.prenom ?? 'Prof'),
                             cycles: Array.isArray(body.cycles) ? body.cycles : [],
                             subjects: Array.isArray(body.subjects) ? body.subjects : [],
+                            hasCompletedWelcome: false,
                         };
                         res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
+                        return send(res, 200, { user: sessionUser });
+                    }
+                    if (body.action === 'completeWelcome') {
+                        if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
+                        sessionUser = { ...(sessionUser ?? DEV_USER), hasCompletedWelcome: true };
                         return send(res, 200, { user: sessionUser });
                     }
                     if (body.action === 'logout') {
@@ -575,11 +582,9 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 3000,
             host: true,
-            strictPort: true,
+            strictPort: false,
             allowedHosts: true,
-            hmr: {
-                clientPort: 3000,
-            },
+            hmr: { },
         },
         plugins: [
             devApiMockPlugin(),

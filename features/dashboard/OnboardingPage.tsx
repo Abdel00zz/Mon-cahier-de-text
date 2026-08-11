@@ -235,59 +235,59 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
     };
 
     return (
-        <div dir={isAr ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-[#687ee3] to-[#5163c4] text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
+        <div dir={isAr ? 'rtl' : 'ltr'} className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[#eef2ff] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
             {/* Decorative wavy background shapes */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-40 overflow-hidden">
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute top-[-20%] left-[-10%] w-[60%] h-[150%] text-[#8378c2] stroke-current stroke-[8] fill-none" style={{ filter: 'blur(4px)' }}>
+            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-50">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -left-[10%] -top-[20%] h-[150%] w-[60%] fill-none stroke-current stroke-[8] text-[#c6d0ff]" style={{ filter: 'blur(4px)' }}>
                     <path d="M 0,0 C 30,20 20,80 50,50 S 70,80 100,100" />
                 </svg>
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[120%] text-[#8378c2] stroke-current stroke-[6] fill-none" style={{ filter: 'blur(3px)' }}>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -bottom-[10%] -right-[10%] h-[120%] w-[50%] fill-none stroke-current stroke-[6] text-[#d7defe]" style={{ filter: 'blur(3px)' }}>
                     <path d="M 0,100 C 40,80 10,20 60,50 S 80,10 100,0" />
                 </svg>
             </div>
 
             {/* Minimalist Logo Header */}
-            <header className="absolute top-0 inset-x-0 px-4 py-4 sm:px-8 sm:py-6 flex justify-between items-center z-40 pointer-events-none">
-                <div className="flex items-center gap-2 text-white drop-shadow-md">
+            <header className="pointer-events-none absolute inset-x-0 top-0 z-40 flex items-center justify-between px-4 py-4 sm:px-8 sm:py-6">
+                <div className="flex items-center gap-2 text-slate-900">
                     <School className="w-6 h-6 sm:w-8 sm:h-8" />
                     <span className="text-lg sm:text-xl font-bold tracking-tight">Mon cahier</span>
                 </div>
             </header>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-20 sm:px-8 flex flex-col relative z-10">
-                <main className="w-full max-w-[700px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden relative m-auto shrink-0">
+            <div className="relative z-10 flex flex-1 flex-col overflow-y-auto px-4 py-20 sm:px-8">
+                <main className="relative m-auto flex w-full max-w-[760px] shrink-0 flex-col overflow-hidden rounded-[22px] border border-slate-200/80 bg-white/95 shadow-[0_24px_64px_rgba(30,41,59,0.14)] backdrop-blur-sm">
                     
-                    <div className="px-6 pt-8 pb-6 sm:px-12 sm:pt-10 sm:pb-8 flex-1">
+                    <div className="flex-1 px-5 pb-6 pt-7 sm:px-10 sm:pb-8 sm:pt-9">
                         
                         {/* Top Progress Bar inside Card */}
-                        <div className="w-full h-2 sm:h-2.5 bg-slate-100 rounded-full mb-8 overflow-hidden">
+                        <div className="mb-8 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 sm:h-2">
                             <div 
-                                className="h-full bg-[#5064df] transition-all duration-700 ease-out rounded-full" 
+                                className="h-full rounded-full bg-[#5064df] transition-all duration-700 ease-out"
                                 style={{ width: `${(step / totalSteps) * 100}%` }} 
                             />
                         </div>
 
                         {/* Dynamic Title */}
-                        <div className="mb-8 animate-fade-in text-start">
-                            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0a1945] mb-2">
+                        <div className="mb-7 animate-fade-in text-start">
+                            <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
                                 {renderHeaderTitle()}
                             </h1>
-                            {step === 1 && <p className="text-base sm:text-lg text-slate-500 font-medium">{t.subtitle}</p>}
+                            {step === 1 && <p className="text-base font-medium leading-relaxed text-slate-500 sm:text-lg">{t.subtitle}</p>}
                         </div>
 
                         {/* Step 1 : Langue */}
                         {step === 1 && (
                             <div className="space-y-4 animate-fade-in duration-500">
-                            <p className="text-sm sm:text-base text-slate-600 font-medium">{t.languageSelect}</p>
+                            <p className="text-sm font-medium text-slate-600 sm:text-base">{t.languageSelect}</p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button 
                                     onClick={() => { setLang('fr'); setStep(2); }} 
                                     className={cn(
-                                        "p-6 sm:p-8 rounded-2xl border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-3 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+                                        "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border p-6 text-center outline-none transition-all duration-300 focus-visible:ring-4 focus-visible:ring-blue-600/20 sm:p-8",
                                         lang === 'fr' 
-                                            ? "border-blue-600 bg-blue-50/50 text-blue-900 shadow-sm" 
-                                            : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600"
+                                            ? "border-[#5064df] bg-[#f4f6ff] text-blue-950 shadow-[0_8px_20px_rgba(80,100,223,0.12)]"
+                                            : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-slate-50 hover:shadow-sm"
                                     )}
                                 > 
                                     <span className="text-3xl sm:text-4xl">🇫🇷</span>
@@ -296,10 +296,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                                 <button 
                                     onClick={() => { setLang('ar'); setStep(2); }} 
                                     className={cn(
-                                        "p-6 sm:p-8 rounded-2xl border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-3 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+                                        "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border p-6 text-center outline-none transition-all duration-300 focus-visible:ring-4 focus-visible:ring-blue-600/20 sm:p-8",
                                         lang === 'ar' 
-                                            ? "border-blue-600 bg-blue-50/50 text-blue-900 shadow-sm" 
-                                            : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600"
+                                            ? "border-[#5064df] bg-[#f4f6ff] text-blue-950 shadow-[0_8px_20px_rgba(80,100,223,0.12)]"
+                                            : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-slate-50 hover:shadow-sm"
                                     )}
                                 > 
                                     <span className="text-3xl sm:text-4xl">🇲🇦</span>
@@ -311,46 +311,46 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
 
                     {/* Step 2 : Profil */}
                     {step === 2 && (
-                        <div className="space-y-6 animate-fade-in duration-500 max-w-2xl">
-                            <div className="space-y-4">
+                        <div className="max-w-2xl space-y-6 animate-fade-in duration-500">
+                            <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
                                 <div className="space-y-1.5">
-                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.fullName}</label>
+                                    <label className="block text-start text-sm font-semibold text-slate-800">{t.fullName}</label>
                                     <Input 
                                         type="text" 
                                         value={config.defaultTeacherName || ''} 
                                         onChange={e => onConfigChange({ defaultTeacherName: e.target.value })} 
                                         placeholder={t.fullNamePlaceholder} 
-                                        className="h-12 px-4 text-start text-base rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-blue-600 focus-visible:border-blue-600 transition-shadow" 
+                                        className="h-12 rounded-lg border-slate-200 bg-white px-4 text-start text-base shadow-sm transition-all placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-blue-600 focus-visible:ring-blue-600"
                                         autoFocus 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.establishment}</label>
+                                    <label className="block text-start text-sm font-semibold text-slate-800">{t.establishment}</label>
                                     <Input 
                                         type="text" 
                                         value={config.establishmentName || ''} 
                                         onChange={e => onConfigChange({ establishmentName: e.target.value })} 
                                         placeholder={t.establishmentPlaceholder} 
-                                        className="h-12 px-4 text-start text-base rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-blue-600 focus-visible:border-blue-600 transition-shadow" 
+                                        className="h-12 rounded-lg border-slate-200 bg-white px-4 text-start text-base shadow-sm transition-all placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-blue-600 focus-visible:ring-blue-600"
                                     />
                                 </div>
                             </div>
                             
-                            <div className="space-y-3 pt-4 border-t border-slate-100">
-                                <label className="block text-start text-sm font-semibold text-slate-900">{t.teachingCycle}</label>
+                            <div className="space-y-3 border-t border-slate-200 pt-5">
+                                <label className="block text-start text-sm font-semibold text-slate-800">{t.teachingCycle}</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {CYCLES.map(c => {
                                         const active = cycle === c.key;
                                         return (
                                             <button key={c.key} type="button" onClick={() => handleCycleChange(c.key)}
-                                                className={cn('group relative flex sm:flex-col items-center sm:items-start gap-3 rounded-2xl border-2 p-3 sm:p-4 text-start transition-all duration-300 outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20 cursor-pointer',
-                                                    active ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50')}>
-                                                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-300',
-                                                    active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200')}>
+                                                className={cn('group relative flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-start outline-none transition-all duration-300 focus-visible:ring-4 focus-visible:ring-blue-600/20 sm:flex-col sm:items-start sm:p-4',
+                                                    active ? 'border-[#5064df] bg-[#f4f6ff] shadow-[0_8px_18px_rgba(80,100,223,0.10)]' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 hover:shadow-sm')}>
+                                                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors duration-300',
+                                                    active ? 'bg-[#5064df] text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200')}>
                                                     <c.icon className="h-5 w-5" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <span className={cn("block text-sm sm:text-base font-bold", active ? "text-blue-900" : "text-slate-900")}>{t.cycleLabels[c.key]}</span>
+                                                    <span className={cn("block text-sm font-bold sm:text-base", active ? "text-blue-950" : "text-slate-900")}>{t.cycleLabels[c.key]}</span>
                                                     <span className={cn("mt-0.5 block text-xs font-medium", active ? "text-blue-700" : "text-slate-500")}>
                                                         {c.key === 'college' ? (isAr ? 'من الأولى إلى الثالثة إعدادي' : '1AC à 3AC') : c.key === 'lycee' ? (isAr ? 'الجذع المشترك والبكالوريا' : 'TC, 1BAC, 2BAC') : (isAr ? 'الأقسام التحضيرية للمدارس العليا' : 'CPGE (1ère & 2ème année)')}
                                                     </span>
@@ -372,10 +372,10 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                                 </div>
                             )}
                             
-                            <div className="max-w-md space-y-1.5">
-                                <label className="block text-start text-sm font-semibold text-slate-900">{t.subject}</label>
+                            <div className="max-w-md space-y-1.5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                                <label className="block text-start text-sm font-semibold text-slate-800">{t.subject}</label>
                                 <Select value={subject} onValueChange={setSubject}>
-                                    <SelectTrigger className="text-start h-12 bg-slate-50 border-slate-200 text-base rounded-xl focus:ring-blue-600 focus:border-blue-600">
+                                    <SelectTrigger className="h-12 rounded-lg border-slate-200 bg-white text-start text-base shadow-sm hover:border-slate-300 focus:border-blue-600 focus:ring-blue-600">
                                         <SelectValue placeholder={t.subjectPlaceholder} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -386,20 +386,20 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                                 </Select>
                             </div>
                             
-                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <div className="space-y-4 border-t border-slate-200 pt-5">
                                 <div>
-                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.classesToCreate}</label>
+                                    <label className="block text-start text-sm font-semibold text-slate-800">{t.classesToCreate}</label>
                                     <p className="mt-1 text-xs sm:text-sm text-slate-500">{t.groupHint}</p>
                                 </div>
                                 <div className="space-y-3">
                                     {rows.map((row, index) => (
                                         <div key={index} className="space-y-1">
-                                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                                                <span className="flex h-12 w-10 items-center justify-center rounded-xl bg-slate-50 text-sm font-bold text-slate-400 shrink-0 border border-transparent">{index + 1}</span>
+                                            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/70 p-2 sm:flex-nowrap">
+                                                <span className="flex h-11 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-400">{index + 1}</span>
                                                 
                                                 <div className="flex-1 min-w-[160px]">
                                                     <Select value={row.level} onValueChange={value => setRows(prev => prev.map((c, i) => (i === index ? { ...c, level: value } : c)))}>
-                                                        <SelectTrigger className="text-start h-12 bg-slate-50 border-slate-200 text-sm sm:text-base rounded-xl focus:ring-blue-600 focus:border-blue-600">
+                                                        <SelectTrigger className="h-11 rounded-lg border-slate-200 bg-white text-start text-sm shadow-sm hover:border-slate-300 focus:border-blue-600 focus:ring-blue-600 sm:text-base">
                                                             <SelectValue placeholder={t.levelPlaceholder} />
                                                         </SelectTrigger>
                                                         <SelectContent>
@@ -420,16 +420,16 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                                                     onBlur={() => { const next = normalizeGroupNumber(row.group); if (next) setRows(prev => prev.map((c, i) => (i === index ? { ...c, group: next } : c))); }}
                                                     placeholder={t.groupPlaceholder}
                                                     className={cn(
-                                                        "h-12 w-24 sm:w-28 bg-slate-50 border-slate-200 text-center text-sm sm:text-base rounded-xl focus-visible:ring-blue-600 focus-visible:border-blue-600",
+                                                        "h-11 w-24 rounded-lg border-slate-200 bg-white text-center text-sm shadow-sm hover:border-slate-300 focus-visible:border-blue-600 focus-visible:ring-blue-600 sm:w-28 sm:text-base",
                                                         rowValidations[index].issue && (showGroupValidation || row.group) ? 'border-red-500 bg-red-50 focus-visible:ring-red-500 text-red-900' : ''
                                                     )}
                                                     inputMode="numeric" maxLength={2} aria-invalid={!!rowValidations[index].issue} 
                                                 />
                                                 
                                                 {rows.length > 1 ? (
-                                                    <Button type="button" variant="ghost" size="icon" className="h-12 w-12 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 shrink-0"
+                                                    <Button type="button" variant="ghost" size="icon" className="h-11 w-11 shrink-0 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600"
                                                         onClick={() => setRows(prev => prev.filter((_, i) => i !== index))} aria-label={t.deleteRow}><Trash2 className="h-4 w-4" /></Button>
-                                                ) : <span className="h-12 w-12 hidden sm:block shrink-0" />}
+                                                ) : <span className="hidden h-11 w-11 shrink-0 sm:block" />}
                                             </div>
                                             {rowValidations[index].issue && (showGroupValidation || row.group) && (
                                                 <p className="text-xs sm:text-sm font-medium text-red-600 ps-12">
@@ -441,11 +441,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                                 </div>
                                 
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
-                                    <Button type="button" variant="outline" className="h-10 sm:h-12 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-4 sm:px-6 font-semibold"
+                                    <Button type="button" variant="outline" className="h-10 rounded-lg border-slate-200 px-4 font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 sm:h-11 sm:px-6"
                                         onClick={() => setRows(prev => [...prev, { level: prev[prev.length - 1]?.level || defaultLevel, group: '' }])}>
                                         <Plus className="me-2 h-4 w-4" />{t.addRow}
                                     </Button>
-                                    <Button type="button" className="h-10 sm:h-12 rounded-xl bg-slate-900 text-white hover:bg-slate-800 px-6 sm:px-8 font-semibold shadow-sm" 
+                                    <Button type="button" className="h-10 rounded-lg bg-slate-900 px-6 font-semibold text-white shadow-sm hover:bg-slate-800 sm:h-11 sm:px-8"
                                         onClick={createBatch} disabled={!canCreateBatch}>
                                         {t.createClasses(rows.length)}
                                     </Button>
@@ -457,7 +457,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                     {/* Step 4 : Emploi du temps */}
                     {step === 4 && (
                         <div className="space-y-4 animate-fade-in duration-500">
-                            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                 <ScheduleTab classes={classes} config={config} onChange={onConfigChange}
                                     onCreateClass={details => onCreateClass({ ...details, cycle: details.cycle ?? cycle })} />
                             </div>
@@ -465,30 +465,32 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                     )}
                     </div>
                     {/* Card Footer */}
-                    <footer className="bg-white border-t border-slate-100 p-4 sm:px-10 sm:py-5 flex items-center justify-end gap-3 rounded-b-2xl">
-                        {step === 4 ? (
-                            <Button type="button" variant="outline" onClick={onSkip} className="h-10 sm:h-11 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold text-slate-700 border-slate-200 hover:bg-slate-50">
-                                {t.later}
-                            </Button>
-                        ) : step > 1 ? (
-                            <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)} className="h-10 sm:h-11 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 inline-flex items-center gap-2">
-                                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />{t.back}
-                            </Button>
-                        ) : null}
-                        
-                        {step < 4 ? (
-                            <Button type="button" disabled={step === 1 ? !isStep1Valid : step === 2 ? !isStep2Valid : !isStep3Valid}
-                                className="h-10 sm:h-11 rounded-xl px-6 sm:px-8 text-sm sm:text-base font-bold bg-[#5064df] hover:bg-[#4357c9] text-white disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 shadow-sm transition-all inline-flex items-center gap-2"
-                                onClick={handleNext}>
-                                {t.next}<ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />
-                            </Button>
-                        ) : (
-                            <Button type="button"
-                                className="h-10 sm:h-11 rounded-xl px-6 sm:px-8 text-sm sm:text-base font-bold bg-[#5064df] hover:bg-[#4357c9] text-white disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 shadow-sm transition-all inline-flex items-center gap-2"
-                                disabled={!hasClasses || finishing} onClick={finish}>
-                                {finishing ? 'Activation…' : t.start}<ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />
-                            </Button>
-                        )}
+                    <footer className="border-t border-slate-200 bg-slate-50/80 p-4 sm:px-10 sm:py-5">
+                        <div className={cn('flex w-full items-center gap-3', step === 1 ? 'justify-end' : 'justify-between')}>
+                            {step === 4 ? (
+                                <Button type="button" variant="outline" onClick={onSkip} className="h-11 min-w-[7rem] rounded-lg border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-white sm:px-6 sm:text-base">
+                                    {t.later}
+                                </Button>
+                            ) : step > 1 ? (
+                                <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)} className="inline-flex h-11 min-w-[7rem] items-center gap-2 rounded-lg border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-white sm:px-6 sm:text-base">
+                                    <ChevronLeft className="h-4 w-4 rtl:rotate-180 sm:h-5 sm:w-5" />{t.back}
+                                </Button>
+                            ) : null}
+
+                            {step < 4 ? (
+                                <Button type="button" disabled={step === 1 ? !isStep1Valid : step === 2 ? !isStep2Valid : !isStep3Valid}
+                                    className="inline-flex h-11 min-w-[7rem] items-center gap-2 rounded-lg bg-[#5064df] px-5 text-sm font-bold text-white shadow-[0_6px_14px_rgba(80,100,223,0.22)] transition-all hover:bg-[#4357c9] disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100 sm:px-7 sm:text-base"
+                                    onClick={handleNext}>
+                                    {t.next}<ChevronRight className="h-4 w-4 rtl:rotate-180 sm:h-5 sm:w-5" />
+                                </Button>
+                            ) : (
+                                <Button type="button"
+                                    className="inline-flex h-11 min-w-[7rem] items-center gap-2 rounded-lg bg-[#5064df] px-5 text-sm font-bold text-white shadow-[0_6px_14px_rgba(80,100,223,0.22)] transition-all hover:bg-[#4357c9] disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100 sm:px-7 sm:text-base"
+                                    disabled={!hasClasses || finishing} onClick={finish}>
+                                    {finishing ? 'Activation…' : t.start}<ChevronRight className="h-4 w-4 rtl:rotate-180 sm:h-5 sm:w-5" />
+                                </Button>
+                            )}
+                        </div>
                     </footer>
                 </main>
             </div>

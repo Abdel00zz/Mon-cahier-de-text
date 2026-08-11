@@ -272,11 +272,16 @@ const App: React.FC = () => {
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
-  
-  let onboardingSeen = false;
-  try { onboardingSeen = !!sessionStorage.getItem('onboarding_seen_v1'); } catch {}
-  const isCurrentlyOnboarding = !config.hasCompletedWelcome && !onboardingSeen;
-  
+
+  // L'accueil ne masque la navigation que pendant le vrai premier parcours :
+  // compte non validé et aucune classe. Un ancien compte avec ses classes ne
+  // doit donc jamais être bloqué par un flag local absent.
+  const isCurrentlyOnboarding =
+    view === 'dashboard' &&
+    classes.length === 0 &&
+    !config.hasCompletedWelcome &&
+    authUser?.hasCompletedWelcome !== true;
+
   const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 

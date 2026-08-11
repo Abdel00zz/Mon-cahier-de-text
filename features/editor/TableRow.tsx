@@ -272,8 +272,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border') : '',
-    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border') : '',
+    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border/70') : '',
+    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border/70') : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -312,8 +312,8 @@ const TableRowComponent: FC<TableRowProps> = ({
     : hasAssignedDate
       ? hasWarning
         ? 'border-r border-warning/40'
-        : 'border-r border-white/65 dark:border-white/10'
-      : 'border-r border-white/55 dark:border-white/10';
+        : 'border-r border-border/80'
+      : 'border-r border-border/80';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
@@ -321,8 +321,8 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? hasWarning
           ? 'md:border-r md:border-warning/40'
-          : 'md:border-r md:border-white/65 dark:border-white/10'
-        : 'md:border-r md:border-white/55 dark:border-white/10';
+          : 'md:border-r md:border-border/80'
+        : 'md:border-r md:border-border/80';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
-import { OnboardingModal } from './modals/OnboardingModal';
 import { OnboardingPage } from './OnboardingPage';
 import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
@@ -19,6 +18,7 @@ import { ChevronDown, Plus, BookOpen } from '@/components/ui/icons';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -97,6 +97,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     onOpenNotifications,
 }) => {
     const { locale, t, isRtl } = useLocale();
+    const { user: accountUser, completeWelcome } = useAuth();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -111,6 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const displayMenuRef = useRef<HTMLDivElement>(null);
     const [now, setNow] = useState(() => new Date());
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
+    const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true;
 
     useEffect(() => {
         if (!CLASS_DISPLAY_OPTIONS.includes(classDisplayMode)) {
@@ -176,21 +178,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     useEffect(() => {
         if (isLoading) return;
-        if (classes.length > 0 || config.hasCompletedWelcome) return;
-        try {
-            if (sessionStorage.getItem('onboarding_seen_v1')) return;
-        } catch { /* stockage indisponible */ }
-        const timer = window.setTimeout(() => setOnboardingOpen(true), 600);
-        return () => window.clearTimeout(timer);
-    }, [isLoading, classes.length, config.hasCompletedWelcome]);
+        // L'onboarding ne s'ouvre qu'au TOUT PREMIER démarrage : aucun cahier
+        // ET le flag permanent `hasCompletedWelcome` n'a jamais été posé.
+        if (classes.length > 0 || welcomeCompleted) return;
+        setOnboardingOpen(true);
+    }, [isLoading, classes.length, welcomeCompleted]);
 
-    const closeOnboarding = useCallback(() => {
-        try { sessionStorage.setItem('onboarding_seen_v1', '1'); } catch { /* stockage indisponible */ }
-        if (!config.hasCompletedWelcome) updateConfig({ hasCompletedWelcome: true });
+    const closeOnboarding = useCallback(async () => {
+        // Le stockage local ferme la page immédiatement ; le compte et la
+        // synchronisation conservent ensuite ce choix sur les autres appareils.
+        if (!welcomeCompleted) updateConfig({ hasCompletedWelcome: true });
         setOnboardingOpen(false);
-    }, [config.hasCompletedWelcome, updateConfig]);
+        try {
+            await completeWelcome();
+        } catch {
+            // Hors ligne : hasCompletedWelcome est déjà stocké localement et
+            // sera envoyé via la synchronisation dès le retour du réseau.
+        }
+    }, [completeWelcome, updateConfig, welcomeCompleted]);
 
-    const completeOnboarding = useCallback(() => {
+    const completeOnboarding = useCallback(async () => {
         const current = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
         updateConfig({
             hasCompletedWelcome: true,
@@ -200,7 +207,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 sessionVibration: true,
             },
         });
-    }, [config.notificationSettings, updateConfig]);
+        setOnboardingOpen(false);
+        try {
+            await completeWelcome();
+        } catch {
+            // Même stratégie que « Plus tard » : persistance locale + sync.
+        }
+    }, [completeWelcome, config.notificationSettings, updateConfig]);
 
     const createClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => {
         const created = addClass({
@@ -386,7 +399,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     // Page de démarrage immersive (première connexion, aucun cahier)
-    if (isOnboardingOpen) {
+    if (isOnboardingOpen && !welcomeCompleted) {
         return (
             <OnboardingPage
                 config={config}
@@ -544,7 +557,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                             </div>
-                                            <Button onClick={() => setOnboardingOpen(true)} className="mt-4 h-10 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90">
+                                            <Button onClick={() => {
+                                                if (welcomeCompleted) {
+                                                    setCreateModalOpen(true);
+                                                } else {
+                                                    setOnboardingOpen(true);
+                                                }
+                                            }} className="mt-4 h-10 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90">
                                             {t('dashboard.addClass')}
                                         </Button>
                                     </div>
@@ -612,16 +631,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     handleDeleteClass(editingClass.id);
                     setEditingClass(null);
                 } : undefined}
-            />
-            <OnboardingModal
-                isOpen={isOnboardingOpen}
-                onClose={closeOnboarding}
-                onComplete={completeOnboarding}
-                config={config}
-                onConfigChange={updateConfig}
-                classes={classes}
-                onCreateClass={createClass}
-                onOpenNotebook={onSelectClass}
             />
             <ClassNotificationsModal
                 isOpen={!!notificationClass}

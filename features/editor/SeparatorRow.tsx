@@ -64,7 +64,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="relative text-center text-[10px] font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-zinc-50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
+                    className="relative text-center text-[10px] font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted/50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
                     dangerouslySetInnerHTML={{ __html: data.content || '' }}
                 />
 

@@ -54,24 +54,24 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg px-2.5 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 active:scale-95 ${
+    className={`group relative flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 active:scale-95 ${
       danger
-        ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400'
+        ? 'text-rose-600 hover:border-rose-200 hover:bg-rose-50 dark:text-rose-400 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/40'
         : accent
-          ? 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90'
-          : 'text-foreground/80 hover:bg-muted hover:text-foreground'
+          ? 'border-primary/20 bg-primary/10 text-primary shadow-xs hover:bg-primary/15'
+          : 'text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'
     }`}
     aria-label={title}
   >
-    <Icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-105" />
-    {label && <span className="text-xs font-semibold whitespace-nowrap">{label}</span>}
-    <span className="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 border border-zinc-800 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans z-[70]">
+    <Icon aria-hidden className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+    {label && <span className="whitespace-nowrap text-[11px] font-semibold">{label}</span>}
+    <span className="pointer-events-none absolute -top-9 left-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
       {title}
     </span>
   </Button>
 );
 
-const Divider: FC = () => <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-border/60" />;
+const Divider: FC = () => <span aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-border/70" />;
 
 export const SelectionBar: FC<SelectionBarProps> = ({
   count,
@@ -138,7 +138,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 z-[60] flex items-center gap-1.5 max-w-[calc(100vw-1.25rem)] -translate-x-1/2 rounded-full border border-border/80 bg-card/95 p-1.5 text-card-foreground shadow-2xl backdrop-blur-md sm:bottom-6 print:hidden"
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1.5rem)] items-center justify-center gap-1 overflow-hidden rounded-xl border border-border/80 bg-card/98 p-1.5 text-card-foreground shadow-xl shadow-black/10 backdrop-blur-md sm:bottom-6 sm:left-1/2 sm:right-auto sm:inset-x-auto sm:w-fit sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:gap-1.5 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
@@ -146,7 +146,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
     >
       {/* Badge indicateur de nombre (ex: 4 ou x4) */}
       <div
-        className="flex shrink-0 h-8 min-w-8 items-center justify-center rounded-full bg-primary/15 text-primary px-2.5 text-xs font-black font-mono tracking-tight"
+        className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 px-2 text-xs font-black tracking-tight text-primary font-mono"
         title={t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount })}
       >
         {count > 1 ? `×${formattedCount}` : formattedCount}
@@ -155,7 +155,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       <Divider />
 
       {/* Actions groupées par intention */}
-      <div className={`flex items-center gap-1 overflow-x-auto [@scrollbar-width:none] ${isPending ? 'opacity-60' : ''}`}>
+      <div className={`flex min-w-0 flex-1 flex-wrap items-center justify-center gap-0.5 sm:flex-nowrap sm:justify-start ${isPending ? 'opacity-60' : ''}`}>
         {groups.map((group, index) => (
           <React.Fragment key={index}>
             {index > 0 && <Divider />}
@@ -172,7 +172,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         size="icon"
         onClick={onClear}
         title={t('selection.closeShortcut')}
-        className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer active:scale-95"
+        className="h-8 w-8 shrink-0 rounded-md border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground cursor-pointer active:scale-95"
         aria-label={t('selection.clearAria')}
       >
         <X className="h-4 w-4" />
