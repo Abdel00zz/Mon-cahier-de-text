@@ -21,13 +21,16 @@ import {
 const DEV_PHONE = '0600000000';
 const DEV_PASSWORD = '00000000';
 
+interface DevWorkspace {
+    classesBlob: Record<string, unknown> | null;
+    lessonsByClass: Map<string, unknown>;
+}
+
 const devApiMockPlugin = (): Plugin => {
     const DEV_USER = {
         phone: DEV_PHONE,
         nom: 'Dev',
         prenom: 'Prof',
-        cycles: ['college', 'lycee'],
-        subjects: ['Mathématiques'],
         hasCompletedWelcome: false,
     };
     let sessionUser: Record<string, unknown> | null = null;
@@ -38,6 +41,7 @@ const devApiMockPlugin = (): Plugin => {
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
     let devAdminMessages: Array<{ id: string; title: string; body: string; createdAt: string; acknowledgedAt?: string }> = [];
     let devTeacherBlocked = false;
+    const workspacesByPhone = new Map<string, DevWorkspace>();
 
     const readBody = (req: import('http').IncomingMessage): Promise<string> =>
         new Promise(resolve => {
@@ -52,6 +56,19 @@ const devApiMockPlugin = (): Plugin => {
     };
     const hasSession = (req: import('http').IncomingMessage) =>
         /cdt_dev_session=1/.test(req.headers.cookie ?? '');
+    const currentSessionPhone = (): string => {
+        const phone = sessionUser?.phone;
+        return typeof phone === 'string' && phone ? phone : DEV_PHONE;
+    };
+    const workspaceForCurrentSession = (): { phone: string; workspace: DevWorkspace } => {
+        const phone = currentSessionPhone();
+        let workspace = workspacesByPhone.get(phone);
+        if (!workspace) {
+            workspace = { classesBlob: null, lessonsByClass: new Map<string, unknown>() };
+            workspacesByPhone.set(phone, workspace);
+        }
+        return { phone, workspace };
+    };
     // accepte 06000000, 0600000000, +212 6..., etc., tolérant sur la saisie dev
     const phoneMatches = (raw: unknown) => {
         const digits = String(raw ?? '').replace(/\D/g, '');
@@ -85,8 +102,6 @@ const devApiMockPlugin = (): Plugin => {
                             phone: String(body.phone ?? DEV_PHONE),
                             nom: String(body.nom ?? 'Dev'),
                             prenom: String(body.prenom ?? 'Prof'),
-                            cycles: Array.isArray(body.cycles) ? body.cycles : [],
-                            subjects: Array.isArray(body.subjects) ? body.subjects : [],
                             hasCompletedWelcome: false,
                         };
                         res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
@@ -109,16 +124,17 @@ const devApiMockPlugin = (): Plugin => {
 
             server.middlewares.use('/api/sync', async (req, res) => {
                 if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
+                const { phone, workspace } = workspaceForCurrentSession();
                 if (req.method === 'GET') {
                     const url = new URL(req.url ?? '/', 'http://localhost');
                     const classId = url.searchParams.get('classId');
                     if (classId) {
-                        const blob = lessonsByClass.get(classId);
+                        const blob = workspace.lessonsByClass.get(classId);
                         return blob
                             ? send(res, 200, blob)
                             : send(res, 404, { error: 'Aucune donnée cloud pour cette classe.' });
                     }
-                    return send(res, 200, classesBlob ?? {
+                    return send(res, 200, workspace.classesBlob ?? {
                         classes: [], schedules: [], timetable: [], settings: {},
                         settingsUpdatedAt: '', classMeta: {}, deletedClasses: {}, updatedAt: '',
                     });
@@ -127,9 +143,10 @@ const devApiMockPlugin = (): Plugin => {
                     let body: Record<string, any> = {};
                     try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
                     const now = new Date().toISOString();
-                    const classMeta: Record<string, { updatedAt: string }> = { ...((classesBlob?.classMeta as any) ?? {}) };
+                    const existingBlob = workspace.classesBlob;
+                    const classMeta: Record<string, { updatedAt: string }> = { ...((existingBlob?.classMeta as any) ?? {}) };
                     const deletedClasses: Record<string, { deletedAt: string }> = {
-                        ...((classesBlob?.deletedClasses as Record<string, { deletedAt: string }> | undefined) ?? {}),
+                        ...((existingBlob?.deletedClasses as Record<string, { deletedAt: string }> | undefined) ?? {}),
                     };
                     for (const id of body.deletedClassIds ?? []) {
                         if (typeof id === 'string' && id) deletedClasses[id] = { deletedAt: now };
@@ -150,9 +167,9 @@ const devApiMockPlugin = (): Plugin => {
                         }
                     }
                     const deletedIds = new Set(Object.keys(deletedClasses));
-                    const requestedClasses = Array.isArray(body.classes) ? body.classes : ((classesBlob?.classes as any[]) ?? []);
-                    const existingClasses = (classesBlob?.classes as Array<{ id?: string }> | undefined) ?? [];
-                    const adminClassOverrides = { ...((classesBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
+                    const requestedClasses = Array.isArray(body.classes) ? body.classes : ((existingBlob?.classes as any[]) ?? []);
+                    const existingClasses = (existingBlob?.classes as Array<{ id?: string }> | undefined) ?? [];
+                    const adminClassOverrides = { ...((existingBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
                     const classesById = new Map<string, unknown>();
                     for (const classInfo of existingClasses) {
                         if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
@@ -165,28 +182,40 @@ const devApiMockPlugin = (): Plugin => {
                         .map(([classId, classInfo]) => adminClassOverrides[classId] ?? classInfo);
                     for (const entry of body.lessons ?? []) {
                         if (deletedIds.has(entry.classId)) continue;
-                        lessonsByClass.set(entry.classId, { lessonsData: entry.lessonsData, updatedAt: entry.updatedAt || now });
+                        const lessonBlob = {
+                            lessonsData: entry.lessonsData,
+                            ...(entry.contentDirection === 'rtl' || entry.contentDirection === 'ltr' ? { contentDirection: entry.contentDirection } : {}),
+                            updatedAt: entry.updatedAt || now,
+                        };
+                        workspace.lessonsByClass.set(entry.classId, lessonBlob);
+                        lessonsByClass.set(entry.classId, lessonBlob);
                         classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
                     }
                     for (const id of deletedIds) {
+                        workspace.lessonsByClass.delete(id);
                         lessonsByClass.delete(id);
                         delete classMeta[id];
                         delete adminClassOverrides[id];
                     }
                     if (body.snapshot && typeof body.snapshot === 'object') {
-                        devSnapshot = { ...body.snapshot, phone: DEV_PHONE, lastSyncAt: now };
+                        devSnapshot = { ...body.snapshot, phone, lastSyncAt: now };
                     }
-                    classesBlob = {
+                    const nextBlob = {
                         classes,
-                        schedules: (body.schedules ?? (classesBlob?.schedules as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
-                        timetable: (body.timetable ?? (classesBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
-                        settings: body.settings ?? (classesBlob?.settings as any) ?? {},
-                        settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((classesBlob?.settingsUpdatedAt as any) ?? ''),
+                        schedules: (body.schedules ?? (existingBlob?.schedules as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
+                        timetable: (body.timetable ?? (existingBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
+                        settings: body.settings ?? (existingBlob?.settings as any) ?? {},
+                        settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((existingBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
                         adminClassOverrides,
                         deletedClasses,
                         updatedAt: now,
                     };
+                    workspace.classesBlob = nextBlob;
+                    // L'administration locale reste une vue de la dernière
+                    // synchronisation active, sans compromettre l'isolation
+                    // des réponses /api/sync entre comptes de test.
+                    classesBlob = nextBlob;
                     return send(res, 200, { ok: true, serverTime: now, classMeta, deletedClasses });
                 }
                 send(res, 405, { error: 'Méthode non autorisée.' });

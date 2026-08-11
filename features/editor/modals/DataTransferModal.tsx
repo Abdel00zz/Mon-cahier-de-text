@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { FileDown, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,8 @@ import { useLocale } from '@/i18n/LocaleProvider';
 interface DataTransferModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (data: any, mode: 'replace' | 'append') => void;
+  /** Renvoie false si le contenu ne peut pas être appliqué : la modale reste ouverte. */
+  onImport: (data: unknown, mode: 'replace' | 'append') => Promise<boolean> | boolean;
   onExport: () => void;
 }
 
@@ -22,14 +23,26 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
   const [fileName, setFileName] = useState('');
   const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
   const [message, setMessage] = useState<string | null>(null);
+  const [isReading, setIsReading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  // Un fichier A peut finir de se lire après le fichier B. Ce compteur rend
+  // le dernier choix seul autorisé à mettre à jour la modale.
+  const readRequestRef = useRef(0);
 
   useEffect(() => {
-    if (!isOpen) return;
+    readRequestRef.current += 1;
+    if (!isOpen) {
+      setIsReading(false);
+      setIsImporting(false);
+      return;
+    }
     setPanel('import');
     setJsonText('');
     setFileName('');
     setImportMode('replace');
     setMessage(null);
+    setIsReading(false);
+    setIsImporting(false);
   }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,23 +55,38 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
       return;
     }
 
+    const requestId = ++readRequestRef.current;
+    setIsReading(true);
+    setJsonText('');
+    setFileName(file.name);
     const reader = new FileReader();
     reader.onload = e => {
+      if (requestId !== readRequestRef.current) return;
       setJsonText(typeof e.target?.result === 'string' ? e.target.result : '');
       setFileName(file.name);
+      setIsReading(false);
     };
-    reader.onerror = () => setMessage(t('transfer.readError'));
+    reader.onerror = () => {
+      if (requestId !== readRequestRef.current) return;
+      setIsReading(false);
+      setMessage(t('transfer.readError'));
+    };
     reader.readAsText(file);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
+    if (isReading || isImporting) return;
     setMessage(null);
+    setIsImporting(true);
     try {
       const parsed = JSON.parse(jsonText);
-      onImport(parsed, importMode);
+      const imported = await onImport(parsed, importMode);
+      if (!imported) return;
     } catch (error) {
       const detail = error instanceof Error ? error.message : t('transfer.invalidJson');
       setMessage(t('transfer.importError', { detail }));
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -75,7 +103,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           {panel === 'export' ? (
             <Button type="button" onClick={onExport} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">{t('transfer.export')}</Button>
           ) : (
-            <Button type="button" onClick={handleImport} disabled={!jsonText} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">{t('transfer.import')}</Button>
+            <Button type="button" onClick={handleImport} disabled={!jsonText || isReading || isImporting} aria-busy={isImporting} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-5 shadow-sm">{t('transfer.import')}</Button>
           )}
         </>
       }
@@ -132,9 +160,11 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
               <Textarea
                 value={jsonText}
                 onChange={event => {
+                  readRequestRef.current += 1;
                   setJsonText(event.target.value);
                   setFileName('');
                   setMessage(null);
+                  setIsReading(false);
                 }}
                 placeholder={t('transfer.pastePlaceholder')}
                 className="mt-3 h-32 resize-y bg-card border border-border focus:ring-0 focus:border-border font-mono text-xs"

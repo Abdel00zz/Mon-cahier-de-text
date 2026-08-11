@@ -107,15 +107,33 @@ const App: React.FC = () => {
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
+  const [isOnboardingVisible, setOnboardingVisible] = useState(false);
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
+  const previousAuthStatusRef = useRef(authStatus);
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
   useSessionAlerts();
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
+
+  // Une authentification déclenchée depuis une ancienne vue (par exemple les
+  // paramètres après une déconnexion) doit reprendre à l'accueil. Cela permet
+  // au premier compte connecté d'atteindre immédiatement son onboarding, sans
+  // réafficher la navigation ou les données de l'utilisateur précédent.
+  useEffect(() => {
+    const wasAnonymous = previousAuthStatusRef.current === 'anonymous';
+    previousAuthStatusRef.current = authStatus;
+    if (!wasAnonymous || authStatus !== 'authenticated') return;
+
+    setIsEvaluationsOpen(false);
+    setOnboardingVisible(false);
+    setActiveClass(null);
+    setView('dashboard');
+    window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
+  }, [authStatus]);
 
   const saveCurrentScroll = useCallback(() => {
     scrollPositionsRef.current[getScrollKey(view, activeClass)] = window.scrollY;
@@ -235,6 +253,7 @@ const App: React.FC = () => {
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOpenSchedule={handleOpenSchedule}
         onOpenNotifications={handleOpenNotifications}
+        onOnboardingVisibilityChange={setOnboardingVisible}
       />
     );
   };
@@ -273,14 +292,14 @@ const App: React.FC = () => {
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
 
-  // L'accueil ne masque la navigation que pendant le vrai premier parcours :
-  // compte non validé et aucune classe. Un ancien compte avec ses classes ne
-  // doit donc jamais être bloqué par un flag local absent.
-  const isCurrentlyOnboarding =
+  // L'accueil masque la navigation dès le premier rendu puis pendant tout le
+  // parcours déclaré par Dashboard. Une classe créée en cours d'onboarding ne
+  // peut donc plus faire réapparaître le sidebar prématurément.
+  const shouldBootOnboarding =
     view === 'dashboard' &&
-    classes.length === 0 &&
     !config.hasCompletedWelcome &&
     authUser?.hasCompletedWelcome !== true;
+  const isCurrentlyOnboarding = isOnboardingVisible || shouldBootOnboarding;
 
   const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';

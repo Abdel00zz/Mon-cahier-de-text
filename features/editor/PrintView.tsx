@@ -12,7 +12,8 @@ import {
     Indices, 
     ElementType,
     Separator,
-    AppConfig
+    AppConfig,
+    ContentDirection
 } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
@@ -25,6 +26,8 @@ interface PrintViewProps {
     lessonsData: LessonsData;
     classInfo: ClassInfo;
     config: AppConfig;
+    /** Même direction que le tableau d'édition, pour une impression fidèle. */
+    contentDirection: ContentDirection;
     newlyAddedIds: string[];
     /** numéroter les pages en bas (Chrome : nécessite « En-têtes et pieds de page » dans le dialogue d'impression) */
     pageNumbers?: boolean;
@@ -66,7 +69,7 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal' }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal' }) => {
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
     const sizes = TEXT_SIZES[textSize];
@@ -348,14 +351,14 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         border: none !important;
                         padding: ${spacing.cellPad};
                         vertical-align: top;
-                        text-align: left;
+                        text-align: start;
                         font-size: ${sizes.cell};
                         line-height: ${spacing.line};
-                        border-right: 1px solid #e0e0e0 !important;
+                        border-inline-end: 1px solid #e0e0e0 !important;
                     }
                     .print-table th:last-child, 
                     .print-table td:last-child {
-                        border-right: none !important;
+                        border-inline-end: none !important;
                     }
 
                     .print-table th {
@@ -647,7 +650,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
             {headerMode === 'first' && administrativeHeader}
 
             {/* Table */}
-            <table className="print-table">
+            <table className="print-table" dir={contentDirection} data-content-direction={contentDirection}>
                 <thead>
                     {headerMode === 'all' && (
                         <tr className="print-admin-header-row">

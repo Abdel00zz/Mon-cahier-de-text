@@ -2,7 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { getRedis, KEYS } from './_lib/redis.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
-import type { ClassInfo, ClassSchedule, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
+import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];
@@ -21,6 +21,7 @@ interface ClassesBlob {
 
 interface LessonsBlob {
     lessonsData: LessonsData;
+    contentDirection?: ContentDirection;
     updatedAt: string;
 }
 
@@ -32,7 +33,7 @@ interface SyncPushBody {
     settingsUpdatedAt?: string;
     deletedClassIds?: string[];
     deletedClasses?: Array<{ id?: unknown; deletedAt?: unknown }> | Record<string, { deletedAt?: unknown }>;
-    lessons?: { classId: string; lessonsData: LessonsData; updatedAt: string }[];
+    lessons?: { classId: string; lessonsData: LessonsData; contentDirection?: ContentDirection; updatedAt: string }[];
     snapshot?: TeacherSnapshot;
 }
 
@@ -167,6 +168,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     for (const entry of lessons) {
         pipeline.set(KEYS.lessons(phone, entry.classId), {
             lessonsData: entry.lessonsData,
+            ...(entry.contentDirection ? { contentDirection: entry.contentDirection } : {}),
             updatedAt: entry.updatedAt || now,
         } satisfies LessonsBlob);
     }

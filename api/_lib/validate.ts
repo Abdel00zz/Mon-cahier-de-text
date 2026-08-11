@@ -1,5 +1,5 @@
 import { HttpError } from './http.js';
-import type { ClassInfo, LessonsData, TimetableEntry } from '../../types.js';
+import type { ClassInfo, ContentDirection, LessonsData, TimetableEntry } from '../../types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);
@@ -96,20 +96,25 @@ export const assertValidTimetable = (timetable: unknown, validClassIds: Set<stri
 export const assertValidLessonsPayload = (
   lessons: unknown,
   validClassIds: Set<string>
-): { classId: string; lessonsData: LessonsData; updatedAt: string }[] => {
+): { classId: string; lessonsData: LessonsData; contentDirection?: ContentDirection; updatedAt: string }[] => {
   if (lessons === undefined) return [];
   if (!Array.isArray(lessons)) throw new HttpError(400, 'Cahiers synchronisés invalides.');
   if (lessons.length > validClassIds.size) throw new HttpError(400, 'Trop de cahiers dans la synchronisation.');
 
   return lessons.map(raw => {
     if (!raw || typeof raw !== 'object') throw new HttpError(400, 'Cahier invalide.');
-    const entry = raw as { classId?: unknown; lessonsData?: unknown; updatedAt?: unknown };
+    const entry = raw as { classId?: unknown; lessonsData?: unknown; contentDirection?: unknown; updatedAt?: unknown };
     const classId = assertStringField(entry.classId, 'Classe du cahier', 120);
     if (!validClassIds.has(classId)) throw new HttpError(400, 'Cahier rattaché à une classe inconnue.');
     if (!Array.isArray(entry.lessonsData)) throw new HttpError(400, 'Données de cahier invalides.');
+    const contentDirection: ContentDirection | undefined =
+      entry.contentDirection === 'rtl' || entry.contentDirection === 'ltr'
+        ? entry.contentDirection
+        : undefined;
     return {
       classId,
       lessonsData: entry.lessonsData as LessonsData,
+      ...(contentDirection ? { contentDirection } : {}),
       updatedAt: typeof entry.updatedAt === 'string' && entry.updatedAt ? entry.updatedAt : new Date().toISOString(),
     };
   });

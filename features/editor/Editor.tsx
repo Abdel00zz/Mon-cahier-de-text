@@ -16,6 +16,7 @@ import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useSelectionData } from '@/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
+import { defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
@@ -32,7 +33,7 @@ import {
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
 import { printDocument } from '@/utils/printUtils';
-import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator } from '@/types';
+import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
@@ -130,6 +131,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     activeModal: null as ActiveModal,
     editingIndices: null as Indices | null,
     searchQuery: '',
+    // La langue du contenu est indépendante de celle de l'interface : un
+    // enseignant peut conserver l'UI française avec un cahier arabe, ou inversement.
+    contentDirection: defaultContentDirection(locale) as ContentDirection,
     newlyAddedIds: [] as string[],
     printSelection: null as LessonsData | null, // sous-ensemble à imprimer (nouveautés seulement)
     printPageNumbers: true, // numérotation des pages à l'impression
@@ -165,6 +169,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     activeModal,
     editingIndices,
     searchQuery,
+    contentDirection,
     newlyAddedIds,
     printSelection,
     printPageNumbers,
@@ -214,12 +219,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleLoadPredefined = useCallback(async () => {
       if (!predefinedOffer) return;
       try {
-          const content = await loadPredefinedContent(predefinedOffer);
+          const prepared = await loadPredefinedContent(predefinedOffer);
           setState(
-            () => withStarterDiagnostic(content, config.applicationLocale ?? 'ar'),
+            () => withStarterDiagnostic(prepared.lessonsData, config.applicationLocale ?? 'ar'),
             'import-data',
           );
-          setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+          setEditorState(draft => {
+            draft.contentDirection = prepared.direction.direction;
+            draft.saveStatus = 'unsaved';
+          });
           toast.success('Programme prédéfini chargé, adaptez-le librement.');
       } catch {
           toast.error('Impossible de charger le contenu prédéfini.');
@@ -317,18 +325,24 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const savedData = raw ? JSON.parse(raw) : [];
       const lessons = Array.isArray(savedData) ? savedData : (savedData.lessonsData ?? []);
       resetState(migrateLessonsData(lessons), 'initial-load');
+      // Les anciens cahiers (simple tableau) sont analysés une fois ; les
+      // nouveaux gardent une décision explicite dans le même instantané.
+      const fallback = defaultContentDirection(locale);
+      const storedDirection = readStoredContentDirection(savedData);
+      const detectedDirection = detectContentDirection(lessons, fallback).direction;
+      setEditorState(draft => { draft.contentDirection = storedDirection ?? detectedDirection; });
     } catch (error) {
       logger.error("Failed to load data from localStorage", error);
       showNotification(t('editorNotice.loadError'), "error");
     } finally {
       setEditorState(draft => { draft.isClassLoading = false; });
     }
-  }, [resetState, getStorageKey, showNotification, setEditorState, t]);
+  }, [resetState, getStorageKey, showNotification, setEditorState, t, locale]);
 
   const saveData = useCallback(() => {
     setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
-      localStorage.setItem(getStorageKey(), JSON.stringify(lessonsData));
+      localStorage.setItem(getStorageKey(), JSON.stringify({ lessonsData, contentDirection }));
       touchClassSyncMeta(classInfo.id);
       markClassDirty(classInfo.id);
       setTimeout(() => setEditorState(draft => {
@@ -341,11 +355,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       showNotification(t('editorNotice.saveError'), "error");
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     }
-  }, [lessonsData, getStorageKey, classInfo.id, showNotification, setEditorState, t]);
+  }, [lessonsData, contentDirection, getStorageKey, classInfo.id, showNotification, setEditorState, t]);
 
   const handleExportData = useCallback(() => {
     try {
-        const dataToExport = { classInfo, lessonsData };
+        const dataToExport = { classInfo, lessonsData, contentDirection };
         const jsonString = JSON.stringify(dataToExport, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -362,7 +376,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         logger.error("Failed to export data", error);
         showNotification(t('editorNotice.exportError'), "error");
     }
-  }, [classInfo, lessonsData, showNotification, t]);
+  }, [classInfo, lessonsData, contentDirection, showNotification, t]);
 
   const handleClassInfoChange = useCallback((newInfo: Partial<ClassInfo>) => {
     const normalizedInfo = newInfo.name !== undefined
@@ -390,7 +404,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       saveData();
     }, 1500);
     return () => clearTimeout(handler);
-  }, [lessonsData, isClassLoading, isConfigLoading, saveStatus, saveData]);
+  }, [lessonsData, contentDirection, isClassLoading, isConfigLoading, saveStatus, saveData]);
 
   useEffect(() => {
     loadData();
@@ -908,26 +922,35 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       else commit();
   }, [setState, showNotification, setEditorState, requestDateCommit]);
 
-  const handleImport = useCallback((data: any, mode: 'replace' | 'append') => {
+  const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       try {
-        const { lessonsData: preparedLessons, report } = prepareImportedLessons(data);
+        const { lessonsData: preparedLessons, report, direction } = prepareImportedLessons(data);
         if (preparedLessons.length === 0) {
           showNotification("Import refuse: aucun tableau de lecons exploitable.", "error");
-          return;
+          return false;
         }
 
         setState(currentData => (mode === 'replace' ? preparedLessons : [...currentData, ...preparedLessons]), 'import-data');
+        // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
+        // toutes ses colonnes. Un import de remplacement (ou le premier import)
+        // adopte immédiatement l'écriture détectée à partir du titre.
+        const shouldAdoptImportedDirection = mode === 'replace' || lessonsData.length === 0;
+        setEditorState(draft => {
+          if (shouldAdoptImportedDirection) draft.contentDirection = direction.direction;
+          draft.saveStatus = 'unsaved';
+        });
         handleModalClose();
         showNotification(
-          `Import maitrise: ${report.topLevelCount} bloc(s), ${report.itemCount} element(s), ${report.normalizedDates} date(s) normalisee(s).`,
+          `Import maitrise: ${report.topLevelCount} bloc(s), ${report.itemCount} element(s), ${report.normalizedDates} date(s) normalisee(s)${shouldAdoptImportedDirection ? ` — ${direction.direction.toUpperCase()} applique` : ''}.`,
           "success",
         );
-        setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+        return true;
       } catch (error) {
         logger.error('Failed to prepare imported JSON', error);
         showNotification("Import refuse: structure JSON non compatible avec le tableau.", "error");
+        return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState]);
+  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setState(() => newLessons, 'manage-lessons');
@@ -1032,6 +1055,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
               lessonsData={filteredData}
+              contentDirection={contentDirection}
               
               onCellUpdate={handleCellUpdate}
               onDeleteSeparator={handleDeleteSeparator}
@@ -1055,7 +1079,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         </div>
 
         {isPrinting && (
-          <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
+          <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} contentDirection={contentDirection} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
         )}
       </div>
 

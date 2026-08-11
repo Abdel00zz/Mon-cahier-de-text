@@ -1,0 +1,120 @@
+import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
+import { CLASS_LEVELS_BY_CYCLE, SUBJECTS } from '@/constants';
+import type { Cycle } from '@/types';
+import type { ClassLevelGroup, CycleOption, ModalLang, OnboardingCopy } from './types';
+
+export const ONBOARDING_CYCLES: CycleOption[] = [
+    { key: 'college', icon: School },
+    { key: 'lycee', icon: GraduationCap },
+    { key: 'prepa', icon: FlaskConical },
+];
+
+export const LEVEL_GROUPS: Record<Cycle, ClassLevelGroup[]> = {
+    college: [{ key: 'college', levels: CLASS_LEVELS_BY_CYCLE.college }],
+    lycee: [
+        { key: 'common', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('Tronc')) },
+        { key: 'firstBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('1BAC')) },
+        { key: 'secondBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('2BAC')) },
+    ],
+    prepa: [{ key: 'prepa', levels: CLASS_LEVELS_BY_CYCLE.prepa }],
+};
+
+export const defaultLevelForCycle = (cycle: Cycle): string => LEVEL_GROUPS[cycle][0]?.levels[0] ?? '';
+
+export const subjectOptionsFor = (selectedSubjects: string[] | undefined): string[] =>
+    Array.from(new Set([...SUBJECTS, ...(selectedSubjects ?? [])]));
+
+const TEXTS: Record<ModalLang, OnboardingCopy> = {
+    fr: {
+        brand: 'Mon cahier',
+        title: 'Bienvenue',
+        subtitle: 'Configurez votre espace de travail en quelques étapes.',
+        start: 'Terminer la configuration',
+        finishing: 'Finalisation…',
+        configurationCompleted: 'Configuration enregistrée.',
+        configurationError: 'La configuration n’a pas pu être finalisée. Réessayez.',
+        classAdded: 'Classe ajoutée.',
+        addingClass: 'Ajout…',
+        classCreationError: 'Impossible d’ajouter la classe. Réessayez.',
+        sectionLanguage: 'Langue',
+        sectionProfile: 'Vos informations',
+        sectionSubjects: 'Matières enseignées',
+        sectionClasses: 'Mes classes',
+        sectionSchedule: 'Emploi du temps',
+        languageSelect: 'Choisissez votre langue principale',
+        fullName: 'Nom complet',
+        fullNamePlaceholder: 'Ex. : M. Ahmed Benali',
+        establishment: 'Établissement',
+        establishmentPlaceholder: 'Ex. : Lycée Ibn al-Haytham',
+        teachingCycle: 'Cycle d’enseignement',
+        subjectSelectionHint: teacherName => `${teacherName}, choisissez votre matière d’enseignement pour pouvoir créer vos classes.`,
+        levelPlaceholder: 'Niveau / filière',
+        groupPlaceholder: 'N° 1–99',
+        removeCreatedClass: 'Supprimer cette classe',
+        classRemoved: name => `${name} a été supprimée.`,
+        addClass: 'Ajouter une classe',
+        catalogMode: 'Niveau et groupe',
+        manualMode: 'Nom personnalisé',
+        customClassName: 'Nom de la classe',
+        customClassNamePlaceholder: 'Ex. : Atelier de soutien — groupe A',
+        groupHint: 'Choisissez un niveau et un numéro, ou saisissez un nom personnalisé.',
+        missingGroup: 'Indiquez le numéro de groupe.',
+        invalidGroup: 'Utilisez un numéro de 1 à 99.',
+        missingLabel: 'Saisissez le nom de la classe.',
+        existingClass: 'Cette classe existe déjà.',
+        later: 'Terminer plus tard',
+        back: 'Retour',
+        next: 'Suivant',
+        step: (current, total) => `Étape ${current} sur ${total}`,
+        cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
+        cycleDescriptions: { college: '1AC à 3AC', lycee: 'TC, 1BAC, 2BAC', prepa: 'CPGE (1ère & 2ème année)' },
+        levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1re Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires' },
+    },
+    ar: {
+        brand: 'دفتر النصوص',
+        title: 'مرحباً',
+        subtitle: 'لنأخذ بضع لحظات لإعداد مساحة العمل الخاصة بك.',
+        start: 'إنهاء الإعداد',
+        finishing: 'جارٍ الإنهاء…',
+        configurationCompleted: 'تم حفظ الإعدادات.',
+        configurationError: 'تعذّر إنهاء الإعداد. حاول مرة أخرى.',
+        classAdded: 'تمت إضافة القسم.',
+        addingClass: 'جارٍ الإضافة…',
+        classCreationError: 'تعذرت إضافة القسم. حاول مرة أخرى.',
+        sectionLanguage: 'اللغة',
+        sectionProfile: 'الملف الشخصي',
+        sectionSubjects: 'المواد المُدرَّسة',
+        sectionClasses: 'أقسامك',
+        sectionSchedule: 'الجدول الزمني',
+        languageSelect: 'اختر لغتك الرئيسية',
+        fullName: 'الاسم الكامل',
+        fullNamePlaceholder: 'مثال: الأستاذ أحمد بنعلي',
+        establishment: 'المؤسسة',
+        establishmentPlaceholder: 'مثال: ثانوية ابن الهيثم',
+        teachingCycle: 'السلك التعليمي',
+        subjectSelectionHint: teacherName => `أستاذ ${teacherName}، اختر المادة التي تُدرّسها حتى تتمكن فيما بعد من إنشاء أقسامك.`,
+        levelPlaceholder: 'المستوى / الشعبة',
+        groupPlaceholder: 'رقم 1–99',
+        removeCreatedClass: 'حذف هذا القسم',
+        classRemoved: name => `تم حذف ${name}.`,
+        addClass: 'إضافة قسم',
+        catalogMode: 'المستوى والمجموعة',
+        manualMode: 'اسم مخصص',
+        customClassName: 'اسم القسم',
+        customClassNamePlaceholder: 'مثال: حصة الدعم — المجموعة أ',
+        groupHint: 'اختر المستوى ودوّن رقم قسمك، أو أدخل تسمية خاصة.',
+        missingGroup: 'أدخل رقم المجموعة.',
+        invalidGroup: 'استخدم رقماً من 1 إلى 99.',
+        missingLabel: 'أدخل اسم القسم.',
+        existingClass: 'هذا القسم موجود بالفعل.',
+        later: 'إنهاء لاحقاً',
+        back: 'رجوع',
+        next: 'التالي',
+        step: (current, total) => `المرحلة ${current} من ${total}`,
+        cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
+        cycleDescriptions: { college: 'من الأولى إلى الثالثة إعدادي', lycee: 'الجذع المشترك والبكالوريا', prepa: 'الأقسام التحضيرية للمدارس العليا' },
+        levelGroupLabels: { college: 'الإعدادي', common: 'الجذع المشترك', firstBac: 'الأولى باك', secondBac: 'الثانية باك', prepa: 'الأقسام التحضيرية' },
+    },
+};
+
+export const copyFor = (lang: ModalLang): OnboardingCopy => TEXTS[lang];

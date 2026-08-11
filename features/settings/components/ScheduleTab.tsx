@@ -66,6 +66,8 @@ const CLASS_CELL_COLORS = [
     { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600', dot: 'bg-rose-400' }, // rose
 ];
 
+type SchedulePeriod = 'all' | 'morning' | 'afternoon';
+
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const { locale, t } = useLocale();
     const hourNumber = React.useMemo(
@@ -89,6 +91,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const timetable = config.timetable ?? [];
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
     const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
+    // Le matin est la vue initiale la plus rapide à lire, quel que soit
+    // l'écran. L'enseignant peut basculer instantanément vers l'après-midi
+    // ou la journée complète sans recharger la grille.
+    const [visiblePeriod, setVisiblePeriod] = React.useState<SchedulePeriod>('morning');
 
     const classById = React.useMemo(() => {
         const map = new Map<string, ClassInfo>();
@@ -130,6 +136,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return map;
     }, [timetable]);
 
+    const visibleHourSlots = React.useMemo(() => {
+        if (visiblePeriod === 'morning') return HOUR_SLOTS.filter(slot => slot.startMin < 12 * 60);
+        if (visiblePeriod === 'afternoon') return HOUR_SLOTS.filter(slot => slot.startMin >= 12 * 60);
+        return HOUR_SLOTS;
+    }, [visiblePeriod]);
+
     const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
 
     // ZÉRO classe ≠ blocage : la grille reste affichée, les classes se créent
@@ -159,45 +171,82 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return { hours, sessions };
     };
 
-    return (
-        <div className="space-y-4">
-            <p className="text-xs leading-relaxed text-muted-foreground">
-                {t('schedule.intro')}
-            </p>
-            {noClassesYet && (
-                <p className="flex items-center gap-2 px-1 text-xs font-semibold leading-relaxed text-primary">
-                    <span aria-hidden>✨</span>
-                    {t('schedule.emptyHint')}
-                </p>
-            )}
+    const periodOptions: Array<{ value: SchedulePeriod; label: string }> = [
+        { value: 'all', label: t('schedule.viewAll') },
+        { value: 'morning', label: t('schedule.viewMorning') },
+        { value: 'afternoon', label: t('schedule.viewAfternoon') },
+    ];
 
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm" aria-label={t('schedule.startYear')}>
-                <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
-                <input
-                    type="date"
-                    value={schoolYearStart}
-                    onChange={e => setSchoolYearStart(e.target.value)}
-                    className="h-11 rounded-lg border border-border/80 bg-background text-foreground px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-                <span className="text-[11px] text-muted-foreground/60 font-mono">{t('schedule.calendar', { label: effectiveSchoolYear.libelle })}</span>
+    return (
+        <div className="space-y-5">
+            <div className="flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 max-w-2xl text-start">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                        {t('schedule.intro')}
+                    </p>
+                    {noClassesYet && (
+                        <p className="mt-2 flex items-center gap-2 text-xs font-semibold leading-relaxed text-primary">
+                            <span aria-hidden>✨</span>
+                            {t('schedule.emptyHint')}
+                        </p>
+                    )}
+                </div>
+                <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
+                    <input
+                        type="date"
+                        value={schoolYearStart}
+                        onChange={e => setSchoolYearStart(e.target.value)}
+                        className="h-10 rounded-lg border border-border/80 bg-background px-2.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                </div>
             </div>
+
+            <p className="-mt-3 text-start text-[11px] font-mono text-muted-foreground/60 sm:text-xs">
+                {t('schedule.calendar', { label: effectiveSchoolYear.libelle })}
+            </p>
 
             {/* État de complétude et volumes horaires avant la saisie de la grille. */}
             <HoursAdvisory classes={classes} timetable={timetable} />
 
-            {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
-            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <div className="overflow-x-auto">
-                <table className="rtl-table w-full min-w-[48rem] border-separate border-spacing-0 text-xs">
+            <section className="space-y-3" aria-label={t('schedule.gridTitle')}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="text-start">
+                        <h3 className="text-sm font-bold text-foreground">{t('schedule.gridTitle')}</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">{t('schedule.gridHint')}</p>
+                    </div>
+                    <div className="inline-flex w-full rounded-lg bg-muted p-1 sm:w-auto" role="group" aria-label={t('schedule.viewLabel')}>
+                        {periodOptions.map(option => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setVisiblePeriod(option.value)}
+                                aria-pressed={visiblePeriod === option.value}
+                                className={`min-w-0 flex-1 rounded-md px-2.5 py-2 text-xs font-semibold transition-all sm:flex-none sm:px-3.5 ${
+                                    visiblePeriod === option.value
+                                        ? 'bg-background text-primary shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
+                <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm">
+                    <div className="overflow-x-auto overscroll-x-contain">
+                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[44rem]' : 'min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
-                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 border-b border-border bg-muted/80 px-3 py-3 text-start font-semibold uppercase tracking-wider text-muted-foreground font-mono`}>
+                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-[5.75rem] border-b border-border bg-muted/80 px-3 py-3 text-start font-semibold tracking-wide text-muted-foreground`}>
                                 {t('schedule.day')}
                             </th>
-                            {HOUR_SLOTS.map(hour => (
+                            {visibleHourSlots.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border bg-muted/80 px-2 py-3 text-center font-semibold text-muted-foreground font-mono ${
+                                    className={`border-b border-border bg-muted/80 px-2 py-3 text-center font-semibold text-muted-foreground ${
                                         hour.lunchBefore ? 'border-l border-l-primary/25' : ''
                                     }`}
                                 >
@@ -212,7 +261,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-border bg-card px-3 py-2.5 font-bold text-foreground transition-colors group-hover:bg-muted/50 ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
                                     {t(`schedule.day.${day.value}`)}
                                 </td>
-                                {HOUR_SLOTS.map(hour => {
+                                {visibleHourSlots.map(hour => {
                                     const run = runsByDay.get(day.value)?.get(hour.index);
                                     /*
                                      * FUSION PARFAITE : une séance continue (2 h+) est UNE
@@ -230,7 +279,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         <td
                                             key={hour.index}
                                             colSpan={span}
-                                            className={`relative p-1 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
+                                            className={`relative p-1.5 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-primary/25' : ''}`}
                                         >
                                             {/*
                                               * Cellule ABRÉGÉE, menu COMPLET : le texte natif du
@@ -251,10 +300,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
                                                 title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                className={`h-11 w-full cursor-pointer rounded border px-1.5 text-center text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                                                className={`h-12 w-full cursor-pointer rounded-lg border border-transparent px-2 text-center text-[11px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                                                     classInfo && color
                                                         ? `${color.border} ${color.bg} text-transparent shadow-sm shadow-foreground/5 hover:brightness-[0.98]`
-                                                        : 'border-dashed border-border bg-background text-muted-foreground/60 hover:border-primary/50 hover:bg-secondary/40 hover:text-foreground'
+                                                        : 'bg-transparent text-muted-foreground/55 hover:border-border hover:bg-muted/60 hover:text-foreground'
                                                 }`}
                                                 aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
@@ -272,13 +321,13 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                             </select>
                                             {classInfo && color && (
                                                 <span
-                                                    className={`pointer-events-none absolute inset-1 flex items-center justify-center truncate px-1 text-[11px] font-bold ${color.text}`}
+                                                    className={`pointer-events-none absolute inset-1.5 flex items-center justify-center truncate px-2 text-[11px] font-bold ${color.text}`}
                                                 >
                                                     {abbreviateClassName(classInfo.name)}
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className={`pointer-events-none absolute start-2 top-0.5 rounded-full bg-card/80 px-1.5 text-[9px] font-bold leading-4 shadow-sm font-mono ${color?.text ?? 'text-primary'}`}>
+                                                <span className={`pointer-events-none absolute start-3 top-1 rounded-full bg-card/85 px-1.5 text-[9px] font-bold leading-4 shadow-sm ${color?.text ?? 'text-primary'}`}>
                                                     {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}
@@ -292,8 +341,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
             </div>
 
-            {/* Récapitulatif compact par classe : séances, heures et état horaire. */}
-            <div className="flex flex-wrap gap-2">
+                {/* Récapitulatif compact par classe : séances, heures et état horaire. */}
+                <div className="flex flex-wrap gap-2 pt-1">
                 {classes.map(c => {
                     const { hours, sessions } = weeklyStats(c.id);
                     const official = getOfficialWeeklyHours(c.cycle, c.name, c.subject);
@@ -301,7 +350,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     return (
                         <span
                             key={c.id}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm font-sans"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-background/70 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground font-sans"
                         >
                             <span className={`h-2 w-2 rounded-full ${colorFor(c.id).dot}`} />
                             {classLabel(c.name)}
@@ -324,7 +373,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         </span>
                     );
                 })}
-            </div>
+                </div>
+            </section>
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
                 aussitôt sur le créneau qui l'a demandée. */}
             {onCreateClass && (

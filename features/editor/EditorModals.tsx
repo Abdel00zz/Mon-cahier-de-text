@@ -14,7 +14,7 @@ const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEva
 interface EditorModalsProps {
   activeModal: string | null;
   handleModalClose: () => void;
-  handleImport: (data: any, mode: 'replace' | 'append') => void;
+  handleImport: (data: unknown, mode: 'replace' | 'append') => Promise<boolean> | boolean;
   handleExportData: () => void;
   lessonsData: LessonsData;
   handleUpdateLessons: (newLessons: LessonsData) => void;

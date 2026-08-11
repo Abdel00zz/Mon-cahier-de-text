@@ -1,5 +1,5 @@
-import { ClassInfo, LessonsData } from '../types.js';
-import { prepareImportedLessons } from './importPipeline.js';
+import { ClassInfo } from '../types.js';
+import { prepareImportedLessons, type ImportPreparationResult } from './importPipeline.js';
 
 /**
  * Bibliothèque de contenus prédéfinis (public/contenus/) : pour chaque
@@ -50,10 +50,9 @@ export const findPredefinedFor = async (classInfo: ClassInfo): Promise<Predefine
 };
 
 /** Charge et normalise le contenu (même pipeline que l'import JSON manuel). */
-export const loadPredefinedContent = async (entry: PredefinedEntry): Promise<LessonsData> => {
+export const loadPredefinedContent = async (entry: PredefinedEntry): Promise<ImportPreparationResult> => {
     const response = await fetch(`/contenus/${entry.fichier}`, { cache: 'no-cache' });
     if (!response.ok) throw new Error('Contenu prédéfini introuvable.');
     const raw = await response.json();
-    const { lessonsData } = prepareImportedLessons(raw);
-    return lessonsData;
+    return prepareImportedLessons(raw);
 };

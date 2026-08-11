@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppConfig, ClassInfo, LessonsData } from '../types';
+import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../types';
 import { computeTeacherSnapshot } from '../utils/progression';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { toast } from 'sonner';
@@ -23,6 +23,7 @@ import { logger } from '../utils/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../utils/syncSettings';
 import { effectiveSchedules } from '../utils/timetable';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
+import { isContentDirection } from '../utils/contentDirection';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -46,16 +47,29 @@ const readLocalClasses = (): ClassInfo[] => {
     }
 };
 
-const readLocalLessons = (classId: string): LessonsData => {
+interface LocalNotebookSnapshot {
+    lessonsData: LessonsData;
+    contentDirection?: ContentDirection;
+}
+
+/** Lit le cahier et sa direction dans le même instantané local. */
+const readLocalNotebook = (classId: string): LocalNotebookSnapshot => {
     try {
         const raw = localStorage.getItem(`classData_v1_${classId}`);
         const parsed = raw ? JSON.parse(raw) : [];
         const lessons = Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []);
-        return migrateLessonsData(lessons);
+        return {
+            lessonsData: migrateLessonsData(lessons),
+            contentDirection: Array.isArray(parsed) || !isContentDirection(parsed?.contentDirection)
+                ? undefined
+                : parsed.contentDirection,
+        };
     } catch {
-        return [];
+        return { lessonsData: [] };
     }
 };
+
+const readLocalLessons = (classId: string): LessonsData => readLocalNotebook(classId).lessonsData;
 
 const readLocalConfig = (): Partial<AppConfig> => {
     try {
@@ -102,6 +116,7 @@ const removeDeletedClassReferences = (
 
 interface RemoteLessonsBlob {
     lessonsData?: LessonsData;
+    contentDirection?: ContentDirection;
     updatedAt?: string;
 }
 
@@ -198,25 +213,29 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // une seule lecture/migration par classe et par push : le corps du
             // push ET l'instantané réutilisent le même résultat
-            const lessonsCache = new Map<string, LessonsData>();
-            const readLessonsCached = (classId: string): LessonsData => {
-                let data = lessonsCache.get(classId);
-                if (!data) {
-                    data = readLocalLessons(classId);
-                    lessonsCache.set(classId, data);
+            const notebookCache = new Map<string, LocalNotebookSnapshot>();
+            const readNotebookCached = (classId: string): LocalNotebookSnapshot => {
+                let notebook = notebookCache.get(classId);
+                if (!notebook) {
+                    notebook = readLocalNotebook(classId);
+                    notebookCache.set(classId, notebook);
                 }
-                return data;
+                return notebook;
+            };
+            const readLessonsCached = (classId: string): LessonsData => {
+                return readNotebookCached(classId).lessonsData;
             };
 
             const entries = work.dirtyClassIds
                 .filter(id => classes.some(c => c.id === id))
                 .map(id => {
-                    const lessonsData = readLessonsCached(id);
+                    const { lessonsData, contentDirection } = readNotebookCached(id);
                     return {
                         classId: id,
                         lessonsData,
+                        contentDirection,
                         updatedAt: syncMeta[id]?.localUpdatedAt ?? now,
-                        bytes: JSON.stringify(lessonsData).length,
+                        bytes: JSON.stringify({ lessonsData, contentDirection }).length,
                     };
                 });
 
@@ -279,7 +298,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // pour que les déploiements serveur précédents le comprennent.
                         deletedClasses: isFirst ? work.deletedClasses : [],
                         deletedClassIds: isFirst ? work.deletedClassIds : [],
-                        lessons: batches[i].map(({ classId, lessonsData, updatedAt }) => ({ classId, lessonsData, updatedAt })),
+                        lessons: batches[i].map(({ classId, lessonsData, contentDirection, updatedAt }) => ({ classId, lessonsData, contentDirection, updatedAt })),
                         snapshot: isFirst ? snapshot : undefined,
                     }),
                 });
@@ -501,9 +520,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         const shouldFetchLessons = localIndex === -1 || serverIsNewer;
                         const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id) : null;
                         if (blob) {
+                            const contentDirection = isContentDirection(blob.contentDirection)
+                                ? blob.contentDirection
+                                : undefined;
                             localStorage.setItem(
                                 `classData_v1_${serverClass.id}`,
-                                JSON.stringify(blob.lessonsData ?? [])
+                                JSON.stringify({
+                                    lessonsData: blob.lessonsData ?? [],
+                                    ...(contentDirection ? { contentDirection } : {}),
+                                })
                             );
                             const syncedAt = blob.updatedAt ?? serverUpdatedAt ?? new Date().toISOString();
                             syncMeta[serverClass.id] = { localUpdatedAt: syncedAt, lastSyncedAt: syncedAt };

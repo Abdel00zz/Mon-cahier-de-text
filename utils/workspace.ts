@@ -1,4 +1,4 @@
-import { resetSyncState } from './syncBus.js';
+import { notifyClassesChanged, notifyConfigChanged, resetSyncState } from './syncBus.js';
 
 /**
  * Sépare deux utilisateurs d'un même appareil en supprimant le poste de
@@ -12,7 +12,7 @@ export const clearLocalWorkspace = (): void => {
     ];
     const exactKeys = [
         'appConfig_v1', 'classManager_v1', 'app_first_launch_v1',
-        'syncMeta_v1', 'settingsSyncMeta_v1', 'archives_v1_index',
+        'syncMeta_v1', 'settingsSyncMeta_v1', 'archives_v1_index', 'onboarding_lang_v1',
     ];
 
     try {
@@ -27,4 +27,9 @@ export const clearLocalWorkspace = (): void => {
         // Le reset mémoire ci-dessous évite tout de même une synchronisation croisée.
     }
     resetSyncState();
+    // Les gestionnaires sont déjà montés lorsque l'utilisateur change de
+    // compte. Les prévenir évite qu'ils conservent en mémoire l'espace du
+    // compte précédent jusqu'au prochain rechargement de la page.
+    notifyClassesChanged();
+    notifyConfigChanged();
 };

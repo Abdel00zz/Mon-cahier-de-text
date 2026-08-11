@@ -129,6 +129,23 @@ export const useConfigManager = () => {
                         draft.schedules = effectiveSchedules(loaded);
                         draft.applicationLocale = normalizeApplicationLocale(loaded.applicationLocale);
                     });
+                } else {
+                    // Après une déconnexion ou une inscription, aucun réglage
+                    // de l'ancien compte ne doit rester vivant en mémoire.
+                    setConfig(() => ({
+                        ...defaultConfig,
+                        selectedCycles: ['college', 'lycee', 'prepa'],
+                        selectedSubjects: [],
+                        showAllCycles: true,
+                        showAllSubjects: true,
+                        schedules: [],
+                        timetable: [],
+                        notificationSettings: { ...defaultNotificationSettings },
+                        notificationDismissals: {},
+                        absences: [],
+                        assessmentDates: {},
+                        pedagogicalEvents: {},
+                    }));
                 }
             } catch (error) {
                 logger.error('Failed to reload config after cloud pull', error);

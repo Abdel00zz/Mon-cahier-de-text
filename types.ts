@@ -1,5 +1,7 @@
 export type Cycle = 'college' | 'lycee' | 'prepa';
 export type AppLocale = 'fr' | 'en' | 'ar';
+/** Sens de lecture propre au contenu d'un cahier, indépendant de la langue de l'interface. */
+export type ContentDirection = 'ltr' | 'rtl';
 
 export interface ClassInfo {
   id: string;

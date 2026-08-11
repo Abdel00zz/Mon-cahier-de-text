@@ -17,10 +17,10 @@ interface CreateClassModalProps {
   defaultTeacherName?: string;
   /** cycle actif du tableau de bord, pré-sélectionné */
   defaultCycle?: Cycle;
-  /** matières de l'enseignant (choisies à l'inscription), filtrent le choix */
+  /** matières configurées dans l'onboarding ou les paramètres, filtrent le choix */
   teacherSubjects?: string[];
   /**
-   * cycles de l'enseignant (choisis à l'inscription, modifiables dans les
+   * cycles configurés dans l'onboarding (puis modifiables dans les
    * Paramètres), un seul cycle : le champ disparaît, il est hérité ;
    * plusieurs : le choix est restreint à ces cycles
    */
@@ -178,8 +178,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         setSubject(editingClass.subject || '');
         setCustomSubject(editingClass.subject || '');
       } else {
-        // cycle initial : celui du tableau de bord s'il appartient au profil,
-        // sinon le premier cycle du prof
+        // cycle initial : celui du tableau de bord s'il est autorisé par les
+        // paramètres pédagogiques, sinon le premier cycle configuré.
         const initialCycle: Cycle =
           teacherCycles.length === 0 || teacherCycles.includes(defaultCycle)
             ? defaultCycle
@@ -265,7 +265,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         }
       >
       <form id="create-class-form" onSubmit={handleSubmit} dir={isAr ? 'rtl' : 'ltr'} className="space-y-3 py-1 text-start sm:space-y-4">
-        {/* Cycle : masqué si le prof n'enseigne qu'un cycle (hérité du profil) */}
+        {/* Cycle : masqué si un seul cycle est configuré dans les paramètres. */}
         {!singleCycle && (
           <div className="space-y-1.5">
             <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">

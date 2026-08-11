@@ -122,12 +122,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <h3
-                    className="text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-2xl"
+                    className="text-xl font-extrabold tracking-tighter text-foreground transition-colors group-hover:text-primary sm:text-2xl"
                     title={displayName}
                 >
                     {formatSuperscript(mainName)}
                     {groupNum && (
-                        <span className={`ms-2 font-sans text-xl font-bold sm:text-2xl ${visual.iconClass}`}>{groupNum}</span>
+                        <span className={`ms-2 font-sans text-xl font-extrabold tracking-tighter sm:text-2xl ${visual.iconClass}`}>{groupNum}</span>
                     )}
                 </h3>
             </button>
@@ -136,7 +136,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="relative z-10 grid grid-cols-2 gap-2 border-t border-border/60 pt-4 text-xs"
+                className="relative z-10 grid grid-cols-2 gap-2 pt-4 text-xs"
             >
                 <button
                     type="button"

@@ -2,14 +2,10 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { notifyConfigChanged } from '../utils/syncBus';
 import { clearLocalWorkspace } from '../utils/workspace';
 
-export type Cycle = 'college' | 'lycee' | 'prepa';
-
 export interface AuthUser {
   phone: string;
   nom: string;
   prenom: string;
-  cycles?: Cycle[];
-  subjects?: string[];
   /** Marqueur serveur : l'accueil a été terminé ou ignoré par ce compte. */
   hasCompletedWelcome?: boolean;
 }
@@ -21,8 +17,6 @@ interface RegisterInput {
   prenom: string;
   phone: string;
   password: string;
-  cycles: Cycle[];
-  subjects: string[];
 }
 
 interface AuthContextValue {
@@ -60,9 +54,9 @@ const cacheUser = (user: AuthUser | null): void => {
 };
 
 /**
- * Hydrate la configuration locale depuis le compte authentifié : nom, cycles
- * et matières renseignés à l'inscription préremplissent l'accueil. Le statut
- * d'accueil n'est jamais validé ici : seul son achèvement explicite le fait.
+ * L'authentification ne hydrate que l'identité du professeur. Les paramètres
+ * pédagogiques (cycle, matière, classes) appartiennent exclusivement à
+ * l'onboarding et à la configuration synchronisée de l'espace de travail.
  */
 const applyProfileToConfig = (user: AuthUser): void => {
   try {
@@ -79,18 +73,6 @@ const applyProfileToConfig = (user: AuthUser): void => {
       }
     }
 
-    // Au premier accès sur cet appareil, le profil du compte est la source de
-    // vérité. Ensuite les choix personnels déjà enregistrés restent intacts.
-    if (user.cycles?.length && (!(config.selectedCycles?.length) || !hasLocalProfile)) {
-      config.selectedCycles = user.cycles;
-      config.showAllCycles = false;
-      changed = true;
-    }
-    if (user.subjects?.length && (!(config.selectedSubjects?.length) || !hasLocalProfile)) {
-      config.selectedSubjects = user.subjects;
-      config.showAllSubjects = false;
-      changed = true;
-    }
     if (user.hasCompletedWelcome === true && config.hasCompletedWelcome !== true) {
       config.hasCompletedWelcome = true;
       changed = true;
@@ -167,11 +149,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = useCallback(async (input: RegisterInput) => {
     const createdUser = await postAuth({ action: 'register', ...input });
+    // Un nouveau compte ne doit jamais hériter des classes, paramètres ou
+    // marqueurs de synchronisation du précédent utilisateur de cet appareil.
+    // Le reset émet les événements nécessaires pour rafraîchir les hooks déjà
+    // montés, puis le profil ci-dessous initialise son espace vierge.
+    clearLocalWorkspace();
     setUser(createdUser);
     setStatus('authenticated');
     cacheUser(createdUser);
-    // Les données saisies à l'inscription préremplissent l'accueil.
-    applyProfileToConfig({ ...createdUser, cycles: input.cycles, subjects: input.subjects });
+    applyProfileToConfig(createdUser);
   }, []);
 
   const completeWelcome = useCallback(async () => {

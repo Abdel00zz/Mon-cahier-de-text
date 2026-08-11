@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem } from '@/types';
+import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem, ContentDirection } from '@/types';
 import { DateCard, DateMergeMeta, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
@@ -80,7 +80,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-border bg-card p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-in fade-in duration-200 md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-border bg-card p-2.5 ps-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-in fade-in duration-200 md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -90,9 +90,9 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
             }}
         >
             {/* Liseré signature indiquant le mode édition */}
-            <span aria-hidden className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
+            <span aria-hidden className="absolute start-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
 
-            <div className="flex flex-col items-center justify-center gap-1.5 md:border-r md:border-border/40 md:pr-3">
+            <div className="flex flex-col items-center justify-center gap-1.5 md:border-e md:border-border/40 md:pe-3">
                 <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-background text-foreground focus:ring-primary/30 font-mono" />
                 {formData.date && (
                     <button
@@ -104,7 +104,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                     </button>
                 )}
             </div>
-            <div className="min-w-0 space-y-2 md:border-r md:border-border/40 md:pr-3">
+            <div className="min-w-0 space-y-2 md:border-e md:border-border/40 md:pe-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr]">
                     <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
                       <SelectTrigger className="min-h-11 border-border bg-card text-foreground">
@@ -151,6 +151,8 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
 
 interface MainTableProps {
   lessonsData: LessonsData;
+  /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
+  contentDirection: ContentDirection;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onDeleteSeparator: (indices: Indices) => void;
   onOpenAddContentModal: (indices?: Indices) => void;
@@ -201,10 +203,10 @@ const TableHeader: React.FC = React.memo(() => {
   <div className="hidden border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42] md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-r border-border/80 px-2.5 py-2.5 text-center">
+      <div className="flex items-center justify-center border-e border-border/80 px-2.5 py-2.5 text-center">
         <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-r border-border/80 px-3 py-2.5 text-center">
+      <div className="flex items-center justify-center border-e border-border/80 px-3 py-2.5 text-center">
         <span className="font-sans text-xs text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
@@ -306,10 +308,10 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     // On les porte donc sur les deux premières colonnes, avec la même force
     // visuelle que les rangées simples.
     const dividerClass = groupIsSelected
-        ? 'border-r border-primary/45'
+        ? 'border-e border-primary/45'
         : hasWarning
-            ? 'border-r border-warning/45'
-            : 'border-r border-border/90';
+            ? 'border-e border-warning/45'
+            : 'border-e border-border/90';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -449,6 +451,7 @@ const EmptyState: React.FC<{
 
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
+  contentDirection,
   onOpenAddContentModal,
   showDescriptions,
   descriptionTypes = [],
@@ -628,11 +631,13 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
   if (!lessonsData || lessonsData.length === 0) {
       return (
-          <EmptyState
-              onOpenAddContentModal={onOpenAddContentModal}
-              predefinedProgramTitle={predefinedProgramTitle}
-              onLoadPredefined={onLoadPredefined}
-          />
+          <div dir={contentDirection} data-content-direction={contentDirection}>
+              <EmptyState
+                  onOpenAddContentModal={onOpenAddContentModal}
+                  predefinedProgramTitle={predefinedProgramTitle}
+                  onLoadPredefined={onLoadPredefined}
+              />
+          </div>
       );
   }
 
@@ -640,6 +645,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
       data-editor-table
+      data-content-direction={contentDirection}
+      dir={contentDirection}
       className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-border/80 bg-card/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:bg-slate-950/[0.52] sm:rounded-[24px]"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >

@@ -1,6 +1,7 @@
 import { LessonsData, TopLevelItem } from '../types.js';
 import { migrateLessonsData } from './dataUtils.js';
 import { logger } from './logger.js';
+import { ContentDirectionDetection, detectContentDirection, isContentDirection } from './contentDirection.js';
 
 interface ImportReport {
   topLevelCount: number;
@@ -14,6 +15,7 @@ interface ImportReport {
 interface ImportPreparationResult {
   lessonsData: LessonsData;
   report: ImportReport;
+  direction: ContentDirectionDetection;
 }
 
 type JsonRecord = Record<string, unknown>;
@@ -129,10 +131,17 @@ const ensureTopLevelShape = (item: TopLevelItem): TopLevelItem => {
 export const prepareImportedLessons = (payload: unknown): ImportPreparationResult => {
   const report = cloneReport();
   const rawLessons = extractLessonsPayload(payload);
+  const savedDirection = isRecord(payload) && isContentDirection(payload.contentDirection)
+    ? payload.contentDirection
+    : 'ltr';
 
   if (!Array.isArray(rawLessons)) {
     logger.warn('Import ignored: payload does not contain an array of lessons.', payload);
-    return { lessonsData: [], report };
+    return {
+      lessonsData: [],
+      report,
+      direction: detectContentDirection([], savedDirection),
+    };
   }
 
   const normalized = rawLessons
@@ -152,8 +161,9 @@ export const prepareImportedLessons = (payload: unknown): ImportPreparationResul
     return total + walk(topLevel);
   }, 0);
 
-  logger.info('Import preparation completed', report);
-  return { lessonsData, report };
+  const direction = detectContentDirection(lessonsData, savedDirection);
+  logger.info('Import preparation completed', { ...report, direction });
+  return { lessonsData, report, direction };
 };
 
 export type { ImportPreparationResult };

@@ -51,7 +51,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (isPrint) {
       // Afficher les chapitres et évaluations de la même manière
       if (item.type === 'chapter' || TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
-        const printIndent = isCorrection ? 'pl-4' : '';
+        const printIndent = isCorrection ? 'ps-4' : '';
         // Nettoyer le titre pour enlever le préfixe de type si présent
         let titleToDisplay = item.title || config.name;
         const typePrefix = item.type.toUpperCase();
@@ -101,9 +101,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     let indentClass = '';
     // Ne pas appliquer d'indentation pour les chapitres et évaluations de premier niveau
     if (indices.itemIndex !== undefined) {
-        if (indices.subsubsectionIndex !== undefined) indentClass = 'md:pl-12';
-        else if (indices.subsectionIndex !== undefined) indentClass = 'md:pl-8';
-        else if (indices.sectionIndex !== undefined) indentClass = 'md:pl-4';
+        if (indices.subsubsectionIndex !== undefined) indentClass = 'md:ps-12';
+        else if (indices.subsectionIndex !== undefined) indentClass = 'md:ps-8';
+        else if (indices.sectionIndex !== undefined) indentClass = 'md:ps-4';
     }
 
     const isTopLevel = item.type === 'chapter' || isEvaluation;
@@ -111,7 +111,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     const justificationClass = isTopLevel ? 'justify-center' : '';
     
     if (isCorrection) {
-      indentClass = 'md:pl-4';
+      indentClass = 'md:ps-4';
     }
 
     if (item.type === 'chapter') {
@@ -153,7 +153,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm font-bold font-sans text-foreground pl-2 sm:pl-4 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm font-bold font-sans text-foreground ps-2 sm:ps-4 py-0.5 flex items-baseline gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -163,7 +163,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm italic font-sans text-muted-foreground pl-4 sm:pl-8 py-0.5 flex items-baseline gap-2">
+            <div className="text-sm italic font-sans text-muted-foreground ps-4 sm:ps-8 py-0.5 flex items-baseline gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -227,7 +227,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         // Mobile : badge AU-DESSUS du titre (pile) pour laisser toute la largeur
         // au texte ; à partir de sm, badge et titre côte à côte.
-        <div className="flex flex-col items-start gap-1 pl-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:pl-8">
+        <div className="flex flex-col items-start gap-1 ps-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:ps-8">
           <Badge
             variant="outline"
             className={`flex-shrink-0 select-none rounded-lg text-[10px] font-bold ${badgeColor} ${isPrint ? 'badge-print' : ''}`}

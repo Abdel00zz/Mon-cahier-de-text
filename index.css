@@ -42,7 +42,7 @@
   --radius-2xl: 1rem;
   --radius-3xl: 1.25rem;
 
-  --font-sans: 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: 'Roboto Slab', 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -103,6 +103,14 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .auth-page-shell {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(217, 100%, 94%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(210, 100%, 95%, 1) 0, transparent 50%);
+    font-family: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   }
 
   ::selection {

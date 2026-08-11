@@ -1,4 +1,4 @@
-import { AppConfig, ClassInfo, LessonsData } from '../types.js';
+import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../types.js';
 import {
     markClassDeleted,
     markClassDirty,
@@ -22,6 +22,7 @@ export interface FullBackup {
     classes: Array<{
         classInfo: ClassInfo;
         lessonsData: LessonsData;
+        contentDirection?: ContentDirection;
         journal?: unknown;
         printMeta?: unknown;
     }>;
@@ -37,14 +38,31 @@ const readJSON = (key: string): unknown => {
     }
 };
 
+const isContentDirection = (value: unknown): value is ContentDirection =>
+    value === 'rtl' || value === 'ltr';
+
+/** Accepte les anciens tableaux et les nouveaux instantanés `{ lessonsData, contentDirection }`. */
+const readNotebook = (value: unknown): { lessonsData: LessonsData; contentDirection?: ContentDirection } => {
+    if (Array.isArray(value)) return { lessonsData: value as LessonsData };
+    if (!value || typeof value !== 'object') return { lessonsData: [] };
+    const record = value as { lessonsData?: unknown; contentDirection?: unknown };
+    return {
+        lessonsData: Array.isArray(record.lessonsData) ? record.lessonsData as LessonsData : [],
+        ...(isContentDirection(record.contentDirection) ? { contentDirection: record.contentDirection } : {}),
+    };
+};
+
 export const buildFullBackup = (): FullBackup => {
     const config = (readJSON('appConfig_v1') as Partial<AppConfig>) ?? {};
-    const classes = ((readJSON('classManager_v1') as ClassInfo[]) ?? []).map(classInfo => ({
-        classInfo,
-        lessonsData: ((readJSON(`classData_v1_${classInfo.id}`) as LessonsData) ?? []),
-        journal: readJSON(`editJournal_v1_${classInfo.id}`),
-        printMeta: readJSON(`printMeta_v1_${classInfo.id}`),
-    }));
+    const classes = ((readJSON('classManager_v1') as ClassInfo[]) ?? []).map(classInfo => {
+        const notebook = readNotebook(readJSON(`classData_v1_${classInfo.id}`));
+        return {
+            classInfo,
+            ...notebook,
+            journal: readJSON(`editJournal_v1_${classInfo.id}`),
+            printMeta: readJSON(`printMeta_v1_${classInfo.id}`),
+        };
+    });
 
     return {
         format: 'cdt-backup',
@@ -94,7 +112,17 @@ export const restoreBackup = (data: any): number => {
     for (const c of classes) {
         const id = c?.classInfo?.id;
         if (!id) continue;
-        localStorage.setItem(`classData_v1_${id}`, JSON.stringify(c.lessonsData ?? []));
+        const notebook = readNotebook({
+            lessonsData: c?.lessonsData,
+            contentDirection: c?.contentDirection,
+        });
+        localStorage.setItem(
+            `classData_v1_${id}`,
+            JSON.stringify({
+                lessonsData: notebook.lessonsData,
+                ...(notebook.contentDirection ? { contentDirection: notebook.contentDirection } : {}),
+            })
+        );
         if (c.journal !== undefined) localStorage.setItem(`editJournal_v1_${id}`, JSON.stringify(c.journal));
         if (c.printMeta !== undefined) localStorage.setItem(`printMeta_v1_${id}`, JSON.stringify(c.printMeta));
     }

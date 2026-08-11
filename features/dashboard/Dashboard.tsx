@@ -26,6 +26,7 @@ interface DashboardProps {
     accountTeacherName?: string;
     onOpenSchedule?: () => void;
     onOpenNotifications?: () => void;
+    onOnboardingVisibilityChange?: (visible: boolean) => void;
 }
 
 type ClassDisplayMode = 'list' | 'single' | 'double';
@@ -95,6 +96,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     accountTeacherName = '',
     onOpenSchedule,
     onOpenNotifications,
+    onOnboardingVisibilityChange,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { user: accountUser, completeWelcome } = useAuth();
@@ -178,11 +180,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     useEffect(() => {
         if (isLoading) return;
-        // L'onboarding ne s'ouvre qu'au TOUT PREMIER démarrage : aucun cahier
-        // ET le flag permanent `hasCompletedWelcome` n'a jamais été posé.
-        if (classes.length > 0 || welcomeCompleted) return;
+        // Le flag de fin est la seule source de vérité : une classe peut être
+        // ajoutée pendant l'onboarding, puis l'utilisateur peut actualiser ou
+        // fermer l'onglet avant l'étape finale. Dans ce cas le parcours doit
+        // reprendre, sans exposer le tableau de bord prématurément.
+        if (welcomeCompleted) return;
         setOnboardingOpen(true);
-    }, [isLoading, classes.length, welcomeCompleted]);
+    }, [isLoading, welcomeCompleted]);
+
+    // Le shell applicatif ne doit pas réafficher sa navigation au premier
+    // ajout de classe : le parcours reste visuellement ouvert jusqu'à sa fin.
+    useEffect(() => {
+        const visible = isOnboardingOpen && !welcomeCompleted;
+        onOnboardingVisibilityChange?.(visible);
+        return () => onOnboardingVisibilityChange?.(false);
+    }, [isOnboardingOpen, onOnboardingVisibilityChange, welcomeCompleted]);
 
     const closeOnboarding = useCallback(async () => {
         // Le stockage local ferme la page immédiatement ; le compte et la
@@ -226,6 +238,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
         return created;
     }, [addClass, selectedCycle, setSelectedCycle, t, teacherName]);
+
+    // L'onboarding ne pilote pas l'état d'interface du tableau de bord. Il
+    // ajoute seulement ses classes avec les paramètres qu'il vient de persister.
+    const createOnboardingClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => (
+        addClass({
+            ...details,
+            cycle: details.cycle ?? (config.selectedCycles?.[0] as Cycle) ?? 'lycee',
+            teacherName: teacherName || t('settings.defaultTeacherName'),
+        })
+    ), [addClass, config.selectedCycles, t, teacherName]);
 
     const handleCreateClass = (details: { name: string; subject: string; cycle?: Cycle }) => {
         createClass(details);
@@ -405,8 +427,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 config={config}
                 onConfigChange={updateConfig}
                 classes={classes}
-                onCreateClass={createClass}
-                onOpenNotebook={onSelectClass}
+                onCreateClass={createOnboardingClass}
+                onDeleteClass={handleDeleteClass}
                 onComplete={completeOnboarding}
                 onSkip={closeOnboarding}
             />

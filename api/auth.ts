@@ -11,16 +11,12 @@ import {
 } from './_lib/auth.js';
 import { getRedis, KEYS } from './_lib/redis.js';
 import { assertName, assertPassword, normalizePhone } from './_lib/validate.js';
-import type { Cycle } from '../types.js';
-
 interface StoredUser {
   phone: string;
   nom: string;
   prenom: string;
   passwordHash: string;
   createdAt: string;
-  cycles?: Cycle[];
-  subjects?: string[];
   hasCompletedWelcome?: boolean;
   lastSyncAt?: string;
   blocked?: boolean;
@@ -32,35 +28,16 @@ interface AuthBody {
   prenom?: string;
   phone?: string;
   password?: string;
-  cycles?: unknown;
-  subjects?: unknown;
 }
 
-const VALID_CYCLES: Cycle[] = ['college', 'lycee', 'prepa'];
 const LOGIN_MAX_ATTEMPTS = 10;
 const LOGIN_WINDOW_SECONDS = 300;
 const INVALID_CREDENTIALS = 'Téléphone ou mot de passe incorrect.';
-
-const normalizeCycles = (value: unknown): Cycle[] => {
-  if (!Array.isArray(value)) return [];
-  return value.filter((cycle): cycle is Cycle => VALID_CYCLES.includes(cycle as Cycle));
-};
-
-const normalizeSubjects = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((subject): subject is string => typeof subject === 'string')
-    .map(subject => subject.trim())
-    .filter(Boolean)
-    .slice(0, 20);
-};
 
 const publicUser = (user: StoredUser) => ({
   phone: user.phone,
   nom: user.nom,
   prenom: user.prenom,
-  cycles: user.cycles ?? [],
-  subjects: user.subjects ?? [],
   hasCompletedWelcome: user.hasCompletedWelcome === true,
 });
 
@@ -69,8 +46,6 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
   const prenom = assertName(body.prenom, 'Prénom');
   const phone = normalizePhone(body.phone);
   const password = assertPassword(body.password);
-  const cycles = normalizeCycles(body.cycles);
-  const subjects = normalizeSubjects(body.subjects);
   const redis = await getRedis();
 
   const user: StoredUser = {
@@ -79,8 +54,6 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
     prenom,
     passwordHash: await hashPassword(password),
     createdAt: new Date().toISOString(),
-    cycles,
-    subjects,
     hasCompletedWelcome: false,
   };
 
@@ -89,7 +62,7 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
     throw new HttpError(409, 'Un compte existe déjà avec ce numéro de téléphone.');
   }
 
-  await redis.hset(KEYS.adminSnapshots, { [phone]: { phone, nom, prenom, cycles, subjects, lastSyncAt: null, classes: [] } });
+  await redis.hset(KEYS.adminSnapshots, { [phone]: { phone, nom, prenom, lastSyncAt: null, classes: [] } });
 
   const token = await signSession({ phone, role: 'teacher' }, SESSION_MAX_AGE);
   setCookie(res, SESSION_COOKIE, token, SESSION_MAX_AGE);
