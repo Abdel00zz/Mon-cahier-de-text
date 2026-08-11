@@ -71,7 +71,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         }
 
         return (
-          <div className={`font-bold text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
+          <div className={`font-extrabold tracking-tight text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
             <config.icon className="h-5 w-5" />
             <span>{titleToDisplay}</span>
           </div>
