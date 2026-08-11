@@ -73,17 +73,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
-    
-    let mainName = displayName;
-    let groupNum = '';
-    const groupSeparator = locale === 'ar' ? ' ' : ' ';
-    if (displayName.includes(groupSeparator)) {
-        const parts = displayName.split(groupSeparator);
-        mainName = parts[0];
-        groupNum = parts[1];
-    }
 
-    const isArabic = containsArabic(mainName);
+    const isArabic = containsArabic(displayName);
     const issueStatus = notificationCount === 1
         ? t('notifications.classIssueCount.one', { count: notificationCount })
         : notificationCount > 1
@@ -118,10 +109,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     className="text-xl font-extrabold tracking-tighter text-foreground transition-colors group-hover:text-primary sm:text-2xl"
                     title={displayName}
                 >
-                    {formatSuperscript(mainName)}
-                    {groupNum && (
-                        <span className={`ms-2 font-sans text-xl font-extrabold tracking-tighter sm:text-2xl ${visual.iconClass}`}>{groupNum}</span>
-                    )}
+                    {formatSuperscript(displayName)}
                 </h3>
             </button>
 
