@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type PlannedAssessment } from '../../utils/assessments';
@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import type { AdminMessage, ClassInfo, ClassSnapshot, Cycle, LessonsData, TeacherSnapshot } from '../../types';
+import { ClassJsonImportModal } from './ClassJsonImportModal';
 
 const calendar = getBundledCalendar();
 
@@ -92,6 +93,7 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [expanded, setExpanded] = useState<number | null>(null);
+    const contentId = `class-chapters-${classId}`;
 
     const toggle = async () => {
         const next = !open;
@@ -114,14 +116,17 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
     return (
         <div className="mt-3 border-t border-border pt-2">
             <button
+                type="button"
                 onClick={toggle}
+                aria-expanded={open}
+                aria-controls={contentId}
                 className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-semibold text-primary hover:bg-primary/10"
             >
                 {open ? '▾' : '▸'} Inspecter les chapitres
             </button>
 
             {open && (
-                <div className="mt-2 space-y-1.5">
+                <div id={contentId} className="mt-2 space-y-1.5">
                     {loading && <p className="text-xs text-muted-foreground">Chargement du cahier…</p>}
                     {error && <p className="rounded-md bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive">{error}</p>}
 
@@ -138,7 +143,9 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
                     {chapters?.map((ch, index) => (
                         <div key={index} className="rounded-lg border border-border bg-background/60">
                             <button
+                                type="button"
                                 onClick={() => setExpanded(current => (current === index ? null : index))}
+                                aria-expanded={expanded === index}
                                 className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/40"
                             >
                                 <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{ch.title}</span>
@@ -205,10 +212,14 @@ const AssessmentDateEditor: React.FC<{
     const [dates, setDates] = useState(initial);
     const [rows, setRows] = useState<Array<PlannedAssessment & { classId: string; className: string }>>([]);
     const [message, setMessage] = useState('');
+    const [isPlanningLoaded, setPlanningLoaded] = useState(false);
 
     useEffect(() => {
+        let cancelled = false;
+        setPlanningLoaded(false);
+        setRows([]);
         Promise.all([loadPlanning(), loadHolidayCalendar()]).then(([planning, calendar]) => {
-            if (!planning) return;
+            if (!planning || cancelled) return;
             const today = todayInMorocco(new Date(), calendar);
             const next = classes.flatMap(classInfo => {
                 const plan = findPlanFor(planning, classInfo);
@@ -217,7 +228,12 @@ const AssessmentDateEditor: React.FC<{
                     .map(item => ({ ...item, classId: classInfo.id, className: classInfo.name }));
             });
             setRows(next.sort((a, b) => a.dateISO.localeCompare(b.dateISO)));
+        }).catch(() => {
+            if (!cancelled) setRows([]);
+        }).finally(() => {
+            if (!cancelled) setPlanningLoaded(true);
         });
+        return () => { cancelled = true; };
     }, [classes, initial, schoolYearStart]);
 
     const change = async (row: PlannedAssessment & { classId: string }, date: string) => {
@@ -231,7 +247,17 @@ const AssessmentDateEditor: React.FC<{
         }
     };
 
-    if (rows.length === 0) return null;
+    if (!isPlanningLoaded) {
+        return <div className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground">Chargement du calendrier des devoirs…</div>;
+    }
+    if (rows.length === 0) {
+        return (
+            <div className="rounded-2xl border border-dashed bg-card p-10 text-center">
+                <p className="text-sm font-black text-foreground">Aucun devoir planifié</p>
+                <p className="mt-1 text-xs text-muted-foreground">Aucune date ministérielle ne correspond encore aux classes de ce professeur.</p>
+            </div>
+        );
+    }
     return (
         <section className="mb-5 rounded-2xl bg-accent/50 p-4">
             <div className="mb-3"><h2 className="text-sm font-black text-foreground">Dates des devoirs</h2><p className="text-[11px] text-muted-foreground">Les modifications sont appliquées au planning du professeur et synchronisées sur son téléphone.</p></div>
@@ -249,7 +275,14 @@ const AssessmentDateEditor: React.FC<{
 };
 
 const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages }) => {
-    if (messages.length === 0) return null;
+    if (messages.length === 0) {
+        return (
+            <section className="rounded-2xl border border-dashed bg-card p-10 text-center">
+                <p className="text-sm font-black text-foreground">Aucun message envoyé</p>
+                <p className="mt-1 text-xs text-muted-foreground">Les messages de la direction et leurs accusés de lecture apparaîtront ici.</p>
+            </section>
+        );
+    }
     return (
         <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="mb-3">
@@ -276,6 +309,9 @@ const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages
     );
 };
 
+type TeacherDetailTab = 'classes' | 'assessments' | 'messages';
+const TEACHER_DETAIL_TAB_ORDER: TeacherDetailTab[] = ['classes', 'assessments', 'messages'];
+
 export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({ phone, onBack }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -291,7 +327,27 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const [className, setClassName] = useState('');
     const [classSubject, setClassSubject] = useState('');
     const [classCycle, setClassCycle] = useState<Cycle>('college');
+    const [activeTab, setActiveTab] = useState<TeacherDetailTab>('classes');
+    const [importingClass, setImportingClass] = useState<ClassInfo | null>(null);
+    const [lessonRevisions, setLessonRevisions] = useState<Record<string, number>>({});
     const [confirmAction, setConfirmAction] = useState<{ kind: 'block' | 'deleteAccount' | 'deleteClass'; classInfo?: ClassInfo } | null>(null);
+
+    const selectTab = (tab: TeacherDetailTab, focus = false) => {
+        setActiveTab(tab);
+        if (focus) window.requestAnimationFrame(() => document.getElementById(`teacher-tab-${tab}`)?.focus());
+    };
+
+    const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, tab: TeacherDetailTab) => {
+        const currentIndex = TEACHER_DETAIL_TAB_ORDER.indexOf(tab);
+        let nextIndex: number | null = null;
+        if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % TEACHER_DETAIL_TAB_ORDER.length;
+        if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + TEACHER_DETAIL_TAB_ORDER.length) % TEACHER_DETAIL_TAB_ORDER.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = TEACHER_DETAIL_TAB_ORDER.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        selectTab(TEACHER_DETAIL_TAB_ORDER[nextIndex], true);
+    };
 
     const runAction = async (fn: () => Promise<string>) => {
         setBusy(true);
@@ -413,8 +469,28 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
         });
     };
 
+    const handleClassImported = (result: ClassLessonsImportResult) => {
+        const className = importingClass?.name ?? 'la classe';
+        setLessonRevisions(current => ({ ...current, [result.classId]: (current[result.classId] ?? 0) + 1 }));
+        setActionMessage(
+            `${result.importedTopLevel} bloc(s) et ${result.importedItems} élément(s) importés dans « ${className} »`+
+            `${result.mode === 'append' ? ' à la suite du cahier.' : ' en remplacement du cahier.'}`
+        );
+        setImportingClass(null);
+
+        // Le serveur recalcule la projection de progression ; on la recharge
+        // sans fermer l'onglet courant ni faire patienter toute la fiche.
+        void fetchTeacher(phone).then(fresh => {
+            setData(fresh);
+            setIsBlocked(fresh.user?.blocked === true);
+        }).catch(() => undefined);
+    };
+
     useEffect(() => {
         let cancelled = false;
+        setActiveTab('classes');
+        setImportingClass(null);
+        setLessonRevisions({});
         const load = async (showLoading: boolean) => {
             if (showLoading) setIsLoading(true);
             try {
@@ -455,7 +531,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const snapshotsByClassId = new Map((data?.snapshot?.classes ?? []).map(classSnapshot => [classSnapshot.id, classSnapshot]));
 
     return (
-        <div className="mx-auto max-w-4xl p-4 sm:p-8">
+        <div className="mx-auto max-w-5xl p-4 sm:p-8">
             <button
                 onClick={onBack}
                 className="mb-4 inline-flex h-9 items-center gap-1 rounded-md border border-border bg-card px-3 text-sm font-semibold text-foreground hover:bg-muted"
@@ -468,7 +544,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
 
             {data && (
                 <>
-                    <header className="mb-6">
+                    <header className="mb-5 rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
                         <h1 className="text-2xl font-bold text-foreground tracking-tight">
                             {data.user?.prenom ?? data.snapshot?.prenom} {data.user?.nom ?? data.snapshot?.nom}
                             {isBlocked && (
@@ -506,18 +582,66 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                             </button>
                         </div>
                         {actionMessage && (
-                            <p className="mt-2 rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-muted-foreground">{actionMessage}</p>
+                            <p role="status" aria-live="polite" className="mt-3 rounded-xl bg-secondary px-3 py-2 text-xs font-semibold text-muted-foreground">{actionMessage}</p>
                         )}
                     </header>
 
-                    <AdminMessagesHistory messages={data.adminMessages ?? []} />
+                    <div className="sticky top-0 z-20 mb-5 overflow-x-auto rounded-2xl border bg-background/90 p-1.5 shadow-sm backdrop-blur">
+                        <div role="tablist" aria-label="Sections de la fiche professeur" aria-orientation="horizontal" className="flex min-w-max gap-1 sm:min-w-0">
+                            {([
+                                { id: 'classes', label: 'Classes & cahiers', count: classes.length },
+                                { id: 'assessments', label: 'Devoirs', count: null },
+                                { id: 'messages', label: 'Messages', count: (data.adminMessages ?? []).length },
+                            ] as Array<{ id: TeacherDetailTab; label: string; count: number | null }>).map(tab => (
+                                <button
+                                    key={tab.id}
+                                    id={`teacher-tab-${tab.id}`}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeTab === tab.id}
+                                    aria-controls={`teacher-panel-${tab.id}`}
+                                    tabIndex={activeTab === tab.id ? 0 : -1}
+                                    onClick={() => selectTab(tab.id)}
+                                    onKeyDown={event => handleTabKeyDown(event, tab.id)}
+                                    className={`flex h-11 min-w-[9rem] shrink-0 items-center justify-center gap-2 rounded-xl px-4 text-xs font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:min-w-0 sm:flex-1 ${
+                                        activeTab === tab.id
+                                            ? 'bg-card text-primary shadow-sm ring-1 ring-border'
+                                            : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                                    }`}
+                                >
+                                    <span>{tab.label}</span>
+                                    {tab.count !== null && (
+                                        <span className={`min-w-5 rounded-full px-1.5 py-0.5 text-[10px] ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                            {tab.count}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-                    <AssessmentDateEditor
-                        phone={phone}
-                        classes={data.classes}
-                        initial={data.assessmentDates ?? {}}
-                        schoolYearStart={data.snapshot?.schoolYearStart}
-                    />
+                    <div
+                        id="teacher-panel-messages"
+                        role="tabpanel"
+                        aria-labelledby="teacher-tab-messages"
+                        hidden={activeTab !== 'messages'}
+                    >
+                        <AdminMessagesHistory messages={data.adminMessages ?? []} />
+                    </div>
+
+                    <div
+                        id="teacher-panel-assessments"
+                        role="tabpanel"
+                        aria-labelledby="teacher-tab-assessments"
+                        hidden={activeTab !== 'assessments'}
+                    >
+                        <AssessmentDateEditor
+                            phone={phone}
+                            classes={data.classes}
+                            initial={data.assessmentDates ?? {}}
+                            schoolYearStart={data.snapshot?.schoolYearStart}
+                        />
+                    </div>
 
                     <Modal
                         isOpen={isMessageModalOpen}
@@ -612,6 +736,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         </div>
                     </Modal>
 
+                    <div
+                        id="teacher-panel-classes"
+                        role="tabpanel"
+                        aria-labelledby="teacher-tab-classes"
+                        hidden={activeTab !== 'classes'}
+                    >
                     <section className="mb-5 rounded-2xl border bg-card p-4 shadow-sm">
                         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                             <div>
@@ -640,13 +770,14 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                     {snapshot && snapshot.sessionsPerWeek > 0 && ` · ${snapshot.sessionsPerWeek} séance(s)/sem.`}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
                                                 <div className="text-right">
                                                     <div className="text-lg font-black text-primary">{snapshot?.completionRate ?? 0}%</div>
                                                     <div className="text-[10px] text-muted-foreground">
                                                         {snapshot ? `${snapshot.plannedCount}/${snapshot.totalItems} éléments` : 'En attente de synchro'}
                                                     </div>
                                                 </div>
+                                                <button onClick={() => setImportingClass(cls)} disabled={busy} className="h-8 rounded-md border border-primary/25 bg-primary/5 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-50">Importer JSON</button>
                                                 <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
                                                 <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
                                             </div>
@@ -677,15 +808,24 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                 </span>
                                             )}
                                         </div>
-                                        <ClassChapters phone={phone} classId={cls.id} />
+                                        <ClassChapters key={`${cls.id}-${lessonRevisions[cls.id] ?? 0}`} phone={phone} classId={cls.id} />
                                     </div>
                                 );
                             })}
                         </div>
                     )}
                     </section>
+                    </div>
                 </>
             )}
+
+            <ClassJsonImportModal
+                isOpen={importingClass !== null}
+                phone={phone}
+                classInfo={importingClass}
+                onClose={() => setImportingClass(null)}
+                onImported={handleClassImported}
+            />
 
             <ConfirmDialog
                 open={confirmAction?.kind === 'block'}

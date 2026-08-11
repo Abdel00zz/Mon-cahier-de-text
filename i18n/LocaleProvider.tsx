@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import type { AppLocale } from '@/types';
-import { formatLocalizedNumber } from './numberFormatting';
 
 type MessageValue = string;
 type TranslationTable = Record<string, MessageValue>;
@@ -2203,11 +2202,7 @@ export const translateLocaleMessage = (
   values: Record<string, string | number> = {},
 ): string => {
   const template = messages[locale][key] ?? messages.fr[key] ?? key;
-  return template.replace(/\{(\w+)\}/g, (_, token) => {
-    const value = values[token];
-    if (value === undefined) return `{${token}}`;
-    return typeof value === 'number' ? formatLocalizedNumber(value, locale) : String(value);
-  });
+  return template.replace(/\{(\w+)\}/g, (_, token) => String(values[token] ?? `{${token}}`));
 };
 
 interface LocaleProviderProps {

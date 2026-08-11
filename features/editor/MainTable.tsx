@@ -11,6 +11,8 @@ import { EditableCell } from '@/components/ui/EditableCell';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
+import { useDevice } from '@/hooks/useDevice';
+import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 /* Accent sobre pour les interactions du tableau. */
@@ -33,9 +35,11 @@ const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description
 
 const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, getDateWarnings }) => {
     const { t } = useLocale();
+    const device = useDevice();
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
     const titleRef = useRef<HTMLInputElement>(null);
     const rootRef = useRef<HTMLFormElement>(null);
+    const isCompact = device.type === 'phone' && device.isPortrait;
 
     useEffect(() => {
         titleRef.current?.focus();
@@ -80,8 +84,10 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-border bg-card p-2.5 ps-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-in fade-in duration-200 md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
-            style={{ borderColor: `${accentColor}66` }}
+            className={cn(
+                'mx-0 my-0 grid gap-2 bg-transparent px-0 py-1 animate-fade-in duration-200',
+                isCompact ? 'grid-cols-1' : 'sm:grid-cols-[minmax(6rem,auto)_1fr] md:grid-cols-[minmax(7rem,0.18fr)_1fr_minmax(8rem,0.18fr)]',
+            )}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
             onKeyDown={(event) => {
@@ -89,36 +95,33 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') onSave(event);
             }}
         >
-            {/* Liseré signature indiquant le mode édition */}
-            <span aria-hidden className="absolute start-0 top-0 h-full w-1" style={{ backgroundColor: accentColor }} />
-
-            <div className="flex flex-col items-center justify-center gap-1.5 md:border-e md:border-border/40 md:pe-3">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="min-h-11 text-center border-border bg-background text-foreground focus:ring-primary/30 font-mono" />
+            <div className="flex flex-row items-center justify-center gap-1.5 sm:flex-col sm:justify-start sm:pt-1">
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-muted/60 px-2 text-center text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 font-mono sm:h-10 sm:w-full sm:text-sm" />
                 {formData.date && (
                     <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
-                        className="text-[10px] font-bold text-muted-foreground/60 hover:text-destructive transition-colors font-sans"
+                        className="shrink-0 text-[9px] font-semibold text-muted-foreground/60 hover:text-destructive transition-colors"
                     >
                         {t('editor.unassignDate')}
                     </button>
                 )}
             </div>
-            <div className="min-w-0 space-y-2 md:border-e md:border-border/40 md:pe-3">
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_0.7fr_0.7fr]">
+            <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_0.6fr_0.7fr] sm:gap-2">
                     <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
-                      <SelectTrigger className="min-h-11 border-border bg-card text-foreground">
+                      <SelectTrigger className="h-9 flex-1 rounded-lg border-0 bg-muted/60 text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm">
                         <SelectValue placeholder={t('editor.type')} />
                       </SelectTrigger>
                       <SelectContent>
                         {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder={t('editor.page')} className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" />
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder={t('editor.page')} className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
                 </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder={t('editor.title')} className="min-h-11 border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30 font-bold" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-16 resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder={t('editor.description')} />
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder={t('editor.title')} className="h-9 rounded-lg border-0 bg-muted/60 px-2.5 text-xs font-bold text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.description')} />
 
                 {/* Garde intelligente : conflits de date affichés dans le formulaire */}
                 {dateWarnings.length > 0 && (
@@ -129,10 +132,10 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                     </div>
                 )}
 
-                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground/70">
                     <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
-                        <kbd className="rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd> {t('common.cancel')}
-                        <kbd className="ms-2 rounded border border-border bg-secondary px-1 py-0.5 font-mono text-[10px] text-muted-foreground">⌘/Ctrl+Enter</kbd> {t('toolbar.save')}
+                        <kbd className="rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd> {t('common.cancel')}
+                        <kbd className="ms-2 rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘+↵</kbd> {t('toolbar.save')}
                     </span>
                     <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
                         <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">{t('common.cancel')}</Button>
@@ -143,7 +146,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                 </div>
             </div>
             <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={3} value={formData.remark || ''} onChange={handleChange} className="h-full resize-y border-border bg-background text-foreground placeholder-muted-foreground focus-visible:ring-primary/30" placeholder={t('editor.remark')} />
+                <Textarea name="remark" rows={2} value={formData.remark || ''} onChange={handleChange} className="h-full min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.remark')} />
             </div>
         </form>
     );

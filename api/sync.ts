@@ -14,6 +14,7 @@ interface ClassesBlob {
     classMeta: Record<string, { updatedAt: string }>;
     /** Les champs imposés par la direction ne peuvent pas être écrasés par un appareil non synchronisé. */
     adminClassOverrides?: Record<string, ClassInfo>;
+    adminLessonsUpdatedAt?: Record<string, string>;
     /** Tombstones durables : un client ancien ne peut pas recréer une classe supprimée. */
     deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
@@ -132,13 +133,23 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
 
     const lessons = assertValidLessonsPayload(body.lessons, requestedClassIds)
         .filter(entry => validClassIds.has(entry.classId));
-    for (const entry of lessons) {
+    // Un appareil resté hors ligne peut pousser une ancienne copie après une
+    // importation administrative. Le watermark ne protège que ces imports (une
+    // simple édition du nom de classe ne doit pas bloquer un cours légitime).
+    const adminLessonsUpdatedAt = { ...(existing.adminLessonsUpdatedAt ?? {}) };
+    const acceptedLessons = lessons.filter(entry => {
+        const watermark = adminLessonsUpdatedAt[entry.classId];
+        return !watermark || entry.updatedAt > watermark;
+    });
+    for (const entry of acceptedLessons) {
         classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
+        delete adminLessonsUpdatedAt[entry.classId];
     }
 
     for (const id of deletedClassIds) {
         delete classMeta[id];
         delete adminClassOverrides[id];
+        delete adminLessonsUpdatedAt[id];
     }
     // purge des métadonnées orphelines (classe absente de la liste poussée)
     for (const id of Object.keys(classMeta)) {
@@ -159,13 +170,14 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             : (existing.settingsUpdatedAt ?? ''),
         classMeta,
         adminClassOverrides,
+        adminLessonsUpdatedAt,
         deletedClasses,
         updatedAt: now,
     };
 
     const pipeline = redis.pipeline();
     pipeline.set(KEYS.classes(phone), nextBlob);
-    for (const entry of lessons) {
+    for (const entry of acceptedLessons) {
         pipeline.set(KEYS.lessons(phone, entry.classId), {
             lessonsData: entry.lessonsData,
             ...(entry.contentDirection ? { contentDirection: entry.contentDirection } : {}),

@@ -39,7 +39,7 @@ export const assertBodySize = (body: unknown): void => {
     ? Buffer.byteLength(body, 'utf8')
     : Buffer.byteLength(JSON.stringify(body ?? {}), 'utf8');
   if (size > MAX_BODY_BYTES) {
-    throw new HttpError(413, 'Données trop volumineuses pour la synchronisation (limite ~950 Ko par requête).');
+    throw new HttpError(413, 'Données trop volumineuses (limite cloud d’environ 950 Ko par requête).');
   }
 };
 
@@ -111,11 +111,17 @@ export const assertValidLessonsPayload = (
       entry.contentDirection === 'rtl' || entry.contentDirection === 'ltr'
         ? entry.contentDirection
         : undefined;
+    let updatedAt = new Date().toISOString();
+    if (typeof entry.updatedAt === 'string' && entry.updatedAt) {
+      const timestamp = Date.parse(entry.updatedAt);
+      if (!Number.isFinite(timestamp)) throw new HttpError(400, 'Horodatage de cahier invalide.');
+      updatedAt = new Date(timestamp).toISOString();
+    }
     return {
       classId,
       lessonsData: entry.lessonsData as LessonsData,
       ...(contentDirection ? { contentDirection } : {}),
-      updatedAt: typeof entry.updatedAt === 'string' && entry.updatedAt ? entry.updatedAt : new Date().toISOString(),
+      updatedAt,
     };
   });
 };

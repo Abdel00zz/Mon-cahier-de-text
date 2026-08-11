@@ -19,6 +19,8 @@ import {
     validateOfficialStudentEventsFile,
     type OfficialStudentEventsFile,
 } from '../utils/officialStudentEvents.js';
+import { prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
+import { assertBodySize } from './_lib/validate.js';
 
 interface AdminBody {
     action?: string;
@@ -33,6 +35,9 @@ interface AdminBody {
     assessmentId?: string;
     date?: string;
     classInfo?: Partial<ClassInfo>;
+    lessonsPayload?: unknown;
+    importMode?: 'replace' | 'append';
+    expectedUpdatedAt?: string | null;
 }
 
 interface ClassesBlob {
@@ -44,6 +49,8 @@ interface ClassesBlob {
     adminClassOverrides?: Record<string, ClassInfo>;
     /** Suppressions durables, appliquées au prochain pull de l'enseignant. */
     deletedClasses?: Record<string, { deletedAt: string }>;
+    /** Import admin autoritaire jusqu'à une édition plus récente du professeur. */
+    adminLessonsUpdatedAt?: Record<string, string>;
     updatedAt: string;
     settings?: Partial<AppConfig>;
     settingsUpdatedAt?: string;
@@ -56,6 +63,12 @@ interface StoredUser {
     createdAt: string;
     lastSyncAt?: string;
     blocked?: boolean;
+}
+
+interface LessonsBlob {
+    lessonsData: unknown;
+    contentDirection?: 'ltr' | 'rtl';
+    updatedAt: string;
 }
 
 const VALID_CYCLES = new Set<Cycle>(['college', 'lycee', 'prepa']);
@@ -339,6 +352,7 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         settingsUpdatedAt: storedBlob?.settingsUpdatedAt ?? '',
         classMeta,
         adminClassOverrides,
+        adminLessonsUpdatedAt: storedBlob?.adminLessonsUpdatedAt ?? {},
         deletedClasses,
         updatedAt: now,
     } satisfies ClassesBlob);
@@ -375,6 +389,8 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     delete classMeta[classId];
     const adminClassOverrides = { ...(storedBlob.adminClassOverrides ?? {}) };
     delete adminClassOverrides[classId];
+    const adminLessonsUpdatedAt = { ...(storedBlob.adminLessonsUpdatedAt ?? {}) };
+    delete adminLessonsUpdatedAt[classId];
     const deletedClasses = { ...(storedBlob.deletedClasses ?? {}), [classId]: { deletedAt: now } };
     const nextSnapshot = storedSnapshot
         ? { ...storedSnapshot, classes: storedSnapshot.classes.filter(item => item.id !== classId) }
@@ -390,6 +406,7 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         settingsUpdatedAt: now,
         classMeta,
         adminClassOverrides,
+        adminLessonsUpdatedAt,
         deletedClasses,
         updatedAt: now,
     } satisfies ClassesBlob);
@@ -412,6 +429,124 @@ const handleClassLessons = async (req: ApiRequest, res: ApiResponse) => {
     const blob = await redis.get<{ lessonsData: unknown; updatedAt: string }>(KEYS.lessons(phone, classId));
     if (!blob) throw new HttpError(404, 'Aucun cahier synchronisé pour cette classe.');
     res.status(200).json(blob);
+};
+
+/**
+ * Importe un JSON dans le seul cahier explicitement sélectionné. La classe est
+ * vérifiée côté serveur : un identifiant fabriqué ne peut donc pas créer ou
+ * écraser un cahier hors de la fiche affichée.
+ */
+const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
+    assertBodySize(body);
+    const phone = requirePhone(body);
+    const classId = requiredText(body.classId, 'Classe');
+    if (body.importMode !== 'replace' && body.importMode !== 'append') {
+        throw new HttpError(400, 'Mode d’import invalide.');
+    }
+    if (body.expectedUpdatedAt !== null && typeof body.expectedUpdatedAt !== 'string') {
+        throw new HttpError(400, 'Version du cahier manquante. Rechargez la fiche puis réessayez.');
+    }
+
+    let prepared: ReturnType<typeof prepareImportedLessons>;
+    try {
+        prepared = prepareImportedLessons(body.lessonsPayload);
+    } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : 'Structure JSON invalide.');
+    }
+    if (prepared.lessonsData.length === 0) {
+        throw new HttpError(400, 'Le JSON ne contient aucun bloc de cours exploitable.');
+    }
+
+    const redis = await getRedis();
+    const lookup = redis.pipeline();
+    lookup.get(KEYS.user(phone));
+    lookup.get(KEYS.classes(phone));
+    lookup.get(KEYS.lessons(phone, classId));
+    lookup.hget(KEYS.adminSnapshots, phone);
+    const [user, classesBlob, existingLessons, storedSnapshot] = (await lookup.exec()) as [
+        StoredUser | null,
+        ClassesBlob | null,
+        LessonsBlob | null,
+        TeacherSnapshot | null,
+    ];
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    const classInfo = classesBlob?.classes.find(item => item.id === classId);
+    if (!classesBlob || !classInfo || classesBlob.deletedClasses?.[classId]) {
+        throw new HttpError(404, 'Classe introuvable pour cet enseignant.');
+    }
+    if ((existingLessons?.updatedAt ?? null) !== body.expectedUpdatedAt) {
+        throw new HttpError(409, 'Ce cahier a changé depuis son ouverture. Rechargez-le avant de confirmer l’import.');
+    }
+
+    const currentLessons = Array.isArray(existingLessons?.lessonsData)
+        ? existingLessons.lessonsData
+        : [];
+    const lessonsData = body.importMode === 'append'
+        ? [...currentLessons, ...prepared.lessonsData]
+        : prepared.lessonsData;
+    const contentDirection = body.importMode === 'append' && currentLessons.length > 0
+        ? existingLessons?.contentDirection ?? prepared.direction.direction
+        : prepared.direction.direction;
+    const now = new Date().toISOString();
+
+    // La taille finale compte aussi l'ancien cahier en mode ajout.
+    assertBodySize({ lessonsData, contentDirection, updatedAt: now });
+
+    const stats = summarizeImportedLessons(lessonsData);
+    const previousClassSnapshot = storedSnapshot?.classes.find(item => item.id === classId);
+    const schedule = classesBlob.schedules?.find(item => item.classId === classId);
+    const nextClassSnapshot: ClassSnapshot = {
+        id: classInfo.id,
+        name: classInfo.name,
+        subject: classInfo.subject,
+        cycle: classInfo.cycle,
+        totalItems: stats.totalItems,
+        plannedCount: stats.plannedCount,
+        completionRate: stats.completionRate,
+        sessionsCount: stats.sessionsCount,
+        lastDate: stats.lastDate,
+        weekdays: previousClassSnapshot?.weekdays ?? schedule?.slots.map(slot => slot.weekday) ?? [],
+        sessionsPerWeek: previousClassSnapshot?.sessionsPerWeek
+            ?? schedule?.slots.reduce((total, slot) => total + (slot.sessions ?? 1), 0)
+            ?? 0,
+        updatedAt: now,
+    };
+    const snapshotBase: TeacherSnapshot = storedSnapshot ?? {
+        phone,
+        nom: user.nom,
+        prenom: user.prenom,
+        lastSyncAt: user.lastSyncAt ?? null,
+        classes: [],
+    };
+    const nextSnapshot: TeacherSnapshot = {
+        ...snapshotBase,
+        classes: snapshotBase.classes.some(item => item.id === classId)
+            ? snapshotBase.classes.map(item => item.id === classId ? nextClassSnapshot : item)
+            : [...snapshotBase.classes, nextClassSnapshot],
+    };
+
+    // MULTI garde le blob, son index de version et la projection admin alignés.
+    const write = redis.multi();
+    write.set(KEYS.lessons(phone, classId), { lessonsData, contentDirection, updatedAt: now } satisfies LessonsBlob);
+    write.set(KEYS.classes(phone), {
+        ...classesBlob,
+        classMeta: { ...(classesBlob.classMeta ?? {}), [classId]: { updatedAt: now } },
+        adminLessonsUpdatedAt: { ...(classesBlob.adminLessonsUpdatedAt ?? {}), [classId]: now },
+        updatedAt: now,
+    } satisfies ClassesBlob);
+    write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
+    await write.exec();
+
+    res.status(200).json({
+        ok: true,
+        classId,
+        mode: body.importMode,
+        importedTopLevel: prepared.report.topLevelCount,
+        importedItems: prepared.report.itemCount,
+        totalTopLevel: lessonsData.length,
+        contentDirection,
+        updatedAt: now,
+    });
 };
 
 /* ── Actions de gestion (bloquer / supprimer / notifier un enseignant) ────── */
@@ -516,6 +651,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
             if (body.action === 'upsertTeacherClass') return await handleUpsertTeacherClass(body, res);
             if (body.action === 'deleteTeacherClass') return await handleDeleteTeacherClass(body, res);
+            if (body.action === 'importClassLessons') return await handleImportClassLessons(body, res);
             throw new HttpError(400, 'Action inconnue.');
         }
 

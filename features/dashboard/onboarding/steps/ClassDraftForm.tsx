@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Plus } from '@/components/ui/icons';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { localizeDigits } from '@/i18n/numberFormatting';
 import { cn } from '@/lib/utils';
 import type { Cycle } from '@/types';
 import { LEVEL_GROUPS } from '../content';
@@ -80,7 +79,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                         <Input
                             aria-label={copy.groupPlaceholder}
                             type="text"
-                            value={localizeDigits(draft.group, lang)}
+                            value={draft.group}
                             onChange={event => controller.setGroup(event.target.value)}
                             onBlur={controller.normalizeGroup}
                             placeholder={copy.groupPlaceholder}

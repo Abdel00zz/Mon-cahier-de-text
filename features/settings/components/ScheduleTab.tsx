@@ -15,7 +15,6 @@ import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
 import { TriangleAlert, CircleCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { createLocalizedNumberFormatter, localizeDigits } from '@/i18n/numberFormatting';
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -72,13 +71,12 @@ type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const { locale, t } = useLocale();
     const hourNumber = React.useMemo(
-        () => createLocalizedNumberFormatter(locale, { minimumIntegerDigits: 2, useGrouping: false }),
+        () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, numberingSystem: 'latn', useGrouping: false }),
         [locale],
     );
-    const minuteZero = hourNumber.format(0);
     const hourLabel = (startMin: number, endMin: number) => locale === 'fr'
         ? `${String(Math.floor(startMin / 60)).padStart(2, '0')}h–${String(Math.floor(endMin / 60)).padStart(2, '0')}h`
-        : `${hourNumber.format(Math.floor(startMin / 60))}:${minuteZero}–${hourNumber.format(Math.floor(endMin / 60))}:${minuteZero}`;
+        : `${hourNumber.format(Math.floor(startMin / 60))}:00–${hourNumber.format(Math.floor(endMin / 60))}:00`;
     const classLabel = (name: string) => formatLocalizedClassDisplayName(name, locale);
     const subjectLabel = (subject: string) => locale === 'ar'
         ? formatLocalizedSubjectDisplayName(subject, locale)
@@ -90,10 +88,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         todayInMorocco(new Date(), calendar),
     );
     const schoolYearStart = config.schoolYearStart ?? effectiveSchoolYear.debut;
-    const localizedSchoolYearStart = React.useMemo(() => {
+    const displaySchoolYearStart = React.useMemo(() => {
         const [year, month, day] = schoolYearStart.split('-');
-        return localizeDigits(`${day}/${month}/${year}`, locale);
-    }, [locale, schoolYearStart]);
+        return `${day}/${month}/${year}`;
+    }, [schoolYearStart]);
+    // Isole la plage numérique dans la phrase RTL pour préserver 2026-2027.
+    const schoolYearLabel = locale === 'ar'
+        ? `\u2066${effectiveSchoolYear.libelle}\u2069`
+        : effectiveSchoolYear.libelle;
     const timetable = config.timetable ?? [];
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
     const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
@@ -204,7 +206,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             type="date"
                             value={schoolYearStart}
                             onChange={e => setSchoolYearStart(e.target.value)}
-                            lang={locale === 'ar' ? 'ar-MA-u-nu-arab' : locale}
+                            lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
                             dir="ltr"
                             className={`h-10 rounded-lg border border-border/80 bg-background px-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
                         />
@@ -214,7 +216,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 dir="ltr"
                                 className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center text-sm text-foreground"
                             >
-                                {localizedSchoolYearStart}
+                                {displaySchoolYearStart}
                             </span>
                         )}
                     </div>
@@ -222,7 +224,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </div>
 
             <p className="-mt-3 text-start text-[11px] font-mono text-muted-foreground/60 sm:text-xs">
-                {t('schedule.calendar', { label: localizeDigits(effectiveSchoolYear.libelle, locale) })}
+                {t('schedule.calendar', { label: schoolYearLabel })}
             </p>
 
             {/* État de complétude et volumes horaires avant la saisie de la grille. */}

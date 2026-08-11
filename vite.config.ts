@@ -10,6 +10,7 @@ import {
     validateOfficialStudentEventsFile,
     type OfficialStudentEventsFile,
 } from './utils/officialStudentEvents';
+import { prepareImportedLessons, summarizeImportedLessons } from './utils/importPipeline';
 
 /*
  * MOCK D'API POUR LE DÉVELOPPEMENT LOCAL (jamais inclus au build : apply 'serve').
@@ -170,6 +171,7 @@ const devApiMockPlugin = (): Plugin => {
                     const requestedClasses = Array.isArray(body.classes) ? body.classes : ((existingBlob?.classes as any[]) ?? []);
                     const existingClasses = (existingBlob?.classes as Array<{ id?: string }> | undefined) ?? [];
                     const adminClassOverrides = { ...((existingBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
+                    const adminLessonsUpdatedAt = { ...((existingBlob?.adminLessonsUpdatedAt as Record<string, string>) ?? {}) };
                     const classesById = new Map<string, unknown>();
                     for (const classInfo of existingClasses) {
                         if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
@@ -182,20 +184,25 @@ const devApiMockPlugin = (): Plugin => {
                         .map(([classId, classInfo]) => adminClassOverrides[classId] ?? classInfo);
                     for (const entry of body.lessons ?? []) {
                         if (deletedIds.has(entry.classId)) continue;
+                        const entryUpdatedAt = typeof entry.updatedAt === 'string' ? entry.updatedAt : now;
+                        const watermark = adminLessonsUpdatedAt[entry.classId];
+                        if (watermark && entryUpdatedAt <= watermark) continue;
                         const lessonBlob = {
                             lessonsData: entry.lessonsData,
                             ...(entry.contentDirection === 'rtl' || entry.contentDirection === 'ltr' ? { contentDirection: entry.contentDirection } : {}),
-                            updatedAt: entry.updatedAt || now,
+                            updatedAt: entryUpdatedAt,
                         };
                         workspace.lessonsByClass.set(entry.classId, lessonBlob);
                         lessonsByClass.set(entry.classId, lessonBlob);
-                        classMeta[entry.classId] = { updatedAt: entry.updatedAt || now };
+                        classMeta[entry.classId] = { updatedAt: entryUpdatedAt };
+                        delete adminLessonsUpdatedAt[entry.classId];
                     }
                     for (const id of deletedIds) {
                         workspace.lessonsByClass.delete(id);
                         lessonsByClass.delete(id);
                         delete classMeta[id];
                         delete adminClassOverrides[id];
+                        delete adminLessonsUpdatedAt[id];
                     }
                     if (body.snapshot && typeof body.snapshot === 'object') {
                         devSnapshot = { ...body.snapshot, phone, lastSyncAt: now };
@@ -208,6 +215,7 @@ const devApiMockPlugin = (): Plugin => {
                         settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((existingBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
                         adminClassOverrides,
+                        adminLessonsUpdatedAt,
                         deletedClasses,
                         updatedAt: now,
                     };
@@ -351,6 +359,90 @@ const devApiMockPlugin = (): Plugin => {
                             devSnapshot = { ...(devSnapshot as any), classes: ((devSnapshot as any).classes ?? []).filter((item: any) => item.id !== classId) };
                         }
                         return send(res, 200, { ok: true, classId });
+                    }
+                    if (body.action === 'importClassLessons') {
+                        const classId = typeof body.classId === 'string' ? body.classId : '';
+                        const mode = body.importMode === 'append' || body.importMode === 'replace' ? body.importMode : null;
+                        const existingClasses = ((classesBlob?.classes as any[]) ?? []);
+                        const classInfo = existingClasses.find(item => item.id === classId);
+                        if (!classInfo) return send(res, 404, { error: 'Classe introuvable pour cet enseignant.' });
+                        if (!mode) return send(res, 400, { error: 'Mode d’import invalide.' });
+
+                        let prepared: ReturnType<typeof prepareImportedLessons>;
+                        try {
+                            prepared = prepareImportedLessons(body.lessonsPayload);
+                        } catch (error) {
+                            return send(res, 400, { error: error instanceof Error ? error.message : 'Structure JSON invalide.' });
+                        }
+                        if (prepared.lessonsData.length === 0) {
+                            return send(res, 400, { error: 'Le JSON ne contient aucun bloc de cours exploitable.' });
+                        }
+
+                        const prior = lessonsByClass.get(classId) as { lessonsData?: unknown; contentDirection?: 'ltr' | 'rtl'; updatedAt?: string } | undefined;
+                        if ((prior?.updatedAt ?? null) !== (body.expectedUpdatedAt ?? null)) {
+                            return send(res, 409, { error: 'Ce cahier a changé depuis son ouverture. Rechargez-le avant de confirmer l’import.' });
+                        }
+                        const currentLessons = Array.isArray(prior?.lessonsData) ? prior.lessonsData : [];
+                        const lessonsData = mode === 'append' ? [...currentLessons, ...prepared.lessonsData] : prepared.lessonsData;
+                        const contentDirection = mode === 'append' && currentLessons.length > 0
+                            ? prior?.contentDirection ?? prepared.direction.direction
+                            : prepared.direction.direction;
+                        const now = new Date().toISOString();
+                        lessonsByClass.set(classId, { lessonsData, contentDirection, updatedAt: now });
+                        classesBlob = {
+                            ...(classesBlob ?? {}),
+                            classMeta: {
+                                ...((classesBlob?.classMeta as Record<string, unknown>) ?? {}),
+                                [classId]: { updatedAt: now },
+                            },
+                            adminLessonsUpdatedAt: {
+                                ...((classesBlob?.adminLessonsUpdatedAt as Record<string, string>) ?? {}),
+                                [classId]: now,
+                            },
+                            updatedAt: now,
+                        };
+                        const targetWorkspace = workspacesByPhone.get(String(body.phone ?? DEV_PHONE));
+                        if (targetWorkspace) {
+                            targetWorkspace.classesBlob = classesBlob;
+                            targetWorkspace.lessonsByClass.set(classId, { lessonsData, contentDirection, updatedAt: now });
+                        }
+
+                        const stats = summarizeImportedLessons(lessonsData);
+                        if (devSnapshot) {
+                            const snapshot = devSnapshot as any;
+                            const previous = (snapshot.classes ?? []).find((item: any) => item.id === classId);
+                            const nextClassSnapshot = {
+                                ...(previous ?? {}),
+                                id: classInfo.id,
+                                name: classInfo.name,
+                                subject: classInfo.subject,
+                                cycle: classInfo.cycle,
+                                totalItems: stats.totalItems,
+                                plannedCount: stats.plannedCount,
+                                completionRate: stats.completionRate,
+                                sessionsCount: stats.sessionsCount,
+                                lastDate: stats.lastDate,
+                                weekdays: previous?.weekdays ?? [],
+                                sessionsPerWeek: previous?.sessionsPerWeek ?? 0,
+                                updatedAt: now,
+                            };
+                            devSnapshot = {
+                                ...snapshot,
+                                classes: previous
+                                    ? snapshot.classes.map((item: any) => item.id === classId ? nextClassSnapshot : item)
+                                    : [...(snapshot.classes ?? []), nextClassSnapshot],
+                            };
+                        }
+                        return send(res, 200, {
+                            ok: true,
+                            classId,
+                            mode,
+                            importedTopLevel: prepared.report.topLevelCount,
+                            importedItems: prepared.report.itemCount,
+                            totalTopLevel: lessonsData.length,
+                            contentDirection,
+                            updatedAt: now,
+                        });
                     }
                     if (body.action === 'notifyTeacher') {
                         const content = typeof body.message === 'string' ? body.message.trim().slice(0, 1_200) : '';

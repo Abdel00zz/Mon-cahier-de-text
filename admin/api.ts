@@ -1,4 +1,4 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, Cycle, LessonsData, TeacherSnapshot } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
@@ -65,7 +65,7 @@ export const fetchTeacherMessages = async (phone: string): Promise<AdminMessage[
 export const fetchClassLessons = (
     phone: string,
     classId: string,
-): Promise<{ lessonsData: LessonsData; updatedAt: string }> =>
+): Promise<{ lessonsData: LessonsData; contentDirection?: ContentDirection; updatedAt: string }> =>
     request(`/api/admin?action=lessons&phone=${encodeURIComponent(phone)}&classId=${encodeURIComponent(classId)}`);
 
 const postAdmin = (payload: Record<string, unknown>) =>
@@ -100,6 +100,34 @@ export const upsertTeacherClass = (
 /** Supprime la classe et son cahier cloud, y compris sur les appareils hors ligne. */
 export const deleteTeacherClass = (phone: string, classId: string): Promise<{ ok: boolean; classId: string }> =>
     postAdmin({ action: 'deleteTeacherClass', phone, classId });
+
+export interface ClassLessonsImportResult {
+    ok: boolean;
+    classId: string;
+    mode: 'replace' | 'append';
+    importedTopLevel: number;
+    importedItems: number;
+    totalTopLevel: number;
+    contentDirection: ContentDirection;
+    updatedAt: string;
+}
+
+/** Importe un contenu normalisé dans la seule classe sélectionnée. */
+export const importClassLessons = (
+    phone: string,
+    classId: string,
+    lessonsPayload: unknown,
+    importMode: 'replace' | 'append',
+    expectedUpdatedAt: string | null,
+): Promise<ClassLessonsImportResult> =>
+    postAdmin({
+        action: 'importClassLessons',
+        phone,
+        classId,
+        lessonsPayload,
+        importMode,
+        expectedUpdatedAt,
+    });
 
 /** Notification push directe vers le(s) téléphone(s) de l'enseignant. */
 export const notifyTeacher = (phone: string, message: string, title?: string): Promise<{ ok: boolean; sent: number; message: AdminMessage }> =>
