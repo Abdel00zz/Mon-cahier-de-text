@@ -47,7 +47,7 @@ const EditableHeader: React.FC<{
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       dir={isArabic ? 'rtl' : 'ltr'}
-      className={`inline-block -mx-1.5 -my-0.5 rounded-md px-1.5 py-0.5 text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-bold tracking-tight'}`}
+      className={`inline-block -mx-1.5 rounded-md px-1.5 py-1 text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-bold tracking-tight'}`}
     >
       {displayValue}
     </span>
@@ -58,10 +58,10 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
   const { t, locale } = useLocale();
 
   return (
-    <div className="rtl-flow group relative mb-2 mt-1 px-0 py-2 sm:mt-2 sm:py-3">
+    <div className="rtl-flow group relative mb-2 mt-1 px-0 pb-3 pt-2 sm:mt-2 sm:pb-4 sm:pt-3">
       <div className="flex items-start gap-2.5 sm:gap-4">
         <header className="min-w-0 flex-1 text-start">
-          <h1 className="flex min-w-0 items-center justify-start text-start font-bold tracking-tight text-lg font-black leading-tight tracking-[-0.035em] text-foreground sm:text-2xl">
+          <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-bold tracking-tight text-lg font-black leading-[1.35] tracking-[-0.035em] text-foreground sm:text-2xl sm:leading-[1.3]">
             <EditableHeader
               value={classInfo.name}
               displayValue={formatLocalizedClassDisplayName(classInfo.name, locale)}
