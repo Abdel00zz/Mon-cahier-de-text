@@ -169,7 +169,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                     <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">
                         Direction administrative
                     </p>
-                    <h1 className="mt-1 text-2xl font-bold text-foreground font-display sm:text-3xl">
+                    <h1 className="mt-1 text-2xl font-bold text-foreground tracking-tight sm:text-3xl">
                         Centre de pilotage
                     </h1>
                     <p className="text-sm text-muted-foreground">

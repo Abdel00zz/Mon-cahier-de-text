@@ -46,38 +46,38 @@ export const ClassListItem: FC<ClassListItemProps> = ({
 
     return (
         <article
-            className="group relative flex min-h-[72px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-slate-900 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0b57d0]/30 hover:shadow-md dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-100"
+            className="group relative flex min-h-[72px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30"
         >
             <button
                 type="button"
                 onClick={selectClass}
-                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-3 text-start outline-none transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30"
+                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-3 text-start outline-none transition-colors hover:bg-muted/50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${visual.iconSurfaceClass}`} aria-hidden>
                     <Users className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-display text-sm font-bold text-slate-900 dark:text-slate-100">{displayName}</h3>
-                    <p className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <h3 className="truncate text-sm font-bold tracking-tight text-foreground">{displayName}</h3>
+                    <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground dark:text-muted-foreground">
                         {classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : t('dashboard.notebook')}
                     </p>
                 </div>
-                <ChevronRight className={`h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 ${isRtl ? 'rotate-180' : ''}`} aria-hidden />
+                <ChevronRight className={`h-4 w-4 shrink-0 text-muted-foreground dark:text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} aria-hidden />
             </button>
 
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
                 className={cn(
-                    'flex shrink-0 bg-slate-50/50 dark:bg-slate-900/30',
-                    isRtl ? 'border-r border-slate-100 dark:border-slate-800' : 'border-l border-slate-100 dark:border-slate-800',
+                    'flex shrink-0 bg-muted/30',
+                    isRtl ? 'border-r border-border' : 'border-l border-border',
                 )}
             >
                 <button
                     type="button"
                     onClick={() => runAction(onConfigure)}
-                    className="flex min-h-[70px] w-12 touch-manipulation items-center justify-center text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30 active:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                    className="flex min-h-[70px] w-12 touch-manipulation items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 active:bg-secondary"
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
                     <Settings className="h-4 w-4" />
@@ -85,14 +85,14 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 <button
                     type="button"
                     onClick={() => runAction(onShowNotifications)}
-                    className={`${issueStatus ? 'w-[7.5rem] px-2 sm:w-32' : 'w-12 sm:w-14'} flex min-h-[70px] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-slate-100 text-[#0b57d0] transition-all hover:bg-[#e8f0fe] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0b57d0]/30 dark:border-slate-800 dark:text-[#a8c7fa] dark:hover:bg-[#004a77]/40`}
+                    className={`${issueStatus ? 'w-[7.5rem] px-2 sm:w-32' : 'w-12 sm:w-14'} flex min-h-[70px] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border text-primary transition-all hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30`}
                     aria-label={notificationButtonLabel}
                     title={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
                     <Info className="h-4 w-4 shrink-0" />
                     {issueStatus && (
-                        <span className="line-clamp-2 min-w-0 text-center text-[9px] font-semibold leading-[1.12] text-[#b3261e] dark:text-[#f2b8b5]">
+                        <span className="line-clamp-2 min-w-0 text-center text-[9px] font-semibold leading-[1.12] text-destructive">
                             ({issueStatus})
                         </span>
                     )}

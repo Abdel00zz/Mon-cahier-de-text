@@ -23,6 +23,8 @@ interface ModalProps {
   footerClassName?: string
   hideClose?: boolean
   swipeToDismiss?: boolean
+  /** Empêche toute fermeture hors bouton explicite (clic overlay, Échap). */
+  blockDismiss?: boolean
 }
 
 const maxWidthClassMap: Record<string, string> = {
@@ -50,6 +52,7 @@ export function Modal({
   footerClassName,
   hideClose = false,
   swipeToDismiss = true,
+  blockDismiss = false,
 }: ModalProps) {
   const onChange = (open: boolean) => {
     if (!open && onClose) {
@@ -59,15 +62,15 @@ export function Modal({
 
   const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md
 
-  if (!isOpen) return null
-
+  // Toujours rendu : Radix garde le contenu monté pendant l'animation de
+  // sortie, puis le démonte lui-même une fois celle-ci terminée.
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
-      <DialogContent className={cn(mwClass, className)} hideClose={hideClose} onSwipeDown={swipeToDismiss ? onClose : undefined}>
+      <DialogContent className={cn(mwClass, className)} hideClose={hideClose} blockDismiss={blockDismiss} onSwipeDown={swipeToDismiss ? onClose : undefined}>
         {(title || description) && (
           <DialogHeader
             className={cn(
-              "modal-header shrink-0 border-b border-slate-200/50 bg-white/50 px-6 pt-6 pb-4 text-slate-900 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-100 backdrop-blur-md",
+              "modal-header shrink-0 border-b border-border bg-card/50 px-6 pt-6 pb-4 text-card-foreground",
               headerClassName,
             )}
           >
@@ -77,7 +80,7 @@ export function Modal({
         )}
         <div
           className={cn(
-            "modal-body custom-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-6 py-5 [overflow-anchor:none]",
+            "modal-body min-h-0 min-w-0 overflow-y-auto overscroll-contain px-6 py-5 [overflow-anchor:none]",
             !(title || description) && "pt-12",
             !footer && "pb-[calc(1.25rem+env(safe-area-inset-bottom))]",
             bodyClassName,
@@ -88,7 +91,7 @@ export function Modal({
         {footer && (
           <DialogFooter
             className={cn(
-              "modal-footer border-t border-slate-200/50 bg-white/50 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 text-slate-900 dark:border-slate-800/50 dark:bg-slate-900/50 dark:text-slate-100 backdrop-blur-md",
+              "modal-footer border-t border-border bg-card/50 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 text-card-foreground",
               footerClassName,
             )}
           >

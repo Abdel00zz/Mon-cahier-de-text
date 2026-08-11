@@ -39,7 +39,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (!config) {
         logger.error("ContentRenderer Error: Invalid top-level item type encountered.", { data });
         return (
-            <div className="text-lg font-bold font-slab text-center py-3 text-destructive flex items-center justify-center gap-3">
+            <div className="text-lg font-bold text-center py-3 text-destructive flex items-center justify-center gap-3">
                 <TriangleAlert className="h-5 w-5" />
                 <span>{t('editor.unknownContent')}</span>
             </div>
@@ -64,14 +64,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
         if (item.type === 'chapter') {
           return (
-            <div className="flex w-full items-center justify-center text-center font-slab text-lg font-extrabold tracking-tight text-red-700">
+            <div className="flex w-full items-center justify-center text-center font-bold text-lg font-extrabold tracking-tight text-red-700">
               <span>{titleToDisplay}</span>
             </div>
           );
         }
 
         return (
-          <div className={`font-bold font-slab text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
+          <div className={`font-bold text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
             <config.icon className="h-5 w-5" />
             <span>{titleToDisplay}</span>
           </div>
@@ -89,7 +89,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
       
       return (
-        <div className="font-bold font-slab text-lg">
+        <div className="font-bold text-lg">
           {titleToDisplay}
         </div>
       );
@@ -117,7 +117,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       return (
         <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
-          <div className="flex w-full items-center justify-center gap-3 py-3 text-center font-slab text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
+          <div className="flex w-full items-center justify-center gap-3 py-3 text-center font-bold text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200/90 bg-red-50 text-red-700 shadow-[0_1px_2px_rgba(127,29,29,0.08)]" aria-hidden>
               <BookOpen className="h-4 w-4" />
             </span>
@@ -131,7 +131,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`${textClasses} font-slab py-1 flex items-center gap-3 ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div className={`${textClasses} font-bold py-1 flex items-center gap-3 ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <config.icon className="h-5 w-5 shrink-0" />
             <EditableTitle value={item.title} onSave={handleUpdate('title')} />
         </div>
@@ -144,7 +144,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-base font-bold font-display text-foreground py-1.5 flex items-baseline gap-2">
+            <div className="text-base font-bold tracking-tight text-foreground py-1.5 flex items-baseline gap-2">
                 <span>{sectionLetter}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -205,7 +205,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               italique, listes) + LaTeX (les longues formules passent à la
               ligne via displayOverflow: linebreak). */}
           {allowDescription && (
-            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-serif whitespace-pre-wrap break-words animate-fade-in shadow-sm">
+            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-serif whitespace-pre-wrap break-words animate-in fade-in duration-200 shadow-sm">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

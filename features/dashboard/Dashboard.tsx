@@ -8,6 +8,7 @@ import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingModal } from './modals/OnboardingModal';
+import { OnboardingPage } from './OnboardingPage';
 import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
@@ -384,6 +385,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return { label: t(labelKey), description: t(descriptionKey) };
     };
 
+    // Page de démarrage immersive (première connexion, aucun cahier)
+    if (isOnboardingOpen && classes.length === 0) {
+        return (
+            <OnboardingPage
+                config={config}
+                onConfigChange={updateConfig}
+                classes={classes}
+                onCreateClass={createClass}
+                onOpenNotebook={onSelectClass}
+                onComplete={completeOnboarding}
+                onSkip={closeOnboarding}
+            />
+        );
+    }
+
     return (
         <div className="min-h-screen bg-transparent text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8" data-dashboard-root>
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
@@ -391,13 +407,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <header className="mb-8 space-y-4" id="dashboard-header">
                         <div className="flex items-center gap-3">
                             <div className="min-w-0">
-                                <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'font-ar tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
-                                <h1 className="flex flex-wrap items-baseline gap-x-1 text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">
+                                <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
+                                <h1 className="flex flex-wrap items-baseline gap-x-1 text-xl font-bold tracking-tight text-foreground dark:text-white sm:text-2xl">
                                     <span>{greeting}{teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className={`${teacherNameIsArabic ? 'font-teacher-ar text-[1.28em] leading-none' : 'font-teacher-latin text-[0.92em] leading-none'} font-normal text-blue-600 dark:text-blue-400`}
+                                            className={`font-sans text-[0.92em] leading-none font-normal text-blue-600`}
                                         >
                                             {teacherName}
                                         </span>
@@ -448,10 +464,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <section className="w-full" aria-labelledby="classes-heading">
                             <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
                                 <div className="flex items-center gap-2.5">
-                                    <h2 id="classes-heading" className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                    <h2 id="classes-heading" className="text-xl font-bold text-foreground dark:text-white flex items-center gap-1.5">
                                         <span>{t('dashboard.classes')}</span>
                                         {filteredClasses.length > 0 && (
-                                            <span className="text-zinc-400 dark:text-zinc-500 font-medium text-sm">
+                                            <span className="text-muted-foreground dark:text-muted-foreground font-medium text-sm">
                                                 ({filteredClasses.length})
                                             </span>
                                         )}
@@ -480,7 +496,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 className="flex h-8 sm:h-8.5 items-center gap-2 rounded-full bg-card/85 px-3 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/20 active:scale-[0.98] border border-border/70"
                                             >
                                                 <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3 w-3 text-zinc-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             {isDisplayMenuOpen && (
                                                 <div
@@ -499,7 +515,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors ${isActive ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white'}`}
+                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors ${isActive ? 'bg-primary/10 text-primary dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-zinc-700/50 hover:text-foreground dark:hover:text-white'}`}
                                                             >
                                                                 <span className="text-[12px] font-bold">{displayCopy(option).label}</span>
                                                             </button>
@@ -517,8 +533,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             <BookOpen className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">{t('dashboard.emptyTitle')}</h3>
-                                            <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
+                                            <h3 className="text-base font-bold text-foreground dark:text-white">{t('dashboard.emptyTitle')}</h3>
+                                            <p className="mt-1.5 text-sm text-muted-foreground dark:text-muted-foreground max-w-sm">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                             </div>
@@ -532,8 +548,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             <div
                                                 key={classInfo.id}
                                                 role="listitem"
-                                                className="animate-slide-in-up opacity-0"
-                                                style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}
+                                                className="animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                style={{ animationDelay: `${Math.min(index, 8) * 35}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassListItem
                                                     classInfo={classInfo}
@@ -550,8 +566,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
-                                                className="h-full animate-slide-in-up opacity-0"
-                                                style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+                                                className="h-full animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard
                                                     classInfo={classInfo}

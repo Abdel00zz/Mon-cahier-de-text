@@ -80,19 +80,19 @@ export const OrientationNudge: React.FC<OrientationNudgeProps> = ({ suppressed =
       aria-live="polite"
       className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] z-[65] mx-auto max-w-md print:hidden"
     >
-      <div className={`flex items-center gap-3 rounded-2xl border border-primary/15 bg-white/95 p-3.5 shadow-[0_16px_42px_rgba(15,23,42,0.18)] backdrop-blur-xl ${reducedMotion ? '' : 'animate-spring-slide-up'}`}>
+      <div className={`flex items-center gap-3 rounded-2xl border border-primary/15 bg-card/95 p-3.5 shadow-[0_16px_42px_rgba(15,23,42,0.18)] backdrop-blur-xl ${reducedMotion ? '' : 'animate-in slide-in-from-bottom duration-300'}`}>
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Redo2 className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 text-start">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">{copy.label}</p>
-          <p className="mt-0.5 text-sm font-bold text-slate-950">{copy.title}</p>
-          <p className="mt-0.5 text-xs leading-5 text-slate-600">{copy.description}</p>
+          <p className="mt-0.5 text-sm font-bold text-foreground">{copy.title}</p>
+          <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{copy.description}</p>
         </div>
         <button
           type="button"
           onClick={dismiss}
-          className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label={copy.close}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

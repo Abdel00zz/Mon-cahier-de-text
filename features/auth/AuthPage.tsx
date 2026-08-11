@@ -167,7 +167,7 @@ const PasswordInput: React.FC<{
         </button>
       </div>
       {capsLock && (
-        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 animate-fade-in">
+        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 animate-in fade-in duration-200">
           <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-500" /> {capsLockLabel}
         </p>
       )}
@@ -247,12 +247,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
   );
 
   return (
-    <div dir={isRtl ? 'rtl' : 'ltr'} lang={displayLocale} className={`app-canvas min-h-dvh p-0 text-foreground sm:p-3 md:p-4 ${isRtl ? 'font-ar' : ''}`}>
+    <div dir={isRtl ? 'rtl' : 'ltr'} lang={displayLocale} className={`min-h-dvh p-0 text-foreground sm:p-3 md:p-4`}>
       <div className="mx-auto grid min-h-dvh w-full max-w-[1480px] overflow-hidden bg-card/94 sm:min-h-[calc(100dvh-2rem)] sm:rounded-xl sm:border sm:border-border/75 sm:shadow-[0_28px_80px_rgba(30,64,110,0.11)] lg:grid-cols-[1.08fr_0.92fr] dark:border-zinc-800 dark:bg-zinc-950">
         <aside className="relative hidden overflow-hidden border-e border-border/70 bg-secondary/48 px-8 py-7 text-foreground lg:flex lg:flex-col xl:px-10 xl:py-8 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center text-[#1d4291] dark:text-blue-300">
-              <h1 className={`truncate font-extrabold ${isRtl ? 'font-ar-display text-[1.75rem] xl:text-[2.15rem]' : 'font-display text-xl tracking-tight xl:text-[1.65rem]'}`}>{copy.brand}</h1>
+              <h1 className={`truncate font-extrabold ${isRtl ? 'font-bold tracking-normal text-[1.75rem] xl:text-[2.15rem]' : 'font-bold tracking-tight text-xl xl:text-[1.65rem]'}`}>{copy.brand}</h1>
             </div>
             {renderLanguageSwitch()}
           </div>
@@ -265,7 +265,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           </div>
 
           <div className="mt-5 space-y-2.5">
-            <h2 className={`font-extrabold text-[#1d4291] dark:text-blue-300 ${isRtl ? 'font-ar-display text-[1.85rem] leading-[1.3]' : 'font-display text-[1.45rem] leading-tight tracking-tight'}`}>{copy.promise}</h2>
+            <h2 className={`font-extrabold text-[#1d4291] ${isRtl ? 'font-bold tracking-normal text-[1.85rem] leading-[1.3]' : 'font-bold tracking-tight text-[1.45rem] leading-tight'}`}>{copy.promise}</h2>
             <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300">{copy.promiseDetail}</p>
             
             <div className="grid grid-cols-1 gap-2 pt-1">
@@ -304,7 +304,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
           <div className="w-full max-w-[520px]">
             <div className="mb-6 flex items-center justify-between gap-3 sm:mb-8 lg:hidden">
               <div className="flex min-w-0 items-center text-[#1d4291]">
-                <span className={`truncate font-extrabold ${isRtl ? 'font-ar-display text-[1.7rem]' : 'text-lg tracking-tight'}`}>{copy.brand}</span>
+                <span className={`truncate font-extrabold ${isRtl ? 'font-bold tracking-normal text-[1.7rem]' : 'text-lg tracking-tight'}`}>{copy.brand}</span>
               </div>
               {renderLanguageSwitch()}
             </div>
@@ -317,7 +317,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
         >
           {/* Header section (above tabs) */}
           <header className="mb-5 sm:mb-6">
-            <h2 className={`font-extrabold text-[#173a63] dark:text-white ${isRtl ? 'font-ar-display text-[2rem] leading-[1.3]' : 'text-[1.6rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
+            <h2 className={`font-extrabold text-[#173a63] ${isRtl ? 'font-bold tracking-normal text-[2rem] leading-[1.3]' : 'text-[1.6rem] tracking-tight'}`}>{isRegister ? copy.createSpace : copy.welcome}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {isRegister ? copy.createDetail : (
                 isRtl ? (
@@ -408,7 +408,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                   aria-describedby={error ? errorId : undefined}
                   className="h-10.5 rounded-lg border border-border bg-background hover:border-primary/50 focus:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 text-foreground font-semibold text-xs sm:text-[13px] transition-colors pe-10 shadow-2xs"
                 />
-                {phoneValid && <CircleCheck className="pointer-events-none absolute end-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-success animate-fade-in" />}
+                {phoneValid && <CircleCheck className="pointer-events-none absolute end-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-success animate-in fade-in duration-200" />}
               </div>
             </label>
 
@@ -436,7 +436,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
                   {/* Jauge de force */}
                   {password.length > 0 && (
-                    <div className="flex items-center gap-2 animate-fade-in bg-muted p-2.5 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 animate-in fade-in duration-200 bg-muted p-2.5 rounded-lg border border-border">
                       <div className="flex flex-1 gap-1" aria-hidden>
                         {[0, 1, 2, 3].map(i => (
                           <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-muted'}`} />
@@ -511,7 +511,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             </AnimatePresence>
 
             {error && (
-              <p ref={errorRef} id={errorId} tabIndex={-1} className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[12px] font-semibold text-red-600 outline-none animate-fade-in" role="alert">
+              <p ref={errorRef} id={errorId} tabIndex={-1} className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[12px] font-semibold text-red-600 outline-none animate-in fade-in duration-200" role="alert">
                 {error}
               </p>
             )}

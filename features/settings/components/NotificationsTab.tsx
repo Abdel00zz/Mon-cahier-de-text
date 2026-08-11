@@ -330,7 +330,7 @@ const AbsencesSection: React.FC<{
 
     return (
         <div className="rounded-xl border border-border bg-card p-3">
-            <h4 className="text-xs font-semibold text-foreground font-display">{t('notifications.absences')}</h4>
+            <h4 className="text-xs font-semibold text-foreground">{t('notifications.absences')}</h4>
             <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground font-sans">
                 {t('notifications.absencesHint')}
             </p>

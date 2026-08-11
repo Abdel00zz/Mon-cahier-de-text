@@ -140,9 +140,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     const canCreateFromSchedule = !!onCreateClass && noClassesYet;
     if (noClassesYet && !onCreateClass) {
         return (
-            <div className="rounded-md border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+            <p className="px-1 py-2 text-center text-sm text-muted-foreground">
                 {t('schedule.empty')}
-            </div>
+            </p>
         );
     }
 
@@ -165,12 +165,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {t('schedule.intro')}
             </p>
             {noClassesYet && (
-                <div className="flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 px-3 py-2.5">
+                <p className="flex items-center gap-2 px-1 text-xs font-semibold leading-relaxed text-primary">
                     <span aria-hidden>✨</span>
-                    <p className="text-xs font-semibold leading-relaxed text-primary">
-                        {t('schedule.emptyHint')}
-                    </p>
-                </div>
+                    {t('schedule.emptyHint')}
+                </p>
             )}
 
             <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm" aria-label={t('schedule.startYear')}>
@@ -189,7 +187,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
             {/* Grille jours × créneaux (façon emploi du temps papier, sans la colonne 24 h) */}
             <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                <div className="overflow-x-auto custom-scrollbar">
+                <div className="overflow-x-auto">
                 <table className="rtl-table w-full min-w-[48rem] border-separate border-spacing-0 text-xs">
                     <thead>
                         <tr>
@@ -373,63 +371,62 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
     }
 
     return (
-        <div className="space-y-2 rounded-xl border border-warning/30 bg-warning/5 px-3 py-2.5" role="status">
+        <>
             {unplanned.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
+                /* « Emploi du temps à compléter » : volontairement SANS cadre
+                   ni fond — le contenu respire directement sur la surface. */
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5" role="status">
+                    <span className="inline-flex shrink-0 items-center gap-1.5 text-amber-600">
                         <TriangleAlert className="h-4 w-4" />
                         <span className="text-xs font-bold">
                             {t('schedule.classesToPlan', { count: unplanned.length, plural: unplanned.length > 1 && locale !== 'ar' ? 's' : '' })}
                         </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {unplanned.map(i => (
-                            <span
-                                key={i.classId}
-                                className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg bg-card px-2.5 py-1.5 text-[11px] leading-snug shadow-2xs"
-                            >
-                                <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
-                                <span className="text-muted-foreground">· {t('schedule.noSlotsPlanned')}</span>
-                                {i.officialHours !== null && (
-                                    <span className="rounded bg-blue-50 px-1.5 py-0.5 font-semibold text-blue-700">
-                                        {t('schedule.hoursToAdd', { count: i.officialHours })}
-                                    </span>
-                                )}
-                            </span>
-                        ))}
-                    </div>
+                    </span>
+                    {unplanned.map(i => (
+                        <span key={i.classId} className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] leading-snug">
+                            <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
+                            <span className="text-muted-foreground">· {t('schedule.noSlotsPlanned')}</span>
+                            {i.officialHours !== null && (
+                                <span className="rounded-full bg-primary/15 px-1.5 py-0.5 font-semibold text-primary">
+                                    {t('schedule.hoursToAdd', { count: i.officialHours })}
+                                </span>
+                            )}
+                        </span>
+                    ))}
                 </div>
             )}
 
             {deviations.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
-                        <TriangleAlert className="h-4 w-4" />
-                        <span className="text-xs font-bold">
-                            {t('schedule.hoursCheck', { count: deviations.length, plural: deviations.length > 1 && locale !== 'ar' ? 's' : '' })}
-                        </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                {deviations.map(i => {
-                    const isOver = i.deviation === 'over';
-                    const adjustment = Math.abs(i.delta);
-                    return (
-                        <span
-                            key={i.classId}
-                            className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg bg-card px-2.5 py-1.5 text-[11px] leading-snug shadow-2xs"
-                            title={t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}
-                        >
-                            <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
-                            <span className="text-muted-foreground">· {t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}</span>
-                            <span className={`rounded px-1.5 py-0.5 font-semibold ${isOver ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-                                {t(isOver ? 'schedule.hoursExcess' : 'schedule.hoursToAdd', { count: adjustment })}
+                <div className="space-y-2 rounded-xl border border-warning/30 bg-warning/5 px-3 py-2.5" role="status">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="inline-flex shrink-0 items-center gap-1.5 text-amber-700">
+                            <TriangleAlert className="h-4 w-4" />
+                            <span className="text-xs font-bold">
+                                {t('schedule.hoursCheck', { count: deviations.length, plural: deviations.length > 1 && locale !== 'ar' ? 's' : '' })}
                             </span>
-                        </span>
-                    );
-                })}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                    {deviations.map(i => {
+                        const isOver = i.deviation === 'over';
+                        const adjustment = Math.abs(i.delta);
+                        return (
+                            <span
+                                key={i.classId}
+                                className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-lg bg-card px-2.5 py-1.5 text-[11px] leading-snug shadow-2xs"
+                                title={t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}
+                            >
+                                <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
+                                <span className="text-muted-foreground">· {t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}</span>
+                                <span className={`rounded-full px-1.5 py-0.5 font-semibold ${isOver ? 'bg-warning/15 text-warning-strong' : 'bg-primary/15 text-primary'}`}>
+                                    {t(isOver ? 'schedule.hoursExcess' : 'schedule.hoursToAdd', { count: adjustment })}
+                                </span>
+                            </span>
+                        );
+                    })}
+                        </div>
                     </div>
                 </div>
             )}
-            </div>
+        </>
     );
 };

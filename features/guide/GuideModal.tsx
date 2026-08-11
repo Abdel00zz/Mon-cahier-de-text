@@ -2,15 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_FR, GUIDE_AR } from '@/constants';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { LangToggle, useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface GuideModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type Lang = 'fr' | 'ar';
-const LANG_KEY = 'guide_lang_v1';
 
 /*
  * Guide REFONDU, esprit « papier doux » :
@@ -20,20 +18,13 @@ const LANG_KEY = 'guide_lang_v1';
  * Palette papier chaud (#fdfbf7 / #f4f1ea / #e8e4d9, sauge, terracotta).
  */
 
-const readLang = (fallback: Lang): Lang => {
-  try {
-    const saved = localStorage.getItem(LANG_KEY);
-    return saved === 'ar' || saved === 'fr' ? saved : fallback;
-  } catch {
-    return fallback;
-  }
-};
+const LANG_KEY = 'guide_lang_v1';
 
 /** Markdown minimal → HTML de lecture, volontairement léger et sans grandes cartes. */
-const toHtml = (markdown: string, prefix: Lang): string => {
+const toHtml = (markdown: string, prefix: ModalLang): string => {
   let headingIndex = 0;
   const isArabic = prefix === 'ar';
-  const headingFontClass = isArabic ? 'font-ar' : 'font-display';
+  const headingFontClass = isArabic ? 'font-bold tracking-normal' : 'font-bold tracking-tight';
   const bodyClass = isArabic
     ? 'text-[17px] leading-[2] text-slate-700 sm:text-[18px]'
     : 'text-[15px] leading-7 text-slate-600 sm:text-base';
@@ -99,16 +90,11 @@ const toHtml = (markdown: string, prefix: Lang): string => {
 export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
   const { locale } = useLocale();
   const contentRef = useRef<HTMLDivElement>(null);
-  const [lang, setLangState] = useState<Lang>(() => readLang(locale === 'ar' ? 'ar' : 'fr'));
+  const { lang, setLang: persistLang } = useModalLang(LANG_KEY, locale === 'ar' ? 'ar' : 'fr');
   const [activeSection, setActiveSection] = useState<string>('sec-0');
 
-  const setLang = (next: Lang) => {
-    setLangState(next);
-    try {
-      localStorage.setItem(LANG_KEY, next);
-    } catch {
-      // stockage indisponible : le choix vaut pour cette session
-    }
+  const setLang = (next: ModalLang) => {
+    persistLang(next);
     // changement de langue = nouveau document : retour en haut
     setActiveSection('sec-0');
     contentRef.current?.scrollTo({ top: 0 });
@@ -140,8 +126,8 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       onClose={onClose}
       title={
         <div className={`flex w-full select-none flex-col justify-between gap-3 sm:items-center ${isAr ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}>
-          <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'text-right font-ar' : 'text-left'}>
-            <span className={`${isAr ? 'font-ar' : 'font-display'} text-xl font-bold text-slate-900 flex items-center gap-2`}>
+          <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'text-right' : 'text-left'}>
+            <span className={`${isAr ? 'font-bold tracking-normal' : 'font-bold tracking-tight'} text-xl font-bold text-slate-900 flex items-center gap-2`}>
               {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
             </span>
             <span className="block text-sm font-semibold text-slate-500 mt-1">
@@ -150,21 +136,12 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Bascule de langue : UNE langue à la fois, choix mémorisé */}
-          <div className="flex shrink-0 items-center self-start rounded-full border border-border bg-muted p-1 sm:self-center">
-            {(['fr', 'ar'] as const).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                aria-pressed={lang === l}
-                className={`cursor-pointer rounded-full px-5 py-1.5 text-xs font-bold transition-all duration-200 ${
-                  lang === l ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {l === 'fr' ? 'Français' : 'العربية'}
-              </button>
-            ))}
-          </div>
+          <LangToggle
+            lang={lang}
+            onChange={setLang}
+            labels={{ fr: 'Français', ar: 'العربية' }}
+            className="self-start sm:self-center"
+          />
         </div>
       }
       maxWidth="4xl"
@@ -184,14 +161,14 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         <div
           ref={contentRef}
           onScroll={handleScroll}
-          className="custom-scrollbar relative flex-1 overflow-y-auto overscroll-contain"
+          className="relative flex-1 overflow-y-auto overscroll-contain"
           style={{ scrollbarGutter: 'stable', height: '100%' }}
           dir={isAr ? 'rtl' : 'ltr'}
           lang={lang}
         >
           <div className="mx-auto max-w-3xl px-6 py-10 pb-24 sm:px-12 sm:py-14">
             <div
-              className={`max-w-none ${isAr ? 'font-ar text-right' : ''}`}
+              className={`max-w-none ${isAr ? 'text-right' : ''}`}
               dangerouslySetInnerHTML={{ __html: html }}
             />
           </div>

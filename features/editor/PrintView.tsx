@@ -434,7 +434,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         padding-top: 4px;
                         text-align: center;
                     }
-                    .print-session-chapter-item .font-slab {
+                    .print-session-chapter-item .font-bold {
                         font-size: ${sizes.chapter} !important;
                         font-weight: bold !important;
                         color: var(--print-ink) !important;
@@ -494,7 +494,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     .print-chapter-row .print-col-content {
                         text-align: center !important;
                     }
-                    .print-chapter-row .font-slab {
+                    .print-chapter-row .font-bold {
                         font-size: ${sizes.chapter} !important;
                         font-weight: bold !important;
                         color: var(--print-ink) !important;

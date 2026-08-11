@@ -2,51 +2,44 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <script>
-    // Polyfill/Override to make window.fetch writable and configurable,
-    // avoiding "Cannot set property fetch of #<Window> which has only a getter" errors.
-    (function() {
-      try {
-        var originalFetch = window.fetch;
-        if (originalFetch) {
-          var currentFetch = originalFetch;
-          Object.defineProperty(window, 'fetch', {
-            get: function() { return currentFetch; },
-            set: function(val) { currentFetch = val; },
-            configurable: true,
-            enumerable: true
-          });
-        }
-      } catch (e) {
-        console.warn('Unable to redefine window.fetch:', e);
-      }
-    })();
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
   <title>Mon cahier de textes</title>
   <meta name="application-name" content="Mon cahier de textes" />
-  <meta name="description" content="Cahier de textes enseignant avec progression, emploi du temps, évaluations, alertes utiles et accès hors connexion." />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="description" content="Cahier de textes enseignant avec progression, emploi du temps, évaluations et accès hors connexion." />
+  <meta name="color-scheme" content="light" />
   <meta name="format-detection" content="telephone=no" />
 
-  <!-- PWA -->
-  <meta name="theme-color" content="#2E7AF5" />
+  <!-- PWA iOS -->
+  <meta name="theme-color" content="#1a56db" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Mon cahier" />
-  <meta name="msapplication-TileColor" content="#2E7AF5" />
-  <!-- iOS ne supporte pas le SVG pour l'icône d'écran d'accueil : PNG 180 -->
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+
+  <!-- PWA Samsung / Android -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1a56db" />
+
+  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
 
-  <!-- Typographie unifiée : ronde et lisible pour l'interface, plus expressive
-       pour les titres, avec une vraie fonte arabe et une monospace compacte. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Fira+Sans+Condensed:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lateef:wght@400;500;600;700;800&family=Playwrite+AR:wght@100..400&family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@300..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Performance: DNS prefetch & preconnect -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
+  <!-- Polices optimisées : chargement asynchrone avec display=swap -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" media="print" onload="this.media='all'; this.onload=null;" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  </noscript>
 </head>
 <body>
   <div id="root"></div>

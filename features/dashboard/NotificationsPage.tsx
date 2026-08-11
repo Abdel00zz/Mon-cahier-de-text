@@ -63,7 +63,7 @@ const ClassIdentityIcon: React.FC<{
       className={cn(
         'flex shrink-0 items-center justify-center rounded-full',
         compact ? 'h-7 w-7' : 'h-9 w-9',
-        visual?.iconSurfaceClass ?? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-300'
+        visual?.iconSurfaceClass ?? 'bg-muted text-muted-foreground dark:bg-zinc-800 dark:text-zinc-300'
       )}
       aria-hidden
     >
@@ -233,7 +233,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   onOpenSettings,
 }) => {
   const { locale, t, isRtl } = useLocale();
-  const titleFontClass = isRtl ? 'font-ar-display text-xl leading-tight tracking-normal' : 'font-display';
+  const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
@@ -429,7 +429,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Top Toggle Header */}
       <div className={cn("flex items-center px-1 mb-1", isEffectiveCollapsed ? "justify-center" : "justify-between")}>
         {!isEffectiveCollapsed && (
-          <span className={cn('font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <span className={cn('font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarLabel')}
           </span>
         )}
@@ -446,7 +446,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Alerte & Suivi */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarTracking')}
           </h3>
         )}
@@ -533,7 +533,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Planification */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarPlanning')}
           </h3>
         )}
@@ -583,7 +583,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400')}>
+                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -604,7 +604,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Historique */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'font-ar text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarHistory')}
           </h3>
         )}
@@ -654,7 +654,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400')}>
+                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -675,7 +675,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   );
 
   return (
-    <div className={cn('app-canvas min-h-screen text-foreground', isRtl ? 'font-ar' : 'font-sans')}>
+    <div className={cn('min-h-screen text-foreground', isRtl ? 'font-sans' : 'font-sans')}>
       <main className="mx-auto max-w-6xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
         <div className="mb-4 flex items-end justify-between gap-3 px-1 sm:mb-5">
           <div className="flex items-center gap-3">
@@ -791,7 +791,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           {t('notifications.deadlineHint')}
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-bold text-muted-foreground bg-muted dark:bg-zinc-800 px-2.5 py-1 rounded-full">
                         {t('notifications.eventCount', { count: filteredOfficial.length })}
                       </span>
                     </div>
@@ -886,7 +886,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                               </span>
                             </div>
 
-                            <div className="h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden mb-3">
+                            <div className="h-1.5 w-full rounded-full bg-muted dark:bg-zinc-800 overflow-hidden mb-3">
                               <div
                                 className="h-full bg-blue-600 rounded-full transition-all duration-500"
                                 style={{ width: `${Math.min(100, Math.max(0, overview.completionRate))}%` }}
@@ -900,10 +900,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </div>
 
                           <div className="mt-3 pt-2.5 flex items-center justify-between text-[11px]">
-                            <span className={cn('font-semibold', overview.toPrintCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500')}>
+                            <span className={cn('font-semibold', overview.toPrintCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
                               {overview.toPrintCount > 0 ? t('notifications.toPrint', { count: overview.toPrintCount }) : t('notifications.printUpToDate')}
                             </span>
-                            <span className="text-zinc-400 text-[10px]">
+                            <span className="text-muted-foreground text-[10px]">
                               {overview.lastPrintedAt ? t('notifications.printedAgo', { when: timeAgo(overview.lastPrintedAt, locale) }) : t('notifications.notPrinted')}
                             </span>
                           </div>
@@ -936,8 +936,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           className={cn(
                             'px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer',
                             activityFilter === filter
-                              ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs'
-                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+                              ? 'bg-foreground text-background dark:text-zinc-900 shadow-2xs'
+                              : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground hover:bg-muted'
                           )}
                         >
                           {t(`notifications.activityFilter.${filter}`)}
@@ -957,12 +957,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             <div className="border-b border-border/55 bg-secondary/45 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                               {day.label}
                             </div>
-                            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            <div className="divide-y divide-border/70">
                               {day.entries.map((entry, index) => (
                                 <button
                                   key={`${entry.classId}-${entry.at}-${index}`}
                                   onClick={() => openClassById(entry.classId)}
-                                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-muted dark:hover:bg-zinc-850 transition-colors cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
                                     <ClassIdentityIcon classInfo={classById.get(entry.classId)} fallback={History} compact />
@@ -972,7 +972,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                           {opLabel(entry.op, locale)}
                                         </span>
                                         {entry.count > 1 && (
-                                          <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.2 text-[9px] font-bold text-zinc-600 dark:text-zinc-400">
+                                          <span className="rounded bg-muted dark:bg-zinc-800 px-1.5 py-0.2 text-[9px] font-bold text-muted-foreground dark:text-muted-foreground">
                                             ×{entry.count}
                                           </span>
                                         )}
@@ -983,7 +983,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-[10px] font-mono text-zinc-400 shrink-0">
+                                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">
                                     {timeRangeLabel(entry, locale)}
                                   </span>
                                 </button>

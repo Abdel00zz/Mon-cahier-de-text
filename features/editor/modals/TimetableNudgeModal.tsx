@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { CalendarRange } from '@/components/ui/icons';
+import { LangToggle, useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
 
 interface TimetableNudgeModalProps {
   isOpen: boolean;
@@ -12,20 +13,11 @@ interface TimetableNudgeModalProps {
   classLabel: string;
 }
 
-type Lang = 'fr' | 'ar';
 /** même clé que le guide et le démarrage : préférence de langue PARTAGÉE */
 const LANG_KEY = 'guide_lang_v1';
 
-const readLang = (): Lang => {
-  try {
-    return localStorage.getItem(LANG_KEY) === 'ar' ? 'ar' : 'fr';
-  } catch {
-    return 'fr';
-  }
-};
-
 /** Textes chaleureux, dans les deux langues de l'enseignant marocain. */
-const TEXTS: Record<Lang, {
+const TEXTS: Record<ModalLang, {
   title: string;
   message: (classLabel: string) => string;
   benefits: string;
@@ -61,18 +53,9 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
   onFill,
   classLabel,
 }) => {
-  const [lang, setLangState] = useState<Lang>(readLang);
+  const { lang, setLang } = useModalLang(LANG_KEY, 'fr');
   const t = TEXTS[lang];
   const isAr = lang === 'ar';
-
-  const setLang = (next: Lang) => {
-    setLangState(next);
-    try {
-      localStorage.setItem(LANG_KEY, next);
-    } catch {
-      // stockage indisponible : le choix vaut pour cette session
-    }
-  };
 
   return (
     <Modal
@@ -88,21 +71,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       <div className="flex flex-col items-center gap-4 py-2 text-center">
         {/* Bascule de langue, discrète, en tête */}
         <div className="flex w-full justify-end">
-          <div className="inline-flex rounded-full border border-zinc-200 bg-zinc-100 p-0.5">
-            {(['fr', 'ar'] as const).map(l => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLang(l)}
-                aria-pressed={lang === l}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold transition-all ${
-                  lang === l ? 'bg-white text-zinc-800 shadow-xs border border-zinc-200/50 font-extrabold' : 'text-zinc-500 hover:text-zinc-800'
-                }`}
-              >
-                {l === 'fr' ? 'FR' : 'ع'}
-              </button>
-            ))}
-          </div>
+          <LangToggle lang={lang} onChange={setLang} />
         </div>
 
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 shadow-xs">
@@ -110,8 +79,8 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
         </span>
 
         <div dir={isAr ? 'rtl' : 'ltr'} className={isAr ? 'font-ar' : ''}>
-          <p className="text-sm leading-relaxed text-zinc-500">{t.message(classLabel)}</p>
-          <p className="mt-3 text-[11px] font-bold text-zinc-500">{t.benefits}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{t.message(classLabel)}</p>
+          <p className="mt-3 text-[11px] font-bold text-muted-foreground">{t.benefits}</p>
         </div>
 
         <Button
@@ -126,7 +95,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
         <button
           type="button"
           onClick={onSkip}
-          className="pb-1 text-xs font-semibold text-zinc-400 hover:text-zinc-700 transition-colors"
+          className="pb-1 text-xs font-semibold text-zinc-400 hover:text-foreground transition-colors"
         >
           {t.skip}
         </button>

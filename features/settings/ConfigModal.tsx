@@ -167,12 +167,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
-  const sectionTitleClass = isRtl ? 'font-ar-display text-xl leading-tight' : 'font-display';
+  const sectionTitleClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
 
   const languageSection = (
     <section className="rounded-xl border border-border/75 bg-secondary/45 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
       <div className="mb-3 min-w-0 sm:mb-0">
-        <h3 className="text-sm font-extrabold text-foreground font-display">{t('language.settings.title')}</h3>
+        <h3 className="text-sm font-extrabold text-foreground">{t('language.settings.title')}</h3>
         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
       </div>
       <div className="grid grid-cols-3 gap-2 sm:w-[320px] sm:shrink-0">
@@ -191,10 +191,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   : 'border-border/80 bg-card/90 text-muted-foreground hover:border-primary/25 hover:bg-accent/70 hover:text-foreground'
               )}
             >
-              <span className={cn('text-sm font-extrabold leading-none', option.value === 'ar' && 'font-ar')}>
+              <span className={cn('text-sm font-extrabold leading-none', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[10px] font-semibold', option.value === 'ar' && 'font-ar')}>
+              <span className={cn('text-[10px] font-semibold', option.value === 'ar' && 'tracking-normal')}>
                 {option.nativeName}
               </span>
             </button>
@@ -332,13 +332,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                         className={cn(
                           'group relative flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 text-start transition-all duration-200 outline-none',
                           active
-                            ? 'border-[#0b57d0] bg-[#e8f0fe] text-[#001d35] font-semibold dark:border-[#a8c7fa] dark:bg-[#004a77]/60 dark:text-[#c2e7ff]'
-                            : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-300 dark:hover:bg-slate-800'
+                            ? 'border-primary bg-primary/10 text-primary font-semibold'
+                            : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted'
                         )}
                       >
                         <div className={cn(
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
-                          active ? 'bg-[#0b57d0] text-white dark:bg-[#a8c7fa] dark:text-[#001d35]' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                         )}>
                           <c.icon className="h-5 w-5" />
                         </div>
@@ -400,7 +400,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground font-display mb-1">{t('settings.exportTitle')}</h4>
+                  <h4 className="text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                     {t('settings.exportDescription')}
                   </p>
@@ -417,7 +417,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
               <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground font-display mb-1">{t('settings.importTitle')}</h4>
+                  <h4 className="text-sm font-bold text-foreground font-bold tracking-tight mb-1">{t('settings.importTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                     {t('settings.importDescription')}
                   </p>
@@ -471,14 +471,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.055] to-cyan-50/55 p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shrink-0">
                     <CircleCheck className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-extrabold text-blue-950 dark:text-blue-200 font-display">
+                    <h3 className="text-sm font-extrabold text-primary">
                       {t('settings.support.planTitle')}
                     </h3>
-                    <p className="text-xs text-blue-700/80 dark:text-blue-300/80">
+                    <p className="text-xs text-primary/80">
                       {t('settings.support.planDescription')}
                     </p>
                   </div>
@@ -577,10 +577,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted/40 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/50"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/40 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/50"
           title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
-          <ChevronRight className={cn("h-2.5 w-2.5 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
+          <ChevronRight className={cn("h-3 w-3 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
         </button>
       </div>
 
@@ -685,11 +685,11 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   // Vue Plein Écran (`asPage`)
   if (asPage) {
     return (
-      <div className="rtl-flow app-canvas min-h-screen safe-bottom">
+      <div className="rtl-flow min-h-screen pb-[env(safe-area-inset-bottom,1rem)]">
         <main className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-6 pb-8">
           <div className="mb-4 flex items-center gap-2 px-1 text-foreground sm:mb-5">
             <Settings className="h-4.5 w-4.5 text-primary" />
-            <h1 className={cn('font-extrabold tracking-tight', isRtl ? 'font-ar-display text-2xl leading-none' : 'font-display text-lg')}>
+            <h1 className={cn('font-extrabold tracking-tight', isRtl ? 'font-bold tracking-normal text-2xl leading-none' : 'text-lg')}>
               {t('settings.title')}
             </h1>
           </div>

@@ -407,14 +407,14 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
               {t('calendar.today')}
             </button>
             <div className="min-w-0 ps-1">
-              <h3 className="truncate font-display text-base font-extrabold capitalize tracking-tight text-foreground sm:text-lg">{monthLabel}</h3>
+              <h3 className="truncate text-base font-extrabold capitalize tracking-tight text-foreground sm:text-lg">{monthLabel}</h3>
               <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
                 {monthSummaryLabel(monthLessonCount, monthMilestoneCount)}
               </p>
             </div>
           </div>
 
-          <div className="no-scrollbar -mx-0.5 flex gap-1 overflow-x-auto px-0.5 pb-0.5" role="tablist" aria-label={t('calendar.layers')}>
+          <div className="[@scrollbar-width:none] -mx-0.5 flex gap-1 overflow-x-auto px-0.5 pb-0.5" role="tablist" aria-label={t('calendar.layers')}>
             {layers.map(item => (
               <button
                 key={item.id}

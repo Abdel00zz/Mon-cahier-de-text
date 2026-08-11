@@ -41,7 +41,7 @@ const EditableHeader: React.FC<{ value: string; displayValue?: string; onSave: (
       onBlur={handleBlur}
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
-      className={`inline-block -mx-1.5 -my-0.5 rounded-md px-1.5 py-0.5 text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-ar' : 'font-display'}`}
+      className={`inline-block -mx-1.5 -my-0.5 rounded-md px-1.5 py-0.5 text-primary hover:bg-primary/5 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-bold tracking-tight'}`}
     >
       {displayValue}
     </span>
@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
     <div className="rtl-flow group relative mb-2 mt-1 px-0 py-2 sm:mt-2 sm:py-3">
       <div className="flex items-start gap-2.5 sm:gap-4">
         <header className="min-w-0 flex-1 text-start">
-          <h1 className="flex min-w-0 items-center justify-start text-start font-display text-lg font-black leading-tight tracking-[-0.035em] text-foreground sm:text-2xl">
+          <h1 className="flex min-w-0 items-center justify-start text-start font-bold tracking-tight text-lg font-black leading-tight tracking-[-0.035em] text-foreground sm:text-2xl">
             <EditableHeader
               value={classInfo.name}
               displayValue={formatClassDisplayName(classInfo.name)}

@@ -80,7 +80,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
     return (
         <form
             ref={rootRef}
-            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-slate-200 bg-white p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-fade-in md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
+            className="relative mx-1.5 my-1.5 grid gap-2.5 overflow-hidden rounded-lg border border-border bg-card p-2.5 pl-3 shadow-[0_4px_16px_rgba(15,23,42,0.08)] animate-in fade-in duration-200 md:grid-cols-[minmax(8rem,0.16fr)_1fr_minmax(8rem,0.16fr)]"
             style={{ borderColor: `${accentColor}66` }}
             onSubmit={handleSave}
             onClick={e => e.stopPropagation()}
@@ -198,17 +198,17 @@ const TableHeader: React.FC = React.memo(() => {
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-white/65 bg-white/[0.52] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.42] md:block">
+  <div className="hidden border-b border-white/65 bg-card/[0.52] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.42] md:block">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-r border-white/65 px-2.5 py-2.5 text-center dark:border-white/10">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">{t('editor.date')}</span>
+        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-r border-white/65 px-3 py-2.5 text-center dark:border-white/10">
-        <span className="font-compact text-[11px] font-black uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.content')}</span>
+        <span className="font-sans text-xs text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
-        <span className="font-compact text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">{t('editor.remark')}</span>
+        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -309,7 +309,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         ? 'border-r border-primary/45'
         : hasWarning
             ? 'border-r border-warning/45'
-            : 'border-r border-slate-200/90';
+            : 'border-r border-border/90';
 
     const saveSharedRemark = (value: string) => {
         items.forEach(item => onCellUpdate(item.indices, 'remark', value));
@@ -321,14 +321,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 `group relative grid ${TABLE_GRID_CLASS} border-y border-white/60 transition-colors duration-200 dark:border-white/10`,
                 hasWarning
                     ? 'border-warning/[0.5] bg-warning/[0.07]'
-                    : 'bg-white/[0.18] dark:bg-slate-950/[0.14]',
+                    : 'bg-card/[0.18] dark:bg-slate-950/[0.14]',
                 groupIsSelected ? 'bg-primary/[0.085]' : '',
-                groupIsNew ? 'new-item-highlight' : '',
             ].filter(Boolean).join(' ')}
         >
             {/* Rail latéral supprimé selon la demande */}
 
-        <div className={`flex min-h-[56px] min-w-0 items-center justify-center self-stretch px-1.5 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-white/[0.32] dark:bg-slate-950/[0.25]'}`}>
+        <div className={`flex min-h-[56px] min-w-0 items-center justify-center self-stretch px-1.5 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-card/[0.32] dark:bg-slate-950/[0.25]'}`}>
                 <DateCard dateStr={date} hasWarning={hasWarning} />
             </div>
 
@@ -361,7 +360,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className={`hidden min-w-0 self-stretch p-1 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-white/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
+            <div className={`hidden min-w-0 self-stretch p-1 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
@@ -404,7 +403,7 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-br from-white via-white to-primary/[0.045] px-5 py-12 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:px-8 sm:py-14">
+        <section className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.045] px-5 py-12 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:px-8 sm:py-14">
             <div aria-hidden="true" className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-primary/[0.055] blur-2xl" />
             <div aria-hidden="true" className="absolute -bottom-24 -left-12 h-40 w-40 rounded-full bg-primary/[0.035] blur-2xl" />
             <div className="relative mx-auto flex max-w-xl flex-col items-center text-center">
@@ -412,17 +411,17 @@ const EmptyState: React.FC<{
                     src="/icons/icon-192.png"
                     alt=""
                     aria-hidden="true"
-                    className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-white"
+                    className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-border"
                 />
                 <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">{t('emptyNotebook.label')}</p>
-                <p className="mt-3 max-w-md text-base leading-7 text-slate-700">
+                <p className="mt-3 max-w-md text-base leading-7 text-foreground">
                     {canLoadPredefined ? (
                         <>
-                            <strong className="font-bold text-slate-950">{t('emptyNotebook.programAvailable')}</strong> {t('emptyNotebook.programHint')}
+                            <strong className="font-bold text-foreground">{t('emptyNotebook.programAvailable')}</strong> {t('emptyNotebook.programHint')}
                         </>
                     ) : (
                         <>
-                            {t('emptyNotebook.createPrefix')} <strong className="font-bold text-slate-950">{t('emptyNotebook.firstChapter')}</strong> {t('emptyNotebook.createSuffix')}
+                            {t('emptyNotebook.createPrefix')} <strong className="font-bold text-foreground">{t('emptyNotebook.firstChapter')}</strong> {t('emptyNotebook.createSuffix')}
                         </>
                     )}
                 </p>
@@ -433,7 +432,7 @@ const EmptyState: React.FC<{
                             {t('emptyNotebook.importProgram')}
                         </Button>
                     )}
-                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{t('emptyNotebook.or')}</span>}
+                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{t('emptyNotebook.or')}</span>}
                     <Button
                         type="button"
                         onClick={() => onOpenAddContentModal()}
@@ -641,7 +640,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
     <Card
       data-editor-table
-      className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-white/65 bg-white/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.52] sm:rounded-[24px]"
+      className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-white/65 bg-card/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.52] sm:rounded-[24px]"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

@@ -107,19 +107,19 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
+    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-2 z-[50] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-border bg-card/95 px-2 py-1.5 shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur-md print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2.5">
       <div className="flex min-w-0 items-center justify-start gap-2">
         <SyncStatusBadge />
       </div>
       
-      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 sm:flex">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-md text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:opacity-30">
+      <div className="hidden items-center justify-center gap-0.5 rounded-lg border border-border bg-muted p-0.5 sm:flex">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-md text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">
           <Undo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-md text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-md text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">
           <Redo2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-md text-zinc-500 hover:bg-white hover:text-zinc-800 disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-md text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">
           <Save className="h-4 w-4" />
         </Button>
       </div>
@@ -133,29 +133,29 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label={t('toolbar.search')}
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel toolbar-search-panel-mobile"
-            className={`relative h-8 w-8 rounded-md border transition-all duration-150 ${searchQuery ? 'border-zinc-300 bg-zinc-100 text-zinc-800 font-bold' : 'border-transparent text-zinc-500 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-800'}`}
+            className={`relative h-8 w-8 rounded-md border transition-all duration-150 ${searchQuery ? 'border-border bg-muted text-foreground font-bold' : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
           >
             <Search className="h-4 w-4" />
-            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-zinc-800" />}
+            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-foreground" />}
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
-            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-2.5 pb-2 bg-white/98 backdrop-blur border-b border-zinc-200 shadow-md animate-slide-in-down" id="toolbar-search-panel-mobile">
+            <div className="sm:hidden fixed top-0 left-0 right-0 z-30 px-3 pt-2.5 pb-2 bg-card/98 backdrop-blur border-b border-border shadow-md animate-in slide-in-from-top-4 fade-in duration-200" id="toolbar-search-panel-mobile">
               <div className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-zinc-400" />
+                <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
                   type="search"
                   placeholder={t('toolbar.searchPlaceholder')}
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
-                  className="flex-1 h-8 text-xs rounded-md border-zinc-200 focus:border-zinc-300 focus:ring-0 focus:outline-none"
+                  className="flex-1 h-8 text-xs rounded-md border-border focus:border-border focus:ring-0 focus:outline-none"
                 />
                 {localSearch && (
                   <button 
                     type="button" 
                     onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
-                    className="w-8 h-8 flex items-center justify-center rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-zinc-800 transition-all duration-150"
+                    className="w-8 h-8 flex items-center justify-center rounded bg-muted hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-150"
                     aria-label={t('toolbar.clearSearch')}
                   >
                     <X className="h-4 w-4" />
@@ -164,7 +164,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 <button
                   type="button"
                   onClick={() => setIsSearchVisible(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-all duration-150"
+                  className="w-8 h-8 flex items-center justify-center rounded bg-muted hover:bg-muted text-foreground transition-all duration-150"
                   aria-label={t('toolbar.closeSearch')}
                 >
                   <ChevronUp className="h-4 w-4" />
@@ -184,7 +184,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 placeholder={t('toolbar.searchPlaceholder')}
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                className="rounded-md h-8 text-xs px-2.5 border-zinc-200 focus:border-zinc-300 focus:ring-0"
+                className="rounded-md h-8 text-xs px-2.5 border-border focus:border-border focus:ring-0"
               />
             </div>
           </div>
@@ -195,14 +195,14 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-8 w-8 cursor-pointer rounded-md border border-zinc-200 bg-white text-zinc-500 shadow-none transition-all hover:bg-zinc-50 hover:text-zinc-800"
+              className="relative h-8 w-8 cursor-pointer rounded-md border border-border bg-card text-muted-foreground shadow-none transition-all hover:bg-muted hover:text-foreground"
               aria-label={t('toolbar.actionsMenu')}
             >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align="end" className="z-[70] w-56 rounded-lg border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-100/50">
-            <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400">
+          <DropdownMenuContent data-editor-actions align="end" className="z-[70] w-56 rounded-lg border border-border bg-card p-1 shadow-lg shadow-zinc-100/50">
+            <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
               {t('toolbar.actions')}
             </DropdownMenuLabel>
 
@@ -211,50 +211,50 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
 
             {/* On mobile screens, show undo/redo/save inside the menu */}
             <div className="sm:hidden">
-              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-                <Undo2 className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+                <Undo2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="font-semibold">{t('toolbar.undo')}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-                <Redo2 className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+                <Redo2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="font-semibold">{t('toolbar.redo')}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-                <Save className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+                <Save className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="font-semibold">{t('toolbar.save')}</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-1 border-t border-zinc-100" />
+              <DropdownMenuSeparator className="my-1 border-t border-border/70" />
             </div>
 
-            <DropdownMenuItem onClick={onOpenEvaluations} className="flex cursor-pointer items-center gap-2 rounded-md border border-zinc-200/50 bg-zinc-50 px-2.5 py-1.5 text-xs text-zinc-800 transition-colors duration-150 hover:bg-zinc-100/75 focus:bg-zinc-100/75">
-              <CalendarCheck className="h-4 w-4 text-zinc-600 shrink-0" />
+            <DropdownMenuItem onClick={onOpenEvaluations} className="flex cursor-pointer items-center gap-2 rounded-md border border-border/50 bg-muted px-2.5 py-1.5 text-xs text-foreground transition-colors duration-150 hover:bg-muted/75 focus:bg-muted/75">
+              <CalendarCheck className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="font-bold">{t('toolbar.evaluations')}</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-1 border-t border-zinc-100" />
+            <DropdownMenuSeparator className="my-1 border-t border-border/70" />
             
-            <DropdownMenuItem onClick={onOpenDataTransfer} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <Database className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <DropdownMenuItem onClick={onOpenDataTransfer} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+              <Database className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="font-semibold">{t('toolbar.data')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenManageLessons} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <ListChecks className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <DropdownMenuItem onClick={onOpenManageLessons} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+              <ListChecks className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="font-semibold">{t('toolbar.contents')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenAnalyse} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <PieChart className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <DropdownMenuItem onClick={onOpenAnalyse} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+              <PieChart className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="font-semibold">{t('toolbar.progress')}</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="my-1 border-t border-zinc-100" />
-            <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-zinc-400">
+            <DropdownMenuSeparator className="my-1 border-t border-border/70" />
+            <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
               {t('toolbar.document')}
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={onPrint} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <Printer className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <DropdownMenuItem onClick={onPrint} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+              <Printer className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="font-semibold">{t('toolbar.print')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenGuide} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900">
-              <CircleHelp className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <DropdownMenuItem onClick={onOpenGuide} className="flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">
+              <CircleHelp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <span className="font-semibold">{t('toolbar.help')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>

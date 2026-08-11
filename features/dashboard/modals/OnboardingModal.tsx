@@ -9,19 +9,10 @@ import { ScheduleTab } from '@/features/settings/components/ScheduleTab';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { Bell, GraduationCap, School, FlaskConical, Trash2, Plus, ChevronRight, ChevronLeft } from '@/components/ui/icons';
+import { LangToggle, useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
 import { cn } from '@/lib/utils';
 
-type Lang = 'fr' | 'ar';
 const LANG_KEY = 'onboarding_lang_v1';
-
-const readLang = (): Lang => {
-    try {
-        if (document.documentElement.lang === 'ar') return 'ar';
-        return localStorage.getItem(LANG_KEY) === 'ar' ? 'ar' : 'fr';
-    } catch {
-        return typeof document !== 'undefined' && document.documentElement.lang === 'ar' ? 'ar' : 'fr';
-    }
-};
 
 interface OnboardingModalProps {
     isOpen: boolean;
@@ -32,6 +23,8 @@ interface OnboardingModalProps {
     classes: ClassInfo[];
     onCreateClass: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
     onOpenNotebook: (classInfo: ClassInfo) => void;
+    /** Page pleine (premier démarrage) plutôt que modale superposée. */
+    asPage?: boolean;
 }
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -50,7 +43,7 @@ const LEVEL_GROUPS: Record<Cycle, { key: 'college' | 'common' | 'firstBac' | 'se
     prepa: [{ key: 'prepa', levels: CLASS_LEVELS_BY_CYCLE.prepa }],
 };
 
-const TEXTS: Record<Lang, {
+const TEXTS: Record<ModalLang, {
     title: string;
     subtitle: string;
     start: string;
@@ -182,21 +175,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     classes,
     onCreateClass,
     onOpenNotebook,
+    asPage = false,
 }) => {
-    const [lang, setLangState] = useState<Lang>(readLang);
+    const { lang, setLang } = useModalLang(LANG_KEY, 'fr', { preferDocumentLang: true });
     const [finishing, setFinishing] = useState(false);
     const [step, setStep] = useState(1);
-    
+
     const isAr = lang === 'ar';
     const t = TEXTS[lang];
     const iosNeedsInstall = typeof navigator !== 'undefined'
         && /iphone|ipad|ipod/i.test(navigator.userAgent)
         && !(window.matchMedia?.('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone === true);
-
-    const setLang = (next: Lang) => {
-        setLangState(next);
-        try { localStorage.setItem(LANG_KEY, next); } catch { /* stockage indisponible */ }
-    };
 
     const hasClasses = classes.length > 0;
     const cycle: Cycle = (config.selectedCycles?.[0] as Cycle) ?? 'lycee';
@@ -292,7 +281,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     const renderStepIndicators = () => (
         <div className="mb-4 flex items-center gap-1.5" aria-label={t.step(step, 3)}>
             {[1, 2, 3].map(i => (
-                <div key={i} className={`h-1 flex-1 rounded-sm transition-colors duration-200 ${step >= i ? 'bg-[#0056D2]' : 'bg-muted'}`} />
+                <div key={i} className={`h-1 flex-1 rounded-sm transition-colors duration-200 ${step >= i ? 'bg-primary' : 'bg-muted'}`} />
             ))}
         </div>
     );
@@ -304,7 +293,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             hideClose={true}
             maxWidth="4xl"
             className="flex max-h-[94dvh] flex-col overflow-hidden rounded-t-xl sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-xl shadow-2xl"
-            bodyClassName="custom-scrollbar overflow-y-auto !px-4 !py-4 sm:!px-6 sm:!py-5"
+            bodyClassName="overflow-y-auto !px-4 !py-4 sm:!px-6 sm:!py-5"
             footerClassName="!flex-row !items-center !justify-between border-t border-border/60 bg-card/90 backdrop-blur-md !px-4 !py-3 sm:!px-6 sm:!py-3.5"
             footer={
                 <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full items-center justify-between gap-3">
@@ -323,7 +312,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                             type="button"
                             size="sm"
                             disabled={step === 1 ? !isStep1Valid : !isStep2Valid}
-                            className="h-9 px-4 text-xs font-semibold bg-[#0056D2] hover:bg-[#0047b3] text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                            className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                             onClick={() => setStep(current => current + 1)}
                         >
                             {t.next}
@@ -333,7 +322,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                         <Button
                             type="button"
                             size="sm"
-                            className="h-9 px-4 text-xs font-semibold bg-[#0056D2] hover:bg-[#0047b3] text-white disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                            className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                             disabled={!hasClasses || finishing}
                             onClick={async () => {
                                 if (finishing) return;
@@ -354,35 +343,26 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
             }
         >
-            <div dir={isAr ? 'rtl' : 'ltr'} className={`flex h-full flex-col ${isAr ? 'font-ar' : ''} text-left`}>
+            <div dir={isAr ? 'rtl' : 'ltr'} className="flex h-full flex-col text-left">
                 
                 <div className="mb-3 flex w-full items-start justify-between gap-4">
                     <div>
                         <h2 className="text-lg font-bold tracking-tight text-foreground">{t.title}</h2>
                         <p className="mt-0.5 text-xs text-muted-foreground">{t.subtitle}</p>
                     </div>
-                    <div className="flex shrink-0 items-center rounded-lg border border-border bg-muted/50 p-0.5">
-                        {(['fr', 'ar'] as const).map(l => (
-                            <button
-                                key={l}
-                                type="button"
-                                onClick={() => setLang(l)}
-                                aria-pressed={lang === l}
-                                className={`cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
-                                    lang === l ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                            >
-                                {l === 'fr' ? 'FR' : 'العربية'}
-                            </button>
-                        ))}
-                    </div>
+                    <LangToggle
+                        lang={lang}
+                        onChange={setLang}
+                        labels={{ fr: 'FR', ar: 'العربية' }}
+                        className="rounded-lg"
+                    />
                 </div>
 
                 {renderStepIndicators()}
 
                 <div className="flex-1">
                     {step === 1 && (
-                        <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="space-y-5 animate-fade-in duration-300">
                             <div>
                                 <h3 className="mb-3 text-sm font-semibold">{t.sectionProfile}</h3>
                                 <div className="grid max-w-xl gap-3 sm:grid-cols-2">
@@ -411,7 +391,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                             </div>
                             
                             <div>
-                                <label className="mb-2.5 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t.teachingCycle}</label>
+                                <label className="mb-2.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.teachingCycle}</label>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {CYCLES.map(c => {
                                         const active = cycle === c.key;
@@ -423,21 +403,21 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                                 className={cn(
                                                     'group relative flex min-h-[72px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-3.5 text-start transition-all duration-200 outline-none',
                                                     active
-                                                        ? 'border-[#0b57d0] bg-[#e8f0fe] text-[#001d35] shadow-xs dark:border-[#a8c7fa] dark:bg-[#004a77]/60 dark:text-[#c2e7ff]'
-                                                        : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-[#1e1f20] dark:text-slate-300 dark:hover:bg-slate-800'
+                                                        ? 'border-primary bg-primary/10 text-primary shadow-xs'
+                                                        : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted'
                                                 )}
                                             >
                                                 <div className={cn(
                                                     'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105',
                                                     active
-                                                        ? 'bg-[#0b57d0] text-white dark:bg-[#a8c7fa] dark:text-[#001d35]'
-                                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'bg-muted text-muted-foreground'
                                                 )}>
                                                     <c.icon className="h-6 w-6" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <span className="block text-sm font-bold leading-tight">{t.cycleLabels[c.key]}</span>
-                                                    <span className="mt-0.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                    <span className="mt-0.5 block text-[11px] font-medium text-muted-foreground">
                                                         {c.key === 'college' ? (isAr ? 'من الأولى إلى الثالثة إعدادي' : '1AC à 3AC') : c.key === 'lycee' ? (isAr ? 'الجذع المشترك والبكالوريا' : 'TC, 1BAC, 2BAC') : (isAr ? 'الأقسام التحضيرية للمدارس العليا' : 'CPGE (1ère & 2ème année)')}
                                                     </span>
                                                 </div>
@@ -450,11 +430,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     )}
 
                     {step === 2 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="space-y-4 animate-fade-in duration-300">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-semibold">{t.sectionClasses}</h3>
                                 {hasClasses && (
-                                    <span className="rounded-md bg-blue-50 px-2 py-1 text-[11px] font-medium text-[#0056D2] dark:bg-blue-900/20">
+                                    <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
                                         {t.addedClasses(classes.length)}
                                     </span>
                                 )}
@@ -483,7 +463,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                     {rows.map((row, index) => (
                                         <div key={index} className="space-y-1">
                                             <div className="grid grid-cols-[1.5rem_minmax(0,1fr)_6.5rem_auto] items-center gap-2">
-                                                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-50 text-[10px] font-bold text-[#0056D2]">
+                                                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary">
                                                     {index + 1}
                                                 </span>
                                                 <Select
@@ -547,7 +527,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                         type="button" 
                                         variant="outline" 
                                         size="sm"
-                                        className="h-8 border-blue-200 px-2.5 text-xs text-[#0056D2] hover:bg-blue-50 dark:border-blue-900/50 dark:hover:bg-blue-900/20"
+                                        className="h-8 border-primary/30 px-2.5 text-xs text-primary hover:bg-primary/10"
                                         onClick={() => setRows(prev => [...prev, { level: prev[prev.length - 1]?.level || defaultLevel, group: '' }])}
                                     >
                                         <Plus className={isAr ? 'ml-1 h-3.5 w-3.5' : 'mr-1 h-3.5 w-3.5'} />
@@ -557,7 +537,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                     <Button 
                                         type="button" 
                                         size="sm"
-                                        className="h-8 bg-[#0056D2] px-3 text-xs text-white hover:bg-[#0047b3]"
+                                        className="h-8 bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90"
                                         onClick={createBatch} 
                                         disabled={!canCreateBatch}
                                     >
@@ -569,7 +549,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     )}
 
                     {step === 3 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="space-y-4 animate-fade-in duration-300">
                             <h3 className="text-sm font-semibold">{t.sectionSchedule}</h3>
                             <div className="overflow-hidden rounded-lg border border-border bg-background text-sm">
                                 <ScheduleTab
@@ -584,7 +564,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                             </div>
                             
                             <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/50 p-2.5">
-                                <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0056D2]" />
+                                <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                                 <p className="text-[11px] leading-relaxed text-foreground">
                                     {iosNeedsInstall ? t.notificationsIOS : t.notifications}
                                 </p>

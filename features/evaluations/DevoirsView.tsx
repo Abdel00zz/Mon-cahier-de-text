@@ -19,13 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Modal } from '@/components/ui/modal';
 import {
   CalendarCheck,
   Check,
@@ -206,7 +200,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 mb-4">
           <CalendarCheck className="h-6 w-6" />
         </div>
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{t('evaluations.createClass')}</h3>
+        <h3 className="text-base font-bold text-foreground dark:text-zinc-100">{t('evaluations.createClass')}</h3>
         <p className="mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
           {t('evaluations.createClassHint')}
         </p>
@@ -381,7 +375,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 rounded-lg border bg-white/45 px-2 text-[10px] font-semibold text-zinc-900 backdrop-blur-md dark:bg-zinc-800/70 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+                                        'h-8 rounded-lg border bg-white/45 px-2 text-[10px] font-semibold text-foreground backdrop-blur-md dark:bg-zinc-800/70 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
                                         custom ? 'border-blue-600 font-bold text-blue-600 dark:text-blue-400' : 'border-zinc-200 dark:border-zinc-700'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
@@ -411,62 +405,70 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       </div>
 
-      {/* Add Pedagogical Event Modal Sheet */}
-      <Sheet open={eventEditorOpen} onOpenChange={setEventEditorOpen}>
-        <SheetContent
-          side="bottom"
-          className="max-h-[90dvh] overflow-y-auto custom-scrollbar rounded-t-3xl border-t p-6 sm:mx-auto sm:max-w-lg"
-        >
-          {selectedClass && (
-            <PedagogicalEventEditor
-              className={selectedClassDisplayName}
-              today={today}
-              onCancel={() => setEventEditorOpen(false)}
-              onSave={addPedagogicalEvent}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* Add Pedagogical Event */}
+      <Modal
+        isOpen={eventEditorOpen}
+        onClose={() => setEventEditorOpen(false)}
+        maxWidth="md"
+        title={t('evaluations.addActivity')}
+        description={selectedClass ? t('evaluations.teacherEvent', { className: selectedClassDisplayName }) : undefined}
+      >
+        {selectedClass && (
+          <PedagogicalEventEditor
+            className={selectedClassDisplayName}
+            today={today}
+            onCancel={() => setEventEditorOpen(false)}
+            onSave={addPedagogicalEvent}
+          />
+        )}
+      </Modal>
 
-      {/* Absences Editor Modal Sheet */}
-      <Sheet open={absencesFor !== null} onOpenChange={(open) => { if (!open) setAbsencesFor(null); }}>
-        <SheetContent
-          side="bottom"
-          className="max-h-[85dvh] overflow-y-auto custom-scrollbar rounded-t-3xl border-t p-6 sm:mx-auto sm:max-w-lg"
-        >
-          {absencesFor && selectedClass && (
-            <AbsencesEditor
-              key={`${selectedClass.id}-${absencesFor.planned.id}`}
-              link={absencesFor}
-              className={selectedClassDisplayName}
-              initialNames={absencesRecord?.names ?? []}
-              updatedAt={absencesRecord?.updatedAt}
-              onCancel={() => setAbsencesFor(null)}
-              onSave={(names) => {
-                const classId = selectedClass.id;
-                const forClass = { ...(config.assessmentAbsences?.[classId] ?? {}) };
-                if (names.length > 0) {
-                  forClass[absencesFor.planned.id] = { names, updatedAt: new Date().toISOString() };
-                } else {
-                  delete forClass[absencesFor.planned.id];
-                }
-                onConfigChange({
-                  assessmentAbsences: { ...(config.assessmentAbsences ?? {}), [classId]: forClass },
-                });
-                toast.success(
-                  names.length > 0
-                    ? t(names.length === 1 ? 'evaluations.absenceSavedOne' : 'evaluations.absenceSavedMany', {
-                        count: number.format(names.length),
-                        assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
-                      })
-                    : t('evaluations.absenceCleared')
-                );
-                setAbsencesFor(null);
-              }}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* Absences Editor */}
+      <Modal
+        isOpen={absencesFor !== null}
+        onClose={() => setAbsencesFor(null)}
+        maxWidth="md"
+        title={absencesFor && selectedClass
+          ? t('evaluations.absencesTitle', {
+              assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
+            })
+          : undefined}
+        description={absencesFor && selectedClass
+          ? `${selectedClassDisplayName} · ${formatLongDate(absencesFor.planned.dateISO, locale)}${absencesRecord?.updatedAt ? ` · ${t('evaluations.updatedOn', { date: new Date(absencesRecord.updatedAt).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA') })}` : ''}`
+          : undefined}
+      >
+        {absencesFor && selectedClass && (
+          <AbsencesEditor
+            key={`${selectedClass.id}-${absencesFor.planned.id}`}
+            link={absencesFor}
+            className={selectedClassDisplayName}
+            initialNames={absencesRecord?.names ?? []}
+            updatedAt={absencesRecord?.updatedAt}
+            onCancel={() => setAbsencesFor(null)}
+            onSave={(names) => {
+              const classId = selectedClass.id;
+              const forClass = { ...(config.assessmentAbsences?.[classId] ?? {}) };
+              if (names.length > 0) {
+                forClass[absencesFor.planned.id] = { names, updatedAt: new Date().toISOString() };
+              } else {
+                delete forClass[absencesFor.planned.id];
+              }
+              onConfigChange({
+                assessmentAbsences: { ...(config.assessmentAbsences ?? {}), [classId]: forClass },
+              });
+              toast.success(
+                names.length > 0
+                  ? t(names.length === 1 ? 'evaluations.absenceSavedOne' : 'evaluations.absenceSavedMany', {
+                      count: number.format(names.length),
+                      assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
+                    })
+                  : t('evaluations.absenceCleared')
+              );
+              setAbsencesFor(null);
+            }}
+          />
+        )}
+      </Modal>
     </div>
   );
 };
@@ -494,7 +496,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
       <button
         type="button"
         onClick={onAdd}
-        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/60 bg-white/[0.48] px-3 text-[10px] font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/80 hover:text-zinc-900 dark:border-white/10 dark:bg-slate-900/55 dark:text-zinc-300 dark:hover:bg-slate-800"
+        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/60 bg-white/[0.48] px-3 text-[10px] font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/80 hover:text-foreground dark:border-white/10 dark:bg-slate-900/55 dark:text-zinc-300 dark:hover:bg-slate-800"
       >
         <Plus className="h-3.5 w-3.5" /> {t('evaluations.add')}
       </button>
@@ -535,7 +537,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                     </span>
                     {done && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('evaluations.completed')}</span>}
                   </div>
-                  <h4 className={cn('text-xs font-bold text-zinc-900 dark:text-zinc-100', done && 'line-through text-zinc-500')}>
+                  <h4 className={cn('text-xs font-bold text-foreground dark:text-zinc-100', done && 'line-through text-zinc-500')}>
                     {event.title}
                   </h4>
                   <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -614,21 +616,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
   };
 
   return (
-    <div className="space-y-4">
-      <SheetHeader className="text-start">
-        <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('evaluations.addActivity')}</SheetTitle>
-        <SheetDescription className="text-xs text-zinc-500 dark:text-zinc-400">
-          {t('evaluations.teacherEvent', { className })}
-        </SheetDescription>
-      </SheetHeader>
-
+    <div className="space-y-5">
       <div className="space-y-4 pt-2">
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.activityType')}</span>
+          <span className="text-xs font-bold text-foreground">{t('evaluations.activityType')}</span>
           <select
             value={type}
             onChange={(event) => changeType(event.target.value as PedagogicalEventType)}
-            className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
           >
             {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, config]) => (
               <option key={value} value={value}>
@@ -639,14 +634,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.titleLabel')}</span>
+          <span className="text-xs font-bold text-foreground">{t('evaluations.titleLabel')}</span>
           <input
             value={title}
             onChange={(event) => {
               setTitle(event.target.value);
               setError('');
             }}
-            className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
             placeholder={t('evaluations.titlePlaceholder')}
             autoFocus
           />
@@ -654,7 +649,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{t('evaluations.start')}</span>
+            <span className="text-xs font-bold text-foreground">{t('evaluations.start')}</span>
             <input
               type="date"
               value={date}
@@ -662,12 +657,12 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
                 setDate(event.target.value);
                 setError('');
               }}
-              className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100"
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
             />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-              {t('evaluations.end')} <span className="font-normal text-zinc-400">({t('evaluations.optional')})</span>
+            <span className="text-xs font-bold text-foreground">
+              {t('evaluations.end')} <span className="font-normal text-muted-foreground">({t('evaluations.optional')})</span>
             </span>
             <input
               type="date"
@@ -677,26 +672,26 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
                 setEndDate(event.target.value);
                 setError('');
               }}
-              className="h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100"
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
             />
           </label>
         </div>
 
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-            {t('evaluations.note')} <span className="font-normal text-zinc-400">({t('evaluations.optional')})</span>
+          <span className="text-xs font-bold text-foreground">
+            {t('evaluations.note')} <span className="font-normal text-muted-foreground">({t('evaluations.optional')})</span>
           </span>
           <textarea
             value={note}
             onChange={(event) => setNote(event.target.value)}
             rows={3}
-            className="w-full resize-none rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full resize-none rounded-xl border border-border bg-input p-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
             placeholder={t('evaluations.notePlaceholder')}
           />
         </label>
 
         {error && (
-          <div role="alert" className="rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-900/40 p-3 text-xs font-semibold text-red-600 dark:text-red-400">
+          <div role="alert" className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-xs font-semibold text-destructive">
             {error}
           </div>
         )}
@@ -705,14 +700,14 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-10 rounded-xl bg-zinc-900 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm"
+            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
           >
             {t('evaluations.add')}
           </button>
@@ -735,7 +730,6 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
   link,
   className,
   initialNames,
-  updatedAt,
   onCancel,
   onSave,
 }) => {
@@ -758,33 +752,21 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
     setDraft('');
   };
 
-  const effectiveDate = link.entry?.date ?? link.planned.dateISO;
-
   return (
-    <div className="space-y-4">
-      <SheetHeader className="text-start">
-        <SheetTitle className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-          {t('evaluations.absencesTitle', { assessment: t(link.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: link.planned.num }) })}
-        </SheetTitle>
-        <SheetDescription className="text-xs text-zinc-500 dark:text-zinc-400">
-          {className} · {formatLongDate(effectiveDate, locale)}
-          {updatedAt && ` · ${t('evaluations.updatedOn', { date: new Date(updatedAt).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA') })}`}
-        </SheetDescription>
-      </SheetHeader>
-
+    <div className="space-y-5">
       <div className="space-y-4 pt-2">
         {names.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {names.map((name) => (
               <span
                 key={name}
-                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+                className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground"
               >
                 {name}
                 <button
                   type="button"
                   onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
-                  className="rounded-full text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+                  className="rounded-full text-muted-foreground hover:text-destructive transition-colors"
                   aria-label={t('evaluations.removeStudentAria', { name })}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -814,20 +796,20 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             }}
             onBlur={() => commitDraft(draft)}
             placeholder={t('evaluations.studentPlaceholder')}
-            className="h-10 flex-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="h-11 flex-1 rounded-xl border border-border bg-input px-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
             autoFocus
           />
           <button
             type="button"
             onClick={() => commitDraft(draft)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-95"
             aria-label={t('evaluations.addStudentAria')}
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {t('evaluations.pasteHint')}
         </p>
 
@@ -835,14 +817,14 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(names)}
-            className="h-10 rounded-xl bg-zinc-900 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm"
+            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
           >
             {t('common.save')} {names.length > 0 ? `(${new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length)})` : ''}
           </button>

@@ -24,7 +24,7 @@ export const AccountTab: React.FC = () => {
         <div className="space-y-3">
             <div className="rounded-xl border border-border bg-card p-4">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">{t('account.title')}</h4>
-                <p className="mt-2 text-lg font-bold text-foreground font-display">
+                <p className="mt-2 text-lg font-bold text-foreground">
                     {user ? `${user.prenom} ${user.nom}` : t('account.notSignedIn')}
                 </p>
                 {user && <p className="text-sm text-muted-foreground font-sans">{user.phone}</p>}

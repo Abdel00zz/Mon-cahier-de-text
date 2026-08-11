@@ -29,6 +29,7 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
         <Modal
             isOpen
             hideClose
+            blockDismiss
             maxWidth="md"
             title="Direction administrative"
             description="Message réservé à votre établissement"

@@ -155,7 +155,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       <Divider />
 
       {/* Actions groupées par intention */}
-      <div className={`flex items-center gap-1 overflow-x-auto no-scrollbar ${isPending ? 'opacity-60' : ''}`}>
+      <div className={`flex items-center gap-1 overflow-x-auto [@scrollbar-width:none] ${isPending ? 'opacity-60' : ''}`}>
         {groups.map((group, index) => (
           <React.Fragment key={index}>
             {index > 0 && <Divider />}

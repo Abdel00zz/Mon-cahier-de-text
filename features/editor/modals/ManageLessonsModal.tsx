@@ -123,8 +123,8 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         title={t('manageLessons.title')}
         description={t('manageLessons.description')}
         maxWidth="xl"
-        bodyClassName="bg-white"
-        footerClassName="bg-white"
+        bodyClassName="bg-card"
+        footerClassName="bg-card"
         footer={(
           <>
             <Button type="button" onClick={onClose} variant="secondary" className="rounded-lg">
@@ -142,32 +142,32 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         )}
       >
         <div className="space-y-4">
-          <details open className="group overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/55">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-white px-3.5 py-2.5 text-xs font-bold text-zinc-700 transition-colors hover:text-zinc-900 [&::-webkit-details-marker]:hidden">
+          <details open className="group overflow-hidden rounded-xl border border-border bg-muted/55">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-card px-3.5 py-2.5 text-xs font-bold text-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
                 {t('manageLessons.descriptionSettings')}
               </span>
-              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" aria-hidden />
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
             </summary>
             <DescriptionVisibilityControl
               context="screen"
               mode={localDesc.mode}
               types={localDesc.types}
               onChange={setLocalDesc}
-              className="border-0 border-t border-zinc-200 bg-transparent p-3 shadow-none"
+              className="border-0 border-t border-border bg-transparent p-3 shadow-none"
             />
           </details>
 
-          <section className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50/55">
-            <div className="flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-3 py-3 sm:px-4">
+          <section className="overflow-hidden rounded-xl border border-border bg-muted/55">
+            <div className="flex items-center justify-between gap-4 border-b border-border bg-card px-3 py-3 sm:px-4">
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-zinc-800">{t('manageLessons.contents')}</h3>
-                <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-zinc-500">
+                <h3 className="text-sm font-bold text-foreground">{t('manageLessons.contents')}</h3>
+                <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-muted-foreground">
                   {t('manageLessons.orderHint')}
                 </p>
               </div>
-              <span className="shrink-0 font-mono text-[10px] font-bold text-zinc-400">
+              <span className="shrink-0 font-mono text-[10px] font-bold text-muted-foreground">
                 {t('manageLessons.itemsCount', { count: localLessons.length })}
               </span>
             </div>
@@ -195,29 +195,29 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   return (
                     <li
                       key={itemKey(item)}
-                      className="flex items-center gap-2.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-2 shadow-xs transition-colors hover:border-zinc-300 sm:px-3"
+                      className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 shadow-xs transition-colors hover:border-border sm:px-3"
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-100 bg-zinc-50">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted">
                         <itemConfig.icon className={`${itemConfig.color} h-4 w-4`} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-semibold text-zinc-800">
+                        <span className="block truncate text-xs font-semibold text-foreground">
                           <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
                         </span>
-                        <span className="mt-0.5 block truncate text-[9px] font-medium text-zinc-400">
+                        <span className="mt-0.5 block truncate text-[9px] font-medium text-muted-foreground">
                           {t(`manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
                         </span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5">
-                        <span className="flex overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                          <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-11 w-9 rounded-none border-0 p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
-                            <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
+                        <span className="flex overflow-hidden rounded-lg border border-border bg-card">
+                          <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-11 w-9 rounded-none border-0 p-0 hover:bg-muted disabled:opacity-25 sm:h-10 sm:w-10" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
+                            <ArrowUp className="h-3.5 w-3.5 text-muted-foreground" />
                           </Button>
-                          <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-11 w-9 rounded-none border-0 border-s border-zinc-200 p-0 hover:bg-zinc-50 disabled:opacity-25 sm:h-9" title={t('manageLessons.moveDown')} aria-label={t('manageLessons.moveDown')}>
-                            <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
+                          <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-11 w-9 rounded-none border-0 border-s border-border p-0 hover:bg-muted disabled:opacity-25 sm:h-10 sm:w-10" title={t('manageLessons.moveDown')} aria-label={t('manageLessons.moveDown')}>
+                            <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
                           </Button>
                         </span>
-                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-11 w-9 rounded-lg border border-zinc-200 bg-white p-0 text-zinc-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:h-9" title={t('manageLessons.delete')} aria-label={t('manageLessons.delete')}>
+                        <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-11 w-9 rounded-lg border border-border bg-card p-0 text-muted-foreground hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:h-10 sm:w-10" title={t('manageLessons.delete')} aria-label={t('manageLessons.delete')}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </span>
@@ -226,10 +226,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                 })}
               </ul>
             ) : (
-              <div className="m-3 rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-8 text-center">
-                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-zinc-400" />
-                <p className="text-xs font-bold text-zinc-600">{t('manageLessons.emptyTitle')}</p>
-                <p className="mt-1 text-[10px] font-medium text-zinc-400">{t('manageLessons.emptyHint')}</p>
+              <div className="m-3 rounded-lg border border-dashed border-border bg-card px-4 py-8 text-center">
+                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+                <p className="text-xs font-bold text-foreground">{t('manageLessons.emptyTitle')}</p>
+                <p className="mt-1 text-[10px] font-medium text-muted-foreground">{t('manageLessons.emptyHint')}</p>
               </div>
             )}
           </section>

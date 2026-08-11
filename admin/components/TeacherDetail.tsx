@@ -6,6 +6,7 @@ import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
+import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import type { AdminMessage, ClassInfo, ClassSnapshot, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 
 const calendar = getBundledCalendar();
@@ -290,6 +291,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const [className, setClassName] = useState('');
     const [classSubject, setClassSubject] = useState('');
     const [classCycle, setClassCycle] = useState<Cycle>('college');
+    const [confirmAction, setConfirmAction] = useState<{ kind: 'block' | 'deleteAccount' | 'deleteClass'; classInfo?: ClassInfo } | null>(null);
 
     const runAction = async (fn: () => Promise<string>) => {
         setBusy(true);
@@ -318,22 +320,16 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                 : 'Message enregistré. Il s’affichera à la prochaine ouverture de l’application.';
         });
 
-    const handleBlock = () =>
+    const handleBlockConfirmed = () =>
         runAction(async () => {
             const next = !isBlocked;
-            if (!window.confirm(next
-                ? 'Bloquer ce compte ? L’enseignant ne pourra plus se connecter.'
-                : 'Débloquer ce compte ?')) return 'Action annulée.';
             await blockTeacher(phone, next);
             setIsBlocked(next);
             return next ? 'Compte bloqué.' : 'Compte débloqué.';
         });
 
-    const handleDelete = () =>
+    const handleDeleteConfirmed = () =>
         runAction(async () => {
-            if (!window.confirm('SUPPRIMER DÉFINITIVEMENT ce compte et toutes ses données cloud ?\nCette action est irréversible.')) {
-                return 'Suppression annulée.';
-            }
             const result = await deleteTeacher(phone);
             window.setTimeout(onBack, 900);
             return `Compte supprimé (${result.deletedClasses} classe(s) effacée(s)).`;
@@ -395,11 +391,10 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                 : 'Classe mise à jour. Les informations administratives seront appliquées au prochain rafraîchissement.';
         });
 
-    const handleDeleteClass = (classInfo: ClassInfo) =>
+    const handleDeleteClassConfirmed = () => {
+        const classInfo = confirmAction?.classInfo;
+        if (!classInfo) return;
         runAction(async () => {
-            if (!window.confirm(`Supprimer définitivement la classe « ${classInfo.name} » et son cahier cloud ?`)) {
-                return 'Suppression de classe annulée.';
-            }
             await deleteTeacherClass(phone, classInfo.id);
             setData(current => current
                 ? {
@@ -416,6 +411,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             );
             return `Classe « ${classInfo.name} » supprimée.`;
         });
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -473,7 +469,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             {data && (
                 <>
                     <header className="mb-6">
-                        <h1 className="text-2xl font-bold text-foreground font-display">
+                        <h1 className="text-2xl font-bold text-foreground tracking-tight">
                             {data.user?.prenom ?? data.snapshot?.prenom} {data.user?.nom ?? data.snapshot?.nom}
                             {isBlocked && (
                                 <span className="ml-2 rounded-full bg-destructive/15 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-destructive">
@@ -495,14 +491,14 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                 📣 Envoyer un message
                             </button>
                             <button
-                                onClick={handleBlock}
+                                onClick={() => setConfirmAction({ kind: 'block' })}
                                 disabled={busy}
                                 className="h-9 rounded-md border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
                             >
                                 {isBlocked ? '🔓 Débloquer' : '🔒 Bloquer'}
                             </button>
                             <button
-                                onClick={handleDelete}
+                                onClick={() => setConfirmAction({ kind: 'deleteAccount' })}
                                 disabled={busy}
                                 className="h-9 rounded-md border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
                             >
@@ -652,7 +648,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                     </div>
                                                 </div>
                                                 <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
-                                                <button onClick={() => void handleDeleteClass(cls)} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
+                                                <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
                                             </div>
                                         </div>
                                         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -690,6 +686,36 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                     </section>
                 </>
             )}
+
+            <ConfirmDialog
+                open={confirmAction?.kind === 'block'}
+                onOpenChange={open => { if (!open) setConfirmAction(null); }}
+                title={isBlocked ? 'Débloquer ce compte ?' : 'Bloquer ce compte ?'}
+                description={isBlocked
+                    ? 'L’enseignant pourra de nouveau se connecter à l’application.'
+                    : 'L’enseignant ne pourra plus se connecter à l’application.'}
+                confirmLabel={isBlocked ? 'Débloquer' : 'Bloquer'}
+                variant={isBlocked ? 'default' : 'destructive'}
+                onConfirm={handleBlockConfirmed}
+            />
+            <ConfirmDialog
+                open={confirmAction?.kind === 'deleteAccount'}
+                onOpenChange={open => { if (!open) setConfirmAction(null); }}
+                title="Supprimer définitivement ce compte ?"
+                description="Cette action est irréversible : le compte et toutes ses données cloud seront effacés."
+                confirmLabel="Supprimer le compte"
+                onConfirm={handleDeleteConfirmed}
+            />
+            <ConfirmDialog
+                open={confirmAction?.kind === 'deleteClass'}
+                onOpenChange={open => { if (!open) setConfirmAction(null); }}
+                title={confirmAction?.classInfo
+                    ? `Supprimer définitivement la classe « ${confirmAction.classInfo.name} » ?`
+                    : 'Supprimer la classe ?'}
+                description="Le cahier cloud de cette classe sera effacé."
+                confirmLabel="Supprimer la classe"
+                onConfirm={handleDeleteClassConfirmed}
+            />
         </div>
     );
 };

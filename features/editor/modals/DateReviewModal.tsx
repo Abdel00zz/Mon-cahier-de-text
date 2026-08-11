@@ -45,18 +45,18 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
           {distinctWarnings.map((warning, index) => (
             <li key={index} className="flex items-start gap-2 py-2 first:pt-0 last:pb-0">
               <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden />
-              <span className="text-[12px] font-semibold leading-relaxed text-zinc-700">{warning.message}</span>
+              <span className="text-[12px] font-semibold leading-relaxed text-foreground">{warning.message}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[11px] font-medium leading-relaxed text-zinc-500">
+        <p className="mt-3 text-[11px] font-medium leading-relaxed text-muted-foreground">
           {t('dateReview.hint')}
         </p>
         {onIgnore && (
           <button
             type="button"
             onClick={onIgnore}
-            className="mt-3 min-h-9 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-amber-800 shadow-xs"
+            className="mt-3 min-h-11 w-full rounded-xl border border-border bg-card px-3 text-[11px] font-bold text-muted-foreground transition-colors hover:bg-zinc-50 hover:text-amber-800 shadow-xs"
           >
             {t('dateReview.ignore')}
           </button>

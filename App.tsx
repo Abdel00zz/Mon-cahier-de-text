@@ -14,6 +14,7 @@ import { useAdminMessages } from './hooks/useAdminMessages';
 
 import { useClassManager } from './hooks/useClassManager';
 import { TabBar, TabType } from './components/navigation/TabBar';
+import { Modal } from './components/ui/modal';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -21,9 +22,7 @@ const SettingsPage = lazy(() => import('./features/settings/SettingsPage').then(
 const NotificationsPage = lazy(() => import('./features/dashboard/NotificationsPage').then(module => ({ default: module.NotificationsPage })));
 const AuthPage = lazy(() => import('./features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const GuideModal = lazy(() => import('./features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
-const IOSheet = lazy(() => import('./components/ui/IOSheet').then(module => ({ default: module.IOSheet })));
 const AdminMessageModal = lazy(() => import('./features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
-const Analytics = () => null;
 const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 const DevoirsView = lazy(() => import('./features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 
@@ -277,7 +276,7 @@ const App: React.FC = () => {
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div className={`app-canvas min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`} app-with-mobile-nav` : ''} sm:pb-8`}>
+    <div className={`min-h-screen text-foreground relative overflow-x-clip transition-all pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8 ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}>
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -307,30 +306,26 @@ const App: React.FC = () => {
           </Suspense>
         ) : appSurface}
 
-        {/* Sheet Globale iOS Évaluations */}
-        {isEvaluationsOpen && (
-          <Suspense fallback={null}>
-            <IOSheet
-              isOpen={isEvaluationsOpen}
-              onClose={() => setIsEvaluationsOpen(false)}
-              title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
-            >
-              <Suspense fallback={<AppBootSkeleton />}>
-                <DevoirsView
-                  classes={classes}
-                  config={config}
-                  onConfigChange={updateConfig}
-                />
-              </Suspense>
-            </IOSheet>
+        {/* Évaluations globales — socle commun Modal */}
+        <Modal
+          isOpen={isEvaluationsOpen}
+          onClose={() => setIsEvaluationsOpen(false)}
+          maxWidth="4xl"
+          title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
+          bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
+        >
+          <Suspense fallback={<AppBootSkeleton />}>
+            <DevoirsView
+              classes={classes}
+              config={config}
+              onConfigChange={updateConfig}
+            />
           </Suspense>
-        )}
+        </Modal>
 
-        {isGuideOpen && (
-          <Suspense fallback={null}>
-            <GuideModal isOpen onClose={() => setGuideOpen(false)} />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <GuideModal isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} />
+        </Suspense>
 
         {adminMessages[0] && (
           <Suspense fallback={null}>
@@ -352,9 +347,6 @@ const App: React.FC = () => {
           mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)', left: 12, right: 12 }}
           className="print:hidden"
         />
-        <Suspense fallback={null}>
-          <Analytics />
-        </Suspense>
       </LocaleProvider>
     </>
   );

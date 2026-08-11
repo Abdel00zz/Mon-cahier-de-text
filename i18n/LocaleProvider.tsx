@@ -2202,7 +2202,7 @@ export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children
     const root = document.documentElement;
     root.lang = locale;
     root.dir = isRtl ? 'rtl' : 'ltr';
-    root.classList.toggle('font-ar', isRtl);
+    // La police arabe est dans la stack --font-sans, gérée par Tailwind
 
     const appName = locale === 'ar'
       ? 'دفتر نصوصي'

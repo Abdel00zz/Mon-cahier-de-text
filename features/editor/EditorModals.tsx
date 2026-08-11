@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData, Indices } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -37,8 +37,8 @@ interface EditorModalsProps {
 const ModalFallback = () => {
   const { t } = useLocale();
   return (
-    <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-[3px] animate-fade-in">
-      <div className="rounded-lg border border-slate-200/80 bg-card/98 px-4 py-3 text-sm font-medium text-card-foreground shadow-[0_18px_48px_rgba(15,23,42,0.16)] animate-slide-in-up">
+    <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-[3px] animate-fade-in duration-200">
+      <div className="rounded-lg border border-border/80 bg-card/98 px-4 py-3 text-sm font-medium text-card-foreground shadow-[0_18px_48px_rgba(0,0,0,0.35)] animate-fade-in duration-200">
         {t('common.loading')}
       </div>
     </div>
@@ -66,72 +66,88 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   assignDateInitialDate,
   classInfo,
 }) => {
-  if (!activeModal) return null;
+  // Garde la dernière modale montée (isOpen=false) le temps de l'animation de
+  // sortie : Radix démonte alors son contenu après la transition. Les props
+  // restent fraîches (rebuilt à chaque rendu pendant que la modale est active).
+  const [lastType, setLastType] = useState<string | null>(null);
+  const lastTypeRef = useRef<string | null>(null);
+  lastTypeRef.current = lastType;
 
-  let modal: React.ReactNode = null;
+  useEffect(() => {
+    if (activeModal) {
+      setLastType(activeModal);
+      return;
+    }
+    if (!lastTypeRef.current) return;
+    const timer = window.setTimeout(() => setLastType(null), 380);
+    return () => window.clearTimeout(timer);
+  }, [activeModal]);
 
-  switch (activeModal) {
-    case 'dataTransfer':
-      modal = <DataTransferModal isOpen onClose={handleModalClose} onImport={handleImport} onExport={handleExportData} />;
-      break;
-    case 'manageLessons':
-      modal = <ManageLessonsModal isOpen onClose={handleModalClose} lessons={lessonsData} onUpdate={handleUpdateLessons} config={config} onConfigChange={onConfigChange} />;
-      break;
-    case 'guide':
-      modal = <GuideModal isOpen onClose={handleModalClose} />;
-      break;
-    case 'assignDate':
-      modal = (
-        <AssignDateModal
-          isOpen
-          onClose={handleModalClose}
-          onApply={handleAssignDates}
-          selectedCount={selectedCount}
-          selectedItems={selectedItemsData}
-          getDateWarnings={getDateWarnings}
-          initialDate={assignDateInitialDate}
-        />
-      );
-      break;
-    case 'description':
-      modal = (
-        <DescriptionModal
-          isOpen
-          onClose={handleModalClose}
-          onSave={handleSaveDescription}
-          title={descriptionLabel}
-          initialValue={singleSelection?.description ?? ''}
-        />
-      );
-      break;
-    case 'addContent':
-      modal = (
-        <AddContentModal
-          isOpen
-          onClose={handleModalClose}
-          onConfirm={handleConfirmAddContent}
-          lessonsData={lessonsData}
-          selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
-        />
-      );
-      break;
-    case 'analyse':
-      modal = <AnalysisModal isOpen onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDateWarnings} />;
-      break;
-    case 'evaluations':
-      modal = (
-        <ClassEvaluationsSheet
-          open
-          onOpenChange={open => { if (!open) handleModalClose(); }}
-          classInfo={classInfo}
-          config={config}
-          onConfigChange={onConfigChange}
-        />
-      );
-      break;
-    default:
-      return null;
-  }
+  const buildModal = (type: string, isOpen: boolean): React.ReactNode => {
+    switch (type) {
+      case 'dataTransfer':
+        return <DataTransferModal isOpen={isOpen} onClose={handleModalClose} onImport={handleImport} onExport={handleExportData} />;
+      case 'manageLessons':
+        return <ManageLessonsModal isOpen={isOpen} onClose={handleModalClose} lessons={lessonsData} onUpdate={handleUpdateLessons} config={config} onConfigChange={onConfigChange} />;
+      case 'guide':
+        return <GuideModal isOpen={isOpen} onClose={handleModalClose} />;
+      case 'assignDate':
+        return (
+          <AssignDateModal
+            isOpen={isOpen}
+            onClose={handleModalClose}
+            onApply={handleAssignDates}
+            selectedCount={selectedCount}
+            selectedItems={selectedItemsData}
+            getDateWarnings={getDateWarnings}
+            initialDate={assignDateInitialDate}
+          />
+        );
+      case 'description':
+        return (
+          <DescriptionModal
+            isOpen={isOpen}
+            onClose={handleModalClose}
+            onSave={handleSaveDescription}
+            title={descriptionLabel}
+            initialValue={singleSelection?.description ?? ''}
+          />
+        );
+      case 'addContent':
+        return (
+          <AddContentModal
+            isOpen={isOpen}
+            onClose={handleModalClose}
+            onConfirm={handleConfirmAddContent}
+            lessonsData={lessonsData}
+            selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
+          />
+        );
+      case 'analyse':
+        return <AnalysisModal isOpen={isOpen} onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDateWarnings} />;
+      case 'evaluations':
+        return (
+          <ClassEvaluationsSheet
+            open={isOpen}
+            onOpenChange={open => { if (!open) handleModalClose(); }}
+            classInfo={classInfo}
+            config={config}
+            onConfigChange={onConfigChange}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
-  return <Suspense fallback={<ModalFallback />}>{modal}</Suspense>;
+  const renderedType = activeModal ?? lastType;
+  if (!renderedType) return null;
+
+  const isOpen = activeModal === renderedType;
+
+  return (
+    <Suspense fallback={<ModalFallback />}>
+      {buildModal(renderedType, isOpen)}
+    </Suspense>
+  );
 };

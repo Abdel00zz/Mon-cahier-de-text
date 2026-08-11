@@ -61,7 +61,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
         <div className="mt-4 rounded-2xl border border-border/80 bg-secondary/40 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h4 className="mb-1.5 text-sm font-bold text-foreground font-display">{t('archives.title')}</h4>
+                    <h4 className="mb-1.5 text-sm font-bold text-foreground">{t('archives.title')}</h4>
                     <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">
                         {t('archives.description')}
                     </p>
@@ -84,7 +84,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                             className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/40 bg-card/70 px-3 py-2"
                         >
                             <div className="min-w-0">
-                                <span className="text-xs font-bold text-foreground font-display">{t('archives.year', { year: meta.yearLabel })}</span>
+                                <span className="text-xs font-bold text-foreground">{t('archives.year', { year: meta.yearLabel })}</span>
                                 <span className="ms-2 text-[10px] font-semibold text-muted-foreground/60 font-mono">
                                     {formatClassCount(meta.classCount)} · {formatSize(meta.bytes)} ·{' '}
                                     {new Date(meta.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}

@@ -97,7 +97,7 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-fade-in">
+    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-200">
       <span
         className={`font-mono text-xl font-extrabold tracking-[-0.08em] tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
@@ -163,7 +163,7 @@ const RemarkCell: FC<{
     : hasWarning
       ? 'bg-warning/[0.055]'
     : hasAssignedDate
-      ? 'bg-white/55'
+      ? 'bg-card/55'
       : 'bg-card';
 
   const borderClass = '';
@@ -272,8 +272,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
 
   const datedLineClass = [
-    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-zinc-200') : '',
-    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-zinc-200') : '',
+    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border') : '',
+    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border') : '',
   ].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
@@ -289,8 +289,8 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-warning/[0.07]'
     : hasAssignedDate
-      ? 'bg-white/[0.28] dark:bg-slate-950/[0.2]'
-      : 'bg-white/[0.18] dark:bg-slate-950/[0.12]';
+      ? 'bg-card/[0.28] dark:bg-slate-950/[0.2]'
+      : 'bg-card/[0.18] dark:bg-slate-950/[0.12]';
   const rowWash = isSelected ? 'bg-primary/[0.085]' : datedWash;
   const hoverWash = isSelected
     ? ''
@@ -367,7 +367,6 @@ const TableRowComponent: FC<TableRowProps> = ({
           className={[
             'relative transition-colors duration-100',
             frameClasses,
-            isNew ? 'new-item-highlight' : '',
           ].filter(Boolean).join(' ')}
           onDoubleClickCapture={handleContentDoubleClickCapture}
           onDoubleClick={event => event.stopPropagation()}
@@ -382,7 +381,6 @@ const TableRowComponent: FC<TableRowProps> = ({
         className={[
           `grid ${rowGridClass} transition-colors duration-100`,
           frameClasses,
-          isNew ? 'new-item-highlight' : '',
         ].filter(Boolean).join(' ')}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
@@ -430,7 +428,6 @@ const TableRowComponent: FC<TableRowProps> = ({
         className={[
           'relative touch-manipulation transition-colors duration-100',
           frameClasses,
-          isNew ? 'new-item-highlight' : '',
         ].filter(Boolean).join(' ')}
         onDoubleClickCapture={handleContentDoubleClickCapture}
         onDoubleClick={event => event.stopPropagation()}
@@ -443,7 +440,6 @@ const TableRowComponent: FC<TableRowProps> = ({
   const rowClasses = [
     `grid ${rowGridClass} touch-manipulation transition-colors duration-100`,
     frameClasses,
-    isNew ? 'new-item-highlight' : '',
   ].filter(Boolean).join(' ');
 
   return (

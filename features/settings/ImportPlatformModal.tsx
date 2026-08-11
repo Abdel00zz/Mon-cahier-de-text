@@ -88,7 +88,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         <div>
           <label
             htmlFor="platform-json-file-input"
-            className="inline-flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-input bg-white px-4 py-4 text-muted-foreground transition-colors hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
+            className="inline-flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-input bg-card px-4 py-4 text-muted-foreground transition-colors hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
           >
             <FileUp className="mx-auto mb-2 h-6 w-6" />
             <span className="font-semibold text-sm">

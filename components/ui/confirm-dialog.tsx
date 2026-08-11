@@ -59,18 +59,21 @@ export function ConfirmDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-4 border-slate-200/80 bg-white p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18)] dark:bg-[#1e1f20] sm:max-w-[440px]">
+            <DialogContent
+                className="gap-4 border-border bg-card p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] sm:max-w-[440px]"
+                blockDismiss={requiresTypedConfirmation}
+            >
                 <DialogHeader className="gap-2">
-                    <DialogTitle className="text-lg font-bold font-display leading-tight text-slate-900 dark:text-slate-100">
+                    <DialogTitle className="text-lg font-bold leading-tight text-foreground">
                         {title}
                     </DialogTitle>
-                    <DialogDescription className="text-sm font-normal leading-relaxed text-slate-500 dark:text-slate-400">
+                    <DialogDescription className="text-sm font-normal leading-relaxed text-muted-foreground">
                         {description}
                     </DialogDescription>
                 </DialogHeader>
                 {requiresTypedConfirmation && (
                     <label className="space-y-1.5 pt-1">
-                        <span className="block text-xs font-medium leading-relaxed text-slate-700 dark:text-slate-300">
+                        <span className="block text-xs font-medium leading-relaxed text-foreground">
                             {confirmationHint}
                         </span>
                         <input
@@ -80,7 +83,7 @@ export function ConfirmDialog({
                             placeholder={confirmationPhrase}
                             autoComplete="off"
                             autoFocus
-                            className="flex h-11 w-full rounded-2xl border border-slate-200 bg-[#f0f4f9] px-4 text-sm font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus-visible:bg-white focus-visible:border-[#0b57d0] focus-visible:ring-4 focus-visible:ring-[#0b57d0]/15 dark:border-slate-700 dark:bg-[#282a2c] dark:text-slate-100"
+                            className="flex h-11 w-full rounded-2xl border border-border bg-muted/40 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
                             aria-label={confirmationHint}
                         />
                     </label>
@@ -90,7 +93,7 @@ export function ConfirmDialog({
                         type="button"
                         variant="ghost"
                         onClick={handleCancel}
-                        className="w-full rounded-full h-10 px-5 font-medium transition-all sm:w-auto"
+                        className="w-full rounded-full h-11 px-5 font-medium transition-all sm:w-auto"
                     >
                         {cancelLabel ?? t('common.cancel')}
                     </Button>
@@ -99,7 +102,7 @@ export function ConfirmDialog({
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
                         disabled={!confirmationIsValid}
-                        className="w-full rounded-full h-10 px-6 font-medium transition-all sm:w-auto"
+                        className="w-full rounded-full h-11 px-6 font-medium transition-all sm:w-auto"
                     >
                         {confirmLabel ?? t('common.confirm')}
                     </Button>

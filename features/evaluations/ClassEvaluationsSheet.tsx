@@ -1,15 +1,9 @@
 import React from 'react';
 import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
-import { Button } from '@/components/ui/button';
-import { CalendarCheck, X } from '@/components/ui/icons';
+import { CalendarCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
+import { Modal } from '@/components/ui/modal';
 import { DevoirsView } from './DevoirsView';
 
 interface ClassEvaluationsSheetProps {
@@ -21,8 +15,8 @@ interface ClassEvaluationsSheetProps {
 }
 
 /**
- * Panneau contextuel du cahier ouvert. Il ne propose volontairement aucun
- * sélecteur de classe : toute modification reste rattachée à `classInfo`.
+ * Évaluations d'une classe : socle commun Modal (bottom-sheet mobile /
+ * centrée desktop), une seule implémentation de panneau.
  */
 export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     open,
@@ -35,44 +29,34 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
     const { t } = useLocale();
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent
-                side="bottom"
-                onSwipeDown={() => onOpenChange(false)}
-                className="max-h-[calc(var(--app-viewport-height,100dvh)-max(0.75rem,env(safe-area-inset-top))-0.5rem)] flex flex-col overflow-hidden rounded-t-[28px] border-white/60 bg-white/[0.78] p-0 shadow-[0_-24px_64px_rgba(15,23,42,0.18)] backdrop-blur-3xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-950/[0.78] sm:inset-x-4 sm:mx-auto sm:max-w-4xl sm:rounded-[28px]"
-                aria-label={t('evaluationsSheet.aria', { className })}
-            >
-                <SheetHeader className="shrink-0 z-30 border-b border-white/55 bg-white/[0.48] px-4 pb-3 pt-8 text-start backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/[0.42] sm:px-5 sm:py-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/50 bg-primary/12 text-primary shadow-sm dark:border-white/10">
-                                <CalendarCheck className="h-4 w-4 stroke-[2.5]" aria-hidden />
-                            </span>
-                            <SheetTitle className="truncate text-base font-bold text-foreground sm:text-lg">{t('evaluationsSheet.title', { className })}</SheetTitle>
-                        </div>
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            size="icon"
-                            onClick={() => onOpenChange(false)}
-                            className="h-9 w-9 shrink-0 rounded-full bg-white/65 shadow-sm backdrop-blur-md hover:bg-white dark:bg-slate-900/60 dark:hover:bg-slate-800"
-                            aria-label={t('common.close')}
-                        >
-                            <span className="sr-only">{t('common.close')}</span>
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </SheetHeader>
-
-                <div className="evaluation-scrollbar flex-1 min-h-0 overflow-y-auto overscroll-contain bg-white/[0.18] px-3 py-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:bg-transparent sm:px-5 sm:py-5 sm:pb-5">
-                    <DevoirsView
-                        classes={[classInfo]}
-                        config={config}
-                        onConfigChange={onConfigChange}
-                        embedded
-                    />
+        <Modal
+            isOpen={open}
+            onClose={() => onOpenChange(false)}
+            maxWidth="4xl"
+            title={(
+                <div className="flex items-center gap-3 min-w-0">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <CalendarCheck className="h-5 w-5 stroke-[2.2]" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                        <span className="block truncate text-base font-bold tracking-tight text-foreground sm:text-lg">
+                            {t('evaluationsSheet.title', { className })}
+                        </span>
+                        <span className="block truncate text-[11px] font-medium text-muted-foreground">
+                            {t('evaluations.supervised')} · {t('evaluations.homework', { number: 1 })} · {t('evaluations.activities')}
+                        </span>
+                    </span>
                 </div>
-            </SheetContent>
-        </Sheet>
+            )}
+            description={<span className="sr-only">{t('evaluationsSheet.aria', { className })}</span>}
+            bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
+        >
+            <DevoirsView
+                classes={[classInfo]}
+                config={config}
+                onConfigChange={onConfigChange}
+                embedded
+            />
+        </Modal>
     );
 };
