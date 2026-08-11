@@ -1,6 +1,7 @@
 /* ── Niveaux de classes (système marocain) ────────────────────────────────── */
 
 import type { Cycle, AppLocale } from '../types';
+import { localizeDigits } from '../i18n/numberFormatting';
 
 export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
   college: ['1AC', '2AC', '3AC'],
@@ -113,7 +114,7 @@ export const formatLocalizedClassDisplayName = (
 
   const suffix = normalized.slice(level.length).trim();
   const label = CLASS_LEVEL_DISPLAY_NAMES_AR[level] ?? CLASS_LEVEL_DISPLAY_NAMES[level];
-  const classLabel = suffix ? `${label} ${suffix}` : label;
+  const classLabel = suffix ? `${label} ${localizeDigits(suffix, locale)}` : label;
   return includeClassPrefix ? `قسم ${classLabel}` : classLabel;
 };
 

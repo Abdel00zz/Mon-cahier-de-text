@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { LocaleProvider } from '../i18n/LocaleProvider';
 import { AdminApp } from './AdminApp';
 import '../index.css';
 
@@ -10,6 +11,8 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <AdminApp />
+    <LocaleProvider locale="fr" manageDocument={false}>
+      <AdminApp />
+    </LocaleProvider>
   </React.StrictMode>
 );

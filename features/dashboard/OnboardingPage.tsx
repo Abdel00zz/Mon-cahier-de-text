@@ -1,8 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { formatLocalizedClassDisplayName } from '@/constants';
-import { useModalLang } from '@/components/ui/lang-toggle';
-import type { AppConfig, ClassInfo, Cycle } from '@/types';
+import type { ClassInfo, Cycle } from '@/types';
 import { OnboardingShell } from './onboarding/OnboardingShell';
 import { copyFor, subjectOptionsFor } from './onboarding/content';
 import { useOnboardingClassDraft } from './onboarding/useOnboardingClassDraft';
@@ -13,7 +12,6 @@ import { ProfileStep } from './onboarding/steps/ProfileStep';
 import { SubjectsStep } from './onboarding/steps/SubjectsStep';
 import type { ModalLang, OnboardingCopy, OnboardingPageProps, OnboardingStep } from './onboarding/types';
 
-const LANG_KEY = 'onboarding_lang_v1';
 // La grille hebdomadaire est la partie la plus lourde du parcours : elle ne
 // charge qu'à la dernière étape, après la création des classes.
 const ScheduleStep = lazy(() => import('./onboarding/steps/ScheduleStep').then(module => ({ default: module.ScheduleStep })));
@@ -40,8 +38,9 @@ export const OnboardingPage = ({
     onComplete,
     onSkip,
 }: OnboardingPageProps) => {
-    const initialLang: ModalLang = config.applicationLocale === 'ar' ? 'ar' : 'fr';
-    const { lang, setLang } = useModalLang(LANG_KEY, initialLang, { preferDocumentLang: true });
+    // Pour les deux langues proposées ici, la source de vérité est désormais
+    // la locale globale que LocaleProvider applique au reste de l'application.
+    const lang: ModalLang = config.applicationLocale === 'ar' ? 'ar' : 'fr';
     const copy = useMemo(() => copyFor(lang), [lang]);
     const [finishing, setFinishing] = useState(false);
 
@@ -65,10 +64,9 @@ export const OnboardingPage = ({
     });
 
     const handleLanguageSelect = useCallback((nextLang: ModalLang) => {
-        setLang(nextLang);
         onConfigChange({ applicationLocale: nextLang });
         navigation.goToProfile();
-    }, [navigation.goToProfile, onConfigChange, setLang]);
+    }, [navigation.goToProfile, onConfigChange]);
 
     const handleTeacherNameChange = useCallback((defaultTeacherName: string) => {
         onConfigChange({ defaultTeacherName });

@@ -1,5 +1,6 @@
 import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS } from '@/constants';
+import { formatLocalizedNumber } from '@/i18n/numberFormatting';
 import type { Cycle } from '@/types';
 import type { ClassLevelGroup, CycleOption, ModalLang, OnboardingCopy } from './types';
 
@@ -94,7 +95,7 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         teachingCycle: 'السلك التعليمي',
         subjectSelectionHint: teacherName => `الأستاذ ${teacherName}، اختر المادة التي تدرّسها لإنشاء أقسامك.`,
         levelPlaceholder: 'المستوى / الشعبة',
-        groupPlaceholder: 'رقم المجموعة (1–99)',
+        groupPlaceholder: 'رقم المجموعة (١–٩٩)',
         removeCreatedClass: 'حذف هذا القسم',
         classRemoved: name => `تم حذف ${name}.`,
         addClass: 'إضافة قسم',
@@ -104,13 +105,13 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         customClassNamePlaceholder: 'مثال: حصة الدعم — المجموعة أ',
         groupHint: 'اختر المستوى وأدخل رقم المجموعة، أو اكتب تسمية خاصة.',
         missingGroup: 'أدخل رقم المجموعة.',
-        invalidGroup: 'استخدم رقماً من 1 إلى 99.',
+        invalidGroup: 'استخدم رقماً من ١ إلى ٩٩.',
         missingLabel: 'أدخل اسم القسم.',
         existingClass: 'هذا القسم موجود بالفعل.',
         later: 'إنهاء لاحقاً',
         back: 'رجوع',
         next: 'التالي',
-        step: (current, total) => `المرحلة ${current} من ${total}`,
+        step: (current, total) => `المرحلة ${formatLocalizedNumber(current, 'ar')} من ${formatLocalizedNumber(total, 'ar')}`,
         cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية للمدارس العليا' },
         cycleDescriptions: { college: 'من الأولى إلى الثالثة من التعليم الثانوي الإعدادي', lycee: 'الجذع المشترك وسلك البكالوريا', prepa: 'السنة الأولى والثانية' },
         levelGroupLabels: { college: 'الثانوي الإعدادي', common: 'الجذع المشترك', firstBac: 'الأولى بكالوريا', secondBac: 'الثانية بكالوريا', prepa: 'الأقسام التحضيرية' },

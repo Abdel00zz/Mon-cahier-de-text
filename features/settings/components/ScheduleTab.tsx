@@ -15,6 +15,7 @@ import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
 import { TriangleAlert, CircleCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { createLocalizedNumberFormatter, localizeDigits } from '@/i18n/numberFormatting';
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -71,12 +72,13 @@ type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
     const { locale, t } = useLocale();
     const hourNumber = React.useMemo(
-        () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, useGrouping: false }),
+        () => createLocalizedNumberFormatter(locale, { minimumIntegerDigits: 2, useGrouping: false }),
         [locale],
     );
+    const minuteZero = hourNumber.format(0);
     const hourLabel = (startMin: number, endMin: number) => locale === 'fr'
         ? `${String(Math.floor(startMin / 60)).padStart(2, '0')}h–${String(Math.floor(endMin / 60)).padStart(2, '0')}h`
-        : `${hourNumber.format(Math.floor(startMin / 60))}:00–${hourNumber.format(Math.floor(endMin / 60))}:00`;
+        : `${hourNumber.format(Math.floor(startMin / 60))}:${minuteZero}–${hourNumber.format(Math.floor(endMin / 60))}:${minuteZero}`;
     const classLabel = (name: string) => formatLocalizedClassDisplayName(name, locale);
     const subjectLabel = (subject: string) => locale === 'ar'
         ? formatLocalizedSubjectDisplayName(subject, locale)
@@ -88,6 +90,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         todayInMorocco(new Date(), calendar),
     );
     const schoolYearStart = config.schoolYearStart ?? effectiveSchoolYear.debut;
+    const localizedSchoolYearStart = React.useMemo(() => {
+        const [year, month, day] = schoolYearStart.split('-');
+        return localizeDigits(`${day}/${month}/${year}`, locale);
+    }, [locale, schoolYearStart]);
     const timetable = config.timetable ?? [];
     // créneau en attente d'une NOUVELLE classe (option « + Créer une classe… »)
     const [pendingCreate, setPendingCreate] = React.useState<{ day: number; slot: number; span: number } | null>(null);
@@ -193,17 +199,30 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
                 <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
                     <label className="text-xs font-semibold text-muted-foreground">{t('schedule.startYear')}</label>
-                    <input
-                        type="date"
-                        value={schoolYearStart}
-                        onChange={e => setSchoolYearStart(e.target.value)}
-                        className="h-10 rounded-lg border border-border/80 bg-background px-2.5 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    />
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={schoolYearStart}
+                            onChange={e => setSchoolYearStart(e.target.value)}
+                            lang={locale === 'ar' ? 'ar-MA-u-nu-arab' : locale}
+                            dir="ltr"
+                            className={`h-10 rounded-lg border border-border/80 bg-background px-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
+                        />
+                        {locale === 'ar' && (
+                            <span
+                                aria-hidden
+                                dir="ltr"
+                                className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center text-sm text-foreground"
+                            >
+                                {localizedSchoolYearStart}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
             <p className="-mt-3 text-start text-[11px] font-mono text-muted-foreground/60 sm:text-xs">
-                {t('schedule.calendar', { label: effectiveSchoolYear.libelle })}
+                {t('schedule.calendar', { label: localizeDigits(effectiveSchoolYear.libelle, locale) })}
             </p>
 
             {/* État de complétude et volumes horaires avant la saisie de la grille. */}
@@ -323,7 +342,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                 <span
                                                     className={`pointer-events-none absolute inset-1.5 flex items-center justify-center truncate px-2 text-[11px] font-bold ${color.text}`}
                                                 >
-                                                    {abbreviateClassName(classInfo.name)}
+                                                    {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
                                                 </span>
                                             )}
                                             {merged && (

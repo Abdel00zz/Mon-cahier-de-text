@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import type { AppLocale } from '@/types';
+import { formatLocalizedNumber } from './numberFormatting';
 
 type MessageValue = string;
 type TranslationTable = Record<string, MessageValue>;
@@ -2202,18 +2203,26 @@ export const translateLocaleMessage = (
   values: Record<string, string | number> = {},
 ): string => {
   const template = messages[locale][key] ?? messages.fr[key] ?? key;
-  return template.replace(/\{(\w+)\}/g, (_, token) => String(values[token] ?? `{${token}}`));
+  return template.replace(/\{(\w+)\}/g, (_, token) => {
+    const value = values[token];
+    if (value === undefined) return `{${token}}`;
+    return typeof value === 'number' ? formatLocalizedNumber(value, locale) : String(value);
+  });
 };
 
 interface LocaleProviderProps {
   locale: AppLocale;
   children: React.ReactNode;
+  /** Désactive la gestion globale de <html> et du titre pour une application embarquée. */
+  manageDocument?: boolean;
 }
 
-export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children }) => {
+export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children, manageDocument = true }) => {
   const isRtl = locale === 'ar';
 
   useEffect(() => {
+    if (!manageDocument) return;
+
     const root = document.documentElement;
     root.lang = locale;
     root.dir = isRtl ? 'rtl' : 'ltr';
@@ -2233,7 +2242,7 @@ export const LocaleProvider: React.FC<LocaleProviderProps> = ({ locale, children
     document.title = appName;
     document.querySelector<HTMLMetaElement>('meta[name="application-name"]')?.setAttribute('content', appName);
     document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', shortAppName);
-  }, [isRtl, locale]);
+  }, [isRtl, locale, manageDocument]);
 
   const value = useMemo<LocaleContextValue>(() => ({
     locale,

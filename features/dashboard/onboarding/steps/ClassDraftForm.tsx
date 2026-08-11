@@ -1,7 +1,10 @@
 import { memo, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Plus } from '@/components/ui/icons';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatLocalizedClassDisplayName } from '@/constants';
+import { localizeDigits } from '@/i18n/numberFormatting';
 import { cn } from '@/lib/utils';
 import type { Cycle } from '@/types';
 import { LEVEL_GROUPS } from '../content';
@@ -33,14 +36,26 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
         <div className="mt-4 space-y-3">
             <p className="text-start text-xs text-slate-500 sm:text-sm">{copy.groupHint}</p>
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-                <div className="flex justify-end">
+                <div className="flex flex-col gap-2 rounded-xl border border-indigo-100 bg-gradient-to-br from-white via-white to-indigo-50/70 p-2.5 shadow-[0_8px_24px_rgba(80,100,223,0.08)] sm:flex-row sm:items-center sm:justify-between">
                     <button
                         type="button"
                         onClick={controller.toggleMode}
-                        className="text-xs font-semibold text-primary hover:text-primary/80"
+                        className="min-h-10 rounded-lg px-3 text-start text-xs font-semibold text-primary transition-colors hover:bg-indigo-50 hover:text-primary/80"
                     >
                         {draft.mode === 'catalog' ? copy.manualMode : copy.catalogMode}
                     </button>
+                    <Button
+                        type="button"
+                        onClick={controller.add}
+                        disabled={controller.isAdding}
+                        aria-busy={controller.isAdding}
+                        className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-[0_5px_16px_rgba(15,23,42,0.20)] transition-all hover:-translate-y-0.5 hover:bg-black hover:shadow-[0_8px_20px_rgba(15,23,42,0.24)] active:translate-y-0 active:scale-[0.98] disabled:translate-y-0 disabled:bg-slate-400 disabled:shadow-none motion-reduce:transform-none motion-reduce:transition-none sm:w-auto sm:min-w-[11rem]"
+                    >
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:rotate-90 group-disabled:rotate-0 motion-reduce:transform-none motion-reduce:transition-none">
+                            <Plus className="h-3.5 w-3.5" />
+                        </span>
+                        {controller.isAdding ? copy.addingClass : copy.addClass}
+                    </Button>
                 </div>
 
                 {draft.mode === 'catalog' ? (
@@ -65,7 +80,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                         <Input
                             aria-label={copy.groupPlaceholder}
                             type="text"
-                            value={draft.group}
+                            value={localizeDigits(draft.group, lang)}
                             onChange={event => controller.setGroup(event.target.value)}
                             onBlur={controller.normalizeGroup}
                             placeholder={copy.groupPlaceholder}
