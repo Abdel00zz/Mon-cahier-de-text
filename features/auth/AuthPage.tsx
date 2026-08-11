@@ -78,8 +78,8 @@ const AUTH_COPY = {
 } as const;
 
 const CYCLE_LABELS: Record<AuthLocale, Record<Cycle, string>> = {
-  fr: { college: 'Collège', lycee: 'Lycée', prepa: 'Prépa' },
-  ar: { college: 'إعدادي', lycee: 'ثانوي', prepa: 'تحضيري' },
+  fr: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
+  ar: { college: 'إعدادي', lycee: 'ثانوي تأهيلي', prepa: 'تحضيري' },
 };
 
 const SUBJECT_LABELS: Record<string, string> = {

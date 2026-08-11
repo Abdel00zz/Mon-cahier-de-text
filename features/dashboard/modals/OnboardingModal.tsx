@@ -103,7 +103,7 @@ const TEXTS: Record<ModalLang, {
         deleteRow: 'Supprimer cette ligne',
         addedClasses: n => `${n} ajoutée${n > 1 ? 's' : ''}`,
         step: (current, total) => `Étape ${current} sur ${total}`,
-        cycleLabels: { college: 'Collège', lycee: 'Lycée', prepa: 'Prépa' },
+        cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
         levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1re Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires' },
         addRow: 'Ajouter une ligne',
         groupHint: 'N° obligatoire de 1 à 99 · unique pour un même niveau.',
@@ -139,7 +139,7 @@ const TEXTS: Record<ModalLang, {
         deleteRow: 'حذف هذا السطر',
         addedClasses: n => `${n} ${n > 1 ? 'أقسام مضافة' : 'قسم مضاف'}`,
         step: (current, total) => `المرحلة ${current} من ${total}`,
-        cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي', prepa: 'الأقسام التحضيرية' },
+        cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
         levelGroupLabels: { college: 'الإعدادي', common: 'الجذع المشترك', firstBac: 'الأولى باك', secondBac: 'الثانية باك', prepa: 'الأقسام التحضيرية' },
         addRow: 'إضافة سطر',
         groupHint: 'رقم من 1 إلى 99 مطلوب وفريد داخل المستوى نفسه.',
@@ -343,7 +343,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 </div>
             }
         >
-            <div dir={isAr ? 'rtl' : 'ltr'} className="flex h-full flex-col text-left">
+            <div dir={isAr ? 'rtl' : 'ltr'} className="flex h-full flex-col text-start">
                 
                 <div className="mb-3 flex w-full items-start justify-between gap-4">
                     <div>
@@ -514,7 +514,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                                 ) : <span className="h-8 w-8" />}
                                             </div>
                                             {rowValidations[index].issue && (showGroupValidation || row.group) && (
-                                                <p className={`${isAr ? 'pr-7' : 'pl-7'} text-[11px] font-medium text-destructive`}>
+                                                <p className={`ps-7 text-[11px] font-medium text-destructive`}>
                                                     {getRowIssueText(rowValidations[index].issue)}
                                                 </p>
                                             )}
@@ -530,7 +530,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                                         className="h-8 border-primary/30 px-2.5 text-xs text-primary hover:bg-primary/10"
                                         onClick={() => setRows(prev => [...prev, { level: prev[prev.length - 1]?.level || defaultLevel, group: '' }])}
                                     >
-                                        <Plus className={isAr ? 'ml-1 h-3.5 w-3.5' : 'mr-1 h-3.5 w-3.5'} />
+                                        <Plus className="me-1 h-3.5 w-3.5" />
                                         {t.addRow}
                                     </Button>
                                     

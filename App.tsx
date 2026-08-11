@@ -272,11 +272,16 @@ const App: React.FC = () => {
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
-  const showNavigation = !isAuthView && !isBooting && view !== 'editor';
+  
+  let onboardingSeen = false;
+  try { onboardingSeen = !!sessionStorage.getItem('onboarding_seen_v1'); } catch {}
+  const isCurrentlyOnboarding = !config.hasCompletedWelcome && !onboardingSeen;
+  
+  const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div className={`min-h-screen text-foreground relative overflow-x-clip transition-all pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8 ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}>
+    <div className={`min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}>
       {showNavigation && (
         <TabBar
           activeTab={activeTab}

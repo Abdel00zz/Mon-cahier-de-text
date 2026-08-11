@@ -99,12 +99,10 @@ const SignalCard: React.FC<{
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-2 pt-2 sm:pt-0">
-        {signal.dismissible ? (
+        {signal.dismissible && (
           <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
             {ignoreLabel}
           </button>
-        ) : (
-          <span className="px-2.5 text-xs font-bold text-warning-strong">{mustResolveLabel}</span>
         )}
         <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90">
           {actionLabel}
@@ -467,7 +465,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
                     ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-left',
+                    : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
                     ? 'text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
@@ -554,7 +552,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
                     ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-left',
+                    : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
                     ? 'text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
@@ -625,7 +623,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
                     ? 'justify-center p-2 relative'
-                    : 'gap-2.5 px-2.5 py-2 text-left',
+                    : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
                     ? 'text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
@@ -806,7 +804,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         {filteredOfficial.map(item => (
                           <div
                             key={`official-${item.event.id}`}
-                            className="flex flex-col justify-between rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-3.5 text-left border border-purple-200/80 dark:border-purple-900/50 shadow-2xs"
+                            className="flex flex-col justify-between rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-3.5 text-start border border-purple-200/80 dark:border-purple-900/50 shadow-2xs"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">
@@ -871,7 +869,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         <button
                           key={overview.classInfo.id}
                           onClick={() => openClassById(overview.classInfo.id)}
-                          className="flex flex-col justify-between rounded-2xl bg-card p-4 border border-border text-card-foreground shadow-2xs hover:border-primary/50 text-left transition-all cursor-pointer group"
+                          className="flex flex-col justify-between rounded-2xl bg-card p-4 border border-border text-card-foreground shadow-2xs hover:border-primary/50 text-start transition-all cursor-pointer group"
                         >
                           <div>
                             <div className="mb-2 flex items-center justify-between gap-2">
@@ -962,7 +960,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 <button
                                   key={`${entry.classId}-${entry.at}-${index}`}
                                   onClick={() => openClassById(entry.classId)}
-                                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-left hover:bg-muted dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                                  className="w-full px-3.5 py-2.5 flex items-center justify-between text-start hover:bg-muted dark:hover:bg-zinc-850 transition-colors cursor-pointer"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
                                     <ClassIdentityIcon classInfo={classById.get(entry.classId)} fallback={History} compact />
@@ -978,7 +976,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                         )}
                                       </div>
                                       <p className="text-[10px] text-muted-foreground">
-                                        <span className="font-semibold text-foreground mr-1.5">{entry.className} •</span>
+                                        <span className="font-semibold text-foreground me-1.5">{entry.className} •</span>
                                         {timeAgo(entry.at, locale)}
                                       </p>
                                     </div>
@@ -1027,7 +1025,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                                 {signal.title}
                               </h3>
                               <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                                {signal.className && <span className="font-semibold mr-1">{signal.className} •</span>}
+                                {signal.className && <span className="font-semibold me-1">{signal.className} •</span>}
                                 {signal.detail}
                               </p>
                               </div>

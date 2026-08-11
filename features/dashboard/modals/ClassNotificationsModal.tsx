@@ -81,6 +81,13 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
   const prioritySignals = [...scheduleSignals, ...otherPriorities];
   const isEmpty = prioritySignals.length === 0 && deadlineCount === 0;
   const scheduleIsConform = timetableInsight.deviation === 'match' && timetableInsight.officialHours !== null;
+  const actionLabels: Record<ClassSignal['action'], string> = {
+    class: t('notifications.action.openClass'),
+    timetable: t('notifications.action.schedule'),
+    evaluations: t('notifications.action.evaluations'),
+    export: t('notifications.action.export'),
+  };
+
   const openEvaluations = () => {
     requestEditorModal({ classId: classInfo.id, modal: 'evaluations', expiresAt: Date.now() + 120_000 });
     onClose();
@@ -211,10 +218,10 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
                       <button
                         type="button"
                         onClick={() => resolveSignal(signal)}
-                        aria-label={`${signal.title} : ${t('notifications.mustResolve')}`}
+                        aria-label={`${signal.title} : ${actionLabels[signal.action]}`}
                         className="flex min-h-9 items-center rounded-full bg-amber-500 px-3 text-xs font-bold text-white transition-all hover:bg-amber-600 active:scale-95"
                       >
-                        {t('notifications.mustResolve')}
+                        {actionLabels[signal.action]}
                       </button>
                     )}
                   </div>
@@ -226,11 +233,8 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
 
         {nextSession === null ? (
           /* Emploi du temps à compléter : volontairement SANS cadre ni fond. */
-          <button
-            type="button"
-            onClick={openSchedule}
-            disabled={!onOpenSchedule}
-            className="flex min-h-11 w-full items-center justify-between gap-3 px-1 text-start text-xs font-bold text-muted-foreground disabled:cursor-default"
+          <p
+            className="flex min-h-11 w-full items-center justify-between gap-3 px-1 text-start text-xs font-bold text-muted-foreground"
             aria-label={t('dashboard.nextSessionStatus')}
           >
             <span className="flex shrink-0 items-center gap-2">
@@ -240,10 +244,10 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
             <span className="min-w-0 text-end font-extrabold text-warning-strong">
               {t('dashboard.toSchedule')}
             </span>
-          </button>
+          </p>
         ) : (
-        <div className="divide-y divide-white/60 overflow-hidden rounded-[20px] border border-white/60 bg-white/[0.52] text-slate-900 shadow-sm backdrop-blur-xl dark:divide-white/10 dark:border-white/10 dark:bg-slate-900/[0.5] dark:text-slate-100" aria-label={t('notifications.classStatusLabel')}>
-          <button type="button" onClick={openSchedule} disabled={!onOpenSchedule} className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 disabled:cursor-default disabled:hover:bg-transparent">
+        <div className="divide-y divide-border/60 overflow-hidden rounded-[20px] border border-border/60 bg-muted/20 text-slate-900 shadow-sm dark:text-slate-100" aria-label={t('notifications.classStatusLabel')}>
+          <div className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start">
             <span className="flex shrink-0 items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
               <CalendarCheck className="h-4 w-4 shrink-0 text-primary" />
               {t('dashboard.nextSessionStatus')}
@@ -251,8 +255,8 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
             <span className={`min-w-0 text-end text-xs font-extrabold ${nextSession?.kind === 'now' ? 'text-emerald-500' : 'text-primary'}`}>
               {nextSession?.label}
             </span>
-          </button>
-          <button type="button" onClick={openClass} className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40">
+          </div>
+          <div className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start">
             <span className="flex shrink-0 items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
               <Clock className="h-4 w-4 shrink-0 text-primary" />
               {t('dashboard.lastLesson')}
@@ -260,9 +264,9 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
             <span className="min-w-0 truncate text-end font-mono text-xs font-bold text-foreground">
               {formatLastLesson(lastModified, locale, t('dashboard.none'))}
             </span>
-          </button>
+          </div>
           {scheduleIsConform && (
-            <button type="button" onClick={openSchedule} disabled={!onOpenSchedule} className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 disabled:cursor-default disabled:hover:bg-transparent">
+            <div className="flex min-h-11 w-full items-center justify-between gap-3 px-3.5 py-2 text-start">
               <span className="flex shrink-0 items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400">
                 <CalendarRange className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 {t('schedule.statusTitle')}
@@ -271,7 +275,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
                 <CircleCheck className="h-4 w-4 shrink-0" />
                 {t('schedule.statusMatch')}
               </span>
-            </button>
+            </div>
           )}
         </div>
         )}

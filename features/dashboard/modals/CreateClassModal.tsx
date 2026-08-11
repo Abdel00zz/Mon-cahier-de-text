@@ -80,7 +80,7 @@ const COPY: Record<ModalLanguage, {
     customSubjectPlaceholder: 'Saisir une matière…',
     switchToOfficial: '← Revenir à la liste officielle',
     createCustom: 'Niveau non listé ? Créer une classe personnalisée',
-    cycleLabels: { college: 'Collège', lycee: 'Lycée', prepa: 'Classe préparatoire' },
+    cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
   ar: {
     createTitle: 'إضافة قسم جديد',
@@ -104,7 +104,7 @@ const COPY: Record<ModalLanguage, {
     customSubjectPlaceholder: 'أدخل المادة…',
     switchToOfficial: 'العودة إلى اللائحة الرسمية ←',
     createCustom: 'المستوى غير موجود؟ أنشئ قسماً مخصصاً',
-    cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي', prepa: 'الأقسام التحضيرية' },
+    cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
 };
 
@@ -264,7 +264,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         </div>
         }
       >
-      <form id="create-class-form" onSubmit={handleSubmit} dir={isAr ? 'rtl' : 'ltr'} className="space-y-3 py-1 text-left sm:space-y-4">
+      <form id="create-class-form" onSubmit={handleSubmit} dir={isAr ? 'rtl' : 'ltr'} className="space-y-3 py-1 text-start sm:space-y-4">
         {/* Cycle : masqué si le prof n'enseigne qu'un cycle (hérité du profil) */}
         {!singleCycle && (
           <div className="space-y-1.5">

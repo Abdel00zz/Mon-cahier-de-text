@@ -134,7 +134,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     disabled,
 }) => (
     <div className={`flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-3 ${disabled ? 'opacity-60' : ''}`}>
-        <div className="flex flex-col text-left">
+        <div className="flex flex-col text-start">
             <Label className="text-xs font-bold text-foreground font-sans leading-none">{label}</Label>
             {hint && <span className="mt-1.5 block text-[11px] text-muted-foreground font-sans leading-normal">{hint}</span>}
         </div>

@@ -4,7 +4,7 @@ import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LangToggle, useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
+import { useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
 import { ScheduleTab } from '@/features/settings/components/ScheduleTab';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
@@ -56,6 +56,7 @@ const TEXTS: Record<ModalLang, {
     title: string; subtitle: string; start: string;
     createClasses: (n: number) => string; classAdded: (n: number) => string;
     notifications: string; notificationsIOS: string;
+    sectionLanguage: string; languageSelect: string;
     sectionProfile: string; sectionClasses: string; sectionSchedule: string;
     fullName: string; fullNamePlaceholder: string;
     establishment: string; establishmentPlaceholder: string;
@@ -70,12 +71,13 @@ const TEXTS: Record<ModalLang, {
     later: string; back: string; next: string;
 }> = {
     fr: {
-        title: 'Bienvenue', subtitle: 'Configurez votre espace en trois étapes.',
+        title: 'Bienvenue', subtitle: 'Configurez votre espace de travail en quelques étapes.',
         start: 'Ouvrir mes cahiers',
         createClasses: n => (n > 1 ? `Ajouter ${n} classes` : 'Ajouter cette classe'),
         classAdded: n => `${n} classe${n > 1 ? 's' : ''} ajoutée${n > 1 ? 's' : ''}.`,
         notifications: 'Activez les notifications de séance dans les réglages de votre téléphone.',
         notificationsIOS: 'Sur iPhone/iPad, ajoutez d\'abord l\'application à l\'écran d\'accueil pour activer les notifications.',
+        sectionLanguage: 'Langue', languageSelect: 'Choisissez votre langue principale',
         sectionProfile: 'Vos informations', sectionClasses: 'Classes', sectionSchedule: 'Emploi du temps',
         fullName: 'Nom complet', fullNamePlaceholder: 'Ex. : M. Ahmed Benali',
         establishment: 'Établissement', establishmentPlaceholder: 'Ex. : Lycée Ibn al-Haytham',
@@ -84,7 +86,7 @@ const TEXTS: Record<ModalLang, {
         groupPlaceholder: 'N° 1–99', deleteRow: 'Supprimer cette ligne',
         addedClasses: n => `${n} ajoutée${n > 1 ? 's' : ''}`,
         step: (current, total) => `Étape ${current} sur ${total}`,
-        cycleLabels: { college: 'Collège', lycee: 'Lycée', prepa: 'Prépa' },
+        cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
         levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1re Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires' },
         addRow: 'Ajouter une ligne',
         groupHint: 'N° obligatoire de 1 à 99 · unique pour un même niveau.',
@@ -93,12 +95,13 @@ const TEXTS: Record<ModalLang, {
         later: 'Plus tard', back: 'Retour', next: 'Suivant',
     },
     ar: {
-        title: 'مرحباً', subtitle: 'لنأخذ بضع لحظات لإعداد مساحتك.',
+        title: 'مرحباً', subtitle: 'لنأخذ بضع لحظات لإعداد مساحة العمل الخاصة بك.',
         start: 'الدخول إلى مساحتي',
         createClasses: n => (n > 1 ? `إضافة ${n} أقسام` : 'إضافة هذا القسم'),
         classAdded: n => `تمت إضافة ${n} ${n > 1 ? 'أقسام' : 'قسم'}.`,
         notifications: 'عند التأكيد، سيقترح هاتفكم تفعيل الإشعارات الأصلية.',
         notificationsIOS: 'على iPhone وiPad، أضيفوا التطبيق أولاً إلى الشاشة الرئيسية لتفعيل الإشعارات.',
+        sectionLanguage: 'اللغة', languageSelect: 'اختر لغتك الرئيسية',
         sectionProfile: 'الملف الشخصي', sectionClasses: 'أقسامك', sectionSchedule: 'الجدول الزمني',
         fullName: 'الاسم الكامل', fullNamePlaceholder: 'مثال: الأستاذ أحمد بنعلي',
         establishment: 'المؤسسة', establishmentPlaceholder: 'مثال: ثانوية ابن الهيثم',
@@ -107,7 +110,7 @@ const TEXTS: Record<ModalLang, {
         groupPlaceholder: 'رقم 1–99', deleteRow: 'حذف هذا السطر',
         addedClasses: n => `${n} ${n > 1 ? 'أقسام مضافة' : 'قسم مضاف'}`,
         step: (current, total) => `المرحلة ${current} من ${total}`,
-        cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي', prepa: 'الأقسام التحضيرية' },
+        cycleLabels: { college: 'الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
         levelGroupLabels: { college: 'الإعدادي', common: 'الجذع المشترك', firstBac: 'الأولى باك', secondBac: 'الثانية باك', prepa: 'الأقسام التحضيرية' },
         addRow: 'إضافة سطر',
         groupHint: 'رقم من 1 إلى 99 مطلوب وفريد داخل المستوى نفسه.', missingGroup: 'أدخل رقم المجموعة.',
@@ -117,8 +120,8 @@ const TEXTS: Record<ModalLang, {
 };
 
 /**
- * Page de démarrage immersive (première connexion). Même logique métier
- * que l'OnboardingModal, mais en page pleine avec hero section.
+ * Page de démarrage immersive ultra avancée (première connexion).
+ * Design inspiré des grandes entreprises : épuré, aéré, sans distraction.
  */
 export const OnboardingPage: React.FC<OnboardingPageProps> = ({
     config, onConfigChange, classes, onCreateClass, onOpenNotebook, onComplete, onSkip,
@@ -130,16 +133,18 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
     const t = TEXTS[lang];
     const hasClasses = classes.length > 0;
     const cycle: Cycle = (config.selectedCycles?.[0] as Cycle) ?? 'lycee';
+    const totalSteps = 4;
 
     const iosNeedsInstall = typeof navigator !== 'undefined'
         && /iphone|ipad|ipod/i.test(navigator.userAgent)
         && !(window.matchMedia?.('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone === true);
 
-    // Step 1: profile validation
-    const isStep1Valid = !!(config.defaultTeacherName && config.defaultTeacherName.trim().length > 0);
-    const isStep2Valid = hasClasses;
+    // Step validations
+    const isStep1Valid = true; // Langue (toujours valide)
+    const isStep2Valid = !!(config.defaultTeacherName && config.defaultTeacherName.trim().length > 0);
+    const isStep3Valid = hasClasses;
 
-    // Step 2: class rows
+    // Class rows setup
     const defaultLevel = LEVEL_GROUPS[cycle][0]?.levels[0] ?? '';
     const [subject, setSubject] = useState<string>(config.selectedSubjects?.[0] ?? 'Mathématiques');
     const [rows, setRows] = useState<ClassRow[]>([{ level: defaultLevel, group: '' }]);
@@ -199,7 +204,6 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
             created += 1;
         });
         if (created > 0) {
-            toast.success(t.classAdded(created));
             setRows([{ level: defaultLevel, group: '' }]);
             setShowGroupValidation(false);
         }
@@ -208,69 +212,146 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
     const finish = async () => {
         if (finishing) return;
         setFinishing(true);
-        try { await onComplete(); if (classes[0]) onOpenNotebook(classes[0]); }
+        try { 
+            await onComplete(); 
+            toast.success(t.classAdded(classes.length));
+            if (classes[0]) onOpenNotebook(classes[0]); 
+        }
         finally { setFinishing(false); }
     };
 
+    const handleNext = () => {
+        if (step === 1 && isStep1Valid) setStep(2);
+        else if (step === 2 && isStep2Valid) setStep(3);
+        else if (step === 3 && isStep3Valid) setStep(4);
+    };
+
+    const renderHeaderTitle = () => {
+        if (step === 1) return t.title;
+        if (step === 2) return t.sectionProfile;
+        if (step === 3) return t.sectionClasses;
+        if (step === 4) return t.sectionSchedule;
+        return '';
+    };
+
     return (
-        <div dir={isAr ? 'rtl' : 'ltr'} className="min-h-screen bg-background text-foreground flex flex-col">
-            {/* Hero */}
-            <header className="px-4 pt-10 pb-3 text-center sm:pt-16 sm:pb-4">
-                <div className="mx-auto max-w-lg">
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary mb-3 sm:h-14 sm:w-14 sm:mb-4">
-                        <School className="h-6 w-6 sm:h-7 sm:w-7" />
-                    </span>
-                    <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">{t.title}</h1>
-                    <p className="mt-1.5 text-sm text-muted-foreground">{t.subtitle}</p>
-                    <LangToggle lang={lang} onChange={setLang} labels={{ fr: 'FR', ar: 'العربية' }} className="mt-3 rounded-lg" />
+        <div dir={isAr ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-[#687ee3] to-[#5163c4] text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
+            {/* Decorative wavy background shapes */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-40 overflow-hidden">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute top-[-20%] left-[-10%] w-[60%] h-[150%] text-[#8378c2] stroke-current stroke-[8] fill-none" style={{ filter: 'blur(4px)' }}>
+                    <path d="M 0,0 C 30,20 20,80 50,50 S 70,80 100,100" />
+                </svg>
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[120%] text-[#8378c2] stroke-current stroke-[6] fill-none" style={{ filter: 'blur(3px)' }}>
+                    <path d="M 0,100 C 40,80 10,20 60,50 S 80,10 100,0" />
+                </svg>
+            </div>
+
+            {/* Minimalist Logo Header */}
+            <header className="absolute top-0 inset-x-0 px-4 py-4 sm:px-8 sm:py-6 flex justify-between items-center z-40 pointer-events-none">
+                <div className="flex items-center gap-2 text-white drop-shadow-md">
+                    <School className="w-6 h-6 sm:w-8 sm:h-8" />
+                    <span className="text-lg sm:text-xl font-bold tracking-tight">Mon cahier</span>
                 </div>
             </header>
 
-            {/* Step indicators */}
-            <div className="px-4 sm:px-8">
-                <div className="mx-auto max-w-2xl flex items-center gap-1.5" aria-label={t.step(step, 3)}>
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className={`h-1 flex-1 rounded-sm transition-colors duration-200 ${step >= i ? 'bg-primary' : 'bg-muted'}`} />
-                    ))}
-                </div>
-            </div>
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-y-auto px-4 py-20 sm:px-8 flex flex-col relative z-10">
+                <main className="w-full max-w-[700px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden relative m-auto shrink-0">
+                    
+                    <div className="px-6 pt-8 pb-6 sm:px-12 sm:pt-10 sm:pb-8 flex-1">
+                        
+                        {/* Top Progress Bar inside Card */}
+                        <div className="w-full h-2 sm:h-2.5 bg-slate-100 rounded-full mb-8 overflow-hidden">
+                            <div 
+                                className="h-full bg-[#5064df] transition-all duration-700 ease-out rounded-full" 
+                                style={{ width: `${(step / totalSteps) * 100}%` }} 
+                            />
+                        </div>
 
-            {/* Content */}
-            <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-8 sm:py-6">
-                <div className="mx-auto max-w-2xl">
+                        {/* Dynamic Title */}
+                        <div className="mb-8 animate-fade-in text-start">
+                            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0a1945] mb-2">
+                                {renderHeaderTitle()}
+                            </h1>
+                            {step === 1 && <p className="text-base sm:text-lg text-slate-500 font-medium">{t.subtitle}</p>}
+                        </div>
 
-                    {/* Step 1 : Profil */}
-                    {step === 1 && (
-                        <div className="space-y-5 animate-fade-in duration-300">
-                            <div>
-                                <h3 className="mb-3 text-sm font-semibold">{t.sectionProfile}</h3>
-                                <div className="grid max-w-xl gap-3 sm:grid-cols-2">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-foreground">{t.fullName}</label>
-                                        <Input type="text" value={config.defaultTeacherName || ''} onChange={e => onConfigChange({ defaultTeacherName: e.target.value })} placeholder={t.fullNamePlaceholder} className="h-9 bg-background border-border text-sm" autoFocus />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-foreground">{t.establishment}</label>
-                                        <Input type="text" value={config.establishmentName || ''} onChange={e => onConfigChange({ establishmentName: e.target.value })} placeholder={t.establishmentPlaceholder} className="h-9 bg-background border-border text-sm" />
-                                    </div>
+                        {/* Step 1 : Langue */}
+                        {step === 1 && (
+                            <div className="space-y-4 animate-fade-in duration-500">
+                            <p className="text-sm sm:text-base text-slate-600 font-medium">{t.languageSelect}</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button 
+                                    onClick={() => { setLang('fr'); setStep(2); }} 
+                                    className={cn(
+                                        "p-6 sm:p-8 rounded-2xl border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-3 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+                                        lang === 'fr' 
+                                            ? "border-blue-600 bg-blue-50/50 text-blue-900 shadow-sm" 
+                                            : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600"
+                                    )}
+                                > 
+                                    <span className="text-3xl sm:text-4xl">🇫🇷</span>
+                                    <span className="text-base sm:text-lg font-bold">Français</span>
+                                </button>
+                                <button 
+                                    onClick={() => { setLang('ar'); setStep(2); }} 
+                                    className={cn(
+                                        "p-6 sm:p-8 rounded-2xl border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-3 cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20",
+                                        lang === 'ar' 
+                                            ? "border-blue-600 bg-blue-50/50 text-blue-900 shadow-sm" 
+                                            : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50 text-slate-600"
+                                    )}
+                                > 
+                                    <span className="text-3xl sm:text-4xl">🇲🇦</span>
+                                    <span className="text-base sm:text-lg font-bold">العربية</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 2 : Profil */}
+                    {step === 2 && (
+                        <div className="space-y-6 animate-fade-in duration-500 max-w-2xl">
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.fullName}</label>
+                                    <Input 
+                                        type="text" 
+                                        value={config.defaultTeacherName || ''} 
+                                        onChange={e => onConfigChange({ defaultTeacherName: e.target.value })} 
+                                        placeholder={t.fullNamePlaceholder} 
+                                        className="h-12 px-4 text-start text-base rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-blue-600 focus-visible:border-blue-600 transition-shadow" 
+                                        autoFocus 
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.establishment}</label>
+                                    <Input 
+                                        type="text" 
+                                        value={config.establishmentName || ''} 
+                                        onChange={e => onConfigChange({ establishmentName: e.target.value })} 
+                                        placeholder={t.establishmentPlaceholder} 
+                                        className="h-12 px-4 text-start text-base rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-blue-600 focus-visible:border-blue-600 transition-shadow" 
+                                    />
                                 </div>
                             </div>
-                            <div>
-                                <label className="mb-2.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">{t.teachingCycle}</label>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            
+                            <div className="space-y-3 pt-4 border-t border-slate-100">
+                                <label className="block text-start text-sm font-semibold text-slate-900">{t.teachingCycle}</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {CYCLES.map(c => {
                                         const active = cycle === c.key;
                                         return (
                                             <button key={c.key} type="button" onClick={() => handleCycleChange(c.key)}
-                                                className={cn('group relative flex min-h-[72px] w-full cursor-pointer items-center gap-3.5 rounded-2xl border-2 p-3.5 text-start transition-all duration-200 outline-none',
-                                                    active ? 'border-primary bg-primary/10 text-primary shadow-xs' : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted')}>
-                                                <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105',
-                                                    active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                                                    <c.icon className="h-6 w-6" />
+                                                className={cn('group relative flex sm:flex-col items-center sm:items-start gap-3 rounded-2xl border-2 p-3 sm:p-4 text-start transition-all duration-300 outline-none focus-visible:ring-4 focus-visible:ring-blue-600/20 cursor-pointer',
+                                                    active ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50')}>
+                                                <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors duration-300',
+                                                    active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200')}>
+                                                    <c.icon className="h-5 w-5" />
                                                 </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <span className="block text-sm font-bold leading-tight">{t.cycleLabels[c.key]}</span>
-                                                    <span className="mt-0.5 block text-[11px] font-medium text-muted-foreground">
+                                                <div className="flex-1">
+                                                    <span className={cn("block text-sm sm:text-base font-bold", active ? "text-blue-900" : "text-slate-900")}>{t.cycleLabels[c.key]}</span>
+                                                    <span className={cn("mt-0.5 block text-xs font-medium", active ? "text-blue-700" : "text-slate-500")}>
                                                         {c.key === 'college' ? (isAr ? 'من الأولى إلى الثالثة إعدادي' : '1AC à 3AC') : c.key === 'lycee' ? (isAr ? 'الجذع المشترك والبكالوريا' : 'TC, 1BAC, 2BAC') : (isAr ? 'الأقسام التحضيرية للمدارس العليا' : 'CPGE (1ère & 2ème année)')}
                                                     </span>
                                                 </div>
@@ -282,114 +363,135 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                         </div>
                     )}
 
-                    {/* Step 2 : Classes */}
-                    {step === 2 && (
-                        <div className="space-y-4 animate-fade-in duration-300">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold">{t.sectionClasses}</h3>
-                                {hasClasses && <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">{t.addedClasses(classes.length)}</span>}
-                            </div>
-                            <div className="space-y-4">
-                                <div className="max-w-sm">
-                                    <label className="mb-1.5 block text-xs font-medium text-foreground">{t.subject}</label>
-                                    <Select value={subject} onValueChange={setSubject}>
-                                        <SelectTrigger className="h-9 bg-background text-sm"><SelectValue placeholder={t.subjectPlaceholder} /></SelectTrigger>
-                                        <SelectContent>
-                                            {(config.selectedSubjects?.length ? config.selectedSubjects : [...SUBJECTS]).map(s => (
-                                                <SelectItem key={s} value={s}>{formatLocalizedSubjectDisplayName(s, lang)}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                    {/* Step 3 : Classes */}
+                    {step === 3 && (
+                        <div className="space-y-6 animate-fade-in duration-500">
+                            {hasClasses && (
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">{t.addedClasses(classes.length)}</span>
                                 </div>
-                                <div className="space-y-2.5">
-                                    <div>
-                                        <label className="block text-xs font-medium text-foreground">{t.classesToCreate}</label>
-                                        <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{t.groupHint}</p>
-                                    </div>
+                            )}
+                            
+                            <div className="max-w-md space-y-1.5">
+                                <label className="block text-start text-sm font-semibold text-slate-900">{t.subject}</label>
+                                <Select value={subject} onValueChange={setSubject}>
+                                    <SelectTrigger className="text-start h-12 bg-slate-50 border-slate-200 text-base rounded-xl focus:ring-blue-600 focus:border-blue-600">
+                                        <SelectValue placeholder={t.subjectPlaceholder} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(config.selectedSubjects?.length ? config.selectedSubjects : [...SUBJECTS]).map(s => (
+                                            <SelectItem key={s} value={s}>{formatLocalizedSubjectDisplayName(s, lang)}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div>
+                                    <label className="block text-start text-sm font-semibold text-slate-900">{t.classesToCreate}</label>
+                                    <p className="mt-1 text-xs sm:text-sm text-slate-500">{t.groupHint}</p>
+                                </div>
+                                <div className="space-y-3">
                                     {rows.map((row, index) => (
                                         <div key={index} className="space-y-1">
-                                            <div className="grid grid-cols-[1.5rem_minmax(0,1fr)_6.5rem_auto] items-center gap-2">
-                                                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary">{index + 1}</span>
-                                                <Select value={row.level} onValueChange={value => setRows(prev => prev.map((c, i) => (i === index ? { ...c, level: value } : c)))}>
-                                                    <SelectTrigger className="h-9 min-w-0 bg-background text-sm"><SelectValue placeholder={t.levelPlaceholder} /></SelectTrigger>
-                                                    <SelectContent>
-                                                        {LEVEL_GROUPS[cycle].map(group => (
-                                                            <SelectGroup key={group.key}>
-                                                                <SelectLabel className="text-xs font-semibold text-muted-foreground">{t.levelGroupLabels[group.key]}</SelectLabel>
-                                                                {group.levels.map(level => <SelectItem key={level} value={level}>{formatLocalizedClassDisplayName(level, lang)}</SelectItem>)}
-                                                            </SelectGroup>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <Input type="text" value={row.group} onChange={event => updateGroup(index, event.target.value)}
+                                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                                                <span className="flex h-12 w-10 items-center justify-center rounded-xl bg-slate-50 text-sm font-bold text-slate-400 shrink-0 border border-transparent">{index + 1}</span>
+                                                
+                                                <div className="flex-1 min-w-[160px]">
+                                                    <Select value={row.level} onValueChange={value => setRows(prev => prev.map((c, i) => (i === index ? { ...c, level: value } : c)))}>
+                                                        <SelectTrigger className="text-start h-12 bg-slate-50 border-slate-200 text-sm sm:text-base rounded-xl focus:ring-blue-600 focus:border-blue-600">
+                                                            <SelectValue placeholder={t.levelPlaceholder} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {LEVEL_GROUPS[cycle].map(group => (
+                                                                <SelectGroup key={group.key}>
+                                                                    <SelectLabel className="text-xs sm:text-sm font-bold text-slate-400 py-2">{t.levelGroupLabels[group.key]}</SelectLabel>
+                                                                    {group.levels.map(level => <SelectItem key={level} value={level}>{formatLocalizedClassDisplayName(level, lang)}</SelectItem>)}
+                                                                </SelectGroup>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+
+                                                <Input 
+                                                    type="text" 
+                                                    value={row.group} 
+                                                    onChange={event => updateGroup(index, event.target.value)}
                                                     onBlur={() => { const next = normalizeGroupNumber(row.group); if (next) setRows(prev => prev.map((c, i) => (i === index ? { ...c, group: next } : c))); }}
                                                     placeholder={t.groupPlaceholder}
-                                                    className={`h-9 min-w-0 bg-background px-2 text-center text-sm ${rowValidations[index].issue && (showGroupValidation || row.group) ? 'border-destructive focus-visible:ring-destructive/30' : ''}`}
-                                                    inputMode="numeric" maxLength={2} aria-invalid={!!rowValidations[index].issue} />
+                                                    className={cn(
+                                                        "h-12 w-24 sm:w-28 bg-slate-50 border-slate-200 text-center text-sm sm:text-base rounded-xl focus-visible:ring-blue-600 focus-visible:border-blue-600",
+                                                        rowValidations[index].issue && (showGroupValidation || row.group) ? 'border-red-500 bg-red-50 focus-visible:ring-red-500 text-red-900' : ''
+                                                    )}
+                                                    inputMode="numeric" maxLength={2} aria-invalid={!!rowValidations[index].issue} 
+                                                />
+                                                
                                                 {rows.length > 1 ? (
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                        onClick={() => setRows(prev => prev.filter((_, i) => i !== index))} aria-label={t.deleteRow}><Trash2 className="h-3.5 w-3.5" /></Button>
-                                                ) : <span className="h-8 w-8" />}
+                                                    <Button type="button" variant="ghost" size="icon" className="h-12 w-12 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 shrink-0"
+                                                        onClick={() => setRows(prev => prev.filter((_, i) => i !== index))} aria-label={t.deleteRow}><Trash2 className="h-4 w-4" /></Button>
+                                                ) : <span className="h-12 w-12 hidden sm:block shrink-0" />}
                                             </div>
                                             {rowValidations[index].issue && (showGroupValidation || row.group) && (
-                                                <p className={`${isAr ? 'pr-7' : 'pl-7'} text-[11px] font-medium text-destructive`}>{getRowIssueText(rowValidations[index].issue)}</p>
+                                                <p className="text-xs sm:text-sm font-medium text-red-600 ps-12">
+                                                    {getRowIssueText(rowValidations[index].issue)}
+                                                </p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                                    <Button type="button" variant="outline" size="sm" className="h-8 border-primary/30 px-2.5 text-xs text-primary hover:bg-primary/10"
+                                
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
+                                    <Button type="button" variant="outline" className="h-10 sm:h-12 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-4 sm:px-6 font-semibold"
                                         onClick={() => setRows(prev => [...prev, { level: prev[prev.length - 1]?.level || defaultLevel, group: '' }])}>
-                                        <Plus className={isAr ? 'ml-1 h-3.5 w-3.5' : 'mr-1 h-3.5 w-3.5'} />{t.addRow}
+                                        <Plus className="me-2 h-4 w-4" />{t.addRow}
                                     </Button>
-                                    <Button type="button" size="sm" className="h-8 bg-primary px-3 text-xs text-primary-foreground hover:bg-primary/90" onClick={createBatch} disabled={!canCreateBatch}>{t.createClasses(rows.length)}</Button>
+                                    <Button type="button" className="h-10 sm:h-12 rounded-xl bg-slate-900 text-white hover:bg-slate-800 px-6 sm:px-8 font-semibold shadow-sm" 
+                                        onClick={createBatch} disabled={!canCreateBatch}>
+                                        {t.createClasses(rows.length)}
+                                    </Button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Step 3 : Emploi du temps */}
-                    {step === 3 && (
-                        <div className="space-y-4 animate-fade-in duration-300">
-                            <h3 className="text-sm font-semibold">{t.sectionSchedule}</h3>
-                            <div className="overflow-hidden rounded-lg border border-border bg-background text-sm">
+                    {/* Step 4 : Emploi du temps */}
+                    {step === 4 && (
+                        <div className="space-y-4 animate-fade-in duration-500">
+                            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                                 <ScheduleTab classes={classes} config={config} onChange={onConfigChange}
                                     onCreateClass={details => onCreateClass({ ...details, cycle: details.cycle ?? cycle })} />
                             </div>
-                            <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/50 p-2.5">
-                                <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                                <p className="text-[11px] leading-relaxed text-foreground">{iosNeedsInstall ? t.notificationsIOS : t.notifications}</p>
-                            </div>
                         </div>
                     )}
-                </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="border-t border-border bg-card/80 px-4 py-4 sm:px-8 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                <div className="mx-auto max-w-2xl flex items-center justify-between gap-3">
-                    {step === 1 ? (
-                        <Button type="button" variant="ghost" size="sm" onClick={onSkip} className="h-9 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer">{t.later}</Button>
-                    ) : (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setStep(s => s - 1)} className="h-9 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer inline-flex items-center gap-1.5">
-                            {isAr ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}{t.back}
-                        </Button>
-                    )}
-                    {step < 3 ? (
-                        <Button type="button" size="sm" disabled={step === 1 ? !isStep1Valid : !isStep2Valid}
-                            className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                            onClick={() => setStep(s => s + 1)}>
-                            {t.next}{isAr ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        </Button>
-                    ) : (
-                        <Button type="button" size="sm"
-                            className="h-9 px-4 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                            disabled={!hasClasses || finishing} onClick={finish}>
-                            {finishing ? 'Activation…' : t.start}{isAr ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        </Button>
-                    )}
-                </div>
-            </footer>
+                    </div>
+                    {/* Card Footer */}
+                    <footer className="bg-white border-t border-slate-100 p-4 sm:px-10 sm:py-5 flex items-center justify-end gap-3 rounded-b-2xl">
+                        {step === 4 ? (
+                            <Button type="button" variant="outline" onClick={onSkip} className="h-10 sm:h-11 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold text-slate-700 border-slate-200 hover:bg-slate-50">
+                                {t.later}
+                            </Button>
+                        ) : step > 1 ? (
+                            <Button type="button" variant="outline" onClick={() => setStep(s => s - 1)} className="h-10 sm:h-11 rounded-xl px-4 sm:px-6 text-sm sm:text-base font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 inline-flex items-center gap-2">
+                                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />{t.back}
+                            </Button>
+                        ) : null}
+                        
+                        {step < 4 ? (
+                            <Button type="button" disabled={step === 1 ? !isStep1Valid : step === 2 ? !isStep2Valid : !isStep3Valid}
+                                className="h-10 sm:h-11 rounded-xl px-6 sm:px-8 text-sm sm:text-base font-bold bg-[#5064df] hover:bg-[#4357c9] text-white disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 shadow-sm transition-all inline-flex items-center gap-2"
+                                onClick={handleNext}>
+                                {t.next}<ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />
+                            </Button>
+                        ) : (
+                            <Button type="button"
+                                className="h-10 sm:h-11 rounded-xl px-6 sm:px-8 text-sm sm:text-base font-bold bg-[#5064df] hover:bg-[#4357c9] text-white disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 shadow-sm transition-all inline-flex items-center gap-2"
+                                disabled={!hasClasses || finishing} onClick={finish}>
+                                {finishing ? 'Activation…' : t.start}<ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 rtl:rotate-180" />
+                            </Button>
+                        )}
+                    </footer>
+                </main>
+            </div>
         </div>
     );
 };

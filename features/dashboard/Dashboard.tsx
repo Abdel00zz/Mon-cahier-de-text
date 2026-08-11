@@ -176,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     useEffect(() => {
         if (isLoading) return;
-        if (classes.length > 0 && config.hasCompletedWelcome) return;
+        if (classes.length > 0 || config.hasCompletedWelcome) return;
         try {
             if (sessionStorage.getItem('onboarding_seen_v1')) return;
         } catch { /* stockage indisponible */ }
@@ -386,7 +386,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     // Page de démarrage immersive (première connexion, aucun cahier)
-    if (isOnboardingOpen && classes.length === 0) {
+    if (isOnboardingOpen) {
         return (
             <OnboardingPage
                 config={config}
@@ -401,7 +401,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-transparent text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8" data-dashboard-root>
+        <div
+            className="min-h-screen bg-transparent text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8"
+            style={{
+                backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%)',
+            }}
+            data-dashboard-root
+        >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
                     <header className="mb-8 space-y-4" id="dashboard-header">
@@ -515,7 +521,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors ${isActive ? 'bg-primary/10 text-primary dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-zinc-700/50 hover:text-foreground dark:hover:text-white'}`}
+                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-start transition-colors ${isActive ? 'bg-primary/10 text-primary dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-zinc-700/50 hover:text-foreground dark:hover:text-white'}`}
                                                             >
                                                                 <span className="text-[12px] font-bold">{displayCopy(option).label}</span>
                                                             </button>

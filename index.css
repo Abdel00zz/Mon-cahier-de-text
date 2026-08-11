@@ -47,41 +47,41 @@
 }
 
 @layer base {
-  /* ── Sakura (TweakCN) · thème vibrant, non sobre ─────────────────────
-     Nuit chaude teintée rose + cerisier en fleurs (rose vif).
+  /* ── Vercel Style (TweakCN) · Light theme ──────────────────────────
+     Style Vercel épuré, clair, minimaliste et haut contraste.
      Structure 100 % shadcn/ui : un seul jeu de variables sémantiques. */
   :root {
-    --background: 348 18% 7%;
-    --foreground: 340 30% 96%;
-    --card: 348 15% 9%;
-    --card-foreground: 340 30% 96%;
-    --popover: 348 15% 9%;
-    --popover-foreground: 340 30% 96%;
-    --primary: 325 85% 62%;
-    --primary-foreground: 345 100% 99%;
-    --secondary: 348 12% 17%;
-    --secondary-foreground: 340 30% 96%;
-    --muted: 348 12% 17%;
-    --muted-foreground: 345 10% 65%;
-    --accent: 325 85% 62% / 0.14;
-    --accent-foreground: 325 85% 72%;
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 340 30% 96%;
-    --success: 142 71% 45%;
-    --warning: 38 92% 55%;
-    --success-strong: 142 71% 55%;
-    --warning-strong: 38 92% 60%;
-    --destructive-strong: 0 72% 60%;
-    --scheduled: 325 85% 62% / 0.14;
-    --scheduled-foreground: 325 85% 72%;
-    --border: 348 10% 18%;
-    --input: 348 10% 21%;
-    --ring: 325 85% 62%;
-    --chart-1: 325 85% 62%;
-    --chart-2: 280 75% 58%;
-    --chart-3: 189 94% 43%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 340 82% 55%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --warning: 38 92% 50%;
+    --success-strong: 142.1 70% 28%;
+    --warning-strong: 38 92% 40%;
+    --destructive-strong: 0 84.2% 50%;
+    --scheduled: 0 0% 96.1%;
+    --scheduled-foreground: 0 0% 9%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 221.2 83.2% 53.3%;
+    --chart-2: 142.1 76.2% 36.3%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   * {

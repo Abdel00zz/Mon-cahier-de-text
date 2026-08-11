@@ -201,7 +201,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align="end" className="z-[70] w-56 rounded-lg border border-border bg-card p-1 shadow-lg shadow-zinc-100/50">
+          <DropdownMenuContent data-editor-actions align={isRtl ? 'start' : 'end'} className="z-[70] w-56 rounded-lg border border-border bg-card p-1 shadow-lg shadow-zinc-100/50">
             <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
               {t('toolbar.actions')}
             </DropdownMenuLabel>

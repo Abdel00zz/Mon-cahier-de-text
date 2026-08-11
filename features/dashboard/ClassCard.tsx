@@ -97,66 +97,72 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     return (
         <article
-            className={`group relative flex min-h-[160px] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 ${visual.cardHoverClass} hover:-translate-y-0.5 hover:border-primary/20 sm:min-h-[170px]`}
+            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-3xl border border-border/80 bg-card/80 p-5 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/80 dark:border-zinc-800 sm:p-6"
         >
+            {/* Subtle glow background */}
+            <div className={`absolute -left-10 -top-10 h-32 w-32 rounded-full blur-2xl transition-all pointer-events-none opacity-30 group-hover:opacity-60 ${visual.iconSurfaceClass}`} />
+
+            {/* Header */}
+            <div className="relative z-10 flex min-h-12 items-center justify-between gap-2">
+                {cycleBadge ? (
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${visual.iconSurfaceClass} border border-current/15 shadow-2xs`}>
+                        {cycleLabel}
+                    </span>
+                ) : <div />}
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-inner transition-transform duration-300 group-hover:scale-110 ${visual.iconSurfaceClass}`}>
+                    <Users className="h-6 w-6" />
+                </div>
+            </div>
+
+            {/* Body */}
             <button
                 type="button"
                 onClick={handleCardClick}
-                className={`flex min-h-[110px] w-full min-w-0 flex-1 touch-manipulation flex-col p-3 text-center outline-none transition-colors hover:bg-muted/50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 sm:p-4`}
+                className="relative z-10 my-5 w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl py-1"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
-                <div className="flex min-h-5 items-center">
-                    {cycleBadge ? (
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${cycleBadge.style}`}>
-                            {cycleLabel}
-                        </span>
-                    ) : null}
-                </div>
-                <div className="flex flex-1 flex-col items-center justify-center px-1 py-1.5 text-center">
-                    <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-2xl shadow-2xs transition-transform duration-200 group-hover:scale-105 ${visual.iconSurfaceClass}`}>
-                        <Users className="h-5 w-5" />
-                    </div>
-                    <h3
-                        className={`line-clamp-2 text-base font-bold leading-tight tracking-tight text-foreground transition-colors sm:text-lg`}
-                        title={displayName}
-                    >
-                        {formatSuperscript(mainName)}
-                        {groupNum && (
-                            <span className={`${isRtl ? 'mr-1.5' : 'ml-1.5'} font-sans text-lg font-bold opacity-90 ${visual.iconClass}`}>{groupNum}</span>
-                        )}
-                    </h3>
-                </div>
+                <h3
+                    className="text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-2xl"
+                    title={displayName}
+                >
+                    {formatSuperscript(mainName)}
+                    {groupNum && (
+                        <span className={`ms-2 font-sans text-xl font-bold sm:text-2xl ${visual.iconClass}`}>{groupNum}</span>
+                    )}
+                </h3>
             </button>
 
+            {/* Footer split actions */}
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="grid min-h-12 w-full shrink-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] border-t border-border bg-muted/30"
+                className="relative z-10 grid grid-cols-2 gap-2 border-t border-border/60 pt-4 text-xs"
             >
                 <button
                     type="button"
-                    onClick={handleConfigureClick}
-                    className="flex min-h-12 touch-manipulation items-center justify-center gap-1.5 px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 active:bg-secondary"
-                    title={t('dashboard.classSettings')}
-                    aria-label={`${t('dashboard.edit')} ${displayName}`}
-                >
-                    <Settings className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{t('dashboard.classSettings')}</span>
-                </button>
-                <button
-                    type="button"
                     onClick={handleNotificationsClick}
-                    className="flex min-h-12 min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s border-border px-2 text-primary transition-colors hover:bg-primary/10 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/30 active:bg-primary/20"
+                    className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 font-medium transition-colors cursor-pointer ${
+                        issueStatus
+                            ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400'
+                            : 'bg-muted/70 text-muted-foreground hover:bg-muted dark:bg-zinc-800/80 dark:hover:bg-zinc-800'
+                    }`}
                     title={notificationButtonLabel}
                     aria-label={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
                     <Info className="h-4 w-4 shrink-0" />
-                    {issueStatus && (
-                        <span className="min-w-0 text-center text-[9px] font-semibold leading-[1.15] text-destructive">
-                            ({issueStatus})
-                        </span>
-                    )}
+                    <span className="truncate">{issueStatus || t('notifications.classUpToDateTitle')}</span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleConfigureClick}
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-muted/70 py-2.5 px-3 font-medium text-muted-foreground hover:bg-muted dark:bg-zinc-800/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    title={t('dashboard.classSettings')}
+                    aria-label={`${t('dashboard.edit')} ${displayName}`}
+                >
+                    <Settings className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span>{t('dashboard.classSettings')}</span>
                 </button>
             </div>
         </article>
