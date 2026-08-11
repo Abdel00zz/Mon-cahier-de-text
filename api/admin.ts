@@ -128,21 +128,26 @@ const handleOverview = async (res: ApiResponse) => {
     const redis = await getRedis();
     const snapshots = (await redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots)) ?? {};
     const entries = Object.entries(snapshots);
+    if (entries.length === 0) {
+        return res.status(200).json({ teachers: [] });
+    }
+
     const pipeline = redis.pipeline();
     for (const [phone] of entries) {
         pipeline.get(KEYS.user(phone));
         pipeline.get(KEYS.adminMessages(phone));
     }
     const records = await pipeline.exec() as Array<StoredUser | AdminMessage[] | null>;
-    const teachers = entries.map(([, snapshot], index) => {
+    const teachers = entries.flatMap(([, snapshot], index) => {
         const user = records[index * 2] as StoredUser | null;
+        if (!user) return [];
         const messages = normalizeAdminMessages(records[index * 2 + 1]);
-        return {
+        return [{
             ...snapshot,
             blocked: user?.blocked === true,
             pendingMessages: messages.filter(message => !message.acknowledgedAt).length,
             lastMessageAt: messages[0]?.createdAt ?? null,
-        };
+        }];
     }).sort((a, b) => {
         const aTime = a.lastSyncAt ?? '';
         const bTime = b.lastSyncAt ?? '';

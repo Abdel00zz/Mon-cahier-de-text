@@ -41,6 +41,22 @@ const publicUser = (user: StoredUser) => ({
   hasCompletedWelcome: user.hasCompletedWelcome === true,
 });
 
+const initialAdminSnapshot = (user: StoredUser) => ({
+  phone: user.phone,
+  nom: user.nom,
+  prenom: user.prenom,
+  lastSyncAt: user.lastSyncAt ?? null,
+  classes: [],
+});
+
+/** Répare sans écraser les données pédagogiques un éventuel index admin manquant. */
+const ensureAdminSnapshot = async (
+  redis: Awaited<ReturnType<typeof getRedis>>,
+  user: StoredUser,
+): Promise<void> => {
+  await redis.hsetnx(KEYS.adminSnapshots, user.phone, initialAdminSnapshot(user));
+};
+
 const handleRegister = async (body: AuthBody, res: ApiResponse) => {
   const nom = assertName(body.nom, 'Nom');
   const prenom = assertName(body.prenom, 'Prénom');
@@ -62,7 +78,14 @@ const handleRegister = async (body: AuthBody, res: ApiResponse) => {
     throw new HttpError(409, 'Un compte existe déjà avec ce numéro de téléphone.');
   }
 
-  await redis.hset(KEYS.adminSnapshots, { [phone]: { phone, nom, prenom, lastSyncAt: null, classes: [] } });
+  try {
+    await redis.hset(KEYS.adminSnapshots, { [phone]: initialAdminSnapshot(user) });
+  } catch (error) {
+    // Évite un compte créé mais invisible dans l'administration si la seconde
+    // écriture Redis échoue. Le numéro reste ainsi disponible pour un nouvel essai.
+    await redis.del(KEYS.user(phone)).catch(() => undefined);
+    throw error;
+  }
 
   const token = await signSession({ phone, role: 'teacher' }, SESSION_MAX_AGE);
   setCookie(res, SESSION_COOKIE, token, SESSION_MAX_AGE);
@@ -87,6 +110,8 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
   if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
     throw new HttpError(401, INVALID_CREDENTIALS);
   }
+
+  await ensureAdminSnapshot(redis, user);
   if (user.blocked) {
     throw new HttpError(403, "Ce compte a été bloqué par l'administration. Contactez votre établissement.");
   }
@@ -108,6 +133,7 @@ const handleMe = async (req: ApiRequest, res: ApiResponse) => {
     clearCookie(res, SESSION_COOKIE);
     throw new HttpError(403, "Ce compte a été bloqué par l'administration.");
   }
+  await ensureAdminSnapshot(redis, user);
   res.status(200).json({ user: publicUser(user) });
 };
 
