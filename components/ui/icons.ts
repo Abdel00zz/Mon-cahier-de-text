@@ -67,6 +67,8 @@ import {
   faSpinner,
   faUsers,
   faBars,
+  faWandMagicSparkles,
+  faShieldHalved,
 } from '@fortawesome/free-solid-svg-icons';
 
 export interface AppIconProps {
@@ -165,3 +167,5 @@ export const User = createIcon(faUser);
 export const Loader2 = createIcon(faSpinner);
 export const Users = createIcon(faUsers);
 export const Menu = createIcon(faBars);
+export const Sparkles = createIcon(faWandMagicSparkles);
+export const ShieldCheck = createIcon(faShieldHalved);

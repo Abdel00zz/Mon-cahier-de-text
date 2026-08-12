@@ -50,7 +50,7 @@ const minuteLabel = (minutes: number): string => `${pad(Math.floor(minutes / 60)
 /* Palette en tokens du design system (rouge = destructive, vert = success,
    ambre = warning) : une seule identité, contrastes de texte accessibles. */
 const EVENT_TONE: Record<CalendarEventKind, { dot: string; wash: string; text: string }> = {
-  lesson: { dot: 'bg-primary', wash: 'bg-primary/10', text: 'text-primary' },
+  lesson: { dot: 'bg-[#423ed8]', wash: 'bg-[#eeaaff]/50', text: 'text-[#423ed8]' },
   holiday: { dot: 'bg-destructive', wash: 'bg-destructive/10', text: 'text-destructive-strong' },
   vacation: { dot: 'bg-success', wash: 'bg-success/10', text: 'text-success-strong' },
   official: { dot: 'bg-warning', wash: 'bg-warning/15', text: 'text-warning-strong' },
@@ -396,14 +396,14 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex shrink-0 items-center rounded-xl border border-border/80 bg-background/70 p-0.5 shadow-2xs" role="group" aria-label={t('calendar.layers')}>
-              <button type="button" onClick={() => moveMonth(-1)} aria-label={t('calendar.previousMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25">
+              <button type="button" onClick={() => moveMonth(-1)} aria-label={t('calendar.previousMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/25">
                 <ChevronLeft className={cn('h-3.5 w-3.5', isRtl && 'rotate-180')} />
               </button>
-              <button type="button" onClick={() => moveMonth(1)} aria-label={t('calendar.nextMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25">
+              <button type="button" onClick={() => moveMonth(1)} aria-label={t('calendar.nextMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/25">
                 <ChevronRight className={cn('h-3.5 w-3.5', isRtl && 'rotate-180')} />
               </button>
             </div>
-            <button type="button" onClick={goToday} className="h-9 shrink-0 rounded-xl border border-primary/20 bg-primary/[0.06] px-3 text-[11px] font-bold text-primary transition-colors hover:bg-primary/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+            <button type="button" onClick={goToday} className="h-9 shrink-0 rounded-xl border border-[#423ed8]/20 bg-[#eeaaff]/50 px-3 text-[11px] font-bold text-[#423ed8] transition-colors hover:bg-[#eeaaff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/30">
               {t('calendar.today')}
             </button>
             <div className="min-w-0 ps-1">
@@ -425,7 +425,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                 className={cn(
                   'h-8 shrink-0 rounded-lg border px-3 text-[10px] font-bold transition-all',
                   layer === item.id
-                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    ? 'border-[#423ed8] bg-[#423ed8] text-[#423ed8]-foreground shadow-sm'
                     : 'border-transparent bg-muted/65 text-muted-foreground hover:border-border hover:bg-background hover:text-foreground',
                 )}
               >
@@ -496,7 +496,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                       : status === 'done'
                         ? 'bg-success/[0.055]'
                         : status === 'planned'
-                          ? (dense ? 'bg-primary/[0.07]' : 'bg-primary/[0.035]')
+                          ? (dense ? 'bg-[#eeaaff]/80' : 'bg-[#eeaaff]/30')
                           : isWeekend ? 'bg-muted/[0.28]' : 'bg-card';
 
             return (
@@ -508,11 +508,11 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                 onClick={() => setSelectedDate(iso)}
                 aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${vacation.title}` : ''}, ${eventCountLabel(visibleEvents.length)}`}
                 className={cn(
-                  'group relative flex min-h-[66px] min-w-0 flex-col gap-1 p-1.5 text-start transition-colors hover:z-10 hover:brightness-[0.985] focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:min-h-[96px] sm:p-2',
+                  'group relative flex min-h-[66px] min-w-0 flex-col gap-1 p-1.5 text-start transition-colors hover:z-10 hover:brightness-[0.985] focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8] sm:min-h-[96px] sm:p-2',
                   dayWash,
                   !current && 'bg-muted/55 opacity-55',
-                  isToday && !selected && 'ring-1 ring-inset ring-primary/55',
-                  selected && 'z-10 ring-2 ring-inset ring-primary',
+                  isToday && !selected && 'ring-1 ring-inset ring-[#423ed8]/55',
+                  selected && 'z-10 ring-2 ring-inset ring-[#423ed8]',
                 )}
               >
                 {/* Trou à combler : liseré latéral, visible quel que soit le fond. */}
@@ -522,7 +522,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
 
                 <span className={cn(
                   'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums sm:text-[11px]',
-                  isToday ? 'bg-primary text-primary-foreground shadow-sm' : current ? 'text-foreground' : 'text-muted-foreground',
+                  isToday ? 'bg-[#423ed8] text-[#423ed8]-foreground shadow-sm' : current ? 'text-foreground' : 'text-muted-foreground',
                 )}>
                   {date.getDate()}
                 </span>
@@ -599,7 +599,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t('calendar.layers')}</p>
             <h4 className="mt-0.5 truncate text-[12px] font-extrabold capitalize text-foreground">{selectedDateLabel}</h4>
           </div>
-          <span className="shrink-0 rounded-full bg-primary/[0.08] px-2 py-1 text-[9px] font-bold text-primary ring-1 ring-inset ring-primary/15">
+          <span className="shrink-0 rounded-full bg-[#eeaaff]/60 px-2 py-1 text-[9px] font-bold text-[#423ed8] ring-1 ring-inset ring-[#423ed8]/15">
             {eventCountLabel(selectedEvents.length)}
           </span>
         </div>

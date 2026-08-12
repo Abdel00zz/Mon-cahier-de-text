@@ -437,95 +437,93 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-transparent text-foreground antialiased dark:bg-zinc-950 pb-20 sm:pb-8"
+            className="min-h-screen bg-slate-50 text-foreground antialiased dark:bg-slate-950 pb-20 sm:pb-8"
             style={{
-                backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%)',
+                backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(238, 170, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 10% 80%, rgba(152, 227, 255, 0.15) 0%, transparent 50%)',
             }}
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
-                    <header className="mb-8 space-y-4" id="dashboard-header">
-                        <div className="flex items-center gap-3">
-                            <div className="min-w-0">
-                                <p className={`mb-1 text-[10px] font-bold text-muted-foreground ${isRtl ? 'tracking-normal' : 'uppercase tracking-[0.12em]'}`}>{welcome.eyebrow}</p>
-                                <h1 className="flex flex-wrap items-baseline gap-x-1 text-xl font-bold tracking-tight text-foreground dark:text-white sm:text-2xl">
+                    <header className="mb-8 space-y-4 pb-2" id="dashboard-header">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                            <div>
+                                <h1 className="flex flex-wrap items-baseline gap-x-2 text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     <span>{greeting}{teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className={`font-sans text-[0.92em] leading-none font-normal text-blue-600`}
+                                            className="text-[#423ed8] font-bold"
                                         >
                                             {teacherName}
                                         </span>
                                     )}
                                 </h1>
-                                <p className="mt-1 max-w-2xl text-xs font-medium leading-relaxed text-muted-foreground sm:text-[13px]">
-                                    {welcome.title && <span className="font-bold text-zinc-600 dark:text-zinc-300">{welcome.title}</span>}
-                                    {welcome.title && welcome.detail && <span aria-hidden="true"> · </span>}
+                                <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
+                                    {welcome.title && <span className="font-semibold text-slate-700 dark:text-zinc-200">{welcome.title} · </span>}
                                     <span>{welcome.detail}</span>
                                 </p>
                             </div>
-                        </div>
 
-                        {classes.length > 0 && availableCycles.length > 1 && (
-                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setCycleFilter('all')}
-                                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                                        cycleFilter === 'all'
-                                            ? 'bg-primary text-primary-foreground shadow-sm'
-                                            : 'border border-border/65 bg-card/80 text-muted-foreground shadow-2xs hover:border-primary/20 hover:text-foreground dark:bg-zinc-900'
-                                    }`}
-                                >
-                                    {t('dashboard.filterAll')}
-                                </button>
-                                {availableCycles.map(c => {
-                                    return (
-                                        <button
-                                            key={c}
-                                            type="button"
-                                            onClick={() => setCycleFilter(c)}
-                                            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                                                cycleFilter === c
-                                                    ? 'bg-primary text-primary-foreground shadow-sm'
-                                                    : 'border border-border/65 bg-card/80 text-muted-foreground shadow-2xs hover:border-primary/20 hover:text-foreground dark:bg-zinc-900'
-                                            }`}
-                                        >
-                                            {t(`cycle.${c}`)}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                            {classes.length > 0 && availableCycles.length > 1 && (
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCycleFilter('all')}
+                                        className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
+                                            cycleFilter === 'all'
+                                                ? 'bg-[#423ed8] text-white shadow-none'
+                                                : 'border-2 border-slate-200 bg-white text-[#423ed8] hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                                        }`}
+                                    >
+                                        {t('dashboard.filterAll')}
+                                    </button>
+                                    {availableCycles.map(c => {
+                                        return (
+                                            <button
+                                                key={c}
+                                                type="button"
+                                                onClick={() => setCycleFilter(c)}
+                                                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
+                                                    cycleFilter === c
+                                                        ? 'bg-[#423ed8] text-white shadow-none'
+                                                        : 'border-2 border-slate-200 bg-white text-[#423ed8] hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                                                }`}
+                                            >
+                                                {t(`cycle.${c}`)}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </header>
 
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
-                            <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
+                            <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
                                 <div className="flex items-center gap-2.5">
-                                    <h2 id="classes-heading" className="text-xl font-bold text-foreground dark:text-white flex items-center gap-1.5">
+                                    <h2 id="classes-heading" className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         <span>{t('dashboard.classes')}</span>
                                         {filteredClasses.length > 0 && (
-                                            <span className="text-muted-foreground dark:text-muted-foreground font-medium text-sm">
-                                                ({filteredClasses.length})
+                                            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+                                                {filteredClasses.length}
                                             </span>
                                         )}
                                     </h2>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <Button
+                                <div className="flex items-center gap-3">
+                                    <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
-                                        className="h-8 sm:h-8.5 px-2.5 sm:px-3 rounded-full bg-primary hover:bg-primary/90 active:bg-primary/85 text-primary-foreground font-bold text-xs flex items-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-xs transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+                                        className="inline-flex items-center gap-2 bg-[#423ed8] hover:bg-[#322ebd] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 shadow-none active:scale-95 cursor-pointer"
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
                                     >
-                                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                        <Plus className="h-4 w-4" />
                                         <span>{t('dashboard.classShort')}</span>
-                                    </Button>
+                                    </button>
 
                                     {classes.length > 0 && (
                                         <div ref={displayMenuRef} className="relative shrink-0 hidden sm:block">
@@ -534,15 +532,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 onClick={() => setDisplayMenuOpen(open => !open)}
                                                 aria-haspopup="menu"
                                                 aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-8 sm:h-8.5 items-center gap-2 rounded-full bg-card/85 px-3 text-xs font-semibold text-foreground shadow-2xs hover:border-primary/20 active:scale-[0.98] border border-border/70"
+                                                className="flex h-11 items-center gap-2 rounded-2xl bg-white border-2 border-slate-200 px-4 text-xs font-bold text-[#423ed8] hover:border-[#423ed8] hover:bg-[#eeaaff]/20 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-[#98e3ff] shadow-none"
                                             >
                                                 <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 dark:text-slate-500 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             {isDisplayMenuOpen && (
                                                 <div
                                                     role="menu"
-                                                    className={`absolute top-[calc(100%+0.4rem)] z-30 w-44 overflow-hidden rounded-[16px] border border-border/70 bg-popover/95 p-2 shadow-[0_16px_40px_rgba(30,64,110,0.12)] backdrop-blur-xl dark:bg-zinc-800 ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    className={`absolute top-[calc(100%+0.5rem)] z-30 w-48 overflow-hidden rounded-[1.5rem] border-2 border-slate-200 bg-white p-2 shadow-[0_10px_25px_rgba(66,62,216,0.1)] dark:bg-slate-900 dark:border-slate-700 dark:shadow-[0_10px_25px_rgba(0,0,0,0.5)] ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
                                                         const isActive = option === currentDisplay;
@@ -556,9 +554,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-start transition-colors ${isActive ? 'bg-primary/10 text-primary dark:bg-blue-900/30 dark:text-blue-300' : 'text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-zinc-700/50 hover:text-foreground dark:hover:text-white'}`}
+                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-start transition-colors ${isActive ? 'bg-[#eeaaff]/50 text-[#423ed8] dark:bg-[#423ed8]/20 dark:text-[#eeaaff] font-bold' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}
                                                             >
-                                                                <span className="text-[12px] font-bold">{displayCopy(option).label}</span>
+                                                                <span className="text-xs">{displayCopy(option).label}</span>
                                                             </button>
                                                         );
                                                     })}
@@ -569,13 +567,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
                             </div>
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center gap-4 rounded-[22px] border border-border/65 bg-card/86 px-6 py-12 text-center shadow-[0_16px_44px_rgba(30,64,110,0.06)] backdrop-blur-sm">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8 text-primary">
+                                    <div className="flex flex-col items-center gap-4 rounded-[2rem] border-2 border-slate-200 bg-white px-6 py-12 text-center shadow-none dark:bg-slate-900 dark:border-slate-700">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eeaaff] text-[#423ed8] dark:bg-[#423ed8]/30 dark:text-[#eeaaff]">
                                             <BookOpen className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-foreground dark:text-white">{t('dashboard.emptyTitle')}</h3>
-                                            <p className="mt-1.5 text-sm text-muted-foreground dark:text-muted-foreground max-w-sm">
+                                            <h3 className="text-base font-bold text-[#423ed8] dark:text-[#98e3ff]">{t('dashboard.emptyTitle')}</h3>
+                                            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                             </div>
@@ -585,7 +583,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 } else {
                                                     setOnboardingOpen(true);
                                                 }
-                                            }} className="mt-4 h-10 rounded-xl bg-primary px-6 font-bold text-primary-foreground hover:bg-primary/90">
+                                            }} className="mt-4 h-11 rounded-2xl bg-[#423ed8] px-6 font-bold text-white hover:bg-[#322ebd] shadow-none">
                                             {t('dashboard.addClass')}
                                         </Button>
                                     </div>

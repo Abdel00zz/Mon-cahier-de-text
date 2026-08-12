@@ -380,7 +380,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           <button
             type="button"
             onClick={() => setCustomMode(v => !v)}
-            className="mt-2 text-[11px] font-medium text-muted-foreground/60 underline-offset-2 transition-colors hover:text-primary hover:underline"
+            className="mt-2 text-[11px] font-medium text-muted-foreground/60 underline-offset-2 transition-colors hover:text-[#423ed8] hover:underline"
           >
             {customMode ? copy.switchToOfficial : copy.createCustom}
           </button>

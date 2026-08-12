@@ -69,7 +69,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                             className="mb-8 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 sm:h-2"
                         >
                             <div
-                                className="h-full rounded-full bg-[#5064df] transition-[width] duration-500 ease-out"
+                                className="h-full rounded-full bg-[#423ed8] shadow-none transition-[width] duration-500 ease-out"
                                 style={{ width: `${(step / ONBOARDING_TOTAL_STEPS) * 100}%` }}
                             />
                         </div>

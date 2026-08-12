@@ -84,16 +84,23 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
         : t('notifications.classButtonLabel', { className: displayName });
 
+    const cycleLabel = classInfo.cycle ? t(`cycle.${classInfo.cycle}`) : null;
+
     return (
         <article
-            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-3xl border border-border/80 bg-card/80 p-5 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/80 dark:border-zinc-800 sm:p-6"
+            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2rem] p-6 transition-all duration-300 bg-white border-[3px] border-slate-200 hover:border-[#423ed8] hover:shadow-[0_12px_32px_rgba(66,62,216,0.15)] hover:-translate-y-1 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-[#98e3ff]"
         >
-            {/* Subtle glow background */}
-            <div className={`absolute -left-10 -top-10 h-32 w-32 rounded-full blur-2xl transition-all pointer-events-none opacity-30 group-hover:opacity-60 ${visual.iconSurfaceClass}`} />
+            {/* Header: Cycle Badge + Icon */}
+            <div className="relative z-10 flex items-center justify-between">
+                {cycleLabel ? (
+                    <span className="inline-flex items-center text-xs font-bold px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
+                        {cycleLabel}
+                    </span>
+                ) : (
+                    <span />
+                )}
 
-            {/* Header — icône centrée, sans badge de cycle */}
-            <div className="relative z-10 flex items-center justify-center">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-inner transition-transform duration-300 group-hover:scale-110 ${visual.iconSurfaceClass}`}>
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
                     <Users className="h-6 w-6" />
                 </div>
             </div>
@@ -102,47 +109,48 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <button
                 type="button"
                 onClick={handleCardClick}
-                className="relative z-10 my-5 w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl py-1"
+                className="relative z-10 my-6 w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#423ed8]/40 rounded-xl py-1 active:scale-[0.98] transition-transform"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <h3
-                    className="text-xl font-extrabold tracking-tighter text-foreground transition-colors group-hover:text-primary sm:text-2xl"
+                    className="text-2xl font-black tracking-tight text-slate-900 dark:text-white transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-200 sm:text-2xl"
                     title={displayName}
                 >
                     {formatSuperscript(displayName)}
                 </h3>
             </button>
 
-            {/* Footer split actions */}
+            {/* Footer split actions without separator line */}
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="relative z-10 grid grid-cols-2 gap-2 pt-4 text-xs"
+                className="relative z-10 grid grid-cols-2 gap-2 pt-2 text-xs"
             >
                 <button
                     type="button"
                     onClick={handleNotificationsClick}
-                    className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 font-medium transition-colors cursor-pointer ${
+                    className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl py-2.5 px-3 font-semibold transition-all duration-300 cursor-pointer active:scale-95 shadow-none relative overflow-hidden ${
                         issueStatus
-                            ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400'
-                            : 'bg-muted/70 text-muted-foreground hover:bg-muted dark:bg-zinc-800/80 dark:hover:bg-zinc-800'
+                            ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400'
+                            : 'bg-white text-[#423ed8] border-2 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300'
                     }`}
                     title={notificationButtonLabel}
                     aria-label={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{issueStatus || t('notifications.classUpToDateTitle')}</span>
+                    <Info className={`h-[18px] w-[18px] shrink-0 relative z-10 ${issueStatus ? 'text-red-600 dark:text-red-500' : ''}`} />
+                    <span className={`truncate relative z-10 ${issueStatus ? 'text-red-600 dark:text-red-400 font-bold animate-advanced-blink' : ''}`}>
+                        {issueStatus || t('notifications.classUpToDateTitle')}
+                    </span>
                 </button>
-
                 <button
                     type="button"
                     onClick={handleConfigureClick}
-                    className="flex items-center justify-center gap-1.5 rounded-xl bg-muted/70 py-2.5 px-3 font-medium text-muted-foreground hover:bg-muted dark:bg-zinc-800/80 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-white text-[#423ed8] border-2 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-all duration-200 cursor-pointer active:scale-95 shadow-none"
                     title={t('dashboard.classSettings')}
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Settings className="h-[18px] w-[18px] shrink-0" />
                     <span>{t('dashboard.classSettings')}</span>
                 </button>
             </div>

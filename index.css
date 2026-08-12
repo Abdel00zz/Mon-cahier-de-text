@@ -110,7 +110,27 @@
     background-image:
       radial-gradient(at 0% 0%, hsla(217, 100%, 94%, 1) 0, transparent 50%),
       radial-gradient(at 100% 100%, hsla(210, 100%, 95%, 1) 0, transparent 50%);
-    font-family: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Fira Sans', 'Roboto Slab', 'IBM Plex Sans Arabic', sans-serif !important;
+  }
+
+  [data-dashboard-root] {
+    font-family: 'Fira Sans', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  [data-dashboard-root] h1, 
+  [data-dashboard-root] h2, 
+  [data-dashboard-root] h3,
+  .auth-page-shell h1,
+  .auth-page-shell h2,
+  .auth-page-shell h3 {
+    font-family: 'Roboto Slab', 'Alexandria', 'IBM Plex Sans Arabic', serif;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
   }
 
   ::selection {
@@ -191,4 +211,18 @@ html[data-keyboard='open'] .mobile-tab-bar {
   @keyframes pop-in {
     from { transform: translateY(14px) scale(0.97); opacity: 0; }
   }
+
+  @keyframes advanced-blink {
+    0%, 100% { opacity: 1; text-shadow: 0 0 6px rgba(239, 68, 68, 0.4); transform: scale(1); }
+    50% { opacity: 0.85; text-shadow: 0 0 2px rgba(239, 68, 68, 0.1); transform: scale(0.99); }
+  }
+
+  @keyframes advanced-alert-pulse {
+    0%, 100% { background-color: rgba(239, 68, 68, 0.15); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { background-color: rgba(239, 68, 68, 0.05); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  }
+
+  --animate-advanced-blink: advanced-blink 1.5s ease-in-out infinite;
+  --animate-advanced-alert: advanced-alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+

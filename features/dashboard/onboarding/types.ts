@@ -72,6 +72,8 @@ export interface OnboardingCopy {
     manualMode: string;
     customClassName: string;
     customClassNamePlaceholder: string;
+    customNameQuestion: string;
+    switchToCatalogQuestion: string;
     groupHint: string;
     missingGroup: string;
     invalidGroup: string;
