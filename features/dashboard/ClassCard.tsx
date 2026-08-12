@@ -3,6 +3,7 @@ import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useDevice } from '@/hooks/useDevice';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ClassCardProps {
@@ -50,6 +51,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     notificationCount,
 }) => {
     const { impact } = useHapticFeedback();
+    const { type: deviceType } = useDevice();
     const { locale, t } = useLocale();
 
     const handleConfigureClick = () => {
@@ -85,12 +87,12 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     return (
         <article
-            className={`group relative flex min-h-[300px] sm:min-h-[320px] flex-col justify-between rounded-[24px] p-[8px] sm:p-[10px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(0,0,0,0.12)] ${visual.frameBg}`}
+            className={`group relative flex min-h-[230px] sm:min-h-[250px] flex-col justify-between rounded-[24px] p-[3px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(0,0,0,0.12)] ${visual.frameBg}`}
         >
-            {/* Inner White Card with Global Padding: pt-24px px-28px pb-20px */}
-            <div className="flex h-full w-full flex-col justify-between rounded-[18px] bg-white pt-[24px] px-[28px] pb-[20px] shadow-xs transition-colors dark:bg-slate-900">
-                {/* 1. En-tête (Header): Flexbox justify-between, align-center, mb-20px */}
-                <div className="relative z-10 flex items-center justify-between mb-[20px]">
+            {/* Inner White Card with Global Padding */}
+            <div className="flex h-full w-full flex-col justify-between rounded-[18px] bg-white pt-[18px] px-[22px] pb-[10px] shadow-xs transition-colors dark:bg-slate-900">
+                {/* 1. En-tête (Header): Flexbox justify-between, align-center, mb-14px */}
+                <div className="relative z-10 flex items-center justify-between mb-[14px]">
                     {/* Badge Mère / Matière ("MATHÉMATIQUES") */}
                     <span className="inline-flex items-center justify-center font-sans font-bold uppercase text-[11px] tracking-[0.08em] py-[6px] px-[14px] rounded-[100px] bg-[#E3EEE8] text-[#1B4332] dark:bg-emerald-950/80 dark:text-emerald-200">
                         {subjectBadgeText}
@@ -115,15 +117,15 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </div>
                 </div>
 
-                {/* 2. Corps de la carte (Titre principal): Centré, mt-16px mb-28px */}
+                {/* 2. Corps de la carte (Titre principal): Centré, mt-12px mb-20px */}
                 <button
                     type="button"
                     onClick={handleCardClick}
-                    className="relative z-10 mt-[16px] mb-[28px] w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#423ed8]/40 rounded-xl py-1 active:scale-[0.98] transition-transform"
+                    className="relative z-10 mt-[12px] mb-[20px] w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#423ed8]/40 rounded-xl py-1 active:scale-[0.98] transition-transform"
                     aria-label={t('dashboard.openClass', { className: displayName })}
                 >
                     <h3
-                        className="font-lemonde font-medium text-[24px] sm:text-[28px] leading-[1.25] text-[#191C1F] dark:text-slate-100 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                        className={`font-lemonde text-[24px] sm:text-[28px] leading-[1.25] text-[#191C1F] dark:text-slate-100 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-300 ${deviceType === 'desktop' ? 'font-medium' : 'font-normal'}`}
                         title={displayName}
                     >
                         {renderClassTitleWithFonts(displayName)}
@@ -134,13 +136,13 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div
                     role="group"
                     aria-label={t('dashboard.classActions', { className: displayName })}
-                    className="relative z-10 grid grid-cols-[1fr_auto] gap-[12px] text-xs"
+                    className="relative z-10 grid grid-cols-[1fr_auto] gap-[8px] text-xs"
                 >
                     {/* Bouton d'Alerte ("1 problème à résoudre" / Up to date) */}
                     <button
                         type="button"
                         onClick={handleNotificationsClick}
-                        className={`flex min-h-[44px] items-center justify-center gap-[6px] px-[16px] rounded-[100px] font-sans font-medium text-[13.5px] transition-all duration-300 cursor-pointer active:scale-95 relative overflow-hidden ${
+                        className={`flex min-h-[28px] items-center justify-center gap-[4px] px-[10px] rounded-[100px] font-sans font-medium text-[11px] transition-all duration-300 cursor-pointer active:scale-95 relative overflow-hidden ${
                             issueStatus
                                 ? 'bg-[#F8E5E2] text-[#8C1D18] border border-[#8C1D18]/15 dark:bg-red-950/60 dark:text-red-200 dark:border-red-800/30'
                                 : 'bg-[#E3EEE8] text-[#1B4332] border border-[#1B4332]/15 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/30'
@@ -149,9 +151,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         aria-label={notificationButtonLabel}
                         aria-haspopup="dialog"
                     >
-                        {/* SVG alert-circle 15px x 15px, stroke 1.8px */}
+                        {/* SVG alert-circle 12px x 12px, stroke 1.8px */}
                         <svg
-                            className={`w-[15px] h-[15px] shrink-0 relative z-10 ${issueStatus ? 'text-[#8C1D18] dark:text-red-400' : ''}`}
+                            className={`w-[12px] h-[12px] shrink-0 relative z-10 ${issueStatus ? 'text-[#8C1D18] dark:text-red-400' : ''}`}
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -172,13 +174,13 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     <button
                         type="button"
                         onClick={handleConfigureClick}
-                        className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[#191C1F] hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer active:scale-95"
+                        className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-full text-[#191C1F] hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer active:scale-95"
                         title={t('dashboard.classSettings')}
                         aria-label={`${t('dashboard.edit')} ${displayName}`}
                     >
-                        {/* SVG settings (Roue dentée) 22px x 22px, stroke 1.8px */}
+                        {/* SVG settings (Roue dentée) 16px x 16px, stroke 1.8px */}
                         <svg
-                            className="w-[22px] h-[22px] shrink-0"
+                            className="w-[16px] h-[16px] shrink-0"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"

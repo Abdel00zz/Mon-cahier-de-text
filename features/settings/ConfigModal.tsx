@@ -182,7 +182,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <button
               key={option.value}
               type="button"
-              onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
+              onClick={() => setLocalConfig(prev => ({ ...prev, applicationLocale: option.value as AppLocale }))}
               aria-pressed={active}
               className={cn(
                 'flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center transition-all cursor-pointer',
