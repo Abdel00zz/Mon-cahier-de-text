@@ -1,8 +1,7 @@
 import { memo, FC } from 'react';
 import { ClassInfo } from '@/types';
-import { formatLocalizedClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
-import { Info, Settings, Users } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -14,36 +13,33 @@ interface ClassCardProps {
     notificationCount: number;
 }
 
-const containsArabic = (text: string): boolean => {
-    if (!text) return false;
-    return /[\u0600-\u06FF]/.test(text);
-};
-
-const formatSuperscript = (text: string) => {
-    const parts = text.split(/(\d+(?:er|ere|eme|ère|ème))/);
+const renderClassTitleWithFonts = (text: string) => {
+    const parts = text.split(/(\d+(?:er|ere|eme|ère|ème)?)/g);
     return parts.map((part, idx) => {
-        if (part.endsWith('er')) return <span key={idx}>{part.slice(0, -2)}<sup>er</sup></span>;
-        if (part.endsWith('ere')) return <span key={idx}>{part.slice(0, -3)}<sup>ere</sup></span>;
-        if (part.endsWith('eme')) return <span key={idx}>{part.slice(0, -3)}<sup>eme</sup></span>;
-        if (part.endsWith('ère')) return <span key={idx}>{part.slice(0, -3)}<sup>ère</sup></span>;
-        if (part.endsWith('ème')) return <span key={idx}>{part.slice(0, -3)}<sup>ème</sup></span>;
-        return part;
-    });
-};
+        if (!part) return null;
 
-const CYCLE_BADGES: Record<string, { style: string; focusClass: string }> = {
-    college: {
-        style: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
-        focusClass: 'focus-visible:border-blue-400 focus-visible:ring-blue-400/45 dark:focus-visible:border-blue-600 dark:focus-visible:ring-blue-500/45',
-    },
-    lycee: {
-        style: 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
-        focusClass: 'focus-visible:border-purple-400 focus-visible:ring-purple-400/45 dark:focus-visible:border-purple-600 dark:focus-visible:ring-purple-500/45',
-    },
-    prepa: {
-        style: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
-        focusClass: 'focus-visible:border-amber-400 focus-visible:ring-amber-400/45 dark:focus-visible:border-amber-600 dark:focus-visible:ring-amber-500/45',
-    },
+        const matchOrdinal = part.match(/^(\d+)(er|ere|eme|ère|ème)$/);
+        if (matchOrdinal) {
+            const num = matchOrdinal[1];
+            const suf = matchOrdinal[2];
+            return (
+                <span key={idx} className="inline-inline-block">
+                    <span className="font-itim font-bold text-[1.1em]">{num}</span>
+                    <sup className="relative -top-[0.4em] text-[0.65em] font-normal font-sans">{suf}</sup>
+                </span>
+            );
+        }
+
+        if (/^\d+$/.test(part)) {
+            return (
+                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px]">
+                    {part}
+                </span>
+            );
+        }
+
+        return <span key={idx}>{part}</span>;
+    });
 };
 
 const ClassCardComponent: FC<ClassCardProps> = ({
@@ -54,7 +50,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     notificationCount,
 }) => {
     const { impact } = useHapticFeedback();
-    const { locale, t, isRtl } = useLocale();
+    const { locale, t } = useLocale();
 
     const handleConfigureClick = () => {
         impact('light');
@@ -74,7 +70,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getClassVisual(classInfo.name);
 
-    const isArabic = containsArabic(displayName);
     const issueStatus = notificationCount === 1
         ? t('notifications.classIssueCount.one', { count: notificationCount })
         : notificationCount > 1
@@ -84,78 +79,122 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
         : t('notifications.classButtonLabel', { className: displayName });
 
-    const cycleLabel = classInfo.cycle ? t(`cycle.${classInfo.cycle}`) : null;
+    const subjectBadgeText = classInfo.subject
+        ? formatLocalizedSubjectDisplayName(classInfo.subject, locale).toUpperCase()
+        : 'MATHÉMATIQUES';
 
     return (
         <article
-            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2rem] p-6 transition-all duration-300 bg-white border-[3px] border-slate-200 hover:border-[#423ed8] hover:shadow-[0_12px_32px_rgba(66,62,216,0.15)] hover:-translate-y-1 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-[#98e3ff]"
+            className={`group relative flex min-h-[300px] sm:min-h-[320px] flex-col justify-between rounded-[24px] p-[8px] sm:p-[10px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(0,0,0,0.12)] ${visual.frameBg}`}
         >
-            {/* Header: Cycle Badge + Icon */}
-            <div className="relative z-10 flex items-center justify-between">
-                {cycleLabel ? (
-                    <span className="inline-flex items-center text-xs font-bold px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
-                        {cycleLabel}
+            {/* Inner White Card with Global Padding: pt-24px px-28px pb-20px */}
+            <div className="flex h-full w-full flex-col justify-between rounded-[18px] bg-white pt-[24px] px-[28px] pb-[20px] shadow-xs transition-colors dark:bg-slate-900">
+                {/* 1. En-tête (Header): Flexbox justify-between, align-center, mb-20px */}
+                <div className="relative z-10 flex items-center justify-between mb-[20px]">
+                    {/* Badge Mère / Matière ("MATHÉMATIQUES") */}
+                    <span className="inline-flex items-center justify-center font-sans font-bold uppercase text-[11px] tracking-[0.08em] py-[6px] px-[14px] rounded-[100px] bg-[#E3EEE8] text-[#1B4332] dark:bg-emerald-950/80 dark:text-emerald-200">
+                        {subjectBadgeText}
                     </span>
-                ) : (
-                    <span />
-                )}
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
-                    <Users className="h-6 w-6" />
+                    {/* Icône Groupe d'élèves (users) 22px x 22px */}
+                    <div className="flex items-center justify-center">
+                        <svg
+                            className={`w-[22px] h-[22px] ${visual.iconClass}`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
                 </div>
-            </div>
 
-            {/* Body */}
-            <button
-                type="button"
-                onClick={handleCardClick}
-                className="relative z-10 my-6 w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#423ed8]/40 rounded-xl py-1 active:scale-[0.98] transition-transform"
-                aria-label={t('dashboard.openClass', { className: displayName })}
-            >
-                <h3
-                    className="text-2xl font-black tracking-tight text-slate-900 dark:text-white transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-200 sm:text-2xl"
-                    title={displayName}
-                >
-                    {formatSuperscript(displayName)}
-                </h3>
-            </button>
-
-            {/* Footer split actions without separator line */}
-            <div
-                role="group"
-                aria-label={t('dashboard.classActions', { className: displayName })}
-                className="relative z-10 grid grid-cols-2 gap-2 pt-2 text-xs"
-            >
+                {/* 2. Corps de la carte (Titre principal): Centré, mt-16px mb-28px */}
                 <button
                     type="button"
-                    onClick={handleNotificationsClick}
-                    className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl py-2.5 px-3 font-semibold transition-all duration-300 cursor-pointer active:scale-95 shadow-none relative overflow-hidden ${
-                        issueStatus
-                            ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100 hover:border-red-300 dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400'
-                            : 'bg-white text-[#423ed8] border-2 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300'
-                    }`}
-                    title={notificationButtonLabel}
-                    aria-label={notificationButtonLabel}
-                    aria-haspopup="dialog"
+                    onClick={handleCardClick}
+                    className="relative z-10 mt-[16px] mb-[28px] w-full text-center outline-none cursor-pointer focus-visible:ring-2 focus-visible:ring-[#423ed8]/40 rounded-xl py-1 active:scale-[0.98] transition-transform"
+                    aria-label={t('dashboard.openClass', { className: displayName })}
                 >
-                    <Info className={`h-[18px] w-[18px] shrink-0 relative z-10 ${issueStatus ? 'text-red-600 dark:text-red-500' : ''}`} />
-                    <span className={`truncate relative z-10 ${issueStatus ? 'text-red-600 dark:text-red-400 font-bold animate-advanced-blink' : ''}`}>
-                        {issueStatus || t('notifications.classUpToDateTitle')}
-                    </span>
+                    <h3
+                        className="font-lemonde font-medium text-[24px] sm:text-[28px] leading-[1.25] text-[#191C1F] dark:text-slate-100 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                        title={displayName}
+                    >
+                        {renderClassTitleWithFonts(displayName)}
+                    </h3>
                 </button>
-                <button
-                    type="button"
-                    onClick={handleConfigureClick}
-                    className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-2xl bg-white text-[#423ed8] border-2 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:text-slate-300 transition-all duration-200 cursor-pointer active:scale-95 shadow-none"
-                    title={t('dashboard.classSettings')}
-                    aria-label={`${t('dashboard.edit')} ${displayName}`}
+
+                {/* 3. Pied de carte (Actions & Boutons): Grid 1fr auto, gap 12px */}
+                <div
+                    role="group"
+                    aria-label={t('dashboard.classActions', { className: displayName })}
+                    className="relative z-10 grid grid-cols-[1fr_auto] gap-[12px] text-xs"
                 >
-                    <Settings className="h-[18px] w-[18px] shrink-0" />
-                    <span>{t('dashboard.classSettings')}</span>
-                </button>
+                    {/* Bouton d'Alerte ("1 problème à résoudre" / Up to date) */}
+                    <button
+                        type="button"
+                        onClick={handleNotificationsClick}
+                        className={`flex min-h-[44px] items-center justify-center gap-[6px] px-[16px] rounded-[100px] font-sans font-medium text-[13.5px] transition-all duration-300 cursor-pointer active:scale-95 relative overflow-hidden ${
+                            issueStatus
+                                ? 'bg-[#F8E5E2] text-[#8C1D18] border border-[#8C1D18]/15 dark:bg-red-950/60 dark:text-red-200 dark:border-red-800/30'
+                                : 'bg-[#E3EEE8] text-[#1B4332] border border-[#1B4332]/15 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/30'
+                        }`}
+                        title={notificationButtonLabel}
+                        aria-label={notificationButtonLabel}
+                        aria-haspopup="dialog"
+                    >
+                        {/* SVG alert-circle 15px x 15px, stroke 1.8px */}
+                        <svg
+                            className={`w-[15px] h-[15px] shrink-0 relative z-10 ${issueStatus ? 'text-[#8C1D18] dark:text-red-400' : ''}`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <span className={`truncate relative z-10 ${issueStatus ? 'font-semibold animate-advanced-blink' : ''}`}>
+                            {issueStatus || t('notifications.classUpToDateTitle')}
+                        </span>
+                    </button>
+
+                    {/* Bouton Réglages ("Paramètres"): Icône plus grande sans label ni box */}
+                    <button
+                        type="button"
+                        onClick={handleConfigureClick}
+                        className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[#191C1F] hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer active:scale-95"
+                        title={t('dashboard.classSettings')}
+                        aria-label={`${t('dashboard.edit')} ${displayName}`}
+                    >
+                        {/* SVG settings (Roue dentée) 22px x 22px, stroke 1.8px */}
+                        <svg
+                            className="w-[22px] h-[22px] shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </article>
     );
 };
 
 export const ClassCard = memo(ClassCardComponent);
+

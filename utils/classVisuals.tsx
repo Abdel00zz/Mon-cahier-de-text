@@ -1,89 +1,159 @@
 import { normalizeOfficialClassName } from '../constants';
 
 export interface ClassVisual {
-    /** Fond de l'icône, commun aux cartes et à la vue liste. */
+    /** Classe de fond pour le cadre extérieur de 12px (ex: bg-[#ec4899]). */
+    frameBg: string;
+    /** Style du badge de cycle ou sous-titre assorti. */
+    badgeStyle: string;
+    /** Fond de l'icône dans la carte intérieure blanche. */
     iconSurfaceClass: string;
-    /** Couleur de l'icône et du numéro de groupe éventuel. */
+    /** Couleur de l'icône. */
     iconClass: string;
-    /** Accent discret de la carte au survol. */
-    cardHoverClass: string;
 }
 
 const visual = (
-    color: string,
-    cardHoverClass: string,
-): ClassVisual => {
-    // Les classes Tailwind restent explicites afin d'être détectées au build.
-    const colors: Record<string, Pick<ClassVisual, 'iconSurfaceClass' | 'iconClass'>> = {
-        sky: { iconSurfaceClass: 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300', iconClass: 'text-sky-600 dark:text-sky-300' },
-        blue: { iconSurfaceClass: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300', iconClass: 'text-blue-600 dark:text-blue-300' },
-        indigo: { iconSurfaceClass: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300', iconClass: 'text-indigo-600 dark:text-indigo-300' },
-        emerald: { iconSurfaceClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300', iconClass: 'text-emerald-600 dark:text-emerald-300' },
-        rose: { iconSurfaceClass: 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300', iconClass: 'text-rose-600 dark:text-rose-300' },
-        cyan: { iconSurfaceClass: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-300', iconClass: 'text-cyan-600 dark:text-cyan-300' },
-        lime: { iconSurfaceClass: 'bg-lime-50 text-lime-600 dark:bg-lime-950/50 dark:text-lime-300', iconClass: 'text-lime-600 dark:text-lime-300' },
-        violet: { iconSurfaceClass: 'bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300', iconClass: 'text-violet-600 dark:text-violet-300' },
-        amber: { iconSurfaceClass: 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300', iconClass: 'text-amber-600 dark:text-amber-300' },
-        orange: { iconSurfaceClass: 'bg-orange-50 text-orange-600 dark:bg-orange-950/50 dark:text-orange-300', iconClass: 'text-orange-600 dark:text-orange-300' },
-        red: { iconSurfaceClass: 'bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-300', iconClass: 'text-red-600 dark:text-red-300' },
-        teal: { iconSurfaceClass: 'bg-teal-50 text-teal-600 dark:bg-teal-950/50 dark:text-teal-300', iconClass: 'text-teal-600 dark:text-teal-300' },
-        purple: { iconSurfaceClass: 'bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-300', iconClass: 'text-purple-600 dark:text-purple-300' },
-        fuchsia: { iconSurfaceClass: 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/50 dark:text-fuchsia-300', iconClass: 'text-fuchsia-600 dark:text-fuchsia-300' },
-        yellow: { iconSurfaceClass: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-950/50 dark:text-yellow-300', iconClass: 'text-yellow-600 dark:text-yellow-300' },
-        pink: { iconSurfaceClass: 'bg-pink-50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-300', iconClass: 'text-pink-600 dark:text-pink-300' },
-        stone: { iconSurfaceClass: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', iconClass: 'text-stone-600 dark:text-stone-300' },
-    };
-    return { ...colors[color], cardHoverClass };
-};
+    frameBg: string,
+    badgeStyle: string,
+    iconSurfaceClass: string,
+    iconClass: string,
+): ClassVisual => ({
+    frameBg,
+    badgeStyle,
+    iconSurfaceClass,
+    iconClass,
+});
+
+// Pink Bonbon pour Tronc Commun (#ec4899)
+const PINK_BONBON = visual(
+    'bg-[#ec4899]',
+    'bg-pink-100 text-pink-900 dark:bg-pink-900/60 dark:text-pink-100',
+    'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
+    'text-pink-600'
+);
+
+// Jaune Soleil pour 1er Bac (#eab308)
+const JAUNE_SOLEIL = visual(
+    'bg-[#eab308]',
+    'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/60 dark:text-yellow-100',
+    'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300',
+    'text-yellow-700'
+);
+
+// Bleu Roi pour 2ème Bac (#2563eb)
+const BLEU_ROI = visual(
+    'bg-[#2563eb]',
+    'bg-blue-100 text-blue-900 dark:bg-blue-900/60 dark:text-blue-100',
+    'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+    'text-blue-600'
+);
+
+// Cyan Vif pour Collège (#3cccfe)
+const CYAN_COLLEGE = visual(
+    'bg-[#3cccfe]',
+    'bg-sky-100 text-sky-900 dark:bg-sky-900/60 dark:text-sky-100',
+    'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300',
+    'text-sky-600'
+);
+
+// Mauve Pastel pour Prépas (#d9b8ff)
+const MAUVE_PREPA = visual(
+    'bg-[#d9b8ff]',
+    'bg-purple-100 text-purple-900 dark:bg-purple-900/60 dark:text-purple-100',
+    'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+    'text-purple-600'
+);
 
 /*
- * Identité du NIVEAU, jamais du numéro de groupe : « Tronc commun
- * scientifique 1 » et « … 2 » restent donc instantanément identifiables.
+ * Identité visuelle unifiée par Niveau/Cycle.
+ * Tronc Commun: Pink Bonbon (#ec4899)
+ * 1er Bac: Jaune Soleil (#eab308)
+ * 2ème Bac: Bleu Roi (#2563eb)
+ * Collège: Cyan Vif (#3cccfe)
+ * Prépas: Mauve Pastel (#d9b8ff)
  */
 const CLASS_VISUALS: Record<string, ClassVisual> = {
-    '1AC': visual('sky', 'hover:border-sky-300 dark:hover:border-sky-700'),
-    '2AC': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    '3AC': visual('indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
-    'Tronc commun scientifique': visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    'Tronc commun lettres': visual('rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
-    'Tronc commun technologique': visual('cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
-    '1BAC Sc. Expérimentales': visual('lime', 'hover:border-lime-300 dark:hover:border-lime-700'),
-    '1BAC Sc. Mathématiques': visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    '1BAC Lettres': visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
-    '1BAC Sc. Économiques': visual('orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
-    '2BAC PC': visual('red', 'hover:border-red-300 dark:hover:border-red-700'),
-    '2BAC SVT': visual('teal', 'hover:border-teal-300 dark:hover:border-teal-700'),
-    '2BAC Sc. Maths A': visual('purple', 'hover:border-purple-300 dark:hover:border-purple-700'),
-    '2BAC Sc. Maths B': visual('fuchsia', 'hover:border-fuchsia-300 dark:hover:border-fuchsia-700'),
-    '2BAC Sc. Économiques': visual('yellow', 'hover:border-yellow-300 dark:hover:border-yellow-700'),
-    '2BAC Sc. Gestion Comptable': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    '2BAC Lettres': visual('pink', 'hover:border-pink-300 dark:hover:border-pink-700'),
-    '2BAC Sc. Humaines': visual('stone', 'hover:border-stone-300 dark:hover:border-stone-700'),
-    'MPSI': visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    'PCSI': visual('cyan', 'hover:border-cyan-300 dark:hover:border-cyan-700'),
-    'MP': visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    'PSI': visual('indigo', 'hover:border-indigo-300 dark:hover:border-indigo-700'),
-    'TSI': visual('orange', 'hover:border-orange-300 dark:hover:border-orange-700'),
-    'ECS': visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    'ECT': visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
+    // Collège
+    '1AC': CYAN_COLLEGE,
+    '2AC': CYAN_COLLEGE,
+    '3AC': CYAN_COLLEGE,
+
+    // Tronc Commun
+    'Tronc Commun Scientifique': PINK_BONBON,
+    'Tronc Commun Lettres et Sciences Humaines': PINK_BONBON,
+    'Tronc Commun Technologique': PINK_BONBON,
+    'Tronc commun scientifique': PINK_BONBON,
+    'Tronc commun lettres': PINK_BONBON,
+    'Tronc commun technologique': PINK_BONBON,
+
+    // 1er Bac
+    '1er Bac Sciences Expérimentales': JAUNE_SOLEIL,
+    '1er Bac Sciences Mathématiques': JAUNE_SOLEIL,
+    '1er Bac Lettres et Sciences Humaines': JAUNE_SOLEIL,
+    '1er Bac Lettres': JAUNE_SOLEIL,
+    '1er Bac Sciences Économiques et Gestion': JAUNE_SOLEIL,
+    '1er Bac Sciences Économiques': JAUNE_SOLEIL,
+
+    // 2ème Bac
+    '2ème Bac Sciences Physiques': BLEU_ROI,
+    '2ème Bac Sciences de la Vie et de la Terre': BLEU_ROI,
+    '2ème Bac Sciences Mathématiques A': BLEU_ROI,
+    '2ème Bac Sciences Mathématiques B': BLEU_ROI,
+    '2ème Bac Sciences Économiques': BLEU_ROI,
+    '2ème Bac Sciences de Gestion Comptable': BLEU_ROI,
+    '2ème Bac Lettres': BLEU_ROI,
+    '2ème Bac Sciences Humaines': BLEU_ROI,
+
+    // Legacy keys (Backward compatibility)
+    '1BAC Sc. Expérimentales': JAUNE_SOLEIL,
+    '1BAC Sc. Mathématiques': JAUNE_SOLEIL,
+    '1BAC Lettres': JAUNE_SOLEIL,
+    '1BAC Sc. Économiques': JAUNE_SOLEIL,
+    '2BAC PC': BLEU_ROI,
+    '2BAC SVT': BLEU_ROI,
+    '2BAC Sc. Maths A': BLEU_ROI,
+    '2BAC Sc. Maths B': BLEU_ROI,
+    '2BAC Sc. Économiques': BLEU_ROI,
+    '2BAC Sc. Gestion Comptable': BLEU_ROI,
+    '2BAC Lettres': BLEU_ROI,
+    '2BAC Sc. Humaines': BLEU_ROI,
+
+    // Prépas
+    'MPSI': MAUVE_PREPA,
+    'PCSI': MAUVE_PREPA,
+    'MP': MAUVE_PREPA,
+    'PSI': MAUVE_PREPA,
+    'TSI': MAUVE_PREPA,
+    'ECS': MAUVE_PREPA,
+    'ECT': MAUVE_PREPA,
 };
 
 const LEVELS = Object.keys(CLASS_VISUALS).sort((left, right) => right.length - left.length);
-const FALLBACKS = [
-    visual('blue', 'hover:border-blue-300 dark:hover:border-blue-700'),
-    visual('violet', 'hover:border-violet-300 dark:hover:border-violet-700'),
-    visual('emerald', 'hover:border-emerald-300 dark:hover:border-emerald-700'),
-    visual('amber', 'hover:border-amber-300 dark:hover:border-amber-700'),
-    visual('rose', 'hover:border-rose-300 dark:hover:border-rose-700'),
-] as const;
 
-const hashText = (value: string): number =>
-    Array.from(value).reduce((total, character) => ((total * 31) + character.charCodeAt(0)) >>> 0, 0);
-
-/** Retourne une identité stable basée sur le niveau, sans dépendre de l'id ou du groupe. */
+/** Retourne une identité visuelle basée sur le niveau/cycle pour les cartes encadrées à double couche. */
 export const getClassVisual = (className: string): ClassVisual => {
     const normalized = normalizeOfficialClassName(className);
     const level = LEVELS.find(key => normalized === key || normalized.startsWith(`${key} `));
     if (level) return CLASS_VISUALS[level];
-    return FALLBACKS[hashText(normalized) % FALLBACKS.length];
+
+    // Fallback dynamique par préfixe
+    const lower = normalized.toLowerCase();
+    if (lower.startsWith('2') || lower.includes('2eme') || lower.includes('2ème') || lower.includes('2bac')) {
+        return BLEU_ROI;
+    }
+    if (lower.startsWith('1er') || lower.includes('1ere') || lower.includes('1ère') || lower.includes('1bac')) {
+        return JAUNE_SOLEIL;
+    }
+    if (lower.includes('tronc') || lower.startsWith('tc')) {
+        return PINK_BONBON;
+    }
+    if (lower.includes('ac') || lower.includes('coll')) {
+        return CYAN_COLLEGE;
+    }
+    if (['mpsi', 'pcsi', 'mp', 'psi', 'tsi', 'ecs', 'ect'].some(p => lower.includes(p))) {
+        return MAUVE_PREPA;
+    }
+
+    return CYAN_COLLEGE;
 };
+
+

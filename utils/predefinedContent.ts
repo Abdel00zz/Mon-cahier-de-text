@@ -1,5 +1,6 @@
 import { ClassInfo } from '../types.js';
 import { prepareImportedLessons, type ImportPreparationResult } from './importPipeline.js';
+import { normalizeOfficialClassName } from '../constants/class-levels.js';
 
 /**
  * Bibliothèque de contenus prédéfinis (public/contenus/) : pour chaque
@@ -34,18 +35,27 @@ const loadManifest = async (): Promise<Manifest | null> => {
 };
 
 const normalize = (value: string): string =>
-    value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+    value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
 /** Contenu prédéfini correspondant à la classe (niveau préfixe du nom + matière). */
 export const findPredefinedFor = async (classInfo: ClassInfo): Promise<PredefinedEntry | null> => {
     const manifest = await loadManifest();
     if (!manifest) return null;
-    const className = normalize(classInfo.name);
+    const officialNorm = normalize(normalizeOfficialClassName(classInfo.name));
+    const rawClassNameNorm = normalize(classInfo.name);
     const subject = normalize(classInfo.subject);
+
     return (
-        manifest.contenus.find(
-            entry => className.startsWith(normalize(entry.niveau)) && subject === normalize(entry.matiere)
-        ) ?? null
+        manifest.contenus.find(entry => {
+            const entryNiveauNorm = normalize(normalizeOfficialClassName(entry.niveau));
+            const rawEntryNiveauNorm = normalize(entry.niveau);
+            const matchesNiveau =
+                officialNorm.startsWith(entryNiveauNorm) ||
+                rawClassNameNorm.startsWith(rawEntryNiveauNorm) ||
+                officialNorm.includes(entryNiveauNorm);
+            const matchesSubject = subject === normalize(entry.matiere);
+            return matchesNiveau && matchesSubject;
+        }) ?? null
     );
 };
 

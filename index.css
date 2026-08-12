@@ -126,6 +126,14 @@
     font-family: 'Roboto Slab', 'Alexandria', 'IBM Plex Sans Arabic', serif;
   }
 
+  .font-lemonde {
+    font-family: 'Le Monde', 'Le Monde Serif', 'Newsreader', 'Playfair Display', 'Roboto Slab', serif;
+  }
+
+  .font-itim {
+    font-family: 'Itim', 'Comic Sans MS', cursive, sans-serif;
+  }
+
   .glass-card {
     background: rgba(255, 255, 255, 0.78);
     backdrop-filter: blur(16px);

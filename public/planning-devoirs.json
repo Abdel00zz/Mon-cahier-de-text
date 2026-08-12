@@ -36,7 +36,7 @@
       ]
     },
     {
-      "niveaux": ["Tronc commun scientifique", "Tronc commun technologique", "TC Sciences", "TC Technologique"],
+      "niveaux": ["Tronc Commun Scientifique", "Tronc Commun Technologique", "Tronc commun scientifique", "Tronc commun technologique", "TC Sciences", "TC Technologique"],
       "libelle": "Tronc commun scientifique et technologique",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "niveaux": ["Tronc commun lettres", "TC Lettres"],
+      "niveaux": ["Tronc Commun Lettres et Sciences Humaines", "Tronc commun lettres", "TC Lettres"],
       "libelle": "Tronc commun lettres / enseignement originel",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "niveaux": ["1BAC Lettres"],
+      "niveaux": ["1er Bac Lettres et Sciences Humaines", "1er Bac Lettres", "1BAC Lettres"],
       "libelle": "1re Bac lettres et sciences humaines",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -94,7 +94,7 @@
       ]
     },
     {
-      "niveaux": ["1BAC Sc. Expérimentales"],
+      "niveaux": ["1er Bac Sciences Expérimentales", "1BAC Sc. Expérimentales"],
       "libelle": "1re Bac sciences expérimentales et technologies",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "niveaux": ["1BAC Sc. Mathématiques"],
+      "niveaux": ["1er Bac Sciences Mathématiques", "1BAC Sc. Mathématiques"],
       "libelle": "1re Bac sciences mathématiques",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -142,7 +142,7 @@
       ]
     },
     {
-      "niveaux": ["2BAC PC", "2BAC SVT"],
+      "niveaux": ["2ème Bac Sciences Physiques", "2ème Bac Sciences de la Vie et de la Terre", "2BAC PC", "2BAC SVT"],
       "libelle": "2e Bac sciences expérimentales, branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -164,7 +164,7 @@
       ]
     },
     {
-      "niveaux": ["2BAC Sc. Maths"],
+      "niveaux": ["2ème Bac Sciences Mathématiques A", "2ème Bac Sciences Mathématiques B", "2BAC Sc. Maths"],
       "libelle": "2e Bac sciences mathématiques (A et B)",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -190,7 +190,7 @@
       ]
     },
     {
-      "niveaux": ["2BAC Sc. Économiques", "2BAC Sc. Gestion Comptable"],
+      "niveaux": ["2ème Bac Sciences Économiques", "2ème Bac Sciences de Gestion Comptable", "2BAC Sc. Économiques", "2BAC Sc. Gestion Comptable"],
       "libelle": "2e Bac sciences économiques et gestion",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -212,7 +212,7 @@
       ]
     },
     {
-      "niveaux": ["2BAC Lettres", "2BAC Sc. Humaines"],
+      "niveaux": ["2ème Bac Lettres", "2ème Bac Sciences Humaines", "2BAC Lettres", "2BAC Sc. Humaines"],
       "libelle": "2e Bac lettres et sciences humaines",
       "semestres": [
         { "n": 1, "devoirs": [
@@ -230,7 +230,7 @@
       ]
     },
     {
-      "niveaux": ["1BAC Sc. Économiques"],
+      "niveaux": ["1er Bac Sciences Économiques et Gestion", "1er Bac Sciences Économiques", "1BAC Sc. Économiques"],
       "libelle": "1re Bac sciences économiques et gestion",
       "semestres": [
         { "n": 1, "devoirs": [
