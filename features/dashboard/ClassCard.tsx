@@ -87,10 +87,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     return (
         <article
-            className={`group relative flex min-h-[230px] sm:min-h-[250px] flex-col justify-between rounded-[24px] p-[3px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-1 hover:shadow-[0_16px_35px_rgba(0,0,0,0.12)] ${visual.frameBg}`}
+            className={`group relative flex min-h-[230px] sm:min-h-[250px] flex-col justify-between rounded-[24px] p-[12px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-[4px] hover:shadow-[0_16px_35px_rgba(0,0,0,0.1)] ${visual.frameBg}`}
         >
-            {/* Inner White Card with Global Padding */}
-            <div className="flex h-full w-full flex-col justify-between rounded-[18px] bg-white pt-[18px] px-[22px] pb-[10px] shadow-xs transition-colors dark:bg-slate-900">
+            {/* Inner Content Area */}
+            <div className="relative z-10 flex flex-1 w-full flex-col justify-between rounded-[18px] bg-white dark:bg-slate-900 pt-[18px] px-[22px] pb-[10px]">
                 {/* 1. En-tête (Header): Flexbox justify-between, align-center, mb-14px */}
                 <div className="relative z-10 flex items-center justify-between mb-[14px]">
                     {/* Badge Mère / Matière ("MATHÉMATIQUES") */}

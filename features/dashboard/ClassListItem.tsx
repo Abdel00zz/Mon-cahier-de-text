@@ -46,9 +46,11 @@ export const ClassListItem: FC<ClassListItemProps> = ({
 
     return (
         <article
-            className="group relative flex min-h-[72px] overflow-hidden rounded-2xl border-2 border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-[#423ed8] dark:bg-slate-900 dark:border-slate-700 dark:hover:border-[#98e3ff]"
+            className={`group relative flex min-h-[72px] rounded-[24px] p-[12px] transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.05)] hover:-translate-y-[4px] hover:shadow-[0_16px_35px_rgba(0,0,0,0.1)] ${visual.frameBg}`}
         >
-            <button
+            {/* Inner Content Area */}
+            <div className="relative z-10 flex flex-1 w-full items-stretch justify-between rounded-[18px] bg-white dark:bg-slate-900 overflow-hidden">
+                <button
                 type="button"
                 onClick={selectClass}
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-3 text-start outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8]/40 dark:hover:bg-slate-800"
@@ -97,6 +99,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         </span>
                     )}
                 </button>
+            </div>
             </div>
         </article>
     );

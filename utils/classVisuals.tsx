@@ -23,28 +23,28 @@ const visual = (
     iconClass,
 });
 
-// Pink Bonbon pour Tronc Commun (#ec4899)
-const PINK_BONBON = visual(
-    'bg-[#ec4899]',
-    'bg-pink-100 text-pink-900 dark:bg-pink-900/60 dark:text-pink-100',
-    'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
-    'text-pink-600'
+// Orange Pêche pour Tronc Commun (#ffc085)
+const ORANGE_PECHE = visual(
+    'bg-[#ffc085]',
+    'bg-orange-100 text-orange-900 dark:bg-orange-900/60 dark:text-orange-100',
+    'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
+    'text-orange-600'
 );
 
-// Jaune Soleil pour 1er Bac (#eab308)
-const JAUNE_SOLEIL = visual(
-    'bg-[#eab308]',
-    'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/60 dark:text-yellow-100',
-    'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300',
-    'text-yellow-700'
+// Mauve Pastel pour 1er Bac (#d9b8ff)
+const MAUVE_PASTEL = visual(
+    'bg-[#d9b8ff]',
+    'bg-purple-100 text-purple-900 dark:bg-purple-900/60 dark:text-purple-100',
+    'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+    'text-purple-600'
 );
 
-// Bleu Roi pour 2ème Bac (#2563eb)
-const BLEU_ROI = visual(
-    'bg-[#2563eb]',
-    'bg-blue-100 text-blue-900 dark:bg-blue-900/60 dark:text-blue-100',
-    'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-    'text-blue-600'
+// Bleu Marine pour 2ème Bac (#2e3856)
+const NAVY_BLUE = visual(
+    'bg-[#2e3856]',
+    'bg-slate-100 text-slate-900 dark:bg-slate-900/60 dark:text-slate-100',
+    'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300',
+    'text-slate-800'
 );
 
 // Cyan Vif pour Collège (#3cccfe)
@@ -55,21 +55,12 @@ const CYAN_COLLEGE = visual(
     'text-sky-600'
 );
 
-// Mauve Pastel pour Prépas (#d9b8ff)
-const MAUVE_PREPA = visual(
-    'bg-[#d9b8ff]',
-    'bg-purple-100 text-purple-900 dark:bg-purple-900/60 dark:text-purple-100',
-    'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-    'text-purple-600'
-);
-
 /*
  * Identité visuelle unifiée par Niveau/Cycle.
- * Tronc Commun: Pink Bonbon (#ec4899)
- * 1er Bac: Jaune Soleil (#eab308)
- * 2ème Bac: Bleu Roi (#2563eb)
+ * Tronc Commun: Orange Pêche (#ffc085)
+ * 1er Bac: Mauve Pastel (#d9b8ff)
+ * 2ème Bac: Bleu Marine (#2e3856)
  * Collège: Cyan Vif (#3cccfe)
- * Prépas: Mauve Pastel (#d9b8ff)
  */
 const CLASS_VISUALS: Record<string, ClassVisual> = {
     // Collège
@@ -78,53 +69,53 @@ const CLASS_VISUALS: Record<string, ClassVisual> = {
     '3AC': CYAN_COLLEGE,
 
     // Tronc Commun
-    'Tronc Commun Scientifique': PINK_BONBON,
-    'Tronc Commun Lettres et Sciences Humaines': PINK_BONBON,
-    'Tronc Commun Technologique': PINK_BONBON,
-    'Tronc commun scientifique': PINK_BONBON,
-    'Tronc commun lettres': PINK_BONBON,
-    'Tronc commun technologique': PINK_BONBON,
+    'Tronc Commun Scientifique': ORANGE_PECHE,
+    'Tronc Commun Lettres et Sciences Humaines': ORANGE_PECHE,
+    'Tronc Commun Technologique': ORANGE_PECHE,
+    'Tronc commun scientifique': ORANGE_PECHE,
+    'Tronc commun lettres': ORANGE_PECHE,
+    'Tronc commun technologique': ORANGE_PECHE,
 
     // 1er Bac
-    '1er Bac Sciences Expérimentales': JAUNE_SOLEIL,
-    '1er Bac Sciences Mathématiques': JAUNE_SOLEIL,
-    '1er Bac Lettres et Sciences Humaines': JAUNE_SOLEIL,
-    '1er Bac Lettres': JAUNE_SOLEIL,
-    '1er Bac Sciences Économiques et Gestion': JAUNE_SOLEIL,
-    '1er Bac Sciences Économiques': JAUNE_SOLEIL,
+    '1er Bac Sciences Expérimentales': MAUVE_PASTEL,
+    '1er Bac Sciences Mathématiques': MAUVE_PASTEL,
+    '1er Bac Lettres et Sciences Humaines': MAUVE_PASTEL,
+    '1er Bac Lettres': MAUVE_PASTEL,
+    '1er Bac Sciences Économiques et Gestion': MAUVE_PASTEL,
+    '1er Bac Sciences Économiques': MAUVE_PASTEL,
 
     // 2ème Bac
-    '2ème Bac Sciences Physiques': BLEU_ROI,
-    '2ème Bac Sciences de la Vie et de la Terre': BLEU_ROI,
-    '2ème Bac Sciences Mathématiques A': BLEU_ROI,
-    '2ème Bac Sciences Mathématiques B': BLEU_ROI,
-    '2ème Bac Sciences Économiques': BLEU_ROI,
-    '2ème Bac Sciences de Gestion Comptable': BLEU_ROI,
-    '2ème Bac Lettres': BLEU_ROI,
-    '2ème Bac Sciences Humaines': BLEU_ROI,
+    '2ème Bac Sciences Physiques': NAVY_BLUE,
+    '2ème Bac Sciences de la Vie et de la Terre': NAVY_BLUE,
+    '2ème Bac Sciences Mathématiques A': NAVY_BLUE,
+    '2ème Bac Sciences Mathématiques B': NAVY_BLUE,
+    '2ème Bac Sciences Économiques': NAVY_BLUE,
+    '2ème Bac Sciences de Gestion Comptable': NAVY_BLUE,
+    '2ème Bac Lettres': NAVY_BLUE,
+    '2ème Bac Sciences Humaines': NAVY_BLUE,
 
     // Legacy keys (Backward compatibility)
-    '1BAC Sc. Expérimentales': JAUNE_SOLEIL,
-    '1BAC Sc. Mathématiques': JAUNE_SOLEIL,
-    '1BAC Lettres': JAUNE_SOLEIL,
-    '1BAC Sc. Économiques': JAUNE_SOLEIL,
-    '2BAC PC': BLEU_ROI,
-    '2BAC SVT': BLEU_ROI,
-    '2BAC Sc. Maths A': BLEU_ROI,
-    '2BAC Sc. Maths B': BLEU_ROI,
-    '2BAC Sc. Économiques': BLEU_ROI,
-    '2BAC Sc. Gestion Comptable': BLEU_ROI,
-    '2BAC Lettres': BLEU_ROI,
-    '2BAC Sc. Humaines': BLEU_ROI,
+    '1BAC Sc. Expérimentales': MAUVE_PASTEL,
+    '1BAC Sc. Mathématiques': MAUVE_PASTEL,
+    '1BAC Lettres': MAUVE_PASTEL,
+    '1BAC Sc. Économiques': MAUVE_PASTEL,
+    '2BAC PC': NAVY_BLUE,
+    '2BAC SVT': NAVY_BLUE,
+    '2BAC Sc. Maths A': NAVY_BLUE,
+    '2BAC Sc. Maths B': NAVY_BLUE,
+    '2BAC Sc. Économiques': NAVY_BLUE,
+    '2BAC Sc. Gestion Comptable': NAVY_BLUE,
+    '2BAC Lettres': NAVY_BLUE,
+    '2BAC Sc. Humaines': NAVY_BLUE,
 
     // Prépas
-    'MPSI': MAUVE_PREPA,
-    'PCSI': MAUVE_PREPA,
-    'MP': MAUVE_PREPA,
-    'PSI': MAUVE_PREPA,
-    'TSI': MAUVE_PREPA,
-    'ECS': MAUVE_PREPA,
-    'ECT': MAUVE_PREPA,
+    'MPSI': MAUVE_PASTEL,
+    'PCSI': MAUVE_PASTEL,
+    'MP': MAUVE_PASTEL,
+    'PSI': MAUVE_PASTEL,
+    'TSI': MAUVE_PASTEL,
+    'ECS': MAUVE_PASTEL,
+    'ECT': MAUVE_PASTEL,
 };
 
 const LEVELS = Object.keys(CLASS_VISUALS).sort((left, right) => right.length - left.length);
@@ -138,19 +129,19 @@ export const getClassVisual = (className: string): ClassVisual => {
     // Fallback dynamique par préfixe
     const lower = normalized.toLowerCase();
     if (lower.startsWith('2') || lower.includes('2eme') || lower.includes('2ème') || lower.includes('2bac')) {
-        return BLEU_ROI;
+        return NAVY_BLUE;
     }
     if (lower.startsWith('1er') || lower.includes('1ere') || lower.includes('1ère') || lower.includes('1bac')) {
-        return JAUNE_SOLEIL;
+        return MAUVE_PASTEL;
     }
     if (lower.includes('tronc') || lower.startsWith('tc')) {
-        return PINK_BONBON;
+        return ORANGE_PECHE;
     }
     if (lower.includes('ac') || lower.includes('coll')) {
         return CYAN_COLLEGE;
     }
     if (['mpsi', 'pcsi', 'mp', 'psi', 'tsi', 'ecs', 'ect'].some(p => lower.includes(p))) {
-        return MAUVE_PREPA;
+        return MAUVE_PASTEL;
     }
 
     return CYAN_COLLEGE;
