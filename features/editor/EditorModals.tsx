@@ -121,6 +121,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             onConfirm={handleConfirmAddContent}
             lessonsData={lessonsData}
             selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
+            subject={classInfo.subject}
           />
         );
       case 'analyse':

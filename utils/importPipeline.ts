@@ -2,6 +2,7 @@ import type { LessonsData, TopLevelItem } from '../types.js';
 import { logger } from './logger.js';
 import { detectContentDirection, isContentDirection } from './contentDirection.js';
 import type { ContentDirectionDetection } from './contentDirection.js';
+import { normalizeContentType } from '../constants/type-keys.js';
 
 interface ImportReport {
   topLevelCount: number;
@@ -158,6 +159,13 @@ const normalizeItem = (
   ['title', 'name', 'type', 'number', 'page', 'description', 'remark', 'content'].forEach(key => {
     normalizeStringField(item, key, report);
   });
+
+  // Normalise le type de contenu vers la clé canonique (accents, alias
+  // FR/EN). Les types de structure (chapter, section, devoir…) ne figurent
+  // pas dans TYPE_MAP et restent inchangés.
+  if (typeof item.type === 'string' && item.type) {
+    item.type = normalizeContentType(item.type);
+  }
 
   if (Object.prototype.hasOwnProperty.call(item, 'date')) {
     const nextDate = normalizeDate(item.date);

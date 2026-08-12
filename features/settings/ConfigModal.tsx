@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, Cycle } from '@/types';
 import { localeMetadata, useLocale } from '@/i18n/LocaleProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { NotificationsTab } from './components/NotificationsTab';
 import { AccountTab } from './components/AccountTab';
 import { ArchivesSection } from './components/ArchivesSection';
 import { getProvincesForAcademy, MOROCCO_EDUCATION_ACADEMIES } from '@/utils/moroccoEducation';
+import { SUBJECTS, formatLocalizedSubjectDisplayName } from '@/constants';
 import {
   CalendarRange,
   Bell,
@@ -119,6 +121,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   asPage = false,
 }) => {
   const { locale, isRtl, t } = useLocale();
+  const { user } = useAuth();
   const [localConfig, setLocalConfig] = useState(config);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
@@ -168,6 +171,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
   const sectionTitleClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
+
+  // Matière enseignée (unique) : radio, appliquée aux classes, documents et
+  // impressions, et pilote le domaine des types de contenu (math/svt/physique).
+  const selectedSubject = localConfig.selectedSubjects?.[0] ?? '';
+  const selectSubject = (subject: string) => {
+    setLocalConfig(prev => ({ ...prev, selectedSubjects: [subject], showAllSubjects: false }));
+  };
 
   const languageSection = (
     <section className="rounded-xl border border-border/75 bg-secondary/45 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
@@ -236,119 +246,184 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               </p>
             </div>
 
-            <div className="space-y-4 max-w-2xl">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                  {t('settings.establishment')}
-                </label>
-                <Input
-                  type="text"
-                  value={localConfig.establishmentName || ''}
-                  onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
-                  placeholder={t('settings.establishmentPlaceholder')}
-                  className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
-                />
-              </div>
+            {/* 1. Profil & Matière */}
+            <section className="rounded-2xl border border-border/70 bg-card/55 p-4 sm:p-5">
+              <header className="flex items-center gap-2.5 mb-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <User className="h-4.5 w-4.5" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-foreground">{t('settings.group.profile')}</h3>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">{t('settings.subjectsHint')}</p>
+                </div>
+              </header>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      {t('settings.teacherName')}
+                    </label>
+                    <Input
+                      type="text"
+                      value={localConfig.defaultTeacherName || ''}
+                      onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
+                      placeholder={t('settings.teacherPlaceholder')}
+                      className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      {t('settings.phone')}
+                    </label>
+                    <Input
+                      type="tel"
+                      value={user?.phone ?? ''}
+                      disabled
+                      readOnly
+                      placeholder="—"
+                      className="h-10 rounded-xl border-border/80 bg-muted/50 px-3.5 text-sm shadow-none text-muted-foreground"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
-                  <label htmlFor="academy-region" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                    {t('settings.academy')}
+                  <label htmlFor="subject" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    {t('settings.subjects')}
                   </label>
                   <select
-                    id="academy-region"
-                    value={selectedAcademy}
-                    onChange={event => {
-                      const academyRegion = event.target.value;
-                      const provinces = getProvincesForAcademy(academyRegion);
-                      setLocalConfig(prev => ({
-                        ...prev,
-                        academyRegion,
-                        educationProvince: provinces.some(province => province.id === prev.educationProvince)
-                          ? prev.educationProvince
-                          : '',
-                      }));
-                    }}
+                    id="subject"
+                    value={selectedSubject}
+                    onChange={event => selectSubject(event.target.value)}
                     className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                   >
-                    <option value="">{t('settings.chooseAcademy')}</option>
-                    {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
-                      <option key={academy.id} value={academy.id}>
-                        {locale === 'ar' ? academy.arabicLabel : academy.label}
+                    <option value="">{t('settings.chooseSubject')}</option>
+                    {SUBJECTS.map(subject => (
+                      <option key={subject} value={subject}>
+                        {formatLocalizedSubjectDisplayName(subject, locale)}
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. Cycle & Établissement */}
+            <section className="rounded-2xl border border-border/70 bg-card/55 p-4 sm:p-5">
+              <header className="flex items-center gap-2.5 mb-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                  <School className="h-4.5 w-4.5" />
+                </span>
+                <h3 className="text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
+              </header>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    {t('settings.cycle')}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {CYCLES.map(c => {
+                      const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
+                      return (
+                        <button
+                          key={c.key}
+                          type="button"
+                          onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
+                          className={cn(
+                            'group flex flex-col items-center justify-center gap-2 rounded-2xl border-2 px-2 py-3.5 transition-all duration-200 outline-none cursor-pointer',
+                            active
+                              ? 'border-blue-500 bg-blue-50/70'
+                              : 'border-border bg-card hover:border-blue-200 hover:bg-blue-50/40'
+                          )}
+                        >
+                          <span className={cn(
+                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
+                            active ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                          )}>
+                            <c.icon className="h-5 w-5" />
+                          </span>
+                          <span className={cn(
+                            'text-[11px] font-semibold leading-tight text-center',
+                            active ? 'text-blue-700' : 'text-muted-foreground'
+                          )}>
+                            {t(`settings.cycle.${c.key}`)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="education-province" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                    {t('settings.province')}
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    {t('settings.establishment')}
                   </label>
-                  <select
-                    id="education-province"
-                    value={localConfig.educationProvince ?? ''}
-                    disabled={!selectedAcademy}
-                    onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                    className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
-                  >
-                    <option value="">
-                      {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
-                    </option>
-                    {availableProvinces.map(province => (
-                      <option key={province.id} value={province.id}>
-                        {locale === 'ar' ? province.arabicLabel : province.label}
-                        {province.kind === 'prefecture' ? ` · ${t('settings.prefecture')}` : ''}
+                  <Input
+                    type="text"
+                    value={localConfig.establishmentName || ''}
+                    onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
+                    placeholder={t('settings.establishmentPlaceholder')}
+                    className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label htmlFor="academy-region" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      {t('settings.academy')}
+                    </label>
+                    <select
+                      id="academy-region"
+                      value={selectedAcademy}
+                      onChange={event => {
+                        const academyRegion = event.target.value;
+                        const provinces = getProvincesForAcademy(academyRegion);
+                        setLocalConfig(prev => ({
+                          ...prev,
+                          academyRegion,
+                          educationProvince: provinces.some(province => province.id === prev.educationProvince)
+                            ? prev.educationProvince
+                            : '',
+                        }));
+                      }}
+                      className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    >
+                      <option value="">{t('settings.chooseAcademy')}</option>
+                      {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
+                        <option key={academy.id} value={academy.id}>
+                          {locale === 'ar' ? academy.arabicLabel : academy.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="education-province" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      {t('settings.province')}
+                    </label>
+                    <select
+                      id="education-province"
+                      value={localConfig.educationProvince ?? ''}
+                      disabled={!selectedAcademy}
+                      onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
+                      className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
+                    >
+                      <option value="">
+                        {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
                       </option>
-                    ))}
-                  </select>
+                      {availableProvinces.map(province => (
+                        <option key={province.id} value={province.id}>
+                          {locale === 'ar' ? province.arabicLabel : province.label}
+                          {province.kind === 'prefecture' ? ` · ${t('settings.prefecture')}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                  {t('settings.teacherName')}
-                </label>
-                <Input
-                  type="text"
-                  value={localConfig.defaultTeacherName || ''}
-                  onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
-                  placeholder={t('settings.teacherPlaceholder')}
-                  className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
-                />
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                  {t('settings.cycle')}
-                </label>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {CYCLES.map(c => {
-                    const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
-                    return (
-                      <button
-                        key={c.key}
-                        type="button"
-                        onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
-                        className={cn(
-                          'group relative flex min-h-[68px] w-full cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 text-start transition-all duration-200 outline-none',
-                          active
-                            ? 'border-primary bg-primary/10 text-primary font-semibold'
-                            : 'border-border bg-card text-muted-foreground hover:border-border hover:bg-muted'
-                        )}
-                      >
-                        <div className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
-                          active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                        )}>
-                          <c.icon className="h-5 w-5" />
-                        </div>
-                        <span className="text-xs font-bold leading-snug">{t(`settings.cycle.${c.key}`)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            </section>
           </div>
         );
 

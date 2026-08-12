@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { MathJax } from 'better-react-mathjax';
 import { Indices, LessonsData, TopLevelItem } from '@/types';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
 import { hasMathSyntax } from '@/utils/math';
 import {
@@ -25,6 +25,8 @@ interface AddContentModalProps {
   onConfirm: (type: string, data: any) => void;
   lessonsData: LessonsData;
   selectedIndices: Indices | null;
+  /** matière de la classe : restreint les types de contenu proposés */
+  subject?: string;
 }
 
 const getElementTypeFromIndices = (data: LessonsData, indices: Indices): string | null => {
@@ -94,6 +96,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   onConfirm,
   lessonsData,
   selectedIndices,
+  subject,
 }) => {
   const { t, isRtl } = useLocale();
   const [stage, setStage] = useState<'select' | 'form'>('select');
@@ -101,6 +104,12 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   const [formData, setFormData] = useState<any>({});
   const initialFocusRef = useRef<HTMLInputElement>(null);
   const selectFocusRef = useRef<HTMLSelectElement>(null);
+
+  // Types de contenu proposés selon la matière (repli sur la liste complète).
+  const lessonTypeOptions = useMemo(
+    () => (subject ? getContentTypesForSubject(subject) : UNIQUE_LESSON_ITEM_TYPES),
+    [subject]
+  );
 
   // Reset when opening modal
   useEffect(() => {
@@ -263,7 +272,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                     <SelectValue placeholder={t('addContent.choose')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {UNIQUE_LESSON_ITEM_TYPES.map(type => (
+                    {lessonTypeOptions.map(type => (
                       <SelectItem key={type} value={type}>
                         {t(`contentType.${type}`)}
                       </SelectItem>
@@ -355,8 +364,12 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   const canAddSubsubsection = selectedElementType === 'subsection' || selectedElementType === 'subsubsection';
 
   const canAddItem = useMemo(() => {
-    return !!selectedItem && 'items' in selectedItem;
-  }, [selectedItem]);
+    if (!selectedItem) return false;
+    // Section / sous-section / sous-sous-section possèdent déjà `items`.
+    if ('items' in selectedItem) return true;
+    // Un chapitre peut aussi recevoir des items directement, sans section.
+    return selectedElementType === 'chapter';
+  }, [selectedItem, selectedElementType]);
 
   const canAddSeparator = !!selectedIndices;
 

@@ -1,70 +1,16 @@
 /* ── Mappings de types de contenu ────────────────────────────────────────── */
 
-export const TYPE_MAP: { [key: string]: string } = {
-  'definition': 'définition', 'définition': 'définition',
-  'theorem': 'théorème', 'théorème': 'théorème', 'theoreme': 'théorème',
-  'proposition': 'proposition', 'prop': 'proposition',
-  'lemma': 'lemme', 'lemme': 'lemme',
-  'corollary': 'corollaire', 'corollaire': 'corollaire', 'corol': 'corollaire',
-  'remark': 'remarque', 'remarque': 'remarque', 'rem': 'remarque',
-  'proof': 'preuve', 'preuve': 'preuve',
-  'example': 'exemple', 'exemple': 'exemple', 'ex': 'exemple',
-  'exercise': 'exercice', 'exercice': 'exercice', 'exo': 'exercice',
-  'activity': 'activité', 'activité': 'activité', 'activite': 'activité', 'act': 'activité',
-  'application': 'application', 'app': 'application'
-};
-
-export const BADGE_TEXT_MAP: { [key: string]: string } = {
-  'définition': 'Déf.',
-  'théorème': 'Th.',
-  'proposition': 'Prop.',
-  'lemme': 'Lem.',
-  'corollaire': 'Cor.',
-  'remarque': 'Rem.',
-  'preuve': 'Prv.',
-  'exemple': 'Ex.',
-  'exercice': 'Exo.',
-  'activité': 'Act.',
-  'application': 'Appli.'
-};
-
-export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-emerald-100/75 text-emerald-800 border-emerald-200/90',
-    'définition': 'bg-blue-100/75 text-blue-800 border-blue-200/90',
-    'théorème': 'bg-purple-100/75 text-purple-800 border-purple-200/90',
-    'proposition': 'bg-indigo-100/75 text-indigo-800 border-indigo-200/90',
-    'lemme': 'bg-violet-100/75 text-violet-800 border-violet-200/90',
-    'corollaire': 'bg-pink-100/75 text-pink-800 border-pink-200/90',
-    'remarque': 'bg-slate-100/85 text-slate-700 border-slate-200/90',
-    'preuve': 'bg-zinc-100 text-zinc-800 border-zinc-200/90',
-    'exemple': 'bg-cyan-100/75 text-cyan-800 border-cyan-200/90',
-    'exercice': 'bg-amber-100/80 text-amber-800 border-amber-200/90',
-    'application': 'bg-teal-100/75 text-teal-800 border-teal-200/90',
-};
-
-export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
-  'activité': 'Activité',
-  'définition': 'Définition',
-  'théorème': 'Théorème',
-  'proposition': 'Proposition',
-  'lemme': 'Lemme',
-  'corollaire': 'Corollaire',
-  'remarque': 'Remarque',
-  'preuve': 'Preuve',
-  'exemple': 'Exemple',
-  'exercice': 'Exercice',
-  'application': "Exercice d'application",
-};
-
-export const SUBJECT_ABBREV_MAP: Record<string, string> = {
-  'Mathématiques': 'Mathématiques',
-  'Physique': 'Physique',
-  'Économie': 'Économie',
-  'Français': 'Français',
-  'SVT': 'SVT',
-  'Sciences de la Vie': 'SVT',
-  'Sciences de la Vie et de la Terre': 'SVT',
-};
+// Les maps « pures » (sans React) vivent dans type-keys.ts pour être partagées
+// avec le pipeline d'import JSON (navigateur + fonctions cloud). On les
+// ré-exporte ici pour préserver l'API historique de `@/constants`.
+export {
+  TYPE_MAP,
+  BADGE_TEXT_MAP,
+  BADGE_COLOR_MAP,
+  BADGE_TOOLTIP_MAP,
+  SUBJECT_ABBREV_MAP,
+  normalizeContentType,
+} from './type-keys';
 
 /* ── Config du niveau de contenu ─────────────────────────────────────────── */
 

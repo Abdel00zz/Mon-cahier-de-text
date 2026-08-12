@@ -125,7 +125,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     aria-label={t('dashboard.openClass', { className: displayName })}
                 >
                     <h3
-                        className={`font-lemonde text-[24px] sm:text-[28px] leading-[1.25] text-[#191C1F] dark:text-slate-100 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-300 ${deviceType === 'desktop' ? 'font-medium' : 'font-normal'}`}
+                        className={`font-lateef text-[24px] sm:text-[28px] leading-[1.25] text-[#191C1F] dark:text-slate-100 transition-colors group-hover:text-slate-700 dark:group-hover:text-slate-300 ${deviceType === 'desktop' ? 'font-medium' : 'font-normal'}`}
                         title={displayName}
                     >
                         {renderClassTitleWithFonts(displayName)}

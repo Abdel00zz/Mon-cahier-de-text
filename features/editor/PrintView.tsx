@@ -88,25 +88,8 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 result.push({ data: element, indices, elementType });
             }
 
-            // Process all child collections independently
-            if (element.sections?.length > 0) {
-                element.sections.forEach((sec: Section, i: number) => 
-                    processElement(sec, { ...indices, sectionIndex: i }, 'section')
-                );
-            }
-            
-            if (element.subsections?.length > 0) {
-                element.subsections.forEach((sub: SubSection, i: number) => 
-                    processElement(sub, { ...indices, subsectionIndex: i }, 'subsection')
-                );
-            }
-            
-            if (element.subsubsections?.length > 0) {
-                element.subsubsections.forEach((ssub: SubSubSection, i: number) => 
-                    processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection')
-                );
-            }
-            
+            // Les items directement sous un nœud passent AVANT les sous-niveaux
+            // (ordre pédagogique : activity → introduction → section → contenu).
             if (element.items?.length > 0) {
                 element.items.forEach((item: any, i: number) => {
                 // Traiter les chapitres et évaluations de la même manière
@@ -125,6 +108,25 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     );
                 }
             });
+            }
+
+            // Process all child collections independently
+            if (element.sections?.length > 0) {
+                element.sections.forEach((sec: Section, i: number) =>
+                    processElement(sec, { ...indices, sectionIndex: i }, 'section')
+                );
+            }
+
+            if (element.subsections?.length > 0) {
+                element.subsections.forEach((sub: SubSection, i: number) =>
+                    processElement(sub, { ...indices, subsectionIndex: i }, 'subsection')
+                );
+            }
+
+            if (element.subsubsections?.length > 0) {
+                element.subsubsections.forEach((ssub: SubSubSection, i: number) =>
+                    processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection')
+                );
             }
 
             // Process separator if it exists

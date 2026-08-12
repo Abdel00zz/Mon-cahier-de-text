@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { EditableCell } from '@/components/ui/EditableCell';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useDevice } from '@/hooks/useDevice';
@@ -25,15 +25,25 @@ interface InlineEditRowProps {
     onSave: (updatedData: Partial<LessonItem>) => void;
     onCancel: () => void;
     accentColor?: string;
+    /** matière de la classe : restreint les types de contenu proposés */
+    subject?: string;
     /** garde intelligente : alertes live sur la date saisie (emploi du temps, fériés, vacances, absences) */
     getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
 
-const LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) => a.localeCompare(b));
+const ALL_LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) => a.localeCompare(b));
+
+const resolveLessonTypeOptions = (subject: string | undefined, currentType: string | undefined): string[] => {
+    const base = subject ? getContentTypesForSubject(subject) : ALL_LESSON_TYPE_OPTIONS;
+    const set = new Set<string>(base);
+    // garde l'ancien type visible même s'il n'appartient pas au domaine courant
+    if (currentType && !set.has(currentType)) set.add(currentType);
+    return [...set].sort((a, b) => a.localeCompare(b));
+};
 
 const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
 
-const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, getDateWarnings }) => {
+const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, subject, getDateWarnings }) => {
     const { t } = useLocale();
     const device = useDevice();
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
@@ -114,7 +124,7 @@ const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, a
                         <SelectValue placeholder={t('editor.type')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {LESSON_TYPE_OPTIONS.map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
+                        {resolveLessonTypeOptions(subject, formData.type as string | undefined).map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
@@ -156,6 +166,8 @@ interface MainTableProps {
   lessonsData: LessonsData;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
+  /** matière de la classe : restreint les types de contenu proposés */
+  subject?: string;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onDeleteSeparator: (indices: Indices) => void;
   onOpenAddContentModal: (indices?: Indices) => void;
@@ -455,6 +467,7 @@ const EmptyState: React.FC<{
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
   contentDirection,
+  subject,
   onOpenAddContentModal,
   showDescriptions,
   descriptionTypes = [],
@@ -485,6 +498,19 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
         const key = makeKey(indices);
         result.push({ data: element, indices, elementType, key });
 
+        // Les items directement sous un nœud (activity, introduction…) passent
+        // AVANT les sous-niveaux : activity → introduction → section → contenu.
+        if (element.items?.length > 0) {
+            element.items.forEach((item: LessonItem | EmbeddableTopLevelItem, i: number) => {
+                if (item.type === 'chapter') {
+                    processElement(item, { ...indices, itemIndex: i }, 'chapter');
+                } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
+                    processElement(item, { ...indices, itemIndex: i }, item.type as ElementType);
+                } else {
+                    processElement(item, { ...indices, itemIndex: i }, 'item');
+                }
+            });
+        }
         if (element.sections?.length > 0) {
             element.sections.forEach((sec: Section, i: number) =>
                 processElement(sec, { ...indices, sectionIndex: i }, 'section')
@@ -499,17 +525,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
             element.subsubsections.forEach((ssub: SubSubSection, i: number) =>
                 processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection')
             );
-        }
-        if (element.items?.length > 0) {
-            element.items.forEach((item: LessonItem | EmbeddableTopLevelItem, i: number) => {
-                if (item.type === 'chapter') {
-                    processElement(item, { ...indices, itemIndex: i }, 'chapter');
-                } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
-                    processElement(item, { ...indices, itemIndex: i }, item.type as ElementType);
-                } else {
-                    processElement(item, { ...indices, itemIndex: i }, 'item');
-                }
-            });
         }
 
         if (element.separatorAfter) {
@@ -709,6 +724,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               data={item.data as LessonItem}
                               onSave={(updatedData) => onConfirmInlineEdit(item.indices, updatedData)}
                               onCancel={onCancelInlineEdit}
+                              subject={subject}
                               getDateWarnings={getDateWarnings}
                           />
                           </VirtualListRow>

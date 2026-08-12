@@ -258,6 +258,8 @@ export interface Section {
 export interface TopLevelItem extends BaseTopLevelItem {
     type: 'chapter' | EmbeddableTopLevelType;
     sections?: Section[];
+    /** items (types de contenu) directement sous le chapitre, sans section */
+    items?: (LessonItem | EmbeddableTopLevelItem)[];
 }
 
 export type LessonsData = TopLevelItem[];

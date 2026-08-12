@@ -21,6 +21,7 @@ export const countOccurrencesOfType = (data: LessonsData, type: string): number 
     };
     for (const block of data) {
         if (block.type === type) count += 1;
+        countItems(block.items);
         for (const section of block.sections ?? []) {
             countItems(section.items);
             for (const subsection of section.subsections ?? []) {
@@ -85,6 +86,10 @@ export const addTopLevelItem = (draft: Draft<LessonsData>, newItem: TopLevelItem
     if ((newItem.type === 'chapter' || newItem.type.startsWith('evaluation_') || newItem.type.startsWith('devoir_') || newItem.type.startsWith('controle_') || newItem.type.startsWith('correction_')) && !newItem.sections) {
         (newItem as any).sections = [];
     }
+    // Un chapitre peut recevoir des items directement (sans section).
+    if (newItem.type === 'chapter' && !newItem.items) {
+        (newItem as any).items = [];
+    }
     const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : draft.length;
     draft.splice(index, 0, newItem);
 };
@@ -140,15 +145,19 @@ export const addSubSubSection = (draft: Draft<LessonsData>, subSectionIndices: I
 
 export const addItem = (draft: Draft<LessonsData>, parentIndices: Indices, newItem: LessonItem | EmbeddableTopLevelItem, insertAfterIndex?: number): void => {
     const { item: container } = findItem(draft, parentIndices);
-    if (container && 'items' in container) {
-        if (!container.items) {
-            container.items = [];
-        }
-        // If inserting into a section without a specific item reference, add to the top.
-        // Otherwise, insert after the specified item.
-        const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : 0;
-        container.items.splice(index, 0, newItem);
-    }
+    // Un conteneur peut recevoir des items : chapitre (type 'chapter'), section,
+    // sous-section ou sous-sous-section. Les items sont initialisés à la volée.
+    const isItemsContainer = !!container && (
+        'items' in container || (container as any).type === 'chapter'
+    );
+    if (!isItemsContainer || !container) return;
+
+    const target = container as unknown as { items?: (LessonItem | EmbeddableTopLevelItem)[] };
+    if (!target.items) target.items = [];
+    // If inserting into a section without a specific item reference, add to the top.
+    // Otherwise, insert after the specified item.
+    const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : 0;
+    target.items.splice(index, 0, newItem);
 };
 
 /** Champ d'index le plus profond défini pour un jeu d'indices donné. */
@@ -261,7 +270,11 @@ export const flattenLessons = (data: LessonsData) => {
     
     const processElement = (element: any, indices: Indices, elementType: string) => {
         flat.push({ data: element, indices, elementType });
-        
+
+        // Items directement sous un nœud AVANT les sous-niveaux (ordre pédagogique).
+        if (element.items?.length > 0) {
+            element.items.forEach((item: any, i: number) => processElement(item, { ...indices, itemIndex: i }, item.type === 'chapter' ? 'chapter' : 'item'));
+        }
         if (element.sections?.length > 0) {
             element.sections.forEach((sec: any, i: number) => processElement(sec, { ...indices, sectionIndex: i }, 'section'));
         }
@@ -270,9 +283,6 @@ export const flattenLessons = (data: LessonsData) => {
         }
         if (element.subsubsections?.length > 0) {
             element.subsubsections.forEach((ssub: any, i: number) => processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection'));
-        }
-        if (element.items?.length > 0) {
-            element.items.forEach((item: any, i: number) => processElement(item, { ...indices, itemIndex: i }, item.type === 'chapter' ? 'chapter' : 'item'));
         }
     };
 

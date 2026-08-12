@@ -1056,7 +1056,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             <MainTable
               lessonsData={filteredData}
               contentDirection={contentDirection}
-              
+              subject={classInfo.subject}
+
               onCellUpdate={handleCellUpdate}
               onDeleteSeparator={handleDeleteSeparator}
               onOpenAddContentModal={handleOpenAddContentModal}
