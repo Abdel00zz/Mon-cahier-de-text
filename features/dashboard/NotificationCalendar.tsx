@@ -8,6 +8,7 @@ import { getBundledCalendar, loadHolidayCalendar, localizeCalendarName, todayInM
 import { getDaySessionBlocks } from '@/utils/timetable';
 import { collectSessionDates } from '@/utils/printMeta';
 import { readClassLessons } from '@/utils/notificationSignals';
+import { loadPlanning, resolveClassAssessments, type PlanningFile } from '@/utils/assessments';
 import {
   getOfficialStudentEventsFile,
   getOfficialStudentEventsForClass,
@@ -92,6 +93,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   };
   const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
   const [officialFile, setOfficialFile] = useState<OfficialStudentEventsFile>(() => getOfficialStudentEventsFile());
+  const [planning, setPlanning] = useState<PlanningFile | null>(null);
   const today = todayInMorocco(new Date(), calendar);
   const [month, setMonth] = useState(() => {
     const value = fromISO(today);
@@ -102,10 +104,11 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
 
   useEffect(() => {
     let active = true;
-    Promise.all([loadHolidayCalendar(), loadOfficialStudentEvents()]).then(([nextCalendar, nextOfficialFile]) => {
+    Promise.all([loadHolidayCalendar(), loadOfficialStudentEvents(), loadPlanning()]).then(([nextCalendar, nextOfficialFile, nextPlanning]) => {
       if (!active) return;
       setCalendar(nextCalendar);
       setOfficialFile(nextOfficialFile);
+      setPlanning(nextPlanning);
     });
     return () => { active = false; };
   }, []);
@@ -184,15 +187,15 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     }
 
     for (const classInfo of relevantClasses) {
-      for (const [assessmentId, date] of Object.entries(config.assessmentDates?.[classInfo.id] ?? {})) {
-        if (!date) continue;
+      const assessments = planning ? resolveClassAssessments(classInfo, planning, config, calendar, today) : [];
+      for (const assessment of assessments) {
         result.push({
-          id: `assessment:${classInfo.id}:${assessmentId}:${date}`,
+          id: `assessment:${classInfo.id}:${assessment.id}:${assessment.dateISO}`,
           kind: 'assessment',
           title: t('calendar.plannedAssessment'),
-          start: date,
-          end: date,
-          detail: formatLocalizedClassDisplayName(classInfo.name, locale),
+          start: assessment.dateISO,
+          end: assessment.dateISO,
+          detail: `${formatLocalizedClassDisplayName(classInfo.name, locale)} · ${assessment.label}`,
           classId: classInfo.id,
           className: formatLocalizedClassDisplayName(classInfo.name, locale),
         });
@@ -213,7 +216,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     }
 
     return result;
-  }, [calendar, config.absences, config.assessmentDates, config.pedagogicalEvents, locale, officialFile, relevantClasses, t]);
+  }, [calendar, config, locale, officialFile, planning, relevantClasses, t, today]);
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();

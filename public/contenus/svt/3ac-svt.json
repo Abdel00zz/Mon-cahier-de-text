@@ -1,0 +1,1215 @@
+[
+  {
+    "chapter": "Chapitre 1 : L’éducation nutritionnelle",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Alimentation et besoins nutritionnels de l'organisme"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Constituants des aliments",
+        "subsections": [
+          {
+            "name": "Mise en évidence des constituants des aliments",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Mise en évidence expérimentale des constituants chimiques"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Composition chimique globale des aliments"
+              },
+              {
+                "type": "remarque",
+                "number": 1,
+                "title": "Rôle des indicateurs chimiques colorés"
+              }
+            ]
+          },
+          {
+            "name": "Composition et types d'aliments",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Distinction entre aliments simples et aliments composés"
+              },
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Répartition des aliments selon leurs constituants dominants"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Rôles des aliments consommés",
+        "subsections": [
+          {
+            "name": "Utilité des aliments dans l'organisme",
+            "items": [
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Rôles bâtisseur, énergétique et fonctionnel des aliments"
+              },
+              {
+                "type": "conclusion",
+                "number": 2,
+                "title": "Bilan des fonctions essentielles des aliments"
+              }
+            ]
+          },
+          {
+            "name": "Groupes d'aliments",
+            "items": [
+              {
+                "type": "classification",
+                "number": 3,
+                "title": "Classification des aliments en six grands groupes"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Déséquilibre alimentaire et carences",
+        "subsections": [
+          {
+            "name": "Carences en protéines et en énergie",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de la carence alimentaire"
+              },
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Symptômes et causes du Kwashiorkor"
+              },
+              {
+                "type": "observation",
+                "number": 2,
+                "title": "Symptômes et causes du marasme nutritionnel"
+              }
+            ]
+          },
+          {
+            "name": "Carences en vitamines et en sels minéraux",
+            "items": [
+              {
+                "type": "observation",
+                "number": 3,
+                "title": "Caractérisation du scorbut, rachitisme, goitre et béribéri"
+              },
+              {
+                "type": "conclusion",
+                "number": 3,
+                "title": "Prévention et traitement des maladies de carence"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Ration alimentaire",
+        "subsections": [
+          {
+            "name": "Conditions d'équilibre de la ration alimentaire",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Calcul de la valeur énergétique de la ration"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison entre apports et besoins énergétiques"
+              },
+              {
+                "type": "conclusion",
+                "number": 4,
+                "title": "Caractéristiques d'une ration alimentaire équilibrée"
+              }
+            ]
+          },
+          {
+            "name": "Facteurs de variation de la ration alimentaire",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Influence de l'âge, du sexe et de l'activité"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : La digestion et l’absorption",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Transformation des aliments le long du tube digestif"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Transformations des aliments dans le tube digestif",
+        "subsections": [
+          {
+            "name": "Transformations au niveau de la bouche",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Mastication, salivation et formation du bol alimentaire"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Digestion mécanique et chimique de l'amidon buccal"
+              }
+            ]
+          },
+          {
+            "name": "Transformations au niveau de l'estomac",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Brassage mécanique et action du suc gastrique"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Transformation des protéines en polypeptides dans l'estomac"
+              }
+            ]
+          },
+          {
+            "name": "Transformations au niveau de l'intestin grêle",
+            "items": [
+              {
+                "type": "processus",
+                "number": 2,
+                "title": "Formation et brassage du chyme intestinal"
+              },
+              {
+                "type": "conclusion",
+                "number": 2,
+                "title": "Simplification finale des aliments en nutriments simples"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Nature des transformations et enzymes digestives",
+        "subsections": [
+          {
+            "name": "Digestion de l'amidon et amylase",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Action in vitro de l'amylase sur l'amidon"
+              }
+            ]
+          },
+          {
+            "name": "Notion de simplification moléculaire et rôle des enzymes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de la simplification moléculaire"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition et propriétés des enzymes digestives"
+              }
+            ]
+          },
+          {
+            "name": "Digestion des protéines et des lipides",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Étapes de digestion des protéines par les protéases"
+              },
+              {
+                "type": "mecanisme",
+                "number": 4,
+                "title": "Émulsion des lipides par la bile et la lipase"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Bilan des produits finaux de la digestion"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Devenir des produits de la digestion et absorption",
+        "subsections": [
+          {
+            "name": "Absorption intestinale et voies de transport",
+            "items": [
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Mise en évidence de la disparition des nutriments"
+              },
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Répartition des nutriments entre sang et lymphe"
+              }
+            ]
+          },
+          {
+            "name": "Caractéristiques de la surface d'absorption",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Anatomie des replis, villosités et microvillosités intestinales"
+              },
+              {
+                "type": "conclusion",
+                "number": 3,
+                "title": "Propriétés optimisant l'efficacité de la paroi intestinale"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Hygiène du système digestif",
+        "subsections": [
+          {
+            "name": "Dangers et maladies du système digestif",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Causes et effets des caries, constipation et diarrhée"
+              }
+            ]
+          },
+          {
+            "name": "Prévention et protection digestive",
+            "items": [
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Règles d'hygiène buccale et comportement alimentaire"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : La respiration chez l'Homme",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Mécanismes et rôle de la respiration humaine"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Échanges gazeux au niveau des poumons",
+        "subsections": [
+          {
+            "name": "Caractéristiques de la surface d'échange pulmonaire",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Structure spongieuse et vascularisation du tissu pulmonaire"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organisation des alvéoles pulmonaires et des capillaires"
+              }
+            ]
+          },
+          {
+            "name": "Mécanisme des échanges gazeux alvéolaires",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Différence de composition entre air inspiré et expiré"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Principe de diffusion selon les pressions partielles"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Enrichissement du sang en dioxygène au niveau alvéolaire"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Échanges gazeux au niveau des organes et respiration cellulaire",
+        "subsections": [
+          {
+            "name": "Mise en évidence de la respiration des tissus",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Consommation de dioxygène et rejet de dioxyde de carbone"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Diffusion des gaz entre le sang et les tissus"
+              }
+            ]
+          },
+          {
+            "name": "Respiration cellulaire et production d'énergie",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de la respiration cellulaire"
+              },
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Oxydation des nutriments et libération d'énergie"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Hygiène de l'appareil respiratoire",
+        "subsections": [
+          {
+            "name": "Dangers pour le système respiratoire",
+            "items": [
+              {
+                "type": "observation",
+                "number": 2,
+                "title": "Effets de la tuberculose, du tabagisme et de la pollution"
+              }
+            ]
+          },
+          {
+            "name": "Mesures de prévention respiratoire",
+            "items": [
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Actions préventives, vaccination et pratique du sport"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : La circulation sanguine",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Rôle du milieu intérieur et du système circulatoire"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Le sang et l'appareil circulatoire",
+        "subsections": [
+          {
+            "name": "Composantes du sang",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Séparation et observation microscopique du sang"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Caractéristiques des globules rouges, blancs, plaquettes et plasma"
+              }
+            ]
+          },
+          {
+            "name": "Vaisseaux sanguins et cœur",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Distinction entre artères, veines et capillaires sanguins"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Transport des gaz et des nutriments",
+        "subsections": [
+          {
+            "name": "Transport du dioxygène et du dioxyde de carbone",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Changement de couleur du sang selon les gaz"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Formation de l'oxyhémoglobine et de la carbhémoglobine"
+              },
+              {
+                "type": "remarque",
+                "number": 1,
+                "title": "Toxicité du monoxyde de carbone sur l'hémoglobine"
+              }
+            ]
+          },
+          {
+            "name": "Échanges dans le milieu intérieur",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Transport des nutriments dissous dans le plasma"
+              },
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Rôle de la lymphe interstitielle dans les échanges"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Activité cardiaque et double circulation",
+        "subsections": [
+          {
+            "name": "Anatomie et fonctionnement du cœur",
+            "items": [
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Organisation des cavités et des valvules cardiaques"
+              },
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Rôle des valvules dans le sens de la circulation"
+              },
+              {
+                "type": "processus",
+                "number": 2,
+                "title": "Étapes du cycle cardiaque : systoles et diastole"
+              }
+            ]
+          },
+          {
+            "name": "Petite et grande circulation",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 4,
+                "title": "Trajet du sang dans la circulation pulmonaire"
+              },
+              {
+                "type": "mecanisme",
+                "number": 5,
+                "title": "Trajet du sang dans la circulation générale"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : L'excrétion urinaire",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Élimination des déchets azotés et régulation de l'eau"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Composition et origine de l'urine",
+        "subsections": [
+          {
+            "name": "Constituants de l'urine",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Mise en évidence des constituants de l'urine"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Composition normale et anomalies urinaires"
+              }
+            ]
+          },
+          {
+            "name": "Anatomie urinaire et origine de l'urine",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organisation de l'appareil excréteur humain"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison entre la composition du plasma et de l'urine"
+              },
+              {
+                "type": "conclusion",
+                "number": 2,
+                "title": "Origine de l'urine par épuration du sang"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Rôle des reins dans la formation de l'urine",
+        "subsections": [
+          {
+            "name": "Structure du rein et du néphron",
+            "items": [
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Zones du rein et organisation du néphron"
+              }
+            ]
+          },
+          {
+            "name": "Étapes de formation de l'urine",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 2,
+                "title": "Analyse du liquide dans les zones du néphron"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Filtration glomérulaire, réabsorption et sécrétion tubulaire"
+              },
+              {
+                "type": "conclusion",
+                "number": 3,
+                "title": "Rôle du rein dans le maintien de la constante du milieu"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 6 : Le système nerveux",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Coordination des fonctions de relation par le système nerveux"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Réception des informations et sensibilité consciente",
+        "subsections": [
+          {
+            "name": "Organes sensoriels et récepteurs",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Correspondance entre sens, organes et stimulus"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Structure de la peau et récepteurs de Meissner et Pacini"
+              }
+            ]
+          },
+          {
+            "name": "Transmission des messages nerveux sensitifs",
+            "items": [
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Organisation du nerf sensitif et des fibres"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Naissance et conduction de l'influx nerveux sensitif"
+              }
+            ]
+          },
+          {
+            "name": "Rôle du cerveau dans la perception",
+            "items": [
+              {
+                "type": "structure",
+                "number": 3,
+                "title": "Anatomie de l'encéphale et du cortex cérébral"
+              },
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Localisation des principales aires sensorielles du cortex"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Rôle des aires sensitives comme centres nerveux"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La motricité volontaire",
+        "subsections": [
+          {
+            "name": "Le centre moteur et le neurone",
+            "items": [
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Localisation de l'aire motrice dans le cortex"
+              },
+              {
+                "type": "structure",
+                "number": 4,
+                "title": "Structure du neurone, corps cellulaire et axone"
+              }
+            ]
+          },
+          {
+            "name": "Organes et trajet de l'influx moteur",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Conséquences des lésions sur la motricité volontaire"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Trajet centrifuge du message nerveux vers le muscle"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La motricité involontaire et le réflexe",
+        "subsections": [
+          {
+            "name": "Définition et organes du réflexe",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition du mouvement réflexe involontaire"
+              },
+              {
+                "type": "experience",
+                "number": 2,
+                "title": "Mise en évidence expérimentale chez la grenouille spinale"
+              }
+            ]
+          },
+          {
+            "name": "Structure de la moelle épinière et arc réflexe",
+            "items": [
+              {
+                "type": "structure",
+                "number": 5,
+                "title": "Organisation des substances grise et blanche spinales"
+              },
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Trajet de l'influx nerveux le long de l'arc réflexe"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Hygiène du système nerveux",
+        "subsections": [
+          {
+            "name": "Dangers et prévention du système nerveux",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Facteurs perturbateurs du fonctionnement nerveux"
+              },
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Règles de protection et d'hygiène nerveuse"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 7 : Le système musculaire",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Rôle des muscles dans l'appareil locomoteur"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Rôle et propriétés du muscle squelettique",
+        "subsections": [
+          {
+            "name": "Rôle du muscle dans le mouvement",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Action des muscles squelettiques et muscles antagonistes"
+              }
+            ]
+          },
+          {
+            "name": "Propriétés musculaires",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'excitabilité, contractilité et élasticité"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Structure du muscle et besoins énergétiques",
+        "subsections": [
+          {
+            "name": "Structure microscopique du muscle",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Types de muscles dans l'organisme"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organisation des fibres musculaires, myofibrilles et plaque motrice"
+              }
+            ]
+          },
+          {
+            "name": "Besoins de l'activité musculaire",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Consommation de dioxygène, glucose et respiration musculaire"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Hygiène du système musculaire",
+        "subsections": [
+          {
+            "name": "Accidents et protection du muscle",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Caractéristiques des crampes, élongations, déchirures et dopage"
+              },
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Mesures de prévention et échauffement sportif"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 8 : L'immunité naturelle et l'immunité spécifique",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Défense de l'organisme contre les micro-organismes"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Les microbes et le pouvoir pathogène",
+        "subsections": [
+          {
+            "name": "Types et milieux de vie des microbes",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Classification des bactéries, champignons, protozoaires et virus"
+              },
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Utilisation des microbes utiles dans l'industrie et l'agriculture"
+              }
+            ]
+          },
+          {
+            "name": "Propriétés des microbes pathogènes",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Multiplication rapide, sécrétion de toxines, capsule et variation"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L'immunité naturelle non spécifique",
+        "subsections": [
+          {
+            "name": "Barrières naturelles du corps",
+            "items": [
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Barrières mécaniques, chimiques et écologiques"
+              }
+            ]
+          },
+          {
+            "name": "Réaction inflammatoire et phagocytose",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Symptômes de la réaction inflammatoire et diapédèse"
+              },
+              {
+                "type": "processus",
+                "number": 2,
+                "title": "Étapes de la phagocytose : adhésion, ingestion, digestion, rejet"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Caractéristiques immédiate, non spécifique et innée de la phagocytose"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L'immunité spécifique adaptative",
+        "subsections": [
+          {
+            "name": "Immunité spécifique à médiation humorale",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'antigène et de l'anticorps"
+              },
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Mise en évidence du rôle du sérum et des lymphocytes B"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Réponses primaires et secondaires et mémoire immunitaire"
+              }
+            ]
+          },
+          {
+            "name": "Immunité spécifique à médiation cellulaire",
+            "items": [
+              {
+                "type": "experience",
+                "number": 2,
+                "title": "Mise en évidence du rôle des lymphocytes T"
+              },
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Action cytotoxique des lymphocytes T tueurs"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Origine des cellules immunitaires et coopération",
+        "subsections": [
+          {
+            "name": "Organes lymphoïdes",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Rôle de la moelle osseuse et du thymus"
+              }
+            ]
+          },
+          {
+            "name": "Coopération cellulaire",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 4,
+                "title": "Interactions entre macrophages, lymphocytes T4, B et Tc"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Renforcement du système immunitaire",
+        "subsections": [
+          {
+            "name": "Mesures préventives",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Principes de l'asepsie, de l'antisepsie et de la vaccination"
+              }
+            ]
+          },
+          {
+            "name": "Mesures curatives",
+            "items": [
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Mode d'action de la sérothérapie, antibiotiques et sulfamides"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison entre le vaccin et le sérum"
+              },
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Technique de l'antibiogramme pour tester l'efficacité"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 9 : Dysfonctionnements du système immunitaire et transfusion",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Perturbations immunitaires, SIDA et transfusion sanguine"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Les allergies",
+        "subsections": [
+          {
+            "name": "Causes et symptômes allergiques",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'allergie et des allergènes"
+              },
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Réalisation et interprétation du test cutané"
+              }
+            ]
+          },
+          {
+            "name": "Mécanisme de la réponse allergique",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Rôle des IgE, mastocytes et décharge d'histamine"
+              },
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Phases de sensibilisation et de crise allergique"
+              },
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Traitement par antihistaminiques et désensibilisation"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L'immunodéficience acquise SIDA",
+        "subsections": [
+          {
+            "name": "Définition et agent responsable",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Caractérisation du VIH et destruction des lymphocytes T4"
+              }
+            ]
+          },
+          {
+            "name": "Phases de l'infection par le VIH",
+            "items": [
+              {
+                "type": "processus",
+                "number": 2,
+                "title": "Évolution de la primo-infection à la phase SIDA"
+              }
+            ]
+          },
+          {
+            "name": "Transmission et prévention",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Voies de transmission du VIH et mesures préventives"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Protection de l'appareil génital",
+        "subsections": [
+          {
+            "name": "Infections sexuellement transmissibles",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Symptômes et prévention des IST et MST"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Problèmes de la transfusion sanguine",
+        "subsections": [
+          {
+            "name": "Agglutination et groupes sanguins ABO",
+            "items": [
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Phénomène d'agglutination et sécurité transfusionnelle"
+              },
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Rôle des agglutinogènes A, B et agglutinines anti-A, anti-B"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Règles de compatibilité entre les groupes A, B, AB et O"
+              }
+            ]
+          },
+          {
+            "name": "Facteur Rhésus et détermination des groupes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 4,
+                "title": "Définition du système Rhésus positif et négatif"
+              },
+              {
+                "type": "methode",
+                "number": 2,
+                "title": "Détermination du groupe sanguin par les sérums-tests"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

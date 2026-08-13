@@ -410,7 +410,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         setPendingCreate(null);
                     }}
                     defaultCycle={(config.selectedCycles?.[0] as Cycle) ?? 'lycee'}
-                    defaultSubject={config.selectedSubjects?.[0]}
+                    teacherSubjects={config.selectedSubjects}
                     teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
                     existingClasses={classes}
                 />

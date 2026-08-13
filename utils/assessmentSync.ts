@@ -113,19 +113,30 @@ export const linkAssessments = (
     notebook: NotebookAssessmentEntry[],
     todayISO: string
 ): AssessmentLink[] => {
-    const byTypeAndNum = new Map<string, NotebookAssessmentEntry>();
-    for (const entry of notebook) {
-        const key = `${entry.type}:${entry.num}`;
-        if (!byTypeAndNum.has(key)) byTypeAndNum.set(key, entry);
-    }
-
-    /* ordinal du devoir dans SON type sur l'année (s1-c1 → 1, s2-c1 → 4…) :
-       c'est cette numérotation continue que suit l'auto-numérotation du cahier */
-    const counters: Record<NotebookAssessmentEntry['type'], number> = { controle: 0, maison: 0 };
+    const used = new Set<NotebookAssessmentEntry>();
+    const distance = (left: string | undefined, right: string): number => {
+        if (!left) return Number.MAX_SAFE_INTEGER;
+        const [ly, lm, ld] = left.split('-').map(Number);
+        const [ry, rm, rd] = right.split('-').map(Number);
+        return Math.abs(Date.UTC(ly, lm - 1, ld) - Date.UTC(ry, rm - 1, rd));
+    };
 
     return planned.map(assessment => {
-        counters[assessment.type] += 1;
-        const entry = byTypeAndNum.get(`${assessment.type}:${counters[assessment.type]}`);
+        const isLinkable = assessment.type === 'controle' || assessment.type === 'maison';
+        // Le numéro recommence au semestre 2. On garde donc toutes les entrées
+        // homonymes et on choisit d'abord la date la plus proche, sans réutiliser
+        // un même bloc pour deux devoirs.
+        const candidates = isLinkable
+            ? notebook.filter(entry => !used.has(entry) && entry.type === assessment.type && entry.num === assessment.num)
+            : [];
+        let entry = candidates.sort((a, b) => distance(a.date, assessment.dateISO) - distance(b.date, assessment.dateISO))[0];
+        // Compatibilité avec les anciens cahiers numérotés en continu sur l'année.
+        if (!entry && isLinkable) {
+            entry = notebook
+                .filter(candidate => !used.has(candidate) && candidate.type === assessment.type)
+                .sort((a, b) => distance(a.date, assessment.dateISO) - distance(b.date, assessment.dateISO))[0];
+        }
+        if (entry) used.add(entry);
         let status: AssessmentLinkStatus;
         if (entry?.date) {
             status = entry.date === assessment.dateISO ? 'done' : 'mismatch';

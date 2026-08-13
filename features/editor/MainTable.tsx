@@ -15,8 +15,6 @@ import { useDevice } from '@/hooks/useDevice';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
-/* Accent sobre pour les interactions du tableau. */
-const TABLE_ACCENT = 'hsl(var(--primary))';
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
 
@@ -43,7 +41,7 @@ const resolveLessonTypeOptions = (subject: string | undefined, currentType: stri
 
 const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
 
-const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, accentColor = TABLE_ACCENT, subject, getDateWarnings }) => {
+const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, subject, getDateWarnings }) => {
     const { t } = useLocale();
     const device = useDevice();
     const [formData, setFormData] = useState<Partial<LessonItem>>(data);
@@ -316,7 +314,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const hasWarning = warnings.length > 0;
     const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(first));
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
-    const groupIsNew = items.some(item => !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId)));
     const sharedRemark = getMergeableRemark(first);
     // Les groupes fusionnés ont leur propre grille : les filets de TableRow
     // ne peuvent pas dessiner les séparateurs Date|Contenu|Remarque ici.

@@ -5,31 +5,24 @@ import {
     PastAssessment,
     PlannedAssessment,
     UpcomingAssessment,
-    applyOverrides,
-    computeAssessmentDates,
-    findPlanFor,
     getRecentPastAssessments,
     getUpcomingAssessments,
     loadPlanning,
+    resolveClassAssessments,
+    type PlanningFile,
 } from '../utils/assessments';
-
-interface PlanningFileLike {
-    version: number;
-    matiere: string;
-    plans: { niveaux: string[]; libelle: string; semestres: any[] }[];
-}
 
 /** Charge le planning officiel + le calendrier (une fois), puis les expose. */
 const useCalendarAndPlanning = () => {
     const [calendar, setCalendar] = useState<HolidayCalendar | null>(null);
-    const [planning, setPlanning] = useState<PlanningFileLike | null>(null);
+    const [planning, setPlanning] = useState<PlanningFile | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         Promise.all([loadHolidayCalendar(), loadPlanning()]).then(([cal, plan]) => {
             if (cancelled) return;
             setCalendar(cal);
-            setPlanning(plan as PlanningFileLike | null);
+            setPlanning(plan);
         });
         return () => { cancelled = true; };
     }, []);
@@ -48,8 +41,8 @@ export const useUpcomingAssessments = (
     return useMemo(() => {
         if (!calendar || !planning) return [];
         const today = todayInMorocco(new Date(), calendar);
-        return getUpcomingAssessments(classes, planning as any, config, calendar, today, horizonDays);
-    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, horizonDays]);
+        return getUpcomingAssessments(classes, planning, config, calendar, today, horizonDays);
+    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, horizonDays]);
 };
 
 /** Devoirs récemment passés (≤ lookback jours), rappel « absents à consigner » du centre de notifications. */
@@ -63,11 +56,11 @@ export const useRecentPastAssessments = (
     return useMemo(() => {
         if (!calendar || !planning) return [];
         const today = todayInMorocco(new Date(), calendar);
-        return getRecentPastAssessments(classes, planning as any, config, calendar, today, lookbackDays);
-    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, lookbackDays]);
+        return getRecentPastAssessments(classes, planning, config, calendar, today, lookbackDays);
+    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, lookbackDays]);
 };
 
-/** Planning complet d'UNE classe (dates officielles + surcharges du prof), pour l'onglet Emploi du temps. */
+/** Planning complet d'UNE classe (dates officielles + surcharges + devoirs manuels), pour l'onglet Évaluations. */
 export const useClassAssessments = (
     classInfo: ClassInfo | null,
     config: AppConfig
@@ -76,11 +69,9 @@ export const useClassAssessments = (
 
     return useMemo(() => {
         if (!calendar || !planning || !classInfo) return { assessments: [], hasPlan: false };
-        const plan = findPlanFor(planning as any, classInfo);
-        if (!plan) return { assessments: [], hasPlan: false };
         const today = todayInMorocco(new Date(), calendar);
-        const base = computeAssessmentDates(plan as any, calendar, today, config.schoolYearStart);
-        const withOverrides = applyOverrides(base, config.assessmentDates?.[classInfo.id]);
-        return { assessments: withOverrides, hasPlan: true };
-    }, [calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart]);
+
+        const assessments = resolveClassAssessments(classInfo, planning, config, calendar, today);
+        return { assessments, hasPlan: assessments.length > 0 };
+    }, [calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder]);
 };

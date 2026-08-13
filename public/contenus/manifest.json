@@ -1,5 +1,5 @@
 {
-  "_commentaire": "Bibliothèque de contenus prédéfinis. Ajouter un fichier JSON (même format qu'un export de classe) puis le référencer ici : il sera proposé automatiquement à la création d'un cahier correspondant (niveau + matière). IMPORTANT : `niveau` doit être un PRÉFIXE du nom officiel de classe (CLASS_LEVELS_BY_CYCLE), ex. « 2BAC Sc. Maths » couvre les variantes A et B. Modifiable sans rebuild.",
+  "_commentaire": "Bibliothèque de contenus prédéfinis. Les JSON sont organisés par matière dans des sous-dossiers : public/contenus/<matière>/<fichier>.json (ex. mathematiques/, physique-chimie/, svt/). `fichier` ne contient QUE le nom de fichier : le dossier est déduit de `matiere` via utils/predefinedContent.ts (subjectFolder). Ajouter un fichier JSON dans le bon dossier puis le référencer ici : il sera proposé automatiquement à la création d'un cahier correspondant (niveau + matière). IMPORTANT : `niveau` doit être un PRÉFIXE du nom officiel de classe (CLASS_LEVELS_BY_CYCLE), ex. « 2BAC Sc. Maths » couvre les variantes A et B. Modifiable sans rebuild.",
   "version": 2,
   "contenus": [
     {
@@ -67,6 +67,24 @@
       "matiere": "Sciences de la Vie et de la Terre",
       "titre": "Programme officiel, 2ème Bac Sciences de la Vie et de la Terre SVT",
       "fichier": "2bac-svt-svt.json"
+    },
+    {
+      "niveau": "1AC",
+      "matiere": "Sciences de la Vie et de la Terre",
+      "titre": "Programme officiel, 1AC · Sciences de la Vie et de la Terre",
+      "fichier": "1ac-svt.json"
+    },
+    {
+      "niveau": "2AC",
+      "matiere": "Sciences de la Vie et de la Terre",
+      "titre": "Programme officiel, 2AC · Sciences de la Vie et de la Terre",
+      "fichier": "2ac-svt.json"
+    },
+    {
+      "niveau": "3AC",
+      "matiere": "Sciences de la Vie et de la Terre",
+      "titre": "Programme officiel, 3AC · Sciences de la Vie et de la Terre",
+      "fichier": "3ac-svt.json"
     }
   ]
 }

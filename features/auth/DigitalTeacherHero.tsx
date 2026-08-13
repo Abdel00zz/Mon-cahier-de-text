@@ -1,17 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  BookOpen,
   Clock,
   Search,
   Pencil,
   FileText,
   ListChecks,
   GraduationCap,
-  School,
-  FlaskConical,
   Bell,
-  CircleCheck,
 } from '@/components/ui/icons';
 import teacherImage from '@/src/assets/images/antique_teacher_desk_1786526855363.jpg';
 
@@ -23,9 +19,9 @@ interface DigitalTeacherHeroProps {
 }
 
 export const DigitalTeacherHero: React.FC<DigitalTeacherHeroProps> = ({
-  isRtl = true,
-  title = 'دفتر نصوصي الرقمي',
-  subtitle,
+  isRtl: _isRtl = true,
+  title: _title = 'دفتر نصوصي الرقمي',
+  subtitle: _subtitle,
   bgImage = teacherImage,
 }) => {
   return (

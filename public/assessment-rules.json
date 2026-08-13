@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "scope": "official_rules_only",
+  "rules": [
+    {
+      "id": "math-college-1ac-2ac",
+      "subjectId": "mathematiques",
+      "cycle": "college",
+      "levels": ["1AC", "2AC"],
+      "semesters": [1, 2],
+      "assessmentType": "controle",
+      "officialCount": 3,
+      "officialDurationMinutes": [60, 60, 60],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "semesterFinalWindow" }
+      ],
+      "sourceRef": "ma-men-note-192",
+      "sourcePages": [3, 4],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-college-3ac",
+      "subjectId": "mathematiques",
+      "cycle": "college",
+      "levels": ["3AC"],
+      "semesters": [1, 2],
+      "assessmentType": "controle",
+      "officialCount": 3,
+      "officialDurationMinutes": [60, 60, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "semesterFinalWindow" }
+      ],
+      "sourceRef": "ma-men-note-192",
+      "sourcePages": [5],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-142-08",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["TC", "1BAC", "2BAC"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "timingRules": [{ "kind": "schoolWeekByTrack" }],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [3, 4, 5, 6, 7, 8, 9],
+      "status": "partial",
+      "confidence": "high",
+      "note": "Les nombres, semaines et durées doivent être lus par filière dans planning-devoirs.json; aucune règle générique ne remplace les tableaux."
+    }
+  ]
+}

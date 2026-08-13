@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
-import { applyOverrides, computeAssessmentDates, findPlanFor, loadPlanning, type PlannedAssessment } from '../../utils/assessments';
+import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../utils/assessments';
 import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
@@ -221,12 +221,13 @@ const AssessmentDateEditor: React.FC<{
         Promise.all([loadPlanning(), loadHolidayCalendar()]).then(([planning, calendar]) => {
             if (!planning || cancelled) return;
             const today = todayInMorocco(new Date(), calendar);
-            const next = classes.flatMap(classInfo => {
-                const plan = findPlanFor(planning, classInfo);
-                if (!plan) return [];
-                return applyOverrides(computeAssessmentDates(plan, calendar, today, schoolYearStart), initial[classInfo.id])
-                    .map(item => ({ ...item, classId: classInfo.id, className: classInfo.name }));
-            });
+            const next = classes.flatMap(classInfo => resolveClassAssessments(
+                classInfo,
+                planning,
+                { assessmentDates: initial, schoolYearStart },
+                calendar,
+                today,
+            ).map(item => ({ ...item, classId: classInfo.id, className: classInfo.name })));
             setRows(next.sort((a, b) => a.dateISO.localeCompare(b.dateISO)));
         }).catch(() => {
             if (!cancelled) setRows([]);

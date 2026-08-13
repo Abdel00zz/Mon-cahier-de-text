@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "schoolYear": "2026-2027",
+  "source": {
+    "title": "Décision ministérielle n° 047.26 relative à l'organisation de l'année scolaire 2026-2027",
+    "date": "2026-07-03",
+    "language": "ar",
+    "note": "Transcription ciblée des échéances élèves 2026-2027. Matière : Langue arabe. Référence réglementaire matière : Note n° 180 du 13/12/2010 - encadrement et suivi des contrôles continus de langue arabe au collège."
+  },
+  "events": [
+    {
+      "id": "langue-arabe-assessment-s1",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - semestre 1",
+      "start": "2027-01-04",
+      "end": "2027-01-09",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du premier semestre dans la période officielle.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-local-exam-3ac",
+      "category": "exam",
+      "title": "Examen local unifié - 3AC",
+      "start": "2027-01-18",
+      "end": "2027-01-19",
+      "levels": [
+        "3ac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'examen local unifié du certificat du cycle collégial selon les épreuves prévues.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-semester1-results",
+      "category": "result",
+      "title": "Remise des résultats - semestre 1",
+      "start": "2027-01-23",
+      "end": "2027-01-23",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir le relevé des notes du premier semestre.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-assessment-s2",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - semestre 2",
+      "start": "2027-06-14",
+      "end": "2027-06-19",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du second semestre dans la période officielle.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-regional-preparation-3ac",
+      "category": "support",
+      "title": "Préparation collective à l'examen régional - 3AC",
+      "start": "2027-06-21",
+      "end": "2027-06-22",
+      "levels": [
+        "3ac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Participer à la préparation collective avant l'examen régional unifié.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-regional-exam-3ac",
+      "category": "exam",
+      "title": "Examen régional unifié - 3AC",
+      "start": "2027-06-23",
+      "end": "2027-06-24",
+      "levels": [
+        "3ac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'examen régional unifié du certificat du cycle collégial.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-final-results",
+      "category": "result",
+      "title": "Remise des résultats de fin d'année",
+      "start": "2027-07-03",
+      "end": "2027-07-03",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir le relevé des notes de fin d'année.",
+      "sourcePage": 11
+    },
+    {
+      "id": "langue-arabe-college-national-reading",
+      "category": "competition",
+      "title": "Concours national de lecture",
+      "start": "2027-05-01",
+      "end": "2027-07-31",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "indicative",
+      "studentAction": "Participer aux échéances du concours national de lecture annoncées en mai et juillet 2027.",
+      "sourcePage": 17
+    },
+    {
+      "id": "langue-arabe-college-arab-reading-challenge",
+      "category": "competition",
+      "title": "Défi de la lecture arabe",
+      "start": "2027-04-01",
+      "end": "2027-05-31",
+      "levels": [
+        "college"
+      ],
+      "dateKind": "indicative",
+      "studentAction": "Participer au Défi de la lecture arabe selon la programmation annoncée entre avril et mai 2027.",
+      "sourcePage": 17
+    }
+  ]
+}

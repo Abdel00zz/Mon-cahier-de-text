@@ -101,7 +101,7 @@ const removeDeletedClassReferences = (
     next.timetable = filterByClass(next.timetable);
     next.schedules = filterByClass(next.schedules);
 
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'notificationDismissals'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
         const records = next[key];
         if (!records) continue;
         const filtered = { ...records };

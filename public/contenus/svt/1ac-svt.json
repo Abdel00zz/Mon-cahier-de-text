@@ -1,0 +1,1085 @@
+[
+  {
+    "chapter": "Chapitre 1 : À la découverte d’un milieu naturel",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Diversité des milieux naturels"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Diversité et composantes des milieux naturels"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Diversité des milieux naturels",
+        "subsections": [
+          {
+            "name": "Outils utilisés pour l’étude d’un milieu naturel",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Rôle des outils pour l'étude du milieu"
+              }
+            ]
+          },
+          {
+            "name": "Étude d’un milieu naturel : exemple le jardin du collège",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Étapes méthodologiques de l'étude sur le terrain"
+              },
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Observation de la répartition des êtres vivants"
+              },
+              {
+                "type": "methode",
+                "number": 2,
+                "title": "Rédaction du compte rendu d'excursion"
+              }
+            ]
+          },
+          {
+            "name": "Les différents milieux naturels",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'un milieu naturel"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Diversité des types de milieux naturels"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Bilan général sur les milieux naturels"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Diversité des êtres vivants dans les milieux naturels",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Diversité des êtres vivants dans les milieux"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Diversité de la vie et facteurs de répartition"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Diversité des êtres vivants",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Techniques de capture de la faune du milieu"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Identification et classification des espèces animales"
+              }
+            ]
+          },
+          {
+            "name": "Répartition des végétaux dans un milieu naturel",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Répartition altitudinale du chêne vert et cèdre"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Exigence en humidité expliquant la répartition"
+              },
+              {
+                "type": "observation",
+                "number": 2,
+                "title": "Étagement des algues du littoral rocheux"
+              },
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Résistance à la dessiccation selon les espèces"
+              },
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Mode de vie parasite chez le gui"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Association symbiotique chez les lichens"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La cellule, unité de structure de tous les êtres vivants",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "La cellule unité de structure du vivant"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "L'unité cellulaire au-delà de la diversité"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Observation des cellules chez les êtres vivants unicellulaires",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'un être vivant unicellulaire"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organisation de la cellule de paramécie"
+              }
+            ]
+          },
+          {
+            "name": "Observation des cellules chez les êtres vivants pluricellulaires : les végétaux",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition d'un être vivant pluricellulaire"
+              },
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Organisation de la cellule végétale"
+              }
+            ]
+          },
+          {
+            "name": "Les cellules chez les êtres vivants pluricellulaires : les animaux",
+            "items": [
+              {
+                "type": "structure",
+                "number": 3,
+                "title": "Organisation de la cellule animale"
+              }
+            ]
+          },
+          {
+            "name": "Les cellules sont organisées en tissus",
+            "items": [
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Définition d'un tissu biologique"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Diversité et unicité des tissus biologiques"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "La cellule unité fondamentale de la vie"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Correction des exercices",
+        "subsections": [
+          {
+            "name": "Test des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 1,
+                "title": "Définitions des concepts clés du chapitre"
+              },
+              {
+                "type": "exercice",
+                "number": 2,
+                "title": "Association des termes et de leurs définitions"
+              },
+              {
+                "type": "exercice",
+                "number": 3,
+                "title": "Vérification de propositions vraies ou fausses"
+              },
+              {
+                "type": "exercice",
+                "number": 4,
+                "title": "Classification des composantes vivantes et non vivantes"
+              }
+            ]
+          },
+          {
+            "name": "Utilisation des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 5,
+                "title": "Analyse de la répartition des arbres"
+              },
+              {
+                "type": "exercice",
+                "number": 6,
+                "title": "Étude du rythme d'activité de la limace"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : La respiration dans différents milieux",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "La respiration en milieu aérien chez l'Homme"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Échanges gazeux respiratoires chez les mammifères"
+      }
+    ],
+    "sections": [
+      {
+        "name": "La respiration en milieu aérien chez l'Homme",
+        "subsections": [
+          {
+            "name": "Comparaison entre l’air inspiré et l’air expiré",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Teneur en dioxygène de l'air inspiré et expiré"
+              },
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Troublement de l'eau de chaux par le dioxyde de carbone"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Bilan des échanges gazeux de l'air respiré"
+              }
+            ]
+          },
+          {
+            "name": "Les alvéoles pulmonaires assurent les échanges gazeux entre l’air et le sang",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Trajet de l'air dans l'appareil respiratoire"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Échanges gazeux au niveau alvéolaire"
+              },
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Caractéristiques de la surface d'échange alvéolaire"
+              },
+              {
+                "type": "conclusion",
+                "number": 2,
+                "title": "Bilan de la respiration pulmonaire chez les mammifères"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La respiration en milieu aérien chez les insectes et les végétaux",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Respiration en milieu aérien chez insectes et végétaux"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Diversité des modes respiratoires en milieu aérien"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "La respiration trachéale chez le criquet",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Voies respiratoires de l'abdomen du criquet"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Échanges gazeux directs avec les organes"
+              }
+            ]
+          },
+          {
+            "name": "La respiration chez les végétaux aériens",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Mise en évidence de la respiration chez les végétaux"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Échanges photosynthétiques et respiratoires selon la lumière"
+              },
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Structure et fonctionnement des stomates"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La respiration en milieu aquatique",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "La respiration en milieu aquatique"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Adaptation de la respiration au milieu aquatique"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "La respiration branchiale chez le poisson",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Mouvements alternés de la bouche et des opercules"
+              },
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'opercule chez le poisson"
+              }
+            ]
+          },
+          {
+            "name": "Les structures impliquées dans les échanges respiratoires chez les poissons",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organisation des branchies et filaments branchiaux"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Échanges gazeux entre l'eau et le sang branchial"
+              }
+            ]
+          },
+          {
+            "name": "La respiration chez les végétaux aquatiques",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Respiration des végétaux en milieu aquatique"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Correction des exercices",
+        "subsections": [
+          {
+            "name": "Test des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 1,
+                "title": "Définitions des structures respiratoires"
+              },
+              {
+                "type": "exercice",
+                "number": 2,
+                "title": "Construction de phrases bilans scientifiques"
+              },
+              {
+                "type": "exercice",
+                "number": 3,
+                "title": "Légende du schéma de l'appareil respiratoire"
+              }
+            ]
+          },
+          {
+            "name": "Utilisation des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 4,
+                "title": "Analyse de la consommation d'oxygène du criquet"
+              },
+              {
+                "type": "exercice",
+                "number": 5,
+                "title": "Analyse du trajet de l'eau chez le poisson"
+              },
+              {
+                "type": "exercice",
+                "number": 6,
+                "title": "Mise en évidence de la respiration des graines"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : L’alimentation chez les êtres vivants",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Le régime alimentaire omnivore chez l'Homme"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Diversité alimentaire et régime omnivore humain"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Le régime alimentaire omnivore chez l’Homme",
+        "subsections": [
+          {
+            "name": "La dentition chez l’Homme",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Forme et rôle des différentes dents"
+              },
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Formule dentaire de l'Homme adulte"
+              }
+            ]
+          },
+          {
+            "name": "Les muscles masticateurs chez l’Homme",
+            "items": [
+              {
+                "type": "fonction",
+                "number": 1,
+                "title": "Action des muscles masticateurs et condyle"
+              }
+            ]
+          },
+          {
+            "name": "L’appareil digestif chez l’Homme",
+            "items": [
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Caractéristiques et rôles des organes digestifs"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Comparaison du régime alimentaire herbivore et carnivore",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Comparaison du régime herbivore et carnivore"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Adaptations anatomiques aux régimes carnivore et herbivore"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Dentition adaptée pour la prise alimentaire chez le lapin",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Dentition et formule dentaire du lapin herbivore"
+              }
+            ]
+          },
+          {
+            "name": "Dentition adaptée pour la prise alimentaire chez le chat",
+            "items": [
+              {
+                "type": "structure",
+                "number": 2,
+                "title": "Dentition et formule dentaire du chat carnivore"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison des dentitions herbivore et carnivore"
+              }
+            ]
+          },
+          {
+            "name": "Le tube digestif pour chaque régime alimentaire",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 2,
+                "title": "Comparaison des tubes digestifs du lapin et du chat"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La nutrition chez les végétaux",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "La nutrition chez les végétaux chlorophylliens"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Absorption de l'eau et des sels minéraux"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "La nécessité de l’eau pour le développement des plantes",
+            "items": [
+              {
+                "type": "experience",
+                "number": 1,
+                "title": "Mise en évidence de l'indispensabilité de l'eau"
+              }
+            ]
+          },
+          {
+            "name": "La nécessité des sels minéraux pour le développement des plantes",
+            "items": [
+              {
+                "type": "experience",
+                "number": 2,
+                "title": "Mise en évidence du besoin en sels minéraux"
+              }
+            ]
+          },
+          {
+            "name": "Des poils pour nourrir la plante d’eau et de sels minéraux",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Rôle des poils absorbants de la zone pilifère"
+              },
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Effet de l'immersion des poils absorbants"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : Les relations trophiques dans un milieu naturel",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Relations alimentaires et flux dans les écosystèmes"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Chaînes alimentaires et réseaux trophiques",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Chaînes alimentaires et réseaux trophiques"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Les chaînes alimentaires",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition et composantes d'une chaîne alimentaire"
+              },
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Exemple de chaîne alimentaire terrestre"
+              }
+            ]
+          },
+          {
+            "name": "Le réseau trophique dans un milieu aquatique et dans la forêt",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Exemples de chaînes à plusieurs maillons"
+              },
+              {
+                "type": "remarque",
+                "number": 1,
+                "title": "Végétal vert premier maillon obligatoire"
+              },
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Classement des maillons selon le niveau trophique"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition d'un réseau trophique"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Flux de la matière et flux de l’énergie",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Flux de la matière et flux de l'énergie"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Producteurs primaires et transfert d'énergie"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Production primaire et production secondaire dans un écosystème",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Production de matière organique chez le maïs"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Biomasse et productivité des différentes forêts"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Exploitation de la sortie géologique",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "Exploitation de la sortie géologique"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Exploitation des données de la sortie géologique"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Rédaction d’un compte-rendu de la sortie géologique",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Méthodologie de rédaction du compte-rendu"
+              }
+            ]
+          },
+          {
+            "name": "Un exemple d’exploitation de la sortie géologique",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Chronologie relative et identification des roches"
+              }
+            ]
+          },
+          {
+            "name": "Établissement d’une carte géologique très simplifiée",
+            "items": [
+              {
+                "type": "methode",
+                "number": 2,
+                "title": "Établissement de la carte géologique simplifiée"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Bilan des apports de la sortie géologique"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : Les étapes de la formation des roches sédimentaires",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Influence de l'érosion sur le paysage géologique"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Processus de dégradation et transformation du relief"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Influence de l’érosion sur le paysage géologique",
+        "subsections": [
+          {
+            "name": "Influence de l’érosion mécanique sur quelques affleurements",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'érosion mécanique"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Agents principaux de l'érosion mécanique"
+              }
+            ]
+          },
+          {
+            "name": "Influence de l’érosion chimique sur quelques affleurements",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition de l'érosion chimique"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Action de l'eau de pluie acide sur les roches"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Bilan du processus de destruction par érosion chimique"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Le transport des produits de l’érosion",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Le transport des produits de l'érosion"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Agents de transport des particules sédimentaires"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Rôle de l’eau et du vent dans le transport des produits de l’érosion",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Manifestations du transport par l'eau et le vent"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Facteurs régissant la distance de transport"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Modes de transport selon la taille des éléments"
+              }
+            ]
+          },
+          {
+            "name": "Les éléments transportés témoignent des conditions de leur transport",
+            "items": [
+              {
+                "type": "observation",
+                "number": 2,
+                "title": "Analyse de la forme des grains de quartz"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Dépôt des sédiments transportés",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "Dépôt des sédiments transportés"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Conditions et milieux d'accumulation des sédiments"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Dépôt de sédiments détritiques",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition des sédiments détritiques"
+              },
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Érosion et dépôt selon la rive de la rivière"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Utilisation du diagramme de Hjulström"
+              }
+            ]
+          },
+          {
+            "name": "Dépôt des sédiments chimiques",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition et formation des évaporites"
+              }
+            ]
+          },
+          {
+            "name": "Dépôt des sédiments biochimiques",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Processus de sédimentation biochimique"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 6 : Les temps géologiques",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Fossiles et fossilisation"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Restes et traces de vie dans les roches sédimentaires"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Fossiles et fossilisation",
+        "subsections": [
+          {
+            "name": "Notion de fossiles",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Classification des formes de fossiles"
+              },
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition scientifique du terme fossile"
+              }
+            ]
+          },
+          {
+            "name": "La fossilisation et ses conditions",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Étapes de la fossilisation de l'ammonite"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Conditions nécessaires à la fossilisation"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "L’importance géologique des fossiles",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "L'importance géologique des fossiles"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Datation relative et reconstitution des paléoenvironnements"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Rôle des fossiles dans la datation des sédiments",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Distinction fossiles stratigraphiques et de faciès"
+              }
+            ]
+          },
+          {
+            "name": "Rôle des fossiles dans la subdivision des temps géologiques",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Subdivision du temps géologique en ères"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Notion de cycle sédimentaire",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "Notion de cycle sédimentaire"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Alternance des transgressions et régressions marines"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Transgression et régression",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'un cycle sédimentaire"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Granoclassement des séries transgressives et régressives"
+              }
+            ]
+          },
+          {
+            "name": "Les phénomènes géologiques accompagnant un cycle sédimentaire",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Surfaces de discontinuité et variations marines"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

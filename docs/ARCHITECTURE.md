@@ -107,6 +107,16 @@ Fonctions testables sans interface : calendrier, validation des dates, progressi
 
 Chaque classe possède ses `LessonsData`. Les opérations structurelles passent par `utils/dataUtils.ts`, l’annulation/rétablissement par `useHistoryState` et le journal d’activité par `utils/journal.ts`.
 
+La sauvegarde locale est prioritaire : l’éditeur écrit après une courte temporisation et force aussi l’écriture lors du masquage, de `pagehide` et du démontage. Le cloud ne lit ensuite que cet instantané local marqué comme modifié.
+
+`utils/sessionIndex.ts` est la projection canonique des séances pour les cartes et leur modal : dernière séance réellement passée, dernier titre dans cette séance, premier contenu futur déjà planifié et contenu pédagogique suivant. Une date future ne doit jamais être présentée comme « dernière séance ». « Contenu prochain » suit l’ordre pédagogique du tableau : le moteur repère la dernière vraie ligne de contenu datée et ne présente que la ligne de contenu qui la suit directement lorsqu’elle n’est pas encore datée. Il ne dépend pas de la présence de l’emploi du temps. `utils/notebookStorage.ts` partage les lectures JSON entre les moteurs du tableau de bord afin d’éviter les parsings répétés.
+
+### Évaluations
+
+`utils/assessments.ts` valide le JSON officiel à l’exécution puis fusionne, dans une seule fonction métier, le planning officiel, les dates ajustées et les devoirs manuels. Les identifiants officiels incluent le millésime scolaire ; les anciennes clés sans année restent lisibles uniquement pour migration.
+
+Les alertes, le modal d’évaluations et les rappels d’absences consomment la même liste résolue. `utils/assessmentSync.ts` rapproche ensuite chaque devoir avec un bloc du cahier par type, numéro et proximité de date, sans réutiliser le même bloc. L’API valide les structures d’évaluation avant de les enregistrer dans Redis.
+
 ### Date
 
 Toutes les entrées convergent vers `validateSessionDate`. Le dialogue de vérification reçoit une liste structurée de raisons, puis confirme ou renvoie vers la planification.

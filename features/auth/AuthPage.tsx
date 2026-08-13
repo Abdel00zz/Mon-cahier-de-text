@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Bell, BookOpen, CalendarCheck, CircleCheck, Eye, EyeOff, ListChecks, Loader2, Plus, Printer, Sparkles, TriangleAlert, ShieldCheck } from '@/components/ui/icons';
+import { BookOpen, CircleCheck, Eye, EyeOff, Loader2, TriangleAlert, ShieldCheck } from '@/components/ui/icons';
 import { AppLocale } from '@/types';
 
 type Mode = 'login' | 'register';
@@ -459,4 +459,3 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
     </div>
   );
 };
-

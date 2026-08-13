@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
-import { getClassVisual } from '@/utils/classVisuals';
+import { getSubjectVisual } from '@/utils/classVisuals';
 import { ChevronRight, Info, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -25,7 +25,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
-    const visual = getClassVisual(classInfo.name);
+    const visual = getSubjectVisual(classInfo.subject);
     const issueStatus = notificationCount === 1
         ? t('notifications.classIssueCount.one', { count: notificationCount })
         : notificationCount > 1
@@ -56,8 +56,8 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-3 text-start outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8]/40 dark:hover:bg-slate-800"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 group-hover:scale-110 transition-transform duration-300 dark:bg-amber-900/40 dark:text-amber-400" aria-hidden>
-                    <Users className="h-5 w-5" />
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl group-hover:scale-110 transition-transform duration-300 ${visual.iconSurfaceClass}`} aria-hidden>
+                    <Users className={`h-5 w-5 ${visual.iconClass}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">{displayName}</h3>
@@ -87,14 +87,14 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 <button
                     type="button"
                     onClick={() => runAction(onShowNotifications)}
-                    className={`${issueStatus ? 'w-[7.5rem] px-2 sm:w-32 bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-400 relative overflow-hidden' : 'w-12 sm:w-14 text-[#423ed8] hover:bg-slate-100 dark:hover:bg-slate-800'} flex min-h-[70px] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s-2 border-slate-200 dark:border-slate-700 transition-all focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8]/40`}
+                    className={`${issueStatus ? 'w-[7.5rem] px-2 sm:w-32 bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:text-white dark:hover:bg-red-600 relative overflow-hidden' : 'w-12 sm:w-14 text-[#423ed8] hover:bg-slate-100 dark:hover:bg-slate-800'} flex min-h-[70px] min-w-0 touch-manipulation items-center justify-center gap-1.5 border-s-2 border-slate-200 dark:border-slate-700 transition-all focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8]/40`}
                     aria-label={notificationButtonLabel}
                     title={notificationButtonLabel}
                     aria-haspopup="dialog"
                 >
-                    <Info className={`h-[18px] w-[18px] shrink-0 relative z-10 ${issueStatus ? 'text-red-600 dark:text-red-500' : ''}`} />
+                    <Info className={`h-[18px] w-[18px] shrink-0 relative z-10 ${issueStatus ? 'text-white' : ''}`} />
                     {issueStatus && (
-                        <span className="line-clamp-2 min-w-0 text-center text-[9px] font-bold leading-[1.12] text-red-600 dark:text-red-400 animate-advanced-blink relative z-10">
+                        <span className="line-clamp-2 min-w-0 text-center text-[9px] font-bold leading-[1.12] text-white animate-advanced-blink relative z-10">
                             ({issueStatus})
                         </span>
                     )}

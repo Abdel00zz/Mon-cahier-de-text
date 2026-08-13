@@ -153,6 +153,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [isPrinting, setIsPrinting] = useState(false);
   const isPrintingRef = useRef(false);
   const printLaunchTimerRef = useRef<number | null>(null);
+  const lessonsDataRef = useRef<LessonsData>(lessonsData);
+  const contentDirectionRef = useRef<ContentDirection>(editorState.contentDirection);
+  const saveStatusRef = useRef<'saved' | 'saving' | 'unsaved'>(editorState.saveStatus);
 
   useEffect(() => () => {
     if (printLaunchTimerRef.current !== null) {
@@ -177,6 +180,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     printTextSize,
     printLineSpacing,
   } = editorState;
+
+  // Les événements pagehide/démontage doivent toujours voir le dernier rendu,
+  // sans dépendre du délai d'autosauvegarde de 1,5 seconde.
+  lessonsDataRef.current = lessonsData;
+  contentDirectionRef.current = contentDirection;
+  saveStatusRef.current = saveStatus;
 
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
@@ -339,23 +348,53 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     }
   }, [resetState, getStorageKey, showNotification, setEditorState, t, locale]);
 
-  const saveData = useCallback(() => {
-    setEditorState(draft => { draft.saveStatus = 'saving'; });
+  const persistCurrentData = useCallback((withVisualStatus: boolean): boolean => {
+    if (saveStatusRef.current === 'saved') return true;
+    if (withVisualStatus) setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
-      localStorage.setItem(getStorageKey(), JSON.stringify({ lessonsData, contentDirection }));
+      localStorage.setItem(getStorageKey(), JSON.stringify({
+        lessonsData: lessonsDataRef.current,
+        contentDirection: contentDirectionRef.current,
+      }));
       touchClassSyncMeta(classInfo.id);
       markClassDirty(classInfo.id);
-      setTimeout(() => setEditorState(draft => {
-        // Une nouvelle édition peut arriver pendant le court retour visuel
-        // « sauvegarde en cours ». Ne jamais l'écraser par un faux « sauvegardé ».
-        if (draft.saveStatus === 'saving') draft.saveStatus = 'saved';
-      }), 500);
+      saveStatusRef.current = 'saved';
+      if (withVisualStatus) {
+        setTimeout(() => setEditorState(draft => {
+          if (draft.saveStatus === 'saving') draft.saveStatus = 'saved';
+        }), 500);
+      }
+      return true;
     } catch (error) {
       logger.error("Failed to save data to localStorage", error);
-      showNotification(t('editorNotice.saveError'), "error");
-      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+      saveStatusRef.current = 'unsaved';
+      if (withVisualStatus) {
+        showNotification(t('editorNotice.saveError'), "error");
+        setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+      }
+      return false;
     }
-  }, [lessonsData, contentDirection, getStorageKey, classInfo.id, showNotification, setEditorState, t]);
+  }, [getStorageKey, classInfo.id, showNotification, setEditorState, t]);
+
+  const saveData = useCallback(() => {
+    persistCurrentData(true);
+  }, [persistCurrentData]);
+
+  // Garantie locale : quitter rapidement après une édition ne peut plus annuler
+  // la dernière saisie avant que l'autosauvegarde différée ait eu le temps de partir.
+  useEffect(() => {
+    const flushWhenHidden = () => {
+      if (document.visibilityState === 'hidden') persistCurrentData(false);
+    };
+    const flushOnPageHide = () => { persistCurrentData(false); };
+    document.addEventListener('visibilitychange', flushWhenHidden);
+    window.addEventListener('pagehide', flushOnPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', flushWhenHidden);
+      window.removeEventListener('pagehide', flushOnPageHide);
+      persistCurrentData(false);
+    };
+  }, [persistCurrentData]);
 
   const handleExportData = useCallback(() => {
     try {
@@ -930,7 +969,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return false;
         }
 
-        setState(currentData => (mode === 'replace' ? preparedLessons : [...currentData, ...preparedLessons]), 'import-data');
+        setState(currentData => {
+            const combined = mode === 'replace' ? preparedLessons : [...currentData, ...preparedLessons];
+            // L'évaluation diagnostique ouvre chaque cahier, y compris importé :
+            // un diagnostic déjà présent est conservé (remonté, sans doublon),
+            // sinon il est injecté en tête.
+            return withStarterDiagnostic(combined, config.applicationLocale ?? 'ar');
+        }, 'import-data');
         // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
         // toutes ses colonnes. Un import de remplacement (ou le premier import)
         // adopte immédiatement l'écriture détectée à partir du titre.
@@ -941,7 +986,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         });
         handleModalClose();
         showNotification(
-          `Import maitrise: ${report.topLevelCount} bloc(s), ${report.itemCount} element(s), ${report.normalizedDates} date(s) normalisee(s)${shouldAdoptImportedDirection ? ` — ${direction.direction.toUpperCase()} applique` : ''}.`,
+          `Import maitrise: ${report.topLevelCount} bloc(s), ${report.itemCount} element(s), ${report.normalizedDates} date(s) normalisee(s)${shouldAdoptImportedDirection ? ` : ${direction.direction.toUpperCase()} applique` : ''}.`,
           "success",
         );
         return true;
@@ -950,7 +995,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         showNotification("Import refuse: structure JSON non compatible avec le tableau.", "error");
         return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length]);
+  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length, config.applicationLocale]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setState(() => newLessons, 'manage-lessons');

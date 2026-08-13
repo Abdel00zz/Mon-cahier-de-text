@@ -1,0 +1,402 @@
+{
+  "version": 1,
+  "schoolYear": "2026-2027",
+  "source": {
+    "title": "Décision ministérielle n° 047.26 relative à l'organisation de l'année scolaire 2026-2027",
+    "date": "2026-07-03",
+    "language": "ar",
+    "note": "Transcription ciblée des échéances élèves 2026-2027. Matière : Physique-Chimie. Référence réglementaire matière : note n° 142.09 du 16/11/2007 relative à l'évaluation pédagogique au secondaire qualifiant."
+  },
+  "events": [
+    {
+      "id": "physique-chimie-tc-assessment-s1",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - TC - semestre 1",
+      "start": "2027-01-04",
+      "end": "2027-01-09",
+      "levels": [
+        "tc"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du premier semestre au tronc commun.",
+      "sourcePage": 12
+    },
+    {
+      "id": "physique-chimie-tc-results-s1",
+      "category": "result",
+      "title": "Remise des résultats - TC - semestre 1",
+      "start": "2027-01-23",
+      "end": "2027-01-23",
+      "levels": [
+        "tc"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir le relevé des notes du premier semestre au tronc commun.",
+      "sourcePage": 12
+    },
+    {
+      "id": "physique-chimie-tc-assessment-s2",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - TC - semestre 2",
+      "start": "2027-06-14",
+      "end": "2027-06-19",
+      "levels": [
+        "tc"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du second semestre au tronc commun.",
+      "sourcePage": 12
+    },
+    {
+      "id": "physique-chimie-tc-final-results",
+      "category": "result",
+      "title": "Résultats de fin d'année - TC",
+      "start": "2027-07-03",
+      "end": "2027-07-03",
+      "levels": [
+        "tc"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir les notes et les résultats d'orientation du tronc commun.",
+      "sourcePage": 12
+    },
+    {
+      "id": "physique-chimie-1bac-assessment-s1",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - 1BAC - semestre 1",
+      "start": "2027-01-04",
+      "end": "2027-01-09",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du premier semestre en 1BAC.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-results-s1",
+      "category": "result",
+      "title": "Remise des résultats - 1BAC - semestre 1",
+      "start": "2027-01-23",
+      "end": "2027-01-23",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir le relevé des notes du premier semestre en 1BAC.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-regional-preparation",
+      "category": "support",
+      "title": "Préparation à l'examen régional - 1BAC",
+      "start": "2027-05-24",
+      "end": "2027-05-27",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Participer à la préparation collective avant la session normale de l'examen régional.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-regional-regular",
+      "category": "exam",
+      "title": "Examen régional unifié - session normale - 1BAC",
+      "start": "2027-05-28",
+      "end": "2027-05-29",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer la session normale de l'examen régional unifié selon la filière et les matières concernées.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-assessment-s2",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - 1BAC - semestre 2",
+      "start": "2027-06-14",
+      "end": "2027-06-19",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du second semestre en 1BAC.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-regional-makeup",
+      "category": "exam",
+      "title": "Examen régional unifié - rattrapage - 1BAC",
+      "start": "2027-06-28",
+      "end": "2027-06-29",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer la session de rattrapage de l'examen régional unifié si concerné.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-regional-results",
+      "category": "result",
+      "title": "Publication des résultats de l'examen régional - 1BAC",
+      "start": "2027-07-08",
+      "end": "2027-07-08",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Consulter les résultats de l'examen régional unifié.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-1bac-final-results",
+      "category": "result",
+      "title": "Résultats et orientation de fin d'année - 1BAC",
+      "start": "2027-07-09",
+      "end": "2027-07-10",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir les notes de fin d'année et les résultats d'orientation.",
+      "sourcePage": 13
+    },
+    {
+      "id": "physique-chimie-2bac-assessment-s1",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - 2BAC - semestre 1",
+      "start": "2027-01-04",
+      "end": "2027-01-09",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du premier semestre en 2BAC.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-results-s1",
+      "category": "result",
+      "title": "Remise des résultats - 2BAC - semestre 1",
+      "start": "2027-01-23",
+      "end": "2027-01-23",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Recevoir le relevé des notes du premier semestre en 2BAC.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-assessment-s2",
+      "category": "assessment",
+      "title": "Derniers contrôles continus - 2BAC - semestre 2",
+      "start": "2027-05-17",
+      "end": "2027-05-22",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Passer les derniers contrôles continus du second semestre en 2BAC.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-national-preparation",
+      "category": "support",
+      "title": "Préparation à l'examen national - session normale - 2BAC",
+      "start": "2027-05-24",
+      "end": "2027-05-29",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Participer à la préparation collective avant la session normale de l'examen national.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-national-regular",
+      "category": "exam",
+      "title": "Examen national unifié - session normale - 2BAC",
+      "start": "2027-06-01",
+      "end": "2027-06-03",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer la session normale de l'examen national unifié du baccalauréat.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-national-results",
+      "category": "result",
+      "title": "Résultats du baccalauréat - session normale",
+      "start": "2027-06-19",
+      "end": "2027-06-19",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Consulter les résultats de la session normale du baccalauréat.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-makeup-preparation",
+      "category": "support",
+      "title": "Préparation à l'examen national - rattrapage - 2BAC",
+      "start": "2027-06-21",
+      "end": "2027-06-30",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "window",
+      "studentAction": "Se préparer à la session de rattrapage de l'examen national si concerné.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-national-makeup",
+      "category": "exam",
+      "title": "Examen national unifié - rattrapage - 2BAC",
+      "start": "2027-07-01",
+      "end": "2027-07-03",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer la session de rattrapage de l'examen national unifié si concerné.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-2bac-makeup-results",
+      "category": "result",
+      "title": "Résultats du baccalauréat - rattrapage",
+      "start": "2027-07-10",
+      "end": "2027-07-10",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Consulter les résultats de la session de rattrapage du baccalauréat.",
+      "sourcePage": 14
+    },
+    {
+      "id": "physique-chimie-lycee-physics-olympiad-test1",
+      "category": "competition",
+      "title": "Olympiades nationales de physique - épreuve 1",
+      "start": "2027-01-08",
+      "end": "2027-01-08",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 1 de sélection des olympiades nationales de physique.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-physics-olympiad-test2",
+      "category": "competition",
+      "title": "Olympiades nationales de physique - épreuve 2",
+      "start": "2027-02-05",
+      "end": "2027-02-05",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 2 de sélection des olympiades nationales de physique.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-physics-olympiad-test3",
+      "category": "competition",
+      "title": "Olympiades nationales de physique - épreuve 3",
+      "start": "2027-03-05",
+      "end": "2027-03-05",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 3 de sélection des olympiades nationales de physique.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-physics-olympiad-test4",
+      "category": "competition",
+      "title": "Olympiades nationales de physique - épreuve 4",
+      "start": "2027-04-02",
+      "end": "2027-04-02",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 4 de sélection des olympiades nationales de physique.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-chemistry-olympiad-test1",
+      "category": "competition",
+      "title": "Olympiades nationales de chimie - épreuve 1",
+      "start": "2027-01-08",
+      "end": "2027-01-08",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 1 de sélection des olympiades nationales de chimie.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-chemistry-olympiad-test2",
+      "category": "competition",
+      "title": "Olympiades nationales de chimie - épreuve 2",
+      "start": "2027-02-05",
+      "end": "2027-02-05",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 2 de sélection des olympiades nationales de chimie.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-chemistry-olympiad-test3",
+      "category": "competition",
+      "title": "Olympiades nationales de chimie - épreuve 3",
+      "start": "2027-03-05",
+      "end": "2027-03-05",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 3 de sélection des olympiades nationales de chimie.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-chemistry-olympiad-test4",
+      "category": "competition",
+      "title": "Olympiades nationales de chimie - épreuve 4",
+      "start": "2027-04-02",
+      "end": "2027-04-02",
+      "levels": [
+        "1bac"
+      ],
+      "dateKind": "fixed",
+      "studentAction": "Passer l'épreuve 4 de sélection des olympiades nationales de chimie.",
+      "sourcePage": 15
+    },
+    {
+      "id": "physique-chimie-lycee-general-scitech",
+      "category": "competition",
+      "title": "Concours général des sciences et techniques",
+      "start": "2027-07-01",
+      "end": "2027-07-31",
+      "levels": [
+        "2bac"
+      ],
+      "dateKind": "indicative",
+      "studentAction": "Participer au Concours général des sciences et techniques en physique-chimie si sélectionné.",
+      "sourcePage": 16
+    }
+  ]
+}

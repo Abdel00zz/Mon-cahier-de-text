@@ -48,7 +48,30 @@ export interface AppConfig {
     assessmentAbsences?: Record<string, Record<string, AssessmentAbsenceRecord>>;
     /** activités pédagogiques libres par classe (diagnostic, olympiade, soutien, examen blanc...) */
     pedagogicalEvents?: Record<string, PedagogicalEvent[]>;
+    /** devoirs surveillés / maison saisis manuellement par le prof, par classe */
+    manualAssessments?: Record<string, ManualAssessment[]>;
+    /** devoirs (prédéfinis ou manuels) masqués par le prof, par classe */
+    removedAssessments?: Record<string, string[]>;
+    /** ordre personnalisé des devoirs (ids) par classe */
+    assessmentOrder?: Record<string, string[]>;
 }
+
+/** Devoir surveillé ou maison ajouté manuellement, sans planning officiel imposé. */
+export interface ManualAssessment {
+    id: string;
+    /** Millésime explicite pour empêcher un devoir manuel de réapparaître l'année suivante. */
+    schoolYear?: string;
+    type: DevoirType;
+    num: number;
+    dateISO: string;
+    duree?: string;
+    semestre: 1 | 2;
+    /** compte dans la note officielle */
+    note?: boolean;
+}
+
+/** Types officiels d'évaluation (nomenclature ministérielle AR/FR). */
+export type DevoirType = 'controle' | 'controle_court' | 'controle_global' | 'oral' | 'maison';
 
 /** Absents d'un devoir surveillé : consignés au moment du devoir, synchronisés avec le compte. */
 interface AssessmentAbsenceRecord {

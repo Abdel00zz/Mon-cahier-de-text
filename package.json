@@ -11,8 +11,9 @@
     "optimize": "vite build --mode production",
     "lint": "tsc --noEmit",
     "check:unused": "knip --no-progress",
-    "check": "npm run lint && npm run check:architecture && npm run check:unused && npm run build",
-    "check:architecture": "tsc --noEmit --noUnusedLocals --noUnusedParameters"
+    "check": "npm run check:data && npm run lint && npm run check:architecture && npm run check:unused && npm run build",
+    "check:architecture": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "check:data": "node scripts/validate-assessment-data.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.3",
@@ -33,6 +34,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
     "immer": "^10.1.1",
+    "katex": "^0.18.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sonner": "^2.0.7",

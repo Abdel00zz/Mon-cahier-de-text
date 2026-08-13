@@ -77,10 +77,9 @@ const SignalCard: React.FC<{
   classInfo?: ClassInfo;
   actionLabel: string;
   ignoreLabel: string;
-  mustResolveLabel: string;
   onIgnore: () => void;
   onResolve: () => void;
-}> = ({ signal, classInfo, actionLabel, ignoreLabel, mustResolveLabel, onIgnore, onResolve }) => {
+}> = ({ signal, classInfo, actionLabel, ignoreLabel, onIgnore, onResolve }) => {
   const visual = classInfo ? getClassVisual(classInfo.name) : null;
 
   return (
@@ -766,7 +765,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                             classInfo={classById.get(signal.classId)}
                             actionLabel={actionLabels[signal.action]}
                             ignoreLabel={t('notifications.ignore')}
-                            mustResolveLabel={t('notifications.mustResolve')}
                             onIgnore={() => ignoreSignal(signal)}
                             onResolve={() => resolveSignal(signal)}
                           />

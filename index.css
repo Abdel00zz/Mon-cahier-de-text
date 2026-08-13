@@ -226,7 +226,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   @keyframes advanced-blink {
     0%, 100% { opacity: 1; text-shadow: 0 0 6px rgba(239, 68, 68, 0.4); transform: scale(1); }
-    50% { opacity: 0.85; text-shadow: 0 0 2px rgba(239, 68, 68, 0.1); transform: scale(0.99); }
+    50% { opacity: 0.5; text-shadow: none; transform: scale(0.99); }
   }
 
   @keyframes advanced-alert-pulse {
@@ -237,4 +237,3 @@ html[data-keyboard='open'] .mobile-tab-bar {
   --animate-advanced-blink: advanced-blink 1.5s ease-in-out infinite;
   --animate-advanced-alert: advanced-alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-

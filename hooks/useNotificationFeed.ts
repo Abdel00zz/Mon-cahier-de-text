@@ -112,7 +112,8 @@ export const useNotificationFeed = (
     const globalSignals = collectCrossClassSignals(classes, locale);
 
     for (const item of pastAssessments.filter(a => a.type === 'controle')) {
-      const saisi = config.assessmentAbsences?.[item.classId]?.[item.id];
+      const saisi = config.assessmentAbsences?.[item.classId]?.[item.id]
+        ?? (item.legacyId ? config.assessmentAbsences?.[item.classId]?.[item.legacyId] : undefined);
       if (saisi) continue;
       const id = `absences:${item.classId}:${item.id}:${item.dateISO}`;
       const whenLabel = item.daysAgo === 0

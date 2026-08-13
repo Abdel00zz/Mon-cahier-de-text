@@ -126,6 +126,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -172,11 +173,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
   const sectionTitleClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
 
-  // Matière enseignée (unique) : radio, appliquée aux classes, documents et
-  // impressions, et pilote le domaine des types de contenu (math/svt/physique).
-  const selectedSubject = localConfig.selectedSubjects?.[0] ?? '';
-  const selectSubject = (subject: string) => {
-    setLocalConfig(prev => ({ ...prev, selectedSubjects: [subject], showAllSubjects: false }));
+  // Matières enseignées (multi-sélection) : filtrent le choix de matière à la
+  // création d'une classe et pilotent le domaine des types de contenu.
+  const selectedSubjects = localConfig.selectedSubjects ?? [];
+  const toggleSubject = (subject: string) => {
+    setLocalConfig(prev => {
+      const current = prev.selectedSubjects ?? [];
+      const next = current.includes(subject)
+        ? current.filter(s => s !== subject)
+        : [...current, subject];
+      return { ...prev, selectedSubjects: next, showAllSubjects: false };
+    });
   };
 
   const languageSection = (
@@ -288,23 +295,42 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="subject" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     {t('settings.subjects')}
                   </label>
-                  <select
-                    id="subject"
-                    value={selectedSubject}
-                    onChange={event => selectSubject(event.target.value)}
-                    className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                  >
-                    <option value="">{t('settings.chooseSubject')}</option>
-                    {SUBJECTS.map(subject => (
-                      <option key={subject} value={subject}>
-                        {formatLocalizedSubjectDisplayName(subject, locale)}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex flex-wrap gap-2">
+                    {SUBJECTS.slice(0, subjectExpanded ? SUBJECTS.length : 6).map(subject => {
+                      const active = selectedSubjects.includes(subject);
+                      return (
+                        <button
+                          key={subject}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => toggleSubject(subject)}
+                          className={cn(
+                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer',
+                            active
+                              ? 'border-blue-500 bg-blue-600 text-white'
+                              : 'border-border bg-card text-muted-foreground hover:border-blue-300 hover:text-foreground'
+                          )}
+                        >
+                          {formatLocalizedSubjectDisplayName(subject, locale)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {SUBJECTS.length > 6 && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setSubjectExpanded(v => !v)}
+                        className="text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer"
+                      >
+                        {subjectExpanded ? t('settings.subjectsSeeLess') : t('settings.subjectsSeeMore')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -621,14 +647,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   const footer = (
     <div className="flex w-full justify-end gap-2">
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={onClose}
-        className="flex-1 text-xs font-bold sm:flex-initial cursor-pointer"
-      >
-        {asPage ? t('settings.back') : t('common.cancel')}
-      </Button>
+      {!asPage && (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onClose}
+          className="flex-1 text-xs font-bold sm:flex-initial cursor-pointer"
+        >
+          {t('common.cancel')}
+        </Button>
+      )}
       <Button
         type="button"
         onClick={handleSave}

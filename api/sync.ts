@@ -1,6 +1,6 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
-import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidTimetable } from './_lib/validate.js';
+import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
 
@@ -69,7 +69,7 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
             );
         }
     }
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents']) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder']) {
         if (cleaned[key] && typeof cleaned[key] === 'object' && !Array.isArray(cleaned[key])) {
             const records = { ...(cleaned[key] as Record<string, unknown>) };
             for (const classId of deletedIds) delete records[classId];
@@ -127,6 +127,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };
     const validClassIds = new Set(classes.map(c => c.id));
     const requestedClassIds = new Set(requestedClasses.map(c => c.id));
+    const submittedSettings = assertValidSyncSettings(body.settings, requestedClassIds);
     const submittedTimetable = assertValidTimetable(body.timetable, requestedClassIds);
     const timetable = (submittedTimetable ?? existing.timetable ?? [])
         .filter(entry => !deletedClassIds.has(entry.classId));
@@ -162,10 +163,10 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             .filter(schedule => !deletedClassIds.has(schedule.classId)),
         timetable,
         settings: sanitizeSettings(
-            body.settings && typeof body.settings === 'object' ? body.settings : (existing.settings ?? {}),
+            submittedSettings ?? (existing.settings ?? {}),
             deletedClassIds
         ),
-        settingsUpdatedAt: body.settings && typeof body.settings === 'object'
+        settingsUpdatedAt: submittedSettings
             ? (typeof body.settingsUpdatedAt === 'string' && body.settingsUpdatedAt ? body.settingsUpdatedAt : now)
             : (existing.settingsUpdatedAt ?? ''),
         classMeta,

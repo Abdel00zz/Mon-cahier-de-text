@@ -1,7 +1,8 @@
 import { AppConfig, AppLocale, ClassInfo, Indices, LessonsData } from '../types';
 import { formatClassDisplayName } from '../constants';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
-import { flattenLessons, migrateLessonsData } from './dataUtils';
+import { flattenLessons } from './dataUtils';
+import { readCachedLessons } from './notebookStorage';
 import { DateWarning, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
@@ -163,13 +164,7 @@ export const sortSignals = (signals: ClassSignal[]): ClassSignal[] =>
     [...signals].sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind] || a.className.localeCompare(b.className));
 
 export const readClassLessons = (classId: string): LessonsData => {
-    try {
-        const raw = localStorage.getItem(`classData_v1_${classId}`);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return migrateLessonsData(Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []));
-    } catch {
-        return [];
-    }
+    return readCachedLessons(classId);
 };
 
 export const formatDateFR = (iso: string): string => iso.split('-').reverse().join('/');

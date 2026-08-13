@@ -327,13 +327,16 @@ const App: React.FC = () => {
   return (
     <>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
-        {view === 'editor' ? (
-          <Suspense fallback={<AppBootSkeleton />}>
-            <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
-              {appSurface}
-            </MathJaxContext>
-          </Suspense>
-        ) : appSurface}
+        {/*
+          Les aperçus de séance du tableau de bord affichent eux aussi des
+          titres saisis en LaTeX. Le contexte doit donc couvrir toute
+          l'application, et pas uniquement la vue de l'éditeur.
+        */}
+        <Suspense fallback={<AppBootSkeleton />}>
+          <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
+            {appSurface}
+          </MathJaxContext>
+        </Suspense>
 
         {/* Évaluations globales — socle commun Modal */}
         <Modal

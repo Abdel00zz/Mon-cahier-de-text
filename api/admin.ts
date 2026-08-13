@@ -13,7 +13,7 @@ import {
     signSession,
 } from './_lib/auth.js';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableEntry, TeacherSnapshot } from '../types.js';
-import { getBundledCalendar, type HolidayCalendar } from '../utils/calendar.js';
+import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../utils/calendar.js';
 import {
     getOfficialStudentEventsFile,
     validateOfficialStudentEventsFile,
@@ -84,7 +84,7 @@ const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: s
     const next = { ...(settings ?? {}) };
     next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
     next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
-    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents'] as const) {
+    for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
         if (!next[key]) continue;
         const records = { ...next[key] };
         delete records[classId];
@@ -169,30 +169,16 @@ const handleOverview = async (res: ApiResponse) => {
     res.status(200).json({ teachers });
 };
 
-const validISO = (value: unknown): value is string =>
-    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
-
 const validateCalendar = (value: unknown): HolidayCalendar => {
-    if (!value || typeof value !== 'object') throw new HttpError(400, 'Calendrier invalide.');
-    const calendar = value as HolidayCalendar;
-    if (!calendar.anneeScolaire || !validISO(calendar.anneeScolaire.debut) || !validISO(calendar.anneeScolaire.fin)) {
-        throw new HttpError(400, 'Année scolaire invalide.');
+    try {
+        return validateHolidayCalendar(value);
+    } catch (error) {
+        throw new HttpError(400, error instanceof Error ? error.message : 'Calendrier invalide.');
     }
-    if (!Array.isArray(calendar.joursFeries) || calendar.joursFeries.some(item => !validISO(item.date) || !item.nom)) {
-        throw new HttpError(400, 'Liste des jours fériés invalide.');
-    }
-    if (!Array.isArray(calendar.vacances) || calendar.vacances.some(item => !validISO(item.debut) || !validISO(item.fin) || item.fin < item.debut || !item.nom)) {
-        throw new HttpError(400, 'Liste des vacances invalide.');
-    }
-    return {
-        ...calendar,
-        version: Math.max(1, Number(calendar.version) || 1),
-        pays: calendar.pays || 'MA',
-        fuseau: calendar.fuseau || 'Africa/Casablanca',
-        joursFeries: [...calendar.joursFeries].sort((a, b) => a.date.localeCompare(b.date)),
-        vacances: [...calendar.vacances].sort((a, b) => a.debut.localeCompare(b.debut)),
-    };
 };
+
+const validISO = (value: unknown): value is string =>
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`));
 
 const handleGetCalendar = async (res: ApiResponse) => {
     const redis = await getRedis();

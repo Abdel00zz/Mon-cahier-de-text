@@ -79,7 +79,58 @@ export interface HolidayCalendar {
     vacances: VacancePeriode[];
 }
 
-const bundled = calendarJson as HolidayCalendar;
+const isValidISODate = (value: unknown): value is string => {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [year, month, day] = value.split('-').map(Number);
+    const parsed = new Date(Date.UTC(year, month - 1, day));
+    return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+};
+
+const validateYear = (value: unknown, path: string): AnneeScolaire => {
+    if (!value || typeof value !== 'object') throw new Error(`${path} est invalide.`);
+    const year = value as Partial<AnneeScolaire>;
+    if (typeof year.libelle !== 'string' || !/^\d{4}-\d{4}$/.test(year.libelle)) throw new Error(`${path}.libelle est invalide.`);
+    if (!isValidISODate(year.debut) || !isValidISODate(year.fin) || year.fin < year.debut) throw new Error(`${path} contient des bornes invalides.`);
+    return { libelle: year.libelle, debut: year.debut, fin: year.fin };
+};
+
+/** Validation commune au bundle, à l'API d'administration et au chargement client. */
+export const validateHolidayCalendar = (value: unknown): HolidayCalendar => {
+    if (!value || typeof value !== 'object') throw new Error('Calendrier invalide.');
+    const raw = value as Partial<HolidayCalendar>;
+    if (!Number.isInteger(raw.version) || Number(raw.version) < 1) throw new Error('calendar.version est invalide.');
+    if (typeof raw.pays !== 'string' || !raw.pays.trim()) throw new Error('calendar.pays est invalide.');
+    if (typeof raw.fuseau !== 'string' || !raw.fuseau.trim()) throw new Error('calendar.fuseau est invalide.');
+    const anneeScolaire = validateYear(raw.anneeScolaire, 'calendar.anneeScolaire');
+    const anneesScolaires = raw.anneesScolaires?.map((year, index) => validateYear(year, `calendar.anneesScolaires[${index}]`));
+    const years = [...(anneesScolaires?.length ? anneesScolaires : [anneeScolaire])].sort((a, b) => a.debut.localeCompare(b.debut));
+    if (new Set(years.map(year => year.libelle)).size !== years.length) throw new Error('Années scolaires dupliquées.');
+    if (years.some((year, index) => index > 0 && year.debut <= years[index - 1].fin)) throw new Error('Années scolaires qui se chevauchent.');
+    if (!Array.isArray(raw.joursFeries) || !Array.isArray(raw.vacances)) throw new Error('Listes du calendrier absentes.');
+    const joursFeries = raw.joursFeries.map((item, index): FerieEntry => {
+        if (!item || !isValidISODate(item.date) || typeof item.nom !== 'string' || !item.nom.trim()) throw new Error(`calendar.joursFeries[${index}] est invalide.`);
+        if (item.type !== 'national' && item.type !== 'religieux') throw new Error(`calendar.joursFeries[${index}].type est invalide.`);
+        if (item.approximatif !== undefined && typeof item.approximatif !== 'boolean') throw new Error(`calendar.joursFeries[${index}].approximatif est invalide.`);
+        return { date: item.date, nom: item.nom.trim(), type: item.type, ...(item.approximatif !== undefined ? { approximatif: item.approximatif } : {}) };
+    }).sort((a, b) => a.date.localeCompare(b.date));
+    const vacances = raw.vacances.map((item, index): VacancePeriode => {
+        if (!item || !isValidISODate(item.debut) || !isValidISODate(item.fin) || item.fin < item.debut || typeof item.nom !== 'string' || !item.nom.trim()) {
+            throw new Error(`calendar.vacances[${index}] est invalide.`);
+        }
+        return { nom: item.nom.trim(), debut: item.debut, fin: item.fin };
+    }).sort((a, b) => a.debut.localeCompare(b.debut));
+    return {
+        version: Number(raw.version),
+        pays: raw.pays.trim(),
+        fuseau: raw.fuseau.trim(),
+        anneeScolaire,
+        ...(anneesScolaires?.length ? { anneesScolaires: years } : {}),
+        joursFeries,
+        vacances,
+    };
+};
+
+const bundled = validateHolidayCalendar(calendarJson);
 
 export const getBundledCalendar = (): HolidayCalendar => cachedCalendar ?? bundled;
 
@@ -91,7 +142,7 @@ export const loadHolidayCalendar = async (): Promise<HolidayCalendar> => {
     try {
         const response = await fetch('/api/calendar', { cache: 'no-cache' });
         if (response.ok) {
-            cachedCalendar = (await response.json()) as HolidayCalendar;
+            cachedCalendar = validateHolidayCalendar(await response.json());
             return cachedCalendar;
         }
     } catch {
@@ -135,6 +186,8 @@ const getWeekday = (iso: string): number => {
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 };
+
+const INSTRUCTION_WEEKDAYS = [1, 2, 3, 4, 5, 6];
 
 export const isSchoolDay = (date: string | Date, weekdays: number[], cal: HolidayCalendar): boolean => {
     const iso = asISO(date);
@@ -220,6 +273,66 @@ const addDaysISO = (iso: string, days: number): string => {
     const dt = new Date(Date.UTC(y, m - 1, d));
     dt.setUTCDate(dt.getUTCDate() + days);
     return toISODate(new Date(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+};
+
+const mondayOf = (iso: string): string => {
+    const weekday = getWeekday(iso);
+    return addDaysISO(iso, weekday === 0 ? -6 : 1 - weekday);
+};
+
+export interface PedagogicalWeek {
+    /** Numéro relatif au semestre, hors semaines entièrement fermées. */
+    number: number;
+    /** Bornes civiles de la semaine d'enseignement (lundi à samedi). */
+    start: string;
+    end: string;
+    /** Premier jour où un devoir peut réellement être programmé. */
+    firstSchoolDay: string;
+    /** Dernier jour où un devoir peut réellement être programmé. */
+    lastSchoolDay: string;
+}
+
+/**
+ * Convertit une semaine officielle relative au semestre en semaine civile.
+ * Une semaine lundi-samedi entièrement couverte par des vacances/jours fériés
+ * ne consomme aucun numéro pédagogique. Une fermeture partielle conserve la
+ * semaine, mais `firstSchoolDay` évite de proposer un devoir un jour fermé.
+ */
+export const getPedagogicalWeek = (
+    semesterStart: string,
+    weekNumber: number,
+    cal: HolidayCalendar,
+    until: string,
+): PedagogicalWeek | null => {
+    if (!Number.isInteger(weekNumber) || weekNumber < 1 || semesterStart > until) return null;
+
+    let monday = mondayOf(asISO(semesterStart));
+    let pedagogicalNumber = 0;
+    let guard = 0;
+    while (monday <= until && guard < 80) {
+        const schoolDays: string[] = [];
+        for (let offset = 0; offset < 6; offset += 1) {
+            const date = addDaysISO(monday, offset);
+            if (date >= semesterStart && date <= until && isSchoolDay(date, INSTRUCTION_WEEKDAYS, cal)) {
+                schoolDays.push(date);
+            }
+        }
+        if (schoolDays.length > 0) {
+            pedagogicalNumber += 1;
+            if (pedagogicalNumber === weekNumber) {
+                return {
+                    number: weekNumber,
+                    start: monday,
+                    end: addDaysISO(monday, 5),
+                    firstSchoolDay: schoolDays[0],
+                    lastSchoolDay: schoolDays[schoolDays.length - 1],
+                };
+            }
+        }
+        monday = addDaysISO(monday, 7);
+        guard += 1;
+    }
+    return null;
 };
 
 /** Nombre de jours de classe (weekdays hors fériés/vacances) dans [from, to] inclus. */

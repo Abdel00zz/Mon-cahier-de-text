@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2 } from '@/components/ui/icons';
-import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName } from '@/constants';
+import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -17,8 +17,8 @@ interface CreateClassModalProps {
   defaultTeacherName?: string;
   /** cycle actif du tableau de bord, pré-sélectionné */
   defaultCycle?: Cycle;
-  /** matière enseignée (unique), héritée des paramètres ; la classe l'adopte */
-  defaultSubject?: string;
+  /** matières configurées dans les Paramètres, filtrent le choix de matière */
+  teacherSubjects?: string[];
   /**
    * cycles configurés dans l'onboarding (puis modifiables dans les
    * Paramètres), un seul cycle : le champ disparaît, il est hérité ;
@@ -50,7 +50,10 @@ const COPY: Record<ModalLanguage, {
   groupHint: string;
   invalidGroup: string;
   duplicateGroup: string;
+  subject: string;
+  subjectPlaceholder: string;
   customLevelPlaceholder: string;
+  customSubjectPlaceholder: string;
   switchToOfficial: string;
   createCustom: string;
   cycleLabels: Record<Cycle, string>;
@@ -58,8 +61,8 @@ const COPY: Record<ModalLanguage, {
   fr: {
     createTitle: 'Créer une nouvelle classe',
     editTitle: 'Configurer la classe',
-    createDescription: 'Choisissez le niveau ; le nom est composé automatiquement.',
-    editDescription: 'Modifiez le niveau de la classe.',
+    createDescription: 'Choisissez le niveau et la matière ; le nom est composé automatiquement.',
+    editDescription: 'Modifiez le niveau et la matière de la classe.',
     cancel: 'Annuler',
     create: 'Créer la classe',
     save: 'Enregistrer les modifications',
@@ -71,7 +74,10 @@ const COPY: Record<ModalLanguage, {
     groupHint: 'Obligatoire : un numéro unique par niveau.',
     invalidGroup: 'Saisissez un numéro de 1 à 99.',
     duplicateGroup: 'Ce numéro est déjà utilisé pour ce niveau.',
+    subject: 'Matière',
+    subjectPlaceholder: 'Choisir une matière…',
     customLevelPlaceholder: 'Ex. : Groupe soutien, DAOL…',
+    customSubjectPlaceholder: 'Saisir une matière…',
     switchToOfficial: '← Revenir à la liste officielle',
     createCustom: 'Niveau non listé ? Créer une classe personnalisée',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
@@ -79,8 +85,8 @@ const COPY: Record<ModalLanguage, {
   ar: {
     createTitle: 'إضافة قسم جديد',
     editTitle: 'إعداد القسم',
-    createDescription: 'اختر المستوى؛ يُنشأ اسم القسم تلقائياً.',
-    editDescription: 'عدّل مستوى القسم.',
+    createDescription: 'اختر المستوى والمادة؛ يُنشأ اسم القسم تلقائياً.',
+    editDescription: 'عدّل مستوى القسم ومادته.',
     cancel: 'إلغاء',
     create: 'إنشاء القسم',
     save: 'حفظ التعديلات',
@@ -92,7 +98,10 @@ const COPY: Record<ModalLanguage, {
     groupHint: 'مطلوب: رقم فريد داخل المستوى نفسه.',
     invalidGroup: 'أدخل رقماً من 1 إلى 99.',
     duplicateGroup: 'هذا الرقم مستخدم بالفعل في هذا المستوى.',
+    subject: 'المادة',
+    subjectPlaceholder: 'اختر مادة…',
     customLevelPlaceholder: 'مثال: مجموعة الدعم، DAOL…',
+    customSubjectPlaceholder: 'أدخل المادة…',
     switchToOfficial: 'العودة إلى اللائحة الرسمية ←',
     createCustom: 'المستوى غير موجود؟ أنشئ قسماً مخصصاً',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
@@ -104,7 +113,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   onClose,
   onCreate,
   defaultCycle = 'lycee',
-  defaultSubject,
+  teacherSubjects = [],
   teacherCycles = [],
   existingClasses = [],
   editingClass = null,
@@ -118,25 +127,35 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [cycle, setCycle] = useState<Cycle>(defaultCycle);
   const [level, setLevel] = useState('');
   const [group, setGroup] = useState('');
+  const [subject, setSubject] = useState('');
   // Mode « personnalisé » : niveau libre pour les cas rares hors liste officielle.
   const [customMode, setCustomMode] = useState(false);
   const [customLevel, setCustomLevel] = useState('');
+  const [customSubject, setCustomSubject] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editingDisplayName = editingClass ? formatLocalizedClassDisplayName(editingClass.name, language) : '';
 
-  // Matière unique, héritée des Paramètres (Profil) — plus de champ matière ici.
-  const effectiveSubject = defaultSubject || SUBJECTS[0];
-
   /*
    * Héritage du profil d'inscription (modifiable dans les Paramètres) :
-   * un seul cycle : champ masqué, valeur héritée ; plusieurs : choix restreint.
+   * une seule matière ou un seul cycle : champ masqué, valeur héritée ;
+   * plusieurs : choix restreint aux valeurs du professeur.
+   * En édition, la valeur actuelle de la classe reste toujours proposée.
    */
+  const subjectOptions = React.useMemo(() => {
+    const base = teacherSubjects.length > 0 ? [...teacherSubjects] : [...SUBJECTS];
+    if (editingClass?.subject && !base.includes(editingClass.subject)) base.unshift(editingClass.subject);
+    return base;
+  }, [teacherSubjects, editingClass]);
+
   const cycleOptions = React.useMemo(() => {
     const base: Cycle[] = teacherCycles.length > 0 ? [...teacherCycles] : (Object.keys(copy.cycleLabels) as Cycle[]);
     if (editingClass?.cycle && !base.includes(editingClass.cycle)) base.unshift(editingClass.cycle);
     return base;
   }, [teacherCycles, editingClass, copy.cycleLabels]);
 
+  // Le sélecteur de matière n'est nécessaire que si le prof a configuré
+  // plusieurs matières (2+) dans les Paramètres ; sinon la matière est héritée.
+  const hideSubjectField = !editingClass && teacherSubjects.length <= 1;
   const singleCycle = !editingClass && cycleOptions.length === 1 && teacherCycles.length === 1;
 
   useEffect(() => {
@@ -157,6 +176,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           setCustomLevel(editingClass.name);
           setGroup('');
         }
+        setSubject(editingClass.subject || '');
+        setCustomSubject(editingClass.subject || '');
       } else {
         // cycle initial : celui du tableau de bord s'il est autorisé par les
         // paramètres pédagogiques, sinon le premier cycle configuré.
@@ -168,19 +189,22 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         const firstLevel = CLASS_LEVELS_BY_CYCLE[initialCycle][0] ?? '';
         setLevel(firstLevel);
         setGroup('');
+        setSubject(teacherSubjects[0] ?? SUBJECTS[0]);
         setCustomMode(false);
         setCustomLevel('');
+        setCustomSubject('');
       }
     }
-  }, [isOpen, defaultCycle, teacherCycles, editingClass]);
+  }, [isOpen, defaultCycle, teacherSubjects, teacherCycles, editingClass]);
 
   const levels = CLASS_LEVELS_BY_CYCLE[cycle] || [];
   const effectiveLevel = customMode ? customLevel.trim() : level;
+  const effectiveSubject = customMode ? customSubject.trim() : subject;
   const normalizedGroup = normalizeGroupNumber(group);
   const duplicateGroup = !!normalizedGroup && existingClasses.some(classInfo =>
     classInfo.id !== editingClass?.id && isSameClassGroup(classInfo.name, effectiveLevel, normalizedGroup)
   );
-  const isFormValid = !!effectiveLevel && !!normalizedGroup && !duplicateGroup;
+  const isFormValid = !!effectiveLevel && !!effectiveSubject && !!normalizedGroup && !duplicateGroup;
   const groupError = group.trim() && !normalizedGroup
     ? copy.invalidGroup
     : duplicateGroup
@@ -322,6 +346,37 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         <p id="group-help" className={groupError ? 'text-[11px] font-medium text-destructive' : 'text-[11px] text-muted-foreground'}>
           {groupError ?? copy.groupHint}
         </p>
+
+        {/* Matière : affichée seulement si le prof enseigne plusieurs matières
+            (2+ configurées dans les Paramètres) ; sinon la matière est héritée. */}
+        {!(hideSubjectField && !customMode) && (
+          <div className="space-y-1.5">
+            <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {copy.subject} *
+            </label>
+            {customMode ? (
+              <Input
+                id="subject"
+                type="text"
+                value={customSubject}
+                onChange={(e) => setCustomSubject(e.target.value)}
+                placeholder={copy.customSubjectPlaceholder}
+                required
+              />
+            ) : (
+              <Select value={subject} onValueChange={setSubject} required>
+                <SelectTrigger id="subject" className="!h-11 text-sm sm:!h-9">
+                  <SelectValue placeholder={copy.subjectPlaceholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjectOptions.map(s => (
+                    <SelectItem key={s} value={s}>{formatLocalizedSubjectDisplayName(s, language)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
 
         {!editingClass && (
           <button

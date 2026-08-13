@@ -25,12 +25,12 @@ const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
 const NAV_COPY = {
   fr: {
     brand: 'Cahier de textes', teacherSpace: 'Espace enseignant',
-    dashboard: 'Classes', evaluations: 'Évaluations', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
+    dashboard: 'Classes', evaluations: 'Contrôle continu', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
     collapse: 'Réduire', expand: 'Développer', mainNav: 'Navigation principale', mobileNav: 'Navigation mobile',
   },
   ar: {
     brand: 'دفتر النصوص الرقمي', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'الأقسام', evaluations: 'التقويمات', notifications: 'القيادة', settings: 'الإعدادات', help: 'الدليل',
+    dashboard: 'الأقسام', evaluations: 'المراقبة المستمرة', notifications: 'القيادة', settings: 'الإعدادات', help: 'الدليل',
     collapse: 'تصغير', expand: 'توسيع', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
 } as const;

@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA, type ManifestOptions } from 'vite-plugin-pwa';
 import { BUNDLE_OPTIMIZATION } from './config/optimization';
-import { getBundledCalendar, type HolidayCalendar } from './utils/calendar';
+import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from './utils/calendar';
 import {
     getOfficialStudentEventsFile,
     validateOfficialStudentEventsFile,
@@ -460,11 +460,13 @@ const devApiMockPlugin = (): Plugin => {
                         return send(res, 200, { ok: true, sent: 0, message });
                     }
                     if (body.action === 'saveCalendar' && body.calendar && typeof body.calendar === 'object') {
-                        devCalendar = {
-                            ...(body.calendar as HolidayCalendar),
-                            version: Number((body.calendar as HolidayCalendar).version || 0) + 1,
-                        };
-                        return send(res, 200, { ok: true, calendar: devCalendar });
+                        try {
+                            const validated = validateHolidayCalendar(body.calendar);
+                            devCalendar = { ...validated, version: validated.version + 1 };
+                            return send(res, 200, { ok: true, calendar: devCalendar });
+                        } catch (error) {
+                            return send(res, 400, { error: error instanceof Error ? error.message : 'Calendrier invalide.' });
+                        }
                     }
                     if (body.action === 'saveOfficialEvents') {
                         try {
@@ -717,10 +719,22 @@ export default defineConfig(({ mode }) => {
                 filename: 'sw.ts',
                 registerType: 'autoUpdate',
                 injectRegister: null, // enregistrement manuel dans registerSW.ts
-                includeAssets: ['icons/*.png', 'icons/icon.svg', 'vacances-jourferie.json'],
+                includeAssets: [
+                    'icons/*.png',
+                    'icons/icon.svg',
+                    'vacances-jourferie.json',
+                    'planning-devoirs.json',
+                    'assessment-rules.json',
+                    'official-sources.json',
+                ],
                 injectManifest: {
                     globPatterns: ['**/*.{js,css,html,woff2}'],
                     globIgnores: ['**/admin*'],
+                },
+                devOptions: {
+                    enabled: true,
+                    type: 'module',
+                    navigateFallback: '/index.html',
                 },
                 manifest: PWA_MANIFEST,
             }),

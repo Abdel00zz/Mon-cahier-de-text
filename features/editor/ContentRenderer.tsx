@@ -107,7 +107,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     }
 
     const isTopLevel = item.type === 'chapter' || isEvaluation;
-    const textClasses = isCorrection ? 'text-base font-semibold' : 'text-lg font-bold';
     const justificationClass = isTopLevel ? 'justify-center' : '';
     
     if (isCorrection) {

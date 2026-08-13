@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { AppConfig, AppLocale, ClassInfo, LessonsData, PedagogicalEvent, PedagogicalEventType } from '@/types';
+import { AppConfig, AppLocale, ClassInfo, DevoirType, LessonsData, ManualAssessment, PedagogicalEvent, PedagogicalEventType } from '@/types';
 import { formatClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/utils/dataUtils';
-import { getBundledCalendar, todayInMorocco } from '@/utils/calendar';
+import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/utils/calendar';
 import { daysBetweenISO } from '@/utils/assessments';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/utils/assessmentSync';
 import { getClassSchoolSegment } from '@/utils/officialStudentEvents';
@@ -71,15 +71,15 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
   missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
 };
 
-const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; badgeClass: string }> = {
-  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-900/40' },
-  olympiade: { labelKey: 'evaluations.event.olympiade', badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-900/40' },
-  concours: { labelKey: 'evaluations.event.concours', badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-900/40' },
-  soutien: { labelKey: 'evaluations.event.soutien', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40' },
-  remediation: { labelKey: 'evaluations.event.remediation', badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-900/40' },
-  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-900/40' },
-  rattrapage: { labelKey: 'evaluations.event.rattrapage', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40' },
-  autre: { labelKey: 'evaluations.event.autre', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700' },
+const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string }> = {
+  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic' },
+  olympiade: { labelKey: 'evaluations.event.olympiade' },
+  concours: { labelKey: 'evaluations.event.concours' },
+  soutien: { labelKey: 'evaluations.event.soutien' },
+  remediation: { labelKey: 'evaluations.event.remediation' },
+  examen_blanc: { labelKey: 'evaluations.event.examen_blanc' },
+  rattrapage: { labelKey: 'evaluations.event.rattrapage' },
+  autre: { labelKey: 'evaluations.event.autre' },
 };
 
 const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
@@ -102,6 +102,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
+  const [manualEditorOpen, setManualEditorOpen] = useState(false);
+  const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -143,12 +145,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   const setAssessmentDate = (assessmentId: string, dateISO: string) => {
     if (!selectedClass) return;
+    const assessment = assessments.find(item => item.id === assessmentId);
     const next: Record<string, Record<string, string>> = {
       ...(config.assessmentDates ?? {}),
       [selectedClass.id]: { ...(config.assessmentDates?.[selectedClass.id] ?? {}) },
     };
     if (dateISO) next[selectedClass.id][assessmentId] = dateISO;
-    else delete next[selectedClass.id][assessmentId];
+    else {
+      delete next[selectedClass.id][assessmentId];
+      if (assessment?.legacyId) delete next[selectedClass.id][assessment.legacyId];
+    }
     onConfigChange({ assessmentDates: next });
   };
 
@@ -157,7 +163,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     setAssessmentDate(link.planned.id, link.entry.date);
     toast.success(
       t('evaluations.alignedToast', {
-        assessment: t(link.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: link.planned.num }),
+        assessment: `${t(`evaluations.type.${link.planned.type}`)} n°${link.planned.num}`,
         date: formatLongDate(link.entry.date, locale),
       })
     );
@@ -194,6 +200,67 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     savePedagogicalEvents(pedagogicalEvents.filter((event) => event.id !== eventId));
   };
 
+  const openCreateAssessment = () => {
+    setEditingAssessment(null);
+    setManualEditorOpen(true);
+  };
+
+  const openEditAssessment = (assessment: { id: string; type: DevoirType; num: number; dateISO: string; duree?: string; semestre: 1 | 2 }) => {
+    setEditingAssessment({
+      id: assessment.id,
+      type: assessment.type,
+      num: assessment.num,
+      dateISO: assessment.dateISO,
+      duree: assessment.duree,
+      semestre: assessment.semestre,
+    });
+    setManualEditorOpen(true);
+  };
+
+  const saveAssessment = (manual: ManualAssessment) => {
+    if (!selectedClass) return;
+    const classId = selectedClass.id;
+    const current = config.manualAssessments?.[classId] ?? [];
+    let nextManual: ManualAssessment[];
+
+    if (editingAssessment) {
+      const editingId = editingAssessment.id;
+      if (current.some((a) => a.id === editingId)) {
+        // devoir manuel édité → mise à jour sur place
+        nextManual = current.map((a) => (a.id === editingId ? manual : a));
+      } else {
+        // devoir prédéfini édité → matérialisé avec le MÊME id (le merge déduplique
+        // et le devoir conserve sa place dans la liste)
+        nextManual = [...current, { ...manual, id: editingId }];
+      }
+    } else {
+      nextManual = [...current, manual];
+    }
+
+    onConfigChange({
+      manualAssessments: { ...(config.manualAssessments ?? {}), [classId]: nextManual },
+    });
+    setManualEditorOpen(false);
+    setEditingAssessment(null);
+    toast.success(
+      t('evaluations.manualSaved', { type: t(`evaluations.type.${manual.type}`), number: manual.num })
+    );
+  };
+
+  const deleteAssessment = (id: string) => {
+    if (!selectedClass) return;
+    const classId = selectedClass.id;
+    const manual = (config.manualAssessments?.[classId] ?? []).filter((a) => a.id !== id);
+    const removed = new Set([...(config.removedAssessments?.[classId] ?? []), id]);
+    const order = (config.assessmentOrder?.[classId] ?? []).filter((oid) => oid !== id);
+    onConfigChange({
+      manualAssessments: { ...(config.manualAssessments ?? {}), [classId]: manual },
+      removedAssessments: { ...(config.removedAssessments ?? {}), [classId]: [...removed] },
+      assessmentOrder: { ...(config.assessmentOrder ?? {}), [classId]: order },
+    });
+    toast.success(t('evaluations.manualDeleted'));
+  };
+
   if (classes.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white dark:bg-zinc-900 ring-1 ring-zinc-200 dark:ring-zinc-800">
@@ -212,6 +279,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const absencesRecord =
     absencesFor && selectedClass
       ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.id]
+        ?? (absencesFor.planned.legacyId ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.legacyId] : undefined)
       : undefined;
 
   return (
@@ -220,17 +288,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       {!embedded && (
         <section
           aria-labelledby="evaluations-class-context"
-          className="flex items-center gap-2 rounded-2xl border border-white/60 bg-white/[0.42] p-2 text-card-foreground shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/[0.36]"
+          className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-2 shadow-xs"
         >
-          <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
-            <Users className={cn('h-3.5 w-3.5', classVisual?.iconClass)} aria-hidden />
+          <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', classVisual?.iconSurfaceClass ?? 'bg-muted text-muted-foreground')}>
+            <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
           </span>
 
           <div className="min-w-0 flex-1">
             <h2 id="evaluations-class-context" className="sr-only">{t('evaluations.activeClass')}</h2>
             <label htmlFor="evaluations-class-selector" className="sr-only">{t('evaluations.chooseClass')}</label>
             <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
-              <SelectTrigger id="evaluations-class-selector" className="h-9 border-white/55 bg-white/[0.48] px-3 text-xs font-semibold text-foreground shadow-none backdrop-blur-md transition-colors hover:bg-white/70 focus:ring-primary/20 dark:border-white/10 dark:bg-slate-900/50">
+              <SelectTrigger id="evaluations-class-selector" className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-none transition-colors hover:bg-accent focus:ring-ring/20">
                 <SelectValue placeholder={t('evaluations.chooseClass')} />
               </SelectTrigger>
               <SelectContent>
@@ -257,15 +325,34 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Section Content */}
       <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {/* Barre d'actions unifiée */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEventEditorOpen(true)}
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+          >
+            <Plus className="h-3.5 w-3.5" /> {t('evaluations.addActivity')}
+          </button>
+          <button
+            type="button"
+            onClick={openCreateAssessment}
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+          >
+            <Plus className="h-3.5 w-3.5" /> {t('evaluations.addDevoir')}
+          </button>
+        </div>
+
         <PedagogicalEventsSection
           events={pedagogicalEvents}
-          onAdd={() => setEventEditorOpen(true)}
           onToggle={togglePedagogicalEvent}
           onDelete={deletePedagogicalEvent}
         />
 
+        {/* Devoirs (planning officiel + saisie manuelle) */}
+        <section className="space-y-2">
         {!hasPlan ? (
-          <div className="rounded-xl border border-dashed border-zinc-300/80 bg-white/[0.42] p-3 text-center text-xs text-zinc-500 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-400">
+          <div className="rounded-xl border border-dashed border-border bg-card/50 p-3 text-center text-xs text-muted-foreground">
             {t('evaluations.noOfficialPlan')}
           </div>
         ) : (
@@ -276,7 +363,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                     return (
                       <section key={sem} className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <h3 className="px-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+                          <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
                         </div>
@@ -285,36 +372,43 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                           {ofSemester.map((link) => {
                             const a = link.planned;
                             const inDays = daysBetweenISO(today, a.dateISO);
-                            const custom = !!config.assessmentDates?.[selectedClass!.id]?.[a.id];
-                            const absents = config.assessmentAbsences?.[selectedClass!.id]?.[a.id]?.names ?? [];
+                            const custom = !!(
+                              config.assessmentDates?.[selectedClass!.id]?.[a.id]
+                              ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
+                            );
+                            const absents = (
+                              config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
+                              ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
+                            )?.names ?? [];
                             const status = STATUS_STYLE[link.status];
-                            const isControle = a.type === 'controle';
+                            const isSupervised = a.type !== 'maison';
 
                             return (
                               <div
                                 key={a.id}
-                                className="flex flex-col gap-1.5 rounded-2xl border border-white/60 bg-white/[0.5] px-3 py-2 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/[0.7] dark:border-white/10 dark:bg-slate-900/[0.48] dark:hover:bg-slate-900/[0.65] sm:flex-row sm:items-center sm:justify-between"
+                                className="flex flex-col gap-1.5 rounded-xl border border-border bg-card px-3 py-2 shadow-xs transition-shadow hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
                               >
                                 <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                                  <span
-                                    className={cn(
-                                      'inline-flex items-center rounded-lg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.05em]',
-                                      isControle
-                                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200/80 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-900/40'
-                                        : 'bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-900/40'
-                                    )}
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditAssessment(a)}
+                                    className="group inline-flex cursor-pointer items-center gap-1.5 rounded text-start transition-colors"
+                                    title={t('evaluations.editDevoir')}
                                   >
-                                    {t(isControle ? 'evaluations.supervised' : 'evaluations.homework', { number: a.num })}
-                                    {a.duree && <span className="ms-1 text-[9px] font-bold opacity-70">· {a.duree}</span>}
-                                  </span>
+                                    <span className="text-sm font-medium text-foreground transition-colors group-hover:text-blue-600 group-hover:underline underline-offset-4">
+                                      {t(`evaluations.type.${a.type}`)}
+                                    </span>
+                                    <span className="text-xs font-semibold text-muted-foreground">n°{a.num}</span>
+                                    {a.duree && <span className="text-xs font-medium text-muted-foreground">· {a.duree}</span>}
+                                  </button>
 
                                   {link.status !== 'upcoming' && (
                                     <span
                                       className={cn(
-                                        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border',
-                                        status.tone === 'green' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-900/40',
-                                        status.tone === 'amber' && 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-900/40',
-                                        status.tone === 'zinc' && 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
+                                        status.tone === 'green' && 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+                                        status.tone === 'amber' && 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+                                        status.tone === 'zinc' && 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
                                       )}
                                     >
                                       {link.status === 'done' && <Check className="h-3 w-3" />}
@@ -324,7 +418,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   )}
 
                                   {link.status === 'upcoming' && inDays >= 0 && inDays <= 14 && (
-                                    <span className="text-[11px] font-bold text-red-600 dark:text-red-400">
+                                    <span
+                                      className={cn(
+                                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                                        inDays === 0
+                                          ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                                          : inDays === 1
+                                            ? 'bg-amber-500/10 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+                                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
+                                      )}
+                                    >
                                       {inDays === 0
                                         ? t('evaluations.today')
                                         : inDays === 1
@@ -334,7 +437,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   )}
 
                                   {link.status === 'mismatch' && link.entry?.date && (
-                                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                                    <span className="text-[11px] font-medium text-muted-foreground">
                                       {t('evaluations.notebookDate', { date: formatLongDate(link.entry.date, locale) })}
                                     </span>
                                   )}
@@ -343,7 +446,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => alignOnNotebook(link)}
-                                      className="rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 hover:bg-amber-100 transition-colors dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-700"
+                                      className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-amber-700 shadow-xs transition-colors hover:bg-accent dark:text-amber-400"
                                     >
                                       {t('evaluations.align')}
                                     </button>
@@ -351,15 +454,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-1.5 shrink-0 sm:pt-0">
-                                  {isControle && (
+                                  {isSupervised && (
                                     <button
                                       type="button"
                                       onClick={() => setAbsencesFor(link)}
                                       className={cn(
-                                        'inline-flex h-8 items-center gap-1 rounded-lg border px-2 text-[10px] font-semibold transition-colors',
+                                        'inline-flex h-8 items-center gap-1 rounded-md border px-2 text-[10px] font-medium transition-colors',
                                         absents.length > 0
-                                          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-900/40'
-                                          : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300'
+                                          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-500/10 dark:text-red-400'
+                                          : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                       )}
                                     >
                                       <Users className="h-3 w-3" />
@@ -375,22 +478,31 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 rounded-lg border bg-white/45 px-2 text-[10px] font-semibold text-foreground backdrop-blur-md dark:bg-zinc-800/70 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
-                                        custom ? 'border-blue-600 font-bold text-blue-600 dark:text-blue-400' : 'border-zinc-200 dark:border-zinc-700'
+                                        'h-8 rounded-md border bg-background px-2 text-[10px] font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30',
+                                        custom ? 'border-blue-600 font-semibold text-blue-600 dark:text-blue-400' : 'border-border'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
-                                      aria-label={t('evaluations.assessmentDateAria', { assessment: t(isControle ? 'evaluations.supervised' : 'evaluations.homework', { number: a.num }) })}
+                                      aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
                                     />
                                     {custom && (
                                       <button
                                         type="button"
                                         onClick={() => setAssessmentDate(a.id, '')}
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                        className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                                         title={t('evaluations.restoreDate')}
                                       >
                                         <Undo2 className="h-3 w-3" />
                                       </button>
                                     )}
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteAssessment(a.id)}
+                                      className="flex h-8 w-8 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10"
+                                      title={t('evaluations.manualDelete')}
+                                      aria-label={t('evaluations.manualDelete')}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -402,6 +514,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   })}
                 </div>
               )}
+        </section>
 
       </div>
 
@@ -415,12 +528,28 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       >
         {selectedClass && (
           <PedagogicalEventEditor
-            className={selectedClassDisplayName}
             today={today}
             onCancel={() => setEventEditorOpen(false)}
             onSave={addPedagogicalEvent}
           />
         )}
+      </Modal>
+
+      {/* Add / Edit Devoir (surveillé / maison) */}
+      <Modal
+        isOpen={manualEditorOpen}
+        onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
+        maxWidth="sm"
+        title={editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
+        description={selectedClass ? t('evaluations.teacherEvent', { className: selectedClassDisplayName }) : undefined}
+      >
+        <ManualAssessmentEditor
+          today={today}
+          initial={editingAssessment}
+          assessments={assessments}
+          onCancel={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
+          onSave={saveAssessment}
+        />
       </Modal>
 
       {/* Absences Editor */}
@@ -430,7 +559,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         maxWidth="md"
         title={absencesFor && selectedClass
           ? t('evaluations.absencesTitle', {
-              assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
+              assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
             })
           : undefined}
         description={absencesFor && selectedClass
@@ -440,8 +569,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         {absencesFor && selectedClass && (
           <AbsencesEditor
             key={`${selectedClass.id}-${absencesFor.planned.id}`}
-            link={absencesFor}
-            className={selectedClassDisplayName}
             initialNames={absencesRecord?.names ?? []}
             updatedAt={absencesRecord?.updatedAt}
             onCancel={() => setAbsencesFor(null)}
@@ -450,8 +577,10 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               const forClass = { ...(config.assessmentAbsences?.[classId] ?? {}) };
               if (names.length > 0) {
                 forClass[absencesFor.planned.id] = { names, updatedAt: new Date().toISOString() };
+                if (absencesFor.planned.legacyId) delete forClass[absencesFor.planned.legacyId];
               } else {
                 delete forClass[absencesFor.planned.id];
+                if (absencesFor.planned.legacyId) delete forClass[absencesFor.planned.legacyId];
               }
               onConfigChange({
                 assessmentAbsences: { ...(config.assessmentAbsences ?? {}), [classId]: forClass },
@@ -460,7 +589,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                 names.length > 0
                   ? t(names.length === 1 ? 'evaluations.absenceSavedOne' : 'evaluations.absenceSavedMany', {
                       count: number.format(names.length),
-                      assessment: t(absencesFor.planned.type === 'controle' ? 'evaluations.supervised' : 'evaluations.homework', { number: absencesFor.planned.num }),
+                      assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
                     })
                   : t('evaluations.absenceCleared')
               );
@@ -475,44 +604,28 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
 interface PedagogicalEventsSectionProps {
   events: PedagogicalEvent[];
-  onAdd: () => void;
   onToggle: (eventId: string) => void;
   onDelete: (eventId: string) => void;
 }
 
 const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   events,
-  onAdd,
   onToggle,
   onDelete,
 }) => {
   const { t, locale } = useLocale();
   return (
     <section className="space-y-2">
-    <div className="flex items-center justify-between gap-3 px-0.5">
-      <h3 className="text-xs font-bold tracking-[-0.01em] text-zinc-800 dark:text-zinc-100">
-        {t('evaluations.activities')}
-      </h3>
-      <button
-        type="button"
-        onClick={onAdd}
-        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-white/60 bg-white/[0.48] px-3 text-[10px] font-bold text-zinc-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white/80 hover:text-foreground dark:border-white/10 dark:bg-slate-900/55 dark:text-zinc-300 dark:hover:bg-slate-800"
-      >
-        <Plus className="h-3.5 w-3.5" /> {t('evaluations.add')}
-      </button>
-    </div>
-
     {events.length > 0 && (
       <div className="grid gap-2">
         {events.map((event) => {
-          const config = PEDAGOGICAL_EVENT_CONFIG[event.type];
           const done = event.status === 'done';
           return (
             <div
               key={event.id}
               className={cn(
-                'flex items-start justify-between gap-3 rounded-2xl border border-white/60 bg-white/[0.5] p-3 shadow-sm backdrop-blur-xl transition-all dark:border-white/10 dark:bg-slate-900/[0.48]',
-                done && 'opacity-60 bg-zinc-50/50 dark:bg-zinc-900/50'
+                'flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-3 shadow-xs transition-all',
+                done && 'opacity-60'
               )}
             >
               <div className="flex items-start gap-3 min-w-0">
@@ -520,10 +633,10 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   type="button"
                   onClick={() => onToggle(event.id)}
                   className={cn(
-                    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border transition-colors',
+                    'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors',
                     done
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                      : 'border-zinc-200 bg-white text-zinc-400 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-500/10 dark:text-emerald-400'
+                      : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
@@ -531,20 +644,14 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 </button>
 
                 <div className="min-w-0">
-                  <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
-                    <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', config.badgeClass)}>
-                      {t(config.labelKey)}
-                    </span>
-                    {done && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{t('evaluations.completed')}</span>}
-                  </div>
-                  <h4 className={cn('text-xs font-bold text-foreground dark:text-zinc-100', done && 'line-through text-zinc-500')}>
+                  <h4 className={cn('text-sm font-medium leading-snug text-foreground', done && 'line-through text-muted-foreground')}>
                     {event.title}
                   </h4>
-                  <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
                   </p>
                   {event.note && (
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-500 line-clamp-2 dark:text-zinc-400">
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">
                       {event.note}
                     </p>
                   )}
@@ -554,7 +661,7 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onDelete(event.id)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-colors"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10"
                 aria-label={t('evaluations.deleteEventAria', { title: event.title })}
               >
                 <Trash2 className="h-4 w-4" />
@@ -569,13 +676,12 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
 };
 
 interface PedagogicalEventEditorProps {
-  className: string;
   today: string;
   onCancel: () => void;
   onSave: (event: PedagogicalEvent) => void;
 }
 
-const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ className, today, onCancel, onSave }) => {
+const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, onCancel, onSave }) => {
   const { t } = useLocale();
   const [type, setType] = useState<PedagogicalEventType>('evaluation_diagnostic');
   const [title, setTitle] = useState(() => t(PEDAGOGICAL_EVENT_CONFIG.evaluation_diagnostic.labelKey));
@@ -717,9 +823,153 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ classNa
   );
 };
 
+interface ManualAssessmentEditorProps {
+  today: string;
+  initial?: ManualAssessment | null;
+  assessments?: { id: string; type: DevoirType }[];
+  onCancel: () => void;
+  onSave: (manual: ManualAssessment) => void;
+}
+
+const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, initial, assessments = [], onCancel, onSave }) => {
+  const { t } = useLocale();
+  const [type, setType] = useState<DevoirType>(initial?.type ?? 'controle');
+  const [num, setNum] = useState(String(initial?.num ?? 1));
+  const [date, setDate] = useState(initial?.dateISO ?? today);
+  const [duree, setDuree] = useState(initial?.duree ?? '');
+  const [semestre, setSemestre] = useState<1 | 2>(initial?.semestre ?? 1);
+  const [error, setError] = useState('');
+
+  // Numérotation automatique et dynamique par type (hors devoir en cours d'édition).
+  const nextNumFor = (nextType: DevoirType): number =>
+    assessments.filter((a) => a.type === nextType && a.id !== initial?.id).length + 1;
+
+  const changeType = (nextType: DevoirType) => {
+    setType(nextType);
+    setNum(String(nextNumFor(nextType)));
+  };
+
+  const submit = () => {
+    const numValue = parseInt(num, 10);
+    if (!numValue || numValue < 1) {
+      setError(t('evaluations.manualNumRequired'));
+      return;
+    }
+    if (!date) {
+      setError(t('evaluations.startDateRequired'));
+      return;
+    }
+    onSave({
+      id: initial?.id ?? (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `dev-${Date.now()}`),
+      schoolYear: schoolYearLabelFromDate(date),
+      type,
+      num: numValue,
+      dateISO: date,
+      duree: duree.trim() || undefined,
+      semestre,
+    });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-4 pt-2">
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
+            <select
+              value={type}
+              onChange={(event) => changeType(event.target.value as DevoirType)}
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            >
+              <option value="controle">{t('evaluations.type.controle')}</option>
+              <option value="controle_court">{t('evaluations.type.controle_court')}</option>
+              <option value="controle_global">{t('evaluations.type.controle_global')}</option>
+              <option value="oral">{t('evaluations.type.oral')}</option>
+              <option value="maison">{t('evaluations.type.maison')}</option>
+            </select>
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold text-foreground">{t('evaluations.manualSemester')}</span>
+            <select
+              value={semestre}
+              onChange={(event) => setSemestre(Number(event.target.value) as 1 | 2)}
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            >
+              <option value={1}>{t('evaluations.semester', { number: 1 })}</option>
+              <option value={2}>{t('evaluations.semester', { number: 2 })}</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold text-foreground">{t('evaluations.manualNum')}</span>
+            <input
+              type="number"
+              min={1}
+              value={num}
+              onChange={(event) => {
+                setNum(event.target.value);
+                setError('');
+              }}
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              inputMode="numeric"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold text-foreground">{t('evaluations.manualDate')}</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(event) => {
+                setDate(event.target.value);
+                setError('');
+              }}
+              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            />
+          </label>
+        </div>
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-bold text-foreground">
+            {t('evaluations.manualDuree')} <span className="font-normal text-muted-foreground">({t('evaluations.optional')})</span>
+          </span>
+          <input
+            value={duree}
+            onChange={(event) => setDuree(event.target.value)}
+            placeholder="1h, 2h…"
+            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+          />
+        </label>
+
+        {error && (
+          <div role="alert" className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-xs font-semibold text-destructive">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
+          >
+            {initial ? t('common.save') : t('evaluations.add')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface AbsencesEditorProps {
-  link: AssessmentLink;
-  className: string;
   initialNames: string[];
   updatedAt?: string;
   onCancel: () => void;
@@ -727,8 +977,6 @@ interface AbsencesEditorProps {
 }
 
 const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
-  link,
-  className,
   initialNames,
   onCancel,
   onSave,

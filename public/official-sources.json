@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "ma-men-decision-047-26",
+      "documentNumber": "047.26",
+      "documentDate": "2026-07-03",
+      "title": "Organisation de l'année scolaire 2026-2027",
+      "authority": "Ministère de l'Éducation nationale du Maroc",
+      "status": "reference_pending_archive",
+      "verification": "secondary_reference",
+      "note": "Les dates transcrites doivent rester distinguées des projections. Archiver le PDF officiel et son empreinte SHA-256 avant de passer à verified_archive."
+    },
+    {
+      "id": "ma-men-note-192",
+      "documentNumber": "192",
+      "title": "Contrôle continu en mathématiques au secondaire collégial",
+      "authority": "Ministère de l'Éducation nationale du Maroc",
+      "status": "transcribed_partial",
+      "verification": "page_checked",
+      "pagesUsed": [3, 4, 5],
+      "note": "Règles utilisées : trois devoirs surveillés par semestre, semaines 5 et 10 puis fin de semestre; durées selon le niveau."
+    },
+    {
+      "id": "ma-men-note-142-08",
+      "documentNumber": "142.08",
+      "documentDate": "2007-11-16",
+      "title": "Contrôle continu en mathématiques au secondaire qualifiant",
+      "authority": "Ministère de l'Éducation nationale du Maroc",
+      "status": "transcribed_partial",
+      "verification": "page_checked",
+      "pagesUsed": [3, 4, 5, 6, 7, 8, 9],
+      "note": "Les tableaux varient selon le niveau et la filière. La base ne doit pas généraliser une ligne à une filière absente."
+    }
+  ]
+}

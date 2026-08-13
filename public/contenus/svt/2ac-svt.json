@@ -1,0 +1,829 @@
+[
+  {
+    "chapter": "Chapitre 1 : La tectonique des plaques",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Les arguments de la dérive des continents"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Historique et problématique de la dérive des continents"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Arguments de la théorie de Wegener",
+        "subsections": [
+          {
+            "name": "Argument morphologique",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Complémentarité géométrique des côtes africaines et sud-américaines"
+              }
+            ]
+          },
+          {
+            "name": "Argument géologique",
+            "items": [
+              {
+                "type": "observation",
+                "number": 2,
+                "title": "Continuité des formations géologiques anciennes transatlantiques"
+              }
+            ]
+          },
+          {
+            "name": "Argument paléontologique",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de la paléontologie"
+              },
+              {
+                "type": "observation",
+                "number": 3,
+                "title": "Présence de fossiles identiques séparés par des océans"
+              }
+            ]
+          },
+          {
+            "name": "Hypothèse de Wegener",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Hypothèse de l'existence du supercontinent Pangée"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Bilan des arguments en faveur du continent unique"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Manifestations et enregistrement des séismes",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Manifestations et enregistrement des séismes"
+          },
+          {
+            "type": "introduction",
+            "number": 1,
+            "title": "Origine et effets de la rupture des roches"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Estimation de l'intensité d'un séisme",
+            "items": [
+              {
+                "type": "methode",
+                "number": 1,
+                "title": "Évaluation de l'intensité sismique par l'échelle MSK"
+              },
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Exemples de dégâts sismiques à Agadir et Port-au-Prince"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Relation entre séismes et tectonique des plaques",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Relation entre séismes et tectonique des plaques"
+          },
+          {
+            "type": "introduction",
+            "number": 1,
+            "title": "Ondes sismiques et zonage de l'activité du globe"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Structure interne du globe terrestre",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Variation de la vitesse des ondes P et S"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Enveloppes et discontinuités majeures du globe terrestre"
+              },
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une discontinuité géologique"
+              }
+            ]
+          },
+          {
+            "name": "Dorsales océaniques et zones d'écartement",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Preuves de l'écartement au niveau des dorsales"
+              }
+            ]
+          },
+          {
+            "name": "Zones de subduction et convergence",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Répartition des foyers sismiques dans la région du Japon"
+              },
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Caractéristiques et mécanisme d'enfoncement de la plaque pacifique"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Correction des exercices sur les séismes",
+        "subsections": [
+          {
+            "name": "Test des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 1,
+                "title": "Définitions des termes majeurs de la sismologie"
+              },
+              {
+                "type": "exercice",
+                "number": 2,
+                "title": "Organisation et propagation des ondes au foyer"
+              }
+            ]
+          },
+          {
+            "name": "Utilisation des connaissances",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 3,
+                "title": "Analyse d'enregistrements sismiques et calcul de distances"
+              },
+              {
+                "type": "exercice",
+                "number": 4,
+                "title": "Analyse du plan de Benioff et zone de subduction"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : Les manifestations et mécanismes du volcanisme",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Manifestations des activités volcaniques"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Origine du magma et types d'éruptions volcaniques"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Typologie des éruptions volcaniques",
+        "subsections": [
+          {
+            "name": "Volcanisme explosif",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Caractéristiques du volcanisme explosif ou volcan gris"
+              },
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Chronologie de l'éruption du mont Saint Helens"
+              },
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Produits émis par les éruptions explosives"
+              }
+            ]
+          },
+          {
+            "name": "Volcanisme effusif",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Caractéristiques du volcanisme effusif ou volcan rouge"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Écoulement de la lave du Piton de la Fournaise"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison des laves cordées et laves en coussin"
+              }
+            ]
+          },
+          {
+            "name": "Édifice volcanique",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 2,
+                "title": "Comparaison entre dôme et cône volcanique"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Synthèse des modes d'éruption et produits volcaniques"
+              }
+            ]
+          },
+          {
+            "name": "Étude de cas de l'éruption du mont Pelée",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 1,
+                "title": "Analyse d'un télégramme historique sur l'éruption"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Relation entre volcanisme et tectonique des plaques",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Relation entre volcanisme et tectonique des plaques"
+          },
+          {
+            "type": "introduction",
+            "number": 1,
+            "title": "Répartition mondiale des volcans actifs"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Volcanisme des limites divergentes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une dorsale océanique"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Accrétion volcanique et expansion du plancher océanique"
+              }
+            ]
+          },
+          {
+            "name": "Volcanisme des limites convergentes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition de la subduction lithosphérique"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Magmatisme induit par la subduction"
+              }
+            ]
+          },
+          {
+            "name": "Volcanisme intraplaque et dynamique des plaques",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 3,
+                "title": "Alignement des îles volcaniques et déplacement des plaques"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Schéma bilan des mouvements de plaques et volcanismes"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Correction des exercices sur le volcanisme",
+        "subsections": [
+          {
+            "name": "Évaluation de la dynamique interne",
+            "items": [
+              {
+                "type": "exercice",
+                "number": 1,
+                "title": "Calcul de la vitesse de propagation des ondes"
+              },
+              {
+                "type": "exercice",
+                "number": 2,
+                "title": "Analyse de la carte mondiale des plaques"
+              },
+              {
+                "type": "exercice",
+                "number": 3,
+                "title": "Comparaison de la répartition des séismes et volcans"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : Les déformations tectoniques",
+    "items": [
+      {
+        "type": "activity",
+        "number": 1,
+        "title": "Les déformations tectoniques cassantes"
+      },
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Déformations cassantes et contraintes tectoniques"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Déformations tectoniques cassantes",
+        "subsections": [
+          {
+            "name": "Affleurements géologiques avec déformations cassantes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une faille et du rejet de faille"
+              }
+            ]
+          },
+          {
+            "name": "Différents types de déformations cassantes",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Caractéristiques des failles normales, inverses et coulissantes"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Déformations tectoniques ductiles",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Les déformations tectoniques ductiles"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Déformations ductiles et plissements des roches"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Affleurements géologiques avec déformations ductiles",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Distinction entre pli anticlinal et pli synclinal"
+              }
+            ]
+          },
+          {
+            "name": "Quelques types de plis",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Classification des plis déjetés, droits, en genou et couchés"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : La reproduction chez les animaux",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Diversité et unité de la reproduction sexuée animale"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Production des gamètes chez les animaux",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Rôle du mâle et de la femelle dans la production des gamètes"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Comportements sexuels au cours de la reproduction",
+            "items": [
+              {
+                "type": "observation",
+                "number": 1,
+                "title": "Exemples de parades nuptiales chez le paon et le combattant"
+              }
+            ]
+          },
+          {
+            "name": "Nécessité d'un mâle et d'une femelle",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Indispensabilité du contact entre spermatozoïdes et ovules"
+              }
+            ]
+          },
+          {
+            "name": "Lieu de production des gamètes",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Production des gamètes dans les testicules et ovaires"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La fécondation chez les animaux",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "La fécondation chez les animaux"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Rencontre des gamètes et formation de la cellule œuf"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Fécondation chez l'Oursin",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Étapes de la fécondation et fusion des noyaux"
+              }
+            ]
+          },
+          {
+            "name": "Fécondation interne et fécondation externe",
+            "items": [
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison entre fécondation interne et externe"
+              }
+            ]
+          },
+          {
+            "name": "Application de la fécondation externe chez les poissons",
+            "items": [
+              {
+                "type": "application",
+                "number": 1,
+                "title": "Pratique de la fécondation externe en pisciculture"
+              }
+            ]
+          },
+          {
+            "name": "Définition de la fécondation",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition biologique du phénomène de fécondation"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Modalités de la gestation et du développement",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "Les animaux ovipares et les animaux vivipares"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Modalités de développement embryonnaire externe et interne"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Animaux ovipares",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'oviparité et réserves nutritives de l'œuf"
+              },
+              {
+                "type": "interpretation",
+                "number": 1,
+                "title": "Diminution du vitellus et de l'albumen durant la couvaison"
+              }
+            ]
+          },
+          {
+            "name": "Animaux vivipares",
+            "items": [
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition de la viviparité et développement utérin"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Nutrition fœtale via le placenta et le cordon ombilical"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Croissance et cycles de développement",
+        "items": [
+          {
+            "type": "activity",
+            "number": 4,
+            "title": "Le développement chez les animaux"
+          },
+          {
+            "type": "introduction",
+            "number": 4,
+            "title": "Stades de développement et modes direct et indirect"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Développement indirect chez la grenouille",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Métamorphoses de la larve têtard vers l'adulte"
+              }
+            ]
+          },
+          {
+            "name": "Développement direct chez la souris",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Croissance progressive d'un jeune ressemblant à l'adulte"
+              }
+            ]
+          },
+          {
+            "name": "Notion de cycle de développement",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition du cycle de développement biologique"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : La reproduction chez les plantes",
+    "items": [
+      {
+        "type": "introduction",
+        "number": 1,
+        "title": "Reproduction sexuée des plantes à fleurs par les graines"
+      }
+    ],
+    "sections": [
+      {
+        "name": "Reproduction sexuée chez les plantes à fleurs",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "La fleur est un organe de reproduction"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Organisation de la fleur",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Rôle reproducteur des étamines et du pistil"
+              },
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Transport du pollen par les abeilles et pollinisation"
+              }
+            ]
+          },
+          {
+            "name": "Transformation de la fleur en fruit",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Germination du grain de pollen et double fécondation"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Transformation de l'ovaire de la fleur en fruit"
+              }
+            ]
+          },
+          {
+            "name": "Cycle de développement des plantes à fleurs",
+            "items": [
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Rôle des pièces florales, androcée et gynécée"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Reproduction sexuée chez les plantes sans fleurs",
+        "items": [
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "La reproduction sexuée chez les plantes sans fleurs"
+          },
+          {
+            "type": "introduction",
+            "number": 2,
+            "title": "Production de gamètes chez les fougères et mousses"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Reproduction sexuée chez une fougère",
+            "items": [
+              {
+                "type": "structure",
+                "number": 1,
+                "title": "Organes reproducteurs anthéridies et archégones"
+              }
+            ]
+          },
+          {
+            "name": "Reproduction sexuée chez les mousses",
+            "items": [
+              {
+                "type": "mecanisme",
+                "number": 1,
+                "title": "Développement du sporophyte parasite sur le gamétophyte"
+              },
+              {
+                "type": "mecanisme",
+                "number": 2,
+                "title": "Rôle de l'eau dans la mobilité des anthérozoïdes"
+              }
+            ]
+          },
+          {
+            "name": "Cycle de développement de la fougère",
+            "items": [
+              {
+                "type": "processus",
+                "number": 1,
+                "title": "Formation du prothalle, sporange et germination des spores"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Reproduction asexuée chez les végétaux",
+        "items": [
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "La reproduction asexuée chez les végétaux"
+          },
+          {
+            "type": "introduction",
+            "number": 3,
+            "title": "Multiplication végétative sans production de gamètes"
+          }
+        ],
+        "subsections": [
+          {
+            "name": "Reproduction asexuée naturelle",
+            "items": [
+              {
+                "type": "classification",
+                "number": 1,
+                "title": "Modes naturels par stolons, tubercules, bulbes et rhizomes"
+              },
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Production de plantes identiques à la plante mère"
+              }
+            ]
+          },
+          {
+            "name": "Reproduction asexuée artificielle",
+            "items": [
+              {
+                "type": "classification",
+                "number": 2,
+                "title": "Techniques de marcottage, bouturage et greffage"
+              },
+              {
+                "type": "comparaison",
+                "number": 1,
+                "title": "Comparaison entre marcottage et bouturage"
+              },
+              {
+                "type": "conclusion",
+                "number": 1,
+                "title": "Complémentarité de la reproduction sexuée et asexuée"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

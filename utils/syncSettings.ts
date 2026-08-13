@@ -28,6 +28,9 @@ export type SyncableSettings = Pick<
     | 'assessmentDates'
     | 'assessmentAbsences'
     | 'pedagogicalEvents'
+    | 'manualAssessments'
+    | 'removedAssessments'
+    | 'assessmentOrder'
     | 'schoolYearStart'
     | 'notificationDismissals'
 > & {
@@ -58,6 +61,9 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'assessmentDates',
     'assessmentAbsences',
     'pedagogicalEvents',
+    'manualAssessments',
+    'removedAssessments',
+    'assessmentOrder',
     'schoolYearStart',
     'notificationDismissals',
 ];

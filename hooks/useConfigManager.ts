@@ -43,7 +43,11 @@ const defaultConfig: AppConfig = {
     notificationDismissals: {},
     absences: [],
     assessmentDates: {},
+    assessmentAbsences: {},
     pedagogicalEvents: {},
+    manualAssessments: {},
+    removedAssessments: {},
+    assessmentOrder: {},
 };
 
 export const useConfigManager = () => {
@@ -91,7 +95,11 @@ export const useConfigManager = () => {
                     notificationDismissals: loadedConfig.notificationDismissals ?? {},
                     absences: loadedConfig.absences ?? [],
                     assessmentDates: loadedConfig.assessmentDates ?? {},
+                    assessmentAbsences: loadedConfig.assessmentAbsences ?? {},
                     pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
+                    manualAssessments: loadedConfig.manualAssessments ?? {},
+                    removedAssessments: loadedConfig.removedAssessments ?? {},
+                    assessmentOrder: loadedConfig.assessmentOrder ?? {},
                     schoolYearStart: loadedConfig.schoolYearStart,
                     applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
                 }));
@@ -144,7 +152,11 @@ export const useConfigManager = () => {
                         notificationDismissals: {},
                         absences: [],
                         assessmentDates: {},
+                        assessmentAbsences: {},
                         pedagogicalEvents: {},
+                        manualAssessments: {},
+                        removedAssessments: {},
+                        assessmentOrder: {},
                     }));
                 }
             } catch (error) {

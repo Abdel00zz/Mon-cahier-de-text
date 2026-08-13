@@ -1,8 +1,11 @@
 import { HttpError } from './http.js';
-import type { ClassInfo, ContentDirection, LessonsData, TimetableEntry } from '../../types.js';
+import type { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableEntry } from '../../types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
 const VALID_CYCLES = new Set(['college', 'lycee', 'prepa']);
+const VALID_ASSESSMENT_TYPES = new Set(['controle', 'controle_court', 'controle_global', 'oral', 'maison']);
+const VALID_PEDAGOGICAL_TYPES = new Set(['evaluation_diagnostic', 'olympiade', 'concours', 'soutien', 'remediation', 'examen_blanc', 'rattrapage', 'autre']);
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const normalizePhone = (value: unknown): string => {
   if (typeof value !== 'string') {
@@ -124,4 +127,78 @@ export const assertValidLessonsPayload = (
       updatedAt,
     };
   });
+};
+
+/** Validation ciblée des données d'évaluation transportées dans le blob de réglages. */
+export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<string>): Record<string, unknown> | undefined => {
+  if (settings === undefined) return undefined;
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) throw new HttpError(400, 'Réglages synchronisés invalides.');
+  const result = { ...(settings as Record<string, unknown>) };
+  const classRecord = (key: string): Record<string, unknown> | undefined => {
+    const value = result[key];
+    if (value === undefined) return undefined;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new HttpError(400, `${key} invalide.`);
+    const record = value as Record<string, unknown>;
+    if (Object.keys(record).length > validClassIds.size) throw new HttpError(400, `${key} contient trop de classes.`);
+    for (const classId of Object.keys(record)) if (!validClassIds.has(classId)) throw new HttpError(400, `${key} référence une classe inconnue.`);
+    return record;
+  };
+
+  for (const key of ['assessmentDates'] as const) {
+    const record = classRecord(key);
+    for (const [classId, raw] of Object.entries(record ?? {})) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, `${key}.${classId} invalide.`);
+      const entries = Object.entries(raw as Record<string, unknown>);
+      if (entries.length > 300) throw new HttpError(400, `${key}.${classId} est trop volumineux.`);
+      for (const [id, date] of entries) {
+        if (!id || id.length > 180 || typeof date !== 'string' || !ISO_DATE.test(date)) throw new HttpError(400, `Date d'évaluation invalide pour ${classId}.`);
+      }
+    }
+  }
+
+  const absences = classRecord('assessmentAbsences');
+  for (const [classId, raw] of Object.entries(absences ?? {})) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, `assessmentAbsences.${classId} invalide.`);
+    const entries = Object.entries(raw as Record<string, unknown>);
+    if (entries.length > 300) throw new HttpError(400, `assessmentAbsences.${classId} est trop volumineux.`);
+    for (const [assessmentId, candidate] of entries) {
+      const value = candidate as { names?: unknown; updatedAt?: unknown };
+      if (!assessmentId || assessmentId.length > 180 || !value || !Array.isArray(value.names) || value.names.length > 200) throw new HttpError(400, 'Liste d’absences invalide.');
+      if (value.names.some(name => typeof name !== 'string' || !name.trim() || name.length > 120)) throw new HttpError(400, 'Nom d’élève absent invalide.');
+      if (typeof value.updatedAt !== 'string' || !Number.isFinite(Date.parse(value.updatedAt))) throw new HttpError(400, 'Horodatage d’absences invalide.');
+    }
+  }
+
+  const manual = classRecord('manualAssessments');
+  for (const [classId, raw] of Object.entries(manual ?? {})) {
+    if (!Array.isArray(raw) || raw.length > 300) throw new HttpError(400, `manualAssessments.${classId} invalide.`);
+    for (const item of raw) {
+      const value = item as Partial<NonNullable<AppConfig['manualAssessments']>[string][number]>;
+      if (!value || typeof value !== 'object' || typeof value.id !== 'string' || !value.id || value.id.length > 180) throw new HttpError(400, 'Identifiant de devoir manuel invalide.');
+      if (!VALID_ASSESSMENT_TYPES.has(value.type as string) || !Number.isInteger(value.num) || Number(value.num) < 1 || Number(value.num) > 50) throw new HttpError(400, 'Type ou numéro de devoir manuel invalide.');
+      if (typeof value.dateISO !== 'string' || !ISO_DATE.test(value.dateISO) || (value.semestre !== 1 && value.semestre !== 2)) throw new HttpError(400, 'Date ou semestre de devoir manuel invalide.');
+      if (value.schoolYear !== undefined && (typeof value.schoolYear !== 'string' || !/^\d{4}-\d{4}$/.test(value.schoolYear))) throw new HttpError(400, 'Année scolaire de devoir manuel invalide.');
+    }
+  }
+
+  const events = classRecord('pedagogicalEvents');
+  for (const [classId, raw] of Object.entries(events ?? {})) {
+    if (!Array.isArray(raw) || raw.length > 500) throw new HttpError(400, `pedagogicalEvents.${classId} invalide.`);
+    for (const item of raw) {
+      const value = item as Record<string, unknown>;
+      if (!value || typeof value.id !== 'string' || !value.id || !VALID_PEDAGOGICAL_TYPES.has(value.type as string)) throw new HttpError(400, 'Activité pédagogique invalide.');
+      if (typeof value.title !== 'string' || !value.title.trim() || value.title.length > 300 || typeof value.date !== 'string' || !ISO_DATE.test(value.date)) throw new HttpError(400, 'Titre ou date d’activité invalide.');
+      if (value.status !== 'planned' && value.status !== 'done') throw new HttpError(400, 'Statut d’activité invalide.');
+    }
+  }
+
+  for (const key of ['removedAssessments', 'assessmentOrder'] as const) {
+    const record = classRecord(key);
+    for (const [classId, raw] of Object.entries(record ?? {})) {
+      if (!Array.isArray(raw) || raw.length > 500 || raw.some(id => typeof id !== 'string' || !id || id.length > 180)) {
+        throw new HttpError(400, `${key}.${classId} invalide.`);
+      }
+    }
+  }
+  return result;
 };

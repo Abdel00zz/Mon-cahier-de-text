@@ -11,14 +11,17 @@ import { OnboardingPage } from './OnboardingPage';
 import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
+import { getSubjectVisual } from '@/utils/classVisuals';
+import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus, BookOpen } from '@/components/ui/icons';
-import { migrateLessonsData } from '@/utils/dataUtils';
+import { readCachedLessons } from '@/utils/notebookStorage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
+import { buildSessionIndex, SessionIndex } from '@/utils/sessionIndex';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -50,46 +53,6 @@ const getGreeting = (locale: 'fr' | 'en' | 'ar', hour: number): string => {
     return 'Bonsoir';
 };
 
-const readLessons = (classId: string) => {
-    try {
-        const raw = localStorage.getItem(`classData_v1_${classId}`);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return migrateLessonsData(Array.isArray(parsed) ? parsed : (parsed.lessonsData ?? []));
-    } catch {
-        return [];
-    }
-};
-
-const findLatestDate = (data: any): string | null => {
-    let latestDate: string | null = null;
-
-    const findDate = (obj: any) => {
-        if (typeof obj !== 'object' || obj === null) return;
-
-        if (obj.date && typeof obj.date === 'string') {
-            if (!latestDate || obj.date > latestDate) {
-                latestDate = obj.date;
-            }
-        }
-
-        Object.values(obj).forEach(value => {
-            if (Array.isArray(value)) {
-                value.forEach(findDate);
-            } else if (typeof value === 'object') {
-                findDate(value);
-            }
-        });
-    };
-
-    if (Array.isArray(data)) {
-        data.forEach(findDate);
-    } else {
-        findDate(data);
-    }
-
-    return latestDate;
-};
-
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     notificationFeed,
@@ -106,13 +69,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
     const [notificationClass, setNotificationClass] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
-    const [lastModifiedDates, setLastModifiedDates] = useState<Record<string, string | null>>({});
+    const [sessionIndexes, setSessionIndexes] = useState<Record<string, SessionIndex>>({});
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', 'double', 100);
-    const [cycleFilter, setCycleFilter] = useState<string>('all');
+    const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
     const [now, setNow] = useState(() => new Date());
+    const sessionIndexDay = todayInMorocco(now, getBundledCalendar());
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true;
 
@@ -146,13 +110,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     useEffect(() => {
         if (isClassesLoading) return;
 
-        const dates: Record<string, string | null> = {};
+        const indexes: Record<string, SessionIndex> = {};
         classes.forEach(classInfo => {
-            const lessons = readLessons(classInfo.id);
-            dates[classInfo.id] = findLatestDate(lessons);
+            const lessons = readCachedLessons(classInfo.id);
+            indexes[classInfo.id] = buildSessionIndex(lessons, sessionIndexDay);
         });
-        setLastModifiedDates(dates);
-    }, [classes, isClassesLoading, notificationFeed]);
+        setSessionIndexes(indexes);
+    }, [classes, isClassesLoading, notificationFeed, sessionIndexDay]);
 
     useEffect(() => {
         if (!isDisplayMenuOpen) return;
@@ -266,6 +230,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (config.pedagogicalEvents?.[classId]) {
             const next = { ...config.pedagogicalEvents }; delete next[classId]; patch.pedagogicalEvents = next;
         }
+        if (config.manualAssessments?.[classId]) {
+            const next = { ...config.manualAssessments }; delete next[classId]; patch.manualAssessments = next;
+        }
+        if (config.removedAssessments?.[classId]) {
+            const next = { ...config.removedAssessments }; delete next[classId]; patch.removedAssessments = next;
+        }
+        if (config.assessmentOrder?.[classId]) {
+            const next = { ...config.assessmentOrder }; delete next[classId]; patch.assessmentOrder = next;
+        }
         if (config.notificationDismissals?.[classId]) {
             const next = { ...config.notificationDismissals }; delete next[classId]; patch.notificationDismissals = next;
         }
@@ -275,12 +248,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             patch.schedules = deriveSchedules(nextTimetable);
         }
         if (Object.keys(patch).length > 0) updateConfig(patch);
-    }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.notificationDismissals, config.timetable, updateConfig]);
+    }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.manualAssessments, config.removedAssessments, config.assessmentOrder, config.notificationDismissals, config.timetable, updateConfig]);
 
-    const availableCycles = useMemo(() => {
+    const availableSubjects = useMemo(() => {
         const set = new Set<string>();
-        classes.forEach(c => { if (c.cycle) set.add(c.cycle); });
-        return Array.from(set);
+        classes.forEach(c => { if (c.subject) set.add(c.subject); });
+        return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
     }, [classes]);
 
     if (isLoading) {
@@ -401,14 +374,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const filteredClasses = visibleClasses.filter(c => {
-        if (cycleFilter !== 'all' && c.cycle !== cycleFilter) return false;
+        if (subjectFilter !== 'all' && c.subject !== subjectFilter) return false;
         return true;
     });
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1'
-        : 'grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2';
+        : 'grid-cols-2';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -465,32 +438,34 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </p>
                             </div>
 
-                            {classes.length > 0 && availableCycles.length > 1 && (
+                            {classes.length > 0 && availableSubjects.length > 1 && (
                                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
                                     <button
                                         type="button"
-                                        onClick={() => setCycleFilter('all')}
-                                        className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
-                                            cycleFilter === 'all'
-                                                ? 'bg-[#423ed8] text-white shadow-none'
-                                                : 'border-2 border-slate-200 bg-white text-[#423ed8] hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                                        onClick={() => setSubjectFilter('all')}
+                                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${
+                                            subjectFilter === 'all'
+                                                ? 'bg-[#423ed8] text-white shadow-xs'
+                                                : 'border border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
                                         }`}
                                     >
                                         {t('dashboard.filterAll')}
                                     </button>
-                                    {availableCycles.map(c => {
+                                    {availableSubjects.map(subject => {
+                                        const subjectVisual = getSubjectVisual(subject);
+                                        const isActive = subjectFilter === subject;
                                         return (
                                             <button
-                                                key={c}
+                                                key={subject}
                                                 type="button"
-                                                onClick={() => setCycleFilter(c)}
-                                                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
-                                                    cycleFilter === c
-                                                        ? 'bg-[#423ed8] text-white shadow-none'
-                                                        : 'border-2 border-slate-200 bg-white text-[#423ed8] hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                                                onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
+                                                className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${subjectVisual.frameBg} ${
+                                                    isActive
+                                                        ? 'text-slate-900 dark:text-slate-100 ring-2 ring-offset-1 ring-slate-900/15 dark:ring-white/25'
+                                                        : 'text-slate-700 dark:text-slate-200 opacity-70 hover:opacity-100'
                                                 }`}
                                             >
-                                                {t(`cycle.${c}`)}
+                                                {formatLocalizedSubjectDisplayName(subject, locale)}
                                             </button>
                                         );
                                     })}
@@ -517,11 +492,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
-                                        className="inline-flex items-center gap-2 bg-[#423ed8] hover:bg-[#322ebd] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 shadow-none active:scale-95 cursor-pointer"
+                                        className="inline-flex h-9 items-center gap-1.5 bg-[#423ed8] px-3 text-xs font-semibold text-white shadow-xs rounded-lg transition-all duration-200 hover:bg-[#322ebd] active:scale-95 cursor-pointer"
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
                                     >
-                                        <Plus className="h-4 w-4" />
+                                        <Plus className="h-3.5 w-3.5" />
                                         <span>{t('dashboard.classShort')}</span>
                                     </button>
 
@@ -532,15 +507,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 onClick={() => setDisplayMenuOpen(open => !open)}
                                                 aria-haspopup="menu"
                                                 aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-11 items-center gap-2 rounded-2xl bg-white border-2 border-slate-200 px-4 text-xs font-bold text-[#423ed8] hover:border-[#423ed8] hover:bg-[#eeaaff]/20 transition-all dark:bg-slate-900 dark:border-slate-700 dark:text-[#98e3ff] shadow-none"
+                                                className="flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-xs transition-colors hover:bg-accent dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200"
                                             >
                                                 <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 dark:text-slate-500 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             {isDisplayMenuOpen && (
                                                 <div
                                                     role="menu"
-                                                    className={`absolute top-[calc(100%+0.5rem)] z-30 w-48 overflow-hidden rounded-[1.5rem] border-2 border-slate-200 bg-white p-2 shadow-[0_10px_25px_rgba(66,62,216,0.1)] dark:bg-slate-900 dark:border-slate-700 dark:shadow-[0_10px_25px_rgba(0,0,0,0.5)] ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    className={`absolute top-[calc(100%+0.5rem)] z-30 w-48 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-md dark:bg-slate-900 dark:border-slate-700 ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
                                                         const isActive = option === currentDisplay;
@@ -554,9 +529,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-start transition-colors ${isActive ? 'bg-[#eeaaff]/50 text-[#423ed8] dark:bg-[#423ed8]/20 dark:text-[#eeaaff] font-bold' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'}`}
+                                                                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-start text-xs transition-colors ${isActive ? 'bg-accent text-accent-foreground font-semibold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                                                             >
-                                                                <span className="text-xs">{displayCopy(option).label}</span>
+                                                                <span>{displayCopy(option).label}</span>
                                                             </button>
                                                         );
                                                     })}
@@ -607,7 +582,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} gap-3 sm:gap-4`}>
+                                    <div className={`grid ${classGridClass} gap-2 sm:gap-3`}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
@@ -639,7 +614,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onCreate={handleCreateClass}
                 defaultTeacherName={teacherName}
                 defaultCycle={selectedCycle}
-                defaultSubject={config.selectedSubjects?.[0]}
+                teacherSubjects={config.selectedSubjects}
                 teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
                 existingClasses={classes}
                 editingClass={editingClass}
@@ -657,7 +632,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 classInfo={notificationClass}
                 config={config}
                 feed={notificationFeed}
-                lastModified={notificationClass ? lastModifiedDates[notificationClass.id] : null}
+                sessionIndex={notificationClass ? sessionIndexes[notificationClass.id] : undefined}
                 nextSession={notificationClass ? nextSession(notificationClass.id) : null}
                 onClose={() => setNotificationClass(null)}
                 onSelectClass={onSelectClass}

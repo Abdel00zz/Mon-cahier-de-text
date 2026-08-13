@@ -237,7 +237,6 @@ const TableRowComponent: FC<TableRowProps> = ({
   onToggleSelect,
   onDoubleClickEdit,
   isSelected,
-  isNew = false,
   showDescriptions,
   descriptionTypes = [],
   searchQuery,

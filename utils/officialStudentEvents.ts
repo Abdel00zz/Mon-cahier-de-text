@@ -23,6 +23,8 @@ export interface OfficialStudentEvent {
     dateKind: OfficialDateKind;
     studentAction: string;
     sourcePage: number;
+    /** Matière concernée (optionnel) : absent = s'applique à toutes les matières. */
+    matiere?: string;
 }
 
 export interface OfficialStudentEventsFile {
@@ -109,6 +111,9 @@ export const validateOfficialStudentEventsFile = (value: unknown): OfficialStude
             dateKind: event.dateKind as OfficialDateKind,
             studentAction: requiredText(event.studentAction, `${id}.studentAction`, 500),
             sourcePage: Number(event.sourcePage),
+            matiere: typeof event.matiere === 'string' && event.matiere.trim()
+                ? requiredText(event.matiere, `${id}.matiere`, 120)
+                : undefined,
         };
     }).sort((a, b) => a.start.localeCompare(b.start) || a.title.localeCompare(b.title));
 
@@ -232,13 +237,20 @@ export const getLocalizedEventTitle = (event: OfficialStudentEvent, locale: stri
 };
 
 export const getOfficialStudentEventsForClass = (
-    classInfo: Pick<ClassInfo, 'name' | 'cycle'>,
+    classInfo: Pick<ClassInfo, 'name' | 'cycle' | 'subject'>,
     category?: OfficialStudentEventCategory,
     file: OfficialStudentEventsFile = cached,
 ): OfficialStudentEvent[] => {
     const tags = getClassStudentTags(classInfo);
+    const subject = normalize(classInfo.subject ?? '');
     return file.events
-        .filter(event => (!category || event.category === category) && event.levels.some(level => tags.has(level)))
+        .filter(event => {
+            if (category && event.category !== category) return false;
+            if (!event.levels.some(level => tags.has(level))) return false;
+            // Un événement marqué d'une matière n'apparaît que pour cette matière.
+            if (event.matiere && normalize(event.matiere) !== subject) return false;
+            return true;
+        })
         .sort((a, b) => a.start.localeCompare(b.start) || a.title.localeCompare(b.title));
 };
 

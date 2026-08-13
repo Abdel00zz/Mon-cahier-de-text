@@ -29,7 +29,11 @@ export interface ProgressionStats {
     perChapter: ChapterProgress[];
 }
 
+const progressionCache = new WeakMap<LessonsData, ProgressionStats>();
+
 export const computeProgressionStats = (lessonsData: LessonsData): ProgressionStats => {
+    const cached = progressionCache.get(lessonsData);
+    if (cached) return cached;
     const allEntries = flattenLessons(lessonsData);
     const contentItems = allEntries.filter(isContentEntry);
 
@@ -71,7 +75,9 @@ export const computeProgressionStats = (lessonsData: LessonsData): ProgressionSt
         };
     });
 
-    return { totalItems, plannedCount, completionRate, sessionsCount, unplannedItems, lastDate, perChapter };
+    const result = { totalItems, plannedCount, completionRate, sessionsCount, unplannedItems, lastDate, perChapter };
+    progressionCache.set(lessonsData, result);
+    return result;
 };
 
 const computeClassSnapshot = (
