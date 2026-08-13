@@ -240,10 +240,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
 
         <div className="grid gap-1.5 rounded-2xl bg-muted/55 p-1.5" aria-label={t('notifications.classStatusLabel')}>
           <article className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl bg-background px-3.5 py-3 text-start shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:grid-cols-[8.75rem_minmax(0,1fr)]">
-            <div className="flex items-center gap-2 pt-0.5">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t('dashboard.lastLesson')}</span>
-            </div>
+            <span className="pt-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t('dashboard.lastLesson')}</span>
             <div className="min-w-0 text-end text-[13px] leading-relaxed">
               <span className="break-words font-semibold text-foreground">
                 <MathText source={sessionIndex?.previous?.lastTitle} inline>
@@ -259,19 +256,16 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           </article>
 
           <article className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl bg-background px-3.5 py-3 text-start shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:grid-cols-[8.75rem_minmax(0,1fr)]">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 pt-0.5">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t('dashboard.nextSessionStatus')}</span>
-              </div>
-              <div className="mt-1 truncate ps-3.5 font-mono text-[9px] font-medium text-muted-foreground">
+            <span className="pt-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-blue-600 dark:text-blue-400">{t('dashboard.nextSessionStatus')}</span>
+            <div className="min-w-0 text-end">
+              <div className="mb-1 truncate font-mono text-[10px] font-medium text-muted-foreground">
                 {nextSession?.label ?? t('dashboard.none')}
               </div>
-            </div>
-            <div className="min-w-0 text-end text-[13px] font-semibold leading-relaxed text-foreground">
-              <MathText source={nextLessonTitle} inline>
-                {nextLessonTitle ?? t('dashboard.none')}
-              </MathText>
+              <div className="text-[13px] font-semibold leading-relaxed text-blue-600 dark:text-blue-400">
+                <MathText source={nextLessonTitle} inline>
+                  {nextLessonTitle ?? t('dashboard.none')}
+                </MathText>
+              </div>
             </div>
           </article>
         </div>
