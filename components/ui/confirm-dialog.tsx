@@ -1,12 +1,5 @@
 import * as React from 'react';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from './dialog';
+import { ModalBottomSheet } from './modal-bottom-sheet';
 import { Button } from './button';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { TriangleAlert, CircleHelp } from '@/components/ui/icons';
@@ -59,50 +52,33 @@ export function ConfirmDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent
-                className="gap-5 border-border/70 bg-card p-5 sm:p-7 shadow-2xl sm:max-w-lg sm:rounded-[28px]"
-                blockDismiss={requiresTypedConfirmation}
-            >
-                <DialogHeader className="gap-3 text-left rtl:text-right">
-                    <div className="flex items-center gap-3">
-                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
-                            variant === 'destructive' 
-                                ? 'bg-destructive/10 text-destructive' 
-                                : 'bg-primary/10 text-primary'
-                        } shadow-xs`}>
-                            {variant === 'destructive' ? (
-                                <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
-                            ) : (
-                                <CircleHelp className="h-5 w-5 stroke-[2.2]" />
-                            )}
-                        </span>
-                        <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
-                            {title}
-                        </DialogTitle>
-                    </div>
-                    <DialogDescription className="text-xs sm:text-sm font-medium leading-relaxed text-muted-foreground pt-1">
-                        {description}
-                    </DialogDescription>
-                </DialogHeader>
-                {requiresTypedConfirmation && (
-                    <label className="space-y-2 pt-1">
-                        <span className="block text-xs font-semibold leading-relaxed text-foreground">
-                            {confirmationHint}
-                        </span>
-                        <input
-                            type="text"
-                            value={confirmationValue}
-                            onChange={(event) => setConfirmationValue(event.target.value)}
-                            placeholder={confirmationPhrase}
-                            autoComplete="off"
-                            autoFocus
-                            className="flex h-11 w-full rounded-2xl border border-border/80 bg-muted/40 px-4 text-xs sm:text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
-                            aria-label={confirmationHint}
-                        />
-                    </label>
-                )}
-                <DialogFooter className="flex flex-row items-center justify-end gap-2.5 pt-3">
+        <ModalBottomSheet
+            isOpen={open}
+            onClose={() => onOpenChange(false)}
+            maxWidth="sm"
+            blockDismiss={requiresTypedConfirmation}
+            className="gap-4"
+            title={
+                <div className="flex items-center gap-3">
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
+                        variant === 'destructive' 
+                            ? 'bg-destructive/10 text-destructive' 
+                            : 'bg-primary/10 text-primary'
+                    } shadow-xs`}>
+                        {variant === 'destructive' ? (
+                            <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
+                        ) : (
+                            <CircleHelp className="h-5 w-5 stroke-[2.2]" />
+                        )}
+                    </span>
+                    <span className="text-base sm:text-lg font-bold text-foreground">
+                        {title}
+                    </span>
+                </div>
+            }
+            description={description}
+            footer={
+                <div className="flex flex-row items-center justify-end gap-2.5 w-full">
                     <Button
                         type="button"
                         variant="secondary"
@@ -120,9 +96,26 @@ export function ConfirmDialog({
                     >
                         {confirmLabel ?? t('common.confirm')}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </div>
+            }
+        >
+            {requiresTypedConfirmation && (
+                <label className="space-y-2 pt-1 block">
+                    <span className="block text-xs font-semibold leading-relaxed text-foreground">
+                        {confirmationHint}
+                    </span>
+                    <input
+                        type="text"
+                        value={confirmationValue}
+                        onChange={(event) => setConfirmationValue(event.target.value)}
+                        placeholder={confirmationPhrase}
+                        autoComplete="off"
+                        autoFocus
+                        className="flex h-11 w-full rounded-2xl border border-border/80 bg-muted/40 px-4 text-xs sm:text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
+                        aria-label={confirmationHint}
+                    />
+                </label>
+            )}
+        </ModalBottomSheet>
     );
 }
-

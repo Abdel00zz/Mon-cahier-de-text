@@ -52,6 +52,7 @@ export const OnboardingPage = ({
     const classDraft = useOnboardingClassDraft({
         cycle,
         subject: selectedSubjects[0] ?? '',
+        selectedSubjects,
         classes,
         copy,
         onConfigChange,

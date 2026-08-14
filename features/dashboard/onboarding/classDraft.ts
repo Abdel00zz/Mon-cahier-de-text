@@ -2,11 +2,12 @@ import type { ClassInfo } from '@/types';
 import { classNameForLevelAndGroup, normalizeGroupNumber } from '@/utils/classGroup';
 import type { ClassDraft, ClassDraftValidation } from './types';
 
-export const createClassDraft = (level: string): ClassDraft => ({
+export const createClassDraft = (level: string, subject = ''): ClassDraft => ({
     mode: 'catalog',
     level,
     group: '',
     label: '',
+    subject,
 });
 
 export const normalizeClassNameKey = (value: string): string =>

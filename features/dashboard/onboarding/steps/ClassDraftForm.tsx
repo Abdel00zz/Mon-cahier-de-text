@@ -1,9 +1,9 @@
 import { memo, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, CircleHelp } from '@/components/ui/icons';
+import { Plus, CircleHelp, BookOpen, Check, GraduationCap } from '@/components/ui/icons';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatLocalizedClassDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName, SUBJECTS } from '@/constants';
 import { cn } from '@/lib/utils';
 import type { Cycle } from '@/types';
 import { LEVEL_GROUPS } from '../content';
@@ -26,33 +26,103 @@ const issueMessage = (issue: ClassDraftIssue | null, copy: OnboardingCopy): stri
 };
 
 export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, controller }) => {
-    const { draft, validation, showValidation } = controller;
+    const { draft, validation, showValidation, activeSubject, selectedSubjects, setSubject } = controller;
     const value = draft.mode === 'catalog' ? draft.group : draft.label;
     const showIssue = Boolean(validation.issue && (showValidation || value));
     const message = useMemo(() => issueMessage(validation.issue, copy), [copy, validation.issue]);
 
-    return (
-        <div className="mt-4 space-y-3 text-start">
-            <p className="text-xs text-slate-500 sm:text-sm font-medium">{copy.groupHint}</p>
+    // Liste des matières à afficher sous forme de badges rapides
+    const quickSubjects = useMemo(() => {
+        const list = selectedSubjects.length > 0 ? [...selectedSubjects] : SUBJECTS.slice(0, 4);
+        if (activeSubject && !list.includes(activeSubject)) {
+            list.push(activeSubject);
+        }
+        return list;
+    }, [selectedSubjects, activeSubject]);
 
-            <div className="space-y-3 rounded-2xl border border-slate-200/90 bg-slate-50/70 p-3 sm:p-4 shadow-2xs">
+    return (
+        <div className="mt-4 space-y-3.5 text-start">
+            {/* Zone d'affectation intelligente de matière (pratique & aérée) */}
+            <div className="rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <BookOpen className="h-4 w-4" />
+                        </div>
+                        <div>
+                            <span className="text-xs font-bold text-foreground">
+                                {copy.subjectToAssign}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Sélecteur de toutes les matières officielles */}
+                    <div className="w-auto">
+                        <Select value={activeSubject} onValueChange={setSubject}>
+                            <SelectTrigger
+                                aria-label={copy.otherSubject}
+                                className="h-7 text-[11px] font-semibold rounded-full border-border bg-muted/60 px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                            >
+                                <SelectValue placeholder={copy.otherSubject} />
+                            </SelectTrigger>
+                            <SelectContent align={lang === 'ar' ? 'start' : 'end'} className="max-h-60">
+                                {SUBJECTS.map(subj => (
+                                    <SelectItem key={subj} value={subj} className="text-xs">
+                                        {formatLocalizedSubjectDisplayName(subj, lang)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Pilules de sélection rapide et réactive des matières choisies */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {quickSubjects.map(subj => {
+                        const isSelected = activeSubject === subj;
+                        return (
+                            <button
+                                key={subj}
+                                type="button"
+                                onClick={() => setSubject(subj)}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer active:scale-95',
+                                    isSelected
+                                        ? 'bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/20 scale-[1.02]'
+                                        : 'bg-muted/50 hover:bg-muted border border-border/70 text-muted-foreground hover:text-foreground'
+                                )}
+                            >
+                                {isSelected ? (
+                                    <Check className="h-3.5 w-3.5" />
+                                ) : (
+                                    <GraduationCap className="h-3.5 w-3.5 opacity-60" />
+                                )}
+                                <span>{formatLocalizedSubjectDisplayName(subj, lang)}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Zone de saisie et de création de la classe */}
+            <div className="space-y-3 rounded-2xl border border-border/80 bg-muted/30 p-3.5 sm:p-4 shadow-xs">
                 {draft.mode === 'catalog' ? (
                     <div className="space-y-3">
-                        {/* Main Choice Row: [ Level Select ] [ Group # (smaller) ] [ Add Button (left) ] */}
+                        {/* Main Choice Row: [ Level Select ] [ Group # ] [ Add Button ] */}
                         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                             {/* Level Select */}
                             <div className="min-w-[150px] flex-1">
                                 <Select value={draft.level} onValueChange={controller.setLevel}>
                                     <SelectTrigger
                                         aria-label={copy.levelPlaceholder}
-                                        className="h-11 rounded-xl border-slate-200 bg-white text-start text-xs font-semibold shadow-2xs hover:border-slate-300 focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
+                                        className="h-11 rounded-xl border-border bg-card text-start text-xs font-semibold shadow-2xs hover:border-slate-300 focus:border-primary focus:ring-primary sm:text-sm"
                                     >
                                         <SelectValue placeholder={copy.levelPlaceholder} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {LEVEL_GROUPS[cycle].map(group => (
                                             <SelectGroup key={group.key}>
-                                                <SelectLabel className="py-1.5 text-xs font-bold text-slate-400">
+                                                <SelectLabel className="py-1.5 text-xs font-bold text-muted-foreground">
                                                     {copy.levelGroupLabels[group.key]}
                                                 </SelectLabel>
                                                 {group.levels.map(level => (
@@ -66,7 +136,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                 </Select>
                             </div>
 
-                            {/* Group Number Input - smaller width ("l adernier plus petite") */}
+                            {/* Group Number Input */}
                             <div className="w-20 shrink-0 sm:w-22">
                                 <Input
                                     aria-label={copy.groupPlaceholder}
@@ -76,8 +146,8 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                     onBlur={controller.normalizeGroup}
                                     placeholder={lang === 'ar' ? 'رقم' : 'N°'}
                                     className={cn(
-                                        'h-11 w-full rounded-xl border-slate-200 bg-white text-center text-xs font-bold shadow-2xs hover:border-slate-300 focus-visible:border-blue-600 focus-visible:ring-blue-600 sm:text-sm',
-                                        showIssue ? 'border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500' : '',
+                                        'h-11 w-full rounded-xl border-border bg-card text-center text-xs font-bold shadow-2xs hover:border-slate-300 focus-visible:border-primary focus-visible:ring-primary sm:text-sm',
+                                        showIssue ? 'border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive' : '',
                                     )}
                                     inputMode="numeric"
                                     maxLength={2}
@@ -85,28 +155,28 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                 />
                             </div>
 
-                            {/* Add Class Button - compact & tight */}
+                            {/* Add Class Button */}
                             <Button
                                 type="button"
                                 onClick={controller.add}
                                 disabled={controller.isAdding}
                                 aria-busy={controller.isAdding}
-                                className="group inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-900 px-3 text-xs font-bold text-white shadow-2xs transition-all hover:bg-black active:scale-[0.98] disabled:bg-slate-400 cursor-pointer"
+                                className="group inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 text-xs font-bold shadow-2xs transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                             >
-                                <Plus className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+                                <Plus className="h-4 w-4 transition-transform group-hover:scale-110" />
                                 <span className="whitespace-nowrap">{controller.isAdding ? copy.addingClass : copy.addClass}</span>
                             </Button>
                         </div>
 
-                        {/* Custom Name Question at the Bottom ("nom precis en bas label bien place petit et sous forme de qst") */}
+                        {/* Custom Name Question at the Bottom */}
                         <div className="pt-1 flex items-center justify-between">
                             <button
                                 type="button"
                                 onClick={controller.toggleMode}
-                                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors cursor-pointer group py-0.5"
+                                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer group py-0.5"
                             >
-                                <CircleHelp className="h-3.5 w-3.5 text-indigo-500 group-hover:scale-110 transition-transform shrink-0" />
-                                <span className="underline decoration-slate-300 group-hover:decoration-indigo-500 underline-offset-2">
+                                <CircleHelp className="h-3.5 w-3.5 text-primary group-hover:scale-110 transition-transform shrink-0" />
+                                <span className="underline decoration-border group-hover:decoration-primary underline-offset-2">
                                     {copy.customNameQuestion}
                                 </span>
                             </button>
@@ -115,9 +185,8 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                 ) : (
                     /* Custom Name Mode */
                     <div className="space-y-2.5">
-                        {/* Question Label well-placed and small */}
-                        <label htmlFor="onboarding-custom-class" className="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                            <CircleHelp className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                        <label htmlFor="onboarding-custom-class" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            <CircleHelp className="h-3.5 w-3.5 text-primary shrink-0" />
                             <span>{copy.customNameQuestion}</span>
                         </label>
 
@@ -130,8 +199,8 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                     onChange={event => controller.setLabel(event.target.value)}
                                     placeholder={copy.customClassNamePlaceholder}
                                     className={cn(
-                                        'h-11 rounded-xl border-slate-200 bg-white px-3 text-start text-xs font-medium shadow-2xs hover:border-slate-300 focus-visible:border-blue-600 focus-visible:ring-blue-600 sm:text-sm',
-                                        showIssue ? 'border-red-500 bg-red-50 text-red-900 focus-visible:ring-red-500' : '',
+                                        'h-11 rounded-xl border-border bg-card px-3 text-start text-xs font-medium shadow-2xs hover:border-slate-300 focus-visible:border-primary focus-visible:ring-primary sm:text-sm',
+                                        showIssue ? 'border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive' : '',
                                     )}
                                     maxLength={80}
                                     aria-invalid={Boolean(validation.issue)}
@@ -143,9 +212,9 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                                 onClick={controller.add}
                                 disabled={controller.isAdding}
                                 aria-busy={controller.isAdding}
-                                className="group inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-900 px-3 text-xs font-bold text-white shadow-2xs transition-all hover:bg-black active:scale-[0.98] disabled:bg-slate-400 cursor-pointer"
+                                className="group inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 text-xs font-bold shadow-2xs transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                             >
-                                <Plus className="h-3.5 w-3.5 transition-transform group-hover:scale-110" />
+                                <Plus className="h-4 w-4 transition-transform group-hover:scale-110" />
                                 <span className="whitespace-nowrap">{controller.isAdding ? copy.addingClass : copy.addClass}</span>
                             </Button>
                         </div>
@@ -154,7 +223,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                             <button
                                 type="button"
                                 onClick={controller.toggleMode}
-                                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors cursor-pointer py-0.5"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary font-medium transition-colors cursor-pointer py-0.5"
                             >
                                 <span>{copy.switchToCatalogQuestion}</span>
                             </button>
@@ -163,7 +232,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                 )}
 
                 {showIssue && message && (
-                    <p className="text-xs font-semibold text-red-600" aria-live="polite">
+                    <p className="text-xs font-semibold text-destructive" aria-live="polite">
                         {message}
                     </p>
                 )}
@@ -173,3 +242,4 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
 });
 
 ClassDraftForm.displayName = 'ClassDraftForm';
+

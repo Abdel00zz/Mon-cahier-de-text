@@ -8,7 +8,8 @@ import type { ClassDraft, ClassDraftValidation, OnboardingCopy } from './types';
 
 interface UseOnboardingClassDraftOptions {
     cycle: Cycle;
-    subject: string;
+    subject?: string;
+    selectedSubjects?: string[];
     classes: ClassInfo[];
     copy: OnboardingCopy;
     onConfigChange: (patch: Partial<AppConfig>) => void;
@@ -20,10 +21,13 @@ export interface OnboardingClassDraftController {
     validation: ClassDraftValidation;
     showValidation: boolean;
     isAdding: boolean;
+    activeSubject: string;
+    selectedSubjects: string[];
     setLevel: (level: string) => void;
     setGroup: (group: string) => void;
     normalizeGroup: () => void;
     setLabel: (label: string) => void;
+    setSubject: (subject: string) => void;
     toggleMode: () => void;
     resetForCycle: (cycle: Cycle) => void;
     add: () => void;
@@ -35,21 +39,32 @@ export interface OnboardingClassDraftController {
  */
 export const useOnboardingClassDraft = ({
     cycle,
-    subject,
+    subject = '',
+    selectedSubjects = [],
     classes,
     copy,
     onConfigChange,
     onCreateClass,
 }: UseOnboardingClassDraftOptions): OnboardingClassDraftController => {
     const defaultLevel = defaultLevelForCycle(cycle);
-    const [draft, setDraft] = useState<ClassDraft>(() => createClassDraft(defaultLevel));
+    const initialSubject = subject || selectedSubjects[0] || '';
+    const [draft, setDraft] = useState<ClassDraft>(() => createClassDraft(defaultLevel, initialSubject));
     const [showValidation, setShowValidation] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const creationLockRef = useRef(false);
     const cycleRef = useRef(cycle);
 
+    // Keep draft subject in sync with initial subject if empty
+    useEffect(() => {
+        if (!draft.subject && (subject || selectedSubjects[0])) {
+            setDraft(curr => ({ ...curr, subject: subject || selectedSubjects[0] || '' }));
+        }
+    }, [draft.subject, selectedSubjects, subject]);
+
+    const activeSubject = draft.subject || subject || selectedSubjects[0] || '';
+
     const validation = useMemo(() => validateClassDraft(draft, classes), [classes, draft]);
-    const isReady = Boolean(subject && validation.name && !validation.issue);
+    const isReady = Boolean(activeSubject && validation.name && !validation.issue);
 
     const setLevel = useCallback((level: string) => {
         setDraft(current => ({ ...current, level }));
@@ -68,6 +83,10 @@ export const useOnboardingClassDraft = ({
 
     const setLabel = useCallback((label: string) => {
         setDraft(current => ({ ...current, label }));
+    }, []);
+
+    const setSubject = useCallback((nextSubject: string) => {
+        setDraft(current => ({ ...current, subject: nextSubject }));
     }, []);
 
     const toggleMode = useCallback(() => {
@@ -96,7 +115,7 @@ export const useOnboardingClassDraft = ({
 
     const add = useCallback(() => {
         if (creationLockRef.current || isAdding) return;
-        if (!isReady || !validation.name) {
+        if (!isReady || !validation.name || !activeSubject) {
             setShowValidation(true);
             return;
         }
@@ -104,15 +123,23 @@ export const useOnboardingClassDraft = ({
         creationLockRef.current = true;
         setIsAdding(true);
         try {
-            // La préférence et la classe sont écrites dans l'ordre : le parent
-            // persiste et synchronise toujours un ensemble cohérent.
-            onConfigChange({
-                selectedCycles: [cycle],
-                showAllCycles: false,
-            });
-            onCreateClass({ name: validation.name, subject, cycle });
+            // S'assurer que la matière utilisée est bien enregistrée dans la config si besoin
+            if (activeSubject && !selectedSubjects.includes(activeSubject)) {
+                onConfigChange({
+                    selectedSubjects: [...selectedSubjects, activeSubject],
+                    selectedCycles: [cycle],
+                    showAllCycles: false,
+                });
+            } else {
+                onConfigChange({
+                    selectedCycles: [cycle],
+                    showAllCycles: false,
+                });
+            }
+
+            onCreateClass({ name: validation.name, subject: activeSubject, cycle });
             toast.success(copy.classAdded);
-            setDraft(createClassDraft(defaultLevel));
+            setDraft(current => createClassDraft(defaultLevel, current.subject || activeSubject));
             setShowValidation(false);
         } catch {
             toast.error(copy.classCreationError);
@@ -122,29 +149,35 @@ export const useOnboardingClassDraft = ({
                 setIsAdding(false);
             }, 0);
         }
-    }, [copy, cycle, defaultLevel, isAdding, isReady, onConfigChange, onCreateClass, subject, validation]);
+    }, [activeSubject, copy, cycle, defaultLevel, isAdding, isReady, onConfigChange, onCreateClass, selectedSubjects, validation]);
 
     return useMemo(() => ({
         draft,
         validation,
         showValidation,
         isAdding,
+        activeSubject,
+        selectedSubjects,
         setLevel,
         setGroup,
         normalizeGroup,
         setLabel,
+        setSubject,
         toggleMode,
         resetForCycle,
         add,
     }), [
+        activeSubject,
         add,
         draft,
         isAdding,
         normalizeGroup,
         resetForCycle,
+        selectedSubjects,
         setGroup,
         setLabel,
         setLevel,
+        setSubject,
         showValidation,
         toggleMode,
         validation,

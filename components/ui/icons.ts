@@ -1,177 +1,189 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import type { LucideProps } from 'lucide-react';
 import {
-  faPlus,
-  faXmark,
-  faCheck,
-  faCheckDouble,
-  faSquareCheck,
-  faGear,
-  faTrashCan,
-  faCalendarDays,
-  faCalendarWeek,
-  faCalendarCheck,
-  faCalendarPlus,
-  faCalendarMinus,
-  faCalendarXmark,
-  faClock,
-  faArrowLeft,
-  faArrowRight,
-  faArrowUp,
-  faArrowDown,
-  faTriangleExclamation,
-  faRotateLeft,
-  faRotateRight,
-  faFloppyDisk,
-  faClockRotateLeft,
-  faMagnifyingGlass,
-  faChevronUp,
-  faChevronDown,
-  faChevronLeft,
-  faChevronRight,
-  faEllipsisVertical,
-  faFileImport,
-  faFileLines,
-  faFileArrowUp,
-  faFileArrowDown,
-  faFileSignature,
-  faListCheck,
-  faSitemap,
-  faChartPie,
-  faPrint,
-  faBell,
-  faBookOpen,
-  faBook,
-  faPencil,
-  faSchool,
-  faGraduationCap,
-  faFlask,
-  faGripLinesVertical,
-  faGrip,
-  faFolderOpen,
-  faDownload,
-  faCircleExclamation,
-  faCircleCheck,
-  faCircleXmark,
-  faCircleQuestion,
-  faCircleInfo,
-  faLocationDot,
-  faDiagramProject,
-  faVial,
-  faHouse,
-  faSquareRootVariable,
-  faEye,
-  faEyeSlash,
-  faDatabase,
-  faUser,
-  faSpinner,
-  faUsers,
-  faBars,
-  faWandMagicSparkles,
-  faShieldHalved,
-  faRotate,
-  faRightFromBracket,
-} from '@fortawesome/free-solid-svg-icons';
+  Plus as LucidePlus,
+  X as LucideX,
+  Check as LucideCheck,
+  CheckCheck as LucideCheckCheck,
+  CheckSquare as LucideCheckSquare,
+  Settings as LucideSettings,
+  Trash2 as LucideTrash2,
+  CalendarDays as LucideCalendarDays,
+  CalendarRange as LucideCalendarRange,
+  CalendarCheck as LucideCalendarCheck,
+  CalendarPlus as LucideCalendarPlus,
+  CalendarMinus as LucideCalendarMinus,
+  CalendarX as LucideCalendarX,
+  Clock as LucideClock,
+  ArrowLeft as LucideArrowLeft,
+  ArrowRight as LucideArrowRight,
+  ArrowUp as LucideArrowUp,
+  ArrowDown as LucideArrowDown,
+  AlertTriangle as LucideAlertTriangle,
+  RotateCcw as LucideUndo2,
+  RotateCw as LucideRedo2,
+  Save as LucideSave,
+  History as LucideHistory,
+  Search as LucideSearch,
+  ChevronUp as LucideChevronUp,
+  ChevronDown as LucideChevronDown,
+  ChevronLeft as LucideChevronLeft,
+  ChevronRight as LucideChevronRight,
+  MoreVertical as LucideMoreVertical,
+  FileInput as LucideFileInput,
+  FileText as LucideFileText,
+  FileUp as LucideFileUp,
+  FileDown as LucideFileDown,
+  FileSignature as LucideFileSignature,
+  ListChecks as LucideListChecks,
+  Network as LucideListTree,
+  PieChart as LucidePieChart,
+  Printer as LucidePrinter,
+  Bell as LucideBell,
+  BookOpen as LucideBookOpen,
+  Book as LucideBook,
+  Pencil as LucidePencil,
+  School as LucideSchool,
+  GraduationCap as LucideGraduationCap,
+  FlaskConical as LucideFlaskConical,
+  GripVertical as LucideGripVertical,
+  GripHorizontal as LucideGripHorizontal,
+  FolderOpen as LucideFolderOpen,
+  Download as LucideDownload,
+  AlertCircle as LucideCircleAlert,
+  CheckCircle2 as LucideCircleCheck,
+  XCircle as LucideCircleX,
+  HelpCircle as LucideCircleHelp,
+  Info as LucideInfo,
+  MapPin as LucideMapPin,
+  GitFork as LucideNetwork,
+  TestTube as LucideTestTube,
+  Home as LucideHome,
+  Sigma as LucideSigma,
+  Eye as LucideEye,
+  EyeOff as LucideEyeOff,
+  Database as LucideDatabase,
+  User as LucideUser,
+  Loader2 as LucideLoader2,
+  Users as LucideUsers,
+  Menu as LucideMenu,
+  Sparkles as LucideSparkles,
+  ShieldCheck as LucideShieldCheck,
+  RefreshCw as LucideRefreshCw,
+  LogOut as LucideLogOut,
+  SlidersHorizontal,
+  Calendar as LucideCalendar,
+  Layers,
+  Award,
+  BookMarked,
+  FileSpreadsheet,
+  Globe,
+  Languages,
+} from 'lucide-react';
 
-export interface AppIconProps {
+export interface AppIconProps extends LucideProps {
   className?: string;
-  size?: number;
+  size?: number | string;
+  strokeWidth?: number;
   style?: React.CSSProperties;
   'aria-hidden'?: boolean | 'true' | 'false';
   'aria-label'?: string;
-  strokeWidth?: number;
 }
 
-const createIcon = (definition: IconDefinition): React.FC<AppIconProps> => {
+const createIcon = (LucideComponent: React.ComponentType<LucideProps>): React.FC<AppIconProps> => {
   const IconComponent: React.FC<AppIconProps> = ({
-    size,
-    strokeWidth: _strokeWidth,
-    style,
-    className,
+    size = 18,
+    strokeWidth = 2,
+    className = '',
     ...props
   }) => {
-    const mergedStyle = size ? { width: size, height: size, ...style } : style;
-    return React.createElement(FontAwesomeIcon, {
-      icon: definition,
-      fixedWidth: true,
+    return React.createElement(LucideComponent, {
+      size,
+      strokeWidth,
       className,
-      style: mergedStyle as React.CSSProperties & Record<`--fa-font-${string}`, string>,
       ...props,
     });
   };
 
-  IconComponent.displayName = `Icon(${definition.iconName})`;
+  IconComponent.displayName = `Icon(${LucideComponent.displayName || 'LucideIcon'})`;
   return IconComponent;
 };
 
-export const Plus = createIcon(faPlus);
-export const X = createIcon(faXmark);
-export const Check = createIcon(faCheck);
-export const CheckCheck = createIcon(faCheckDouble);
-export const CheckSquare = createIcon(faSquareCheck);
-export const Settings = createIcon(faGear);
-export const Trash2 = createIcon(faTrashCan);
-export const CalendarDays = createIcon(faCalendarDays);
-export const CalendarRange = createIcon(faCalendarWeek);
-export const CalendarCheck = createIcon(faCalendarCheck);
-export const CalendarPlus = createIcon(faCalendarPlus);
-export const CalendarMinus = createIcon(faCalendarMinus);
-export const CalendarX = createIcon(faCalendarXmark);
-export const Clock = createIcon(faClock);
-export const ArrowLeft = createIcon(faArrowLeft);
-export const ArrowRight = createIcon(faArrowRight);
-export const ArrowUp = createIcon(faArrowUp);
-export const ArrowDown = createIcon(faArrowDown);
-export const TriangleAlert = createIcon(faTriangleExclamation);
-export const Undo2 = createIcon(faRotateLeft);
-export const Redo2 = createIcon(faRotateRight);
-export const Save = createIcon(faFloppyDisk);
-export const History = createIcon(faClockRotateLeft);
-export const Search = createIcon(faMagnifyingGlass);
-export const ChevronUp = createIcon(faChevronUp);
-export const ChevronDown = createIcon(faChevronDown);
-export const ChevronLeft = createIcon(faChevronLeft);
-export const ChevronRight = createIcon(faChevronRight);
-export const MoreVertical = createIcon(faEllipsisVertical);
-export const FileInput = createIcon(faFileImport);
-export const FileText = createIcon(faFileLines);
-export const FileUp = createIcon(faFileArrowUp);
-export const FileDown = createIcon(faFileArrowDown);
-export const FileSignature = createIcon(faFileSignature);
-export const ListChecks = createIcon(faListCheck);
-export const ListTree = createIcon(faSitemap);
-export const PieChart = createIcon(faChartPie);
-export const Printer = createIcon(faPrint);
-export const Bell = createIcon(faBell);
-export const BookOpen = createIcon(faBookOpen);
-export const Book = createIcon(faBook);
-export const Pencil = createIcon(faPencil);
-export const School = createIcon(faSchool);
-export const GraduationCap = createIcon(faGraduationCap);
-export const FlaskConical = createIcon(faFlask);
-export const GripVertical = createIcon(faGripLinesVertical);
-export const GripHorizontal = createIcon(faGrip);
-export const FolderOpen = createIcon(faFolderOpen);
-export const Download = createIcon(faDownload);
-export const CircleAlert = createIcon(faCircleExclamation);
-export const CircleCheck = createIcon(faCircleCheck);
-export const CircleX = createIcon(faCircleXmark);
-export const CircleHelp = createIcon(faCircleQuestion);
-export const Info = createIcon(faCircleInfo);
-export const MapPin = createIcon(faLocationDot);
-export const Network = createIcon(faDiagramProject);
-export const TestTube = createIcon(faVial);
-export const Home = createIcon(faHouse);
-export const Sigma = createIcon(faSquareRootVariable);
-export const Eye = createIcon(faEye);
-export const EyeOff = createIcon(faEyeSlash);
-export const Database = createIcon(faDatabase);
-export const User = createIcon(faUser);
-export const Loader2 = createIcon(faSpinner);
-export const Users = createIcon(faUsers);
-export const Menu = createIcon(faBars);
-export const Sparkles = createIcon(faWandMagicSparkles);
-export const ShieldCheck = createIcon(faShieldHalved);
-export const RefreshCw = createIcon(faRotate);
-export const LogOut = createIcon(faRightFromBracket);
+export const Plus = createIcon(LucidePlus);
+export const X = createIcon(LucideX);
+export const Check = createIcon(LucideCheck);
+export const CheckCheck = createIcon(LucideCheckCheck);
+export const CheckSquare = createIcon(LucideCheckSquare);
+export const Settings = createIcon(LucideSettings);
+export const Trash2 = createIcon(LucideTrash2);
+export const CalendarDays = createIcon(LucideCalendarDays);
+export const CalendarRange = createIcon(LucideCalendarRange);
+export const CalendarCheck = createIcon(LucideCalendarCheck);
+export const CalendarPlus = createIcon(LucideCalendarPlus);
+export const CalendarMinus = createIcon(LucideCalendarMinus);
+export const CalendarX = createIcon(LucideCalendarX);
+export const Clock = createIcon(LucideClock);
+export const ArrowLeft = createIcon(LucideArrowLeft);
+export const ArrowRight = createIcon(LucideArrowRight);
+export const ArrowUp = createIcon(LucideArrowUp);
+export const ArrowDown = createIcon(LucideArrowDown);
+export const TriangleAlert = createIcon(LucideAlertTriangle);
+export const Undo2 = createIcon(LucideUndo2);
+export const Redo2 = createIcon(LucideRedo2);
+export const Save = createIcon(LucideSave);
+export const History = createIcon(LucideHistory);
+export const Search = createIcon(LucideSearch);
+export const ChevronUp = createIcon(LucideChevronUp);
+export const ChevronDown = createIcon(LucideChevronDown);
+export const ChevronLeft = createIcon(LucideChevronLeft);
+export const ChevronRight = createIcon(LucideChevronRight);
+export const MoreVertical = createIcon(LucideMoreVertical);
+export const FileInput = createIcon(LucideFileInput);
+export const FileText = createIcon(LucideFileText);
+export const FileUp = createIcon(LucideFileUp);
+export const FileDown = createIcon(LucideFileDown);
+export const FileSignature = createIcon(LucideFileSignature);
+export const ListChecks = createIcon(LucideListChecks);
+export const ListTree = createIcon(LucideListTree);
+export const PieChart = createIcon(LucidePieChart);
+export const Printer = createIcon(LucidePrinter);
+export const Bell = createIcon(LucideBell);
+export const BookOpen = createIcon(LucideBookOpen);
+export const Book = createIcon(LucideBook);
+export const Pencil = createIcon(LucidePencil);
+export const School = createIcon(LucideSchool);
+export const GraduationCap = createIcon(LucideGraduationCap);
+export const FlaskConical = createIcon(LucideFlaskConical);
+export const GripVertical = createIcon(LucideGripVertical);
+export const GripHorizontal = createIcon(LucideGripHorizontal);
+export const FolderOpen = createIcon(LucideFolderOpen);
+export const Download = createIcon(LucideDownload);
+export const CircleAlert = createIcon(LucideCircleAlert);
+export const CircleCheck = createIcon(LucideCircleCheck);
+export const CircleX = createIcon(LucideCircleX);
+export const CircleHelp = createIcon(LucideCircleHelp);
+export const Info = createIcon(LucideInfo);
+export const MapPin = createIcon(LucideMapPin);
+export const Network = createIcon(LucideNetwork);
+export const TestTube = createIcon(LucideTestTube);
+export const Home = createIcon(LucideHome);
+export const Sigma = createIcon(LucideSigma);
+export const Eye = createIcon(LucideEye);
+export const EyeOff = createIcon(LucideEyeOff);
+export const Database = createIcon(LucideDatabase);
+export const User = createIcon(LucideUser);
+export const Loader2 = createIcon(LucideLoader2);
+export const Users = createIcon(LucideUsers);
+export const Menu = createIcon(LucideMenu);
+export const Sparkles = createIcon(LucideSparkles);
+export const ShieldCheck = createIcon(LucideShieldCheck);
+export const RefreshCw = createIcon(LucideRefreshCw);
+export const LogOut = createIcon(LucideLogOut);
+export const Calendar = createIcon(LucideCalendar);
+export const Sliders = createIcon(SlidersHorizontal);
+export const LayersIcon = createIcon(Layers);
+export const AwardIcon = createIcon(Award);
+export const BookMarkedIcon = createIcon(BookMarked);
+export const FileSpreadsheetIcon = createIcon(FileSpreadsheet);
+export const GlobeIcon = createIcon(Globe);
+export const LanguagesIcon = createIcon(Languages);

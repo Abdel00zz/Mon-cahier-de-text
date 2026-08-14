@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Trash2, Users } from '@/components/ui/icons';
-import { formatLocalizedClassDisplayName } from '@/constants';
+import { Trash2, Users, GraduationCap } from '@/components/ui/icons';
+import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getClassVisual } from '@/utils/classVisuals';
 import type { ClassInfo } from '@/types';
 import type { ModalLang, OnboardingCopy } from '../types';
@@ -21,6 +21,7 @@ export const CreatedClassesList = memo<CreatedClassesListProps>(({ classes, lang
             {classes.map(classInfo => {
                 const visual = getClassVisual(classInfo.name);
                 const displayName = formatLocalizedClassDisplayName(classInfo.name, lang);
+                const subjectName = classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, lang) : null;
 
                 return (
                     <div
@@ -33,10 +34,16 @@ export const CreatedClassesList = memo<CreatedClassesListProps>(({ classes, lang
                                 <Users className="h-5 w-5" />
                             </div>
 
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                                 <p className="truncate text-sm font-bold text-slate-900">
                                     {displayName}
                                 </p>
+                                {subjectName && (
+                                    <span className="inline-flex items-center gap-1 w-fit rounded-full bg-slate-100/90 px-2 py-0.5 text-[11px] font-semibold text-slate-600 border border-slate-200/60">
+                                        <GraduationCap className="h-3 w-3 text-slate-500" />
+                                        {subjectName}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -58,3 +65,4 @@ export const CreatedClassesList = memo<CreatedClassesListProps>(({ classes, lang
 });
 
 CreatedClassesList.displayName = 'CreatedClassesList';
+

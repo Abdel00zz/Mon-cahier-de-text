@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CountryFlag } from '@/components/ui/CountryFlags';
 import { ScheduleTab } from './components/ScheduleTab';
 import { NotificationsTab } from './components/NotificationsTab';
 import { AccountTab } from './components/AccountTab';
@@ -28,6 +29,8 @@ import {
   CircleCheck,
   ArrowLeft,
   ArrowRight,
+  Save,
+  LogOut,
 } from '@/components/ui/icons';
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -189,12 +192,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="rounded-2xl border border-border/75 bg-card/60 p-4 sm:p-5 shadow-2xs">
-      <div className="mb-3.5 min-w-0">
+    <section className="rounded-2xl border border-border/80 bg-card/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs">
+      <div className="mb-4 text-center">
         <h3 className="text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
       </div>
-      <div className="grid grid-cols-3 gap-2.5 sm:max-w-md">
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
         {localeMetadata.map(option => {
           const active = (localConfig.applicationLocale ?? 'fr') === option.value;
           return (
@@ -204,16 +207,19 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               onClick={() => setLocalConfig(prev => ({ ...prev, applicationLocale: option.value as AppLocale }))}
               aria-pressed={active}
               className={cn(
-                'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2.5 text-center transition-all duration-200 cursor-pointer',
+                'flex min-w-[110px] sm:min-w-[130px] flex-col items-center justify-center gap-2 rounded-2xl border p-3.5 sm:p-4 text-center transition-all duration-200 cursor-pointer shadow-xs',
                 active
-                  ? 'border-primary/40 bg-primary/10 text-primary shadow-xs ring-1 ring-inset ring-primary/20 font-bold'
+                  ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-bold scale-[1.02]'
                   : 'border-border/80 bg-background/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'
               )}
             >
-              <span className={cn('text-sm font-bold leading-none', option.value === 'ar' && 'font-bold tracking-normal')}>
+              <div className="flex h-9 items-center justify-center">
+                <CountryFlag code={option.value as 'fr' | 'ar' | 'en'} className="w-8 h-5.5 rounded-xs shadow-xs" />
+              </div>
+              <span className={cn('text-sm font-bold leading-tight', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-primary/90 font-semibold')}>
+              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-primary font-semibold')}>
                 {option.nativeName}
               </span>
             </button>
@@ -647,25 +653,43 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     }
   };
 
+  const { logout } = useAuth();
+
   const footer = (
-    <div className="flex w-full justify-end gap-2">
-      {!asPage && (
+    <div className="flex w-full flex-wrap items-center justify-between gap-3">
+      <div>
+        {activeCategory === 'compte' && user ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => logout()}
+            className="h-10 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 border-destructive/30 hover:border-destructive/60 transition-all cursor-pointer shadow-xs gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            {t('account.signOut')}
+          </Button>
+        ) : !asPage ? (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className="text-xs font-bold cursor-pointer"
+          >
+            {t('common.cancel')}
+          </Button>
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-2">
         <Button
           type="button"
-          variant="secondary"
-          onClick={onClose}
-          className="flex-1 text-xs font-bold sm:flex-initial cursor-pointer"
+          onClick={handleSave}
+          className="h-10 bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90 px-6 rounded-xl cursor-pointer shadow-xs gap-2"
         >
-          {t('common.cancel')}
+          <Save className="h-4 w-4" />
+          {t('settings.saveChanges')}
         </Button>
-      )}
-      <Button
-        type="button"
-        onClick={handleSave}
-        className="flex-1 bg-primary text-xs font-bold text-white hover:bg-primary/90 sm:flex-initial cursor-pointer"
-      >
-        {t('settings.saveChanges')}
-      </Button>
+      </div>
     </div>
   );
 
@@ -794,24 +818,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       <div className="rtl-flow min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-background/60">
         <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 pb-8">
           <div className="mb-4 flex items-center justify-between px-1 text-foreground sm:mb-5">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-card border border-border/80 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer shadow-2xs"
-                title={t('common.cancel')}
-                aria-label={t('common.cancel')}
-              >
-                <BackIcon className="h-4 w-4" />
-              </button>
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Settings className="h-4.5 w-4.5" />
-                </span>
-                <h1 className={cn('font-bold tracking-tight text-foreground', isRtl ? 'font-bold tracking-normal text-xl leading-none' : 'text-lg sm:text-xl')}>
-                  {t('settings.title')}
-                </h1>
-              </div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs">
+                <Settings className="h-5 w-5 stroke-[2]" />
+              </span>
+              <h1 className={cn('font-bold tracking-tight text-foreground', isRtl ? 'font-bold tracking-normal text-xl leading-none' : 'text-lg sm:text-xl')}>
+                {t('settings.title')}
+              </h1>
             </div>
           </div>
 

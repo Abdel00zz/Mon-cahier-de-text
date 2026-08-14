@@ -33,6 +33,7 @@ export interface ClassDraft {
     level: string;
     group: string;
     label: string;
+    subject: string;
 }
 
 export interface ClassDraftValidation {
@@ -63,6 +64,10 @@ export interface OnboardingCopy {
     establishmentPlaceholder: string;
     teachingCycle: string;
     subjectSelectionHint: (teacherName: string) => string;
+    subjectToAssign: string;
+    assignSubjectHint: string;
+    otherSubject: string;
+    assignedSubject: string;
     levelPlaceholder: string;
     groupPlaceholder: string;
     removeCreatedClass: string;

@@ -235,37 +235,43 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
       lang={displayLocale}
       className="auth-page-shell font-['Roboto_Slab',serif] min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-[#2563eb] selection:text-white"
     >
-      {/* ================= HERO / BANNER IMAGE PANEL ================= */}
-      <aside className="relative lg:w-1/2 xl:w-[52%] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-slate-100 dark:bg-slate-950 overflow-hidden shrink-0 min-h-[300px] lg:min-h-screen">
-        <div className="relative w-full h-full max-w-2xl flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-4">
+      {/* ================= HERO / BANNER IMAGE PANEL (DESKTOP ONLY) ================= */}
+      <aside className="relative hidden lg:flex lg:w-1/2 xl:w-[52%] items-center justify-center p-6 lg:p-10 bg-slate-100 dark:bg-slate-950 overflow-hidden shrink-0 min-h-screen">
+        <div className="relative w-full h-full max-w-2xl flex items-center justify-center overflow-hidden rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-5">
           <img
             key={displayLocale}
             src={displayLocale === 'ar' ? '/login_ar.png' : '/login_fr.png'}
             alt={copy.brand}
-            className="w-full h-full max-h-[88vh] object-contain rounded-xl sm:rounded-2xl transition-all duration-300 animate-in fade-in zoom-in-95"
+            className="w-full h-full max-h-[88vh] object-contain rounded-2xl transition-all duration-300 animate-in fade-in zoom-in-95"
           />
         </div>
       </aside>
 
-      {/* ================= FORM PANEL ================= */}
-      <main className="lg:w-1/2 xl:w-[48%] flex flex-col justify-between p-6 sm:p-10 lg:p-16 bg-white dark:bg-slate-900 shrink-0">
+      {/* ================= FORM PANEL (UNIFIED HYPER-MODERN SINGLE PIECE ON MOBILE & DESKTOP) ================= */}
+      <main className="w-full lg:w-1/2 xl:w-[48%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-14 bg-slate-50 lg:bg-white dark:bg-slate-950 lg:dark:bg-slate-900 shrink-0">
         
-        {/* Top Navigation Row in Form Panel */}
-        <header className="w-full flex items-center justify-between pb-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/25">
-              <BookOpen className="h-5 w-5" aria-hidden="true" />
+        {/* Top Navigation Row */}
+        <header className="w-full flex items-center justify-between pb-4 sm:pb-6">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/25">
+              <BookOpen className="h-4.5 w-4.5 sm:h-5 sm:w-5" aria-hidden="true" />
             </div>
-            <span className={`font-black text-slate-900 dark:text-white text-lg ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif]' : ''}`}>
-              {copy.brand}
-            </span>
+            <div className="flex flex-col">
+              <span className={`font-black text-slate-900 dark:text-white text-base sm:text-lg leading-tight ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif]' : ''}`}>
+                {copy.brand}
+              </span>
+              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                {copy.teacherAccess}
+              </span>
+            </div>
           </div>
 
           {renderLanguageSwitch()}
         </header>
 
-        {/* Center Form Container */}
-        <div className="w-full max-w-md mx-auto my-auto py-6 sm:py-8">
+        {/* Center Form Card */}
+        <div className="w-full max-w-md mx-auto my-auto py-2 sm:py-6">
+          <div className="w-full rounded-2xl sm:rounded-3xl bg-white sm:bg-transparent dark:bg-slate-900 sm:dark:bg-transparent p-5 sm:p-0 shadow-lg sm:shadow-none border border-slate-200/80 sm:border-none dark:border-slate-800">
           
           <motion.div
             key={mode}
@@ -275,12 +281,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             className="w-full"
           >
             {/* Main Welcome Header */}
-            <div className="text-start mb-6">
-              <h2 className={`text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif] leading-tight' : ''}`}>
+            <div className="text-start mb-5 sm:mb-6">
+              <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif] leading-tight' : ''}`}>
                 {isRegister ? copy.createTitle : copy.welcomeTitle}
               </h2>
               
-              <div className="mt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5 font-medium">
+              <div className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5 font-medium">
                 <span>{isRegister ? copy.createSubtitle : copy.welcomeSubtitle}</span>
                 <button
                   type="button"
@@ -293,13 +299,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             </div>
 
             {/* Segmented Mode Control */}
-            <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1.5 dark:bg-slate-800">
+            <div className="mb-5 sm:mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
               {(['login', 'register'] as const).map(value => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => switchMode(value)}
-                  className={`relative min-h-[44px] rounded-xl px-2 py-2 text-xs font-extrabold transition-colors focus:outline-none cursor-pointer ${mode === value ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+                  className={`relative min-h-[40px] sm:min-h-[44px] rounded-xl px-2 py-1.5 text-xs font-extrabold transition-colors focus:outline-none cursor-pointer ${mode === value ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
                 >
                   {mode === value && (
                     <motion.span
@@ -445,6 +451,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
               </button>
             </form>
           </motion.div>
+          </div>
         </div>
 
         {/* Footer Security Badge */}

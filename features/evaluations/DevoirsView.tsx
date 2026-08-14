@@ -30,6 +30,13 @@ import {
   Trash2,
   Users,
   X,
+  Clock,
+  Pencil,
+  Calendar,
+  Sparkles,
+  LayersIcon,
+  AwardIcon,
+  BookOpen,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -55,9 +62,9 @@ const formatLongDate = (iso: string, locale: AppLocale): string => {
   try {
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA', {
-      weekday: 'long',
+      weekday: 'short',
       day: 'numeric',
-      month: 'long',
+      month: 'short',
     });
   } catch {
     return iso;
@@ -71,15 +78,15 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
   missing: { labelKey: 'evaluations.status.missing', tone: 'zinc' },
 };
 
-const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string }> = {
-  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic' },
-  olympiade: { labelKey: 'evaluations.event.olympiade' },
-  concours: { labelKey: 'evaluations.event.concours' },
-  soutien: { labelKey: 'evaluations.event.soutien' },
-  remediation: { labelKey: 'evaluations.event.remediation' },
-  examen_blanc: { labelKey: 'evaluations.event.examen_blanc' },
-  rattrapage: { labelKey: 'evaluations.event.rattrapage' },
-  autre: { labelKey: 'evaluations.event.autre' },
+const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; badgeColor: string }> = {
+  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeColor: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20' },
+  olympiade: { labelKey: 'evaluations.event.olympiade', badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' },
+  concours: { labelKey: 'evaluations.event.concours', badgeColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20' },
+  soutien: { labelKey: 'evaluations.event.soutien', badgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' },
+  remediation: { labelKey: 'evaluations.event.remediation', badgeColor: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20' },
+  examen_blanc: { labelKey: 'evaluations.event.examen_blanc', badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20' },
+  rattrapage: { labelKey: 'evaluations.event.rattrapage', badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
+  autre: { labelKey: 'evaluations.event.autre', badgeColor: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20' },
 };
 
 const formatDateRange = (start: string, end: string | undefined, locale: AppLocale, rangeSeparator: string): string => {
@@ -93,7 +100,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   onConfigChange,
   embedded = false,
 }) => {
-  const { t, locale } = useLocale();
+  const { t, locale, isRtl } = useLocale();
   const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
@@ -104,6 +111,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] = useState<ManualAssessment | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 's1' | 's2' | 'events'>('all');
 
   const today = todayInMorocco(new Date(), getBundledCalendar());
 
@@ -226,11 +234,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     if (editingAssessment) {
       const editingId = editingAssessment.id;
       if (current.some((a) => a.id === editingId)) {
-        // devoir manuel édité → mise à jour sur place
         nextManual = current.map((a) => (a.id === editingId ? manual : a));
       } else {
-        // devoir prédéfini édité → matérialisé avec le MÊME id (le merge déduplique
-        // et le devoir conserve sa place dans la liste)
         nextManual = [...current, { ...manual, id: editingId }];
       }
     } else {
@@ -263,19 +268,19 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
   if (classes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-white dark:bg-zinc-900 ring-1 ring-zinc-200 dark:ring-zinc-800">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 mb-4">
-          <CalendarCheck className="h-6 w-6" />
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl bg-card border border-border/80 shadow-xs">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
+          <CalendarCheck className="h-7 w-7" />
         </div>
-        <h3 className="text-base font-bold text-foreground dark:text-zinc-100">{t('evaluations.createClass')}</h3>
-        <p className="mt-1 max-w-sm text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <h3 className="text-base font-bold text-foreground">{t('evaluations.createClass')}</h3>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground leading-relaxed">
           {t('evaluations.createClassHint')}
         </p>
       </div>
     );
   }
 
-  const semesters: (1 | 2)[] = [1, 2];
+  const semesters: (1 | 2)[] = activeTab === 's1' ? [1] : activeTab === 's2' ? [2] : [1, 2];
   const absencesRecord =
     absencesFor && selectedClass
       ? config.assessmentAbsences?.[selectedClass.id]?.[absencesFor.planned.id]
@@ -283,35 +288,34 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : undefined;
 
   return (
-    <div className={cn('space-y-3 font-sans', embedded ? '' : 'p-0')}>
-      {/* Le planning est toujours filtré par la classe active. */}
+    <div className="space-y-5 font-sans">
+      {/* Class Selector (when not embedded) */}
       {!embedded && (
         <section
           aria-labelledby="evaluations-class-context"
-          className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-2 shadow-xs"
+          className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-1.5 sm:p-2 shadow-xs backdrop-blur-xs"
         >
-          <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', classVisual?.iconSurfaceClass ?? 'bg-muted text-muted-foreground')}>
+          <span className={cn('flex h-7.5 w-7.5 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
             <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
           </span>
 
           <div className="min-w-0 flex-1">
             <h2 id="evaluations-class-context" className="sr-only">{t('evaluations.activeClass')}</h2>
-            <label htmlFor="evaluations-class-selector" className="sr-only">{t('evaluations.chooseClass')}</label>
             <Select value={selectedClass?.id ?? ''} onValueChange={selectClass}>
-              <SelectTrigger id="evaluations-class-selector" className="h-9 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-none transition-colors hover:bg-accent focus:ring-ring/20">
+              <SelectTrigger id="evaluations-class-selector" className="h-7.5 sm:h-8 rounded-lg border border-border/80 bg-background/80 px-2.5 text-[11px] sm:text-xs font-semibold text-foreground shadow-none transition-colors hover:bg-accent focus:ring-primary/20">
                 <SelectValue placeholder={t('evaluations.chooseClass')} />
               </SelectTrigger>
               <SelectContent>
                 {classGroups.map((group) => (
                   <SelectGroup key={group.id}>
-                    <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <SelectLabel className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
                       {group.label}
                     </SelectLabel>
                     {group.classes.map((classInfo) => {
                       const displayName = formatClassDisplayName(classInfo.name);
                       return (
-                        <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs font-medium">
-                          {classInfo.subject ? `${displayName}, ${classInfo.subject}` : displayName}
+                        <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs font-semibold">
+                          {classInfo.subject ? `${displayName} · ${classInfo.subject}` : displayName}
                         </SelectItem>
                       );
                     })}
@@ -323,208 +327,337 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         </section>
       )}
 
-      {/* Section Content */}
-      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        {/* Barre d'actions unifiée */}
-        <div className="flex items-center gap-2">
+      {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+        {/* Organic Pill Segmented Filter */}
+        <div className="inline-flex items-center rounded-full bg-muted/50 p-0.5 shadow-2xs backdrop-blur-xs self-start flex-wrap gap-0.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('all')}
+            className={cn(
+              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              activeTab === 'all'
+                ? 'bg-card text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {t('evaluations.tabAll')} ({number.format(links.length)})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('s1')}
+            className={cn(
+              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              activeTab === 's1'
+                ? 'bg-card text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {t('evaluations.semester', { number: 1 })}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('s2')}
+            className={cn(
+              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              activeTab === 's2'
+                ? 'bg-card text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {t('evaluations.semester', { number: 2 })}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('events')}
+            className={cn(
+              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              activeTab === 'events'
+                ? 'bg-card text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            {t('evaluations.activities')} ({number.format(pedagogicalEvents.length)})
+          </button>
+        </div>
+
+        {/* Floating Action Buttons */}
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => setEventEditorOpen(true)}
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+            className="inline-flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full bg-muted/60 hover:bg-muted px-2.5 sm:px-3 text-[10.5px] sm:text-xs font-semibold text-foreground shadow-2xs transition-all cursor-pointer active:scale-[0.97]"
           >
-            <Plus className="h-3.5 w-3.5" /> {t('evaluations.addActivity')}
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            <span>{t('evaluations.addActivity')}</span>
           </button>
           <button
             type="button"
             onClick={openCreateAssessment}
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+            className="inline-flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full bg-primary px-3 sm:px-3.5 text-[10.5px] sm:text-xs font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer active:scale-[0.97]"
           >
-            <Plus className="h-3.5 w-3.5" /> {t('evaluations.addDevoir')}
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <span>{t('evaluations.addDevoir')}</span>
           </button>
         </div>
+      </div>
 
-        <PedagogicalEventsSection
-          events={pedagogicalEvents}
-          onToggle={togglePedagogicalEvent}
-          onDelete={deletePedagogicalEvent}
-        />
+      {/* Main Content Area */}
+      <div className="space-y-5">
+        {/* Pedagogical Events Section (shown when on 'all' or 'events' tab) */}
+        {(activeTab === 'all' || activeTab === 'events') && pedagogicalEvents.length > 0 && (
+          <PedagogicalEventsSection
+            events={pedagogicalEvents}
+            onToggle={togglePedagogicalEvent}
+            onDelete={deletePedagogicalEvent}
+          />
+        )}
 
-        {/* Devoirs (planning officiel + saisie manuelle) */}
-        <section className="space-y-2">
-        {!hasPlan ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-3 text-center text-xs text-muted-foreground">
-            {t('evaluations.noOfficialPlan')}
-          </div>
-        ) : (
-          <div className="space-y-3">
-                  {semesters.map((sem) => {
-                    const ofSemester = links.filter((l) => l.planned.semestre === sem);
-                    if (ofSemester.length === 0) return null;
-                    return (
-                      <section key={sem} className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <h3 className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {/* Assessment Lists by Semester */}
+        {activeTab !== 'events' && (
+          <section className="space-y-4">
+            {!hasPlan ? (
+              <div className="rounded-3xl border border-dashed border-border bg-card/40 p-8 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <h4 className="text-sm font-bold text-foreground">{t('evaluations.noOfficialPlan')}</h4>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                  {t('evaluations.noOfficialPlanHint')}
+                </p>
+                <button
+                  type="button"
+                  onClick={openCreateAssessment}
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-xs hover:brightness-110 cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                  {t('evaluations.addDevoir')}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {semesters.map((sem) => {
+                  const ofSemester = links.filter((l) => l.planned.semestre === sem);
+                  if (ofSemester.length === 0) return null;
+                  return (
+                    <section key={sem} className="space-y-2.5">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-black">
+                            {sem}
+                          </span>
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                             {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
                         </div>
+                        <span className="text-[11px] font-semibold text-muted-foreground">
+                          {ofSemester.length} {ofSemester.length === 1 ? t('evaluations.assessmentSingle') : t('evaluations.assessmentPlural')}
+                        </span>
+                      </div>
 
-                        <div className="grid gap-1.5">
-                          {ofSemester.map((link) => {
-                            const a = link.planned;
-                            const inDays = daysBetweenISO(today, a.dateISO);
-                            const custom = !!(
-                              config.assessmentDates?.[selectedClass!.id]?.[a.id]
-                              ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
-                            );
-                            const absents = (
-                              config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
-                              ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
-                            )?.names ?? [];
-                            const status = STATUS_STYLE[link.status];
-                            const isSupervised = a.type !== 'maison';
+                      <div className="grid gap-2.5">
+                        {ofSemester.map((link) => {
+                          const a = link.planned;
+                          const inDays = daysBetweenISO(today, a.dateISO);
+                          const custom = !!(
+                            config.assessmentDates?.[selectedClass!.id]?.[a.id]
+                            ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
+                          );
+                          const absents = (
+                            config.assessmentAbsences?.[selectedClass!.id]?.[a.id]
+                            ?? (a.legacyId ? config.assessmentAbsences?.[selectedClass!.id]?.[a.legacyId] : undefined)
+                          )?.names ?? [];
+                          const status = STATUS_STYLE[link.status];
+                          const isSupervised = a.type !== 'maison';
 
-                            return (
-                              <div
-                                key={a.id}
-                                className="flex flex-col gap-1.5 rounded-xl border border-border bg-card px-3 py-2 shadow-xs transition-shadow hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
-                              >
-                                <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                          // Type accents
+                          const isMaison = a.type === 'maison';
+                          const isCourt = a.type === 'controle_court' || a.type === 'oral';
+
+                          return (
+                            <div
+                              key={a.id}
+                              className={cn(
+                                'group flex flex-col gap-3 rounded-2xl border bg-card/85 p-3.5 sm:p-4 shadow-xs transition-all duration-200 hover:shadow-md sm:flex-row sm:items-center sm:justify-between backdrop-blur-xs',
+                                link.status === 'done' ? 'border-border/70' : link.status === 'mismatch' ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/90'
+                              )}
+                            >
+                              {/* Left Info */}
+                              <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={cn(
+                                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black shadow-2xs',
+                                      isMaison
+                                        ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/20'
+                                        : isCourt
+                                          ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 ring-1 ring-teal-500/20'
+                                          : 'bg-primary/10 text-primary ring-1 ring-primary/20'
+                                    )}
+                                  >
+                                    n°{a.num}
+                                  </span>
+
                                   <button
                                     type="button"
                                     onClick={() => openEditAssessment(a)}
-                                    className="group inline-flex cursor-pointer items-center gap-1.5 rounded text-start transition-colors"
+                                    className="group/title inline-flex cursor-pointer items-center gap-1.5 rounded-lg text-start transition-colors"
                                     title={t('evaluations.editDevoir')}
                                   >
-                                    <span className="text-sm font-medium text-foreground transition-colors group-hover:text-blue-600 group-hover:underline underline-offset-4">
+                                    <span className="text-sm font-bold text-foreground transition-colors group-hover/title:text-primary">
                                       {t(`evaluations.type.${a.type}`)}
                                     </span>
-                                    <span className="text-xs font-semibold text-muted-foreground">n°{a.num}</span>
-                                    {a.duree && <span className="text-xs font-medium text-muted-foreground">· {a.duree}</span>}
+                                    {a.duree && (
+                                      <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                                        <Clock className="h-2.5 w-2.5" />
+                                        {a.duree}
+                                      </span>
+                                    )}
+                                    <Pencil className="h-3 w-3 text-muted-foreground/40 group-hover/title:text-primary transition-opacity" />
                                   </button>
+                                </div>
 
-                                  {link.status !== 'upcoming' && (
-                                    <span
-                                      className={cn(
-                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
-                                        status.tone === 'green' && 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
-                                        status.tone === 'amber' && 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
-                                        status.tone === 'zinc' && 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                                      )}
-                                    >
-                                      {link.status === 'done' && <Check className="h-3 w-3" />}
-                                      {link.status === 'mismatch' && <CircleAlert className="h-3 w-3" />}
+                                {/* Status Badges */}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {link.status === 'done' && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                                      <Check className="h-3 w-3 stroke-[3]" />
                                       {t(status.labelKey)}
                                     </span>
                                   )}
 
-                                  {link.status === 'upcoming' && inDays >= 0 && inDays <= 14 && (
+                                  {link.status === 'mismatch' && (
+                                    <div className="inline-flex items-center gap-1.5">
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/20">
+                                        <CircleAlert className="h-3 w-3" />
+                                        {t(status.labelKey)}
+                                      </span>
+                                      {link.entry?.date && (
+                                        <button
+                                          type="button"
+                                          onClick={() => alignOnNotebook(link)}
+                                          className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 transition-colors cursor-pointer"
+                                          title={t('evaluations.align')}
+                                        >
+                                          <span>⚡ {formatLongDate(link.entry.date, locale)}</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {link.status === 'upcoming' && (
                                     <span
                                       className={cn(
-                                        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1',
                                         inDays === 0
-                                          ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                                          ? 'bg-blue-600 text-white ring-blue-600'
                                           : inDays === 1
-                                            ? 'bg-amber-500/10 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
-                                            : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
+                                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-amber-500/25'
+                                            : 'bg-muted text-muted-foreground ring-border/80'
                                       )}
                                     >
                                       {inDays === 0
                                         ? t('evaluations.today')
                                         : inDays === 1
                                           ? t('evaluations.tomorrow')
-                                          : t('evaluations.inDays', { count: number.format(inDays) })}
+                                          : inDays > 1 && inDays <= 30
+                                            ? t('evaluations.inDays', { count: number.format(inDays) })
+                                            : formatLongDate(a.dateISO, locale)}
                                     </span>
-                                  )}
-
-                                  {link.status === 'mismatch' && link.entry?.date && (
-                                    <span className="text-[11px] font-medium text-muted-foreground">
-                                      {t('evaluations.notebookDate', { date: formatLongDate(link.entry.date, locale) })}
-                                    </span>
-                                  )}
-
-                                  {link.status === 'mismatch' && (
-                                    <button
-                                      type="button"
-                                      onClick={() => alignOnNotebook(link)}
-                                      className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-amber-700 shadow-xs transition-colors hover:bg-accent dark:text-amber-400"
-                                    >
-                                      {t('evaluations.align')}
-                                    </button>
                                   )}
                                 </div>
+                              </div>
 
-                                <div className="flex items-center gap-1.5 shrink-0 sm:pt-0">
-                                  {isSupervised && (
-                                    <button
-                                      type="button"
-                                      onClick={() => setAbsencesFor(link)}
-                                      className={cn(
-                                        'inline-flex h-8 items-center gap-1 rounded-md border px-2 text-[10px] font-medium transition-colors',
-                                        absents.length > 0
-                                          ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-500/10 dark:text-red-400'
-                                          : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                                      )}
-                                    >
-                                      <Users className="h-3 w-3" />
-                                      {absents.length > 0
-                                        ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
-                                        : t('evaluations.absentees')}
-                                    </button>
-                                  )}
+                              {/* Right Actions & Date Selector */}
+                              <div className="flex items-center gap-2 shrink-0 sm:pt-0">
+                                {isSupervised && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setAbsencesFor(link)}
+                                    className={cn(
+                                      'inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all cursor-pointer shadow-2xs',
+                                      absents.length > 0
+                                        ? 'border-rose-300 bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
+                                        : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
+                                    )}
+                                  >
+                                    <Users className="h-3.5 w-3.5" />
+                                    {absents.length > 0
+                                      ? t(absents.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', { count: number.format(absents.length) })
+                                      : t('evaluations.absentees')}
+                                  </button>
+                                )}
 
-                                  <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1.5 bg-background/80 border border-border/80 rounded-xl p-0.5 shadow-2xs">
+                                  <div className="relative flex items-center">
                                     <input
                                       type="date"
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 rounded-md border bg-background px-2 text-[10px] font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30',
-                                        custom ? 'border-blue-600 font-semibold text-blue-600 dark:text-blue-400' : 'border-border'
+                                        'h-8 rounded-lg bg-transparent px-2.5 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer',
+                                        custom && 'text-primary font-black'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
                                       aria-label={t('evaluations.assessmentDateAria', { assessment: t(`evaluations.type.${a.type}`) })}
                                     />
-                                    {custom && (
-                                      <button
-                                        type="button"
-                                        onClick={() => setAssessmentDate(a.id, '')}
-                                        className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                                        title={t('evaluations.restoreDate')}
-                                      >
-                                        <Undo2 className="h-3 w-3" />
-                                      </button>
-                                    )}
+                                  </div>
+
+                                  {custom && (
                                     <button
                                       type="button"
-                                      onClick={() => deleteAssessment(a.id)}
-                                      className="flex h-8 w-8 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10"
-                                      title={t('evaluations.manualDelete')}
-                                      aria-label={t('evaluations.manualDelete')}
+                                      onClick={() => setAssessmentDate(a.id, '')}
+                                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
+                                      title={t('evaluations.restoreDate')}
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <Undo2 className="h-3.5 w-3.5" />
                                     </button>
-                                  </div>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteAssessment(a.id)}
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                                    title={t('evaluations.manualDelete')}
+                                    aria-label={t('evaluations.manualDelete')}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    );
-                  })}
-                </div>
-              )}
-        </section>
-
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
-      {/* Add Pedagogical Event */}
+      {/* Add Pedagogical Event Modal */}
       <Modal
         isOpen={eventEditorOpen}
         onClose={() => setEventEditorOpen(false)}
         maxWidth="md"
-        title={t('evaluations.addActivity')}
-        description={selectedClass ? t('evaluations.teacherEvent', { className: selectedClassDisplayName }) : undefined}
+        className="sm:rounded-3xl border border-border/80 shadow-2xl"
+        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        title={
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              <AwardIcon className="h-5 w-5" />
+            </span>
+            <div>
+              <span className="text-base font-bold text-foreground">{t('evaluations.addActivity')}</span>
+              {selectedClass && (
+                <p className="text-xs font-medium text-muted-foreground mt-0.5">{selectedClassDisplayName}</p>
+              )}
+            </div>
+          </div>
+        }
       >
         {selectedClass && (
           <PedagogicalEventEditor
@@ -535,13 +668,28 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         )}
       </Modal>
 
-      {/* Add / Edit Devoir (surveillé / maison) */}
+      {/* Add / Edit Devoir Modal */}
       <Modal
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
-        maxWidth="sm"
-        title={editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
-        description={selectedClass ? t('evaluations.teacherEvent', { className: selectedClassDisplayName }) : undefined}
+        maxWidth="md"
+        className="sm:rounded-3xl border border-border/80 shadow-2xl"
+        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        title={
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              <CalendarCheck className="h-5 w-5" />
+            </span>
+            <div>
+              <span className="text-base font-bold text-foreground">
+                {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
+              </span>
+              {selectedClass && (
+                <p className="text-xs font-medium text-muted-foreground mt-0.5">{selectedClassDisplayName}</p>
+              )}
+            </div>
+          </div>
+        }
       >
         <ManualAssessmentEditor
           today={today}
@@ -552,19 +700,34 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         />
       </Modal>
 
-      {/* Absences Editor */}
+      {/* Absences Editor Modal */}
       <Modal
         isOpen={absencesFor !== null}
         onClose={() => setAbsencesFor(null)}
         maxWidth="md"
-        title={absencesFor && selectedClass
-          ? t('evaluations.absencesTitle', {
-              assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
-            })
-          : undefined}
-        description={absencesFor && selectedClass
-          ? `${selectedClassDisplayName} · ${formatLongDate(absencesFor.planned.dateISO, locale)}${absencesRecord?.updatedAt ? ` · ${t('evaluations.updatedOn', { date: new Date(absencesRecord.updatedAt).toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA') })}` : ''}`
-          : undefined}
+        className="sm:rounded-3xl border border-border/80 shadow-2xl"
+        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        title={
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">
+              <Users className="h-5 w-5" />
+            </span>
+            <div>
+              <span className="text-base font-bold text-foreground">
+                {absencesFor && selectedClass
+                  ? t('evaluations.absencesTitle', {
+                      assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
+                    })
+                  : t('evaluations.absentees')}
+              </span>
+              {absencesFor && selectedClass && (
+                <p className="text-xs font-medium text-muted-foreground mt-0.5">
+                  {selectedClassDisplayName} · {formatLongDate(absencesFor.planned.dateISO, locale)}
+                </p>
+              )}
+            </div>
+          </div>
+        }
       >
         {absencesFor && selectedClass && (
           <AbsencesEditor
@@ -614,18 +777,36 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
   onDelete,
 }) => {
   const { t, locale } = useLocale();
+  if (events.length === 0) return null;
+
   return (
-    <section className="space-y-2">
-    {events.length > 0 && (
-      <div className="grid gap-2">
+    <section className="space-y-2.5">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 text-xs">
+            <AwardIcon className="h-3.5 w-3.5" />
+          </span>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            {t('evaluations.activities')} & {t('evaluations.pedagogicalEvents')}
+          </h3>
+        </div>
+        <span className="text-[11px] font-semibold text-muted-foreground">
+          {events.length} {events.length === 1 ? t('evaluations.eventSingle') : t('evaluations.eventPlural')}
+        </span>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
         {events.map((event) => {
           const done = event.status === 'done';
+          const eventConfig = PEDAGOGICAL_EVENT_CONFIG[event.type] ?? PEDAGOGICAL_EVENT_CONFIG.autre;
           return (
             <div
               key={event.id}
               className={cn(
-                'flex items-start justify-between gap-3 rounded-xl border border-border bg-card p-3 shadow-xs transition-all',
-                done && 'opacity-60'
+                'group flex items-start justify-between gap-3 rounded-2xl border p-3.5 shadow-xs transition-all duration-200 backdrop-blur-xs',
+                done
+                  ? 'border-border/60 bg-card/50 opacity-70'
+                  : 'border-border/85 bg-card/85 hover:shadow-md'
               )}
             >
               <div className="flex items-start gap-3 min-w-0">
@@ -633,10 +814,10 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   type="button"
                   onClick={() => onToggle(event.id)}
                   className={cn(
-                    'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors',
+                    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border transition-all cursor-pointer',
                     done
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-500/10 dark:text-emerald-400'
-                      : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
+                      : 'border-border/80 bg-background hover:border-primary/40 hover:bg-primary/5 text-muted-foreground'
                   )}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
@@ -644,14 +825,21 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                 </button>
 
                 <div className="min-w-0">
-                  <h4 className={cn('text-sm font-medium leading-snug text-foreground', done && 'line-through text-muted-foreground')}>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold', eventConfig.badgeColor)}>
+                      {t(eventConfig.labelKey)}
+                    </span>
+                    <span className="text-[11px] font-semibold text-muted-foreground">
+                      {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
+                    </span>
+                  </div>
+
+                  <h4 className={cn('text-sm font-bold mt-1 text-foreground', done && 'line-through text-muted-foreground')}>
                     {event.title}
                   </h4>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {formatDateRange(event.date, event.endDate, locale, t('evaluations.rangeSeparator'))}
-                  </p>
+
                   {event.note && (
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">
                       {event.note}
                     </p>
                   )}
@@ -661,16 +849,15 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onDelete(event.id)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                 aria-label={t('evaluations.deleteEventAria', { title: event.title })}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
           );
         })}
       </div>
-    )}
     </section>
   );
 };
@@ -722,18 +909,18 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-4 pt-2">
+    <div className="space-y-4">
+      <div className="space-y-3.5">
         <label className="block space-y-1.5">
           <span className="text-xs font-bold text-foreground">{t('evaluations.activityType')}</span>
           <select
             value={type}
             onChange={(event) => changeType(event.target.value as PedagogicalEventType)}
-            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, config]) => (
+            {Object.entries(PEDAGOGICAL_EVENT_CONFIG).map(([value, conf]) => (
               <option key={value} value={value}>
-                {t(config.labelKey)}
+                {t(conf.labelKey)}
               </option>
             ))}
           </select>
@@ -747,7 +934,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
               setTitle(event.target.value);
               setError('');
             }}
-            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder={t('evaluations.titlePlaceholder')}
             autoFocus
           />
@@ -763,7 +950,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
                 setDate(event.target.value);
                 setError('');
               }}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
           <label className="block space-y-1.5">
@@ -778,7 +965,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
                 setEndDate(event.target.value);
                 setError('');
               }}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
         </div>
@@ -791,7 +978,7 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
             value={note}
             onChange={(event) => setNote(event.target.value)}
             rows={3}
-            className="w-full resize-none rounded-xl border border-border bg-input p-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            className="w-full resize-none rounded-xl border border-border/80 bg-background p-3 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder={t('evaluations.notePlaceholder')}
           />
         </label>
@@ -802,18 +989,18 @@ const PedagogicalEventEditor: React.FC<PedagogicalEventEditorProps> = ({ today, 
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
+            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
+            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
             {t('evaluations.add')}
           </button>
@@ -840,7 +1027,6 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   const [semestre, setSemestre] = useState<1 | 2>(initial?.semestre ?? 1);
   const [error, setError] = useState('');
 
-  // Numérotation automatique et dynamique par type (hors devoir en cours d'édition).
   const nextNumFor = (nextType: DevoirType): number =>
     assessments.filter((a) => a.type === nextType && a.id !== initial?.id).length + 1;
 
@@ -871,15 +1057,15 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-4 pt-2">
+    <div className="space-y-4">
+      <div className="space-y-3.5">
         <div className="grid grid-cols-2 gap-3">
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
             <select
               value={type}
               onChange={(event) => changeType(event.target.value as DevoirType)}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="controle">{t('evaluations.type.controle')}</option>
               <option value="controle_court">{t('evaluations.type.controle_court')}</option>
@@ -893,7 +1079,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             <select
               value={semestre}
               onChange={(event) => setSemestre(Number(event.target.value) as 1 | 2)}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value={1}>{t('evaluations.semester', { number: 1 })}</option>
               <option value={2}>{t('evaluations.semester', { number: 2 })}</option>
@@ -912,7 +1098,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setNum(event.target.value);
                 setError('');
               }}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
               inputMode="numeric"
             />
           </label>
@@ -925,7 +1111,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setDate(event.target.value);
                 setError('');
               }}
-              className="h-11 w-full rounded-xl border border-border bg-input px-3 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
         </div>
@@ -938,7 +1124,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             value={duree}
             onChange={(event) => setDuree(event.target.value)}
             placeholder="1h, 2h…"
-            className="h-11 w-full rounded-xl border border-border bg-input px-3 text-sm font-semibold text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </label>
 
@@ -948,18 +1134,18 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
+            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
+            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
             {initial ? t('common.save') : t('evaluations.add')}
           </button>
@@ -1001,23 +1187,23 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-4 pt-2">
+    <div className="space-y-4">
+      <div className="space-y-3.5">
         {names.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
             {names.map((name) => (
               <span
                 key={name}
-                className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-background border border-border/80 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
               >
                 {name}
                 <button
                   type="button"
                   onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
-                  className="rounded-full text-muted-foreground hover:text-destructive transition-colors"
+                  className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                   aria-label={t('evaluations.removeStudentAria', { name })}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </span>
             ))}
@@ -1044,35 +1230,35 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             }}
             onBlur={() => commitDraft(draft)}
             placeholder={t('evaluations.studentPlaceholder')}
-            className="h-11 flex-1 rounded-xl border border-border bg-input px-3 text-sm text-foreground transition-all duration-200 placeholder:text-muted-foreground hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/25"
+            className="h-10 flex-1 rounded-xl border border-border/80 bg-background px-3.5 text-xs text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
             autoFocus
           />
           <button
             type="button"
             onClick={() => commitDraft(draft)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-95"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all cursor-pointer shadow-xs"
             aria-label={t('evaluations.addStudentAria')}
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
           {t('evaluations.pasteHint')}
         </p>
 
-        <div className="grid grid-cols-2 gap-3 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 rounded-xl bg-muted text-sm font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200 active:scale-[0.98]"
+            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={() => onSave(names)}
-            className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:brightness-110 transition-all duration-200 active:scale-[0.98] shadow-sm"
+            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
             {t('common.save')} {names.length > 0 ? `(${new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length)})` : ''}
           </button>

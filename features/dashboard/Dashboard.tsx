@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useClassManager } from '@/hooks/useClassManager';
 import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
+import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/ui/button';
 import { ClassCard } from './ClassCard';
@@ -70,8 +71,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [notificationClass, setNotificationClass] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const [sessionIndexes, setSessionIndexes] = useState<Record<string, SessionIndex>>({});
+    const { type: deviceType } = useDevice();
+    const isMobile = deviceType === 'phone';
+    const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
-    const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', 'double', 100);
+    const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
@@ -380,8 +384,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1'
-        : 'grid-cols-2';
+        ? 'grid-cols-1 max-w-xl mx-auto'
+        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -410,59 +414,55 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-slate-50 text-foreground antialiased dark:bg-slate-950 pb-20 sm:pb-8"
-            style={{
-                backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(238, 170, 255, 0.15) 0%, transparent 50%), radial-gradient(circle at 10% 80%, rgba(152, 227, 255, 0.15) 0%, transparent 50%)',
-            }}
+            className="min-h-screen bg-[#fafafa] dark:bg-[#191919] text-foreground antialiased pb-20 sm:pb-8"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7 lg:px-10">
-                    <header className="mb-8 space-y-4 pb-2" id="dashboard-header">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="relative z-10 mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
+                    <header className="mb-4 sm:mb-6 space-y-2 sm:space-y-3 pb-1" id="dashboard-header">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
                             <div>
-                                <h1 className="flex flex-wrap items-baseline gap-x-2 text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                                <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
                                     <span>{greeting}{teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className="text-[#423ed8] font-bold"
+                                            className="text-slate-900 dark:text-white font-bold"
                                         >
                                             {teacherName}
                                         </span>
                                     )}
                                 </h1>
-                                <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
-                                    {welcome.title && <span className="font-semibold text-slate-700 dark:text-zinc-200">{welcome.title} · </span>}
+                                <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-[13px] mt-0.5 max-w-2xl leading-normal">
+                                    {welcome.title && <span className="font-medium text-slate-700 dark:text-zinc-300">{welcome.title} · </span>}
                                     <span>{welcome.detail}</span>
                                 </p>
                             </div>
 
                             {classes.length > 0 && availableSubjects.length > 1 && (
-                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
                                     <button
                                         type="button"
                                         onClick={() => setSubjectFilter('all')}
-                                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${
+                                        className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer active:scale-95 ${
                                             subjectFilter === 'all'
-                                                ? 'bg-[#423ed8] text-white shadow-xs'
-                                                : 'border border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                                                ? 'bg-slate-900 text-white shadow-2xs dark:bg-zinc-100 dark:text-zinc-900'
+                                                : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                                         }`}
                                     >
                                         {t('dashboard.filterAll')}
                                     </button>
                                     {availableSubjects.map(subject => {
-                                        const subjectVisual = getSubjectVisual(subject);
                                         const isActive = subjectFilter === subject;
                                         return (
                                             <button
                                                 key={subject}
                                                 type="button"
                                                 onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${subjectVisual.frameBg} ${
+                                                className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer active:scale-95 ${
                                                     isActive
-                                                        ? 'text-slate-900 dark:text-slate-100 ring-2 ring-offset-1 ring-slate-900/15 dark:ring-white/25'
-                                                        : 'text-slate-700 dark:text-slate-200 opacity-70 hover:opacity-100'
+                                                        ? 'bg-slate-900 text-white shadow-2xs dark:bg-zinc-100 dark:text-zinc-900'
+                                                        : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                                                 }`}
                                             >
                                                 {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -476,23 +476,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
-                            <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
-                                <div className="flex items-center gap-2.5">
-                                    <h2 id="classes-heading" className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2 flex-wrap">
+                                <div className="flex items-center gap-2">
+                                    <h2 id="classes-heading" className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
                                         <span>{t('dashboard.classes')}</span>
                                         {filteredClasses.length > 0 && (
-                                            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-bold rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900">
+                                            <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300">
                                                 {filteredClasses.length}
                                             </span>
                                         )}
                                     </h2>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                     <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
-                                        className="inline-flex h-9 items-center gap-1.5 bg-[#423ed8] px-3 text-xs font-semibold text-white shadow-xs rounded-lg transition-all duration-200 hover:bg-[#322ebd] active:scale-95 cursor-pointer"
+                                        className="inline-flex h-7.5 items-center gap-1.5 bg-slate-900 px-3 text-xs font-medium text-white shadow-2xs rounded-lg transition-colors hover:bg-slate-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white active:scale-95 cursor-pointer"
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
                                     >
@@ -507,15 +507,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 onClick={() => setDisplayMenuOpen(open => !open)}
                                                 aria-haspopup="menu"
                                                 aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground shadow-xs transition-colors hover:bg-accent dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200"
+                                                className="flex h-7.5 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white px-2.5 text-xs font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300"
                                             >
                                                 <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             {isDisplayMenuOpen && (
                                                 <div
                                                     role="menu"
-                                                    className={`absolute top-[calc(100%+0.5rem)] z-30 w-48 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-md dark:bg-slate-900 dark:border-slate-700 ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-800 ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
                                                         const isActive = option === currentDisplay;
@@ -529,7 +529,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-start text-xs transition-colors ${isActive ? 'bg-accent text-accent-foreground font-semibold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                                                className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-start text-xs transition-colors ${isActive ? 'bg-slate-100 text-slate-900 font-semibold dark:bg-zinc-800 dark:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
                                                             >
                                                                 <span>{displayCopy(option).label}</span>
                                                             </button>
@@ -582,11 +582,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} gap-2 sm:gap-3`}>
+                                    <div className={`grid ${classGridClass} gap-3 sm:gap-4 w-full`}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
-                                                className="h-full animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                className="h-full w-full max-w-[420px] sm:max-w-none mx-auto animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard

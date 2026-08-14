@@ -58,10 +58,10 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
   const { t, locale } = useLocale();
 
   return (
-    <div className="rtl-flow group relative mb-2 mt-1 px-0 pb-3 pt-2 sm:mt-2 sm:pb-4 sm:pt-3">
-      <div className="flex items-start gap-2.5 sm:gap-4">
+    <div className="rtl-flow group relative mb-1.5 mt-0.5 px-0 pb-1.5 pt-1 sm:mt-1 sm:pb-2.5 sm:pt-2">
+      <div className="flex items-start gap-2 sm:gap-3">
         <header className="min-w-0 flex-1 text-start">
-          <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-bold tracking-tight text-lg font-black leading-[1.35] tracking-[-0.035em] text-foreground sm:text-2xl sm:leading-[1.3]">
+          <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-bold tracking-tight text-base sm:text-lg lg:text-xl leading-[1.3] text-foreground">
             <EditableHeader
               value={classInfo.name}
               displayValue={formatLocalizedClassDisplayName(classInfo.name, locale)}
@@ -70,13 +70,13 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
             />
           </h1>
 
-          <div className="mt-2 flex flex-col items-start gap-1 text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-1.5 sm:text-xs">
-            <span className="inline-flex min-w-0 items-center gap-2">
-              <User className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden />
+          <div className="mt-1 flex flex-col items-start gap-1 text-[10px] sm:text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <User className="h-3 w-3 shrink-0 text-primary/70" aria-hidden />
               <span className="truncate"><span className="font-semibold text-foreground/65">{t('editor.teacher')}</span> · <span className="italic">{classInfo.teacherName || t('editor.notProvided')}</span></span>
             </span>
-            <span className="inline-flex min-w-0 items-center gap-2">
-              <School className="h-3.5 w-3.5 shrink-0 text-primary/70" aria-hidden />
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <School className="h-3 w-3 shrink-0 text-primary/70" aria-hidden />
               <span className="truncate"><span className="font-semibold text-foreground/65">{t('editor.establishment')}</span> · {establishmentName || t('editor.notProvided')}</span>
             </span>
           </div>
