@@ -102,13 +102,13 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            className="group relative flex w-full min-h-[102px] sm:min-h-[116px] cursor-pointer flex-col justify-between rounded-xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 sm:p-3.5 transition-all duration-150 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 hover:bg-slate-50/50 dark:hover:bg-zinc-900/80 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:outline-none"
+            className="group relative flex w-full min-h-[102px] sm:min-h-[116px] cursor-pointer flex-col justify-between rounded-xl border border-slate-300/70 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3 sm:p-3.5 transition-all duration-150 shadow-2xs hover:shadow-xs hover:border-slate-400/70 dark:hover:border-zinc-600 hover:bg-slate-50/50 dark:hover:bg-zinc-900/80 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:outline-none"
         >
             {/* Top area: Subject badge & Centered class title */}
             <div className="w-full text-center">
                 {subjectBadgeText && (
-                    <div className="flex justify-end mb-1">
-                        <span className={`inline-flex items-center justify-center font-sans font-medium text-[10px] sm:text-[11px] py-0.5 px-2 rounded-md ${visual.badgeStyle} shadow-2xs`}>
+                    <div className={`flex mb-1 ${isRtl ? 'justify-end' : 'justify-start'}`}>
+                        <span className={`inline-flex items-center justify-center font-sans font-medium text-[7px] sm:text-[8px] py-px px-1.5 rounded-md opacity-75 ${visual.badgeStyle}`}>
                             {subjectBadgeText}
                         </span>
                     </div>
