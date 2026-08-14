@@ -53,7 +53,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 }) => {
     const { impact } = useHapticFeedback();
     const { type: deviceType } = useDevice();
-    const { locale, t, isRtl } = useLocale();
+    const { locale, t } = useLocale();
 
     const handleConfigureClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -107,7 +107,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Top area: Subject badge & Centered class title */}
             <div className="w-full text-center">
                 {subjectBadgeText && (
-                    <div className={`flex mb-1 ${isRtl ? 'justify-end' : 'justify-start'}`}>
+                    <div className="flex justify-start mb-1">
                         <span className={`inline-flex items-center justify-center font-sans font-medium text-[7px] sm:text-[8px] py-px px-1.5 rounded-md opacity-75 ${visual.badgeStyle}`}>
                             {subjectBadgeText}
                         </span>
