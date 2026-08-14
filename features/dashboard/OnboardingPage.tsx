@@ -45,13 +45,13 @@ export const OnboardingPage = ({
     const [finishing, setFinishing] = useState(false);
 
     const cycle = (config.selectedCycles?.[0] as Cycle | undefined) ?? 'lycee';
-    const selectedSubject = config.selectedSubjects?.[0] ?? '';
+    const selectedSubjects = config.selectedSubjects ?? [];
     const subjectOptions = useMemo(() => subjectOptionsFor(config.selectedSubjects), [config.selectedSubjects]);
     const isProfileValid = Boolean(config.defaultTeacherName?.trim());
 
     const classDraft = useOnboardingClassDraft({
         cycle,
-        subject: selectedSubject,
+        subject: selectedSubjects[0] ?? '',
         classes,
         copy,
         onConfigChange,
@@ -59,7 +59,7 @@ export const OnboardingPage = ({
     });
     const navigation = useOnboardingNavigation({
         isProfileValid,
-        isSubjectValid: Boolean(selectedSubject),
+        isSubjectValid: selectedSubjects.length > 0,
         isClassesValid: classes.length > 0,
     });
 
@@ -81,9 +81,12 @@ export const OnboardingPage = ({
         classDraft.resetForCycle(nextCycle);
     }, [classDraft.resetForCycle, onConfigChange]);
 
-    const handleSubjectSelect = useCallback((subject: string) => {
-        onConfigChange({ selectedSubjects: [subject], showAllSubjects: false });
-    }, [onConfigChange]);
+    const handleSubjectToggle = useCallback((subject: string) => {
+        const next = selectedSubjects.includes(subject)
+            ? selectedSubjects.filter(s => s !== subject)
+            : [...selectedSubjects, subject];
+        onConfigChange({ selectedSubjects: next, showAllSubjects: false });
+    }, [onConfigChange, selectedSubjects]);
 
     const handleRemoveClass = useCallback((classInfo: ClassInfo) => {
         onDeleteClass(classInfo.id);
@@ -122,11 +125,11 @@ export const OnboardingPage = ({
         content = (
             <SubjectsStep
                 subjects={subjectOptions}
-                selectedSubject={selectedSubject}
+                selectedSubjects={selectedSubjects}
                 teacherName={config.defaultTeacherName ?? ''}
                 lang={lang}
                 copy={copy}
-                onSelect={handleSubjectSelect}
+                onToggle={handleSubjectToggle}
             />
         );
     } else if (navigation.step === 4) {

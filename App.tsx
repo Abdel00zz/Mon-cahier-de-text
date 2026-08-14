@@ -371,7 +371,7 @@ const App: React.FC = () => {
         <GlobalTooltip />
         <Toaster
           position={isRtl ? 'bottom-left' : 'bottom-right'}
-          closeButton
+          closeButton={false}
           expand={false}
           gap={5}
           visibleToasts={3}

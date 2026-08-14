@@ -16,9 +16,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       icons={{
         success: <div className="hidden" />,
-        info: <Info className="h-3.5 w-3.5" />,
-        warning: <TriangleAlert className="h-3.5 w-3.5" />,
-        error: <CircleX className="h-3.5 w-3.5" />,
+        info: <Info className="h-3.5 w-3.5 text-blue-500" />,
+        warning: <TriangleAlert className="h-3.5 w-3.5 text-amber-500" />,
+        error: <CircleX className="h-3.5 w-3.5 text-red-500" />,
         loading: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
       }}
       toastOptions={{

@@ -109,8 +109,6 @@ export const useOnboardingClassDraft = ({
             onConfigChange({
                 selectedCycles: [cycle],
                 showAllCycles: false,
-                selectedSubjects: [subject],
-                showAllSubjects: false,
             });
             onCreateClass({ name: validation.name, subject, cycle });
             toast.success(copy.classAdded);

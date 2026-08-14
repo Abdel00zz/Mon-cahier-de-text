@@ -27,6 +27,8 @@ interface ScheduleTabProps {
      * les classes naissent au fil de la saisie.
      */
     onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
+    /** Avis « heures posées vs officiel » — masqué dans l'étape d'onboarding. */
+    showHoursAdvisory?: boolean;
 }
 
 /*
@@ -68,7 +70,7 @@ const CLASS_CELL_COLORS = [
 
 type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 
-export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass }) => {
+export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onChange, onCreateClass, showHoursAdvisory = true }) => {
     const { locale, t } = useLocale();
     const hourNumber = React.useMemo(
         () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, numberingSystem: 'latn', useGrouping: false }),
@@ -228,7 +230,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </p>
 
             {/* État de complétude et volumes horaires avant la saisie de la grille. */}
-            <HoursAdvisory classes={classes} timetable={timetable} />
+            {showHoursAdvisory && <HoursAdvisory classes={classes} timetable={timetable} />}
 
             <section className="space-y-3" aria-label={t('schedule.gridTitle')}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

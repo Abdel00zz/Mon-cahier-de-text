@@ -178,6 +178,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const notifySyncError = useCallback((status: number, message?: string) => {
         const key = String(status);
         if (lastErrorKeyRef.current === key) return;
+        // Pendant l'onboarding, ne pas interrompre l'utilisateur : l'erreur de
+        // synchro reste visible via l'état « Erreur » une fois le parcours fini.
+        if (readLocalConfig().hasCompletedWelcome !== true) return;
         lastErrorKeyRef.current = key;
         if (status === 401) {
             toast.error(syncText('sync.sessionExpired'), { duration: 10_000 });
