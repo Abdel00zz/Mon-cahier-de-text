@@ -46,13 +46,13 @@ const DialogContent = React.forwardRef<
         ref={ref}
         dir={isRtl ? "rtl" : "ltr"}
         className={cn(
-          "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[calc(var(--app-viewport-height,100dvh)-1rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[28px] rounded-b-none border border-border/40 bg-card p-0 text-card-foreground shadow-[0_8px_40px_rgba(0,0,0,0.08)] outline-none",
-          "will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.4,0,1,1)]",
+          "rtl-flow dialog-content fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[32px] rounded-b-none border border-border/50 bg-card p-0 text-card-foreground shadow-[0_12px_48px_rgba(0,0,0,0.18)] outline-none",
+          "will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
           "data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in",
           "data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]",
           "motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100",
-          "sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-3rem)] sm:w-[calc(100vw-2rem)] sm:rounded-[28px] sm:pb-0",
-          "pb-[env(safe-area-inset-bottom)]",
+          "sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[28px] sm:border sm:border-border/60 sm:shadow-[0_24px_70px_rgba(0,0,0,0.22)]",
+          "pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0",
           swipe.isDragging && "select-none",
           className
         )}
@@ -65,17 +65,17 @@ const DialogContent = React.forwardRef<
         onPointerCancel={(e) => { onPointerCancel?.(e); if (!e.defaultPrevented) swipe.onPointerCancel(e); }}
         {...props}
       >
-        <div data-swipe-dismiss-handle aria-hidden className="absolute left-1/2 top-2.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-muted-foreground/30 sm:hidden" />
+        <div data-swipe-dismiss-handle aria-hidden className="absolute left-1/2 top-2.5 h-1.5 w-12 -translate-x-1/2 rounded-full bg-muted-foreground/30 transition-opacity hover:bg-muted-foreground/50 sm:hidden" />
         {children}
         {!hideClose && (
           <DialogPrimitive.Close
             aria-label={closeLabel}
             className={cn(
-              "dialog-close absolute top-3.5 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4",
+              "dialog-close absolute top-3.5 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-all hover:bg-secondary hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4 sm:h-11 sm:w-11",
               isRtl ? "left-4" : "right-4"
             )}
           >
-            <X className="h-4 w-4" strokeWidth={2.2} />
+            <X className="h-4.5 w-4.5" strokeWidth={2.2} />
             <span className="sr-only">{closeLabel}</span>
           </DialogPrimitive.Close>
         )}

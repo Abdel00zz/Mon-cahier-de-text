@@ -32,24 +32,26 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
         <Modal
             isOpen={open}
             onClose={() => onOpenChange(false)}
-            maxWidth="4xl"
+            maxWidth="5xl"
+            className="sm:max-w-5xl sm:rounded-[32px]"
+            headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+            bodyClassName="px-5 py-5 sm:px-7 sm:py-6"
             title={(
                 <div className="flex items-center gap-3 min-w-0">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
                         <CalendarCheck className="h-5 w-5 stroke-[2.2]" aria-hidden />
                     </span>
                     <span className="min-w-0">
-                        <span className="block truncate text-base font-bold tracking-tight text-foreground sm:text-lg">
+                        <span className="block truncate text-base font-bold text-foreground sm:text-lg">
                             {t('evaluationsSheet.title', { className })}
                         </span>
-                        <span className="block truncate text-[11px] font-medium text-muted-foreground">
+                        <span className="block truncate text-xs font-medium text-muted-foreground mt-0.5">
                             {t('evaluations.supervised')} · {t('evaluations.homework', { number: 1 })} · {t('evaluations.activities')}
                         </span>
                     </span>
                 </div>
             )}
             description={<span className="sr-only">{t('evaluationsSheet.aria', { className })}</span>}
-            bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
         >
             <DevoirsView
                 classes={[classInfo]}

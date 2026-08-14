@@ -14,10 +14,21 @@ export const SUBJECTS = [
   'Anglais',
   'Espagnol',
   'Allemand',
+  'Italien',
   'Philosophie',
   'Histoire-Géographie',
   'Éducation Islamique',
   'Éducation Physique et Sportive',
+  'Traduction',
+  'Langue Amazighe',
+  'Arts Appliqués',
+  'Éducation Artistique',
+  'Éducation Musicale',
+  'Sciences Agronomiques',
+  'Sciences et Technologies Électriques',
+  'Sciences et Technologies Mécaniques',
+  'Droit',
+  'Comptabilité et Mathématiques Financières',
 ] as const;
 
 const SUBJECT_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
@@ -32,15 +43,59 @@ const SUBJECT_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
   'Anglais': 'اللغة الإنجليزية',
   'Espagnol': 'اللغة الإسبانية',
   'Allemand': 'اللغة الألمانية',
+  'Italien': 'اللغة الإيطالية',
   'Philosophie': 'الفلسفة',
   'Histoire-Géographie': 'التاريخ والجغرافيا',
   'Éducation Islamique': 'التربية الإسلامية',
   'Éducation Physique et Sportive': 'التربية البدنية والرياضية',
+  'Traduction': 'الترجمة',
+  'Langue Amazighe': 'اللغة الأمازيغية',
+  'Arts Appliqués': 'الفنون التطبيقية',
+  'Éducation Artistique': 'التربية الفنية والتشكيلية',
+  'Éducation Musicale': 'التربية الموسيقية والأناشيد',
+  'Sciences Agronomiques': 'العلوم الزراعية',
+  'Sciences et Technologies Électriques': 'العلوم والتكنولوجيات الكهربائية',
+  'Sciences et Technologies Mécaniques': 'العلوم والتكنولوجيات الميكانيكية',
+  'Droit': 'القانون والتنظيم الإداري',
+  'Comptabilité et Mathématiques Financières': 'المحاسبة والرياضيات المالية',
   // Anciens libellés conservés pour ne pas casser les données existantes
   'Sciences Économiques': 'العلوم الاقتصادية',
-  'EPS': 'التربية البدنية',
+  'EPS': 'التربية البدنية والرياضية',
 };
 
-export const formatLocalizedSubjectDisplayName = (subject: string, locale: AppLocale): string => (
-  locale === 'ar' ? (SUBJECT_DISPLAY_NAMES_AR[subject] ?? subject) : subject
-);
+const SUBJECT_DISPLAY_NAMES_EN: Readonly<Record<string, string>> = {
+  'Mathématiques': 'Mathematics',
+  'Physique-Chimie': 'Physics & Chemistry',
+  'Sciences de la Vie et de la Terre': 'Life and Earth Sciences',
+  'Sciences de l’Ingénieur': 'Engineering Sciences',
+  'Sciences Économiques et Gestion': 'Economics and Management',
+  'Informatique': 'Computer Science',
+  'Français': 'French',
+  'Arabe': 'Arabic',
+  'Anglais': 'English',
+  'Espagnol': 'Spanish',
+  'Allemand': 'German',
+  'Italien': 'Italian',
+  'Philosophie': 'Philosophy',
+  'Histoire-Géographie': 'History & Geography',
+  'Éducation Islamique': 'Islamic Education',
+  'Éducation Physique et Sportive': 'Physical Education & Sports',
+  'Traduction': 'Translation',
+  'Langue Amazighe': 'Tamazight Language',
+  'Arts Appliqués': 'Applied Arts',
+  'Éducation Artistique': 'Visual Arts Education',
+  'Éducation Musicale': 'Music Education',
+  'Sciences Agronomiques': 'Agricultural Sciences',
+  'Sciences et Technologies Électriques': 'Electrical Engineering & Tech',
+  'Sciences et Technologies Mécaniques': 'Mechanical Engineering & Tech',
+  'Droit': 'Law & Administration',
+  'Comptabilité et Mathématiques Financières': 'Accounting & Financial Math',
+  'Sciences Économiques': 'Economics',
+  'EPS': 'Physical Education',
+};
+
+export const formatLocalizedSubjectDisplayName = (subject: string, locale: AppLocale): string => {
+  if (locale === 'ar') return SUBJECT_DISPLAY_NAMES_AR[subject] ?? subject;
+  if (locale === 'en') return SUBJECT_DISPLAY_NAMES_EN[subject] ?? subject;
+  return subject;
+};

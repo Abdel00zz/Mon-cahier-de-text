@@ -156,68 +156,189 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="xl"
-      hideClose={true}
-      className="border-border/60 bg-background shadow-[0_24px_80px_-24px_rgba(0,0,0,0.32)] sm:max-w-[38rem] sm:rounded-[1.25rem]"
-      headerClassName="border-0 bg-background px-5 pb-2 pt-8 sm:px-6 sm:pt-6"
-      bodyClassName="px-5 py-3 sm:px-6"
-      footerClassName="border-0 bg-background px-5 pb-5 pt-2 sm:px-6"
+      maxWidth="lg"
+      hideClose={false}
+      className="border-border/60 bg-background shadow-[0_24px_80px_-24px_rgba(0,0,0,0.28)] sm:max-w-[42rem] sm:rounded-[28px]"
+      headerClassName="border-b border-border/50 bg-card/60 px-5 pb-3.5 pt-5 sm:px-7 sm:pt-6 sm:pb-4"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      footerClassName="border-t border-border/50 bg-card/60 px-5 py-3.5 sm:px-7 sm:py-4"
       title={(
-        <span className={cn('flex min-w-0 items-center gap-3 text-foreground', isRtl && 'font-bold tracking-normal text-xl')}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background shadow-sm">
-            <Info className="h-5 w-5" />
+        <div className={cn('flex min-w-0 items-center gap-3 text-foreground', isRtl && 'font-bold tracking-normal')}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+            <Info className="h-5 w-5 stroke-[2.2]" />
           </div>
-          <span className="truncate text-base font-bold sm:text-lg">{t('notifications.classSummaryTitle', { className: displayName })}</span>
-        </span>
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-base font-bold text-foreground sm:text-lg">
+              {t('notifications.classSummaryTitle', { className: displayName })}
+            </span>
+            <span className="block truncate text-xs font-medium text-muted-foreground">
+              {classInfo.subject ? `${classInfo.subject} · ` : ''}{t('notifications.classStatusLabel')}
+            </span>
+          </div>
+        </div>
       )}
       description={<span className="sr-only">{t('notifications.classSummaryDescription')}</span>}
       footer={(
-        <div className={cn("flex w-full items-center justify-end gap-2", isRtl && "justify-start")}>
+        <div className={cn("flex w-full items-center justify-between gap-3", isRtl && "flex-row-reverse")}>
+          <button
+            type="button"
+            onClick={openClass}
+            className="flex h-10 items-center justify-center rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow active:scale-[0.98] sm:h-11 sm:text-sm"
+          >
+            {t('notifications.action.openClass')}
+          </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-9 cursor-pointer rounded-lg bg-foreground px-5 text-xs font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:opacity-90"
+            className="h-10 rounded-xl border border-border/80 bg-background px-4 text-xs font-semibold text-muted-foreground shadow-xs transition-colors hover:bg-muted hover:text-foreground active:scale-[0.98] sm:h-11 sm:text-sm"
           >
             {t('common.close')}
           </button>
         </div>
       )}
     >
-      <div className="space-y-3">
+      <div className="space-y-4">
+        {/* ── Cartes de statut de continuité pédagogique ── */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Dernière séance */}
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-xs transition-shadow hover:shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                {t('dashboard.lastLesson')}
+              </span>
+              {sessionIndex?.previous?.date && (
+                <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-medium text-foreground">
+                  {formatLastLesson(sessionIndex.previous.date, locale, t('dashboard.none'))}
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 min-w-0">
+              <div className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+                <MathText source={sessionIndex?.previous?.lastTitle} inline>
+                  {sessionIndex?.previous?.lastTitle ?? t('dashboard.none')}
+                </MathText>
+              </div>
+            </div>
+          </div>
+
+          {/* Prochaine séance */}
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-blue-500/25 bg-blue-500/[0.04] p-4 shadow-xs transition-shadow hover:shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                {t('dashboard.nextSessionStatus')}
+              </span>
+              {nextSession?.label && (
+                <span className="inline-flex items-center rounded-md bg-blue-500/15 px-2 py-0.5 font-mono text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                  {nextSession.label}
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5 min-w-0">
+              <div className="line-clamp-2 text-sm font-bold leading-snug text-blue-700 dark:text-blue-300">
+                <MathText source={nextLessonTitle} inline>
+                  {nextLessonTitle ?? t('dashboard.none')}
+                </MathText>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bannières de synthèse / alertes d'action ── */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={() => prioritySignals[0] && resolveSignal(prioritySignals[0])}
+            disabled={prioritySignals.length === 0}
+            className={cn(
+              'group relative flex min-h-[56px] min-w-0 items-center justify-between gap-3 rounded-2xl border p-3.5 text-start transition-all duration-200 active:scale-[0.99]',
+              prioritySignals.length > 0
+                ? 'border-rose-500/30 bg-rose-500/[0.07] hover:bg-rose-500/[0.12] text-rose-900 dark:text-rose-100'
+                : 'border-border/60 bg-card/60 text-muted-foreground opacity-75',
+            )}
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105',
+                prioritySignals.length > 0 ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-muted text-muted-foreground'
+              )}>
+                <CircleAlert className="h-4.5 w-4.5" />
+              </div>
+              <span className="truncate text-xs font-bold leading-tight">
+                {t('notifications.classNeedsAction')}
+              </span>
+            </div>
+            <span className={cn(
+              'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs',
+              prioritySignals.length > 0 ? 'bg-rose-600 text-white dark:bg-rose-500' : 'bg-muted text-muted-foreground'
+            )}>
+              {prioritySignals.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={openUpcoming}
+            disabled={deadlineCount === 0 || (!onOpenNotifications && summary.assessments.length === 0 && summary.pedagogicalEvents.length === 0)}
+            className={cn(
+              'group relative flex min-h-[56px] min-w-0 items-center justify-between gap-3 rounded-2xl border p-3.5 text-start transition-all duration-200 active:scale-[0.99]',
+              deadlineCount > 0
+                ? 'border-emerald-500/30 bg-emerald-500/[0.07] hover:bg-emerald-500/[0.12] text-emerald-900 dark:text-emerald-100'
+                : 'border-border/60 bg-card/60 text-muted-foreground opacity-75',
+            )}
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <div className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105',
+                deadlineCount > 0 ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+              )}>
+                <CalendarCheck className="h-4.5 w-4.5" />
+              </div>
+              <span className="truncate text-xs font-bold leading-tight">
+                {t('notifications.classUpcoming')}
+              </span>
+            </div>
+            <span className={cn(
+              'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold shadow-2xs',
+              deadlineCount > 0 ? 'bg-emerald-600 text-white dark:bg-emerald-500' : 'bg-muted text-muted-foreground'
+            )}>
+              {deadlineCount}
+            </span>
+          </button>
+        </div>
+
+        {/* ── Signaux prioritaires à traiter ── */}
         {prioritySignals.length > 0 && (
-          <section aria-label={t('notifications.priorities')}>
-            <div className="max-h-[min(31dvh,15rem)] space-y-2 overflow-y-auto pe-1 overscroll-contain">
+          <section aria-label={t('notifications.priorities')} className="space-y-2">
+            <h3 className="text-xs font-bold text-foreground">
+              {t('notifications.priorities')}
+            </h3>
+            <div className="max-h-[min(32dvh,16rem)] space-y-2 overflow-y-auto pe-1 overscroll-contain">
               {prioritySignals.map(signal => (
                 <article
                   key={signal.id}
-                  className={cn(
-                    'grid grid-cols-[minmax(0,1fr)_auto] items-stretch overflow-hidden rounded-xl border border-border bg-background transition-colors hover:bg-muted/50',
-                    signal.kind === 'schedule'
-                      ? 'border-foreground/25'
-                      : 'border-border',
-                  )}
+                  className="flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-border/80 bg-card p-3 shadow-xs transition-all hover:border-border hover:shadow-sm"
                 >
                   <button
                     type="button"
                     onClick={() => resolveSignal(signal)}
-                    className="grid min-w-0 w-full grid-cols-[2rem_minmax(0,1fr)] items-center gap-2.5 px-3 py-2.5 text-start transition-colors hover:bg-slate-100/60 dark:hover:bg-slate-800/40"
+                    className="flex min-w-0 flex-1 items-center gap-3 text-start"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
-                      {signal.kind === 'schedule' ? <CalendarRange className="h-4 w-4" /> : <CircleAlert className="h-4 w-4" />}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/60 text-foreground">
+                      {signal.kind === 'schedule' ? <CalendarRange className="h-4.5 w-4.5" /> : <CircleAlert className="h-4.5 w-4.5 text-rose-500" />}
                     </span>
-                    <span className="min-w-0">
+                    <span className="min-w-0 flex-1">
                       <span className="block text-xs font-bold leading-snug text-foreground">{signal.title}</span>
-                      <span className="mt-0.5 block truncate text-[11px] font-medium leading-snug text-slate-500 dark:text-slate-400">
+                      <span className="mt-0.5 block truncate text-[11px] font-medium leading-snug text-muted-foreground">
                         {signal.detail}
                       </span>
                     </span>
                   </button>
-                  <div className="flex items-center px-2">
+                  <div className="flex shrink-0 items-center gap-1.5">
                     {signal.dismissible ? (
                       <button
                         type="button"
                         onClick={() => ignoreSignal(signal)}
-                        className="inline-flex min-h-8 items-center rounded-full px-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+                        className="inline-flex h-8 items-center rounded-xl px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
                         {t('notifications.ignore')}
                       </button>
@@ -226,7 +347,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
                         type="button"
                         onClick={() => resolveSignal(signal)}
                         aria-label={`${signal.title} : ${actionLabels[signal.action]}`}
-                        className="flex min-h-9 items-center rounded-lg bg-foreground px-3 text-xs font-semibold text-background transition-opacity hover:opacity-80"
+                        className="flex h-8 items-center rounded-xl bg-foreground px-3 text-xs font-semibold text-background transition-opacity hover:opacity-90 active:scale-95"
                       >
                         {actionLabels[signal.action]}
                       </button>
@@ -238,111 +359,89 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           </section>
         )}
 
-        <div className="grid gap-1.5 rounded-2xl bg-muted/55 p-1.5" aria-label={t('notifications.classStatusLabel')}>
-          <article className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl bg-background px-3.5 py-3 text-start shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:grid-cols-[8.75rem_minmax(0,1fr)]">
-            <span className="pt-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{t('dashboard.lastLesson')}</span>
-            <div className="min-w-0 text-end text-[13px] leading-relaxed">
-              <span className="break-words font-semibold text-foreground">
-                <MathText source={sessionIndex?.previous?.lastTitle} inline>
-                  {sessionIndex?.previous?.lastTitle ?? t('dashboard.none')}
-                </MathText>
-              </span>
-              {sessionIndex?.previous?.date ? (
-                <span className="ms-1.5 inline whitespace-nowrap font-mono text-[10px] font-medium text-muted-foreground">
-                  · {t('dashboard.doneOn', { date: formatLastLesson(sessionIndex.previous.date, locale, t('dashboard.none')) })}
-                </span>
-              ) : null}
-            </div>
-          </article>
-
-          <article className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl bg-background px-3.5 py-3 text-start shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:grid-cols-[8.75rem_minmax(0,1fr)]">
-            <span className="pt-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-blue-600 dark:text-blue-400">{t('dashboard.nextSessionStatus')}</span>
-            <div className="min-w-0 text-end">
-              <div className="mb-1 truncate font-mono text-[10px] font-medium text-muted-foreground">
-                {nextSession?.label ?? t('dashboard.none')}
-              </div>
-              <div className="text-[13px] font-semibold leading-relaxed text-blue-600 dark:text-blue-400">
-                <MathText source={nextLessonTitle} inline>
-                  {nextLessonTitle ?? t('dashboard.none')}
-                </MathText>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => prioritySignals[0] && resolveSignal(prioritySignals[0])} disabled={prioritySignals.length === 0} className={cn(
-            'flex min-h-[52px] min-w-0 items-center justify-between gap-2.5 rounded-xl border p-3 text-start transition-colors disabled:cursor-default disabled:opacity-70',
-            prioritySignals.length > 0
-              ? 'border-red-700 bg-red-600 text-white shadow-sm hover:bg-red-700 dark:border-red-500 dark:bg-red-700 dark:hover:bg-red-600'
-              : 'border-border bg-background text-muted-foreground',
-          )}>
-            <span className="flex min-w-0 items-center gap-2 text-xs font-bold">
-              <CircleAlert className="h-4 w-4 shrink-0" />
-              <span className={cn('truncate', prioritySignals.length > 0 && 'animate-advanced-blink')}>{t('notifications.classNeedsAction')}</span>
-            </span>
-            <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold', prioritySignals.length > 0 ? 'bg-white text-red-700' : 'bg-foreground text-background')}>{prioritySignals.length}</span>
-          </button>
-          <button type="button" onClick={openUpcoming} disabled={deadlineCount === 0 || (!onOpenNotifications && summary.assessments.length === 0 && summary.pedagogicalEvents.length === 0)} className="flex min-h-[52px] min-w-0 items-center justify-between gap-2.5 rounded-xl border border-border bg-background p-3 text-start transition-colors hover:bg-muted/50 disabled:cursor-default disabled:opacity-70">
-            <span className="flex min-w-0 items-center gap-2 text-xs font-bold">
-              <CalendarCheck className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t('notifications.classUpcoming')}</span>
-            </span>
-            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">{deadlineCount}</span>
-          </button>
-        </div>
-
+        {/* ── Tout est à jour ── */}
         {isEmpty ? (
-          <div className="flex flex-col items-center rounded-xl border border-border bg-background px-5 py-4 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground">
-              <Check className="h-5 w-5" />
+          <div className="flex flex-col items-center rounded-2xl border border-border/60 bg-card/60 px-5 py-6 text-center shadow-xs">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <Check className="h-5 w-5 stroke-[2.5]" />
             </span>
-            <h3 className="mt-2 text-sm font-bold text-slate-900 dark:text-slate-100">{t('notifications.classUpToDateTitle')}</h3>
-            <p className="mt-0.5 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t('notifications.classUpToDateDescription')}</p>
+            <h3 className="mt-2.5 text-sm font-bold text-foreground">{t('notifications.classUpToDateTitle')}</h3>
+            <p className="mt-0.5 max-w-sm text-xs leading-relaxed text-muted-foreground">{t('notifications.classUpToDateDescription')}</p>
           </div>
         ) : deadlineCount > 0 ? (
-          <section className="max-h-[min(30dvh,15rem)] overflow-y-auto pe-1">
-            <h3 className="mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">{t('notifications.deadlines')}</h3>
-            <div className="space-y-1.5">
-                  {summary.assessments.map(item => (
-                    <button type="button" onClick={openEvaluations} key={`${item.classId}-${item.id}-${item.dateISO}`} className="flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-border bg-background px-3.5 py-2 text-start transition-colors hover:bg-muted/50">
-                      <CalendarCheck className="h-4 w-4 shrink-0" />
-                      <h4 className="min-w-0 truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {t(item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework', { number: item.num })}
-                        <span className="font-medium text-slate-500 dark:text-slate-400"> : {formatDate(item.dateISO, locale)}</span>
-                      </h4>
-                    </button>
-                  ))}
-                  {summary.pedagogicalEvents.map(item => (
-                    <button type="button" onClick={openEvaluations} key={`pedagogical-${item.classId}-${item.event.id}`} className="flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-border bg-background px-3.5 py-2 text-start transition-colors hover:bg-muted/50">
-                      <CalendarCheck className="h-4 w-4 shrink-0" />
-                      <h4 className="min-w-0 truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {item.event.title}<span className="font-medium text-slate-500 dark:text-slate-400"> : {formatDate(item.event.date, locale)}</span>
-                      </h4>
-                    </button>
-                  ))}
-                  {summary.officialEvents.map(item => (
-                    <button type="button" onClick={openDeadlines} disabled={!onOpenNotifications} key={item.event.id} className="flex min-h-11 w-full items-center gap-2.5 rounded-xl border border-border bg-background px-3.5 py-2 text-start transition-colors hover:bg-muted/50 disabled:cursor-default">
-                      <CalendarCheck className="h-4 w-4 shrink-0" />
-                      <h4 className="min-w-0 truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {getLocalizedEventTitle(item.event, locale)}<span className="font-medium text-slate-500 dark:text-slate-400"> : {formatDate(item.event.start, locale)}</span>
-                      </h4>
-                    </button>
-                  ))}
+          <section className="space-y-2">
+            <h3 className="text-xs font-bold text-foreground">{t('notifications.deadlines')}</h3>
+            <div className="max-h-[min(28dvh,14rem)] space-y-1.5 overflow-y-auto pe-1 overscroll-contain">
+              {summary.assessments.map(item => (
+                <button
+                  type="button"
+                  onClick={openEvaluations}
+                  key={`${item.classId}-${item.id}-${item.dateISO}`}
+                  className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-start transition-all hover:bg-muted/50 hover:shadow-xs"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <CalendarCheck className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    <span className="truncate text-xs font-bold text-foreground">
+                      {t(item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework', { number: item.num })}
+                    </span>
+                  </div>
+                  <span className="shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
+                    {formatDate(item.dateISO, locale)}
+                  </span>
+                </button>
+              ))}
+              {summary.pedagogicalEvents.map(item => (
+                <button
+                  type="button"
+                  onClick={openEvaluations}
+                  key={`pedagogical-${item.classId}-${item.event.id}`}
+                  className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-start transition-all hover:bg-muted/50 hover:shadow-xs"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <CalendarCheck className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="truncate text-xs font-bold text-foreground">{item.event.title}</span>
+                  </div>
+                  <span className="shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
+                    {formatDate(item.event.date, locale)}
+                  </span>
+                </button>
+              ))}
+              {summary.officialEvents.map(item => (
+                <button
+                  type="button"
+                  onClick={openDeadlines}
+                  disabled={!onOpenNotifications}
+                  key={item.event.id}
+                  className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-start transition-all hover:bg-muted/50 hover:shadow-xs disabled:cursor-default"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <CalendarCheck className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate text-xs font-bold text-foreground">{getLocalizedEventTitle(item.event, locale)}</span>
+                  </div>
+                  <span className="shrink-0 font-mono text-[11px] font-medium text-muted-foreground">
+                    {formatDate(item.event.start, locale)}
+                  </span>
+                </button>
+              ))}
             </div>
           </section>
         ) : null}
 
+        {/* ── Signaux ignorés ── */}
         {summary.ignoredCorrections.length > 0 && (
-          <details className="rounded-xl border border-border/65 bg-muted/35 px-3 py-2">
-            <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground">
+          <details className="rounded-xl border border-border/60 bg-muted/30 px-3.5 py-2 transition-colors">
+            <summary className="cursor-pointer text-[11px] font-bold text-muted-foreground hover:text-foreground">
               {t('notifications.classIgnoredCount', { count: summary.ignoredCorrections.length })}
             </summary>
-            <div className="mt-2 space-y-1.5">
+            <div className="mt-2 space-y-1.5 pt-1">
               {summary.ignoredCorrections.map(signal => (
-                <div key={signal.id} className="flex items-center justify-between gap-2 rounded-lg bg-card/80 px-2.5 py-2">
-                  <span className="min-w-0 truncate text-[10px] font-semibold text-muted-foreground">{signal.title}</span>
-                  <button type="button" onClick={() => restoreSignal(signal)} className="min-h-8 shrink-0 rounded-lg px-2 text-[10px] font-semibold text-foreground hover:bg-muted">
+                <div key={signal.id} className="flex items-center justify-between gap-2 rounded-lg bg-card px-3 py-1.5 shadow-2xs">
+                  <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">{signal.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => restoreSignal(signal)}
+                    className="min-h-7 shrink-0 rounded-md px-2 text-xs font-bold text-primary hover:bg-primary/10"
+                  >
                     {t('notifications.restore')}
                   </button>
                 </div>

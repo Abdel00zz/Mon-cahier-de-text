@@ -2,7 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { BookOpen, Settings, CircleHelp, PieChart, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
-import { useLocale } from '@/i18n/LocaleProvider';
+import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
 
 export type TabType = 'dashboard' | 'evaluations' | 'settings' | 'notifications' | 'help';
 
@@ -22,18 +22,27 @@ const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
   { id: 'notifications', icon: PieChart },
 ];
 
-const NAV_COPY = {
+const NAV_COPY: Record<AppLocale, {
+  brand: string; teacherSpace: string;
+  dashboard: string; evaluations: string; notifications: string; settings: string; help: string;
+  collapse: string; expand: string; mainNav: string; mobileNav: string;
+}> = {
   fr: {
     brand: 'Cahier de textes', teacherSpace: 'Espace enseignant',
     dashboard: 'Classes', evaluations: 'Contrôle continu', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
     collapse: 'Réduire', expand: 'Développer', mainNav: 'Navigation principale', mobileNav: 'Navigation mobile',
   },
   ar: {
-    brand: 'دفتر النصوص الرقمي', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'الأقسام', evaluations: 'المراقبة المستمرة', notifications: 'القيادة', settings: 'الإعدادات', help: 'الدليل',
-    collapse: 'تصغير', expand: 'توسيع', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
+    brand: 'دفتر النصوص الرقمي', teacherSpace: 'فضاء الأستاذ(ة)',
+    dashboard: 'الأقسام', evaluations: 'المراقبة المستمرة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
+    collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
-} as const;
+  en: {
+    brand: 'Lesson Notebook', teacherSpace: 'Teacher Space',
+    dashboard: 'Classes', evaluations: 'Continuous Assessment', notifications: 'Dashboard', settings: 'Settings', help: 'Pedagogical Guide',
+    collapse: 'Collapse', expand: 'Expand', mainNav: 'Main navigation', mobileNav: 'Mobile navigation',
+  },
+};
 
 const countLabel = (count?: number) => count && count > 99 ? '99+' : count;
 
@@ -48,7 +57,7 @@ export const TabBar = React.memo<TabBarProps>(({
 }) => {
   const { impact } = useHapticFeedback();
   const { locale } = useLocale();
-  const copy = NAV_COPY[locale === 'ar' ? 'ar' : 'fr'];
+  const copy = NAV_COPY[locale] ?? NAV_COPY.fr;
   const touchStartX = useRef(0);
 
   const goTo = useCallback((tab: TabType) => {

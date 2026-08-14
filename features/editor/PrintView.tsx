@@ -197,15 +197,21 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         .sort(), [printRows]);
     const firstPrintDate = printDates[0];
     const lastPrintDate = printDates[printDates.length - 1];
+    const isRtlPrint = contentDirection === 'rtl' || isArabicClassName;
     const academy = getAcademyById(config.academyRegion);
     const province = academy?.provinces.find(item => item.id === config.educationProvince);
-    const academyLine = academy
-        ? `Académie Régionale d’Éducation et de Formation · ${academy.label}`
-        : 'Académie Régionale d’Éducation et de Formation';
-    const provinceLine = province ? `Direction provinciale de ${province.label}` : 'Direction provinciale';
+    
+    const academyLine = isRtlPrint
+        ? (academy ? `الأكاديمية الجهوية للتربية والتكوين · ${academy.arabicLabel}` : 'الأكاديمية الجهوية للتربية والتكوين')
+        : (academy ? `Académie Régionale d’Éducation et de Formation · ${academy.label}` : 'Académie Régionale d’Éducation et de Formation');
+
+    const provinceLine = isRtlPrint
+        ? (province ? `المديرية الإقليمية: ${province.arabicLabel}` : 'المديرية الإقليمية')
+        : (province ? `Direction provinciale de ${province.label}` : 'Direction provinciale');
+
     const periodLabel = firstPrintDate && lastPrintDate
         ? `${formatDateDDMMYYYY(firstPrintDate)} – ${formatDateDDMMYYYY(lastPrintDate)}`
-        : 'Aucune séance datée';
+        : (isRtlPrint ? 'لا توجد حصص مؤرخة' : 'Aucune séance datée');
     const schoolYearLabel = getSchoolYearLabel(config.schoolYearStart, firstPrintDate);
     
     const formatSeparatorDate = (dateString: string): string => {
@@ -250,18 +256,42 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     };
 
     const administrativeHeader = (
-        <div className="print-header">
-            <div className="print-government">Royaume du Maroc, Ministère de l’Éducation nationale, du Préscolaire et des Sports</div>
+        <div className={`print-header ${isRtlPrint ? 'direction-rtl' : ''}`}>
+            <div className="print-government">
+                {isRtlPrint
+                    ? 'المملكة المغربية · وزارة التربية الوطنية والتعليم الأولي والرياضة'
+                    : 'Royaume du Maroc · Ministère de l’Éducation Nationale, du Préscolaire et des Sports'}
+            </div>
             <div className="print-academy">{academyLine}</div>
             <div className="print-province">{provinceLine}</div>
-            <div className="print-header-title">Cahier de textes, Extrait imprimé</div>
+            <div className="print-header-title">
+                {isRtlPrint ? 'دفتر النصوص · مستخرج رسمي' : 'Cahier de textes · Extrait imprimé'}
+            </div>
             <div className="print-institution-grid">
-                <div className="print-institution-field"><span className="print-field-label">Établissement</span><strong className="print-field-value">{config.establishmentName || 'Non renseigné'}</strong></div>
-                <div className="print-institution-field"><span className="print-field-label">Enseignant</span><strong className="print-field-value">{classInfo.teacherName || config.defaultTeacherName || 'Non renseigné'}</strong></div>
-                <div className="print-institution-field"><span className="print-field-label">Classe</span><strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>{classInfo.name || 'Non spécifiée'}</strong></div>
-                <div className="print-institution-field"><span className="print-field-label">Matière</span><strong className="print-field-value">{classInfo.subject || 'Non renseignée'}</strong></div>
-                <div className="print-institution-field"><span className="print-field-label">Année scolaire</span><strong className="print-field-value">{schoolYearLabel}</strong></div>
-                <div className="print-institution-field"><span className="print-field-label">Période imprimée</span><strong className="print-field-value">{periodLabel}</strong></div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'المؤسسة التعليمية' : 'Établissement'}</span>
+                    <strong className="print-field-value">{config.establishmentName || (isRtlPrint ? 'غير محددة' : 'Non renseigné')}</strong>
+                </div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
+                    <strong className="print-field-value">{classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}</strong>
+                </div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'القسم / الفوج' : 'Classe'}</span>
+                    <strong className={`print-field-value ${isArabicClassName ? 'font-ar' : ''}`}>{classInfo.name || (isRtlPrint ? 'غير محدد' : 'Non spécifiée')}</strong>
+                </div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'المادة الدراسية' : 'Matière'}</span>
+                    <strong className="print-field-value">{classInfo.subject || (isRtlPrint ? 'غير محددة' : 'Non renseignée')}</strong>
+                </div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'السنة الدراسية' : 'Année scolaire'}</span>
+                    <strong className="print-field-value">{schoolYearLabel}</strong>
+                </div>
+                <div className="print-institution-field">
+                    <span className="print-field-label">{isRtlPrint ? 'الفترة المطبوعة' : 'Période imprimée'}</span>
+                    <strong className="print-field-value">{periodLabel}</strong>
+                </div>
             </div>
         </div>
     );
@@ -662,9 +692,9 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         </tr>
                     )}
                     <tr>
-                        <th className="print-col-date">Date</th>
-                        <th className="print-col-content">Contenu</th>
-                        <th className="print-col-remark">Remarque</th>
+                        <th className="print-col-date">{isRtlPrint ? 'التاريخ' : 'Date'}</th>
+                        <th className="print-col-content">{isRtlPrint ? 'عناصر الدرس والمحتوى البيداغوجي' : 'Contenu'}</th>
+                        <th className="print-col-remark">{isRtlPrint ? 'ملاحظات وإنجازات' : 'Remarque'}</th>
                     </tr>
                 </thead>
                 <tbody>

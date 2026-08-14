@@ -829,11 +829,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
                 {/* 3. SECTION : CALENDRIER */}
                 {activeAxis === 'calendrier' && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
-                          <CalendarDays className="h-4 w-4 text-[#423ed8]" />
+                        <h2 className={cn('flex items-center gap-2 text-lg font-bold text-foreground', titleFontClass)}>
+                          <CalendarDays className="h-5 w-5 text-primary" />
                           {t('notifications.calendar')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -841,9 +841,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         </p>
                       </div>
                     </div>
-                    <div className="rounded-2xl border border-border bg-card p-2 text-card-foreground">
-                      <NotificationCalendar classes={classes} config={config} selectedClassId="all" />
-                    </div>
+                    <NotificationCalendar classes={classes} config={config} selectedClassId="all" />
                   </div>
                 )}
 

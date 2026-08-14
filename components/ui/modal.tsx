@@ -28,14 +28,16 @@ interface ModalProps {
 }
 
 const maxWidthClassMap: Record<string, string> = {
-  sm: "sm:max-w-sm",
-  md: "sm:max-w-md",
-  lg: "sm:max-w-lg",
-  xl: "sm:max-w-xl",
-  "2xl": "sm:max-w-2xl",
-  "3xl": "sm:max-w-3xl",
-  "4xl": "sm:max-w-4xl",
-  "5xl": "sm:max-w-5xl",
+  xs: "sm:max-w-sm",
+  sm: "sm:max-w-md",
+  md: "sm:max-w-xl",
+  lg: "sm:max-w-2xl",
+  xl: "sm:max-w-3xl",
+  "2xl": "sm:max-w-4xl",
+  "3xl": "sm:max-w-5xl",
+  "4xl": "sm:max-w-6xl",
+  "5xl": "sm:max-w-7xl",
+  full: "sm:max-w-[94vw]",
 }
 
 export function Modal({
@@ -70,19 +72,19 @@ export function Modal({
         {(title || description) && (
           <DialogHeader
             className={cn(
-              "modal-header shrink-0 border-b border-border bg-card/50 px-6 pt-6 pb-4 text-card-foreground",
+              "modal-header shrink-0 border-b border-border/60 bg-card/80 backdrop-blur-md px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 text-card-foreground",
               headerClassName,
             )}
           >
-            {title && <DialogTitle>{title}</DialogTitle>}
-            {description && <DialogDescription>{description}</DialogDescription>}
+            {title && <DialogTitle className="text-base sm:text-lg font-bold leading-snug">{title}</DialogTitle>}
+            {description && <DialogDescription className="text-xs sm:text-sm leading-relaxed mt-0.5">{description}</DialogDescription>}
           </DialogHeader>
         )}
         <div
           className={cn(
-            "modal-body min-h-0 min-w-0 overflow-y-auto overscroll-contain px-6 py-5 [overflow-anchor:none]",
-            !(title || description) && "pt-12",
-            !footer && "pb-[calc(1.25rem+env(safe-area-inset-bottom))]",
+            "modal-body min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5 [overflow-anchor:none]",
+            !(title || description) && "pt-8 sm:pt-6",
+            !footer && "pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]",
             bodyClassName,
           )}
         >
@@ -91,7 +93,7 @@ export function Modal({
         {footer && (
           <DialogFooter
             className={cn(
-              "modal-footer border-t border-border bg-card/50 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4 text-card-foreground",
+              "modal-footer border-t border-border/60 bg-card/80 backdrop-blur-md px-5 py-3.5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-7 sm:py-4 text-card-foreground",
               footerClassName,
             )}
           >

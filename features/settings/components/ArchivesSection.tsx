@@ -58,11 +58,11 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
     );
 
     return (
-        <div className="mt-4 rounded-2xl border border-border/80 bg-secondary/40 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border/50">
                 <div className="min-w-0">
-                    <h4 className="mb-1.5 text-sm font-bold text-foreground">{t('archives.title')}</h4>
-                    <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">
+                    <h4 className="text-sm font-bold text-foreground">{t('archives.title')}</h4>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                         {t('archives.description')}
                     </p>
                 </div>
@@ -70,22 +70,22 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                     type="button"
                     variant="outline"
                     onClick={handleCreate}
-                    className="h-10 shrink-0 rounded-full border-border text-xs text-primary transition-all hover:bg-primary hover:text-white"
+                    className="h-9.5 shrink-0 rounded-xl border-primary/30 bg-primary/10 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-2xs"
                 >
                     <CalendarCheck className="h-4 w-4" /> {t('archives.action', { year: yearLabel })}
                 </Button>
             </div>
 
-            {archives.length > 0 && (
-                <ul className="mt-3 space-y-1.5">
+            {archives.length > 0 ? (
+                <ul className="mt-3.5 space-y-2">
                     {archives.map(meta => (
                         <li
                             key={meta.id}
-                            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/40 bg-card/70 px-3 py-2"
+                            className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-border/70 bg-background/80 px-3.5 py-2.5 shadow-2xs"
                         >
                             <div className="min-w-0">
                                 <span className="text-xs font-bold text-foreground">{t('archives.year', { year: meta.yearLabel })}</span>
-                                <span className="ms-2 text-[10px] font-semibold text-muted-foreground/60 font-mono">
+                                <span className="ms-2 text-[11px] font-medium text-muted-foreground">
                                     {formatClassCount(meta.classCount)} · {formatSize(meta.bytes)} ·{' '}
                                     {new Date(meta.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
@@ -96,26 +96,26 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                                     onClick={() => {
                                         if (!downloadArchive(meta)) toast.error(t('archives.missing'));
                                     }}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-primary cursor-pointer"
                                     title={t('archives.download')}
                                     aria-label={t('archives.download')}
                                 >
-                                    <Download className="h-3.5 w-3.5" />
+                                    <Download className="h-4 w-4" />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setPendingDelete(meta)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                    className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive cursor-pointer"
                                     title={t('archives.delete')}
                                     aria-label={t('archives.delete')}
                                 >
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
                         </li>
                     ))}
                 </ul>
-            )}
+            ) : null}
 
             <ConfirmDialog
                 open={pendingDelete !== null}

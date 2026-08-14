@@ -150,16 +150,20 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       onClose={onClose}
       title={t('assignDate.title')}
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
-      maxWidth="md"
+      maxWidth="lg"
+      className="sm:max-w-xl sm:rounded-[28px]"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
       footer={
-        <div className="flex items-center justify-end gap-2 w-full">
-          <Button type="button" variant="secondary" onClick={onClose} className="px-3 text-xs font-semibold">
+        <div className="flex items-center justify-end gap-2.5 w-full">
+          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
             {t('common.cancel')}
           </Button>
           <Button
             type="button"
             onClick={handleApply}
-            className={`cursor-pointer px-3.5 text-xs font-bold shadow-sm transition-all duration-150 ${
+            className={`rounded-xl h-10 px-5 text-xs sm:text-sm font-bold shadow-sm transition-all duration-150 ${
               actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'bg-rose-600 hover:bg-rose-700 text-white'
@@ -185,7 +189,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               value: 'associate',
               label: (
                 <span className="flex items-center gap-1.5">
-                  <CalendarPlus className="h-3 w-3" /> {t('assignDate.assign')}
+                  <CalendarPlus className="h-3.5 w-3.5" /> {t('assignDate.assign')}
                 </span>
               ),
             },
@@ -193,7 +197,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               value: 'dissociate',
               label: (
                 <span className="flex items-center gap-1.5">
-                  <CalendarMinus className="h-3 w-3" /> {t('assignDate.unassign')}
+                  <CalendarMinus className="h-3.5 w-3.5" /> {t('assignDate.unassign')}
                 </span>
               ),
             },
@@ -203,18 +207,18 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         {/* Dynamic & Centered Middle Section */}
         {actionType === 'associate' ? (
           <div className="space-y-3.5 animate-fade-in duration-200 text-center max-w-sm mx-auto py-1">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
               {t('assignDate.chooseDate')}
             </span>
             
             {/* Centered Date Input */}
-            <div className="relative flex flex-col items-center gap-1.5">
+            <div className="relative flex flex-col items-center gap-2">
               <Input
                 id="assign-date-input"
                 type="date"
                 value={selectedDate}
                 onChange={event => setSelectedDate(event.target.value)}
-                className="h-10 w-48 rounded-lg border border-border bg-card text-center text-sm font-bold shadow-xs transition-colors hover:bg-muted focus:border-border focus:ring-0"
+                className="h-11 w-52 rounded-xl border border-border bg-card text-center text-sm font-bold shadow-xs transition-colors hover:bg-muted focus:border-border focus:ring-0"
               />
               {/* Intelligent date readout / Capteur intelligent */}
               <span className="text-xs font-semibold text-muted-foreground capitalize">
@@ -224,24 +228,24 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
             {/* Garde intelligente : conflits emploi du temps / fériés / vacances / absences */}
             {dateWarnings.length > 0 && (
-              <div className="mx-auto max-w-sm space-y-1 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-start animate-fade-in duration-200" role="status">
+              <div className="mx-auto max-w-sm space-y-1 rounded-2xl border border-amber-500/30 bg-amber-500/[0.08] p-3 text-start animate-fade-in duration-200" role="status">
                 {dateWarnings.map((warning, i) => (
-                  <p key={i} className="flex items-start gap-1.5 text-[11px] font-medium leading-snug text-amber-800">
-                    <span aria-hidden className="mt-0.5 shrink-0 text-amber-600">⚠</span>
+                  <p key={i} className="flex items-start gap-1.5 text-xs font-medium leading-snug text-amber-800 dark:text-amber-300">
+                    <span aria-hidden className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400">⚠</span>
                     {warning.message}
                   </p>
                 ))}
-                <p className="pl-4 text-[10px] text-amber-600/95 font-medium mt-1">
+                <p className="ps-4 text-[11px] text-amber-700/90 dark:text-amber-400 font-medium mt-1">
                   {t('assignDate.warningOverride')}
                 </p>
               </div>
             )}
 
             {/* Quick Presets */}
-            <div className="grid grid-cols-3 gap-1.5 max-w-xs mx-auto pt-1">
+            <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto pt-1">
               <Button
                 type="button"
-                className={`h-10 rounded-lg border border-border py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-10 rounded-xl border border-border py-1 text-xs font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(-1)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-card hover:bg-muted text-foreground'
@@ -252,7 +256,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               </Button>
               <Button
                 type="button"
-                className={`h-10 rounded-lg border border-border py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-10 rounded-xl border border-border py-1 text-xs font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(0)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-card hover:bg-muted text-foreground'
@@ -263,7 +267,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               </Button>
               <Button
                 type="button"
-                className={`h-10 rounded-lg border border-border py-1 text-[11px] font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                className={`h-10 rounded-xl border border-border py-1 text-xs font-bold shadow-xs transition-all duration-150 active:scale-95 ${
                   selectedDate === isoFromOffset(1)
                     ? 'bg-primary text-primary-foreground border-primary font-extrabold'
                     : 'bg-card hover:bg-muted text-foreground'
@@ -275,12 +279,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="mx-auto max-w-sm animate-fade-in duration-200 space-y-1.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-center">
-            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-100 text-rose-600 mb-0.5">
-              <CalendarX className="h-4 w-4" />
+          <div className="mx-auto max-w-sm animate-fade-in duration-200 space-y-1.5 rounded-2xl border border-rose-200 bg-rose-50/70 dark:border-rose-900/50 dark:bg-rose-950/20 p-4 text-center">
+            <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 mb-1">
+              <CalendarX className="h-4.5 w-4.5" />
             </div>
-            <h4 className="text-xs font-bold text-rose-800 uppercase tracking-wider">{t('assignDate.removeTitle')}</h4>
-            <p className="text-[11px] text-rose-600 font-medium leading-relaxed max-w-xs mx-auto">
+            <h4 className="text-xs font-bold text-rose-800 dark:text-rose-200 uppercase tracking-wider">{t('assignDate.removeTitle')}</h4>
+            <p className="text-xs text-rose-600 dark:text-rose-300 font-medium leading-relaxed max-w-xs mx-auto">
               {t('assignDate.removeHint')}
             </p>
           </div>
@@ -288,12 +292,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
         {/* Compact selected items list preview with transition preview */}
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+          <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1">
             <span>{t('assignDate.preview')}</span>
             <span>{t('assignDate.change')}</span>
           </div>
           
-          <div className="rounded-xl border border-border bg-muted/50 p-1.5 space-y-1">
+          <div className="rounded-2xl border border-border/70 bg-muted/40 p-2 space-y-1.5">
             {visibleItems.map((previewItem, index) => {
               const badge = getItemBadge(previewItem.item);
               const isDateable = previewItem.canDate;
@@ -301,23 +305,23 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               return (
                 <div
                   key={`${previewItem.title}-${index}`}
-                  className={`flex items-center justify-between gap-3 p-1.5 rounded-lg border border-border bg-card shadow-xs transition-opacity duration-150 ${
+                  className={`flex items-center justify-between gap-3 p-2.5 rounded-xl border border-border/80 bg-card shadow-2xs transition-opacity duration-150 ${
                     !isDateable ? 'opacity-40' : ''
                   }`}
                 >
                   {/* Left Side: Badge & Title */}
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     {badge && (
                       <Badge
                         variant="outline"
-                        className={`text-[8.5px] font-bold uppercase py-0 px-1 h-4 rounded flex items-center gap-0.5 flex-shrink-0 ${badge.color}`}
+                        className={`text-[9px] font-bold uppercase py-0.5 px-1.5 h-4.5 rounded-md flex items-center gap-1 shrink-0 ${badge.color}`}
                       >
-                        {badge.icon && <badge.icon className="me-0.5 h-2 w-2" />}
+                        {badge.icon && <badge.icon className="me-0.5 h-2.5 w-2.5" />}
                         {badge.text}
                       </Badge>
                     )}
 
-                    <div className="min-w-0 flex-grow text-[11px] font-semibold text-foreground truncate">
+                    <div className="min-w-0 flex-1 text-xs font-bold text-foreground truncate">
                       {hasMathSyntax(previewItem.title) ? (
                         <MathJax inline hideUntilTypeset="first">
                           {previewItem.title}
@@ -329,24 +333,24 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
                   </div>
 
                   {/* Right Side: Visual state change representation */}
-                  <div className="flex items-center gap-1 text-[10px] font-bold flex-shrink-0">
-                      <span className="text-muted-foreground font-semibold">
+                  <div className="flex items-center gap-1.5 text-xs font-bold shrink-0">
+                    <span className="text-muted-foreground font-semibold">
                       {formatShortDate(previewItem.date, localeCode, t('assignDate.noDate'))}
                     </span>
 
                     {isDateable && (
-                      <div className="flex items-center gap-1 animate-fade-in duration-200">
-                        <ChevronRight className={`h-2 w-2 text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-1.5 animate-fade-in duration-200">
+                        <ChevronRight className={`h-3 w-3 text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
                         {actionType === 'associate' ? (
-                          <span className="px-1.5 py-0.5 rounded-md bg-muted border border-border text-foreground font-bold shadow-xs">
+                          <span className="px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold shadow-2xs">
                             {formatShortDate(selectedDate, localeCode, t('assignDate.noDate'))}
                           </span>
                         ) : previewItem.date ? (
-                          <span className="px-1.5 py-0.5 rounded-md bg-red-50 border border-red-100 text-red-600 font-bold shadow-xs line-through">
+                          <span className="px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 font-bold shadow-2xs line-through">
                             {formatShortDate(previewItem.date, localeCode, t('assignDate.noDate'))}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground font-medium italic">{t('assignDate.noChange')}</span>
+                          <span className="text-muted-foreground font-medium italic text-[11px]">{t('assignDate.noChange')}</span>
                         )}
                       </div>
                     )}
@@ -356,7 +360,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
             })}
 
             {remainingItemsCount > 0 && (
-              <div className="text-center py-1 text-[10px] font-bold text-muted-foreground italic">
+              <div className="text-center py-1 text-[11px] font-bold text-muted-foreground italic">
                 {t(remainingItemsCount === 1 ? 'assignDate.moreOne' : 'assignDate.moreMany', { count: number.format(remainingItemsCount) })}
               </div>
             )}

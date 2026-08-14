@@ -9,6 +9,7 @@ import {
 } from './dialog';
 import { Button } from './button';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { TriangleAlert, CircleHelp } from '@/components/ui/icons';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -60,20 +61,33 @@ export function ConfirmDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className="gap-4 border-border bg-card p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] sm:max-w-[440px]"
+                className="gap-5 border-border/70 bg-card p-5 sm:p-7 shadow-2xl sm:max-w-lg sm:rounded-[28px]"
                 blockDismiss={requiresTypedConfirmation}
             >
-                <DialogHeader className="gap-2">
-                    <DialogTitle className="text-lg font-bold leading-tight text-foreground">
-                        {title}
-                    </DialogTitle>
-                    <DialogDescription className="text-sm font-normal leading-relaxed text-muted-foreground">
+                <DialogHeader className="gap-3 text-left rtl:text-right">
+                    <div className="flex items-center gap-3">
+                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
+                            variant === 'destructive' 
+                                ? 'bg-destructive/10 text-destructive' 
+                                : 'bg-primary/10 text-primary'
+                        } shadow-xs`}>
+                            {variant === 'destructive' ? (
+                                <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
+                            ) : (
+                                <CircleHelp className="h-5 w-5 stroke-[2.2]" />
+                            )}
+                        </span>
+                        <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+                            {title}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-xs sm:text-sm font-medium leading-relaxed text-muted-foreground pt-1">
                         {description}
                     </DialogDescription>
                 </DialogHeader>
                 {requiresTypedConfirmation && (
-                    <label className="space-y-1.5 pt-1">
-                        <span className="block text-xs font-medium leading-relaxed text-foreground">
+                    <label className="space-y-2 pt-1">
+                        <span className="block text-xs font-semibold leading-relaxed text-foreground">
                             {confirmationHint}
                         </span>
                         <input
@@ -83,17 +97,17 @@ export function ConfirmDialog({
                             placeholder={confirmationPhrase}
                             autoComplete="off"
                             autoFocus
-                            className="flex h-11 w-full rounded-2xl border border-border bg-muted/40 px-4 text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
+                            className="flex h-11 w-full rounded-2xl border border-border/80 bg-muted/40 px-4 text-xs sm:text-sm font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:bg-card focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15"
                             aria-label={confirmationHint}
                         />
                     </label>
                 )}
-                <DialogFooter className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end sm:gap-2">
+                <DialogFooter className="flex flex-row items-center justify-end gap-2.5 pt-3">
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="secondary"
                         onClick={handleCancel}
-                        className="w-full rounded-full h-11 px-5 font-medium transition-all sm:w-auto"
+                        className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm"
                     >
                         {cancelLabel ?? t('common.cancel')}
                     </Button>
@@ -102,7 +116,7 @@ export function ConfirmDialog({
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
                         disabled={!confirmationIsValid}
-                        className="w-full rounded-full h-11 px-6 font-medium transition-all sm:w-auto"
+                        className="rounded-xl h-10 px-5 text-xs font-bold sm:text-sm shadow-sm"
                     >
                         {confirmLabel ?? t('common.confirm')}
                     </Button>
@@ -111,3 +125,4 @@ export function ConfirmDialog({
         </Dialog>
     );
 }
+

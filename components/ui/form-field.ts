@@ -8,7 +8,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
  */
 export const formFieldVariants = cva(
   [
-    'flex w-full items-center border bg-input text-sm text-foreground',
+    'flex w-full items-center border bg-input text-base sm:text-sm text-foreground',
     'transition-all duration-200',
     'placeholder:text-muted-foreground',
     'hover:border-primary/30',

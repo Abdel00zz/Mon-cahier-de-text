@@ -26,6 +26,8 @@ import {
   CircleHelp,
   ChevronRight,
   CircleCheck,
+  ArrowLeft,
+  ArrowRight,
 } from '@/components/ui/icons';
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -187,12 +189,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="rounded-xl border border-border/75 bg-secondary/45 p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
-      <div className="mb-3 min-w-0 sm:mb-0">
-        <h3 className="text-sm font-extrabold text-foreground">{t('language.settings.title')}</h3>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('language.settings.description')}</p>
+    <section className="rounded-2xl border border-border/75 bg-card/60 p-4 sm:p-5 shadow-2xs">
+      <div className="mb-3.5 min-w-0">
+        <h3 className="text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
       </div>
-      <div className="grid grid-cols-3 gap-2 sm:w-[320px] sm:shrink-0">
+      <div className="grid grid-cols-3 gap-2.5 sm:max-w-md">
         {localeMetadata.map(option => {
           const active = (localConfig.applicationLocale ?? 'fr') === option.value;
           return (
@@ -202,16 +204,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               onClick={() => setLocalConfig(prev => ({ ...prev, applicationLocale: option.value as AppLocale }))}
               aria-pressed={active}
               className={cn(
-                'flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center transition-all cursor-pointer',
+                'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-2xl border px-3 py-2.5 text-center transition-all duration-200 cursor-pointer',
                 active
-                  ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20 font-bold'
-                  : 'border-border/80 bg-card/90 text-muted-foreground hover:border-primary/25 hover:bg-accent/70 hover:text-foreground'
+                  ? 'border-primary/40 bg-primary/10 text-primary shadow-xs ring-1 ring-inset ring-primary/20 font-bold'
+                  : 'border-border/80 bg-background/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'
               )}
             >
-              <span className={cn('text-sm font-extrabold leading-none', option.value === 'ar' && 'font-bold tracking-normal')}>
+              <span className={cn('text-sm font-bold leading-none', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[10px] font-semibold', option.value === 'ar' && 'tracking-normal')}>
+              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-primary/90 font-semibold')}>
                 {option.nativeName}
               </span>
             </button>
@@ -254,21 +256,21 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* 1. Profil & Matière */}
-            <section className="rounded-2xl border border-border/70 bg-card/55 p-4 sm:p-5">
-              <header className="flex items-center gap-2.5 mb-4">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                  <User className="h-4.5 w-4.5" />
+            <section className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <User className="h-5 w-5 stroke-[2.2]" />
                 </span>
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-foreground">{t('settings.group.profile')}</h3>
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">{t('settings.subjectsHint')}</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{t('settings.subjectsHint')}</p>
                 </div>
               </header>
 
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label className="block text-xs font-bold text-foreground/80">
                       {t('settings.teacherName')}
                     </label>
                     <Input
@@ -276,12 +278,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       value={localConfig.defaultTeacherName || ''}
                       onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
                       placeholder={t('settings.teacherPlaceholder')}
-                      className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
+                      className="h-10 rounded-xl border-border/80 bg-background/80 px-3.5 text-sm shadow-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label className="block text-xs font-bold text-foreground/80">
                       {t('settings.phone')}
                     </label>
                     <Input
@@ -290,13 +292,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       disabled
                       readOnly
                       placeholder="—"
-                      className="h-10 rounded-xl border-border/80 bg-muted/50 px-3.5 text-sm shadow-none text-muted-foreground"
+                      className="h-10 rounded-xl border-border/80 bg-muted/40 px-3.5 text-sm shadow-none text-muted-foreground"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <div className="space-y-2 pt-1">
+                  <label className="block text-xs font-bold text-foreground/80">
                     {t('settings.subjects')}
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -309,10 +311,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           aria-pressed={active}
                           onClick={() => toggleSubject(subject)}
                           className={cn(
-                            'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer',
+                            'rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs',
                             active
-                              ? 'border-blue-500 bg-blue-600 text-white'
-                              : 'border-border bg-card text-muted-foreground hover:border-blue-300 hover:text-foreground'
+                              ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
+                              : 'border-border/80 bg-background/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'
                           )}
                         >
                           {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -325,7 +327,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setSubjectExpanded(v => !v)}
-                        className="text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer"
+                        className="text-xs font-bold text-primary hover:underline cursor-pointer"
                       >
                         {subjectExpanded ? t('settings.subjectsSeeLess') : t('settings.subjectsSeeMore')}
                       </button>
@@ -336,20 +338,20 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="rounded-2xl border border-border/70 bg-card/55 p-4 sm:p-5">
-              <header className="flex items-center gap-2.5 mb-4">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                  <School className="h-4.5 w-4.5" />
+            <section className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+              <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <School className="h-5 w-5 stroke-[2.2]" />
                 </span>
                 <h3 className="text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
               </header>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className="block text-xs font-bold text-foreground/80">
                     {t('settings.cycle')}
                   </label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                     {CYCLES.map(c => {
                       const active = (localConfig.selectedCycles?.[0] ?? 'college') === c.key;
                       return (
@@ -358,21 +360,21 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           type="button"
                           onClick={() => setLocalConfig(prev => ({ ...prev, selectedCycles: [c.key], showAllCycles: false }))}
                           className={cn(
-                            'group flex flex-col items-center justify-center gap-2 rounded-2xl border-2 px-2 py-3.5 transition-all duration-200 outline-none cursor-pointer',
+                            'group flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 transition-all duration-200 outline-none cursor-pointer',
                             active
-                              ? 'border-blue-500 bg-blue-50/70'
-                              : 'border-border bg-card hover:border-blue-200 hover:bg-blue-50/40'
+                              ? 'border-primary/40 bg-primary/10 shadow-xs ring-1 ring-inset ring-primary/20'
+                              : 'border-border/80 bg-background/80 hover:border-border hover:bg-muted/40'
                           )}
                         >
                           <span className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
-                            active ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                            active ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-muted/60 text-muted-foreground'
                           )}>
                             <c.icon className="h-5 w-5" />
                           </span>
                           <span className={cn(
-                            'text-[11px] font-semibold leading-tight text-center',
-                            active ? 'text-blue-700' : 'text-muted-foreground'
+                            'text-xs font-bold leading-tight text-center',
+                            active ? 'text-primary' : 'text-muted-foreground'
                           )}>
                             {t(`settings.cycle.${c.key}`)}
                           </span>
@@ -383,7 +385,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className="block text-xs font-bold text-foreground/80">
                     {t('settings.establishment')}
                   </label>
                   <Input
@@ -391,13 +393,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     value={localConfig.establishmentName || ''}
                     onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
                     placeholder={t('settings.establishmentPlaceholder')}
-                    className="h-10 rounded-xl border-border/80 bg-card/85 px-3.5 text-sm shadow-none"
+                    className="h-10 rounded-xl border-border/80 bg-background/80 px-3.5 text-sm shadow-none"
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label htmlFor="academy-region" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label htmlFor="academy-region" className="block text-xs font-bold text-foreground/80">
                       {t('settings.academy')}
                     </label>
                     <select
@@ -414,7 +416,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                             : '',
                         }));
                       }}
-                      className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      className="h-10 w-full rounded-xl border border-border/80 bg-background/80 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
                     >
                       <option value="">{t('settings.chooseAcademy')}</option>
                       {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
@@ -426,7 +428,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="education-province" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <label htmlFor="education-province" className="block text-xs font-bold text-foreground/80">
                       {t('settings.province')}
                     </label>
                     <select
@@ -434,7 +436,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       value={localConfig.educationProvince ?? ''}
                       disabled={!selectedAcademy}
                       onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                      className="h-10 w-full rounded-xl border border-border/80 bg-card/85 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
+                      className="h-10 w-full rounded-xl border border-border/80 bg-background/80 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
                     >
                       <option value="">
                         {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
@@ -689,7 +691,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       {/* Paramètres principaux */}
       <div className="flex-1">
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {mainMenuItems.map(item => {
             const isActive = activeCategory === item.id;
             const Icon = item.icon;
@@ -703,28 +705,28 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 }}
                 title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl focus:outline-none focus-visible:text-primary',
+                  'w-full flex items-center transition-all cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                   isEffectiveCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'justify-start gap-2.5 px-3 py-2 text-start',
+                    ? 'justify-center p-2'
+                    : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'text-primary font-semibold'
-                    : 'text-muted-foreground hover:text-primary'
+                    ? 'bg-primary/10 text-primary shadow-2xs border border-primary/20'
+                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'text-primary scale-105'
-                      : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
+                      ? 'bg-primary text-primary-foreground shadow-xs scale-105'
+                      : 'bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
                   )}
                 >
-                  <Icon className="h-4 w-4 stroke-[2.5]" />
+                  <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
                 </div>
                 {!isEffectiveCollapsed && (
                   <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-medium group-hover:text-foreground')}>
+                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground group-hover:text-foreground')}>
                       {t(item.titleKey)}
                     </span>
                   </div>
@@ -736,8 +738,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       </div>
 
       {/* Paiements et assistance */}
-      <div className="pt-5">
-        <div className="space-y-0.5">
+      <div className="pt-4 border-t border-border/40">
+        <div className="space-y-1.5">
           {supportMenuItems.map(item => {
             const isActive = activeCategory === item.id;
             const Icon = item.icon;
@@ -751,28 +753,28 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 }}
                 title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-xl focus:outline-none focus-visible:text-primary',
+                  'w-full flex items-center transition-all cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                   isEffectiveCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'justify-start gap-2.5 px-3 py-2 text-start',
+                    ? 'justify-center p-2'
+                    : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'text-primary font-semibold'
-                    : 'text-muted-foreground hover:text-primary'
+                    ? 'bg-primary/10 text-primary shadow-2xs border border-primary/20'
+                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'text-primary scale-105'
-                      : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
+                      ? 'bg-primary text-primary-foreground shadow-xs scale-105'
+                      : 'bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
                   )}
                 >
-                  <Icon className="h-4 w-4 stroke-[2.5]" />
+                  <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
                 </div>
                 {!isEffectiveCollapsed && (
                   <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-medium group-hover:text-foreground')}>
+                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground group-hover:text-foreground')}>
                       {t(item.titleKey)}
                     </span>
                   </div>
@@ -787,14 +789,30 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   // Vue Plein Écran (`asPage`)
   if (asPage) {
+    const BackIcon = isRtl ? ArrowRight : ArrowLeft;
     return (
-      <div className="rtl-flow min-h-screen pb-[env(safe-area-inset-bottom,1rem)]">
-        <main className="mx-auto max-w-6xl px-3 py-5 sm:px-6 sm:py-6 pb-8">
-          <div className="mb-4 flex items-center gap-2 px-1 text-foreground sm:mb-5">
-            <Settings className="h-4.5 w-4.5 text-primary" />
-            <h1 className={cn('font-extrabold tracking-tight', isRtl ? 'font-bold tracking-normal text-2xl leading-none' : 'text-lg')}>
-              {t('settings.title')}
-            </h1>
+      <div className="rtl-flow min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-background/60">
+        <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 pb-8">
+          <div className="mb-4 flex items-center justify-between px-1 text-foreground sm:mb-5">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-card border border-border/80 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer shadow-2xs"
+                title={t('common.cancel')}
+                aria-label={t('common.cancel')}
+              >
+                <BackIcon className="h-4 w-4" />
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Settings className="h-4.5 w-4.5" />
+                </span>
+                <h1 className={cn('font-bold tracking-tight text-foreground', isRtl ? 'font-bold tracking-normal text-xl leading-none' : 'text-lg sm:text-xl')}>
+                  {t('settings.title')}
+                </h1>
+              </div>
+            </div>
           </div>
 
           {/* Grille responsive 2 colonnes avec réducteur automatique */}
@@ -802,7 +820,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Sidebar gauche : Menu des rubriques */}
             <div
               className={cn(
-                'bg-card/88 border border-border/75 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.055)] backdrop-blur-sm transition-all duration-300',
+                'bg-card/90 border border-border/75 rounded-3xl p-3 shadow-2xs backdrop-blur-sm transition-all duration-300',
                 isEffectiveCollapsed
                   ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                   : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -815,13 +833,25 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Panneau droit : Contenu de la rubrique sélectionnée */}
             <div
               className={cn(
-                'flex flex-col bg-card/92 border border-border/75 rounded-2xl p-4 sm:p-5 shadow-[0_12px_32px_rgba(30,64,110,0.055)] backdrop-blur-sm min-h-[500px] transition-all duration-300 text-card-foreground',
+                'flex flex-col bg-card/92 border border-border/75 rounded-3xl p-4 sm:p-6 shadow-2xs backdrop-blur-sm min-h-[520px] transition-all duration-300 text-card-foreground',
                 isEffectiveCollapsed
                   ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                   : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
                 !mobileSubViewOpen ? 'hidden md:block' : 'block'
               )}
             >
+              {/* Mobile Back to Menu */}
+              <div className="mb-4 pb-3 border-b border-border/50 md:hidden flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMobileSubViewOpen(false)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs"
+                >
+                  <BackIcon className="h-3.5 w-3.5" />
+                  {t('settings.title')}
+                </button>
+              </div>
+
               <div className="flex-1">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -836,8 +866,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </AnimatePresence>
               </div>
               
-              {/* Actions au bas de la zone de contenu (au lieu de la barre fixée) */}
-              <div className="mt-8">
+              {/* Actions au bas de la zone de contenu */}
+              <div className="mt-8 pt-4 border-t border-border/50">
                 {footer}
               </div>
             </div>
@@ -853,18 +883,25 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <span className="flex items-center gap-2">
-          <Settings className="h-5 w-5 text-primary" />
-          {t('settings.title')}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+            <Settings className="h-5 w-5 stroke-[2.2]" />
+          </span>
+          <span className="text-base sm:text-lg font-bold text-foreground">
+            {t('settings.title')}
+          </span>
+        </div>
       }
       description={t('settings.description')}
-      maxWidth="4xl"
+      maxWidth="5xl"
+      className="sm:max-w-5xl sm:rounded-[32px]"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
     >
-      <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[460px]">
+      <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[480px]">
         <div
           className={cn(
-            'md:col-span-5',
+            'md:col-span-5 lg:col-span-4',
             isRtl ? 'border-l border-border/70 pl-0 md:pl-4' : 'border-r border-border/70 pr-0 md:pr-4',
             mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
@@ -874,7 +911,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
         <div
           className={cn(
-            'md:col-span-7 flex flex-col',
+            'md:col-span-7 lg:col-span-8 flex flex-col',
             isRtl ? 'pr-0 md:pr-2' : 'pl-0 md:pl-2',
             !mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
@@ -893,7 +930,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </AnimatePresence>
           </div>
           
-          <div className="mt-8">
+          <div className="mt-8 pt-4 border-t border-border/60">
             {footer}
           </div>
         </div>

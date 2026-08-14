@@ -3,8 +3,25 @@ import { AppConfig, ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { CalendarCheck, CalendarDays, CalendarRange, ChevronLeft, ChevronRight, Clock, GraduationCap } from '@/components/ui/icons';
-import { getBundledCalendar, loadHolidayCalendar, localizeCalendarName, todayInMorocco, type HolidayCalendar } from '@/utils/calendar';
+import {
+  CalendarCheck,
+  CalendarDays,
+  CalendarRange,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  GraduationCap,
+  Check,
+  CircleAlert,
+  Info,
+} from '@/components/ui/icons';
+import {
+  getBundledCalendar,
+  loadHolidayCalendar,
+  localizeCalendarName,
+  todayInMorocco,
+  type HolidayCalendar,
+} from '@/utils/calendar';
 import { getDaySessionBlocks } from '@/utils/timetable';
 import { collectSessionDates } from '@/utils/printMeta';
 import { readClassLessons } from '@/utils/notificationSignals';
@@ -48,16 +65,74 @@ const fromISO = (iso: string): Date => {
 const addDays = (date: Date, amount: number): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
 const minuteLabel = (minutes: number): string => `${pad(Math.floor(minutes / 60))}h${minutes % 60 ? pad(minutes % 60) : ''}`;
 
-/* Palette en tokens du design system (rouge = destructive, vert = success,
-   ambre = warning) : une seule identité, contrastes de texte accessibles. */
-const EVENT_TONE: Record<CalendarEventKind, { dot: string; wash: string; text: string }> = {
-  lesson: { dot: 'bg-[#423ed8]', wash: 'bg-[#eeaaff]/50', text: 'text-[#423ed8]' },
-  holiday: { dot: 'bg-destructive', wash: 'bg-destructive/10', text: 'text-destructive-strong' },
-  vacation: { dot: 'bg-success', wash: 'bg-success/10', text: 'text-success-strong' },
-  official: { dot: 'bg-warning', wash: 'bg-warning/15', text: 'text-warning-strong' },
-  absence: { dot: 'bg-muted-foreground', wash: 'bg-muted', text: 'text-muted-foreground' },
-  assessment: { dot: 'bg-destructive', wash: 'bg-destructive/10', text: 'text-destructive-strong' },
-  pedagogical: { dot: 'bg-violet-500', wash: 'bg-violet-500/10', text: 'text-violet-700 dark:text-violet-300' },
+/* Stylisation moderne et soignée des événements avec contrastes WCAG AA */
+const EVENT_STYLES: Record<
+  CalendarEventKind,
+  {
+    dot: string;
+    badge: string;
+    border: string;
+    text: string;
+    bgLight: string;
+    iconColor: string;
+  }
+> = {
+  lesson: {
+    dot: 'bg-primary',
+    badge: 'bg-primary/10 text-primary border-primary/20',
+    border: 'border-primary/30',
+    text: 'text-primary',
+    bgLight: 'bg-primary/[0.04]',
+    iconColor: 'text-primary',
+  },
+  holiday: {
+    dot: 'bg-rose-500',
+    badge: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
+    border: 'border-rose-500/30',
+    text: 'text-rose-700 dark:text-rose-300',
+    bgLight: 'bg-rose-500/[0.05]',
+    iconColor: 'text-rose-500',
+  },
+  vacation: {
+    dot: 'bg-emerald-500',
+    badge: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    border: 'border-emerald-500/30',
+    text: 'text-emerald-700 dark:text-emerald-300',
+    bgLight: 'bg-emerald-500/[0.04]',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+  },
+  official: {
+    dot: 'bg-sky-500',
+    badge: 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20',
+    border: 'border-sky-500/30',
+    text: 'text-sky-700 dark:text-sky-300',
+    bgLight: 'bg-sky-500/[0.04]',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+  },
+  absence: {
+    dot: 'bg-muted-foreground',
+    badge: 'bg-muted text-muted-foreground border-border/80',
+    border: 'border-border',
+    text: 'text-muted-foreground',
+    bgLight: 'bg-muted/40',
+    iconColor: 'text-muted-foreground',
+  },
+  assessment: {
+    dot: 'bg-amber-500',
+    badge: 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/25',
+    border: 'border-amber-500/30',
+    text: 'text-amber-800 dark:text-amber-300',
+    bgLight: 'bg-amber-500/[0.05]',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+  },
+  pedagogical: {
+    dot: 'bg-purple-500',
+    badge: 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20',
+    border: 'border-purple-500/30',
+    text: 'text-purple-700 dark:text-purple-300',
+    bgLight: 'bg-purple-500/[0.04]',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+  },
 };
 
 const layerMatches = (event: CalendarEvent, layer: CalendarLayer): boolean => {
@@ -79,18 +154,21 @@ const eventPriority: Record<CalendarEventKind, number> = {
 
 export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ classes, config, selectedClassId }) => {
   const { locale, isRtl, t } = useLocale();
+
   const eventCountLabel = (count: number): string => {
     if (locale !== 'ar') return `${count} ${t('calendar.events')}`;
     if (count === 1) return 'حدث واحد';
     if (count === 2) return 'حدثان';
     return `${count} أحداث`;
   };
+
   const monthSummaryLabel = (sessions: number, events: number): string => {
     if (locale !== 'ar') return t('calendar.monthSummary', { sessions, events });
     const sessionText = sessions === 1 ? 'حصة واحدة' : sessions === 2 ? 'حصتان' : `${sessions} حصص`;
     const eventText = events === 1 ? 'موعد واحد' : events === 2 ? 'موعدان' : `${events} مواعيد`;
     return `${sessionText} · ${eventText}`;
   };
+
   const [calendar, setCalendar] = useState<HolidayCalendar>(() => getBundledCalendar());
   const [officialFile, setOfficialFile] = useState<OfficialStudentEventsFile>(() => getOfficialStudentEventsFile());
   const [planning, setPlanning] = useState<PlanningFile | null>(null);
@@ -229,9 +307,6 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       const closed = dayEvents.some(event => event.kind === 'holiday' || event.kind === 'vacation' || event.kind === 'absence');
 
       if (!closed) {
-        // Chaque classe suit sa propre branche : la grille détaillée a
-        // priorité pour cette classe seulement. Les anciens horaires des
-        // autres classes continuent donc d'apparaître dans le calendrier.
         const blocks = getDaySessionBlocks(config.timetable, date.getDay())
           .filter(block => relevantClassIds.has(block.classId));
         for (const block of blocks) {
@@ -272,11 +347,6 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return map;
   }, [classById, config.schedules, config.timetable, locale, monthCells, relevantClasses, staticEvents, t]);
 
-  /*
-   * Dates réellement CONSIGNÉES dans chaque cahier : c'est ce qui transforme
-   * le calendrier en carte de complétude (où le cahier a des trous), au lieu
-   * d'un simple planning.
-   */
   const recordedByClass = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const classInfo of relevantClasses) {
@@ -285,13 +355,6 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return map;
   }, [relevantClasses]);
 
-  /**
-   * État pédagogique d'un jour :
-   *  · `gap` : séance passée sans contenu consigné (le trou à combler) ;
-   *  · `done` : toutes les séances du jour sont consignées ;
-   *  · `planned` : séance à venir ;
-   *  · `none` : aucun cours ce jour-là.
-   */
   const dayStatus = (iso: string, events: CalendarEvent[]): { status: 'gap' | 'done' | 'planned' | 'none'; planned: number; recorded: number } => {
     const lessons = events.filter(event => event.kind === 'lesson');
     if (lessons.length === 0) return { status: 'none', planned: 0, recorded: 0 };
@@ -301,30 +364,22 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return { status: 'gap', planned: lessons.length, recorded };
   };
 
-  /*
-   * Lecture par SEMAINE (ligne de la grille) :
-   *  · une semaine contenant un devoir est teintée en rouge doux ;
-   *  · une semaine de vacances est verte, avec le nom affiché UNE SEULE fois
-   *    (premier jour de la semaine concernée) pour éviter la répétition.
-   */
-  const { assessmentWeeks, vacationLabelCells } = useMemo(() => {
-    const weeks = new Set<number>();
+  /** Pour les vacances, n'afficher le label que sur le premier jour de la semaine concernée */
+  const vacationLabelCells = useMemo(() => {
     const labelCells = new Set<string>();
     const weekAlreadyLabelled = new Set<number>();
     monthCells.forEach((date, index) => {
       const iso = toISO(date);
       const events = eventsByDate.get(iso) ?? [];
       const weekIndex = Math.floor(index / 7);
-      if (events.some(event => event.kind === 'assessment')) weeks.add(weekIndex);
       if (events.some(event => event.kind === 'vacation') && !weekAlreadyLabelled.has(weekIndex)) {
         weekAlreadyLabelled.add(weekIndex);
         labelCells.add(iso);
       }
     });
-    return { assessmentWeeks: weeks, vacationLabelCells: labelCells };
+    return labelCells;
   }, [eventsByDate, monthCells]);
 
-  /** Navigation clavier dans la grille (flèches), sens inversé en RTL. */
   const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const horizontal = isRtl ? -1 : 1;
     const delta =
@@ -351,9 +406,16 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
   const monthLabel = new Intl.DateTimeFormat(localeCode, { month: 'long', year: 'numeric' }).format(month);
   const selectedDateLabel = new Intl.DateTimeFormat(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(fromISO(selectedDate));
-  const weekdayLabels = Array.from({ length: 7 }, (_, index) =>
-    new Intl.DateTimeFormat(localeCode, { weekday: 'short' }).format(new Date(2026, 7, 3 + index)).replace('.', ''),
-  );
+  
+  // Noms des jours de la semaine débutant par le Lundi
+  const weekdayLabels = Array.from({ length: 7 }, (_, index) => {
+    const d = new Date(2026, 7, 3 + index); // 3 août 2026 est un Lundi
+    return {
+      short: new Intl.DateTimeFormat(localeCode, { weekday: 'short' }).format(d).replace('.', ''),
+      full: new Intl.DateTimeFormat(localeCode, { weekday: 'long' }).format(d),
+      isWeekend: index === 5 || index === 6,
+    };
+  });
 
   const moveMonth = (amount: number) => {
     const next = new Date(month.getFullYear(), month.getMonth() + amount, 1);
@@ -394,63 +456,95 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   ];
 
   return (
-    <div className="py-2" dir={isRtl ? 'rtl' : 'ltr'}>
-      <header className="mb-3 rounded-2xl border border-border/70 bg-card/80 p-2.5 shadow-2xs backdrop-blur-sm sm:p-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="flex shrink-0 items-center rounded-xl border border-border/80 bg-background/70 p-0.5 shadow-2xs" role="group" aria-label={t('calendar.layers')}>
-              <button type="button" onClick={() => moveMonth(-1)} aria-label={t('calendar.previousMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/25">
-                <ChevronLeft className={cn('h-3.5 w-3.5', isRtl && 'rotate-180')} />
-              </button>
-              <button type="button" onClick={() => moveMonth(1)} aria-label={t('calendar.nextMonth')} className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/25">
-                <ChevronRight className={cn('h-3.5 w-3.5', isRtl && 'rotate-180')} />
-              </button>
-            </div>
-            <button type="button" onClick={goToday} className="h-9 shrink-0 rounded-xl border border-[#423ed8]/20 bg-[#eeaaff]/50 px-3 text-[11px] font-bold text-[#423ed8] transition-colors hover:bg-[#eeaaff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#423ed8]/30">
-              {t('calendar.today')}
+    <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* ── BARRE SUPÉRIEURE : NAVIGATION & FILTRES ── */}
+      <header className="flex flex-col gap-3.5 rounded-3xl border border-border/70 bg-card p-3 sm:p-4 shadow-xs lg:flex-row lg:items-center lg:justify-between">
+        {/* Navigation Mois & Bouton Aujourd'hui */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center rounded-2xl border border-border/80 bg-muted/40 p-1 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => moveMonth(-1)}
+              aria-label={t('calendar.previousMonth')}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-card hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
+              <ChevronLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} />
             </button>
-            <div className="min-w-0 ps-1">
-              <h3 className="truncate text-base font-extrabold capitalize tracking-tight text-foreground sm:text-lg">{monthLabel}</h3>
-              <p className="mt-0.5 truncate text-[10px] font-semibold text-muted-foreground">
-                {monthSummaryLabel(monthLessonCount, monthMilestoneCount)}
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={() => moveMonth(1)}
+              aria-label={t('calendar.nextMonth')}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-card hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
+              <ChevronRight className={cn('h-4 w-4', isRtl && 'rotate-180')} />
+            </button>
           </div>
 
-          <div className="[@scrollbar-width:none] -mx-0.5 flex gap-1 overflow-x-auto px-0.5 pb-0.5" role="tablist" aria-label={t('calendar.layers')}>
-            {layers.map(item => (
+          <button
+            type="button"
+            onClick={goToday}
+            className="h-10 rounded-2xl border border-primary/25 bg-primary/10 px-4 text-xs font-bold text-primary transition-all hover:bg-primary/15 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/30 shadow-2xs"
+          >
+            {t('calendar.today')}
+          </button>
+
+          <div className="min-w-0 ps-1">
+            <h3 className="truncate text-lg sm:text-xl font-black capitalize tracking-tight text-foreground">
+              {monthLabel}
+            </h3>
+            <p className="truncate text-xs font-medium text-muted-foreground">
+              {monthSummaryLabel(monthLessonCount, monthMilestoneCount)}
+            </p>
+          </div>
+        </div>
+
+        {/* Filtres de couches (Segmented Pills) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-border/60 bg-muted/40 p-1 shadow-2xs" role="tablist" aria-label={t('calendar.layers')}>
+          {layers.map(item => {
+            const active = layer === item.id;
+            return (
               <button
                 key={item.id}
                 type="button"
                 role="tab"
-                aria-selected={layer === item.id}
+                aria-selected={active}
                 onClick={() => setLayer(item.id)}
                 className={cn(
-                  'h-8 shrink-0 rounded-lg border px-3 text-[10px] font-bold transition-all',
-                  layer === item.id
-                    ? 'border-[#423ed8] bg-[#423ed8] text-[#423ed8]-foreground shadow-sm'
-                    : 'border-transparent bg-muted/65 text-muted-foreground hover:border-border hover:bg-background hover:text-foreground',
+                  'h-9 shrink-0 rounded-xl px-3.5 text-xs font-bold transition-all duration-150',
+                  active
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:bg-card/70 hover:text-foreground',
                 )}
               >
                 {item.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-2xl border border-border/75 bg-card shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-        <div className="grid grid-cols-7 border-b border-border/70 bg-muted/45">
-          {weekdayLabels.map((label, index) => (
-            <div key={`${label}-${index}`} className="px-1 py-2 text-center text-[9px] font-bold uppercase tracking-wide text-muted-foreground sm:text-[10px]">
-              <span className="sm:hidden">{label.slice(0, 1)}</span>
-              <span className="hidden sm:inline">{label}</span>
+      {/* ── GRILLE DU CALENDRIER MODERNE ET AÉRÉE ── */}
+      <div className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-xs">
+        {/* En-tête des jours de la semaine */}
+        <div className="grid grid-cols-7 border-b border-border/60 bg-muted/30">
+          {weekdayLabels.map((item, index) => (
+            <div
+              key={`${item.short}-${index}`}
+              className={cn(
+                'py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-wider',
+                item.isWeekend ? 'text-muted-foreground/70' : 'text-foreground'
+              )}
+            >
+              <span className="sm:hidden">{item.short}</span>
+              <span className="hidden sm:inline">{item.full}</span>
             </div>
           ))}
         </div>
+
+        {/* Cellules du calendrier */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role */}
         <div
-          className="grid grid-cols-7 gap-px bg-border/65"
+          className="grid grid-cols-7 gap-1 sm:gap-1.5 p-1.5 sm:p-2.5 bg-muted/20"
           role="grid"
           tabIndex={0}
           onKeyDown={handleGridKeyDown}
@@ -463,44 +557,32 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             const current = inCurrentMonth(date);
             const selected = iso === selectedDate;
             const isToday = iso === today;
-            const weekIndex = Math.floor(index / 7);
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
             const holiday = allDayEvents.find(event => event.kind === 'holiday');
             const vacation = allDayEvents.find(event => event.kind === 'vacation');
-            const isAssessmentWeek = assessmentWeeks.has(weekIndex);
+            const absence = allDayEvents.find(event => event.kind === 'absence');
             const showVacationLabel = Boolean(vacation) && vacationLabelCells.has(iso);
-            // Les cellules reprennent la logique Google Calendar : quelques
-            // créneaux lisibles sur grand écran, puis des pastilles compactes
-            // sur mobile. Le panneau latéral garde le détail complet.
-            const chipEvents = visibleEvents.filter(event => event.kind !== 'holiday' && event.kind !== 'vacation');
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
 
-            /*
-             * FONDS PORTEURS DE SENS, hiérarchie de lecture :
-             *  1. contexte de fermeture (férié / vacances / absence) ;
-             *  2. semaine de devoir (rouge doux, demandé) ;
-             *  3. état du cahier : trou à combler > jour consigné > à venir.
-             * La densité (nb de séances) renforce légèrement la teinte des
-             * jours à venir : le mois se lit comme une carte de charge.
-             */
-            const { status, planned } = dayStatus(iso, allDayEvents);
-            const dense = planned >= 2;
+            const { status } = dayStatus(iso, allDayEvents);
+            const nonBreakEvents = visibleEvents.filter(event => event.kind !== 'holiday' && event.kind !== 'vacation');
 
-            const dayWash = holiday
-              ? 'bg-destructive/[0.055]'
-              : vacation
-                ? 'bg-success/[0.045]'
-                : allDayEvents.some(event => event.kind === 'absence')
-                  ? 'bg-muted/75'
-                  : status === 'gap'
-                    ? 'bg-warning/[0.14]'
-                    : isAssessmentWeek
-                      ? 'bg-destructive/[0.05]'
-                      : status === 'done'
-                        ? 'bg-success/[0.055]'
-                        : status === 'planned'
-                          ? (dense ? 'bg-[#eeaaff]/80' : 'bg-[#eeaaff]/30')
-                          : isWeekend ? 'bg-muted/[0.28]' : 'bg-card';
+            // Style de fond aéré et harmonieux
+            const cellBg = !current
+              ? 'bg-muted/15 border-transparent opacity-40'
+              : selected
+                ? 'bg-primary/[0.06] border-primary ring-2 ring-primary/40 shadow-xs'
+                : isToday
+                  ? 'bg-primary/[0.03] border-primary/40 ring-1 ring-primary/30'
+                  : holiday
+                    ? 'bg-rose-500/[0.04] dark:bg-rose-500/[0.08] border-rose-500/20'
+                    : vacation
+                      ? 'bg-emerald-500/[0.03] dark:bg-emerald-500/[0.06] border-emerald-500/15'
+                      : absence
+                        ? 'bg-muted/40 border-border/60'
+                        : isWeekend
+                          ? 'bg-muted/30 border-border/40'
+                          : 'bg-card border-border/60 hover:border-border hover:shadow-2xs';
 
             return (
               <button
@@ -511,122 +593,216 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
                 onClick={() => setSelectedDate(iso)}
                 aria-label={`${date.getDate()} ${monthLabel}${holiday ? `, ${holiday.title}` : ''}${vacation ? `, ${vacation.title}` : ''}, ${eventCountLabel(visibleEvents.length)}`}
                 className={cn(
-                  'group relative flex min-h-[66px] min-w-0 flex-col gap-1 p-1.5 text-start transition-colors hover:z-10 hover:brightness-[0.985] focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#423ed8] sm:min-h-[96px] sm:p-2',
-                  dayWash,
-                  !current && 'bg-muted/55 opacity-55',
-                  isToday && !selected && 'ring-1 ring-inset ring-[#423ed8]/55',
-                  selected && 'z-10 ring-2 ring-inset ring-[#423ed8]',
+                  'group relative flex min-h-[74px] sm:min-h-[104px] flex-col justify-between rounded-xl sm:rounded-2xl border p-1.5 sm:p-2 text-start transition-all duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                  cellBg
                 )}
               >
-                {/* Trou à combler : liseré latéral, visible quel que soit le fond. */}
-                {status === 'gap' && current && (
-                  <span className="absolute inset-y-0 start-0 w-[3px] bg-warning" aria-hidden />
-                )}
-
-                <span className={cn(
-                  'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums sm:text-[11px]',
-                  isToday ? 'bg-[#423ed8] text-[#423ed8]-foreground shadow-sm' : current ? 'text-foreground' : 'text-muted-foreground',
-                )}>
-                  {date.getDate()}
-                </span>
-
-                {/* Fermetures : une bande discrète, sans teinter lourdement tout le mois. */}
-                {holiday ? (
-                  <span className="mt-0.5 min-w-0 rounded-md bg-destructive/10 px-1 py-0.5 text-start">
-                    <span className="block truncate text-[8px] font-bold leading-tight text-destructive-strong sm:text-[9px]">
-                      {holiday.title}
-                    </span>
+                {/* Ligne du haut : Numéro du jour & Indicateur de statut */}
+                <div className="flex items-center justify-between w-full">
+                  <span
+                    className={cn(
+                      'flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold tabular-nums transition-transform group-hover:scale-105',
+                      isToday
+                        ? 'bg-primary text-primary-foreground shadow-xs'
+                        : selected
+                          ? 'bg-primary/15 text-primary font-black'
+                          : current
+                            ? isWeekend ? 'text-muted-foreground' : 'text-foreground'
+                            : 'text-muted-foreground/60',
+                    )}
+                  >
+                    {date.getDate()}
                   </span>
-                ) : showVacationLabel ? (
-                  <span className="mt-0.5 min-w-0 rounded-md bg-success/10 px-1 py-0.5 text-start">
-                    <span className="block truncate text-[8px] font-bold leading-tight text-success-strong sm:text-[9px]">
-                      {vacation?.title}
+
+                  {/* Badge statut pédagogique (à consigner) */}
+                  {status === 'gap' && current && (
+                    <span
+                      title={t('calendar.legend.gap')}
+                      className="flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-amber-500 ring-2 ring-card animate-pulse"
+                      aria-hidden
+                    />
+                  )}
+                  {status === 'done' && current && nonBreakEvents.length > 0 && (
+                    <span
+                      title={t('calendar.legend.done')}
+                      className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold"
+                      aria-hidden
+                    >
+                      <Check className="h-2.5 w-2.5 stroke-[2.5]" />
                     </span>
-                  </span>
-                ) : vacation ? (
-                  <span className="mt-auto h-1 w-full rounded-full bg-success/35" aria-hidden />
-                ) : (
-                  <>
-                    <span className="hidden min-w-0 flex-1 flex-col gap-0.5 overflow-hidden sm:flex" aria-hidden>
-                      {chipEvents.slice(0, 2).map(event => (
-                        <span key={event.id} className={cn('flex min-w-0 items-center gap-1 rounded px-1 py-0.5 text-[8px] font-bold leading-tight', EVENT_TONE[event.kind].wash, EVENT_TONE[event.kind].text)}>
-                          <span className={cn('h-1 w-1 shrink-0 rounded-full', EVENT_TONE[event.kind].dot)} />
-                          <span className="truncate">{event.kind === 'lesson' && event.detail ? `${event.detail} · ${event.title}` : event.title}</span>
-                        </span>
-                      ))}
-                      {chipEvents.length > 2 && <span className="px-1 text-[8px] font-bold text-muted-foreground">+{chipEvents.length - 2}</span>}
-                    </span>
-                    <span className="mt-auto flex flex-wrap items-center gap-0.5 sm:hidden" aria-hidden>
-                      {chipEvents.slice(0, 4).map(event => (
-                        <span key={event.id} className={cn('h-1.5 w-1.5 rounded-full', EVENT_TONE[event.kind].dot)} />
-                      ))}
-                      {chipEvents.length > 4 && <span className="text-[7px] font-bold text-muted-foreground">+{chipEvents.length - 4}</span>}
-                    </span>
-                  </>
-                )}
+                  )}
+                </div>
+
+                {/* Corps de la cellule : Badges clairs & aérés */}
+                <div className="mt-1 flex flex-1 flex-col justify-end gap-1 min-w-0 w-full">
+                  {/* Férié */}
+                  {holiday && (
+                    <div className="flex items-center gap-1 rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-rose-700 dark:text-rose-300 truncate">
+                      <span className="shrink-0">🎈</span>
+                      <span className="truncate">{holiday.title}</span>
+                    </div>
+                  )}
+
+                  {/* Vacances : affichage discret et élégant */}
+                  {vacation && !holiday && (
+                    showVacationLabel ? (
+                      <div className="flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 truncate">
+                        <span className="shrink-0">🌴</span>
+                        <span className="truncate">{vacation.title}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center py-0.5">
+                        <span className="h-1 w-6 rounded-full bg-emerald-500/25" aria-hidden />
+                      </div>
+                    )
+                  )}
+
+                  {/* Cours, examens et activités */}
+                  {!holiday && !vacation && (
+                    <>
+                      {/* Vue desktop : badges informatifs */}
+                      <div className="hidden sm:flex flex-col gap-0.5 min-w-0">
+                        {nonBreakEvents.slice(0, 2).map(event => {
+                          const style = EVENT_STYLES[event.kind];
+                          return (
+                            <div
+                              key={event.id}
+                              className={cn(
+                                'flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold truncate leading-tight shadow-2xs',
+                                style.badge
+                              )}
+                            >
+                              <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', style.dot)} />
+                              <span className="truncate">
+                                {event.kind === 'lesson' && event.detail ? `${event.detail} · ${event.title}` : event.title}
+                              </span>
+                            </div>
+                          );
+                        })}
+                        {nonBreakEvents.length > 2 && (
+                          <span className="text-[9px] font-bold text-muted-foreground px-1">
+                            +{nonBreakEvents.length - 2}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Vue mobile : pastilles compactes */}
+                      <div className="flex sm:hidden flex-wrap items-center gap-1">
+                        {nonBreakEvents.slice(0, 3).map(event => (
+                          <span
+                            key={event.id}
+                            className={cn('h-2 w-2 rounded-full', EVENT_STYLES[event.kind].dot)}
+                          />
+                        ))}
+                        {nonBreakEvents.length > 3 && (
+                          <span className="text-[8px] font-bold text-muted-foreground">
+                            +{nonBreakEvents.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      <ul className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-border/65 bg-muted/30 px-3 py-2" aria-label={t('calendar.layers')}>
-        {/* États du cahier, avant les couleurs purement calendaires. */}
-        <li className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm border-s-[3px] border-warning bg-warning/[0.14]" aria-hidden />
-          <span className="text-[9px] font-semibold text-muted-foreground">{t('calendar.legend.gap')}</span>
+      {/* ── LÉGENDE RAFFINÉE & AÉRÉE ── */}
+      <ul
+        className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-2xs"
+        aria-label={t('calendar.layers')}
+      >
+        <li className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden />
+          <span className="text-xs font-semibold text-muted-foreground">{t('calendar.legend.gap')}</span>
         </li>
-        <li className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-success/[0.35]" aria-hidden />
-          <span className="text-[9px] font-semibold text-muted-foreground">{t('calendar.legend.done')}</span>
+        <li className="flex items-center gap-2">
+          <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-bold" aria-hidden>
+            ✓
+          </span>
+          <span className="text-xs font-semibold text-muted-foreground">{t('calendar.legend.done')}</span>
         </li>
-        {/* Types d'événements (pastilles) */}
-        {([
+        {[
           { kind: 'lesson' as const, label: t('calendar.lesson') },
           { kind: 'assessment' as const, label: t('calendar.assessment') },
           { kind: 'pedagogical' as const, label: t('calendar.pedagogical') },
           { kind: 'official' as const, label: t('calendar.category.school') },
           { kind: 'holiday' as const, label: t('calendar.holiday') },
           { kind: 'vacation' as const, label: t('calendar.vacation') },
-        ]).map(item => (
-          <li key={item.kind} className="flex items-center gap-1.5">
-            <span className={cn('h-1.5 w-1.5 rounded-full', EVENT_TONE[item.kind].dot)} aria-hidden />
-            <span className="text-[9px] font-semibold text-muted-foreground">{item.label}</span>
+        ].map(item => (
+          <li key={item.kind} className="flex items-center gap-2">
+            <span className={cn('h-2 w-2 rounded-full', EVENT_STYLES[item.kind].dot)} aria-hidden />
+            <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
           </li>
         ))}
       </ul>
 
-      <section className="mt-3 rounded-2xl border border-border/75 bg-card p-3 shadow-2xs sm:p-3.5" aria-label={selectedDateLabel}>
-        <div className="mb-3 flex items-center justify-between gap-2">
+      {/* ── PANNEAU DE DÉTAIL DU JOUR SÉLECTIONNÉ ── */}
+      <section
+        className="rounded-3xl border border-border/70 bg-card p-4 sm:p-5 shadow-xs"
+        aria-label={selectedDateLabel}
+      >
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
           <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t('calendar.layers')}</p>
-            <h4 className="mt-0.5 truncate text-[12px] font-extrabold capitalize text-foreground">{selectedDateLabel}</h4>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {t('calendar.layers')}
+            </span>
+            <h4 className="mt-0.5 truncate text-base sm:text-lg font-bold capitalize text-foreground">
+              {selectedDateLabel}
+            </h4>
           </div>
-          <span className="shrink-0 rounded-full bg-[#eeaaff]/60 px-2 py-1 text-[9px] font-bold text-[#423ed8] ring-1 ring-inset ring-[#423ed8]/15">
+          <span className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary shadow-2xs">
             {eventCountLabel(selectedEvents.length)}
           </span>
         </div>
+
         {selectedEvents.length === 0 ? (
-          <div className="flex min-h-16 items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 px-3 text-center text-[11px] text-muted-foreground">
-            {t('calendar.noEvents')}
+          <div className="flex min-h-24 flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
+              <CalendarDays className="h-5 w-5" />
+            </span>
+            <p className="text-xs sm:text-sm font-semibold text-muted-foreground">
+              {t('calendar.noEvents')}
+            </p>
           </div>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {selectedEvents.map(event => {
               const Icon = iconFor(event);
-              const tone = EVENT_TONE[event.kind];
+              const style = EVENT_STYLES[event.kind];
               return (
-                <article key={event.id} className="flex min-w-0 items-start gap-2 rounded-xl border border-border/70 bg-background/55 p-2.5 transition-colors hover:bg-muted/40">
-                  <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', tone.wash, tone.text)}>
-                    <Icon className="h-3.5 w-3.5" />
+                <article
+                  key={event.id}
+                  className={cn(
+                    'flex items-start gap-3.5 rounded-2xl border p-3.5 sm:p-4 transition-all duration-150 hover:shadow-2xs',
+                    style.bgLight,
+                    style.border
+                  )}
+                >
+                  <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-2xs border', style.badge)}>
+                    <Icon className="h-5 w-5 stroke-[2.2]" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-1">
-                      <span className={cn('text-[9px] font-bold uppercase tracking-wide', tone.text)}>{categoryLabel(event)}</span>
-                      {event.tentative && <span className="rounded bg-amber-50 px-1 text-[8px] font-semibold text-amber-700">{t('calendar.toConfirm')}</span>}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={cn('text-[10px] font-bold uppercase tracking-wider', style.text)}>
+                        {categoryLabel(event)}
+                      </span>
+                      {event.tentative && (
+                        <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-amber-700 dark:text-amber-300">
+                          {t('calendar.toConfirm')}
+                        </span>
+                      )}
                     </div>
-                    <h5 className="mt-0.5 text-[11px] font-bold leading-snug text-foreground">{event.title}</h5>
-                    {event.detail && <p className="mt-0.5 line-clamp-2 text-[10px] leading-relaxed text-muted-foreground">{event.detail}</p>}
+                    <h5 className="mt-1 text-sm font-bold leading-snug text-foreground">
+                      {event.title}
+                    </h5>
+                    {event.detail && (
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground font-medium">
+                        {event.detail}
+                      </p>
+                    )}
                   </div>
                 </article>
               );

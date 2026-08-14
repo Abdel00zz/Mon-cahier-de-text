@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Trash2 } from '@/components/ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
-import { useLocale } from '@/i18n/LocaleProvider';
+import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -32,7 +32,7 @@ interface CreateClassModalProps {
   onDelete?: () => void;
 }
 
-type ModalLanguage = 'fr' | 'ar';
+type ModalLanguage = AppLocale;
 
 const COPY: Record<ModalLanguage, {
   createTitle: string;
@@ -84,27 +84,51 @@ const COPY: Record<ModalLanguage, {
   },
   ar: {
     createTitle: 'إضافة قسم جديد',
-    editTitle: 'إعداد القسم',
-    createDescription: 'اختر المستوى والمادة؛ يُنشأ اسم القسم تلقائياً.',
-    editDescription: 'عدّل مستوى القسم ومادته.',
+    editTitle: 'إعداد القسم والتهيئة',
+    createDescription: 'اختر السلك، المستوى والمادة التعليمية؛ يُنشأ اسم القسم تلقائياً وفق التسميات الرسمية.',
+    editDescription: 'تعديل سلك ومستوى القسم والمادة المسندة.',
     cancel: 'إلغاء',
     create: 'إنشاء القسم',
     save: 'حفظ التعديلات',
-    cycle: 'السلك',
+    cycle: 'السلك التعليمي',
     cyclePlaceholder: 'اختر السلك…',
-    level: 'المستوى / القسم',
+    level: 'المستوى / الشعبة أو المسلك',
     levelPlaceholder: 'اختر المستوى…',
-    group: 'رقم المجموعة',
-    groupHint: 'مطلوب: رقم فريد داخل المستوى نفسه.',
-    invalidGroup: 'أدخل رقماً من 1 إلى 99.',
-    duplicateGroup: 'هذا الرقم مستخدم بالفعل في هذا المستوى.',
-    subject: 'المادة',
-    subjectPlaceholder: 'اختر مادة…',
-    customLevelPlaceholder: 'مثال: مجموعة الدعم، DAOL…',
-    customSubjectPlaceholder: 'أدخل المادة…',
-    switchToOfficial: 'العودة إلى اللائحة الرسمية ←',
-    createCustom: 'المستوى غير موجود؟ أنشئ قسماً مخصصاً',
-    cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
+    group: 'رقم الفوج / المجموعة',
+    groupHint: 'مطلوب: رقم الفوج داخل نفس المستوى (مثال: 1، 2...).',
+    invalidGroup: 'يرجى إدخال رقم فوج صحيح من 1 إلى 99.',
+    duplicateGroup: 'رقم الفوج هذا مستخدم بالفعل لهذا المستوى.',
+    subject: 'المادة الدراسية',
+    subjectPlaceholder: 'اختر المادة…',
+    customLevelPlaceholder: 'مثال: حصة الدعم، أنشطة الأندية…',
+    customSubjectPlaceholder: 'أدخل المادة أو التخصص…',
+    switchToOfficial: 'العودة إلى اللائحة الرسمية للوزارة ←',
+    createCustom: 'مستوى غير مدرج؟ إنشاء قسم أو نشاط مخصص',
+    cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية للمدارس العليا' },
+  },
+  en: {
+    createTitle: 'Create New Class',
+    editTitle: 'Configure Class',
+    createDescription: 'Select level and subject; the official class name is composed automatically.',
+    editDescription: 'Modify class level, subject, and group.',
+    cancel: 'Cancel',
+    create: 'Create Class',
+    save: 'Save Changes',
+    cycle: 'Education Cycle',
+    cyclePlaceholder: 'Select a cycle…',
+    level: 'Grade Level / Stream',
+    levelPlaceholder: 'Select a level…',
+    group: 'Group / Section #',
+    groupHint: 'Required: unique group number per level (1–99).',
+    invalidGroup: 'Please enter a number from 1 to 99.',
+    duplicateGroup: 'This group number is already in use for this level.',
+    subject: 'Subject',
+    subjectPlaceholder: 'Select a subject…',
+    customLevelPlaceholder: 'e.g. Tutoring group, club…',
+    customSubjectPlaceholder: 'Enter subject name…',
+    switchToOfficial: '← Back to official curriculum list',
+    createCustom: 'Level not listed? Create custom class',
+    cycleLabels: { college: 'Middle School', lycee: 'High School', prepa: 'Preparatory Classes' },
   },
 };
 
@@ -121,8 +145,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   onDelete,
 }) => {
   const { locale, t } = useLocale();
-  const language: ModalLanguage = locale === 'ar' ? 'ar' : 'fr';
-  const copy = COPY[language];
+  const language: ModalLanguage = locale;
+  const copy = COPY[language] ?? COPY.fr;
   const isAr = language === 'ar';
   const [cycle, setCycle] = useState<Cycle>(defaultCycle);
   const [level, setLevel] = useState('');
@@ -237,10 +261,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         title={editingClass ? copy.editTitle : copy.createTitle}
         description={editingClass ? copy.editDescription : copy.createDescription}
         maxWidth="md"
-        className="sm:max-w-[34rem]"
-        headerClassName="px-4 pt-4 sm:px-6 sm:pt-6"
-        bodyClassName="px-4 py-3 sm:px-6 sm:py-4"
-        footerClassName="px-4 py-2.5 sm:px-6 sm:py-3"
+        className="sm:max-w-[38rem] sm:rounded-[28px]"
+        headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+        bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+        footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
         footer={
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
           {editingClass && onDelete && (
@@ -248,17 +272,17 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               type="button"
               variant="destructive"
               onClick={() => setConfirmDelete(true)}
-              className="order-2 h-11 w-full gap-2 sm:order-1 sm:me-auto sm:h-9 sm:w-auto"
+              className="order-2 h-11 w-full gap-2 rounded-xl sm:order-1 sm:me-auto sm:h-10 sm:w-auto"
             >
               <Trash2 className="h-4 w-4" />
               {t('dashboard.delete')}
             </Button>
           )}
-          <div className="order-1 flex w-full gap-2 sm:order-2 sm:ms-auto sm:w-auto">
-            <Button type="button" onClick={onClose} variant="secondary" className="h-11 flex-1 sm:h-9 sm:flex-none">
+          <div className="order-1 flex w-full gap-2.5 sm:order-2 sm:ms-auto sm:w-auto">
+            <Button type="button" onClick={onClose} variant="secondary" className="h-11 flex-1 rounded-xl sm:h-10 sm:flex-none">
               {copy.cancel}
             </Button>
-            <Button type="submit" form="create-class-form" variant="default" disabled={!isFormValid} className="h-11 flex-1 sm:h-9 sm:flex-none">
+            <Button type="submit" form="create-class-form" variant="default" disabled={!isFormValid} className="h-11 flex-1 rounded-xl bg-primary text-primary-foreground font-bold shadow-sm sm:h-10 sm:flex-none">
               {editingClass ? copy.save : copy.create}
             </Button>
           </div>

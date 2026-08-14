@@ -17,6 +17,7 @@ import {
   faCalendarXmark,
   faClock,
   faArrowLeft,
+  faArrowRight,
   faArrowUp,
   faArrowDown,
   faTriangleExclamation,
@@ -69,6 +70,8 @@ import {
   faBars,
   faWandMagicSparkles,
   faShieldHalved,
+  faRotate,
+  faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 
 export interface AppIconProps {
@@ -117,6 +120,7 @@ export const CalendarMinus = createIcon(faCalendarMinus);
 export const CalendarX = createIcon(faCalendarXmark);
 export const Clock = createIcon(faClock);
 export const ArrowLeft = createIcon(faArrowLeft);
+export const ArrowRight = createIcon(faArrowRight);
 export const ArrowUp = createIcon(faArrowUp);
 export const ArrowDown = createIcon(faArrowDown);
 export const TriangleAlert = createIcon(faTriangleExclamation);
@@ -169,3 +173,5 @@ export const Users = createIcon(faUsers);
 export const Menu = createIcon(faBars);
 export const Sparkles = createIcon(faWandMagicSparkles);
 export const ShieldCheck = createIcon(faShieldHalved);
+export const RefreshCw = createIcon(faRotate);
+export const LogOut = createIcon(faRightFromBracket);

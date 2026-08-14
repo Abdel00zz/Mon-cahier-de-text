@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import type { AppLocale } from '@/types';
 
+export type { AppLocale };
+
 type MessageValue = string;
 type TranslationTable = Record<string, MessageValue>;
 
@@ -784,6 +786,17 @@ const messages: Record<AppLocale, TranslationTable> = {
     'language.settings.active': 'Active language',
     'dashboard.ready': 'Your notebooks are ready to open.',
     'dashboard.classes': 'My classes',
+    'dashboard.notebook': 'Lesson notebook',
+    'dashboard.filterAll': 'All',
+    'dashboard.evaluations': 'Continuous assessment',
+    'dashboard.addClass': 'Add a class',
+    'dashboard.classShort': 'Class',
+    'dashboard.emptyTitle': 'Create your first class',
+    'dashboard.emptyDescription': 'Add a class to plan your lessons and fill in your notebook.',
+    'dashboard.classList': 'Class list',
+    'cycle.college': 'Middle School (Collège)',
+    'cycle.lycee': 'High School (Lycée qualifiant)',
+    'cycle.prepa': 'Preparatory Classes (CPGE)',
     'dashboard.nextSessionStatus': 'Next lesson',
     'dashboard.lastLesson': 'Last lesson',
     'dashboard.doneOn': 'completed on {date}',
@@ -843,6 +856,10 @@ const messages: Record<AppLocale, TranslationTable> = {
     'editor.title': 'Item title',
     'editor.description': 'Description / content…',
     'editor.unassignDate': 'Unassign date',
+    'editor.orientation.label': 'Clearer view',
+    'editor.orientation.title': 'Rotate phone',
+    'editor.orientation.description': 'Switch to landscape mode to see the table clearly.',
+    'editor.orientation.close': 'Close orientation reminder',
     'common.cancel': 'Cancel',
     'common.confirm': 'Confirm',
     'common.close': 'Close',
@@ -1563,7 +1580,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'dashboard.welcome.afternoonDetail': 'واصل بنفس الوتيرة.',
     'dashboard.welcome.eveningDetail': 'عمل جيد اليوم، تكفي مراجعة أخيرة.',
     'dashboard.filterAll': 'الكل',
-    'dashboard.evaluations': 'التقويمات',
+    'dashboard.evaluations': 'المراقبة المستمرة',
     'dashboard.addClass': 'إضافة قسم',
     'dashboard.classShort': 'قسم',
     'dashboard.emptyTitle': 'أنشئ قسمك الأول',
@@ -1578,7 +1595,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'dashboard.deleteNotebookConfirmHint': 'اكتب « {name} » كما هو لتأكيد الحذف.',
     'cycle.college': 'الثانوي الإعدادي',
     'cycle.lycee': 'الثانوي التأهيلي',
-    'cycle.prepa': 'الأقسام التحضيرية',
+    'cycle.prepa': 'الأقسام التحضيرية للمدارس العليا',
     'dashboard.classCount': '{count} قسم{plural}',
     'dashboard.display': 'طريقة العرض',
     'dashboard.display.list': 'قائمة',

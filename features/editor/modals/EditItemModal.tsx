@@ -64,24 +64,24 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex select-none items-start gap-3 rounded-xl border p-2.5 text-start transition-all duration-150 ${
+      className={`group relative flex select-none items-start gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 ${
         disabled
-          ? 'bg-muted/50 border-border/70 opacity-40 cursor-not-allowed'
-          : 'bg-card hover:bg-muted/80 border-border hover:border-border active:scale-[0.99] cursor-pointer shadow-sm hover:shadow-md'
+          ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
+          : 'bg-card hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.98] cursor-pointer shadow-xs hover:shadow-sm'
       }`}
       title={tooltip}
     >
-      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg p-2 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/60`}`}>
-        <Icon className="h-5 w-5" />
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
+        <Icon className="h-5 w-5 stroke-[2.2]" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-semibold text-xs text-foreground leading-snug">{label}</div>
+        <div className="font-bold text-xs text-foreground leading-snug">{label}</div>
         {description && (
-          <div className="text-[10px] text-muted-foreground mt-0.5 leading-normal truncate">{description}</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-1">{description}</div>
         )}
         {disabled && tooltip && (
-          <div className="text-[9px] text-red-500 font-medium mt-1 leading-tight flex items-center gap-1">
-            <CircleAlert className="h-2 w-2" />
+          <div className="text-[10px] text-rose-500 font-medium mt-1 leading-tight flex items-center gap-1">
+            <CircleAlert className="h-3 w-3 shrink-0" />
             <span className="truncate">{tooltip}</span>
           </div>
         )}
@@ -401,47 +401,53 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           ? t('addContent.selectHint')
           : t('addContent.formHint')
       }
-      maxWidth={stage === 'select' ? "2xl" : "lg"}
+      maxWidth={stage === 'select' ? "3xl" : "xl"}
+      className={stage === 'select' ? "sm:max-w-4xl sm:rounded-[28px]" : "sm:max-w-2xl sm:rounded-[28px]"}
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
       footer={
         stage === 'form' ? (
-          <>
-            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
+          <div className="flex w-full items-center justify-end gap-2.5">
+            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
               {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
               form="add-content-form" 
-              className="rounded-xl bg-primary hover:bg-primary/90 font-semibold px-5 shadow-sm text-primary-foreground"
+              className="rounded-xl bg-primary hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm text-primary-foreground"
             >
               {t('addContent.insert')}
             </Button>
-          </>
+          </div>
         ) : (
-          <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl">
-            {t('common.close')}
-          </Button>
+          <div className="flex w-full items-center justify-end">
+            <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-5 text-xs font-semibold sm:text-sm">
+              {t('common.close')}
+            </Button>
+          </div>
         )
       }
     >
       {/* Context Target Banner */}
-      <div className="mb-4 p-3 bg-muted/80 border border-border rounded-xl text-xs text-muted-foreground flex items-start gap-2.5 flex-shrink-0">
-        <div className="p-1.5 bg-card border border-border text-muted-foreground rounded-lg flex-shrink-0">
-          <MapPin className="h-3 w-3" />
+      <div className="mb-4 p-3 bg-muted/60 border border-border/70 rounded-2xl text-xs text-muted-foreground flex items-center gap-3 shrink-0">
+        <div className="flex h-8 w-8 items-center justify-center bg-card border border-border text-foreground rounded-xl shrink-0 shadow-2xs">
+          <MapPin className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-foreground">{t('addContent.insertionPoint')}</div>
-          <div className="truncate mt-0.5 text-muted-foreground font-medium">{targetLocationLabel}</div>
+          <div className="font-bold text-foreground text-xs">{t('addContent.insertionPoint')}</div>
+          <div className="truncate mt-0.5 text-muted-foreground font-medium text-[11px]">{targetLocationLabel}</div>
         </div>
       </div>
 
       {stage === 'select' ? (
-        <div className="max-h-[50vh] space-y-5 overflow-y-auto py-1 pe-1">
+        <div className="max-h-[min(58dvh,32rem)] space-y-5 overflow-y-auto py-1 pe-1 overscroll-contain">
           {/* Group 1: Cours & Structures */}
-          <div className="space-y-2">
-            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupStructures')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={Book}
                 label={t('manageLessons.type.chapter')}
@@ -498,11 +504,11 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           </div>
 
           {/* Group 2: Évaluations & Devoirs */}
-          <div className="space-y-2">
-            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupAssessments')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={TestTube}
                 label={t('manageLessons.type.evaluation_diagnostic')}
@@ -528,16 +534,16 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           </div>
 
           {/* Group 3: Corrections */}
-          <div className="space-y-2">
-            <h3 className="ps-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="space-y-2.5">
+            <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('addContent.groupCorrections')}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={CheckCheck}
                 label={t('manageLessons.type.correction_devoir_maison')}
                 description={t('addContent.homeworkCorrectionHint')}
-                colorClass="text-emerald-700"
+                colorClass="text-emerald-700 dark:text-emerald-400"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
