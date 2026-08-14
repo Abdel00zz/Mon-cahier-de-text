@@ -427,7 +427,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className="text-slate-900 dark:text-white font-bold"
+                                            className="text-black dark:text-white font-bold"
                                         >
                                             {teacherName}
                                         </span>
