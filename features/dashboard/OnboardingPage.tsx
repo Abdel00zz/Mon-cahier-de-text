@@ -107,6 +107,10 @@ export const OnboardingPage = ({
         }
     }, [copy, finishing, onComplete]);
 
+    // Sans classe, l'emploi du temps ne peut pas être rempli : « Ignorer »
+    // termine directement la configuration au lieu de passer à l'étape 5.
+    const showIgnoreClass = navigation.step === 4 && classes.length === 0;
+
     let content: ReactNode;
     if (navigation.step === 1) {
         content = <LanguageStep lang={lang} copy={copy} onSelect={handleLanguageSelect} />;
@@ -166,6 +170,8 @@ export const OnboardingPage = ({
             onNext={navigation.next}
             onComplete={handleComplete}
             onSkip={onSkip}
+            showIgnore={showIgnoreClass}
+            onIgnore={handleComplete}
         >
             {content}
         </OnboardingShell>

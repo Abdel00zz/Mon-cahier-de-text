@@ -106,6 +106,15 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
 
             {/* Zone de saisie et de création de la classe */}
             <div className="space-y-3 rounded-2xl border border-border/80 bg-muted/30 p-3.5 sm:p-4 shadow-xs">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <GraduationCap className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-foreground">
+                        {draft.mode === 'catalog' ? copy.catalogMode : copy.customClassName}
+                    </span>
+                </div>
+
                 {draft.mode === 'catalog' ? (
                     <div className="space-y-3">
                         {/* Main Choice Row: [ Level Select ] [ Group # ] [ Add Button ] */}

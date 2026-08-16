@@ -17,7 +17,17 @@ export const CreatedClassesList = memo<CreatedClassesListProps>(({ classes, lang
     if (!classes.length) return null;
 
     return (
-        <div className="mt-3 max-h-56 space-y-2 overflow-y-auto rounded-2xl border border-slate-200/80 bg-slate-50/50 p-2 text-start" aria-live="polite">
+        <div className="mt-4 space-y-2 text-start" aria-live="polite">
+            <div className="flex items-center justify-between gap-2 px-1">
+                <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
+                    <Users className="h-3.5 w-3.5" />
+                    {copy.sectionClasses}
+                </h3>
+                <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">
+                    {classes.length}
+                </span>
+            </div>
+            <div className="max-h-64 space-y-2 overflow-y-auto rounded-2xl border border-slate-200/90 bg-slate-50/60 p-2">
             {classes.map(classInfo => {
                 const visual = getClassVisual(classInfo.name);
                 const displayName = formatLocalizedClassDisplayName(classInfo.name, lang);
@@ -60,6 +70,7 @@ export const CreatedClassesList = memo<CreatedClassesListProps>(({ classes, lang
                     </div>
                 );
             })}
+            </div>
         </div>
     );
 });

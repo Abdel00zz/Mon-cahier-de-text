@@ -18,6 +18,8 @@ interface OnboardingShellProps {
     onNext: () => void;
     onComplete: () => void;
     onSkip: () => void;
+    showIgnore?: boolean;
+    onIgnore?: () => void;
     children: ReactNode;
 }
 
@@ -35,6 +37,8 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
     onNext,
     onComplete,
     onSkip,
+    showIgnore = false,
+    onIgnore,
     children,
 }) => {
     const isLastStep = step === ONBOARDING_TOTAL_STEPS;
@@ -92,6 +96,12 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                             )}
 
                             <div className="flex items-center gap-2">
+                                {showIgnore && (
+                                    <Button type="button" variant="outline" onClick={onIgnore} className="h-11 rounded-lg border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-white sm:px-5 sm:text-base">
+                                        {copy.ignoreClass}
+                                    </Button>
+                                )}
+
                                 {isLastStep && (
                                     <Button type="button" variant="outline" onClick={onSkip} className="h-11 rounded-lg border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-white sm:px-5 sm:text-base">
                                         {copy.later}

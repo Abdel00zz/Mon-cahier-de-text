@@ -350,10 +350,14 @@ const TableRowComponent: FC<TableRowProps> = ({
           handleToggle();
         }}
       >
-        <div className="min-w-0">
-          <div className={`flex min-w-0 items-center justify-center gap-2 text-center text-[13px] font-bold ${cfg?.color ?? 'text-foreground'}`}>
-            {cfg?.icon && <cfg.icon className="h-3.5 w-3.5 shrink-0" />}
-            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} />
+        <div className="min-w-0 w-full">
+          <div className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
+            {cfg?.icon && (
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${cfg?.badgeColor ?? 'border-border bg-muted'}`} aria-hidden>
+                <cfg.icon className="h-4 w-4" />
+              </span>
+            )}
+            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} className={`text-base font-extrabold tracking-tight sm:text-lg ${cfg?.color ?? 'text-foreground'}`} />
           </div>
           <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
         </div>

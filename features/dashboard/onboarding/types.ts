@@ -87,6 +87,7 @@ export interface OnboardingCopy {
     later: string;
     back: string;
     next: string;
+    ignoreClass: string;
     step: (current: number, total: number) => string;
     cycleLabels: Record<Cycle, string>;
     cycleDescriptions: Record<Cycle, string>;
