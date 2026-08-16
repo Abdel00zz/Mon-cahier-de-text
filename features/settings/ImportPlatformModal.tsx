@@ -4,7 +4,6 @@ import { TriangleAlert, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { cn } from '@/lib/utils';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -13,7 +12,7 @@ interface ImportPlatformModalProps {
 }
 
 export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen, onClose, onImport }) => {
-  const { isRtl, t } = useLocale();
+  const { t } = useLocale();
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);

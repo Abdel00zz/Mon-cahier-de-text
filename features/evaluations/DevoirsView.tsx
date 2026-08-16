@@ -32,9 +32,6 @@ import {
   X,
   Clock,
   Pencil,
-  Calendar,
-  Sparkles,
-  LayersIcon,
   AwardIcon,
   BookOpen,
 } from '@/components/ui/icons';
@@ -100,7 +97,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   onConfigChange,
   embedded = false,
 }) => {
-  const { t, locale, isRtl } = useLocale();
+  const { t, locale } = useLocale();
   const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;

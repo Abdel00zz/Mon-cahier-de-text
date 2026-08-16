@@ -1,151 +1,11 @@
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from './icons';
 import { cn } from '@/lib/utils';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
 
-export type SheetValue = 'Hidden' | 'Expanded' | 'PartiallyExpanded';
-
-export interface SheetStateOptions {
-  skipPartiallyExpanded?: boolean;
-  initialValue?: SheetValue | boolean;
-  onDismiss?: () => void;
-}
-
-/**
- * State controller for Material 3 ModalBottomSheet.
- * Mimics Jetpack Compose Material 3 `SheetState` / `rememberModalBottomSheetState`.
- */
-export class SheetState {
-  private _value: SheetValue;
-  private _listeners: Set<(val: SheetValue) => void> = new Set();
-  public skipPartiallyExpanded: boolean;
-  public onDismiss?: () => void;
-
-  constructor(options: SheetStateOptions = {}) {
-    const init = options.initialValue;
-    if (typeof init === 'boolean') {
-      this._value = init ? 'Expanded' : 'Hidden';
-    } else {
-      this._value = init || 'Hidden';
-    }
-    this.skipPartiallyExpanded = options.skipPartiallyExpanded ?? true;
-    this.onDismiss = options.onDismiss;
-  }
-
-  get isVisible(): boolean {
-    return this._value !== 'Hidden';
-  }
-
-  get isOpen(): boolean {
-    return this._value !== 'Hidden';
-  }
-
-  get currentValue(): SheetValue {
-    return this._value;
-  }
-
-  public subscribe(listener: (val: SheetValue) => void): () => void {
-    this._listeners.add(listener);
-    return () => {
-      this._listeners.delete(listener);
-    };
-  }
-
-  private notify() {
-    this._listeners.forEach((listener) => listener(this._value));
-  }
-
-  public show(): void {
-    if (this._value !== 'Expanded') {
-      this._value = 'Expanded';
-      this.notify();
-    }
-  }
-
-  public expand(): void {
-    if (this._value !== 'Expanded') {
-      this._value = 'Expanded';
-      this.notify();
-    }
-  }
-
-  public hide(): void {
-    if (this._value !== 'Hidden') {
-      this._value = 'Hidden';
-      this.notify();
-      this.onDismiss?.();
-    }
-  }
-
-  public dismiss(): void {
-    this.hide();
-  }
-
-  public toggle(): void {
-    if (this.isVisible) {
-      this.hide();
-    } else {
-      this.show();
-    }
-  }
-
-  public setValue(val: SheetValue): void {
-    if (this._value !== val) {
-      this._value = val;
-      this.notify();
-      if (val === 'Hidden') {
-        this.onDismiss?.();
-      }
-    }
-  }
-}
-
-/**
- * Hook to create and remember a Material 3 SheetState.
- */
-export function useSheetState(options: SheetStateOptions | boolean = false): SheetState {
-  const optionsObj: SheetStateOptions = typeof options === 'boolean'
-    ? { initialValue: options ? 'Expanded' : 'Hidden' }
-    : options;
-
-  const [state] = useState(() => new SheetState(optionsObj));
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    state.onDismiss = optionsObj.onDismiss;
-    state.skipPartiallyExpanded = optionsObj.skipPartiallyExpanded ?? true;
-  }, [optionsObj.onDismiss, optionsObj.skipPartiallyExpanded, state]);
-
-  // Synchronize with boolean initialValue changes if passed as prop
-  useEffect(() => {
-    if (typeof options === 'boolean') {
-      if (options && !state.isVisible) {
-        state.show();
-      } else if (!options && state.isVisible) {
-        state.hide();
-      }
-    }
-  }, [options, state]);
-
-  useEffect(() => {
-    const unsub = state.subscribe(() => {
-      setTick((t) => t + 1);
-    });
-    return unsub;
-  }, [state]);
-
-  return state;
-}
-
-/**
- * Material 3 alias for `useSheetState`.
- */
-export const rememberModalBottomSheetState = useSheetState;
-
 export interface ModalBottomSheetProps {
-  sheetState?: SheetState;
   isOpen?: boolean;
   onDismissRequest?: () => void;
   onClose?: () => void;
@@ -182,7 +42,6 @@ const maxWidthClassMap: Record<string, string> = {
  * Implements M3 bottom sheet surface, drag handle, elevation, gestures, and responsive adaptation.
  */
 export function ModalBottomSheet({
-  sheetState,
   isOpen,
   onDismissRequest,
   onClose,
@@ -205,23 +64,14 @@ export function ModalBottomSheet({
       onDismissRequest();
     } else if (onClose) {
       onClose();
-    } else if (sheetState) {
-      sheetState.hide();
     }
-  }, [onDismissRequest, onClose, sheetState]);
+  }, [onDismissRequest, onClose]);
 
-  // Determine effective open state from SheetState or direct prop
-  const effectiveOpen = useMemo(() => {
-    if (sheetState) return sheetState.isVisible;
-    return Boolean(isOpen);
-  }, [sheetState, sheetState?.isVisible, isOpen]);
+  const effectiveOpen = Boolean(isOpen);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      if (sheetState) sheetState.hide();
       dismissCallback();
-    } else if (sheetState) {
-      sheetState.show();
     }
   };
 

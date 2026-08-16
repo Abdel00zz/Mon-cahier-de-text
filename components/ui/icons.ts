@@ -46,7 +46,6 @@ import {
   School as LucideSchool,
   GraduationCap as LucideGraduationCap,
   FlaskConical as LucideFlaskConical,
-  GripVertical as LucideGripVertical,
   GripHorizontal as LucideGripHorizontal,
   FolderOpen as LucideFolderOpen,
   Download as LucideDownload,
@@ -67,18 +66,10 @@ import {
   Loader2 as LucideLoader2,
   Users as LucideUsers,
   Menu as LucideMenu,
-  Sparkles as LucideSparkles,
   ShieldCheck as LucideShieldCheck,
   RefreshCw as LucideRefreshCw,
   LogOut as LucideLogOut,
-  SlidersHorizontal,
-  Calendar as LucideCalendar,
-  Layers,
   Award,
-  BookMarked,
-  FileSpreadsheet,
-  Globe,
-  Languages,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -154,7 +145,6 @@ export const Pencil = createIcon(LucidePencil);
 export const School = createIcon(LucideSchool);
 export const GraduationCap = createIcon(LucideGraduationCap);
 export const FlaskConical = createIcon(LucideFlaskConical);
-export const GripVertical = createIcon(LucideGripVertical);
 export const GripHorizontal = createIcon(LucideGripHorizontal);
 export const FolderOpen = createIcon(LucideFolderOpen);
 export const Download = createIcon(LucideDownload);
@@ -175,15 +165,7 @@ export const User = createIcon(LucideUser);
 export const Loader2 = createIcon(LucideLoader2);
 export const Users = createIcon(LucideUsers);
 export const Menu = createIcon(LucideMenu);
-export const Sparkles = createIcon(LucideSparkles);
 export const ShieldCheck = createIcon(LucideShieldCheck);
 export const RefreshCw = createIcon(LucideRefreshCw);
 export const LogOut = createIcon(LucideLogOut);
-export const Calendar = createIcon(LucideCalendar);
-export const Sliders = createIcon(SlidersHorizontal);
-export const LayersIcon = createIcon(Layers);
 export const AwardIcon = createIcon(Award);
-export const BookMarkedIcon = createIcon(BookMarked);
-export const FileSpreadsheetIcon = createIcon(FileSpreadsheet);
-export const GlobeIcon = createIcon(Globe);
-export const LanguagesIcon = createIcon(Languages);

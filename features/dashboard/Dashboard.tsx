@@ -12,7 +12,6 @@ import { OnboardingPage } from './OnboardingPage';
 import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
-import { getSubjectVisual } from '@/utils/classVisuals';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';

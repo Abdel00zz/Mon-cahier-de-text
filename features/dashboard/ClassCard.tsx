@@ -3,7 +3,6 @@ import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getSubjectVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { useDevice } from '@/hooks/useDevice';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Settings, CircleAlert, CircleCheck } from '@/components/ui/icons';
 
@@ -52,7 +51,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     notificationCount,
 }) => {
     const { impact } = useHapticFeedback();
-    const { type: deviceType } = useDevice();
     const { locale, t } = useLocale();
 
     const handleConfigureClick = (event: ReactMouseEvent<HTMLButtonElement>) => {

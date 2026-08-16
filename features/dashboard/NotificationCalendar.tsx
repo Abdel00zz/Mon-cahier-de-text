@@ -12,8 +12,6 @@ import {
   Clock,
   GraduationCap,
   Check,
-  CircleAlert,
-  Info,
 } from '@/components/ui/icons';
 import {
   getBundledCalendar,
@@ -550,7 +548,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
           onKeyDown={handleGridKeyDown}
           aria-label={monthLabel}
         >
-          {monthCells.map((date, index) => {
+          {monthCells.map((date) => {
             const iso = toISO(date);
             const allDayEvents = eventsByDate.get(iso) ?? [];
             const visibleEvents = allDayEvents.filter(event => layerMatches(event, layer));
