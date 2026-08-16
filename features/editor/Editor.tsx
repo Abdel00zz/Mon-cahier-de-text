@@ -16,7 +16,7 @@ import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useSelectionData } from '@/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
-import { defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
+import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
@@ -583,7 +583,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               // Garder l'accueil vide jusqu'au premier choix. Ensuite, le
               // diagnostic devient automatiquement le premier bloc du cahier.
               if (draft.length === 0 && type !== 'evaluation_diagnostic') {
-                  addTopLevelItem(draft, createStarterDiagnostic(config.applicationLocale ?? 'ar'));
+                  addTopLevelItem(draft, createStarterDiagnostic(contentLocaleFromDirection(contentDirection)));
               }
               addTopLevelItem(draft, newItem, insertAfterIndex);
           }, 'add-top-level');
@@ -644,7 +644,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       setSelectionState(createSelectionState());
       handleModalClose();
-  }, [selectedIndices, config.applicationLocale, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
+  }, [selectedIndices, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -1205,6 +1205,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         getDateWarnings={getDateWarnings}
         assignDateInitialDate={assignDateInitialDate}
         classInfo={classInfo}
+        contentDirection={contentDirection}
       />
 
       <DateReviewModal

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { MathJax } from 'better-react-mathjax';
-import { Indices, LessonsData, TopLevelItem } from '@/types';
+import { ContentDirection, Indices, LessonsData, TopLevelItem } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
 import { hasMathSyntax } from '@/utils/math';
@@ -13,7 +13,7 @@ import {
   ArrowLeft, MapPin, Book, Network, ListTree, GripHorizontal,
   TestTube, Home, FileSignature, CheckCheck, CheckSquare, Sigma, CircleAlert,
 } from '@/components/ui/icons';
-import { useLocale } from '@/i18n/LocaleProvider';
+import { translateLocaleMessage, useLocale } from '@/i18n/LocaleProvider';
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -27,6 +27,8 @@ interface AddContentModalProps {
   selectedIndices: Indices | null;
   /** matière de la classe : restreint les types de contenu proposés */
   subject?: string;
+  /** sens d'écriture du cahier : les éléments ajoutés suivent cette langue (FR/AR). */
+  contentDirection?: ContentDirection;
 }
 
 const getElementTypeFromIndices = (data: LessonsData, indices: Indices): string | null => {
@@ -97,8 +99,13 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   lessonsData,
   selectedIndices,
   subject,
+  contentDirection,
 }) => {
   const { t, isRtl } = useLocale();
+  // Les éléments ajoutés restent cohérents avec la langue du cahier (FR si le
+  // contenu est en écriture latine, AR sinon), pas avec celle de l'interface.
+  const tc = (key: string, values?: Record<string, string | number>): string =>
+    translateLocaleMessage(contentDirection === 'rtl' ? 'ar' : 'fr', key, values);
   const [stage, setStage] = useState<'select' | 'form'>('select');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
@@ -137,18 +144,18 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       const { item } = findItem(lessonsData, selectedIndices);
       if (!item) return t('addContent.atEnd');
       const itemAny = item as any;
-      const displayTitle = itemAny.title || itemAny.name || itemAny.content || (itemAny.type ? t(`contentType.${itemAny.type}`) : t('addContent.item'));
+      const displayTitle = itemAny.title || itemAny.name || itemAny.content || (itemAny.type ? tc(`contentType.${itemAny.type}`) : t('addContent.item'));
       return t('addContent.afterItem', { title: displayTitle });
     } catch {
       return t('addContent.atEnd');
     }
-  }, [selectedIndices, lessonsData, isOpen, t]);
+  }, [selectedIndices, lessonsData, isOpen, t, contentDirection]);
 
   let modalTitle = t('addContent.title');
   if (stage !== 'select' && selectedType) {
     const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
     if (config) {
-      modalTitle = t('addContent.addType', { type: t(`manageLessons.type.${selectedType}`) });
+      modalTitle = t('addContent.addType', { type: tc(`manageLessons.type.${selectedType}`) });
     } else if (selectedType === 'section') {
       modalTitle = t('addContent.addType', { type: t('addContent.section') });
     } else if (selectedType === 'subsection') {
@@ -171,7 +178,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       // Types récurrents : titre auto-suggéré « Contrôle continu N » (N =
       // occurrences existantes dans le cahier + 1). Simple suggestion, le
       // champ reste librement modifiable par le professeur.
-      const localizedName = t(`manageLessons.type.${type}`);
+      const localizedName = tc(`manageLessons.type.${type}`);
       initialData.title = config.autoNumber
         ? `${localizedName} ${countOccurrencesOfType(lessonsData, type) + 1}`
         : localizedName;
@@ -211,7 +218,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     if (!selectedType) return null;
     const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
     if (config) {
-      const localizedName = t(`manageLessons.type.${selectedType}`);
+      const localizedName = tc(`manageLessons.type.${selectedType}`);
       return (
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
@@ -274,7 +281,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   <SelectContent>
                     {lessonTypeOptions.map(type => (
                       <SelectItem key={type} value={type}>
-                        {t(`contentType.${type}`)}
+                        {tc(`contentType.${type}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -450,7 +457,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={Book}
-                label={t('manageLessons.type.chapter')}
+                label={tc('manageLessons.type.chapter')}
                 description={t('addContent.chapterHint')}
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('chapter')}
@@ -511,21 +518,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={TestTube}
-                label={t('manageLessons.type.evaluation_diagnostic')}
+                label={tc('manageLessons.type.evaluation_diagnostic')}
                 description={t('addContent.diagnosticHint')}
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
-                label={t('manageLessons.type.devoir_maison')}
+                label={tc('manageLessons.type.devoir_maison')}
                 description={t('addContent.homeworkHint')}
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
-                label={t('manageLessons.type.controle_continu')}
+                label={tc('manageLessons.type.controle_continu')}
                 description={t('addContent.assessmentHint')}
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('controle_continu')}
@@ -541,14 +548,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               <CategoryCard
                 icon={CheckCheck}
-                label={t('manageLessons.type.correction_devoir_maison')}
+                label={tc('manageLessons.type.correction_devoir_maison')}
                 description={t('addContent.homeworkCorrectionHint')}
                 colorClass="text-emerald-700 dark:text-emerald-400"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
                 icon={CheckSquare}
-                label={t('manageLessons.type.correction_controle_continu')}
+                label={tc('manageLessons.type.correction_controle_continu')}
                 description={t('addContent.assessmentCorrectionHint')}
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('correction_controle_continu')}

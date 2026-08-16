@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { AppConfig, ClassInfo, LessonsData, Indices } from '@/types';
+import { AppConfig, ClassInfo, LessonsData, Indices, ContentDirection } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
@@ -32,6 +32,7 @@ interface EditorModalsProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   assignDateInitialDate?: string;
   classInfo: ClassInfo;
+  contentDirection?: ContentDirection;
 }
 
 const ModalFallback = () => {
@@ -65,6 +66,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   getDateWarnings,
   assignDateInitialDate,
   classInfo,
+  contentDirection,
 }) => {
   // Garde la dernière modale montée (isOpen=false) le temps de l'animation de
   // sortie : Radix démonte alors son contenu après la transition. Les props
@@ -122,6 +124,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             lessonsData={lessonsData}
             selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
             subject={classInfo.subject}
+            contentDirection={contentDirection}
           />
         );
       case 'analyse':

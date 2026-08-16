@@ -18,6 +18,10 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 export const defaultContentDirection = (locale?: AppLocale): ContentDirection =>
   locale === 'ar' ? 'rtl' : 'ltr';
 
+/** Langue du contenu pédagogique déduite de son sens d'écriture (FR ↔ AR). */
+export const contentLocaleFromDirection = (direction: ContentDirection): AppLocale =>
+  direction === 'rtl' ? 'ar' : 'fr';
+
 export const isContentDirection = (value: unknown): value is ContentDirection =>
   value === 'rtl' || value === 'ltr';
 
@@ -30,62 +34,67 @@ export const readStoredContentDirection = (value: unknown): ContentDirection | u
 const readText = (value: unknown): string =>
   typeof value === 'string' ? value.trim() : '';
 
+const MAX_SAMPLED_TEXTS = 16;
+
 /**
- * Le premier titre réel suffit à classer un cahier scolaire : il est stable,
- * humainement choisi et évite d'être trompé par une date, un numéro ou une
- * petite annotation dans une autre langue.
+ * Parcourt l'arbre du cahier et collecte jusqu'à `MAX_SAMPLED_TEXTS` intitulés
+ * exploitables (titres, noms, contenus). Les dates et numéros isolés
+ * n'influencent pas le résultat : seuls les caractères à écriture forte
+ * (arabe / latin) sont comptés lors de l'agrégation.
  */
-export const findPrimaryContentTitle = (value: unknown): string => {
-  const visit = (node: unknown): string => {
-    if (Array.isArray(node)) {
-      for (const item of node) {
-        const title = visit(item);
-        if (title) return title;
-      }
-      return '';
+const collectContentTexts = (node: unknown, out: string[] = []): string[] => {
+  if (out.length >= MAX_SAMPLED_TEXTS) return out;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectContentTexts(item, out);
+      if (out.length >= MAX_SAMPLED_TEXTS) return out;
     }
-    if (!isRecord(node)) return '';
+    return out;
+  }
+  if (!isRecord(node)) return out;
 
-    for (const key of ['title', 'name', 'content'] as const) {
-      const text = readText(node[key]);
-      if (text) return text;
+  for (const key of ['title', 'name', 'content'] as const) {
+    const text = readText(node[key]);
+    if (text) {
+      out.push(text);
+      if (out.length >= MAX_SAMPLED_TEXTS) return out;
     }
+  }
 
-    for (const key of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
-      const title = visit(node[key]);
-      if (title) return title;
-    }
+  for (const key of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
+    collectContentTexts(node[key], out);
+  }
 
-    return '';
-  };
-
-  return visit(value);
+  return out;
 };
 
 /**
- * Détermine l'écriture dominante du titre. L'arabe garde priorité lorsqu'il
- * ouvre le titre ou représente au moins autant de lettres que le latin —
- * utile pour « الدرس 1 : fonctions f(x) ». À l'inverse, un intitulé français
- * contenant un mot arabe isolé reste LTR.
+ * Détermine l'écriture dominante du cahier en agrégeant le signal sur plusieurs
+ * intitulés (et non le seul premier titre) : un intitulé français isolé en tête
+ * ne bascule plus un cahier arabe en LTR, et réciproquement. L'arabe garde
+ * priorité lorsqu'il ouvre le texte ou représente au moins autant de lettres
+ * que le latin — utile pour « الدرس 1 : fonctions f(x) ».
  */
 export const detectContentDirection = (
   content: unknown,
   fallback: ContentDirection = 'ltr',
 ): ContentDirectionDetection => {
-  const title = findPrimaryContentTitle(content);
-  if (!title) return { direction: fallback, title: '', detected: false };
+  const texts = collectContentTexts(content);
+  const title = texts[0] ?? '';
 
   let arabicCount = 0;
   let latinCount = 0;
   let firstStrongDirection: ContentDirection | undefined;
 
-  for (const character of Array.from(title)) {
-    if (ARABIC_CHARACTER.test(character)) {
-      arabicCount += 1;
-      firstStrongDirection ??= 'rtl';
-    } else if (LATIN_CHARACTER.test(character)) {
-      latinCount += 1;
-      firstStrongDirection ??= 'ltr';
+  for (const text of texts) {
+    for (const character of Array.from(text)) {
+      if (ARABIC_CHARACTER.test(character)) {
+        arabicCount += 1;
+        firstStrongDirection ??= 'rtl';
+      } else if (LATIN_CHARACTER.test(character)) {
+        latinCount += 1;
+        firstStrongDirection ??= 'ltr';
+      }
     }
   }
 
