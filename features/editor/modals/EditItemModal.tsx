@@ -448,7 +448,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       </div>
 
       {stage === 'select' ? (
-        <div className="max-h-[min(58dvh,32rem)] space-y-5 overflow-y-auto py-1 pe-1 overscroll-contain">
+        <div className="space-y-5 py-1 pe-1">
           {/* Group 1: Cours & Structures */}
           <div className="space-y-2.5">
             <h3 className="ps-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -564,7 +564,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex h-full max-h-[55vh] flex-col overflow-y-auto pe-1">
+        <div className="flex flex-col pe-1">
           <form id="add-content-form" onSubmit={handleSubmit} className="space-y-4 pb-2">
             {renderForm()}
           </form>
