@@ -75,38 +75,45 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
   'sécurité': 'Séc.'
 };
 
+// Palette pro et simple : 5 teintes sémantiques à tonalité uniforme
+// (-50 / -700 / -200), au lieu d'un arc-en-ciel de pastels. Le libellé du
+// badge porte la distinction fine ; la couleur indique la catégorie.
 export const BADGE_COLOR_MAP: { [key: string]: string } = {
-    'activité': 'bg-emerald-100/75 text-emerald-800 border-emerald-200/90',
-    'définition': 'bg-blue-100/75 text-blue-800 border-blue-200/90',
-    'théorème': 'bg-purple-100/75 text-purple-800 border-purple-200/90',
-    'proposition': 'bg-indigo-100/75 text-indigo-800 border-indigo-200/90',
-    'lemme': 'bg-violet-100/75 text-violet-800 border-violet-200/90',
-    'corollaire': 'bg-pink-100/75 text-pink-800 border-pink-200/90',
-    'remarque': 'bg-slate-100/85 text-slate-700 border-slate-200/90',
-    'preuve': 'bg-zinc-100 text-zinc-800 border-zinc-200/90',
-    'exemple': 'bg-cyan-100/75 text-cyan-800 border-cyan-200/90',
-    'exercice': 'bg-amber-100/80 text-amber-800 border-amber-200/90',
-    'application': 'bg-teal-100/75 text-teal-800 border-teal-200/90',
-    'introduction': 'bg-neutral-100/85 text-neutral-800 border-neutral-200/90',
-    'observation': 'bg-sky-100/75 text-sky-800 border-sky-200/90',
-    'comparaison': 'bg-lime-100/75 text-lime-800 border-lime-200/90',
-    'classification': 'bg-orange-100/75 text-orange-800 border-orange-200/90',
-    'structure': 'bg-rose-100/75 text-rose-800 border-rose-200/90',
-    'fonction': 'bg-fuchsia-100/75 text-fuchsia-800 border-fuchsia-200/90',
-    'mécanisme': 'bg-red-100/75 text-red-800 border-red-200/90',
-    'processus': 'bg-green-100/75 text-green-800 border-green-200/90',
-    'méthode': 'bg-stone-100/85 text-stone-700 border-stone-200/90',
-    'expérience': 'bg-yellow-100/80 text-yellow-800 border-yellow-200/90',
-    'interprétation': 'bg-cyan-100/75 text-cyan-800 border-cyan-200/90',
-    'conclusion': 'bg-indigo-100/75 text-indigo-800 border-indigo-200/90',
-    'propriété': 'bg-amber-100/80 text-amber-800 border-amber-200/90',
-    'grandeur': 'bg-teal-100/75 text-teal-800 border-teal-200/90',
-    'relation': 'bg-violet-100/75 text-violet-800 border-violet-200/90',
-    'loi': 'bg-slate-100/85 text-slate-800 border-slate-200/90',
-    'principe': 'bg-purple-100/75 text-purple-800 border-purple-200/90',
-    'protocole': 'bg-emerald-100/75 text-emerald-800 border-emerald-200/90',
-    'modèle': 'bg-blue-100/75 text-blue-800 border-blue-200/90',
-    'sécurité': 'bg-red-100/75 text-red-800 border-red-200/90',
+    // Concepts & logique — bleu
+    'définition': 'bg-blue-50 text-blue-700 border-blue-200',
+    'théorème': 'bg-blue-50 text-blue-700 border-blue-200',
+    'proposition': 'bg-blue-50 text-blue-700 border-blue-200',
+    'lemme': 'bg-blue-50 text-blue-700 border-blue-200',
+    'corollaire': 'bg-blue-50 text-blue-700 border-blue-200',
+    'preuve': 'bg-blue-50 text-blue-700 border-blue-200',
+    'propriété': 'bg-blue-50 text-blue-700 border-blue-200',
+    'relation': 'bg-blue-50 text-blue-700 border-blue-200',
+    'loi': 'bg-blue-50 text-blue-700 border-blue-200',
+    'principe': 'bg-blue-50 text-blue-700 border-blue-200',
+    'modèle': 'bg-blue-50 text-blue-700 border-blue-200',
+    'grandeur': 'bg-blue-50 text-blue-700 border-blue-200',
+    // Pratique & application — vert
+    'exemple': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'exercice': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'activité': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'application': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'expérience': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'méthode': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'protocole': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    // Observation & analyse — ambre
+    'observation': 'bg-amber-50 text-amber-700 border-amber-200',
+    'comparaison': 'bg-amber-50 text-amber-700 border-amber-200',
+    'classification': 'bg-amber-50 text-amber-700 border-amber-200',
+    'interprétation': 'bg-amber-50 text-amber-700 border-amber-200',
+    'conclusion': 'bg-amber-50 text-amber-700 border-amber-200',
+    'introduction': 'bg-amber-50 text-amber-700 border-amber-200',
+    'structure': 'bg-amber-50 text-amber-700 border-amber-200',
+    'fonction': 'bg-amber-50 text-amber-700 border-amber-200',
+    'mécanisme': 'bg-amber-50 text-amber-700 border-amber-200',
+    'processus': 'bg-amber-50 text-amber-700 border-amber-200',
+    // Note & sécurité — neutre / alerte
+    'remarque': 'bg-slate-50 text-slate-700 border-slate-200',
+    'sécurité': 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
