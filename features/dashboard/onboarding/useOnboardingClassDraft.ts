@@ -21,13 +21,10 @@ export interface OnboardingClassDraftController {
     validation: ClassDraftValidation;
     showValidation: boolean;
     isAdding: boolean;
-    activeSubject: string;
-    selectedSubjects: string[];
     setLevel: (level: string) => void;
     setGroup: (group: string) => void;
     normalizeGroup: () => void;
     setLabel: (label: string) => void;
-    setSubject: (subject: string) => void;
     toggleMode: () => void;
     resetForCycle: (cycle: Cycle) => void;
     add: () => void;
@@ -83,10 +80,6 @@ export const useOnboardingClassDraft = ({
 
     const setLabel = useCallback((label: string) => {
         setDraft(current => ({ ...current, label }));
-    }, []);
-
-    const setSubject = useCallback((nextSubject: string) => {
-        setDraft(current => ({ ...current, subject: nextSubject }));
     }, []);
 
     const toggleMode = useCallback(() => {
@@ -156,28 +149,22 @@ export const useOnboardingClassDraft = ({
         validation,
         showValidation,
         isAdding,
-        activeSubject,
-        selectedSubjects,
         setLevel,
         setGroup,
         normalizeGroup,
         setLabel,
-        setSubject,
         toggleMode,
         resetForCycle,
         add,
     }), [
-        activeSubject,
         add,
         draft,
         isAdding,
         normalizeGroup,
         resetForCycle,
-        selectedSubjects,
         setGroup,
         setLabel,
         setLevel,
-        setSubject,
         showValidation,
         toggleMode,
         validation,

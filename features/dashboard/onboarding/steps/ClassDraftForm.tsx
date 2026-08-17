@@ -1,9 +1,8 @@
 import { memo, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, CircleHelp, BookOpen, Check, GraduationCap } from '@/components/ui/icons';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName, SUBJECTS } from '@/constants';
+import { Plus, CircleHelp, Check, GraduationCap } from '@/components/ui/icons';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { cn } from '@/lib/utils';
 import type { Cycle } from '@/types';
 import { LEVEL_GROUPS } from '../content';
@@ -26,84 +25,21 @@ const issueMessage = (issue: ClassDraftIssue | null, copy: OnboardingCopy): stri
 };
 
 export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, controller }) => {
-    const { draft, validation, showValidation, activeSubject, selectedSubjects, setSubject } = controller;
+    const { draft, validation, showValidation } = controller;
     const value = draft.mode === 'catalog' ? draft.group : draft.label;
     const showIssue = Boolean(validation.issue && (showValidation || value));
     const message = useMemo(() => issueMessage(validation.issue, copy), [copy, validation.issue]);
 
-    // Liste des matières à afficher sous forme de badges rapides
-    const quickSubjects = useMemo(() => {
-        const list = selectedSubjects.length > 0 ? [...selectedSubjects] : SUBJECTS.slice(0, 4);
-        if (activeSubject && !list.includes(activeSubject)) {
-            list.push(activeSubject);
-        }
-        return list;
-    }, [selectedSubjects, activeSubject]);
+    const groups = LEVEL_GROUPS[cycle];
+    const activeGroup = groups.find(group => group.levels.includes(draft.level)) ?? groups[0];
+
+    const selectGroup = (groupKey: string) => {
+        const target = groups.find(group => group.key === groupKey);
+        if (target?.levels.length) controller.setLevel(target.levels[0]);
+    };
 
     return (
         <div className="mt-4 space-y-3.5 text-start">
-            {/* Zone d'affectation intelligente de matière (pratique & aérée) */}
-            <div className="rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <BookOpen className="h-4 w-4" />
-                        </div>
-                        <div>
-                            <span className="text-xs font-bold text-foreground">
-                                {copy.subjectToAssign}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Sélecteur de toutes les matières officielles */}
-                    <div className="w-auto">
-                        <Select value={activeSubject} onValueChange={setSubject}>
-                            <SelectTrigger
-                                aria-label={copy.otherSubject}
-                                className="h-7 text-[11px] font-semibold rounded-full border-border bg-muted/60 px-2.5 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
-                            >
-                                <SelectValue placeholder={copy.otherSubject} />
-                            </SelectTrigger>
-                            <SelectContent align={lang === 'ar' ? 'start' : 'end'} className="max-h-60">
-                                {SUBJECTS.map(subj => (
-                                    <SelectItem key={subj} value={subj} className="text-xs">
-                                        {formatLocalizedSubjectDisplayName(subj, lang)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                {/* Pilules de sélection rapide et réactive des matières choisies */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {quickSubjects.map(subj => {
-                        const isSelected = activeSubject === subj;
-                        return (
-                            <button
-                                key={subj}
-                                type="button"
-                                onClick={() => setSubject(subj)}
-                                className={cn(
-                                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer active:scale-95',
-                                    isSelected
-                                        ? 'bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/20 scale-[1.02]'
-                                        : 'bg-muted/50 hover:bg-muted border border-border/70 text-muted-foreground hover:text-foreground'
-                                )}
-                            >
-                                {isSelected ? (
-                                    <Check className="h-3.5 w-3.5" />
-                                ) : (
-                                    <GraduationCap className="h-3.5 w-3.5 opacity-60" />
-                                )}
-                                <span>{formatLocalizedSubjectDisplayName(subj, lang)}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
             {/* Zone de saisie et de création de la classe */}
             <div className="space-y-3 rounded-2xl border border-border/80 bg-muted/30 p-3.5 sm:p-4 shadow-xs">
                 <div className="flex items-center gap-2">
@@ -117,67 +53,91 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
 
                 {draft.mode === 'catalog' ? (
                     <div className="space-y-3">
-                        {/* Main Choice Row: [ Level Select ] [ Group # ] [ Add Button ] */}
-                        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                            {/* Level Select */}
-                            <div className="min-w-[150px] flex-1">
-                                <Select value={draft.level} onValueChange={controller.setLevel}>
-                                    <SelectTrigger
-                                        aria-label={copy.levelPlaceholder}
-                                        className="h-11 rounded-xl border-border bg-card text-start text-xs font-semibold shadow-2xs hover:border-slate-300 focus:border-primary focus:ring-primary sm:text-sm"
-                                    >
-                                        <SelectValue placeholder={copy.levelPlaceholder} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {LEVEL_GROUPS[cycle].map(group => (
-                                            <SelectGroup key={group.key}>
-                                                <SelectLabel className="py-1.5 text-xs font-bold text-muted-foreground">
-                                                    {copy.levelGroupLabels[group.key]}
-                                                </SelectLabel>
-                                                {group.levels.map(level => (
-                                                    <SelectItem key={level} value={level}>
-                                                        {formatLocalizedClassDisplayName(level, lang, { includeClassPrefix: false })}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        {/* Choix en deux temps : paliers (sidebar) + filières complètes */}
+                        <div className="grid gap-2.5 sm:grid-cols-[9.5rem_1fr] sm:gap-3">
+                            <nav
+                                aria-label={copy.levelPlaceholder}
+                                className="flex gap-1.5 overflow-x-auto pb-0.5 sm:flex-col sm:overflow-visible sm:pb-0"
+                            >
+                                {groups.map(group => {
+                                    const isActive = activeGroup?.key === group.key;
+                                    return (
+                                        <button
+                                            key={group.key}
+                                            type="button"
+                                            onClick={() => selectGroup(group.key)}
+                                            aria-pressed={isActive}
+                                            className={cn(
+                                                'inline-flex h-9 shrink-0 items-center justify-start rounded-lg px-3 text-xs font-bold transition-colors cursor-pointer sm:w-full',
+                                                isActive
+                                                    ? 'bg-primary text-primary-foreground shadow-xs'
+                                                    : 'bg-muted/50 text-muted-foreground border border-border/70 hover:bg-muted hover:text-foreground'
+                                            )}
+                                        >
+                                            {copy.levelGroupLabels[group.key]}
+                                        </button>
+                                    );
+                                })}
+                            </nav>
 
-                            {/* Group Number Input */}
-                            <div className="w-20 shrink-0 sm:w-22">
-                                <Input
-                                    aria-label={copy.groupPlaceholder}
-                                    type="text"
-                                    value={draft.group}
-                                    onChange={event => controller.setGroup(event.target.value)}
-                                    onBlur={controller.normalizeGroup}
-                                    placeholder={lang === 'ar' ? 'رقم' : 'N°'}
-                                    className={cn(
-                                        'h-11 w-full rounded-xl border-border bg-card text-center text-xs font-bold shadow-2xs hover:border-slate-300 focus-visible:border-primary focus-visible:ring-primary sm:text-sm',
-                                        showIssue ? 'border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive' : '',
-                                    )}
-                                    inputMode="numeric"
-                                    maxLength={2}
-                                    aria-invalid={Boolean(validation.issue)}
-                                />
+                            <div
+                                className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-border/70 bg-card p-1.5"
+                                aria-label={copy.levelPlaceholder}
+                            >
+                                {activeGroup?.levels.map(level => {
+                                    const isSelected = draft.level === level;
+                                    return (
+                                        <button
+                                            key={level}
+                                            type="button"
+                                            onClick={() => controller.setLevel(level)}
+                                            aria-pressed={isSelected}
+                                            className={cn(
+                                                'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-xs font-semibold leading-snug transition-colors cursor-pointer',
+                                                isSelected
+                                                    ? 'bg-primary/10 text-foreground ring-1 ring-primary/30'
+                                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                            )}
+                                        >
+                                            <span className="min-w-0 flex-1">
+                                                {formatLocalizedClassDisplayName(level, lang, { includeClassPrefix: false })}
+                                            </span>
+                                            {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                                        </button>
+                                    );
+                                })}
                             </div>
+                        </div>
 
-                            {/* Add Class Button */}
+                        {/* Numéro de groupe + ajout */}
+                        <div className="flex items-center gap-2">
+                            <Input
+                                aria-label={copy.groupPlaceholder}
+                                type="text"
+                                value={draft.group}
+                                onChange={event => controller.setGroup(event.target.value)}
+                                onBlur={controller.normalizeGroup}
+                                placeholder={lang === 'ar' ? 'رقم' : 'N°'}
+                                className={cn(
+                                    'h-11 w-20 shrink-0 rounded-xl border-border bg-card text-center text-xs font-bold shadow-2xs hover:border-slate-300 focus-visible:border-primary focus-visible:ring-primary sm:w-22 sm:text-sm',
+                                    showIssue ? 'border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive' : '',
+                                )}
+                                inputMode="numeric"
+                                maxLength={2}
+                                aria-invalid={Boolean(validation.issue)}
+                            />
                             <Button
                                 type="button"
                                 onClick={controller.add}
                                 disabled={controller.isAdding}
                                 aria-busy={controller.isAdding}
-                                className="group inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 text-xs font-bold shadow-2xs transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                                className="group inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground px-4 text-xs font-bold shadow-2xs transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                             >
                                 <Plus className="h-4 w-4 transition-transform group-hover:scale-110" />
                                 <span className="whitespace-nowrap">{controller.isAdding ? copy.addingClass : copy.addClass}</span>
                             </Button>
                         </div>
 
-                        {/* Custom Name Question at the Bottom */}
                         <div className="pt-1 flex items-center justify-between">
                             <button
                                 type="button"
@@ -192,7 +152,7 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
                         </div>
                     </div>
                 ) : (
-                    /* Custom Name Mode */
+                    /* Nom personnalisé */
                     <div className="space-y-2.5">
                         <label htmlFor="onboarding-custom-class" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <CircleHelp className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -251,4 +211,3 @@ export const ClassDraftForm = memo<ClassDraftFormProps>(({ cycle, lang, copy, co
 });
 
 ClassDraftForm.displayName = 'ClassDraftForm';
-
