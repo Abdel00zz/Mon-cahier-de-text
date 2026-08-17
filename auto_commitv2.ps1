@@ -14,21 +14,31 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# ---- Anti-blocage ---------------------------------------------------------
+# Git ne doit jamais attendre une saisie interactive (identifiants, mot de
+# passe, PIN) : en leur absence, la commande echoue rapidement au lieu de
+# geler la fenetre.
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'Never'
+
 $Path = @($Path | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+
 $script:LockPath = $null
+$script:LockStream = $null
 $script:OwnsLock = $false
 
-function Write-Step([string]$Text) {
-    Write-Host "`n> $Text" -ForegroundColor Cyan
-}
+function Write-Step([string]$Text) { Write-Host "`n> $Text" -ForegroundColor Cyan }
+function Write-Info([string]$Text) { Write-Host "[INFO] $Text" -ForegroundColor DarkGray }
+function Write-Warn([string]$Text) { Write-Host "[ATTENTION] $Text" -ForegroundColor Yellow }
 
 function Run-Git {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$Arguments,
-        [Parameter()]
-        [switch]$AllowFailure
+        [switch]$AllowFailure,
+        [switch]$Silent
     )
     $previousErrorPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
@@ -38,7 +48,10 @@ function Run-Git {
     } finally {
         $ErrorActionPreference = $previousErrorPreference
     }
-    $output | ForEach-Object { Write-Host $_ }
+    # En mode silencieux, on n'affiche la sortie qu'en cas d'echec (diagnostic).
+    if (-not $Silent -or $exitCode -ne 0) {
+        $output | ForEach-Object { Write-Host $_ }
+    }
     if (-not $AllowFailure -and $exitCode -ne 0) {
         throw "La commande Git a echoue : git $($Arguments -join ' ')"
     }
@@ -49,7 +62,6 @@ function Get-GitText {
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$Arguments,
-        [Parameter()]
         [switch]$AllowFailure
     )
     $previousErrorPreference = $ErrorActionPreference
@@ -68,10 +80,7 @@ function Get-GitText {
 
 function Test-Git {
     [CmdletBinding()]
-    param(
-        [Parameter(Mandatory, Position = 0)]
-        [string[]]$Arguments
-    )
+    param([Parameter(Mandatory, Position = 0)][string[]]$Arguments)
     & git @Arguments *> $null
     return $LASTEXITCODE -eq 0
 }
@@ -102,47 +111,65 @@ function Get-Divergence([string]$Target) {
     return [PSCustomObject]@{ Ahead = [int]$counts[0]; Behind = [int]$counts[1] }
 }
 
+function Get-GitDir {
+    $gitDir = (Get-GitText -Arguments @('rev-parse', '--git-dir') | Select-Object -First 1).Trim()
+    if (-not [System.IO.Path]::IsPathRooted($gitDir)) {
+        $gitDir = Join-Path (Get-Location).Path $gitDir
+    }
+    return [System.IO.Path]::GetFullPath($gitDir)
+}
+
 function Acquire-Lock {
     if ($DryRun) { return }
-    $gitDir = ((Get-GitText -Arguments @('rev-parse', '--git-dir') | Select-Object -First 1).Trim())
-    if (-not [System.IO.Path]::IsPathRooted($gitDir)) { $gitDir = Join-Path (Get-Location).Path $gitDir }
-    $script:LockPath = Join-Path ([System.IO.Path]::GetFullPath($gitDir)) 'auto-commit.lock'
-    try {
-        $stream = [System.IO.File]::Open($script:LockPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+    $script:LockPath = Join-Path (Get-GitDir) 'auto-commit.lock'
+
+    # Verrou laisse par une session interrompue : on le nettoie si personne ne
+    # le tient. On sonde le fichier en ouverture exclusive : si elle reussit,
+    # aucune autre instance ne le tient, donc on peut le supprimer sans risque.
+    if (Test-Path -LiteralPath $script:LockPath) {
+        $probe = $null
         try {
-            $writer = New-Object System.IO.StreamWriter($stream)
-            $writer.WriteLine("pid=$PID")
-            $writer.WriteLine("host=$env:COMPUTERNAME")
-            $writer.WriteLine("started=$(Get-Date -Format 'o')")
-            $writer.Flush()
-        } finally {
-            if ($null -ne $writer) { $writer.Dispose() } else { $stream.Dispose() }
+            $probe = [System.IO.File]::Open($script:LockPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+        } catch [System.IO.IOException] {
+            throw "Une autre publication est deja en cours (verrou $($script:LockPath)). Attendez sa fin, ou supprimez ce fichier si aucune fenetre n'est ouverte."
         }
+        if ($probe) {
+            $probe.Dispose()
+            Remove-Item -LiteralPath $script:LockPath -Force -ErrorAction Stop
+        }
+    }
+
+    # Le verrou = poignee exclusive gardee ouverte jusqu'a la fin. Si le processus
+    # est tue, Windows libere la poignee et le fichier devient recuperable.
+    try {
+        $script:LockStream = [System.IO.File]::Open($script:LockPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+        $meta = "pid=$PID`nhost=$env:COMPUTERNAME`nstarted=$(Get-Date -Format 'o')`n"
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($meta)
+        $script:LockStream.Write($bytes, 0, $bytes.Length)
+        $script:LockStream.Flush($true)
         $script:OwnsLock = $true
     } catch [System.IO.IOException] {
-        $owner = if (Test-Path -LiteralPath $script:LockPath) { (Get-Content -LiteralPath $script:LockPath -Raw -ErrorAction SilentlyContinue).Trim() } else { 'inconnu' }
-        $pidMatch = [regex]::Match($owner, '(?m)^pid=(\d+)\s*$')
-        if ($pidMatch.Success -and -not (Get-Process -Id ([int]$pidMatch.Groups[1].Value) -ErrorAction SilentlyContinue)) {
-            Write-Host '[INFO] Verrou obsolète détecté : récupération automatique.' -ForegroundColor Yellow
-            Remove-Item -LiteralPath $script:LockPath -Force
-            Acquire-Lock
-            return
-        }
-        throw "Une autre publication est deja en cours. Verifiez $script:LockPath ($owner)."
+        if ($script:LockStream) { $script:LockStream.Dispose(); $script:LockStream = $null }
+        throw "Impossible de creer le verrou $($script:LockPath). Une autre publication vient probablement de demarrer."
     }
 }
 
 function Release-Lock {
+    if ($script:LockStream) {
+        try { $script:LockStream.Dispose() } catch {}
+        $script:LockStream = $null
+    }
     if ($script:OwnsLock -and $script:LockPath -and (Test-Path -LiteralPath $script:LockPath)) {
         Remove-Item -LiteralPath $script:LockPath -Force -ErrorAction SilentlyContinue
     }
+    $script:OwnsLock = $false
 }
 
 function Save-Changes {
     if ((Get-Status).Count -eq 0) { return $null }
     $before = ((Get-GitText -Arguments @('rev-parse', '--verify', '-q', 'refs/stash') -AllowFailure | Select-Object -First 1))
     Write-Step 'Sauvegarde temporaire des changements locaux'
-    Run-Git -Arguments @('stash', 'push', '--include-untracked', '--message', "auto-commit safety $(Get-Date -Format 'yyyy-MM-dd HH:mm')")
+    Run-Git -Silent -Arguments @('stash', 'push', '--include-untracked', '--message', "auto-commit safety $(Get-Date -Format 'yyyy-MM-dd HH:mm')")
     $after = ((Get-GitText -Arguments @('rev-parse', '--verify', '-q', 'refs/stash') -AllowFailure | Select-Object -First 1))
     if ([string]::IsNullOrWhiteSpace($after) -or $after -eq $before) { throw 'La sauvegarde temporaire des changements a echoue.' }
     return $after.Trim()
@@ -152,11 +179,11 @@ function Restore-Changes([string]$Stash) {
     if ([string]::IsNullOrWhiteSpace($Stash)) { return }
     Write-Step 'Restauration des changements locaux'
     try {
-        Run-Git -Arguments @('stash', 'apply', '--index', $Stash)
+        Run-Git -Silent -Arguments @('stash', 'apply', '--index', $Stash)
     } catch {
         throw "La mise a jour distante est integree, mais la restauration locale est en conflit. Le stash $Stash est conserve."
     }
-    Run-Git -Arguments @('stash', 'drop', $Stash)
+    Run-Git -Silent -Arguments @('stash', 'drop', $Stash)
 }
 
 function Sync-Remote([string]$Target) {
@@ -170,7 +197,7 @@ function Sync-Remote([string]$Target) {
         if ($divergence.Ahead -gt 0) { Run-Git -Arguments @('rebase', "origin/$Target") }
         else { Run-Git -Arguments @('merge', '--ff-only', "origin/$Target") }
     } catch {
-        Run-Git -Arguments @('rebase', '--abort') -AllowFailure
+        Run-Git -AllowFailure -Silent -Arguments @('rebase', '--abort')
         throw "Conflit pendant la mise a jour distante. Aucun force-push n'a ete execute et vos changements restent sauvegardes."
     }
     Restore-Changes $stash
@@ -204,14 +231,22 @@ function Assert-SafePaths([string[]]$Files) {
 
 function Run-Checks {
     if ($SkipChecks -or -not (Test-Path -LiteralPath 'package.json')) { return }
+    # Le type-check n'a d'interet que si du TypeScript a change : on l'evite
+    # sinon (commits de .md, .bat, .ps1, images... -> instantanes).
+    $tsChanged = @(Get-ChangedPaths | Where-Object { $_ -match '\.(ts|tsx)$' })
+    if (-not $tsChanged) {
+        Write-Info 'Aucun fichier TypeScript modifie : verification TypeScript ignoree.'
+        return
+    }
     if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-        Write-Host '[INFO] npm absent : verification TypeScript ignoree.' -ForegroundColor Yellow
+        Write-Info 'npm absent : verification TypeScript ignoree.'
         return
     }
     try { $package = Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json }
-    catch { Write-Host '[INFO] package.json illisible : verification ignoree.' -ForegroundColor Yellow; return }
+    catch { Write-Info 'package.json illisible : verification ignoree.'; return }
     if ($null -eq $package.scripts.lint) { return }
     Write-Step 'Verification TypeScript (npm run lint)'
+    Write-Info 'Cela peut prendre quelques secondes sur un gros projet.'
     & npm run lint
     if ($LASTEXITCODE -ne 0) { throw 'La verification TypeScript a echoue. Le commit est annule.' }
 }
@@ -222,27 +257,30 @@ function Commit-Work([string]$CommitMessage) {
     $files = if (@($Path).Count -gt 0) { @($Path) } else { Get-ChangedPaths }
     Assert-SafePaths $files
     if (-not (Confirm "Creer le commit et publier $Branch")) {
-        Write-Host '[INFO] Operation annulee. Aucun fichier n a ete indexe.' -ForegroundColor Yellow
+        Write-Info 'Operation annulee. Aucun fichier n a ete indexe.'
         return $false
     }
     Write-Step 'Indexation et creation du commit'
     if (@($Path).Count -gt 0) { Run-Git -Arguments (@('add', '--') + $Path) }
     else { Run-Git -Arguments @('add', '--all') }
-    Run-Git -Arguments @('diff', '--cached', '--check')
+    Run-Git -Silent -Arguments @('diff', '--cached', '--check')
     if (Test-Git -Arguments @('diff', '--cached', '--quiet')) { return $false }
-    Run-Git -Arguments @('var', 'GIT_AUTHOR_IDENT')
+    Run-Git -Silent -Arguments @('var', 'GIT_AUTHOR_IDENT')
     Run-Git -Arguments @('commit', '-m', $CommitMessage)
     return $true
 }
 
 function Push-Branch([string]$Target) {
-    & git push --porcelain -u origin $Target
-    if ($LASTEXITCODE -eq 0) { return }
-    if ($NoSync) { throw "La publication de $Target a echoue. Le commit local est conserve." }
-    Write-Host '[INFO] Nouvelle tentative securisee apres actualisation distante.' -ForegroundColor Yellow
-    Run-Git -Arguments @('fetch', 'origin', $Target, '--prune')
+    try {
+        Run-Git -Silent -Arguments @('push', '--quiet', '-u', 'origin', $Target)
+        return
+    } catch {
+        if ($NoSync) { throw "La publication de $Target a echoue. Le commit local est conserve." }
+    }
+    Write-Warn 'Nouvelle tentative securisee apres actualisation distante.'
+    Run-Git -Silent -Arguments @('fetch', '--quiet', '--prune', 'origin', $Target)
     Sync-Remote $Target
-    Run-Git -Arguments @('push', '--porcelain', '-u', 'origin', $Target)
+    Run-Git -Silent -Arguments @('push', '--quiet', '-u', 'origin', $Target)
 }
 
 function Show-Help {
@@ -256,8 +294,8 @@ function Show-Help {
     Write-Host '  -SkipChecks            ignore npm run lint'
     Write-Host '  -IncludeSensitive      autorise une cle ou un .env verifie'
     Write-Host ''
-    Write-Host 'Protections : verrou local, blocage des secrets, verification TypeScript,'
-    Write-Host 'sauvegarde temporaire, rattrapage d un push concurrent et aucun force-push.'
+    Write-Host 'Protections : verrou local auto-recuperable, blocage des secrets,'
+    Write-Host 'verification TypeScript ciblee, sauvegarde temporaire, aucun force-push.'
 }
 
 if ($Help) {
@@ -291,7 +329,8 @@ try {
 
     if ($DryRun) {
         Write-Step "Verification distante de origin/$Branch"
-        Run-Git -Arguments @('ls-remote', '--heads', 'origin', $Branch)
+        Run-Git -Silent -Arguments @('ls-remote', '--heads', 'origin', $Branch)
+        Write-Info 'Origine accessible.'
         Write-Step 'Apercu des changements'
         Get-Status | ForEach-Object { Write-Host $_ }
         Write-Host '[INFO] Simulation terminee : aucun commit ni push.' -ForegroundColor Green
@@ -299,12 +338,12 @@ try {
     }
 
     Acquire-Lock
-    if (-not $NoSync) { Run-Git -Arguments @('fetch', 'origin', $Branch, '--prune') }
+    if (-not $NoSync) { Run-Git -Silent -Arguments @('fetch', '--quiet', '--prune', 'origin', $Branch) }
     Sync-Remote $Branch
 
     $status = Get-Status
     Write-Step 'Apercu des changements'
-    if ($status.Count -eq 0) { Write-Host '[INFO] Aucun changement de fichier a commiter.' -ForegroundColor DarkGray }
+    if ($status.Count -eq 0) { Write-Info 'Aucun changement de fichier a commiter.' }
     else {
         $status | ForEach-Object { Write-Host $_ }
         Run-Checks

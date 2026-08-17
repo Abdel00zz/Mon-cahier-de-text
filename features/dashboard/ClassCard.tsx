@@ -100,7 +100,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            className="group relative flex w-full min-h-[148px] sm:min-h-[160px] cursor-pointer flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-4 px-4 pb-2.5 sm:pt-4.5 sm:px-5 sm:pb-3 transition-all duration-250 shadow-[0_2px_12px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_10px_26px_-4px_rgba(37,99,235,0.1)] dark:hover:shadow-[0_10px_26px_-4px_rgba(0,0,0,0.6)] hover:border-blue-400/70 dark:hover:border-blue-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+            className="group relative flex h-full w-full min-h-[148px] sm:min-h-[160px] cursor-pointer flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-4 px-4 pb-2.5 sm:pt-4.5 sm:px-5 sm:pb-3 transition-all duration-250 shadow-[0_2px_12px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_10px_26px_-4px_rgba(37,99,235,0.1)] dark:hover:shadow-[0_10px_26px_-4px_rgba(0,0,0,0.6)] hover:border-blue-400/70 dark:hover:border-blue-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
         >
             {/* Top area: Minimalist subject pill (Top Left / Start) */}
             <div className="flex items-center justify-start w-full">
@@ -118,7 +118,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Center area: Class title (Airy, centered, high contrast) */}
             <div className="w-full my-3 sm:my-4 text-center flex flex-col items-center justify-center">
                 <h3
-                    className="text-lg sm:text-[20px] font-bold tracking-tight text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                    className="text-sm sm:text-base lg:text-xl font-semibold lg:font-bold tracking-tight text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
                     title={displayName}
                 >
                     {renderClassTitleWithFonts(displayName)}
