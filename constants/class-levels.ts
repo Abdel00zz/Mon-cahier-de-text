@@ -24,6 +24,60 @@ export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
   prepa: ['MPSI', 'PCSI', 'MP', 'PSI', 'TSI', 'ECS', 'ECT'],
 };
 
+export type ClassLevelGroupKey = 'college' | 'common' | 'firstBac' | 'secondBac' | 'prepa';
+
+export interface ClassLevelGroup {
+  key: ClassLevelGroupKey;
+  levels: string[];
+}
+
+/**
+ * Regroupe les niveaux officiels d'un cycle en paliers pédagogiques (Tronc
+ * commun, 1re Bac, 2e Bac…) pour proposer un choix en deux temps, plus lisible
+ * sur petit écran qu'une longue liste à plat.
+ */
+export const classLevelGroupsForCycle = (cycle: Cycle): ClassLevelGroup[] => {
+  switch (cycle) {
+    case 'college':
+      return [{ key: 'college', levels: CLASS_LEVELS_BY_CYCLE.college }];
+    case 'lycee':
+      return [
+        { key: 'common', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('Tronc')) },
+        { key: 'firstBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('1er Bac')) },
+        { key: 'secondBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('2ème Bac')) },
+      ];
+    case 'prepa':
+      return [{ key: 'prepa', levels: CLASS_LEVELS_BY_CYCLE.prepa }];
+  }
+};
+
+const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, string>> = {
+  fr: {
+    college: 'Collège',
+    common: 'Tronc commun',
+    firstBac: '1re Bac',
+    secondBac: '2e Bac',
+    prepa: 'Prépa',
+  },
+  ar: {
+    college: 'الإعدادي',
+    common: 'الجذع المشترك',
+    firstBac: 'الأولى بكالوريا',
+    secondBac: 'الثانية بكالوريا',
+    prepa: 'الأقسام التحضيرية',
+  },
+  en: {
+    college: 'Middle School',
+    common: 'Common Core',
+    firstBac: '1st Bac',
+    secondBac: '2nd Bac',
+    prepa: 'Preparatory Classes',
+  },
+};
+
+export const formatClassLevelGroupLabel = (key: ClassLevelGroupKey, locale: AppLocale): string =>
+  CLASS_LEVEL_GROUP_LABELS[locale][key];
+
 const CLASS_LEVEL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
   '1AC': '1ère Année Collégiale',
   '2AC': '2ème Année Collégiale',

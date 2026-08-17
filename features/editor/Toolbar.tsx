@@ -195,13 +195,13 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-7 w-7 cursor-pointer rounded-full border border-border/80 bg-card text-muted-foreground shadow-none transition-all hover:bg-muted hover:text-foreground active:scale-95"
+              className="relative h-7 w-7 cursor-pointer rounded-full text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95"
               aria-label={t('toolbar.actionsMenu')}
             >
               <MoreVertical className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align={isRtl ? 'start' : 'end'} className="z-[70] w-56 rounded-2xl border border-border/80 bg-card/98 p-1.5 shadow-xl backdrop-blur-md">
+          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-56 rounded-2xl border border-border/80 bg-card/98 p-1.5 shadow-xl backdrop-blur-md">
             <DropdownMenuLabel className="px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
               {t('toolbar.actions')}
             </DropdownMenuLabel>

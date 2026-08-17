@@ -19,10 +19,13 @@ export type { ContentDomain } from './constants/type-domains';
 
 export {
   CLASS_LEVELS_BY_CYCLE,
+  classLevelGroupsForCycle,
   formatClassDisplayName,
+  formatClassLevelGroupLabel,
   formatLocalizedClassDisplayName,
   normalizeOfficialClassName,
 } from './constants/class-levels';
+export type { ClassLevelGroupKey } from './constants/class-levels';
 
 export {
   SUBJECTS,

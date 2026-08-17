@@ -1,5 +1,5 @@
 import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
-import { CLASS_LEVELS_BY_CYCLE, SUBJECTS } from '@/constants';
+import { SUBJECTS, classLevelGroupsForCycle } from '@/constants';
 import type { Cycle } from '@/types';
 import type { ClassLevelGroup, CycleOption, ModalLang, OnboardingCopy } from './types';
 
@@ -10,13 +10,9 @@ export const ONBOARDING_CYCLES: CycleOption[] = [
 ];
 
 export const LEVEL_GROUPS: Record<Cycle, ClassLevelGroup[]> = {
-    college: [{ key: 'college', levels: CLASS_LEVELS_BY_CYCLE.college }],
-    lycee: [
-        { key: 'common', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('Tronc')) },
-        { key: 'firstBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('1BAC')) },
-        { key: 'secondBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('2BAC')) },
-    ],
-    prepa: [{ key: 'prepa', levels: CLASS_LEVELS_BY_CYCLE.prepa }],
+    college: classLevelGroupsForCycle('college'),
+    lycee: classLevelGroupsForCycle('lycee'),
+    prepa: classLevelGroupsForCycle('prepa'),
 };
 
 export const defaultLevelForCycle = (cycle: Cycle): string => LEVEL_GROUPS[cycle][0]?.levels[0] ?? '';

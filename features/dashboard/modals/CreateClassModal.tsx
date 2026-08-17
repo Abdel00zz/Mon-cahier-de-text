@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2 } from '@/components/ui/icons';
-import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { Check, Trash2 } from '@/components/ui/icons';
+import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import type { ClassLevelGroupKey } from '@/constants';
+import { cn } from '@/lib/utils';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
 
@@ -221,7 +223,14 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     }
   }, [isOpen, defaultCycle, teacherSubjects, teacherCycles, editingClass]);
 
-  const levels = CLASS_LEVELS_BY_CYCLE[cycle] || [];
+  const levelGroups = React.useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
+  const activeGroup = levelGroups.find(g => g.levels.includes(level)) ?? levelGroups[0];
+
+  const selectGroup = (groupKey: ClassLevelGroupKey) => {
+    const target = levelGroups.find(g => g.key === groupKey);
+    if (target?.levels.length) setLevel(target.levels[0]);
+  };
+
   const effectiveLevel = customMode ? customLevel.trim() : level;
   const effectiveSubject = customMode ? customSubject.trim() : subject;
   const normalizedGroup = normalizeGroupNumber(group);
@@ -316,60 +325,97 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-[1fr_auto] gap-3">
-          <div className="space-y-1.5">
-            <label htmlFor="level" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {copy.level} *
-            </label>
-            {customMode ? (
-              <Input
-                id="level"
-                type="text"
-                value={customLevel}
-                onChange={(e) => setCustomLevel(e.target.value)}
-                placeholder={copy.customLevelPlaceholder}
-                required
-              />
-            ) : (
-              <Select value={level} onValueChange={setLevel} required>
-                <SelectTrigger id="level" className="!h-11 text-sm sm:!h-9">
-                  <SelectValue placeholder={copy.levelPlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  {levels.map(l => (
-                    <SelectItem key={l} value={l} className="text-xs leading-snug">
-                      {formatLocalizedClassDisplayName(l, language, { includeClassPrefix: false })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="group" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {copy.group} *
-            </label>
+        <div className="space-y-1.5">
+          <span id="level-label" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {copy.level} *
+          </span>
+          {customMode ? (
             <Input
-              id="group"
+              id="level"
               type="text"
-              value={group}
-              onChange={(e) => setGroup(sanitizeGroupNumberInput(e.target.value))}
-              onBlur={() => {
-                const next = normalizeGroupNumber(group);
-                if (next) setGroup(next);
-              }}
-              placeholder="1–99"
-              className="h-11 w-24 text-center sm:h-9"
-              inputMode="numeric"
-              maxLength={2}
-              aria-invalid={!!groupError}
-              aria-describedby="group-help"
+              value={customLevel}
+              onChange={(e) => setCustomLevel(e.target.value)}
+              placeholder={copy.customLevelPlaceholder}
+              aria-labelledby="level-label"
+              required
             />
-          </div>
+          ) : (
+            <div role="group" aria-labelledby="level-label" className="space-y-2">
+              {/* Paliers : Tronc commun / 1re Bac / 2e Bac (choix en deux temps) */}
+              <div className="flex flex-wrap gap-1.5">
+                {levelGroups.map(g => {
+                  const isActive = activeGroup?.key === g.key;
+                  return (
+                    <button
+                      key={g.key}
+                      type="button"
+                      onClick={() => selectGroup(g.key)}
+                      aria-pressed={isActive}
+                      className={cn(
+                        'inline-flex h-9 items-center justify-center rounded-full px-3.5 text-xs font-bold transition-colors cursor-pointer',
+                        isActive
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : 'bg-muted/60 text-muted-foreground border border-border/70 hover:bg-muted hover:text-foreground'
+                      )}
+                    >
+                      {formatClassLevelGroupLabel(g.key, language)}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Filières du palier sélectionné */}
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {activeGroup?.levels.map(l => {
+                  const isSelected = level === l;
+                  return (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setLevel(l)}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-start text-xs font-semibold leading-snug transition-all cursor-pointer',
+                        isSelected
+                          ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/30'
+                          : 'border-border bg-card text-muted-foreground hover:border-slate-300 hover:text-foreground'
+                      )}
+                    >
+                      <span className="min-w-0 flex-1">
+                        {formatLocalizedClassDisplayName(l, language, { includeClassPrefix: false })}
+                      </span>
+                      {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-        <p id="group-help" className={groupError ? 'text-[11px] font-medium text-destructive' : 'text-[11px] text-muted-foreground'}>
-          {groupError ?? copy.groupHint}
-        </p>
+
+        <div className="space-y-1.5">
+          <label htmlFor="group" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {copy.group} *
+          </label>
+          <Input
+            id="group"
+            type="text"
+            value={group}
+            onChange={(e) => setGroup(sanitizeGroupNumberInput(e.target.value))}
+            onBlur={() => {
+              const next = normalizeGroupNumber(group);
+              if (next) setGroup(next);
+            }}
+            placeholder="1–99"
+            className="h-11 w-24 text-center sm:h-9"
+            inputMode="numeric"
+            maxLength={2}
+            aria-invalid={!!groupError}
+            aria-describedby="group-help"
+          />
+          <p id="group-help" className={groupError ? 'text-[11px] font-medium text-destructive' : 'text-[11px] text-muted-foreground'}>
+            {groupError ?? copy.groupHint}
+          </p>
+        </div>
 
         {/* Matière : affichée seulement si le prof enseigne plusieurs matières
             (2+ configurées dans les Paramètres) ; sinon la matière est héritée. */}
