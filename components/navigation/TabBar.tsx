@@ -85,11 +85,11 @@ export const TabBar = React.memo<TabBarProps>(({
 
   return (
     <>
-      {/* Desktop sidebar — Google Keep style */}
+      {/* Desktop sidebar — Modern Deep Blue Theme */}
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden w-[80px] flex-col bg-card py-4 text-card-foreground print:hidden sm:flex',
-          isRtl ? 'right-0 border-l border-border/30' : 'left-0 border-r border-border/30',
+          'fixed inset-y-0 z-40 hidden w-[80px] flex-col bg-[#0b152b] dark:bg-[#080f20] py-4 text-slate-100 print:hidden sm:flex shadow-lg',
+          isRtl ? 'right-0 border-l border-blue-900/40' : 'left-0 border-r border-blue-900/40',
           isExpanded ? 'lg:w-[260px]' : 'lg:w-[80px]',
           'transition-[width] duration-200 ease-out',
         )}
@@ -99,18 +99,18 @@ export const TabBar = React.memo<TabBarProps>(({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/60 focus:outline-none"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-blue-200/80 transition-colors hover:bg-blue-900/50 hover:text-white focus:outline-none cursor-pointer"
             aria-label={isExpanded ? copy.collapse : copy.expand}
           >
             <Menu className="h-[20px] w-[20px]" />
           </button>
           <div className={cn('ms-3 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[170px]')}>
-            <span className="block truncate text-[15px] font-semibold text-foreground">{copy.brand}</span>
-            <span className="block truncate text-[11px] font-medium text-muted-foreground">{copy.teacherSpace}</span>
+            <span className="block truncate text-[15px] font-bold text-white tracking-tight">{copy.brand}</span>
+            <span className="block truncate text-[11px] font-medium text-blue-200/70">{copy.teacherSpace}</span>
           </div>
         </div>
 
-        <div className="mt-3 flex flex-1 flex-col gap-0.5 px-2.5">
+        <div className="mt-3 flex flex-1 flex-col gap-1 px-2.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -122,11 +122,11 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'relative flex h-[46px] w-full items-center justify-center rounded-2xl transition-colors duration-150 focus:outline-none',
+                  'group relative flex h-[46px] w-full items-center justify-center rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer',
                   isExpanded && 'lg:justify-start lg:gap-4 lg:px-4',
                   isActive
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-foreground/70 hover:bg-muted/50',
+                    ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-950/60 hover:bg-blue-500'
+                    : 'text-blue-100/80 hover:bg-white/10 hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
@@ -134,11 +134,11 @@ export const TabBar = React.memo<TabBarProps>(({
                 <span className="relative flex shrink-0 items-center justify-center">
                   <Icon className={cn(
                     'h-[22px] w-[22px] transition-colors duration-150',
-                    isActive ? 'text-primary' : '',
+                    isActive ? 'text-white' : 'text-blue-200/80 group-hover:text-white',
                   )} />
                   {count ? (
                     <span className={cn(
-                      'absolute -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-card',
+                      'absolute -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-[#0b152b]',
                       isRtl ? '-left-3' : '-right-3',
                     )}>
                       {countLabel(count)}
@@ -148,7 +148,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 <span className={cn(
                   'hidden min-w-0 flex-1 truncate text-start text-[14px] transition-all duration-150',
                   isExpanded && 'lg:block',
-                  isActive ? 'font-semibold text-primary' : 'font-medium',
+                  isActive ? 'font-semibold text-white' : 'font-medium',
                 )}>
                   {copy[tab.id]}
                 </span>
@@ -157,45 +157,47 @@ export const TabBar = React.memo<TabBarProps>(({
           })}
         </div>
 
-        <div className="mt-auto px-2.5 pb-[max(1rem,env(safe-area-inset-bottom,1rem))]">
+        <div className="mt-auto px-2.5 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] flex flex-col gap-1">
           <button
             type="button"
             onClick={() => goTo('settings')}
             className={cn(
-              'flex h-[46px] w-full items-center justify-center rounded-2xl text-foreground/70 transition-colors duration-150 hover:bg-muted/50 focus:outline-none',
+              'group flex h-[46px] w-full items-center justify-center rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer',
               isExpanded && 'lg:justify-start lg:gap-4 lg:px-4',
-              activeTab === 'settings' && 'bg-primary/10 text-primary font-semibold',
+              activeTab === 'settings'
+                ? 'bg-blue-600 text-white font-semibold shadow-xs hover:bg-blue-500'
+                : 'text-blue-100/80 hover:bg-white/10 hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[22px] w-[22px] shrink-0 transition-colors duration-150', activeTab === 'settings' && 'text-primary')} />
-            <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' && 'font-semibold text-primary')}>{copy.settings}</span>
+            <Settings className={cn('h-[22px] w-[22px] shrink-0 transition-colors duration-150', activeTab === 'settings' ? 'text-white' : 'text-blue-200/80 group-hover:text-white')} />
+            <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' ? 'font-semibold text-white' : '')}>{copy.settings}</span>
           </button>
           <button
             type="button"
             onClick={() => goTo('help')}
             className={cn(
-              'mt-0.5 flex h-[46px] w-full items-center justify-center rounded-2xl text-foreground/70 transition-colors duration-150 hover:bg-muted/50 focus:outline-none',
+              'group flex h-[46px] w-full items-center justify-center rounded-2xl text-blue-100/80 transition-all duration-150 hover:bg-white/10 hover:text-white focus:outline-none cursor-pointer',
               isExpanded && 'lg:justify-start lg:gap-4 lg:px-4',
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-[22px] w-[22px] shrink-0" />
+            <CircleHelp className="h-[22px] w-[22px] shrink-0 text-blue-200/80 group-hover:text-white transition-colors duration-150" />
             <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
           </button>
         </div>
       </nav>
 
-      {/* Mobile bottom tab bar — Android 16 / Material You Expressive */}
+      {/* Mobile bottom tab bar — Android 16 / Material You Expressive Modern Blue */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-full border border-border/40 bg-card/95 text-card-foreground shadow-[0_4px_16px_rgba(0,0,0,0.07)] backdrop-blur-md print:hidden sm:hidden will-change-transform"
+        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-full border border-blue-900/40 bg-[#0b152b]/95 dark:bg-[#080f20]/95 text-slate-100 shadow-[0_8px_28px_rgba(11,21,43,0.35)] backdrop-blur-md print:hidden sm:hidden will-change-transform"
         style={{ bottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="mx-auto flex h-[48px] max-w-sm items-center justify-around px-1">
+        <div className="mx-auto flex h-[50px] max-w-sm items-center justify-around px-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -207,21 +209,21 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'relative flex h-9 flex-1 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-95',
+                  'relative flex h-9 flex-1 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-95 cursor-pointer',
                   'min-h-[40px] min-w-[40px]',
-                  isActive ? 'text-primary' : 'text-foreground/60 hover:text-foreground',
+                  isActive ? 'text-white' : 'text-blue-200/70 hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <div className={cn(
-                  'relative flex items-center justify-center rounded-full px-2.5 py-1 transition-all',
-                  isActive ? 'bg-primary/10' : ''
+                  'relative flex items-center justify-center rounded-full px-3 py-1.5 transition-all',
+                  isActive ? 'bg-blue-600 text-white shadow-xs' : ''
                 )}>
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-[19px] w-[19px]" />
                   {count ? (
                     <span className={cn(
-                      'absolute -top-[2px] flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-destructive px-[3px] text-[7.5px] font-bold leading-none text-white ring-2 ring-card',
+                      'absolute -top-[2px] flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rose-500 px-[3px] text-[8px] font-bold leading-none text-white ring-2 ring-[#0b152b]',
                       isRtl ? '-left-1' : '-right-1',
                     )}>
                       {countLabel(count)}
@@ -235,18 +237,18 @@ export const TabBar = React.memo<TabBarProps>(({
             type="button"
             onClick={() => goTo('settings')}
             className={cn(
-              'relative flex h-9 flex-1 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-95',
+              'relative flex h-9 flex-1 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-95 cursor-pointer',
               'min-h-[40px] min-w-[40px]',
-              activeTab === 'settings' ? 'text-primary' : 'text-foreground/60 hover:text-foreground',
+              activeTab === 'settings' ? 'text-white' : 'text-blue-200/70 hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
             <div className={cn(
-              'relative flex items-center justify-center rounded-full px-2.5 py-1 transition-all',
-              activeTab === 'settings' ? 'bg-primary/10' : ''
+              'relative flex items-center justify-center rounded-full px-3 py-1.5 transition-all',
+              activeTab === 'settings' ? 'bg-blue-600 text-white shadow-xs' : ''
             )}>
-              <Settings className="h-[18px] w-[18px]" />
+              <Settings className="h-[19px] w-[19px]" />
             </div>
           </button>
         </div>

@@ -119,7 +119,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       return {
         text: t(`manageLessons.type.${type}`),
         color: config.badgeColor || 'bg-secondary text-secondary-foreground border-border',
-        icon: config.icon
+        icon: null
       };
     }
 

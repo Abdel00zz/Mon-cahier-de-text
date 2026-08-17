@@ -351,8 +351,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         }}
       >
         <div className="min-w-0 w-full">
-          <div className="flex w-full items-center justify-center gap-2.5 py-1">
-            {cfg?.icon && <cfg.icon className={`h-5 w-5 shrink-0 ${cfg?.color ?? 'text-foreground'}`} aria-hidden />}
+          <div className="flex w-full items-center justify-center py-1">
             <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} className={`text-base font-extrabold tracking-tight sm:text-lg ${cfg?.color ?? 'text-foreground'}`} />
           </div>
           <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />

@@ -7,7 +7,7 @@ import { EditableCell } from '@/components/ui/EditableCell';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
-import { BookOpen, TriangleAlert } from '@/components/ui/icons';
+import { TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ContentRendererProps {
@@ -71,8 +71,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         }
 
         return (
-          <div className={`font-extrabold tracking-tight text-lg flex items-center justify-center gap-3 ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
-            <config.icon className="h-5 w-5" />
+          <div className={`font-extrabold tracking-tight text-lg flex items-center justify-center ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
             <span>{titleToDisplay}</span>
           </div>
         );
@@ -116,10 +115,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       return (
         <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
-          <div className="flex w-full items-center justify-center gap-3 py-3 text-center font-bold text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-red-200/90 bg-red-50 text-red-700 shadow-[0_1px_2px_rgba(127,29,29,0.08)]" aria-hidden>
-              <BookOpen className="h-4 w-4" />
-            </span>
+          <div className="flex w-full items-center justify-center py-3 text-center font-bold text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
             <EditableTitle value={item.title} onSave={handleUpdate('title')} />
           </div>
         </MaybeMathJax>
@@ -130,8 +126,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`text-lg font-extrabold tracking-tight sm:text-xl py-1 flex items-center gap-3 ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
-            <config.icon className="h-5 w-5 shrink-0" />
+        <div className={`text-lg font-extrabold tracking-tight sm:text-xl py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <EditableTitle value={item.title} onSave={handleUpdate('title')} />
         </div>
       </MaybeMathJax>
@@ -223,16 +218,22 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const contentKey = `${item.type || ''}-${item.number || ''}-${item.title || ''}-${item.description || ''}-${item.page || ''}`;
 
       const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
+      const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
+        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
+        : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
+
       return (
         // Mobile : badge AU-DESSUS du titre (pile) pour laisser toute la largeur
-        // au texte ; à partir de sm, badge et titre côte à côte.
-        <div className="flex flex-col items-start gap-1 ps-1 py-1 sm:flex-row sm:items-baseline sm:gap-2 sm:ps-8">
+        // au texte ; à partir de sm, badge et titre côte à côte avec espacement soigné.
+        <div className="flex flex-col items-start gap-1 ps-1 py-1 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8">
           <Badge
             variant="outline"
-            className={`flex-shrink-0 select-none rounded-lg text-[10px] font-bold ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
-            data-tippy-content={BADGE_TOOLTIP_MAP[normalizedType] || normalizedType}
+            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-normal border min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            data-tippy-content={fullTooltip}
+            title={fullTooltip}
           >
-            {badgeText} {item.number || ''}
+            <span>{badgeText}</span>
+            {item.number ? <span className="ms-1 font-bold">{item.number}</span> : null}
           </Badge>
           <div className="w-full flex-grow min-w-0 sm:w-auto">
             <MaybeMathJax mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>

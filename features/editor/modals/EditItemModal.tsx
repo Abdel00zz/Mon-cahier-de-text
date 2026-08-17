@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { MathJax } from 'better-react-mathjax';
 import { ContentDirection, Indices, LessonsData, TopLevelItem } from '@/types';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, BADGE_COLOR_MAP, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
 import { hasMathSyntax } from '@/utils/math';
 import {
@@ -281,7 +281,12 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   <SelectContent>
                     {lessonTypeOptions.map(type => (
                       <SelectItem key={type} value={type}>
-                        {tc(`contentType.${type}`)}
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold border ${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'}`}>
+                            {BADGE_TEXT_MAP[type] || type}
+                          </span>
+                          <span>{tc(`contentType.${type}`)}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
