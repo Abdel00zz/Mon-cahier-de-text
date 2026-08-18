@@ -4,8 +4,8 @@ import { toast } from 'sonner';
 import { Header } from './Header';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
-import { OrientationNudge } from './OrientationNudge';
 import { SelectionBar } from './SelectionBar';
+import { useForceLandscape } from '@/hooks/useForceLandscape';
 import { EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Plus } from '@/components/ui/icons';
@@ -120,6 +120,7 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings }) => {
+  useForceLandscape();
   const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
@@ -1128,8 +1129,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} contentDirection={contentDirection} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
         )}
       </div>
-
-      <OrientationNudge suppressed={Boolean(activeModal || selectedCount > 0 || isPrinting)} />
 
       {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}
       {!activeModal && selectedCount === 0 && (

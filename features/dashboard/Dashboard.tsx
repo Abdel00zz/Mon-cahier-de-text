@@ -22,6 +22,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { buildSessionIndex, SessionIndex } from '@/utils/sessionIndex';
+import { useOrientation } from '@/hooks/useOrientation';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -74,6 +75,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const isMobile = deviceType === 'phone';
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
     const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
+    const { isLandscape } = useOrientation();
     const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
@@ -507,43 +509,45 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             <span>{t('dashboard.classShort')}</span>
                                         </button>
 
-                                        <div ref={displayMenuRef} className="relative shrink-0 hidden sm:block">
-                                            <button
-                                                type="button"
-                                                onClick={() => setDisplayMenuOpen(open => !open)}
-                                                aria-haspopup="menu"
-                                                aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3 text-xs font-medium text-slate-700 shadow-2xs backdrop-blur-sm transition-colors hover:bg-slate-50 dark:text-zinc-300 cursor-pointer"
-                                            >
-                                                <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                            </button>
-                                            {isDisplayMenuOpen && (
-                                                <div
-                                                    role="menu"
-                                                    className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/95 backdrop-blur-md p-1 shadow-lg dark:bg-zinc-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
+                                        {isLandscape && (
+                                            <div ref={displayMenuRef} className="relative shrink-0 hidden sm:block">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDisplayMenuOpen(open => !open)}
+                                                    aria-haspopup="menu"
+                                                    aria-expanded={isDisplayMenuOpen}
+                                                    className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3 text-xs font-medium text-slate-700 shadow-2xs backdrop-blur-sm transition-colors hover:bg-slate-50 dark:text-zinc-300 cursor-pointer"
                                                 >
-                                                    {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                        const isActive = option === currentDisplay;
-                                                        return (
-                                                            <button
-                                                                key={option}
-                                                                type="button"
-                                                                role="menuitemradio"
-                                                                aria-checked={isActive}
-                                                                onClick={() => {
-                                                                    setClassDisplayMode(option);
-                                                                    setDisplayMenuOpen(false);
-                                                                }}
-                                                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-indigo-500/10 text-indigo-600 font-semibold dark:bg-indigo-500/20 dark:text-indigo-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
-                                                            >
-                                                                <span>{displayCopy(option).label}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
+                                                    <span>{displayCopy(currentDisplay).label}</span>
+                                                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                {isDisplayMenuOpen && (
+                                                    <div
+                                                        role="menu"
+                                                        className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/95 backdrop-blur-md p-1 shadow-lg dark:bg-zinc-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    >
+                                                        {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                            const isActive = option === currentDisplay;
+                                                            return (
+                                                                <button
+                                                                    key={option}
+                                                                    type="button"
+                                                                    role="menuitemradio"
+                                                                    aria-checked={isActive}
+                                                                    onClick={() => {
+                                                                        setClassDisplayMode(option);
+                                                                        setDisplayMenuOpen(false);
+                                                                    }}
+                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-indigo-500/10 text-indigo-600 font-semibold dark:bg-indigo-500/20 dark:text-indigo-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
+                                                                >
+                                                                    <span>{displayCopy(option).label}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
