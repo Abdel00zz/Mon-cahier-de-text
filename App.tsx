@@ -11,6 +11,7 @@ import { normalizeOfficialClassName } from './constants';
 import { LocaleProvider, translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { useAdminMessages } from './hooks/useAdminMessages';
+import { requestEditorLandscape } from './hooks/useForceLandscape';
 
 import { useClassManager } from './hooks/useClassManager';
 import { TabBar, TabType } from './components/navigation/TabBar';
@@ -158,6 +159,9 @@ const App: React.FC = () => {
   }, [activeClass, view]);
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
+    // Appel synchrone au clic : requis par certains navigateurs pour autoriser
+    // le plein écran et le verrouillage de l'orientation dans le cahier.
+    void requestEditorLandscape();
     saveCurrentScroll();
     setActiveClass(classInfo);
     setView('editor');
