@@ -31,7 +31,7 @@ const PushActivationCard: React.FC<{
     // Cas informatifs (aucune action possible)
     if (!supported || iosNeedsInstall) {
         return (
-            <div className="flex items-start gap-3.5 rounded-2xl border border-border/70 bg-card/65 p-4 shadow-2xs">
+            <div className="flex items-start gap-3.5 rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground">
                     {iosNeedsInstall ? <Download className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                 </span>
@@ -48,8 +48,8 @@ const PushActivationCard: React.FC<{
     // Bloqué par le navigateur : ré-autorisation impossible par API.
     if (permission === 'denied' && !active) {
         return (
-            <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-2xs">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+            <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-xs backdrop-blur-xl">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
                     <TriangleAlert className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -63,7 +63,7 @@ const PushActivationCard: React.FC<{
     // Activé : état de succès + test + désactivation.
     if (active) {
         return (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 sm:p-5 shadow-2xs">
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
                 <div className="flex items-start gap-3.5">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <Check className="h-5 w-5 stroke-[2.5]" />
@@ -78,7 +78,7 @@ const PushActivationCard: React.FC<{
                         type="button"
                         onClick={onTest}
                         disabled={busy}
-                        className="h-9 flex-1 rounded-xl border border-border/80 bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-2xs"
+                        className="h-9.5 flex-1 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-xs"
                     >
                         {t('notifications.sendTest')}
                     </button>
@@ -86,7 +86,7 @@ const PushActivationCard: React.FC<{
                         type="button"
                         onClick={onDeactivate}
                         disabled={busy}
-                        className="h-9 rounded-xl px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
+                        className="h-9.5 rounded-xl px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
                     >
                         {t('notifications.turnOff')}
                     </button>
@@ -98,9 +98,9 @@ const PushActivationCard: React.FC<{
     // À activer : le vrai CTA (permission + abonnement en un geste).
     const label = permission === 'granted' ? t('notifications.finalizeReminders') : t('notifications.enableReminders');
     return (
-        <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4 sm:p-5 shadow-2xs">
+        <div className="rounded-2xl border border-indigo-500/25 bg-gradient-to-br from-indigo-500/10 via-violet-500/5 to-purple-500/10 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
             <div className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xs">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_10px_rgba(99,102,241,0.35)]">
                     <Bell className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ const PushActivationCard: React.FC<{
                 type="button"
                 onClick={onActivate}
                 disabled={busy}
-                className="mt-3.5 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-xs transition-all hover:bg-primary/90 disabled:opacity-60 cursor-pointer"
+                className="mt-3.5 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 text-xs font-bold text-white shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition-all hover:from-indigo-600 hover:to-violet-700 disabled:opacity-60 cursor-pointer"
             >
                 <Bell className="h-4 w-4" />
                 {label}
@@ -133,7 +133,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     hint,
     disabled,
 }) => (
-    <div className={`flex items-start justify-between gap-3 rounded-2xl border border-border/70 bg-card/65 p-4 shadow-2xs ${disabled ? 'opacity-60' : ''}`}>
+    <div className={`flex items-start justify-between gap-3 rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl ${disabled ? 'opacity-60' : ''}`}>
         <div className="flex flex-col text-start">
             <Label className="text-xs font-bold text-foreground font-sans leading-none">{label}</Label>
             {hint && <span className="mt-1.5 block text-xs text-muted-foreground font-sans leading-normal">{hint}</span>}
@@ -151,8 +151,8 @@ const NotificationKind: React.FC<{
     label: string;
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-background/80 p-2.5 shadow-2xs ring-1 ring-border/60">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-background/70 p-2.5 shadow-xs border border-white/[0.12] dark:border-white/[0.08]">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
             <Icon className="h-4 w-4" />
         </span>
         <span className="min-w-0">
@@ -218,7 +218,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 {t('notifications.intro')}
             </p>
 
-            {/* Activation explicite des rappels push (remplace la demande auto d'onboarding) */}
+            {/* Activation explicite des rappels push */}
             <PushActivationCard
                 active={pushActive}
                 busy={busy}
@@ -228,7 +228,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 t={t}
             />
 
-            <div className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+            <div className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
                 <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     {t('notifications.nativeDescription')}
@@ -261,12 +261,12 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="rounded-2xl border border-border/70 bg-card/65 p-4 shadow-2xs flex flex-col justify-between">
+                <label className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl flex flex-col justify-between">
                     <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.delayThreshold')}</span>
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-xl border border-border/80 bg-background/80 text-foreground px-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
                     >
                         {[1, 2, 3].map(count => (
                             <option key={count} value={count}>
@@ -275,12 +275,12 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         ))}
                     </select>
                 </label>
-                <label className="rounded-2xl border border-border/70 bg-card/65 p-4 shadow-2xs flex flex-col justify-between">
+                <label className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl flex flex-col justify-between">
                     <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.inactivity')}</span>
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-xl border border-border/80 bg-background/80 text-foreground px-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
                     >
                         {[3, 5, 10].map(count => <option key={count} value={count}>{t('notifications.inactiveDays', { count })}</option>)}
                     </select>
@@ -294,7 +294,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 onChange={v => patch({ quietDuringVacations: v })}
             />
 
-            {message && <p className="rounded-xl bg-card/80 border border-border/70 px-3.5 py-2.5 text-xs font-bold text-foreground shadow-2xs">{message}</p>}
+            {message && <p className="rounded-xl bg-card/85 border border-white/[0.12] dark:border-white/[0.08] px-3.5 py-2.5 text-xs font-bold text-foreground shadow-xs backdrop-blur-xl">{message}</p>}
 
             <AbsencesSection
                 absences={config.absences ?? []}
@@ -329,7 +329,7 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+        <div className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
             <h4 className="text-xs font-bold text-foreground">{t('notifications.absences')}</h4>
             <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground font-sans">
                 {t('notifications.absencesHint')}
@@ -340,7 +340,7 @@ const AbsencesSection: React.FC<{
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-xl bg-background/80 border border-border/70 px-3 py-2 text-xs shadow-2xs"
+                            className="flex items-center justify-between gap-2 rounded-xl bg-background/80 border border-white/[0.12] dark:border-white/[0.08] px-3 py-2 text-xs shadow-xs"
                         >
                             <span className="font-bold text-foreground font-sans">
                                 {formatDateDDMMYYYY(absence.debut)}
@@ -365,7 +365,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-xl border border-border/80 bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                     aria-label={t('notifications.absenceStart')}
                 />
                 <input
@@ -373,7 +373,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-xl border border-border/80 bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                     aria-label={t('notifications.absenceEnd')}
                 />
                 <input
@@ -381,13 +381,13 @@ const AbsencesSection: React.FC<{
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder={t('notifications.reasonOptional')}
-                    className="col-span-2 h-10 rounded-xl border border-border/80 bg-background/80 px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="col-span-2 h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 />
                 <button
                     type="button"
                     onClick={addAbsence}
                     disabled={!debut}
-                    className="col-span-2 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 sm:col-span-1 px-4 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                    className="col-span-2 h-10 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white disabled:opacity-40 sm:col-span-1 px-4 text-xs font-bold shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition-all active:scale-95 cursor-pointer"
                 >
                     {t('notifications.add')}
                 </button>

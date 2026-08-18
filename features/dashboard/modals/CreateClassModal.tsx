@@ -199,8 +199,14 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           setGroup(editingClass.name.slice(matchedLevel.length).trim());
         } else {
           setCustomMode(true);
-          setCustomLevel(editingClass.name);
-          setGroup('');
+          const match = editingClass.name.match(/^(.*?)\s+(\d{1,2})$/);
+          if (match) {
+            setCustomLevel(match[1]);
+            setGroup(match[2]);
+          } else {
+            setCustomLevel(editingClass.name);
+            setGroup('');
+          }
         }
         setSubject(editingClass.subject || '');
         setCustomSubject(editingClass.subject || '');
@@ -270,10 +276,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         title={editingClass ? copy.editTitle : copy.createTitle}
         description={editingClass ? copy.editDescription : copy.createDescription}
         maxWidth="md"
-        className="sm:max-w-[38rem] sm:rounded-[28px]"
-        headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+        className="sm:max-w-[38rem] sm:rounded-[32px] border border-slate-200/90 dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl shadow-xl overflow-hidden"
+        headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-        footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+        footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md"
         footer={
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
           {editingClass && onDelete && (
@@ -281,17 +287,23 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               type="button"
               variant="destructive"
               onClick={() => setConfirmDelete(true)}
-              className="order-2 h-11 w-full gap-2 rounded-xl sm:order-1 sm:me-auto sm:h-10 sm:w-auto"
+              className="order-2 h-11 w-full gap-2 rounded-xl sm:order-1 sm:me-auto sm:h-10 sm:w-auto cursor-pointer"
             >
               <Trash2 className="h-4 w-4" />
               {t('dashboard.delete')}
             </Button>
           )}
           <div className="order-1 flex w-full gap-2.5 sm:order-2 sm:ms-auto sm:w-auto">
-            <Button type="button" onClick={onClose} variant="secondary" className="h-11 flex-1 rounded-xl sm:h-10 sm:flex-none">
+            <Button type="button" onClick={onClose} variant="secondary" className="h-11 flex-1 rounded-xl border border-slate-200/80 dark:border-white/[0.08] sm:h-10 sm:flex-none cursor-pointer">
               {copy.cancel}
             </Button>
-            <Button type="submit" form="create-class-form" variant="default" disabled={!isFormValid} className="h-11 flex-1 rounded-xl bg-primary text-primary-foreground font-bold shadow-sm sm:h-10 sm:flex-none">
+            <Button
+              type="submit"
+              form="create-class-form"
+              variant="accent"
+              disabled={!isFormValid}
+              className="h-11 flex-1 rounded-xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 sm:h-10 sm:flex-none cursor-pointer"
+            >
               {editingClass ? copy.save : copy.create}
             </Button>
           </div>
@@ -313,10 +325,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 setLevel(CLASS_LEVELS_BY_CYCLE[nextCycle][0] ?? '');
               }}
             >
-              <SelectTrigger id="cycle" className="!h-11 text-sm sm:!h-9">
+              <SelectTrigger id="cycle" className="!h-11 text-sm sm:!h-9 rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80">
                 <SelectValue placeholder={copy.cyclePlaceholder} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl border-slate-200/80 dark:border-white/[0.08]">
                 {cycleOptions.map(c => (
                   <SelectItem key={c} value={c}>{copy.cycleLabels[c]}</SelectItem>
                 ))}
@@ -337,6 +349,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               onChange={(e) => setCustomLevel(e.target.value)}
               placeholder={copy.customLevelPlaceholder}
               aria-labelledby="level-label"
+              className="rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80"
               required
             />
           ) : (
@@ -352,10 +365,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                       onClick={() => selectGroup(g.key)}
                       aria-pressed={isActive}
                       className={cn(
-                        'inline-flex h-9 items-center justify-center rounded-full px-3.5 text-xs font-bold transition-colors cursor-pointer',
+                        'inline-flex h-9 items-center justify-center rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer',
                         isActive
-                          ? 'bg-primary text-primary-foreground shadow-xs'
-                          : 'bg-muted/60 text-muted-foreground border border-border/70 hover:bg-muted hover:text-foreground'
+                          ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xs shadow-indigo-500/25 border border-white/15'
+                          : 'bg-muted/50 text-muted-foreground border border-slate-200/80 dark:border-white/[0.08] hover:bg-muted hover:text-foreground'
                       )}
                     >
                       {formatClassLevelGroupLabel(g.key, language)}
@@ -374,16 +387,16 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                       onClick={() => setLevel(l)}
                       aria-pressed={isSelected}
                       className={cn(
-                        'flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-start text-xs font-semibold leading-snug transition-all cursor-pointer',
+                        'flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-start text-xs font-semibold leading-snug transition-all cursor-pointer',
                         isSelected
-                          ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary/30'
-                          : 'border-border bg-card text-muted-foreground hover:border-slate-300 hover:text-foreground'
+                          ? 'border-indigo-500/80 bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 ring-1 ring-indigo-500/30 shadow-xs'
+                          : 'border-slate-200/80 dark:border-white/[0.08] bg-card text-muted-foreground hover:border-slate-300 dark:hover:border-white/20 hover:text-foreground'
                       )}
                     >
                       <span className="min-w-0 flex-1">
                         {formatLocalizedClassDisplayName(l, language, { includeClassPrefix: false })}
                       </span>
-                      {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                      {isSelected && <Check className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 stroke-[2.5]" />}
                     </button>
                   );
                 })}
@@ -392,29 +405,35 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="group" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {copy.group} *
-          </label>
-          <Input
-            id="group"
-            type="text"
-            value={group}
-            onChange={(e) => setGroup(sanitizeGroupNumberInput(e.target.value))}
-            onBlur={() => {
-              const next = normalizeGroupNumber(group);
-              if (next) setGroup(next);
-            }}
-            placeholder="1–99"
-            className="h-11 w-24 text-center sm:h-9"
-            inputMode="numeric"
-            maxLength={2}
-            aria-invalid={!!groupError}
-            aria-describedby="group-help"
-          />
-          <p id="group-help" className={groupError ? 'text-[11px] font-medium text-destructive' : 'text-[11px] text-muted-foreground'}>
-            {groupError ?? copy.groupHint}
-          </p>
+        <div className="space-y-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-muted/20 p-3 sm:p-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="group" className="block text-xs font-bold uppercase tracking-wider text-foreground">
+                {copy.group} *
+              </label>
+              <p id="group-help" className={cn('mt-0.5 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>
+                {groupError ?? copy.groupHint}
+              </p>
+            </div>
+            <div className="w-full sm:w-auto">
+              <Input
+                id="group"
+                type="text"
+                value={group}
+                onChange={(e) => setGroup(sanitizeGroupNumberInput(e.target.value))}
+                onBlur={() => {
+                  const next = normalizeGroupNumber(group);
+                  if (next) setGroup(next);
+                }}
+                placeholder="1–99"
+                className="h-11 w-full sm:w-28 text-center text-sm font-bold rounded-xl border-2 border-black dark:border-white bg-white dark:bg-slate-950 text-black dark:text-white shadow-xs transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-black dark:focus-visible:border-white"
+                inputMode="numeric"
+                maxLength={2}
+                aria-invalid={!!groupError}
+                aria-describedby="group-help"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Matière : affichée seulement si le prof enseigne plusieurs matières
@@ -431,14 +450,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
                 value={customSubject}
                 onChange={(e) => setCustomSubject(e.target.value)}
                 placeholder={copy.customSubjectPlaceholder}
+                className="rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80"
                 required
               />
             ) : (
               <Select value={subject} onValueChange={setSubject} required>
-                <SelectTrigger id="subject" className="!h-11 text-sm sm:!h-9">
+                <SelectTrigger id="subject" className="!h-11 text-sm sm:!h-9 rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80">
                   <SelectValue placeholder={copy.subjectPlaceholder} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border-slate-200/80 dark:border-white/[0.08]">
                   {subjectOptions.map(s => (
                     <SelectItem key={s} value={s}>{formatLocalizedSubjectDisplayName(s, language)}</SelectItem>
                   ))}
@@ -452,7 +472,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           <button
             type="button"
             onClick={() => setCustomMode(v => !v)}
-            className="mt-2 text-[11px] font-medium text-muted-foreground/60 underline-offset-2 transition-colors hover:text-[#423ed8] hover:underline"
+            className="mt-2 text-[11px] font-medium text-muted-foreground/70 underline-offset-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer"
           >
             {customMode ? copy.switchToOfficial : copy.createCustom}
           </button>

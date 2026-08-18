@@ -144,8 +144,11 @@ export const OnboardingPage = ({
                 cycle={cycle}
                 lang={lang}
                 copy={copy}
+                selectedSubjects={selectedSubjects}
+                onCreateClass={onCreateClass}
                 controller={classDraft}
                 onRemove={handleRemoveClass}
+                onConfigChange={onConfigChange}
             />
         );
     } else {

@@ -92,6 +92,13 @@ export interface OnboardingCopy {
     cycleLabels: Record<Cycle, string>;
     cycleDescriptions: Record<Cycle, string>;
     levelGroupLabels: Record<string, string>;
+    selectBranchesHint: string;
+    noClassSelectedYet: string;
+    configuredClassesCount: (count: number) => string;
+    customClassPrompt: string;
+    groupPrefix: string;
+    otherGroupNumber: string;
+    groupsLabel: string;
 }
 
 export type { ModalLang };

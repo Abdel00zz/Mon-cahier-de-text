@@ -23,22 +23,22 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            <div className="rounded-2xl border border-border/80 bg-card/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs">
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
                 <div className="flex items-start gap-3.5">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                         <User className="h-5 w-5 stroke-[2]" />
                     </span>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{t('account.title')}</span>
                             {user && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
                                     <ShieldCheck className="h-3 w-3" />
                                     {t('settings.support.connected')}
                                 </span>
                             )}
                         </div>
-                        <p className="mt-1 text-base font-bold text-foreground sm:text-lg">
+                        <p className={`mt-1 text-base font-bold sm:text-lg ${user ? 'font-itim text-[#0056D2] dark:text-[#38bdf8] text-lg sm:text-xl' : 'text-foreground'}`}>
                             {user ? `${user.prenom} ${user.nom}` : t('account.notSignedIn')}
                         </p>
                         {user && <p className="text-xs text-muted-foreground font-medium mt-0.5 font-mono">{user.phone}</p>}
@@ -46,16 +46,16 @@ export const AccountTab: React.FC = () => {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-border/80 bg-card/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs">
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-start gap-3.5">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                             <RefreshCw className="h-5 w-5 stroke-[2]" />
                         </span>
                         <div className="min-w-0">
                             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{t('account.sync')}</span>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 <p className="text-sm font-bold text-foreground">{t(`account.status.${syncStatus}`)}</p>
                             </div>
                             {lastSyncAt && (
@@ -67,9 +67,8 @@ export const AccountTab: React.FC = () => {
                     </div>
                     <Button
                         type="button"
-                        variant="outline"
                         onClick={syncNow}
-                        className="h-9.5 rounded-xl text-xs font-bold border-border/90 text-foreground hover:bg-accent/80 cursor-pointer shadow-xs sm:shrink-0"
+                        className="h-10 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition-all cursor-pointer sm:shrink-0 gap-1.5"
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                         {t('account.syncNow')}

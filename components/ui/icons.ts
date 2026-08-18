@@ -70,6 +70,7 @@ import {
   RefreshCw as LucideRefreshCw,
   LogOut as LucideLogOut,
   Award,
+  Layers as LucideLayers,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -169,3 +170,4 @@ export const ShieldCheck = createIcon(LucideShieldCheck);
 export const RefreshCw = createIcon(LucideRefreshCw);
 export const LogOut = createIcon(LucideLogOut);
 export const AwardIcon = createIcon(Award);
+export const Layers = createIcon(LucideLayers);

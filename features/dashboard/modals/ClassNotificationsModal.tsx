@@ -158,13 +158,13 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
       onClose={onClose}
       maxWidth="lg"
       hideClose={false}
-      className="border-border/60 bg-background shadow-[0_24px_80px_-24px_rgba(0,0,0,0.28)] sm:max-w-[42rem] sm:rounded-[28px]"
-      headerClassName="border-b border-border/50 bg-card/60 px-5 pb-3.5 pt-5 sm:px-7 sm:pt-6 sm:pb-4"
+      className="border border-slate-200/90 dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.3)] sm:max-w-[42rem] sm:rounded-[32px] overflow-hidden"
+      headerClassName="border-b border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md px-5 pb-3.5 pt-5 sm:px-7 sm:pt-6 sm:pb-4"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t border-border/50 bg-card/60 px-5 py-3.5 sm:px-7 sm:py-4"
+      footerClassName="border-t border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md px-5 py-3.5 sm:px-7 sm:py-4"
       title={(
         <div className={cn('flex min-w-0 items-center gap-3 text-foreground', isRtl && 'font-bold tracking-normal')}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
             <Info className="h-5 w-5 stroke-[2.2]" />
           </div>
           <div className="min-w-0 flex-1">
@@ -183,14 +183,14 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           <button
             type="button"
             onClick={openClass}
-            className="flex h-10 items-center justify-center rounded-xl bg-primary px-5 text-xs font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow active:scale-[0.98] sm:h-11 sm:text-sm"
+            className="flex h-10 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/25 transition-all hover:shadow-lg hover:shadow-indigo-500/40 hover:from-indigo-600 hover:to-violet-700 active:scale-[0.98] sm:h-11 sm:text-sm border border-white/15 cursor-pointer"
           >
             {t('notifications.action.openClass')}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-xl border border-border/80 bg-background px-4 text-xs font-semibold text-muted-foreground shadow-xs transition-colors hover:bg-muted hover:text-foreground active:scale-[0.98] sm:h-11 sm:text-sm"
+            className="h-10 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-background/80 px-4 text-xs font-semibold text-muted-foreground shadow-xs transition-colors hover:bg-muted hover:text-foreground active:scale-[0.98] sm:h-11 sm:text-sm cursor-pointer"
           >
             {t('common.close')}
           </button>
@@ -201,7 +201,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
         {/* ── Cartes de statut de continuité pédagogique ── */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Dernière séance */}
-          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-xs transition-shadow hover:shadow-sm">
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-card p-4 shadow-xs transition-shadow hover:shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {t('dashboard.lastLesson')}
@@ -222,19 +222,19 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           </div>
 
           {/* Prochaine séance */}
-          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-blue-500/25 bg-blue-500/[0.04] p-4 shadow-xs transition-shadow hover:shadow-sm">
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-indigo-500/30 dark:border-indigo-500/25 bg-indigo-500/[0.04] p-4 shadow-xs transition-shadow hover:shadow-sm">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 {t('dashboard.nextSessionStatus')}
               </span>
               {nextSession?.label && (
-                <span className="inline-flex items-center rounded-md bg-blue-500/15 px-2 py-0.5 font-mono text-[10px] font-medium text-blue-700 dark:text-blue-300">
+                <span className="inline-flex items-center rounded-md bg-indigo-500/15 px-2 py-0.5 font-mono text-[10px] font-medium text-indigo-700 dark:text-indigo-300">
                   {nextSession.label}
                 </span>
               )}
             </div>
             <div className="mt-2.5 min-w-0">
-              <div className="line-clamp-2 text-sm font-bold leading-snug text-blue-700 dark:text-blue-300">
+              <div className="line-clamp-2 text-sm font-bold leading-snug text-indigo-700 dark:text-indigo-300">
                 <MathText source={nextLessonTitle} inline>
                   {nextLessonTitle ?? t('dashboard.none')}
                 </MathText>

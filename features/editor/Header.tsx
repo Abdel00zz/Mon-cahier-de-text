@@ -73,7 +73,10 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
           <div className="mt-1 flex flex-col items-start gap-1 text-[10px] sm:text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <User className="h-3 w-3 shrink-0 text-primary/70" aria-hidden />
-              <span className="truncate"><span className="font-semibold text-foreground/65">{t('editor.teacher')}</span> · <span className="italic">{classInfo.teacherName || t('editor.notProvided')}</span></span>
+              <span className="truncate">
+                <span className="font-semibold text-foreground/65">{t('editor.teacher')}</span> ·{' '}
+                <span className="font-itim text-[#0056D2] dark:text-[#38bdf8] font-bold text-xs sm:text-sm">{classInfo.teacherName || t('editor.notProvided')}</span>
+              </span>
             </span>
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <School className="h-3 w-3 shrink-0 text-primary/70" aria-hidden />

@@ -192,7 +192,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="rounded-2xl border border-border/80 bg-card/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs">
+    <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
       <div className="mb-4 text-center">
         <h3 className="text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
@@ -209,8 +209,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               className={cn(
                 'flex min-w-[110px] sm:min-w-[130px] flex-col items-center justify-center gap-2 rounded-2xl border p-3.5 sm:p-4 text-center transition-all duration-200 cursor-pointer shadow-xs',
                 active
-                  ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 font-bold scale-[1.02]'
-                  : 'border-border/80 bg-background/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'
+                  ? 'border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 to-violet-600/15 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/30 font-bold scale-[1.02] shadow-[0_4px_16px_rgba(99,102,241,0.18)]'
+                  : 'border-white/[0.08] dark:border-white/[0.06] bg-background/60 text-muted-foreground hover:border-indigo-500/30 hover:bg-muted/50 hover:text-foreground'
               )}
             >
               <div className="flex h-9 items-center justify-center">
@@ -219,7 +219,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               <span className={cn('text-sm font-bold leading-tight', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-primary font-semibold')}>
+              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-indigo-600 dark:text-indigo-400 font-semibold')}>
                 {option.nativeName}
               </span>
             </button>
@@ -262,9 +262,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* 1. Profil & Matière */}
-            <section className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+            <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                   <User className="h-5 w-5 stroke-[2.2]" />
                 </span>
                 <div className="min-w-0">
@@ -284,7 +284,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       value={localConfig.defaultTeacherName || ''}
                       onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
                       placeholder={t('settings.teacherPlaceholder')}
-                      className="h-10 rounded-xl border-border/80 bg-background/80 px-3.5 text-sm shadow-none"
+                      className="h-10 rounded-xl border-white/[0.12] dark:border-white/[0.08] bg-background/70 px-3.5 text-base font-itim font-bold text-[#0056D2] dark:text-[#38bdf8] shadow-none placeholder:font-sans placeholder:font-normal placeholder:text-sm focus:border-indigo-500/50"
                     />
                   </div>
 
@@ -298,7 +298,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       disabled
                       readOnly
                       placeholder="—"
-                      className="h-10 rounded-xl border-border/80 bg-muted/40 px-3.5 text-sm shadow-none text-muted-foreground"
+                      className="h-10 rounded-xl border-white/[0.08] bg-muted/40 px-3.5 text-sm shadow-none text-muted-foreground"
                     />
                   </div>
                 </div>
@@ -317,10 +317,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           aria-pressed={active}
                           onClick={() => toggleSubject(subject)}
                           className={cn(
-                            'rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-2xs',
+                            'rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs',
                             active
-                              ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-inset ring-primary/20'
-                              : 'border-border/80 bg-background/80 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'
+                              ? 'border-indigo-500/40 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/30 shadow-[0_2px_8px_rgba(99,102,241,0.18)] scale-[1.02]'
+                              : 'border-white/[0.08] dark:border-white/[0.06] bg-background/60 text-muted-foreground hover:border-indigo-500/30 hover:bg-muted/50 hover:text-foreground'
                           )}
                         >
                           {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -333,7 +333,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setSubjectExpanded(v => !v)}
-                        className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                       >
                         {subjectExpanded ? t('settings.subjectsSeeLess') : t('settings.subjectsSeeMore')}
                       </button>
@@ -344,9 +344,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+            <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                   <School className="h-5 w-5 stroke-[2.2]" />
                 </span>
                 <h3 className="text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
@@ -368,19 +368,21 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           className={cn(
                             'group flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 transition-all duration-200 outline-none cursor-pointer',
                             active
-                              ? 'border-primary/40 bg-primary/10 shadow-xs ring-1 ring-inset ring-primary/20'
-                              : 'border-border/80 bg-background/80 hover:border-border hover:bg-muted/40'
+                              ? 'border-indigo-500/40 bg-gradient-to-br from-indigo-500/15 to-violet-600/15 shadow-[0_4px_16px_rgba(99,102,241,0.18)] ring-1 ring-inset ring-indigo-500/30 scale-[1.02]'
+                              : 'border-white/[0.08] dark:border-white/[0.06] bg-background/60 hover:border-indigo-500/30 hover:bg-muted/40'
                           )}
                         >
                           <span className={cn(
-                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105',
-                            active ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-muted/60 text-muted-foreground'
+                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-105',
+                            active
+                              ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)]'
+                              : 'bg-muted/60 text-muted-foreground'
                           )}>
                             <c.icon className="h-5 w-5" />
                           </span>
                           <span className={cn(
                             'text-xs font-bold leading-tight text-center',
-                            active ? 'text-primary' : 'text-muted-foreground'
+                            active ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
                           )}>
                             {t(`settings.cycle.${c.key}`)}
                           </span>
@@ -399,7 +401,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     value={localConfig.establishmentName || ''}
                     onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
                     placeholder={t('settings.establishmentPlaceholder')}
-                    className="h-10 rounded-xl border-border/80 bg-background/80 px-3.5 text-sm shadow-none"
+                    className="h-10 rounded-xl border-white/[0.12] dark:border-white/[0.08] bg-background/70 px-3.5 text-sm shadow-none focus:border-indigo-500/50"
                   />
                 </div>
 
@@ -422,7 +424,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                             : '',
                         }));
                       }}
-                      className="h-10 w-full rounded-xl border border-border/80 bg-background/80 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      className="h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/70 px-3.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                     >
                       <option value="">{t('settings.chooseAcademy')}</option>
                       {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
@@ -442,7 +444,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                       value={localConfig.educationProvince ?? ''}
                       disabled={!selectedAcademy}
                       onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                      className="h-10 w-full rounded-xl border border-border/80 bg-background/80 px-3.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
+                      className="h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/70 px-3.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
                     >
                       <option value="">
                         {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
@@ -507,7 +509,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
+              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-5 shadow-xs backdrop-blur-xl">
                 <div>
                   <h4 className="text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -516,15 +518,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={onExportPlatform}
-                  className="w-full border-primary/30 text-primary font-bold hover:bg-primary hover:text-white transition-all cursor-pointer"
+                  className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 text-white font-bold hover:from-indigo-600 hover:to-violet-700 shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition-all cursor-pointer rounded-xl h-10"
                 >
                   {t('settings.exportAction')}
                 </Button>
               </div>
 
-              <div className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/82 p-5 shadow-2xs">
+              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-5 shadow-xs backdrop-blur-xl">
                 <div>
                   <h4 className="text-sm font-bold text-foreground font-bold tracking-tight mb-1">{t('settings.importTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -538,7 +539,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     if (!asPage) onClose();
                     onOpenImport();
                   }}
-                  className="w-full border-border/80 font-bold hover:bg-accent/65 transition-all cursor-pointer"
+                  className="w-full border-white/[0.12] dark:border-white/[0.08] bg-background/60 font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-10"
                 >
                   {t('settings.importAction')}
                 </Button>
@@ -552,7 +553,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           <div className="space-y-5">
             <div>
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <FolderOpen className="h-5 w-5 text-primary" />
+                <FolderOpen className="h-5 w-5 text-indigo-500" />
                 {t('settings.section.archivesTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -568,7 +569,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           <div className="space-y-6">
             <div>
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <CircleHelp className="h-5 w-5 text-primary" />
+                <CircleHelp className="h-5 w-5 text-indigo-500" />
                 {t('settings.section.supportTitle')}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -577,17 +578,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* Premium Card */}
-            <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.055] to-cyan-50/55 p-5">
+            <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-violet-500/5 to-purple-500/10 p-5 backdrop-blur-xl shadow-xs">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_10px_rgba(99,102,241,0.35)] shrink-0">
                     <CircleCheck className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-extrabold text-primary">
+                    <h3 className="text-sm font-extrabold text-foreground">
                       {t('settings.support.planTitle')}
                     </h3>
-                    <p className="text-xs text-primary/80">
+                    <p className="text-xs text-muted-foreground">
                       {t('settings.support.planDescription')}
                     </p>
                   </div>
@@ -595,8 +596,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               </div>
             </div>
 
-            {/* List of actions inspired by user screenshot */}
-            <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-card/86">
+            {/* List of actions */}
+            <div className="divide-y divide-border/50 overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 backdrop-blur-xl">
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
@@ -604,7 +605,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     {t('settings.support.devicesDescription')}
                   </p>
                 </div>
-                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1">
+                <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 ring-1 ring-emerald-500/20">
                   {t('settings.support.connected')}
                 </span>
               </div>
@@ -624,7 +625,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     sessionStorage.setItem('open_guide_now', 'true');
                     onClose();
                   }}
-                  className="text-xs font-bold cursor-pointer"
+                  className="text-xs font-bold cursor-pointer border-white/[0.12] dark:border-white/[0.08] rounded-xl"
                 >
                   {t('settings.support.openGuide')}
                 </Button>
@@ -639,7 +640,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
                 <a
                   href="mailto:support@cahier-textes.ma"
-                  className="text-xs font-bold text-primary hover:underline"
+                  className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   {t('settings.support.contact')}
                 </a>
@@ -673,7 +674,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="text-xs font-bold cursor-pointer"
+            className="text-xs font-bold cursor-pointer rounded-xl h-10 border border-white/[0.08]"
           >
             {t('common.cancel')}
           </Button>
@@ -684,7 +685,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <Button
           type="button"
           onClick={handleSave}
-          className="h-10 bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90 px-6 rounded-xl cursor-pointer shadow-xs gap-2"
+          className="h-10 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white text-xs font-bold px-6 rounded-xl cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.35)] hover:shadow-[0_6px_22px_rgba(99,102,241,0.45)] hover:scale-[1.01] active:scale-[0.99] transition-all gap-2"
         >
           <Save className="h-4 w-4" />
           {t('settings.saveChanges')}
@@ -706,7 +707,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/40 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/50"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-background/60 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-white/[0.12] dark:border-white/[0.08]"
           title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
           <ChevronRight className={cn("h-3 w-3 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
@@ -729,12 +730,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 }}
                 title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                  'w-full flex items-center transition-all duration-200 cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40',
                   isEffectiveCollapsed
                     ? 'justify-center p-2'
                     : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary shadow-2xs border border-primary/20'
+                    ? 'bg-gradient-to-r from-indigo-500/15 via-indigo-500/10 to-violet-500/10 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_12px_rgba(99,102,241,0.12)] border border-indigo-500/30'
                     : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
                 )}
               >
@@ -742,8 +743,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-xs scale-105'
-                      : 'bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
+                      ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)] scale-105'
+                      : 'bg-muted/60 text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 group-hover:scale-105'
                   )}
                 >
                   <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
@@ -777,12 +778,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 }}
                 title={t(item.titleKey)}
                 className={cn(
-                  'w-full flex items-center transition-all cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+                  'w-full flex items-center transition-all duration-200 cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40',
                   isEffectiveCollapsed
                     ? 'justify-center p-2'
                     : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary shadow-2xs border border-primary/20'
+                    ? 'bg-gradient-to-r from-indigo-500/15 via-indigo-500/10 to-violet-500/10 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_12px_rgba(99,102,241,0.12)] border border-indigo-500/30'
                     : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
                 )}
               >
@@ -790,8 +791,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-xs scale-105'
-                      : 'bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary group-hover:scale-105'
+                      ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)] scale-105'
+                      : 'bg-muted/60 text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 group-hover:scale-105'
                   )}
                 >
                   <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
@@ -815,11 +816,18 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   if (asPage) {
     const BackIcon = isRtl ? ArrowRight : ArrowLeft;
     return (
-      <div className="rtl-flow min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-background/60">
-        <main className="mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 pb-8">
+      <div className="rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-background/60">
+        {/* Ambient Colorful Glows */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
+          <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-600/15 blur-3xl opacity-40" />
+          <div className="absolute top-1/3 -right-32 h-[420px] w-[420px] rounded-full bg-gradient-to-bl from-violet-600/20 via-fuchsia-500/15 to-indigo-600/15 blur-3xl opacity-35" />
+          <div className="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-gradient-to-tr from-cyan-500/15 to-indigo-600/15 blur-3xl opacity-35" />
+        </div>
+
+        <main className="relative mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 pb-8">
           <div className="mb-4 flex items-center justify-between px-1 text-foreground sm:mb-5">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                 <Settings className="h-5 w-5 stroke-[2]" />
               </span>
               <h1 className={cn('font-bold tracking-tight text-foreground', isRtl ? 'font-bold tracking-normal text-xl leading-none' : 'text-lg sm:text-xl')}>
@@ -833,7 +841,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Sidebar gauche : Menu des rubriques */}
             <div
               className={cn(
-                'bg-card/90 border border-border/75 rounded-3xl p-3 shadow-2xs backdrop-blur-sm transition-all duration-300',
+                'bg-card/85 border border-white/[0.12] dark:border-white/[0.08] rounded-3xl p-3 shadow-xs backdrop-blur-xl transition-all duration-300',
                 isEffectiveCollapsed
                   ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                   : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -846,7 +854,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Panneau droit : Contenu de la rubrique sélectionnée */}
             <div
               className={cn(
-                'flex flex-col bg-card/92 border border-border/75 rounded-3xl p-4 sm:p-6 shadow-2xs backdrop-blur-sm min-h-[520px] transition-all duration-300 text-card-foreground',
+                'flex flex-col bg-card/90 border border-white/[0.12] dark:border-white/[0.08] rounded-3xl p-4 sm:p-6 shadow-xs backdrop-blur-xl min-h-[520px] transition-all duration-300 text-card-foreground',
                 isEffectiveCollapsed
                   ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                   : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
@@ -858,7 +866,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setMobileSubViewOpen(false)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer shadow-xs"
                 >
                   <BackIcon className="h-3.5 w-3.5" />
                   {t('settings.title')}
@@ -897,7 +905,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
             <Settings className="h-5 w-5 stroke-[2.2]" />
           </span>
           <span className="text-base sm:text-lg font-bold text-foreground">
@@ -907,7 +915,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       }
       description={t('settings.description')}
       maxWidth="5xl"
-      className="sm:max-w-5xl sm:rounded-[32px]"
+      className="relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-white/[0.12] dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl"
       headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
     >

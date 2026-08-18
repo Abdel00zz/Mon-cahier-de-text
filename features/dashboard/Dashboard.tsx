@@ -384,7 +384,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-xl mx-auto'
-        : 'grid-cols-1 sm:grid-cols-2';
+        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(350px,1fr))]';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -413,9 +413,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-[#fafafa] dark:bg-[#191919] text-foreground antialiased pb-20 sm:pb-8"
+            className="min-h-screen bg-[#fafafa] dark:bg-[#121212] text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
             data-dashboard-root
         >
+            {/* Ambient Colorful Glows */}
+            <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 select-none">
+                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-transparent blur-3xl opacity-35 dark:opacity-25" />
+                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-bl from-violet-600/20 via-fuchsia-500/15 to-transparent blur-3xl opacity-30 dark:opacity-20" />
+                <div className="absolute -bottom-32 left-1/3 h-[420px] w-[420px] rounded-full bg-gradient-to-tr from-cyan-500/15 via-indigo-600/15 to-transparent blur-3xl opacity-35 dark:opacity-25" />
+            </div>
+
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
                     <header className="mb-4 sm:mb-6 space-y-2 sm:space-y-3 pb-1" id="dashboard-header">
@@ -426,7 +433,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className="text-black dark:text-white font-bold"
+                                            className="font-itim text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 text-xl sm:text-2xl font-bold tracking-wide"
                                         >
                                             {teacherName}
                                         </span>
@@ -443,10 +450,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setSubjectFilter('all')}
-                                        className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer active:scale-95 ${
+                                        className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                                             subjectFilter === 'all'
-                                                ? 'bg-slate-900 text-white shadow-2xs dark:bg-zinc-100 dark:text-zinc-900'
-                                                : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 border border-white/10'
+                                                : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                                         }`}
                                     >
                                         {t('dashboard.filterAll')}
@@ -458,10 +465,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 key={subject}
                                                 type="button"
                                                 onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer active:scale-95 ${
+                                                className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                                                     isActive
-                                                        ? 'bg-slate-900 text-white shadow-2xs dark:bg-zinc-100 dark:text-zinc-900'
-                                                        : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                        ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 border border-white/10'
+                                                        : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                                                 }`}
                                             >
                                                 {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -475,38 +482,38 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
-                            <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                    <h2 id="classes-heading" className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                        <span>{t('dashboard.classes')}</span>
-                                        {filteredClasses.length > 0 && (
-                                            <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300">
-                                                {filteredClasses.length}
-                                            </span>
-                                        )}
-                                    </h2>
-                                </div>
+                            {classes.length > 0 && (
+                                <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2">
+                                        <h2 id="classes-heading" className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                            <span>{t('dashboard.classes')}</span>
+                                            {filteredClasses.length > 0 && (
+                                                <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/30">
+                                                    {filteredClasses.length}
+                                                </span>
+                                            )}
+                                        </h2>
+                                    </div>
 
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setCreateModalOpen(true)}
-                                        className="inline-flex h-7.5 items-center gap-1.5 bg-slate-900 px-3 text-xs font-medium text-white shadow-2xs rounded-lg transition-colors hover:bg-slate-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white active:scale-95 cursor-pointer"
-                                        aria-label={t('dashboard.addClass')}
-                                        title={t('dashboard.addClass')}
-                                    >
-                                        <Plus className="h-3.5 w-3.5" />
-                                        <span>{t('dashboard.classShort')}</span>
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCreateModalOpen(true)}
+                                            className="inline-flex h-8 items-center gap-1.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 px-3.5 text-xs font-semibold text-white shadow-sm shadow-indigo-500/25 rounded-xl border border-white/15 transition-all hover:shadow-md hover:shadow-indigo-500/40 hover:from-indigo-600 hover:to-violet-700 active:scale-95 cursor-pointer"
+                                            aria-label={t('dashboard.addClass')}
+                                            title={t('dashboard.addClass')}
+                                        >
+                                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                            <span>{t('dashboard.classShort')}</span>
+                                        </button>
 
-                                    {classes.length > 0 && (
                                         <div ref={displayMenuRef} className="relative shrink-0 hidden sm:block">
                                             <button
                                                 type="button"
                                                 onClick={() => setDisplayMenuOpen(open => !open)}
                                                 aria-haspopup="menu"
                                                 aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-7.5 items-center gap-1.5 rounded-lg border border-slate-200/90 bg-white px-2.5 text-xs font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300"
+                                                className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3 text-xs font-medium text-slate-700 shadow-2xs backdrop-blur-sm transition-colors hover:bg-slate-50 dark:text-zinc-300 cursor-pointer"
                                             >
                                                 <span>{displayCopy(currentDisplay).label}</span>
                                                 <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -514,7 +521,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             {isDisplayMenuOpen && (
                                                 <div
                                                     role="menu"
-                                                    className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-800 ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/95 backdrop-blur-md p-1 shadow-lg dark:bg-zinc-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
                                                 >
                                                     {CLASS_DISPLAY_OPTIONS.map(option => {
                                                         const isActive = option === currentDisplay;
@@ -528,7 +535,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                     setClassDisplayMode(option);
                                                                     setDisplayMenuOpen(false);
                                                                 }}
-                                                                className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-start text-xs transition-colors ${isActive ? 'bg-slate-100 text-slate-900 font-semibold dark:bg-zinc-800 dark:text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
+                                                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-indigo-500/10 text-indigo-600 font-semibold dark:bg-indigo-500/20 dark:text-indigo-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
                                                             >
                                                                 <span>{displayCopy(option).label}</span>
                                                             </button>
@@ -537,29 +544,52 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center gap-4 rounded-[2rem] border-2 border-slate-200 bg-white px-6 py-12 text-center shadow-none dark:bg-slate-900 dark:border-slate-700">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eeaaff] text-[#423ed8] dark:bg-[#423ed8]/30 dark:text-[#eeaaff]">
-                                            <BookOpen className="h-6 w-6" />
+                                    <div className="relative flex flex-col items-center justify-center py-10 sm:py-14 md:py-16 px-4 sm:px-8 text-center rounded-3xl border border-slate-200/60 dark:border-white/[0.06] bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl shadow-xs overflow-hidden">
+                                        {/* Colorful Glow behind image */}
+                                        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-96 rounded-full bg-gradient-to-tr from-indigo-500/10 via-violet-500/10 to-amber-500/10 blur-3xl opacity-50 dark:opacity-30" />
+
+                                        {/* Top: Modern Rounded Framed Illustration */}
+                                        <div className="relative mb-5 sm:mb-6 flex items-center justify-center p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/80 shadow-[0_6px_24px_-6px_rgba(15,23,42,0.06)] dark:shadow-[0_6px_24px_-6px_rgba(0,0,0,0.4)] backdrop-blur-sm max-w-full overflow-hidden">
+                                            <img
+                                                src="/dashboard.png"
+                                                alt="Illustration tableau de bord"
+                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-xl sm:rounded-2xl select-none pointer-events-none"
+                                                referrerPolicy="no-referrer"
+                                                loading="eager"
+                                            />
                                         </div>
-                                        <div>
-                                            <h3 className="text-base font-bold text-[#423ed8] dark:text-[#98e3ff]">{t('dashboard.emptyTitle')}</h3>
-                                            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+
+                                        {/* Middle: Proportionally Refined Typography (Title & Subtitle) */}
+                                        <div className="relative z-10 max-w-md mx-auto space-y-1 sm:space-y-1.5 px-2">
+                                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
+                                                {t('dashboard.emptyTitle')}
+                                            </h3>
+                                            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-sm mx-auto">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
-                                            </div>
-                                            <Button onClick={() => {
-                                                if (welcomeCompleted) {
-                                                    setCreateModalOpen(true);
-                                                } else {
-                                                    setOnboardingOpen(true);
-                                                }
-                                            }} className="mt-4 h-11 rounded-2xl bg-[#423ed8] px-6 font-bold text-white hover:bg-[#322ebd] shadow-none">
-                                            {t('dashboard.addClass')}
-                                        </Button>
+                                        </div>
+
+                                        {/* Bottom: Centered Button */}
+                                        <div className="relative z-10 mt-5 sm:mt-6">
+                                            <Button
+                                                variant="accent"
+                                                onClick={() => {
+                                                    if (welcomeCompleted) {
+                                                        setCreateModalOpen(true);
+                                                    } else {
+                                                        setOnboardingOpen(true);
+                                                    }
+                                                }}
+                                                className="h-10 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 inline-flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40"
+                                            >
+                                                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                                <span>{t('dashboard.addClass')}</span>
+                                            </Button>
+                                        </div>
                                     </div>
                                 ) : currentDisplay === 'list' ? (
                                     <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>

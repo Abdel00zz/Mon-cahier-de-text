@@ -72,6 +72,13 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
         cycleDescriptions: { college: '1AC à 3AC', lycee: 'TC, 1BAC, 2BAC', prepa: 'CPGE (1ère & 2ème année)' },
         levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1re Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires' },
+        selectBranchesHint: 'Cochez vos filières et cliquez sur vos groupes pour ajouter vos classes instantanément.',
+        noClassSelectedYet: 'Aucune classe configurée pour le moment.',
+        configuredClassesCount: count => `${count} classe${count > 1 ? 's' : ''} prête${count > 1 ? 's' : ''}`,
+        customClassPrompt: '+ Ajouter une classe personnalisée (nom libre)',
+        groupPrefix: 'Gr.',
+        otherGroupNumber: 'Autre n°',
+        groupsLabel: 'Groupes :',
     },
     ar: {
         brand: 'دفتر النصوص',
@@ -124,6 +131,13 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية للمدارس العليا' },
         cycleDescriptions: { college: 'من الأولى إلى الثالثة من التعليم الثانوي الإعدادي', lycee: 'الجذع المشترك وسلك البكالوريا', prepa: 'السنة الأولى والثانية' },
         levelGroupLabels: { college: 'الثانوي الإعدادي', common: 'الجذع المشترك', firstBac: 'الأولى بكالوريا', secondBac: 'الثانية بكالوريا', prepa: 'الأقسام التحضيرية' },
+        selectBranchesHint: 'حدد الشعب المسندة إليك وانقر على أرقام المجموعات لإضافتها فوراً.',
+        noClassSelectedYet: 'لم يتم تحديد أي قسم بعد.',
+        configuredClassesCount: count => count === 1 ? 'قسم واحد جاهز' : count === 2 ? 'قسمان جاهزان' : `${count} أقسام جاهزة`,
+        customClassPrompt: '+ إضافة قسم بتسمية خاصة',
+        groupPrefix: 'فوج',
+        otherGroupNumber: 'رقم آخر',
+        groupsLabel: 'المجموعات:',
     },
 };
 
