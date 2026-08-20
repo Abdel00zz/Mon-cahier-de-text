@@ -400,7 +400,3 @@ export const nextSchoolDay = (
     }
     return null;
 };
-
-const WEEKDAY_LABELS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-
-export const weekdayLabel = (weekday: number): string => WEEKDAY_LABELS[weekday] ?? '';

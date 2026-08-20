@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export type DeviceType = 'phone' | 'tablet' | 'desktop';
+type DeviceType = 'phone' | 'tablet' | 'desktop';
 
 interface DeviceInfo {
     type: DeviceType;

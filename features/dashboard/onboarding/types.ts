@@ -5,8 +5,8 @@ import type { ModalLang } from '@/components/ui/lang-toggle';
 export const ONBOARDING_TOTAL_STEPS = 5 as const;
 
 export type OnboardingStep = 1 | 2 | 3 | 4 | 5;
-export type ClassCreationMode = 'catalog' | 'manual';
-export type ClassDraftIssue = 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass';
+type ClassCreationMode = 'catalog' | 'manual';
+type ClassDraftIssue = 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass';
 
 export interface OnboardingPageProps {
     config: AppConfig;

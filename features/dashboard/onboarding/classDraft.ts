@@ -10,7 +10,7 @@ export const createClassDraft = (level: string, subject = ''): ClassDraft => ({
     subject,
 });
 
-export const normalizeClassNameKey = (value: string): string =>
+const normalizeClassNameKey = (value: string): string =>
     value.trim().toLocaleLowerCase('fr').replace(/\s+/g, ' ');
 
 export const validateClassDraft = (draft: ClassDraft, classes: ClassInfo[]): ClassDraftValidation => {

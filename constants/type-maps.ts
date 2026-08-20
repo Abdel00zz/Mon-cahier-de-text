@@ -9,7 +9,6 @@ export {
   BADGE_COLOR_MAP,
   BADGE_TOOLTIP_MAP,
   SUBJECT_ABBREV_MAP,
-  normalizeContentType,
 } from './type-keys';
 
 /* ── Config du niveau de contenu ─────────────────────────────────────────── */

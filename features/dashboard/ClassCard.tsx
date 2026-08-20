@@ -51,7 +51,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     notificationCount,
 }) => {
     const { impact } = useHapticFeedback();
-    const { locale, t, isRtl } = useLocale();
+    const { locale, t } = useLocale();
 
     const handleConfigureClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();

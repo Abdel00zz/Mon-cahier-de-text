@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Laptop, Type, Sparkles, Check, Palette, Eye, RotateCcw } from 'lucide-react';
+import { Sun, Moon, Laptop, Type, Check, Eye, RotateCcw } from 'lucide-react';
 import { AppConfig, ThemeMode } from '@/types';
-import { LATIN_FONTS, ARABIC_FONTS, FontOption } from '@/constants/typography';
+import { LATIN_FONTS, ARABIC_FONTS } from '@/constants/typography';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { MathText } from '@/components/ui/math-text';
 import { Badge } from '@/components/ui/badge';

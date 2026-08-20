@@ -8,7 +8,7 @@ interface FlagProps {
 /**
  * Real authentic SVG flag for Morocco 🇲🇦
  */
-export const FlagMorocco: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
+const FlagMorocco: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
   <svg
     viewBox="0 0 900 600"
     width={size}
@@ -31,7 +31,7 @@ export const FlagMorocco: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }
 /**
  * Real authentic SVG flag for France 🇫🇷
  */
-export const FlagFrance: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
+const FlagFrance: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
   <svg
     viewBox="0 0 900 600"
     width={size}
@@ -48,7 +48,7 @@ export const FlagFrance: React.FC<FlagProps> = ({ className = 'w-6 h-4', size })
 /**
  * Real authentic SVG flag for the United Kingdom 🇬🇧
  */
-export const FlagUK: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
+const FlagUK: React.FC<FlagProps> = ({ className = 'w-6 h-4', size }) => (
   <svg
     viewBox="0 0 60 30"
     width={size}

@@ -49,7 +49,7 @@ interface PlanDevoir {
     fenetre?: string;
 }
 
-export interface Plan {
+interface Plan {
     /** matière concernée (ex. « Mathématiques », « SVT ») */
     matiere: string;
     /** cycle d'enseignement (college / lycee / prepa) */
@@ -170,7 +170,7 @@ const normalize = (value: string): string =>
     value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 
 /** Plan officiel correspondant à la matière, au cycle et au niveau de la classe. */
-export const findPlanFor = (
+const findPlanFor = (
     planning: PlanningFile,
     classInfo: Pick<ClassInfo, 'name' | 'subject' | 'cycle'>,
 ): Plan | null => {
@@ -256,7 +256,7 @@ const manualToPlanned = (m: ManualAssessment): PlannedAssessment => ({
  * ignorées. La date proposée est le premier jour scolaire de la semaine
  * pédagogique cible, puis le professeur peut l'ajuster librement.
  */
-export const computeAssessmentDates = (
+const computeAssessmentDates = (
     plan: Plan,
     cal: HolidayCalendar,
     today: string,
@@ -300,7 +300,7 @@ export const computeAssessmentDates = (
 };
 
 /** Applique les dates personnalisées du professeur (config.assessmentDates). */
-export const applyOverrides = (
+const applyOverrides = (
     assessments: PlannedAssessment[],
     overrides: Record<string, string> | undefined
 ): PlannedAssessment[] =>

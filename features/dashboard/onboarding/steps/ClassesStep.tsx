@@ -4,7 +4,7 @@ import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } fr
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { LEVEL_GROUPS } from '../content';
 import { cn } from '@/lib/utils';
-import { Plus, X, Check, School, GraduationCap, FlaskConical, Layers, Trash2 } from '@/components/ui/icons';
+import { Plus, X, Check, School, GraduationCap, FlaskConical, Layers } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { ClassInfo, Cycle } from '@/types';
@@ -31,7 +31,6 @@ export const ClassesStep = memo<ClassesStepProps>(({
     lang,
     copy,
     selectedSubjects = [],
-    controller,
     onCreateClass,
     onRemove,
 }) => {

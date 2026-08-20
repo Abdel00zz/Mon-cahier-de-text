@@ -72,10 +72,6 @@ import {
   Award,
   Layers as LucideLayers,
   Palette as LucidePalette,
-  Sun as LucideSun,
-  Moon as LucideMoon,
-  Type as LucideType,
-  Laptop as LucideLaptop,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -177,7 +173,3 @@ export const LogOut = createIcon(LucideLogOut);
 export const AwardIcon = createIcon(Award);
 export const Layers = createIcon(LucideLayers);
 export const Palette = createIcon(LucidePalette);
-export const Sun = createIcon(LucideSun);
-export const Moon = createIcon(LucideMoon);
-export const Type = createIcon(LucideType);
-export const Laptop = createIcon(LucideLaptop);

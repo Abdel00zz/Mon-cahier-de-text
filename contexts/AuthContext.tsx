@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { notifyConfigChanged } from '../utils/syncBus';
 import { clearLocalWorkspace } from '../utils/workspace';
 
-export interface AuthUser {
+interface AuthUser {
   phone: string;
   nom: string;
   prenom: string;

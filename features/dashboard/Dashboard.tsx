@@ -16,7 +16,7 @@ import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
-import { ChevronDown, Plus, BookOpen } from '@/components/ui/icons';
+import { ChevronDown, Plus } from '@/components/ui/icons';
 import { readCachedLessons } from '@/utils/notebookStorage';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';

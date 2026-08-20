@@ -1,12 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-export interface SegmentedOption<T extends string> {
-  value: T;
-  label: React.ReactNode;
-  disabled?: boolean;
-}
-
 interface SegmentedProps<T extends string> {
   value: T;
   onChange: (value: T) => void;

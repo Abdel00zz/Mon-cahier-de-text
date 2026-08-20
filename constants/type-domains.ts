@@ -4,9 +4,9 @@
  * que les types pertinents pour sa matière dans les sélecteurs de type.
  */
 
-export type ContentDomain = 'math' | 'svt' | 'physique';
+type ContentDomain = 'math' | 'svt' | 'physique';
 
-export const CONTENT_TYPES_BY_DOMAIN: Record<ContentDomain, string[]> = {
+const CONTENT_TYPES_BY_DOMAIN: Record<ContentDomain, string[]> = {
   math: [
     'définition',
     'théorème',
@@ -62,7 +62,7 @@ export const CONTENT_TYPES_BY_DOMAIN: Record<ContentDomain, string[]> = {
 };
 
 /** Résout le domaine disciplinaire depuis le libellé de matière d'une classe. */
-export const resolveContentDomain = (subject: string): ContentDomain => {
+const resolveContentDomain = (subject: string): ContentDomain => {
   const s = (subject || '')
     .toLowerCase()
     .normalize('NFD')
