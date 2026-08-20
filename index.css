@@ -47,6 +47,14 @@
   --font-itim: 'Itim', cursive, sans-serif;
 }
 
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility font-itim {
   font-family: 'Itim', cursive, sans-serif;
 }
@@ -89,6 +97,43 @@
     --chart-1: 221.2 83.2% 53.3%;
     --chart-2: 142.1 76.2% 36.3%;
     --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --content-font-latin: 'Itim', cursive, sans-serif;
+    --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 14%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 14%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 16%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142.1 70.6% 45.3%;
+    --warning: 38 92% 50%;
+    --success-strong: 142.1 76% 55%;
+    --warning-strong: 38 92% 55%;
+    --destructive-strong: 0 84.2% 60%;
+    --scheduled: 217.2 32.6% 14%;
+    --scheduled-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.8 100% 65%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
@@ -153,16 +198,45 @@
     font-family: 'Roboto Slab', 'Alexandria', 'IBM Plex Sans Arabic', serif;
   }
 
+  /* ── Typographie & Polices pour le contenu du cahier ─────────────────── */
+  .font-itim { font-family: 'Itim', cursive, sans-serif !important; }
+  .font-kalam { font-family: 'Kalam', cursive, sans-serif !important; }
+  .font-caveat { font-family: 'Caveat', cursive, sans-serif !important; }
+  .font-outfit { font-family: 'Outfit', sans-serif !important; }
+  .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  .font-fira { font-family: 'Fira Sans', sans-serif !important; }
+  .font-roboto-slab { font-family: 'Roboto Slab', serif !important; }
+  .font-newsreader { font-family: 'Newsreader', serif !important; }
+  .font-lexend { font-family: 'Lexend', sans-serif !important; }
+  .font-inter { font-family: 'Inter', sans-serif !important; }
+
+  /* ── Polices Arabes ──────────────────────────────────────────────────── */
+  .font-ibm-plex { font-family: 'IBM Plex Sans Arabic', sans-serif !important; }
+  .font-cairo { font-family: 'Cairo', sans-serif !important; }
+  .font-tajawal { font-family: 'Tajawal', sans-serif !important; }
+  .font-amiri { font-family: 'Amiri', serif !important; }
+  .font-alexandria { font-family: 'Alexandria', sans-serif !important; }
+  .font-readex { font-family: 'Readex Pro', sans-serif !important; }
+  .font-almarai { font-family: 'Almarai', sans-serif !important; }
+  .font-lateef { font-family: 'Lateef', serif !important; }
+  .font-marhey { font-family: 'Marhey', cursive, sans-serif !important; }
+  .font-changa { font-family: 'Changa', sans-serif !important; }
+
+  /* Dynamic content font assignment */
+  [data-content-direction="ltr"] .content-cell-font,
+  [data-content-direction="ltr"] [data-row-content="true"],
+  .content-font-latin {
+    font-family: var(--content-font-latin, 'Itim', cursive, sans-serif);
+  }
+
+  [data-content-direction="rtl"] .content-cell-font,
+  [data-content-direction="rtl"] [data-row-content="true"],
+  .content-font-arabic {
+    font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif);
+  }
+
   .font-lemonde {
     font-family: 'Le Monde', 'Le Monde Serif', 'Newsreader', 'Playfair Display', 'Roboto Slab', serif;
-  }
-
-  .font-itim {
-    font-family: 'Itim', 'Comic Sans MS', cursive, sans-serif;
-  }
-
-  .font-lateef {
-    font-family: 'Lateef', 'IBM Plex Sans Arabic', 'Alexandria', serif;
   }
 
   .glass-card {
@@ -170,6 +244,35 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.85);
+  }
+
+  .dark .glass-card {
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .auth-page-shell {
+    background-color: #0b1120;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(220, 80%, 15%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(217, 90%, 10%, 1) 0, transparent 50%);
+  }
+
+  /* Rendu net des formules MathJax & KaTeX en mode sombre */
+  .dark .katex,
+  .dark .katex-display,
+  .dark .MathJax,
+  .dark mjx-container {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .dark .katex .mord,
+  .dark .katex .mbin,
+  .dark .katex .mrel,
+  .dark .katex .mopen,
+  .dark .katex .mclose,
+  .dark .katex .mpunct {
+    color: inherit !important;
   }
 
   ::selection {

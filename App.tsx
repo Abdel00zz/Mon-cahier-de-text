@@ -11,9 +11,9 @@ import { normalizeOfficialClassName } from './constants';
 import { LocaleProvider, translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { useAdminMessages } from './hooks/useAdminMessages';
-import { requestEditorLandscape } from './hooks/useForceLandscape';
 
 import { useClassManager } from './hooks/useClassManager';
+import { useTheme } from './hooks/useTheme';
 import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
 
@@ -111,6 +111,7 @@ const App: React.FC = () => {
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
+  useTheme(config.theme, config.contentFontLatin, config.contentFontArabic, (newTheme) => updateConfig({ theme: newTheme }));
   const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);
@@ -159,9 +160,6 @@ const App: React.FC = () => {
   }, [activeClass, view]);
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
-    // Appel synchrone au clic : requis par certains navigateurs pour autoriser
-    // le plein écran et le verrouillage de l'orientation dans le cahier.
-    void requestEditorLandscape();
     saveCurrentScroll();
     setActiveClass(classInfo);
     setView('editor');

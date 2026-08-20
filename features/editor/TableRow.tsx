@@ -26,12 +26,15 @@ interface TableRowProps {
 
 export interface DateMergeMeta {
   isMerged: boolean;
+  mergeType?: 'date' | 'content';
   isStart: boolean;
   isContinuation: boolean;
   isEnd: boolean;
   count: number;
   indexInGroup: number;
   shouldMergeRemark?: boolean;
+  isDatedSequenceStart?: boolean;
+  isDatedSequenceEnd?: boolean;
 }
 
 const parseDate = (dateStr?: string) => {
@@ -92,28 +95,55 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
 
   if (!parsed) {
     return (
-      <div className="flex min-h-[18px] w-full items-center justify-center py-1.5 select-none" aria-hidden />
+      <div className="flex min-h-[18px] w-full items-center justify-center py-1 select-none" aria-hidden />
     );
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-200">
+    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-150 py-0.5">
       <span
-        className={`font-mono text-xl font-extrabold tracking-[-0.08em] tabular-nums transition-colors ${
+        className={`font-mono text-base sm:text-lg font-black tracking-tight tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
         }`}
       >
         {parsed.day}
       </span>
-      <span className={`mt-1 font-mono text-[9px] font-bold uppercase tracking-[0.08em] ${hasWarning ? 'text-destructive' : 'text-muted-foreground/65'}`}>
+      <span className={`mt-0.5 font-mono text-[8px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
         {parsed.month} {parsed.year.slice(2)}
       </span>
-      {!hasWarning && parsed.isToday && <span className="mt-1 h-1 w-1 rounded-full bg-primary" aria-hidden />}
+      {!hasWarning && parsed.isToday && <span className="mt-0.5 h-1 w-1 rounded-full bg-primary" aria-hidden />}
     </div>
   );
 });
 
 DateCard.displayName = 'DateCard';
+
+export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo(({ dates, hasWarning }) => {
+  const parsedDates = dates.map(d => parseDate(d)).filter(Boolean);
+  if (parsedDates.length === 0) return null;
+  if (parsedDates.length === 1) return <DateCard dateStr={dates[0]} hasWarning={hasWarning} />;
+
+  const first = parsedDates[0]!;
+  const last = parsedDates[parsedDates.length - 1]!;
+  const sameMonthYear = first.month === last.month && first.year === last.year;
+
+  return (
+    <div className="relative flex flex-col items-center justify-center select-none leading-tight animate-in fade-in duration-150 py-0.5">
+      <div className="flex items-center gap-1 font-mono text-[12px] sm:text-sm font-black tracking-tight tabular-nums text-foreground">
+        <span className={hasWarning ? 'text-destructive' : first.isToday ? 'text-primary' : 'text-foreground'}>{first.day}</span>
+        <span className={`text-[11px] sm:text-xs font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
+        <span className={hasWarning ? 'text-destructive' : last.isToday ? 'text-primary' : 'text-foreground'}>{last.day}</span>
+      </div>
+      <div className="mt-0.5 flex items-center">
+        <span className={`font-mono text-[7.5px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
+          {sameMonthYear ? `${first.month} ${first.year.slice(2)}` : `${first.month}/${last.month}`}
+        </span>
+      </div>
+    </div>
+  );
+});
+
+MultiDateCard.displayName = 'MultiDateCard';
 
 const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boolean; isSelected?: boolean; hasAssignedDate?: boolean }> = memo(({ dateStr, merge, hasWarning, isSelected, hasAssignedDate }) => {
   const isMerged = !!merge?.isMerged;
@@ -129,7 +159,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
 
     return (
-      <div className={`flex h-full min-h-[52px] w-full flex-col items-center justify-center px-2 py-1.5 transition-colors duration-200 ${bgClass}`}>
+      <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
         {isMiddle && <DateCard dateStr={dateStr} hasWarning={hasWarning} />}
       </div>
     );
@@ -137,7 +167,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
   // Not merged
   return (
-    <div className={`flex h-full min-h-[52px] w-full flex-col items-center justify-center px-2 py-1.5 transition-colors duration-200 ${bgClass}`}>
+    <div className={`flex h-full min-h-[48px] w-full flex-col items-center justify-center px-1 py-1 transition-colors duration-200 ${bgClass}`}>
       <DateCard dateStr={dateStr} hasWarning={hasWarning} />
     </div>
   );
@@ -145,7 +175,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
 DateCell.displayName = 'DateCell';
 
-const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
+const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
 const RemarkCell: FC<{
   value?: string;
@@ -172,13 +202,13 @@ const RemarkCell: FC<{
     const isMiddle = merge.indexInGroup === Math.floor(merge.count / 2);
 
     return (
-      <div className={`relative hidden min-w-0 p-1.5 md:block ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
+      <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
         {isMiddle && (
-          <div className="relative z-10 h-full flex flex-col justify-center">
+          <div className="relative z-10 h-full flex flex-col justify-center w-full">
             <EditableCell
               value={value || ''}
               onSave={onSave}
-              className="w-full h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
+              className="w-full h-full p-0.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
               multiline
               placeholder=""
             />
@@ -189,12 +219,12 @@ const RemarkCell: FC<{
   }
 
   return (
-    <div className={`hidden min-w-0 p-1.5 md:block ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div className="h-full">
+    <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
+      <div className="h-full w-full">
         <EditableCell
           value={value || ''}
           onSave={onSave}
-          className="h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
+          className="h-full w-full p-0.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
           multiline
           placeholder=""
         />
@@ -204,26 +234,8 @@ const RemarkCell: FC<{
 });
 RemarkCell.displayName = 'RemarkCell';
 
-/*
- * Remarque visible sur MOBILE (< md) : la colonne Remarque est masquée sur
- * petit écran ; sans ceci, la donnée était invisible et non modifiable sur
- * téléphone. Affichée en italique sous le contenu, éditable au tap.
- */
-const MobileRemark: FC<{ value?: string; onSave: (value: string) => void }> = memo(({ value, onSave }) => {
-  if (!value?.trim()) return null;
-  return (
-    <div className="mt-1 flex items-start gap-1.5 md:hidden" onClick={event => event.stopPropagation()}>
-      <span aria-hidden className="mt-1 h-1 w-1 shrink-0 rounded-full bg-border" />
-      <EditableCell
-        value={value}
-        onSave={onSave}
-        className="min-h-6 flex-1 p-0.5 text-[11px] italic text-muted-foreground font-sans"
-        multiline
-        placeholder=""
-      />
-    </div>
-  );
-});
+/* Remarque intégrée directement dans la colonne Remarque du tableau 3 colonnes. */
+const MobileRemark: FC<{ value?: string; onSave: (value: string) => void }> = () => null;
 MobileRemark.displayName = 'MobileRemark';
 
 const TableRowComponent: FC<TableRowProps> = ({
@@ -269,11 +281,23 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isMergedDateGroup = !!dateMerge?.isMerged;
   const isDatedGroupStart = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isStart);
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
+  
+  const isDatedSequenceStart = !!dateMerge?.isDatedSequenceStart;
+  const isDatedSequenceEnd = !!dateMerge?.isDatedSequenceEnd;
 
-  const datedLineClass = [
-    isDatedGroupStart ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border/70') : '',
-    isDatedGroupEnd ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border/70') : '',
-  ].filter(Boolean).join(' ');
+  const topBorderClass = isDatedSequenceStart 
+    ? (hasWarning ? 'border-t-[2px] border-warning/[0.7]' : 'border-t-[2px] border-foreground/30') 
+    : isDatedGroupStart 
+      ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border/70') 
+      : '';
+      
+  const bottomBorderClass = isDatedSequenceEnd 
+    ? (hasWarning ? 'border-b-[2px] border-warning/[0.7]' : 'border-b-[2px] border-foreground/30') 
+    : isDatedGroupEnd 
+      ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border/70') 
+      : '';
+
+  const datedLineClass = [topBorderClass, bottomBorderClass].filter(Boolean).join(' ');
   const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
 
@@ -316,19 +340,17 @@ const TableRowComponent: FC<TableRowProps> = ({
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
-      ? 'md:border-e md:border-primary/30'
+      ? 'border-e border-primary/30'
       : hasAssignedDate
         ? hasWarning
-          ? 'md:border-e md:border-warning/40'
-          : 'md:border-e md:border-border/80'
-        : 'md:border-e md:border-border/80';
+          ? 'border-e border-warning/40'
+          : 'border-e border-border/80'
+        : 'border-e border-border/80';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;
-  const rowGridClass = hasAssignedDate
-    ? TABLE_GRID_CLASS
-    : 'grid-cols-1 md:grid-cols-[var(--cdt-table-cols)]';
-  const dateCellVisibility = hasAssignedDate ? 'flex' : 'hidden md:flex';
+  const rowGridClass = TABLE_GRID_CLASS;
+  const dateCellVisibility = 'flex';
 
   const isCorrection = elementType.startsWith('correction_');
   const isTopLevelBlock = (elementType in TOP_LEVEL_TYPE_CONFIG && elementType !== 'chapter') || isCorrection;
@@ -352,7 +374,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
-            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} className={`text-base font-extrabold tracking-tight sm:text-lg ${cfg?.color ?? 'text-foreground'}`} />
+            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} className={`text-[14.5px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`} />
           </div>
           <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
         </div>

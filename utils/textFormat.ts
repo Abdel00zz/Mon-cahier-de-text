@@ -62,7 +62,7 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
       out.push(
         React.createElement(
           'span',
-          { key: `li-${keyBase}-${index}`, className: 'flex gap-1.5 pl-2 whitespace-normal' },
+          { key: `li-${keyBase}-${index}`, className: 'flex gap-1.5 pl-1 whitespace-normal' },
           React.createElement('span', { className: 'select-none text-primary', 'aria-hidden': true }, '•'),
           React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyBold(bullet[2]))
         )
@@ -71,7 +71,7 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
       out.push(
         React.createElement(
           'span',
-          { key: `ol-${keyBase}-${index}`, className: 'flex gap-1.5 pl-2 whitespace-normal' },
+          { key: `ol-${keyBase}-${index}`, className: 'flex gap-1.5 pl-1 whitespace-normal' },
           React.createElement('span', { className: 'select-none font-semibold text-primary' }, `${numbered[2]}.`),
           React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyBold(numbered[3]))
         )

@@ -11,6 +11,7 @@ import { CountryFlag } from '@/components/ui/CountryFlags';
 import { ScheduleTab } from './components/ScheduleTab';
 import { NotificationsTab } from './components/NotificationsTab';
 import { AccountTab } from './components/AccountTab';
+import { AppearanceTab } from './components/AppearanceTab';
 import { ArchivesSection } from './components/ArchivesSection';
 import { getProvincesForAcademy, MOROCCO_EDUCATION_ACADEMIES } from '@/utils/moroccoEducation';
 import { SUBJECTS, formatLocalizedSubjectDisplayName } from '@/constants';
@@ -31,6 +32,7 @@ import {
   ArrowRight,
   Save,
   LogOut,
+  Palette,
 } from '@/components/ui/icons';
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -56,6 +58,7 @@ interface ConfigModalProps {
 type SettingsCategory =
   | 'compte'
   | 'profil'
+  | 'apparence'
   | 'emploi'
   | 'notifications'
   | 'donnees'
@@ -80,6 +83,12 @@ const SETTING_ITEMS: SettingMenuItem[] = [
     id: 'profil',
     titleKey: 'settings.item.profile',
     icon: School,
+    group: 'main',
+  },
+  {
+    id: 'apparence',
+    titleKey: 'settings.item.appearance',
+    icon: Palette,
     group: 'main',
   },
   {
@@ -460,6 +469,29 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
               </div>
             </section>
+          </div>
+        );
+
+      case 'apparence':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
+                <Palette className="h-5 w-5 text-primary" />
+                {t('settings.section.appearanceTitle')}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t('settings.section.appearanceDescription')}
+              </p>
+            </div>
+            <AppearanceTab
+              config={localConfig}
+              onConfigChange={(newCfg) => {
+                setLocalConfig(prev => ({ ...prev, ...newCfg }));
+                // Live preview for appearance changes
+                applyLive(newCfg);
+              }}
+            />
           </div>
         );
 

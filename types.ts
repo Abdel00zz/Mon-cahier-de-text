@@ -13,7 +13,15 @@ export interface ClassInfo {
     cycle?: Cycle; // optional for backward compatibility
 }
 
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export interface AppConfig {
+  /** Mode d'affichage (Clair / Sombre / Système). */
+  theme?: ThemeMode;
+  /** Police d'écriture pour les contenus latins/français. */
+  contentFontLatin?: string;
+  /** Police d'écriture pour les contenus arabes. */
+  contentFontArabic?: string;
   /** Langue de l'interface, partagée avec le compte enseignant. */
   applicationLocale?: AppLocale;
   establishmentName: string;

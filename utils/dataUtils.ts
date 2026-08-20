@@ -211,6 +211,73 @@ export const deleteSeparator = (draft: Draft<LessonsData>, itemIndices: Indices)
     }
 };
 
+/**
+ * Supprime un titre structurel (section, sous-section ou sous-sous-section) en
+ * remontant son contenu au niveau supérieur : ses éléments sont rattachés au
+ * parent et ses sous-titres montent d'un cran, sans perdre aucune donnée.
+ * Renvoie `true` quand la suppression a été réalisée par remontée ; `false`
+ * pour une feuille (item), un séparateur ou un chapitre (suppression complète).
+ */
+export const deleteStructuralNodePromotingChildren = (
+    draft: Draft<LessonsData>,
+    indices: Indices,
+): boolean => {
+    if (indices.isSeparator || indices.itemIndex !== undefined) return false;
+
+    // Sous-sous-section : ses items remontent dans la sous-section parente.
+    if (indices.subsubsectionIndex !== undefined) {
+        const subsection = draft[indices.chapterIndex]?.sections?.[indices.sectionIndex!]
+            ?.subsections?.[indices.subsectionIndex!];
+        const node = subsection?.subsubsections?.[indices.subsubsectionIndex];
+        if (!subsection?.subsubsections || !node) return false;
+        const items = node.items ?? [];
+        subsection.subsubsections.splice(indices.subsubsectionIndex, 1);
+        if (items.length > 0) {
+            subsection.items ??= [];
+            subsection.items.push(...items);
+        }
+        return true;
+    }
+
+    // Sous-section : ses sous-sous-sections deviennent des sous-sections et
+    // ses items remontent dans la section parente.
+    if (indices.subsectionIndex !== undefined) {
+        const section = draft[indices.chapterIndex]?.sections?.[indices.sectionIndex!];
+        const node = section?.subsections?.[indices.subsectionIndex];
+        if (!section?.subsections || !node) return false;
+        const promoted = node.subsubsections ?? [];
+        const items = node.items ?? [];
+        section.subsections.splice(indices.subsectionIndex, 1, ...promoted);
+        if (items.length > 0) {
+            section.items ??= [];
+            section.items.push(...items);
+        }
+        return true;
+    }
+
+    // Section : ses sous-sections deviennent des sections (le champ
+    // `subsubsections` devient `subsections`) et ses items remontent.
+    if (indices.sectionIndex !== undefined) {
+        const chapter = draft[indices.chapterIndex];
+        const node = chapter?.sections?.[indices.sectionIndex];
+        if (!chapter?.sections || !node) return false;
+        const promoted: Section[] = (node.subsections ?? []).map((sub) => {
+            const { subsubsections, ...rest } = sub;
+            return { ...rest, subsections: subsubsections ?? [] };
+        });
+        const items = node.items ?? [];
+        chapter.sections.splice(indices.sectionIndex, 1, ...promoted);
+        if (items.length > 0) {
+            chapter.items ??= [];
+            chapter.items.push(...items);
+        }
+        return true;
+    }
+
+    // Chapitre : suppression complète gérée par l'appelant.
+    return false;
+};
+
 // Compact date formatter: returns dd/mm/yyyy from ISO (yyyy-mm-dd) without timezone shifts
 export const formatDateDDMMYYYY = memoize((dateString: string): string | null => {
     if (!dateString || typeof dateString !== 'string') return null;

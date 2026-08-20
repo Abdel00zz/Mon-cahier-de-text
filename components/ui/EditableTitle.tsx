@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MathText } from './math-text';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface EditableTitleProps {
   value: string;
@@ -8,6 +9,7 @@ interface EditableTitleProps {
 }
 
 export const EditableTitle: React.FC<EditableTitleProps> = ({ value, onSave, className = '' }) => {
+  const { t } = useLocale();
   const [isEditing, setIsEditing] = useState(false);
   const [currentValue, setCurrentValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,7 +71,7 @@ export const EditableTitle: React.FC<EditableTitleProps> = ({ value, onSave, cla
     <span
       onDoubleClick={handleDoubleClick}
       className={`px-2 py-1 -mx-2 -my-1 rounded-md break-words ${className}`}
-      title="Double-cliquez pour modifier"
+      title={t('common.doubleClickToEdit')}
     >
       {/* le LaTeX du titre est rendu à l'affichage ; la source brute reste éditable */}
       <MathText source={value} cacheKey={value} inline>{value}</MathText>

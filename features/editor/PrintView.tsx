@@ -41,9 +41,9 @@ interface PrintViewProps {
 
 /** Réglages typographiques du document imprimé, pilotés par la modale. */
 const TEXT_SIZES: Record<'s' | 'm' | 'l', { body: string; cell: string; description: string; chapter: string }> = {
-    s: { body: '9pt', cell: '7.8pt', description: '7.3pt', chapter: '11.5pt' },
-    m: { body: '10pt', cell: '8.5pt', description: '8pt', chapter: '13pt' },
-    l: { body: '11pt', cell: '9.6pt', description: '9pt', chapter: '14.5pt' },
+    s: { body: '9pt', cell: '7.8pt', description: '7.3pt', chapter: '9.8pt' },
+    m: { body: '10pt', cell: '8.5pt', description: '8pt', chapter: '11pt' },
+    l: { body: '11pt', cell: '9.6pt', description: '9pt', chapter: '12.3pt' },
 };
 
 const LINE_SPACINGS: Record<'compact' | 'normal' | 'aere', { line: number; cellPad: string; itemGap: string }> = {
@@ -790,7 +790,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     ) : (
                         <tr>
                             <td colSpan={3} style={{ textAlign: 'center', fontStyle: 'italic', padding: '20px' }}>
-                                Aucun contenu à afficher
+                                {isRtlPrint ? 'لا يوجد محتوى للعرض' : 'Aucun contenu à afficher'}
                             </td>
                         </tr>
                     )}
@@ -800,11 +800,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
             {/* Signatures, le cahier de textes est un document de contrôle pédagogique */}
             <div className="print-signatures">
                 <div className="print-signature-box">
-                    <div className="print-signature-label">Signature du professeur</div>
+                    <div className="print-signature-label">{isRtlPrint ? 'توقيع الأستاذ(ة)' : 'Signature du professeur'}</div>
                     <div className="print-signature-line" />
                 </div>
                 <div className="print-signature-box">
-                    <div className="print-signature-label">Visa de la direction</div>
+                    <div className="print-signature-label">{isRtlPrint ? 'تأشيرة الإدارة التربوية' : 'Visa de la direction'}</div>
                     <div className="print-signature-line" />
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem, ContentDirection } from '@/types';
-import { DateCard, DateMergeMeta, TableRow } from './TableRow';
+import { DateCard, MultiDateCard, DateMergeMeta, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
-const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
+const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
 interface InlineEditRowProps {
     data: LessonItem;
@@ -213,17 +213,17 @@ const TableHeader: React.FC = React.memo(() => {
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="hidden border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42] md:block">
+  <div className="border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42]">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
-    <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-e border-border/80 px-2.5 py-2.5 text-center">
-        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
+    <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-e border-border/80 px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
+        <span className="font-sans text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-e border-border/80 px-3 py-2.5 text-center">
-        <span className="font-sans text-xs text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
+      <div className="flex items-center justify-center border-e border-border/80 px-2 py-1.5 sm:px-3 sm:py-2 text-center">
+        <span className="font-sans text-[10px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
       </div>
-      <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
-        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
+      <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
+        <span className="font-sans text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -245,41 +245,150 @@ const getMergeableRemark = (item: FlatDataItem): string => {
     return typeof remark === 'string' ? remark.trim() : '';
 };
 
+/**
+ * Identité pédagogique normalisée pour la fusion intelligente :
+ * Type, numéro et titre normalisés (minuscule, sans espaces superflus).
+ * Un séparateur, un chapitre, une section ou un contenu différent brise
+ * immédiatement la continuité.
+ */
+const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
+    if (item.elementType !== 'item' && !TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.elementType)) return null;
+    const data = item.data as any;
+    const normType = (data.type || '').toString().trim().toLowerCase();
+    const normNumber = (data.number || '').toString().trim().toLowerCase();
+    const normTitle = (data.title || '').toString().trim().toLowerCase();
+    if (!normType && !normTitle) return null;
+    return `${normType}:::${normNumber}:::${normTitle}`;
+};
+
+const parseDateTimestamp = (dateStr: string | null): number => {
+    if (!dateStr) return 0;
+    try {
+        if (dateStr.includes('-')) {
+            const parts = dateStr.split('T')[0].split('-');
+            if (parts.length === 3) {
+                return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getTime();
+            }
+        } else if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
+            }
+        }
+        const time = new Date(dateStr).getTime();
+        return isNaN(time) ? 0 : time;
+    } catch {
+        return 0;
+    }
+};
+
+/**
+ * Fusion intelligente des séances et contenus :
+ * 1. Même date : toutes les lignes consécutives ayant la même date de séance
+ *    sont fusionnées dans une cellule de date commune.
+ * 2. Même contenu multi-dates : les lignes consécutives de même identité pédagogique
+ *    (type, numéro, titre) sur des dates successives sont regroupées avec MultiDateCard.
+ */
 const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
     let start = 0;
-
     while (start < items.length) {
-        const date = getMergeableDate(items[start]);
-        if (!date) {
+        const itemStart = items[start];
+        const dateStart = getMergeableDate(itemStart);
+        const identityStart = getPedagogicalIdentity(itemStart);
+        const isDatedSequenceStart = Boolean(dateStart && (start === 0 || !getMergeableDate(items[start - 1])));
+
+        if (!dateStart || itemStart.elementType === 'separator') {
+            const isDatedSequenceEnd = start === items.length - 1 || !getMergeableDate(items[start + 1]);
+            itemStart.dateMerge = {
+                isMerged: false,
+                mergeType: 'date',
+                isStart: true,
+                isContinuation: false,
+                isEnd: true,
+                count: 1,
+                indexInGroup: 0,
+                isDatedSequenceStart: !!isDatedSequenceStart,
+                isDatedSequenceEnd: !!isDatedSequenceEnd,
+            };
             start += 1;
             continue;
         }
 
+        // 1. Détection des lignes consécutives de MÊME DATE
+        let sameDateEnd = start + 1;
+        while (sameDateEnd < items.length) {
+            const nextItem = items[sameDateEnd];
+            const nextDate = getMergeableDate(nextItem);
+            if (nextItem.elementType === 'separator' || !nextDate || nextDate !== dateStart) {
+                break;
+            }
+            sameDateEnd += 1;
+        }
+
+        // 2. Détection des lignes consécutives de MÊME CONTENU sur dates distinctes (Multi-date)
+        let sameContentEnd = start + 1;
+        if (identityStart) {
+            let lastDate = dateStart;
+            let lastTimestamp = parseDateTimestamp(dateStart);
+            while (sameContentEnd < items.length) {
+                const nextItem = items[sameContentEnd];
+                const nextDate = getMergeableDate(nextItem);
+                const nextIdentity = getPedagogicalIdentity(nextItem);
+
+                if (nextItem.elementType === 'separator' || !nextIdentity || nextIdentity !== identityStart || !nextDate) {
+                    break;
+                }
+                const nextTimestamp = parseDateTimestamp(nextDate);
+                if (nextDate === lastDate || (lastTimestamp > 0 && nextTimestamp < lastTimestamp)) {
+                    break;
+                }
+                lastDate = nextDate;
+                lastTimestamp = nextTimestamp;
+                sameContentEnd += 1;
+            }
+        }
+
+        const sameDateCount = sameDateEnd - start;
+        const sameContentCount = sameContentEnd - start;
+
         let end = start + 1;
-        while (end < items.length && getMergeableDate(items[end]) === date) {
-            end += 1;
+        let mergeType: 'date' | 'content' = 'date';
+
+        if (sameDateCount > 1) {
+            end = sameDateEnd;
+            mergeType = 'date';
+        } else if (sameContentCount > 1) {
+            end = sameContentEnd;
+            mergeType = 'content';
+        } else {
+            end = start + 1;
+            mergeType = 'date';
         }
 
         const count = end - start;
+        const isMerged = count > 1;
         const group = items.slice(start, end);
         const firstRemark = getMergeableRemark(group[0]);
-        const shouldMergeRemark = count > 1 && group.every(item => getMergeableRemark(item) === firstRemark);
+        const shouldMergeRemark = isMerged && group.every(item => getMergeableRemark(item) === firstRemark);
+        const isDatedSequenceEnd = end === items.length || !getMergeableDate(items[end]);
 
         for (let index = start; index < end; index += 1) {
             items[index].dateMerge = {
-                isMerged: count > 1,
+                isMerged,
+                mergeType,
                 isStart: index === start,
                 isContinuation: index !== start,
                 isEnd: index === end - 1,
                 count,
                 indexInGroup: index - start,
                 shouldMergeRemark,
+                isDatedSequenceStart: !!isDatedSequenceStart && index === start,
+                isDatedSequenceEnd: !!isDatedSequenceEnd && index === end - 1,
             };
         }
 
         start = end;
     }
-
     return items;
 };
 
@@ -308,17 +417,14 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     searchQuery,
     getDateWarnings,
 }) => {
-    const first = items[0];
-    const date = getMergeableDate(first) ?? '';
-    const warnings = date && getDateWarnings ? getDateWarnings(date) : [];
+    const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
+    const uniqueDates = Array.from(new Set(allDates));
+    const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
     const hasWarning = warnings.length > 0;
-    const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(first));
+    const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(items[0]));
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
-    const sharedRemark = getMergeableRemark(first);
-    // Les groupes fusionnés ont leur propre grille : les filets de TableRow
-    // ne peuvent pas dessiner les séparateurs Date|Contenu|Remarque ici.
-    // On les porte donc sur les deux premières colonnes, avec la même force
-    // visuelle que les rangées simples.
+    const sharedRemark = getMergeableRemark(items[0]);
+
     const dividerClass = groupIsSelected
         ? 'border-e border-primary/45'
         : hasWarning
@@ -332,25 +438,26 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y border-border/70 transition-colors duration-200`,
+                `group relative grid ${TABLE_GRID_CLASS} border-y-2 border-border/80 transition-colors duration-200`,
                 hasWarning
-                    ? 'border-warning/[0.5] bg-warning/[0.07]'
+                    ? 'border-warning/[0.6] bg-warning/[0.07]'
                     : 'bg-card/[0.18] dark:bg-slate-950/[0.14]',
                 groupIsSelected ? 'bg-primary/[0.085]' : '',
             ].filter(Boolean).join(' ')}
         >
-            {/* Rail latéral supprimé selon la demande */}
-
-        <div className={`flex min-h-[56px] min-w-0 items-center justify-center self-stretch px-1.5 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-card/[0.32] dark:bg-slate-950/[0.25]'}`}>
-                <DateCard dateStr={date} hasWarning={hasWarning} />
+            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-card/[0.32] dark:bg-slate-950/[0.25]'}`}>
+                {uniqueDates.length > 1 ? (
+                    <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
+                ) : (
+                    <DateCard dateStr={uniqueDates[0]} hasWarning={hasWarning} />
+                )}
             </div>
 
             <div className={`min-w-0 self-stretch ${dividerClass}`}>
-                {items.map(item => {
+                {items.map((item, idx) => {
                     const isSelected = selectedKeys.has(item.key);
                     const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
-                    // Le groupe fusionné porte le seul contour horizontal ; les lignes
-                    // enfants ne doivent pas redessiner un cadre imbriqué dans le contenu.
+                    const isLast = idx === items.length - 1;
                     return (
                         <TableRow
                             key={item.key}
@@ -358,7 +465,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             indices={item.indices}
                             elementType={item.elementType}
                             dateMerge={item.dateMerge}
-                            lineClassOverride=""
+                            lineClassOverride={isLast ? '' : 'border-b border-border/40'}
                             layout="content-only"
                             onCellUpdate={onCellUpdate}
                             onToggleSelect={onToggleSelect}
@@ -374,13 +481,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 })}
             </div>
 
-            <div className={`hidden min-w-0 self-stretch p-1 md:flex ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
+            <div className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <EditableCell
                             value={sharedRemark}
                             onSave={saveSharedRemark}
-                            className="h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
+                            className="h-full w-full p-0.5 sm:p-1 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
                             multiline
                             placeholder=""
                         />
@@ -388,11 +495,11 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map(item => (
-                            <div key={item.key} className="min-h-[44px] p-1">
+                            <div key={item.key} className="min-h-[40px] p-0.5 sm:p-1">
                                 <EditableCell
                                     value={getMergeableRemark(item)}
                                     onSave={value => onCellUpdate(item.indices, 'remark', value)}
-                                    className="h-full p-1 text-[11px] text-muted-foreground font-semibold font-sans"
+                                    className="h-full w-full p-0.5 sm:p-1 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
                                     multiline
                                     placeholder=""
                                 />

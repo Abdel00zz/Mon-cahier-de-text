@@ -22,6 +22,9 @@ export const defaultNotificationSettings = {
 } as const;
 
 const defaultConfig: AppConfig = {
+    theme: 'light',
+    contentFontLatin: 'itim',
+    contentFontArabic: 'ibm-plex',
     applicationLocale: 'ar',
     establishmentName: '',
     defaultTeacherName: '',
@@ -101,6 +104,9 @@ export const useConfigManager = () => {
                     removedAssessments: loadedConfig.removedAssessments ?? {},
                     assessmentOrder: loadedConfig.assessmentOrder ?? {},
                     schoolYearStart: loadedConfig.schoolYearStart,
+                    theme: loadedConfig.theme ?? 'light',
+                    contentFontLatin: loadedConfig.contentFontLatin ?? 'itim',
+                    contentFontArabic: loadedConfig.contentFontArabic ?? 'ibm-plex',
                     applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
                 }));
             } else {

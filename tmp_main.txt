@@ -1,0 +1,300 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem, ContentDirection } from '@/types';
+import { DateCard, DateMergeMeta, TableRow } from './TableRow';
+import { SeparatorRow } from './SeparatorRow';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { EditableCell } from '@/components/ui/EditableCell';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
+import { logger } from '@/utils/logger';
+import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
+import { useDevice } from '@/hooks/useDevice';
+import { cn } from '@/lib/utils';
+import { useLocale } from '@/i18n/LocaleProvider';
+
+const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
+const TABLE_GRID_CLASS = 'grid-cols-[22%_1fr_25%] md:grid-cols-[var(--cdt-table-cols)]';
+
+interface InlineEditRowProps {
+    data: LessonItem;
+    onSave: (updatedData: Partial<LessonItem>) => void;
+    onCancel: () => void;
+    accentColor?: string;
+    /** matière de la classe : restreint les types de contenu proposés */
+    subject?: string;
+    /** garde intelligente : alertes live sur la date saisie (emploi du temps, fériés, vacances, absences) */
+    getDateWarnings?: (date: string) => { type: string; message: string }[];
+}
+
+const ALL_LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) => a.localeCompare(b));
+
+const resolveLessonTypeOptions = (subject: string | undefined, currentType: string | undefined): string[] => {
+    const base = subject ? getContentTypesForSubject(subject) : ALL_LESSON_TYPE_OPTIONS;
+    const set = new Set<string>(base);
+    // garde l'ancien type visible même s'il n'appartient pas au domaine courant
+    if (currentType && !set.has(currentType)) set.add(currentType);
+    return [...set].sort((a, b) => a.localeCompare(b));
+};
+
+const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
+
+const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, subject, getDateWarnings }) => {
+    const { t } = useLocale();
+    const device = useDevice();
+    const [formData, setFormData] = useState<Partial<LessonItem>>(data);
+    const titleRef = useRef<HTMLInputElement>(null);
+    const rootRef = useRef<HTMLFormElement>(null);
+    const isCompact = device.type === 'phone' && device.isPortrait;
+
+    useEffect(() => {
+        titleRef.current?.focus();
+        titleRef.current?.select();
+        // garde le formulaire visible même s'il était en bord de fenêtre
+        rootRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, []);
+
+    // Détection de modification : annuler/enregistrer sans changement ne
+    // pollue pas l'historique undo/redo ni la file de synchronisation.
+    const isDirty = React.useMemo(
+        () => EDITABLE_FIELDS.some(field => (formData[field] ?? '') !== ((data as any)[field] ?? '')),
+        [formData, data]
+    );
+
+    // Alertes intelligentes recalculées quand la date change dans le formulaire.
+    const dateWarnings = React.useMemo(
+        () => (getDateWarnings && formData.date && formData.date !== data.date ? getDateWarnings(formData.date) : []),
+        [getDateWarnings, formData.date, data.date]
+    );
+
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    }, []);
+
+    const handleSave = (e: React.MouseEvent | React.FormEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!isDirty) {
+            onCancel(); // rien n'a changé : fermeture propre, zéro écriture
+            return;
+        }
+        onSave(formData);
+    };
+
+    const handleCancel = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onCancel();
+    };
+
+    return (
+        <form
+            ref={rootRef}
+            className={cn(
+                'mx-0 my-0 grid gap-2 bg-transparent px-0 py-1 animate-fade-in duration-200',
+                isCompact ? 'grid-cols-1' : 'sm:grid-cols-[minmax(6rem,auto)_1fr] md:grid-cols-[minmax(7rem,0.18fr)_1fr_minmax(8rem,0.18fr)]',
+            )}
+            onSubmit={handleSave}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={(event) => {
+                if (event.key === 'Escape') onCancel();
+                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') onSave(event);
+            }}
+        >
+            <div className="flex flex-row items-center justify-center gap-1.5 sm:flex-col sm:justify-start sm:pt-1">
+                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-muted/60 px-2 text-center text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 font-mono sm:h-10 sm:w-full sm:text-sm" />
+                {formData.date && (
+                    <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
+                        className="shrink-0 text-[9px] font-semibold text-muted-foreground/60 hover:text-destructive transition-colors"
+                    >
+                        {t('editor.unassignDate')}
+                    </button>
+                )}
+            </div>
+            <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_0.6fr_0.7fr] sm:gap-2">
+                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
+                      <SelectTrigger className="h-9 flex-1 rounded-lg border-0 bg-muted/60 text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm">
+                        <SelectValue placeholder={t('editor.type')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {resolveLessonTypeOptions(subject, formData.type as string | undefined).map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
+                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder={t('editor.page')} className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
+                </div>
+                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder={t('editor.title')} className="h-9 rounded-lg border-0 bg-muted/60 px-2.5 text-xs font-bold text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
+                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.description')} />
+
+                {/* Garde intelligente : conflits de date affichés dans le formulaire */}
+                {dateWarnings.length > 0 && (
+                    <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="status">
+                        {dateWarnings.map((warning, i) => (
+                            <p key={i} className="text-[11px] font-semibold leading-snug text-warning-strong">⚠ {warning.message}</p>
+                        ))}
+                    </div>
+                )}
+
+                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground/70">
+                    <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
+                        <kbd className="rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd> {t('common.cancel')}
+                        <kbd className="ms-2 rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘+↵</kbd> {t('toolbar.save')}
+                    </span>
+                    <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
+                        <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">{t('common.cancel')}</Button>
+                        <Button type="submit" variant="default" size="sm" className="min-h-10" disabled={!isDirty}>
+                            {isDirty ? t('common.save') : t('common.noChanges')}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            <div className="flex min-w-0 items-stretch">
+                <Textarea name="remark" rows={2} value={formData.remark || ''} onChange={handleChange} className="h-full min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.remark')} />
+            </div>
+        </form>
+    );
+};
+
+interface MainTableProps {
+  lessonsData: LessonsData;
+  /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
+  contentDirection: ContentDirection;
+  /** matière de la classe : restreint les types de contenu proposés */
+  subject?: string;
+  onCellUpdate: (indices: Indices, field: string, value: any) => void;
+  onDeleteSeparator: (indices: Indices) => void;
+  onOpenAddContentModal: (indices?: Indices) => void;
+  showDescriptions?: boolean;
+  descriptionTypes?: string[];
+  selectedKeys: ReadonlySet<string>;
+  onToggleSelect: (indices: Indices) => void;
+  editingIndices: Indices | null;
+  onInitiateInlineEdit: (indices: Indices) => void;
+  onConfirmInlineEdit: (indices: Indices, updatedData: Partial<LessonItem>) => void;
+  onCancelInlineEdit: () => void;
+  newlyAddedIds: string[];
+  /** garde intelligente : alertes live sur la date saisie */
+  getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** terme de recherche actif (surlignage dans les lignes) */
+  searchQuery?: string;
+  /** rangée à rejoindre automatiquement après une suggestion de séance */
+  focusKey?: string | null;
+  /** programme officiel proposé lorsque le cahier est encore vide */
+  predefinedProgramTitle?: string;
+  onLoadPredefined?: () => void;
+}
+
+interface FlatDataItem {
+    data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem | Separator | EmbeddableTopLevelItem;
+    indices: Indices;
+    elementType: ElementType;
+    key: string;
+    dateMerge?: DateMergeMeta;
+}
+
+type RenderRow =
+    | { kind: 'single'; item: FlatDataItem; key: string; flatIndex: number }
+    | { kind: 'session'; items: FlatDataItem[]; key: string; flatIndex: number };
+
+
+const VIRTUALIZATION_THRESHOLD = 140;
+const ESTIMATED_ROW_HEIGHT = 72;
+const VIRTUAL_OVERSCAN = 16;
+
+const TableHeader: React.FC = React.memo(() => {
+  const { t } = useLocale();
+  return (
+  /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
+     avec celles des rangées (elles aussi sans padding de cadre). En-tête
+     de colonnes NON collant : il défile avec le tableau (seule la barre
+     d'outils reste épinglée en haut). */
+  <div className="border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42]">
+    {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
+    <div className={`grid min-h-12 ${TABLE_GRID_CLASS}`}>
+      <div className="flex items-center justify-center border-e border-border/80 px-2.5 py-2.5 text-center">
+        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
+      </div>
+      <div className="flex items-center justify-center border-e border-border/80 px-3 py-2.5 text-center">
+        <span className="font-sans text-xs text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
+      </div>
+      <div className="flex items-center justify-center px-2.5 py-2.5 text-center">
+        <span className="font-sans text-xs text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
+      </div>
+    </div>
+  </div>
+  );
+});
+TableHeader.displayName = 'TableHeader';
+
+const makeKey = (idx: Indices): string =>
+    `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}|${idx.isSeparator ? 1 : 0}`;
+
+const getMergeableDate = (item: FlatDataItem): string | null => {
+    if (item.elementType === 'separator') return null;
+    const date = (item.data as any).date;
+    return typeof date === 'string' && date.trim() ? date.trim() : null;
+};
+
+const getMergeableRemark = (item: FlatDataItem): string => {
+    const remark = (item.data as any).remark;
+    return typeof remark === 'string' ? remark.trim() : '';
+};
+
+const getMergeableContent = (item: FlatDataItem): string | null => {
+    if (item.elementType === 'separator') return null;
+    const data = item.data as any;
+    if (!data.type && !data.title) return null;
+    if (!getMergeableDate(item)) return null; // le fusionnement s'active qu'apres la saisie de la date
+    return JSON.stringify({ type: data.type, number: data.number, title: data.title, description: data.description });
+};
+
+const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
+    let start = 0;
+    while (start < items.length) {
+        const date = getMergeableDate(items[start]);
+        const content = getMergeableContent(items[start]);
+        
+        const isDatedSequenceStart = date && (start === 0 || !getMergeableDate(items[start - 1]));
+        
+        if (!date && !content) {
+            start += 1;
+            continue;
+        }
+
+        let endDate = start + 1;
+        if (date) {
+            while (endDate < items.length && getMergeableDate(items[endDate]) === date) {
+                endDate += 1;
+            }
+        }
+
+        let endContent = start + 1;
+        if (content) {
+            while (endContent < items.length && getMergeableContent(items[endContent]) === content) {
+                endContent += 1;
+            }
+        }
+        
+        let end = start + 1;
+        let mergeType: 'date' | 'content' = 'date';
+        
+        if (endContent > endDate) {
+            end = endContent;
+            mergeType = 'content';
+        } else if (endDate > start + 1) {
+            end = endDate;
+            mergeType = 'date';
+        } else {
+            const isDatedSequenceEnd = start === items.length - 1 || !getMergeableDate(items[start + 1]);
+            items[start].dateMerge = {
+                isMerged: false,
+                mergeType: 'date',
+                isStart: true,
+                isContinuation: false,
+                isEnd: true,
+                count: 1,

@@ -64,14 +64,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
         if (item.type === 'chapter') {
           return (
-            <div className="flex w-full items-center justify-center text-center font-bold text-lg font-extrabold tracking-tight text-red-700">
+            <div className="flex w-full items-center justify-center text-center font-bold text-base font-extrabold tracking-tight text-red-700">
               <span>{titleToDisplay}</span>
             </div>
           );
         }
 
         return (
-          <div className={`font-extrabold tracking-tight text-lg flex items-center justify-center ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
+          <div className={`font-extrabold tracking-tight text-base flex items-center justify-center ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
             <span>{titleToDisplay}</span>
           </div>
         );
@@ -88,7 +88,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
       
       return (
-        <div className="font-bold text-lg">
+        <div className="font-bold text-base">
           {titleToDisplay}
         </div>
       );
@@ -115,7 +115,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       return (
         <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
-          <div className="flex w-full items-center justify-center py-3 text-center font-bold text-lg font-extrabold tracking-tight text-red-700 sm:text-xl">
+          <div className="flex w-full items-center justify-center py-2 sm:py-2.5 text-center font-bold text-[15px] sm:text-base font-extrabold tracking-tight text-red-700">
             <EditableTitle value={item.title} onSave={handleUpdate('title')} />
           </div>
         </MaybeMathJax>
@@ -126,7 +126,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`text-lg font-extrabold tracking-tight sm:text-xl py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div className={`text-[14.5px] sm:text-base font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <EditableTitle value={item.title} onSave={handleUpdate('title')} />
         </div>
       </MaybeMathJax>
@@ -138,7 +138,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-base font-bold tracking-tight text-foreground py-1.5 flex items-baseline gap-2">
+            <div className="text-[13.5px] sm:text-base font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -147,7 +147,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm font-bold font-sans text-foreground ps-2 sm:ps-4 py-0.5 flex items-baseline gap-2">
+            <div className="text-[12px] sm:text-sm font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -157,7 +157,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-sm italic font-sans text-muted-foreground ps-4 sm:ps-8 py-0.5 flex items-baseline gap-2">
+            <div className="text-[11px] sm:text-sm italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <EditableTitle value={data.name} onSave={handleUpdate('name')} />
             </div>
@@ -190,25 +190,22 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const content = (
-        <div className="max-w-none space-y-1 text-sm text-muted-foreground">
+        <div className="max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-muted-foreground">
           {/* Titre */}
-          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-foreground p-0" placeholder="Titre..." highlight={highlight} />
+          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-[12.5px] sm:text-sm text-foreground p-0" placeholder={t('editor.titlePlaceholder')} highlight={highlight} />
 
-          {/* Description : encadré doux sous le titre, contenu TOUJOURS affiché
-              en entier (aucune barre de défilement) ; texte enrichi (gras,
-              italique, listes) + LaTeX (les longues formules passent à la
-              ligne via displayOverflow: linebreak). */}
+          {/* Description : encadré sobre sous le titre */}
           {allowDescription && (
-            <div className="mt-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs md:text-[12px] leading-relaxed text-muted-foreground font-serif whitespace-pre-wrap break-words animate-in fade-in duration-200 shadow-sm">
+            <div className="mt-1 border border-border px-1.5 py-1 sm:px-2 sm:py-1.5 text-[11.5px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
 
           {/* Info page */}
           {item.page && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground italic">
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground italic">
               <span>(p.</span>
-              <EditableCell value={String(item.page || '')} onSave={handleUpdate('page')} className="p-0" placeholder="page" />
+              <EditableCell value={String(item.page || '')} onSave={handleUpdate('page')} className="p-0" placeholder={t('editor.pagePlaceholder')} />
               <span>)</span>
             </div>
           )}
@@ -223,12 +220,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       return (
-        // Mobile : badge AU-DESSUS du titre (pile) pour laisser toute la largeur
-        // au texte ; à partir de sm, badge et titre côte à côte avec espacement soigné.
-        <div className="flex flex-col items-start gap-1 ps-1 py-1 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8">
+        <div className="flex flex-col items-start gap-1 ps-0.5 py-0.5 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8 sm:py-1">
           <Badge
             variant="outline"
-            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-normal border min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9.5px] sm:text-[11px] font-semibold tracking-normal border min-w-[42px] sm:min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >

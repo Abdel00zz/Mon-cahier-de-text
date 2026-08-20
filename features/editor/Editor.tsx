@@ -14,7 +14,7 @@ import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useSelectionData } from '@/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
@@ -927,6 +927,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       });
       setState(draft => {
           sorted.forEach(idx => {
+              // Titre structurel : on retire le titre et on remonte son contenu
+              // au niveau supérieur (aucune donnée imbriquée n'est perdue).
+              if (deleteStructuralNodePromotingChildren(draft, idx)) return;
+              // Élément feuille, chapitre ou séparateur : suppression simple.
               const { parent, targetIndex } = findItem(draft, idx);
               if (parent && typeof targetIndex === 'number' && Array.isArray(parent)) {
                   parent.splice(targetIndex, 1);

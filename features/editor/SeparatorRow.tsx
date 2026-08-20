@@ -13,7 +13,7 @@ interface SeparatorRowProps {
 }
 
 /* Separateur aligne sur les traits neutres du tableau. */
-const TABLE_GRID_CLASS = 'grid-cols-[19%_1fr] md:grid-cols-[var(--cdt-table-cols)]';
+const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
 const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onCellUpdate, onDelete }) => {
     const { t } = useLocale();

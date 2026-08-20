@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MathText } from './math-text';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface EditableCellProps {
   value: string;
@@ -35,6 +36,7 @@ const highlightMatches = (text: string, query?: string): React.ReactNode => {
 };
 
 export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, className = '', multiline = false, placeholder = "Cliquer pour éditer", highlight }) => {
+  const { t } = useLocale();
   const [isEditing, setIsEditing] = useState(false);
   const [currentValue, setCurrentValue] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -94,7 +96,7 @@ export const EditableCell: React.FC<EditableCellProps> = ({ value, onSave, class
     <div
       onDoubleClick={() => setIsEditing(true)}
       className={`min-h-[1.5rem] focus:bg-background rounded break-words whitespace-pre-wrap ${className}`}
-      title="Double-cliquez pour modifier"
+      title={t('common.doubleClickToEdit')}
     >
       {value ? (
         // surlignage de recherche prioritaire (les <mark> casseraient le typeset) ;
