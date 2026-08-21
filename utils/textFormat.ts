@@ -4,6 +4,7 @@ import React from 'react';
  * Moteur de mise en page des descriptions, hors segments mathématiques :
  *   **gras**                       → <strong>
  *   *italique*                     → <em>
+ *   ++souligné++                   → <u>
  *   « - texte » en début de ligne  → puce (équivalent \itemize)
  *   « 1. texte » en début de ligne → liste numérotée (équivalent \enumerate)
  * Les segments $...$ / $$...$$ sont transmis intacts à MathJax (qui gère
@@ -64,7 +65,7 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
           'span',
           { key: `li-${keyBase}-${index}`, className: 'flex gap-1.5 pl-1 whitespace-normal' },
           React.createElement('span', { className: 'select-none text-primary', 'aria-hidden': true }, '•'),
-          React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyBold(bullet[2]))
+          React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyInlineFormatting(bullet[2], `bullet-${keyBase}-${index}`))
         )
       );
     } else if (numbered) {
@@ -73,11 +74,11 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
           'span',
           { key: `ol-${keyBase}-${index}`, className: 'flex gap-1.5 pl-1 whitespace-normal' },
           React.createElement('span', { className: 'select-none font-semibold text-primary' }, `${numbered[2]}.`),
-          React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyBold(numbered[3]))
+          React.createElement('span', { className: 'min-w-0 flex-1' }, ...applyInlineFormatting(numbered[3], `number-${keyBase}-${index}`))
         )
       );
     } else {
-      out.push(...applyBold(line));
+      out.push(...applyInlineFormatting(line, `text-${keyBase}-${index}`));
       // '\n' uniquement entre deux lignes de TEXTE : jamais avant/après un
       // item de liste (le bloc flex crée déjà sa propre ligne).
       const next = lines[index + 1];
@@ -90,23 +91,52 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
   return out;
 }
 
-function applyBold(segment: string): React.ReactNode[] {
+const INLINE_MARKERS = ['***', '**', '++', '*'] as const;
+
+function applyInlineFormatting(segment: string, keyBase: string): React.ReactNode[] {
   if (!segment) return [];
   const out: React.ReactNode[] = [];
-  // **gras** puis *italique* (le gras est capturé en premier)
-  const regexInline = /\*\*([^*]+)\*\*|\*([^*\n]+)\*/g;
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = regexInline.exec(segment)) !== null) {
-    const start = m.index;
-    if (start > last) out.push(segment.slice(last, start));
-    if (m[1] !== undefined) {
-      out.push(React.createElement('strong', { key: `b-${start}-${regexInline.lastIndex}` }, m[1]));
-    } else {
-      out.push(React.createElement('em', { key: `i-${start}-${regexInline.lastIndex}` }, m[2]));
+  let cursor = 0;
+
+  while (cursor < segment.length) {
+    let openingIndex = -1;
+    let marker: typeof INLINE_MARKERS[number] | null = null;
+    INLINE_MARKERS.forEach(candidate => {
+      const index = segment.indexOf(candidate, cursor);
+      if (index < 0) return;
+      if (openingIndex < 0 || index < openingIndex || (index === openingIndex && candidate.length > (marker?.length ?? 0))) {
+        openingIndex = index;
+        marker = candidate;
+      }
+    });
+
+    if (openingIndex < 0 || !marker) {
+      out.push(segment.slice(cursor));
+      break;
     }
-    last = regexInline.lastIndex;
+
+    const closingIndex = segment.indexOf(marker, openingIndex + marker.length);
+    if (closingIndex < 0) {
+      out.push(segment.slice(cursor));
+      break;
+    }
+
+    if (openingIndex > cursor) out.push(segment.slice(cursor, openingIndex));
+    const inner = segment.slice(openingIndex + marker.length, closingIndex);
+    const children = applyInlineFormatting(inner, `${keyBase}-${openingIndex}`);
+    const key = `${keyBase}-${openingIndex}-${closingIndex}`;
+
+    if (marker === '***') {
+      out.push(React.createElement('strong', { key }, React.createElement('em', null, ...children)));
+    } else if (marker === '**') {
+      out.push(React.createElement('strong', { key }, ...children));
+    } else if (marker === '++') {
+      out.push(React.createElement('u', { key, className: 'decoration-current underline-offset-2' }, ...children));
+    } else {
+      out.push(React.createElement('em', { key }, ...children));
+    }
+    cursor = closingIndex + marker.length;
   }
-  if (last < segment.length) out.push(segment.slice(last));
+
   return out;
 }

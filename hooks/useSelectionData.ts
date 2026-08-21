@@ -8,7 +8,6 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
             try {
                 const { item } = findItem(lessonsData as any, idx);
                 const isRealRow = !!item && !idx.isSeparator;
-                const isStandardContent = idx.itemIndex !== undefined && isRealRow;
                 return {
                     indices: idx,
                     item,
@@ -16,8 +15,7 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
                     date: (item as any)?.date ?? '',
                     description: (item as any)?.description ?? '',
                     canDate: isRealRow,
-                    canDescription: !!item && isStandardContent,
-                    canInlineEdit: !!item && isStandardContent,
+                    canEditContent: isRealRow,
                     canAddAfter: !!item && !idx.isSeparator,
                 };
             } catch {
@@ -28,8 +26,7 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
                     date: '',
                     description: '',
                     canDate: false,
-                    canDescription: false,
-                    canInlineEdit: false,
+                    canEditContent: false,
                     canAddAfter: false,
                 };
             }

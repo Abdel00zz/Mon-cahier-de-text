@@ -208,26 +208,26 @@ export const formatLocalizedClassDisplayName = (
 };
 
 const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
-  [/^(?:trc|tc\s*sciences?|tc\s*scientifique|tronc\s+commun\s+sciences?|tronc\s+commun\s+scientifique)\b/i, 'Tronc Commun Scientifique'],
-  [/^(?:tc\s*lettres?|tronc\s+commun\s+lettres?(?:\s+et\s+sciences?\s+humaines?)?)\b/i, 'Tronc Commun Lettres et Sciences Humaines'],
-  [/^(?:tc\s*technologique|tronc\s+commun\s+technologique)\b/i, 'Tronc Commun Technologique'],
+  [/^(?:trc|tc\s*sciences?|tc\s*scientifique|tronc\s+commun\s+sciences?|tronc\s+commun\s+scientifique)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Scientifique'],
+  [/^(?:tc\s*lettres?|tronc\s+commun\s+lettres?(?:\s+et\s+sciences?\s+humaines?)?)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Lettres et Sciences Humaines'],
+  [/^(?:tc\s*technologique|tronc\s+commun\s+technologique)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Technologique'],
 
   // 1er Bac / 1BAC
-  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?)\b/i, '1er Bac Sciences Expérimentales'],
-  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\b/i, '1er Bac Sciences Mathématiques'],
-  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?)\b/i, '1er Bac Lettres et Sciences Humaines'],
-  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?)\b/i, '1er Bac Sciences Économiques et Gestion'],
+  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?)(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Expérimentales'],
+  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
+  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?)(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
+  [/^(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?)(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
 
   // 2ème Bac / 2BAC
-  [/^(?:2bac\s*pc|2ème\s*bac\s*pc|2e\s*bac\s*pc|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc))\b/i, '2ème Bac Sciences Physiques'],
-  [/^(?:2bac\s*svt|2ème\s*bac\s*svt|2e\s*bac\s*svt|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt))\b/i, '2ème Bac Sciences de la Vie et de la Terre'],
-  [/^(?:2bac\s*sc\.?\s*maths?\s*a|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)\b/i, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac\s*sc\.?\s*maths?\s*b|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)\b/i, '2ème Bac Sciences Mathématiques B'],
-  [/^(?:2bac\s*sc\.?\s*maths?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))\b/i, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac\s*sc\.?\s*éco\.?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*économiques?)\b/i, '2ème Bac Sciences Économiques'],
-  [/^(?:2bac\s*sc\.?\s*gestion\s*comptable|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)\b/i, '2ème Bac Sciences de Gestion Comptable'],
-  [/^(?:2bac\s*lettres?|2ème\s*bac\s*lettres?)\b/i, '2ème Bac Lettres'],
-  [/^(?:2bac\s*sc\.?\s*humaines?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*humaines?)\b/i, '2ème Bac Sciences Humaines'],
+  [/^(?:2bac\s*pc|2ème\s*bac\s*pc|2e\s*bac\s*pc|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
+  [/^(?:2bac\s*svt|2ème\s*bac\s*svt|2e\s*bac\s*svt|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
+  [/^(?:2bac\s*sc\.?\s*maths?\s*a|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac\s*sc\.?\s*maths?\s*b|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
+  [/^(?:2bac\s*sc\.?\s*maths?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac\s*sc\.?\s*éco\.?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*économiques?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Économiques'],
+  [/^(?:2bac\s*sc\.?\s*gestion\s*comptable|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
+  [/^(?:2bac\s*lettres?|2ème\s*bac\s*lettres?)(?![\p{L}\p{N}_])/iu, '2ème Bac Lettres'],
+  [/^(?:2bac\s*sc\.?\s*humaines?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
 ];
 
 export const normalizeOfficialClassName = (name: string): string => {

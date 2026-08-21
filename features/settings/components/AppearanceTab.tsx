@@ -12,12 +12,28 @@ interface AppearanceTabProps {
   onConfigChange: (newConfig: Partial<AppConfig>) => void;
 }
 
+const LATIN_SAMPLE_COLORS = [
+  'text-indigo-700 dark:text-indigo-300',
+  'text-emerald-700 dark:text-emerald-300',
+  'text-rose-700 dark:text-rose-300',
+  'text-sky-700 dark:text-sky-300',
+  'text-amber-700 dark:text-amber-300',
+];
+
+const ARABIC_SAMPLE_COLORS = [
+  'text-teal-700 dark:text-teal-300',
+  'text-violet-700 dark:text-violet-300',
+  'text-orange-700 dark:text-orange-300',
+  'text-blue-700 dark:text-blue-300',
+  'text-fuchsia-700 dark:text-fuchsia-300',
+];
+
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigChange }) => {
   const { t, isRtl } = useLocale();
   const [activeTab, setActiveTab] = useState<'latin' | 'arabic'>('latin');
 
   const currentTheme = config.theme || 'light';
-  const currentLatinFont = config.contentFontLatin || 'itim';
+  const currentLatinFont = config.contentFontLatin || 'fira';
   const currentArabicFont = config.contentFontArabic || 'ibm-plex';
 
   const handleSelectTheme = (theme: ThemeMode) => {
@@ -35,7 +51,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   const handleResetDefaults = () => {
     onConfigChange({
       theme: 'light',
-      contentFontLatin: 'itim',
+      contentFontLatin: 'fira',
       contentFontArabic: 'ibm-plex',
     });
   };
@@ -46,7 +62,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* ── Section 1 : Thème de l'interface (Clair / Sombre / Système) ── */}
-      <section className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs">
+      <section className="settings-section-block p-4 sm:p-6">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -168,24 +184,23 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </section>
 
-      {/* ── Section 2 : Banc d'essai & Aperçu en Direct ── */}
-      <section className="rounded-2xl border border-primary/20 bg-primary/[0.02] p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center gap-2 mb-3">
+      {/* ── Section 2 : aperçu typographique en situation ── */}
+      <section className="settings-section-block p-4 sm:p-5">
+        <div className="mb-3 flex items-center gap-2">
           <Eye className="h-4 w-4 text-primary" />
           <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
             {t('settings.appearance.previewTitle')}
           </h4>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Aperçu Français / Latin */}
-          <div className="rounded-xl border border-border/80 bg-card p-3.5 space-y-2">
-            <div className="flex items-center justify-between text-xs text-muted-foreground border-b border-border/60 pb-1.5">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="settings-surface space-y-2 p-3.5">
+            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">Français / Latin : {selectedLatinObj.name}</span>
               <Badge variant="outline" className="text-[10px] uppercase">{selectedLatinObj.category}</Badge>
             </div>
-            <div style={{ fontFamily: selectedLatinObj.family }} className="space-y-1.5 text-foreground">
-              <div className="text-[14px] font-semibold flex items-center justify-between">
+            <div style={{ fontFamily: selectedLatinObj.family }} className="space-y-1.5 text-foreground" dir="ltr">
+              <div className="flex items-center justify-between text-[14px] font-semibold">
                 <span>Activité 2 : Étude de fonction</span>
                 <span className="text-xs font-normal text-muted-foreground">(p. 42)</span>
               </div>
@@ -200,14 +215,13 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             </div>
           </div>
 
-          {/* Aperçu Arabe */}
-          <div className="rounded-xl border border-border/80 bg-card p-3.5 space-y-2" dir="rtl">
-            <div className="flex items-center justify-between text-xs text-muted-foreground border-b border-border/60 pb-1.5">
+          <div className="settings-surface space-y-2 p-3.5" dir="rtl">
+            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">العربية : {selectedArabicObj.name}</span>
               <Badge variant="outline" className="text-[10px]">{selectedArabicObj.category}</Badge>
             </div>
             <div style={{ fontFamily: selectedArabicObj.family }} className="space-y-1.5 text-foreground">
-              <div className="text-[14px] font-semibold flex items-center justify-between">
+              <div className="flex items-center justify-between text-[14px] font-semibold">
                 <span>نشاط 2: دراسة الدوال وتطبيقات الاشتقاق</span>
                 <span className="text-xs font-normal text-muted-foreground">(ص. 42)</span>
               </div>
@@ -225,7 +239,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 3 : Sélection des Polices du Contenu (Français vs Arabe) ── */}
-      <section className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs">
+      <section className="settings-section-block p-4 sm:p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Type className="h-5 w-5" />
@@ -241,14 +255,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
 
         {/* Onglets de bascule Latin / Arabe */}
-        <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-xl mb-5 w-fit border border-border/70">
+        <div className="mb-5 flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-100/90 p-1 dark:border-zinc-800 dark:bg-zinc-900/80">
           <button
             type="button"
             onClick={() => setActiveTab('latin')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               activeTab === 'latin'
-                ? 'bg-background text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
+                : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
             }`}
           >
             {t('settings.appearance.latinTab')} ({LATIN_FONTS.length})
@@ -258,8 +272,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             onClick={() => setActiveTab('arabic')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               activeTab === 'arabic'
-                ? 'bg-background text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
+                : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
             }`}
           >
             {t('settings.appearance.arabicTab')} ({ARABIC_FONTS.length})
@@ -269,7 +283,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         {/* Grille des polices Latines (Français / Anglais) */}
         {activeTab === 'latin' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {LATIN_FONTS.map(font => {
+            {LATIN_FONTS.map((font, fontIndex) => {
               const isSelected = currentLatinFont === font.id;
               return (
                 <button
@@ -301,7 +315,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
                   <div
                     style={{ fontFamily: font.family }}
-                    className="mt-3.5 pt-2.5 border-t border-border/60 text-foreground text-[13px] leading-snug w-full"
+                    className={`mt-3.5 w-full border-t border-border/60 pt-2.5 text-[13px] font-semibold leading-snug ${LATIN_SAMPLE_COLORS[fontIndex % LATIN_SAMPLE_COLORS.length]}`}
                   >
                     {font.sampleFr}
                   </div>
@@ -314,7 +328,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         {/* Grille des polices Arabes */}
         {activeTab === 'arabic' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" dir="rtl">
-            {ARABIC_FONTS.map(font => {
+            {ARABIC_FONTS.map((font, fontIndex) => {
               const isSelected = currentArabicFont === font.id;
               return (
                 <button
@@ -346,7 +360,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
                   <div
                     style={{ fontFamily: font.family }}
-                    className="mt-3.5 pt-2.5 border-t border-border/60 text-foreground text-[14px] leading-snug w-full"
+                    className={`mt-3.5 w-full border-t border-border/60 pt-2.5 text-[14px] font-semibold leading-snug ${ARABIC_SAMPLE_COLORS[fontIndex % ARABIC_SAMPLE_COLORS.length]}`}
                   >
                     {font.sampleAr}
                   </div>

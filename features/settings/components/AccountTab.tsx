@@ -23,7 +23,7 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <div className="settings-surface relative overflow-hidden p-4 sm:p-5">
                 <div className="flex items-start gap-3.5">
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                         <User className="h-5 w-5 stroke-[2]" />
@@ -46,7 +46,7 @@ export const AccountTab: React.FC = () => {
                 </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <div className="settings-surface relative overflow-hidden p-4 sm:p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-start gap-3.5">
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">

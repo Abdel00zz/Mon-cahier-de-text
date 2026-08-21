@@ -1,8 +1,7 @@
 import React, { useCallback, FC, memo } from 'react';
 import { Indices, ElementType, TopLevelItem } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
-import { EditableCell } from '@/components/ui/EditableCell';
-import { EditableTitle } from '@/components/ui/EditableTitle';
+import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 
 interface TableRowProps {
@@ -12,7 +11,6 @@ interface TableRowProps {
   dateMerge?: DateMergeMeta;
   layout?: 'full' | 'content-only';
   lineClassOverride?: string;
-  onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onToggleSelect: (indices: Indices) => void;
   onDoubleClickEdit?: (indices: Indices) => void;
   isSelected: boolean;
@@ -181,11 +179,10 @@ const RemarkCell: FC<{
   value?: string;
   merge?: DateMergeMeta;
   lineClass: string;
-  onSave: (value: string) => void;
   hasAssignedDate?: boolean;
   isSelected?: boolean;
   hasWarning?: boolean;
-}> = memo(({ value, merge, lineClass, onSave, hasAssignedDate, isSelected, hasWarning }) => {
+}> = memo(({ value, merge, lineClass, hasAssignedDate, isSelected, hasWarning }) => {
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
   
   const bgClass = isSelected 
@@ -205,13 +202,7 @@ const RemarkCell: FC<{
       <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
         {isMiddle && (
           <div className="relative z-10 h-full flex flex-col justify-center w-full">
-            <EditableCell
-              value={value || ''}
-              onSave={onSave}
-              className="w-full h-full p-0.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
-              multiline
-              placeholder=""
-            />
+            <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
           </div>
         )}
       </div>
@@ -220,23 +211,11 @@ const RemarkCell: FC<{
 
   return (
     <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div className="h-full w-full">
-        <EditableCell
-          value={value || ''}
-          onSave={onSave}
-          className="h-full w-full p-0.5 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
-          multiline
-          placeholder=""
-        />
-      </div>
+      <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
     </div>
   );
 });
 RemarkCell.displayName = 'RemarkCell';
-
-/* Remarque intégrée directement dans la colonne Remarque du tableau 3 colonnes. */
-const MobileRemark: FC<{ value?: string; onSave: (value: string) => void }> = () => null;
-MobileRemark.displayName = 'MobileRemark';
 
 const TableRowComponent: FC<TableRowProps> = ({
   data,
@@ -245,7 +224,6 @@ const TableRowComponent: FC<TableRowProps> = ({
   dateMerge,
   layout = 'full',
   lineClassOverride,
-  onCellUpdate,
   onToggleSelect,
   onDoubleClickEdit,
   isSelected,
@@ -374,9 +352,10 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
-            <EditableTitle value={item.title} onSave={value => onCellUpdate(indices, 'title', value)} className={`text-[14.5px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`} />
+            <MathText source={item.title} cacheKey={`row-title-${item.type}-${item.title}`} inline>
+              <span className={`break-words text-[14.5px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
+            </MathText>
           </div>
-          <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
         </div>
       </div>
     );
@@ -410,14 +389,14 @@ const TableRowComponent: FC<TableRowProps> = ({
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </div>
         {contentCell}
-        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
+        <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
       </div>
     );
   }
 
   const contentCell = (
     <div
-      className={`min-w-0 flex-1 px-2 py-1.5 cursor-pointer sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;
@@ -435,10 +414,8 @@ const TableRowComponent: FC<TableRowProps> = ({
         elementType={elementType}
         showDescriptions={showDescriptions}
         descriptionTypes={descriptionTypes}
-        onCellUpdate={onCellUpdate}
         highlight={searchQuery}
       />
-      <MobileRemark value={data.remark} onSave={value => onCellUpdate(indices, 'remark', value)} />
     </div>
   );
 
@@ -475,7 +452,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
       {contentCell}
 
-      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} onSave={value => onCellUpdate(indices, 'remark', value)} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
+      <RemarkCell value={data.remark || ''} merge={dateMerge} lineClass={contentBottomBorder} hasAssignedDate={hasAssignedDate} isSelected={isSelected} hasWarning={hasWarning} />
     </div>
   );
 };

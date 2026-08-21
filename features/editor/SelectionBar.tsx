@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
-  FileText, Pencil, Trash2, X,
+  Pencil, Trash2, X,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -19,13 +19,10 @@ interface SelectionBarProps {
   hasDate: boolean;
   canAdd: boolean;
   canAssignDate: boolean;
-  canDescription: boolean;
-  descriptionLabel?: string;
   onAdd: () => void;
   onAssignDate: () => void;
   onAssignToday?: () => void;
   onClearDate: () => void;
-  onDescription: () => void;
   onEdit?: () => void;
   onDelete: () => void;
   onClear: () => void;
@@ -78,13 +75,10 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   hasDate,
   canAdd,
   canAssignDate,
-  canDescription,
-  descriptionLabel = 'Description',
   onAdd,
   onAssignDate,
   onAssignToday,
   onClearDate,
-  onDescription,
   onEdit,
   onDelete,
   onClear,
@@ -120,7 +114,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   const contentActions: React.ReactNode[] = [];
   if (canAdd) contentActions.push(<ActionButton key="add" icon={Plus} onClick={onAdd} title={t('selection.addAfter')} />);
   if (canEdit && onEdit) contentActions.push(<ActionButton key="edit" icon={Pencil} onClick={onEdit} title={t('selection.edit')} />);
-  if (canDescription) contentActions.push(<ActionButton key="desc" icon={FileText} onClick={onDescription} title={descriptionLabel} />);
   if (contentActions.length > 0) groups.push(<div key="content" className="flex items-center gap-0.5 shrink-0">{contentActions}</div>);
 
   const dateActions: React.ReactNode[] = [];

@@ -1,171 +1,21 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem, ContentDirection } from '@/types';
 import { DateCard, MultiDateCard, DateMergeMeta, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { EditableCell } from '@/components/ui/EditableCell';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, getContentTypesForSubject } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
-import { useDevice } from '@/hooks/useDevice';
-import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
-interface InlineEditRowProps {
-    data: LessonItem;
-    onSave: (updatedData: Partial<LessonItem>) => void;
-    onCancel: () => void;
-    accentColor?: string;
-    /** matière de la classe : restreint les types de contenu proposés */
-    subject?: string;
-    /** garde intelligente : alertes live sur la date saisie (emploi du temps, fériés, vacances, absences) */
-    getDateWarnings?: (date: string) => { type: string; message: string }[];
-}
-
-const ALL_LESSON_TYPE_OPTIONS = [...new Set(Object.values(TYPE_MAP))].sort((a, b) => a.localeCompare(b));
-
-const resolveLessonTypeOptions = (subject: string | undefined, currentType: string | undefined): string[] => {
-    const base = subject ? getContentTypesForSubject(subject) : ALL_LESSON_TYPE_OPTIONS;
-    const set = new Set<string>(base);
-    // garde l'ancien type visible même s'il n'appartient pas au domaine courant
-    if (currentType && !set.has(currentType)) set.add(currentType);
-    return [...set].sort((a, b) => a.localeCompare(b));
-};
-
-const EDITABLE_FIELDS = ['date', 'type', 'number', 'page', 'title', 'description', 'remark'] as const;
-
-const InlineEditRow: React.FC<InlineEditRowProps> = ({ data, onSave, onCancel, subject, getDateWarnings }) => {
-    const { t } = useLocale();
-    const device = useDevice();
-    const [formData, setFormData] = useState<Partial<LessonItem>>(data);
-    const titleRef = useRef<HTMLInputElement>(null);
-    const rootRef = useRef<HTMLFormElement>(null);
-    const isCompact = device.type === 'phone' && device.isPortrait;
-
-    useEffect(() => {
-        titleRef.current?.focus();
-        titleRef.current?.select();
-        // garde le formulaire visible même s'il était en bord de fenêtre
-        rootRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }, []);
-
-    // Détection de modification : annuler/enregistrer sans changement ne
-    // pollue pas l'historique undo/redo ni la file de synchronisation.
-    const isDirty = React.useMemo(
-        () => EDITABLE_FIELDS.some(field => (formData[field] ?? '') !== ((data as any)[field] ?? '')),
-        [formData, data]
-    );
-
-    // Alertes intelligentes recalculées quand la date change dans le formulaire.
-    const dateWarnings = React.useMemo(
-        () => (getDateWarnings && formData.date && formData.date !== data.date ? getDateWarnings(formData.date) : []),
-        [getDateWarnings, formData.date, data.date]
-    );
-
-    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    }, []);
-
-    const handleSave = (e: React.MouseEvent | React.FormEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (!isDirty) {
-            onCancel(); // rien n'a changé : fermeture propre, zéro écriture
-            return;
-        }
-        onSave(formData);
-    };
-
-    const handleCancel = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onCancel();
-    };
-
-    return (
-        <form
-            ref={rootRef}
-            className={cn(
-                'mx-0 my-0 grid gap-2 bg-transparent px-0 py-1 animate-fade-in duration-200',
-                isCompact ? 'grid-cols-1' : 'sm:grid-cols-[minmax(6rem,auto)_1fr] md:grid-cols-[minmax(7rem,0.18fr)_1fr_minmax(8rem,0.18fr)]',
-            )}
-            onSubmit={handleSave}
-            onClick={e => e.stopPropagation()}
-            onKeyDown={(event) => {
-                if (event.key === 'Escape') onCancel();
-                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') onSave(event);
-            }}
-        >
-            <div className="flex flex-row items-center justify-center gap-1.5 sm:flex-col sm:justify-start sm:pt-1">
-                <Input type="date" name="date" value={formData.date || ''} onChange={handleChange} className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-muted/60 px-2 text-center text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 font-mono sm:h-10 sm:w-full sm:text-sm" />
-                {formData.date && (
-                    <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, date: '' }))}
-                        className="shrink-0 text-[9px] font-semibold text-muted-foreground/60 hover:text-destructive transition-colors"
-                    >
-                        {t('editor.unassignDate')}
-                    </button>
-                )}
-            </div>
-            <div className="min-w-0 space-y-2">
-                <div className="flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_0.6fr_0.7fr] sm:gap-2">
-                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })} required>
-                      <SelectTrigger className="h-9 flex-1 rounded-lg border-0 bg-muted/60 text-xs text-foreground focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm">
-                        <SelectValue placeholder={t('editor.type')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {resolveLessonTypeOptions(subject, formData.type as string | undefined).map(type => <SelectItem key={type} value={type}>{t(`contentType.${type}`)}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Input type="text" name="number" value={formData.number || ''} onChange={handleChange} placeholder="N°" className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
-                    <Input type="text" name="page" value={formData.page || ''} onChange={handleChange} placeholder={t('editor.page')} className="h-9 rounded-lg border-0 bg-muted/60 px-2 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
-                </div>
-                <Input ref={titleRef} type="text" name="title" value={formData.title || ''} onChange={handleChange} placeholder={t('editor.title')} className="h-9 rounded-lg border-0 bg-muted/60 px-2.5 text-xs font-bold text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:h-10 sm:text-sm" />
-                <Textarea name="description" rows={2} value={formData.description || ''} onChange={handleChange} className="min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.description')} />
-
-                {/* Garde intelligente : conflits de date affichés dans le formulaire */}
-                {dateWarnings.length > 0 && (
-                    <div className="space-y-0.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1.5" role="status">
-                        {dateWarnings.map((warning, i) => (
-                            <p key={i} className="text-[11px] font-semibold leading-snug text-warning-strong">⚠ {warning.message}</p>
-                        ))}
-                    </div>
-                )}
-
-                <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground/70">
-                    <span className="hidden items-center gap-1.5 sm:inline-flex font-medium">
-                        <kbd className="rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">Esc</kbd> {t('common.cancel')}
-                        <kbd className="ms-2 rounded-md bg-muted/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘+↵</kbd> {t('toolbar.save')}
-                    </span>
-                    <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
-                        <Button type="button" onClick={handleCancel} variant="secondary" size="sm" className="min-h-10">{t('common.cancel')}</Button>
-                        <Button type="submit" variant="default" size="sm" className="min-h-10" disabled={!isDirty}>
-                            {isDirty ? t('common.save') : t('common.noChanges')}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-            <div className="flex min-w-0 items-stretch">
-                <Textarea name="remark" rows={2} value={formData.remark || ''} onChange={handleChange} className="h-full min-h-14 resize-y rounded-lg border-0 bg-muted/60 px-2.5 py-1.5 text-xs text-foreground placeholder-muted-foreground/50 focus:bg-muted focus:ring-2 focus:ring-primary/30 sm:text-sm" placeholder={t('editor.remark')} />
-            </div>
-        </form>
-    );
-};
-
 interface MainTableProps {
   lessonsData: LessonsData;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
-  /** matière de la classe : restreint les types de contenu proposés */
-  subject?: string;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onDeleteSeparator: (indices: Indices) => void;
   onOpenAddContentModal: (indices?: Indices) => void;
@@ -173,10 +23,7 @@ interface MainTableProps {
   descriptionTypes?: string[];
   selectedKeys: ReadonlySet<string>;
   onToggleSelect: (indices: Indices) => void;
-  editingIndices: Indices | null;
-  onInitiateInlineEdit: (indices: Indices) => void;
-  onConfirmInlineEdit: (indices: Indices, updatedData: Partial<LessonItem>) => void;
-  onCancelInlineEdit: () => void;
+  onOpenContentEditor: (indices: Indices) => void;
   newlyAddedIds: string[];
   /** garde intelligente : alertes live sur la date saisie */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
@@ -396,7 +243,6 @@ interface SessionGroupRowProps {
     items: FlatDataItem[];
     selectedKeys: ReadonlySet<string>;
     newlyAddedIds: string[];
-    onCellUpdate: (indices: Indices, field: string, value: any) => void;
     onToggleSelect: (indices: Indices) => void;
     onDoubleClickEdit?: (indices: Indices) => void;
     showDescriptions?: boolean;
@@ -409,7 +255,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     items,
     selectedKeys,
     newlyAddedIds,
-    onCellUpdate,
     onToggleSelect,
     onDoubleClickEdit,
     showDescriptions,
@@ -430,10 +275,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         : hasWarning
             ? 'border-e border-warning/45'
             : 'border-e border-border/90';
-
-    const saveSharedRemark = (value: string) => {
-        items.forEach(item => onCellUpdate(item.indices, 'remark', value));
-    };
 
     return (
         <div
@@ -467,7 +308,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             dateMerge={item.dateMerge}
                             lineClassOverride={isLast ? '' : 'border-b border-border/40'}
                             layout="content-only"
-                            onCellUpdate={onCellUpdate}
                             onToggleSelect={onToggleSelect}
                             onDoubleClickEdit={onDoubleClickEdit}
                             isSelected={isSelected}
@@ -484,25 +324,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             <div className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
-                        <EditableCell
-                            value={sharedRemark}
-                            onSave={saveSharedRemark}
-                            className="h-full w-full p-0.5 sm:p-1 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
-                            multiline
-                            placeholder=""
-                        />
+                        <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{sharedRemark}</div>
                     </div>
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map(item => (
                             <div key={item.key} className="min-h-[40px] p-0.5 sm:p-1">
-                                <EditableCell
-                                    value={getMergeableRemark(item)}
-                                    onSave={value => onCellUpdate(item.indices, 'remark', value)}
-                                    className="h-full w-full p-0.5 sm:p-1 text-[10px] sm:text-[11px] text-muted-foreground font-semibold font-sans"
-                                    multiline
-                                    placeholder=""
-                                />
+                                <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{getMergeableRemark(item)}</div>
                             </div>
                         ))}
                     </div>
@@ -571,26 +399,21 @@ const EmptyState: React.FC<{
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
   contentDirection,
-  subject,
   onOpenAddContentModal,
   showDescriptions,
   descriptionTypes = [],
   selectedKeys,
   onToggleSelect,
-  editingIndices,
   newlyAddedIds,
   onCellUpdate,
   onDeleteSeparator,
-  onInitiateInlineEdit,
-  onConfirmInlineEdit,
-  onCancelInlineEdit,
+  onOpenContentEditor,
   getDateWarnings,
   searchQuery,
   focusKey,
   predefinedProgramTitle,
   onLoadPredefined,
 }) => {
-  const editingKey = editingIndices ? makeKey(editingIndices) : null;
   const flatData = useMemo(() => {
     const result: FlatDataItem[] = [];
 
@@ -656,18 +479,14 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
 
         if (item.dateMerge?.isMerged && item.dateMerge.isStart) {
             const group = flatData.slice(index, index + item.dateMerge.count);
-            const containsEditedRow = editingKey !== null && group.some(groupItem => groupItem.key === editingKey);
-
-            if (!containsEditedRow) {
-                rows.push({
-                    kind: 'session',
-                    items: group,
-                    key: `session-${item.key}`,
-                    flatIndex: index,
-                });
-                index += item.dateMerge.count - 1;
-                continue;
-            }
+            rows.push({
+                kind: 'session',
+                items: group,
+                key: `session-${item.key}`,
+                flatIndex: index,
+            });
+            index += item.dateMerge.count - 1;
+            continue;
         }
 
         rows.push({
@@ -679,21 +498,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     }
 
     return rows;
-  }, [flatData, editingKey]);
-
-  // La virtualisation reste ACTIVE pendant l'édition : la ligne éditée est
-  // simplement « épinglée » (keepIndices) pour ne jamais être démontée.
-  // Avant, éditer dans un gros cahier désactivait la virtualisation et
-  // re-rendait toutes les lignes d'un coup.
-  const editingIndex = useMemo(
-    () => (editingKey === null ? -1 : renderRows.findIndex(row => (
-        row.kind === 'single'
-            ? row.item.key === editingKey
-            : row.items.some(item => item.key === editingKey)
-    ))),
-    [editingKey, renderRows]
-  );
-  const keepIndices = useMemo(() => (editingIndex >= 0 ? [editingIndex] : []), [editingIndex]);
+  }, [flatData]);
 
   const shouldVirtualize = renderRows.length > VIRTUALIZATION_THRESHOLD;
   const { scrollRef, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
@@ -701,7 +506,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     enabled: shouldVirtualize,
     estimateSize: ESTIMATED_ROW_HEIGHT,
     overscan: VIRTUAL_OVERSCAN,
-    keepIndices,
   });
 
   useEffect(() => {
@@ -789,9 +593,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   items={row.items}
                                   selectedKeys={selectedKeys}
                                   newlyAddedIds={newlyAddedIds}
-                                  onCellUpdate={onCellUpdate}
                                   onToggleSelect={onToggleSelect}
-                                  onDoubleClickEdit={onInitiateInlineEdit}
+                                  onDoubleClickEdit={onOpenContentEditor}
                                   showDescriptions={showDescriptions}
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
@@ -819,22 +622,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       );
                   }
 
-                  const isEditing = editingKey !== null && editingKey === item.key;
-
-                  if (isEditing && item.elementType === 'item') {
-                      return (
-                          <VirtualListRow key={`${item.key}-edit`} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
-                          <InlineEditRow
-                              data={item.data as LessonItem}
-                              onSave={(updatedData) => onConfirmInlineEdit(item.indices, updatedData)}
-                              onCancel={onCancelInlineEdit}
-                              subject={subject}
-                              getDateWarnings={getDateWarnings}
-                          />
-                          </VirtualListRow>
-                      );
-                  }
-
                   const isSelected = selectedKeys.has(item.key);
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
 
@@ -845,9 +632,8 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               indices={item.indices}
                               elementType={item.elementType}
                               dateMerge={item.dateMerge}
-                              onCellUpdate={onCellUpdate}
                               onToggleSelect={onToggleSelect}
-                              onDoubleClickEdit={onInitiateInlineEdit}
+                              onDoubleClickEdit={onOpenContentEditor}
                               isSelected={isSelected}
                               isNew={isNew}
                               showDescriptions={showDescriptions}

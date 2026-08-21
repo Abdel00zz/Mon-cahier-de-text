@@ -25,7 +25,7 @@ import {
   ArrowLeft,
 } from '@/components/ui/icons';
 import { computeProgressionStats } from '@/utils/progression';
-import { getNewDates, readPrintMeta } from '@/utils/printMeta';
+import { getNewDates } from '@/utils/printMeta';
 import { JournalEntry, opLabel, readJournal, timeAgo } from '@/utils/journal';
 import {
   ClassSignal,
@@ -140,7 +140,6 @@ interface ClassOverview {
   sessionsCount: number;
   lastDate: string | null;
   toPrintCount: number;
-  lastPrintedAt: string | null;
 }
 
 interface ActivityEntry extends JournalEntry {
@@ -253,7 +252,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const classOverviews = useMemo<ClassOverview[]>(() => classes.map(classInfo => {
     const lessons = readClassLessons(classInfo.id);
     const stats = computeProgressionStats(lessons);
-    const printMeta = readPrintMeta(classInfo.id);
     return {
       classInfo,
       className: formatLocalizedClassDisplayName(classInfo.name, locale),
@@ -261,7 +259,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       sessionsCount: stats.sessionsCount,
       lastDate: stats.lastDate,
       toPrintCount: getNewDates(lessons, classInfo.id).length,
-      lastPrintedAt: printMeta.lastPrintedAt,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [classes, feed, locale]);
@@ -280,6 +277,14 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const filteredIgnored = ignoredCorrections;
   const filteredOfficial = officialEvents;
   const filteredOverviews = classOverviews;
+  const rankedOverviews = [...filteredOverviews].sort((left, right) =>
+    right.completionRate - left.completionRate
+    || right.sessionsCount - left.sessionsCount
+    || left.className.localeCompare(right.className, localeCode(locale))
+  );
+  const averageCompletionRate = rankedOverviews.length > 0
+    ? Math.round(rankedOverviews.reduce((total, item) => total + item.completionRate, 0) / rankedOverviews.length)
+    : 0;
   const activitySource = allActivityEntries.slice(0, 50);
   const filteredActivity = activityFilter === 'all'
     ? activitySource
@@ -847,9 +852,9 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
                 {/* 4. SECTION : CLASSES */}
                 {activeAxis === 'classes' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between pb-1">
-                      <div>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-3">
+                      <div className="min-w-0">
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
                           <GraduationCap className="h-4 w-4 text-[#423ed8]" />
                           {t('notifications.classes')}
@@ -858,52 +863,64 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           {t('notifications.classesHint')}
                         </p>
                       </div>
+                      {rankedOverviews.length > 0 && (
+                        <span className="shrink-0 pt-0.5 font-mono text-[10px] font-extrabold tabular-nums text-muted-foreground">
+                          {t('notifications.averageProgress', { value: averageCompletionRate })}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {filteredOverviews.map(overview => (
-                        <button
-                          key={overview.classInfo.id}
-                          onClick={() => openClassById(overview.classInfo.id)}
-                          className="flex flex-col justify-between rounded-2xl bg-card p-4 border border-border text-card-foreground shadow-2xs hover:border-[#423ed8]/50 text-start transition-all cursor-pointer group"
-                        >
-                          <div>
-                            <div className="mb-2 flex items-center justify-between gap-2">
-                              <div className="flex min-w-0 items-center gap-2">
-                                <ClassIdentityIcon classInfo={overview.classInfo} fallback={GraduationCap} compact />
-                                <h3 className="truncate text-xs font-bold text-foreground transition-colors group-hover:text-[#423ed8]">
-                                  {overview.className}
-                                </h3>
+                    {rankedOverviews.length === 0 ? (
+                      <EmptyState
+                        title={t('notifications.emptyClassesTitle')}
+                        description={t('notifications.emptyClassesDescription')}
+                      />
+                    ) : (
+                      <div className="divide-y divide-border/60">
+                        {rankedOverviews.map(overview => {
+                          const visual = getClassVisual(overview.classInfo.name);
+                          const completionRate = Math.min(100, Math.max(0, overview.completionRate));
+                          return (
+                            <button
+                              key={overview.classInfo.id}
+                              type="button"
+                              onClick={() => openClassById(overview.classInfo.id)}
+                              className="group block w-full py-4 text-start outline-none transition-colors hover:bg-muted/25 focus-visible:bg-muted/35 sm:px-1"
+                            >
+                              <h3 className="truncate text-xs font-extrabold text-foreground transition-colors group-hover:text-[#423ed8]">
+                                {overview.className}
+                              </h3>
+
+                              <div className="mt-2 flex items-center gap-2.5">
+                                <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-[3px] bg-muted dark:bg-zinc-800">
+                                  <div
+                                    className={cn('h-full rounded-[3px] transition-[width] duration-500', visual.frameBg)}
+                                    style={{ width: `${completionRate}%` }}
+                                  />
+                                </div>
+                                <span className="w-11 shrink-0 text-end font-mono text-[11px] font-black tabular-nums text-foreground">
+                                  {completionRate}%
+                                </span>
                               </div>
-                              <span className="text-sm font-extrabold text-blue-600 dark:text-blue-400">
-                                {overview.completionRate}%
-                              </span>
-                            </div>
 
-                            <div className="h-1.5 w-full rounded-full bg-muted dark:bg-zinc-800 overflow-hidden mb-3">
-                              <div
-                                className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, Math.max(0, overview.completionRate))}%` }}
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                              <span>{t('notifications.sessionCount', { count: overview.sessionsCount })}</span>
-                              <span>{t('notifications.lastSession', { date: overview.lastDate ? formatLocalizedDate(overview.lastDate, locale) : '—' })}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2.5 flex items-center justify-between text-[11px]">
-                            <span className={cn('font-semibold', overview.toPrintCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
-                              {overview.toPrintCount > 0 ? t('notifications.toPrint', { count: overview.toPrintCount }) : t('notifications.printUpToDate')}
-                            </span>
-                            <span className="text-muted-foreground text-[10px]">
-                              {overview.lastPrintedAt ? t('notifications.printedAgo', { when: timeAgo(overview.lastPrintedAt, locale) }) : t('notifications.notPrinted')}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] leading-snug text-muted-foreground">
+                                <span className="font-semibold text-foreground/80">
+                                  {t('notifications.sessionCount', { count: overview.sessionsCount })}
+                                </span>
+                                <span>
+                                  {t('notifications.lastSession', { date: overview.lastDate ? formatLocalizedDate(overview.lastDate, locale) : '—' })}
+                                </span>
+                                <span className={cn('ms-auto font-semibold', overview.toPrintCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground')}>
+                                  {overview.toPrintCount > 0
+                                    ? t('notifications.toPrint', { count: overview.toPrintCount })
+                                    : t('notifications.printUpToDate')}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 

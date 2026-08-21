@@ -235,7 +235,6 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 isPrint={true} 
                 showDescriptions={config.printDescriptionMode === 'all' ? true : config.printDescriptionMode === 'none' ? false : undefined}
                 descriptionTypes={config.printDescriptionTypes}
-                onCellUpdate={() => {}}
             />
         </MathJax>
     );

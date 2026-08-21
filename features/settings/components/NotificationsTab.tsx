@@ -31,7 +31,7 @@ const PushActivationCard: React.FC<{
     // Cas informatifs (aucune action possible)
     if (!supported || iosNeedsInstall) {
         return (
-            <div className="flex items-start gap-3.5 rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl">
+            <div className="settings-surface flex items-start gap-3.5 p-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground">
                     {iosNeedsInstall ? <Download className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                 </span>
@@ -63,7 +63,7 @@ const PushActivationCard: React.FC<{
     // Activé : état de succès + test + désactivation.
     if (active) {
         return (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <div className="settings-surface p-4 sm:p-5">
                 <div className="flex items-start gap-3.5">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <Check className="h-5 w-5 stroke-[2.5]" />
@@ -98,7 +98,7 @@ const PushActivationCard: React.FC<{
     // À activer : le vrai CTA (permission + abonnement en un geste).
     const label = permission === 'granted' ? t('notifications.finalizeReminders') : t('notifications.enableReminders');
     return (
-        <div className="rounded-2xl border border-indigo-500/25 bg-gradient-to-br from-indigo-500/10 via-violet-500/5 to-purple-500/10 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+        <div className="settings-surface p-4 sm:p-5">
             <div className="flex items-start gap-3.5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_10px_rgba(99,102,241,0.35)]">
                     <Bell className="h-5 w-5" />
@@ -133,7 +133,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     hint,
     disabled,
 }) => (
-    <div className={`flex items-start justify-between gap-3 rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl ${disabled ? 'opacity-60' : ''}`}>
+    <div className={`settings-surface flex items-start justify-between gap-3 p-4 ${disabled ? 'opacity-60' : ''}`}>
         <div className="flex flex-col text-start">
             <Label className="text-xs font-bold text-foreground font-sans leading-none">{label}</Label>
             {hint && <span className="mt-1.5 block text-xs text-muted-foreground font-sans leading-normal">{hint}</span>}
@@ -151,7 +151,7 @@ const NotificationKind: React.FC<{
     label: string;
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-background/70 p-2.5 shadow-xs border border-white/[0.12] dark:border-white/[0.08]">
+    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-zinc-100 p-2.5 shadow-none dark:bg-zinc-800/80">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
             <Icon className="h-4 w-4" />
         </span>
@@ -228,7 +228,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 t={t}
             />
 
-            <div className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <div className="settings-section-block p-4 sm:p-5">
                 <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     {t('notifications.nativeDescription')}
@@ -261,7 +261,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl flex flex-col justify-between">
+                <label className="settings-surface flex flex-col justify-between p-4">
                     <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.delayThreshold')}</span>
                     <select
                         value={settings.gapThreshold}
@@ -275,7 +275,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                         ))}
                     </select>
                 </label>
-                <label className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 shadow-xs backdrop-blur-xl flex flex-col justify-between">
+                <label className="settings-surface flex flex-col justify-between p-4">
                     <span className="block text-xs font-bold text-foreground font-sans">{t('notifications.inactivity')}</span>
                     <select
                         value={settings.inactivityThresholdDays}
@@ -294,7 +294,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 onChange={v => patch({ quietDuringVacations: v })}
             />
 
-            {message && <p className="rounded-xl bg-card/85 border border-white/[0.12] dark:border-white/[0.08] px-3.5 py-2.5 text-xs font-bold text-foreground shadow-xs backdrop-blur-xl">{message}</p>}
+            {message && <p className="settings-surface px-3.5 py-2.5 text-xs font-bold text-foreground">{message}</p>}
 
             <AbsencesSection
                 absences={config.absences ?? []}
@@ -329,7 +329,7 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+        <div className="settings-section-block p-4 sm:p-5">
             <h4 className="text-xs font-bold text-foreground">{t('notifications.absences')}</h4>
             <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground font-sans">
                 {t('notifications.absencesHint')}
@@ -340,7 +340,7 @@ const AbsencesSection: React.FC<{
                     {absences.map((absence, index) => (
                         <li
                             key={`${absence.debut}-${index}`}
-                            className="flex items-center justify-between gap-2 rounded-xl bg-background/80 border border-white/[0.12] dark:border-white/[0.08] px-3 py-2 text-xs shadow-xs"
+                            className="settings-surface flex items-center justify-between gap-2 px-3 py-2 text-xs"
                         >
                             <span className="font-bold text-foreground font-sans">
                                 {formatDateDDMMYYYY(absence.debut)}

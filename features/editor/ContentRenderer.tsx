@@ -2,8 +2,6 @@ import React from 'react';
 import { MathText } from '@/components/ui/math-text';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
-import { EditableTitle } from '@/components/ui/EditableTitle';
-import { EditableCell } from '@/components/ui/EditableCell';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
@@ -14,7 +12,6 @@ interface ContentRendererProps {
   data: any;
   indices: Indices;
   elementType: ElementType;
-  onCellUpdate: (indices: Indices, field: string, value: any) => void;
   isPrint?: boolean;
   showDescriptions?: boolean; // explicit on/off. If undefined, use descriptionTypes (custom mode)
   descriptionTypes?: string[];
@@ -26,11 +23,26 @@ const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; c
   <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
 );
 
-export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, onCellUpdate, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
+const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, query }) => {
+  const needle = query?.trim();
+  if (!needle) return <>{text}</>;
+  const parts: React.ReactNode[] = [];
+  const source = text.toLocaleLowerCase();
+  const target = needle.toLocaleLowerCase();
+  let cursor = 0;
+  let match = source.indexOf(target);
+  while (match >= 0) {
+    if (match > cursor) parts.push(text.slice(cursor, match));
+    parts.push(<mark key={`${match}-${target}`} className="rounded-sm bg-warning/30 px-0.5 text-inherit">{text.slice(match, match + needle.length)}</mark>);
+    cursor = match + needle.length;
+    match = source.indexOf(target, cursor);
+  }
+  if (cursor < text.length) parts.push(text.slice(cursor));
+  return <>{parts}</>;
+};
+
+export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
   const { t } = useLocale();
-  const handleUpdate = (field: string) => (value: string) => {
-    onCellUpdate(indices, field, value);
-  };
   
   if (elementType in TOP_LEVEL_TYPE_CONFIG) {
     const item = data as TopLevelItem;
@@ -116,7 +128,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
           <div className="flex w-full items-center justify-center py-2 sm:py-2.5 text-center font-bold text-[15px] sm:text-base font-extrabold tracking-tight text-red-700">
-            <EditableTitle value={item.title} onSave={handleUpdate('title')} />
+            <HighlightedText text={item.title} query={highlight} />
           </div>
         </MaybeMathJax>
       );
@@ -127,7 +139,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div className={`text-[14.5px] sm:text-base font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
-            <EditableTitle value={item.title} onSave={handleUpdate('title')} />
+            <HighlightedText text={item.title} query={highlight} />
         </div>
       </MaybeMathJax>
     );
@@ -140,7 +152,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
             <div className="text-[13.5px] sm:text-base font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
-                <EditableTitle value={data.name} onSave={handleUpdate('name')} />
+                <HighlightedText text={data.name} query={highlight} />
             </div>
         </MaybeMathJax>
       );
@@ -149,7 +161,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
             <div className="text-[12px] sm:text-sm font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
-                <EditableTitle value={data.name} onSave={handleUpdate('name')} />
+                <HighlightedText text={data.name} query={highlight} />
             </div>
         </MaybeMathJax>
       );
@@ -159,7 +171,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
             <div className="text-[11px] sm:text-sm italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
-                <EditableTitle value={data.name} onSave={handleUpdate('name')} />
+                <HighlightedText text={data.name} query={highlight} />
             </div>
         </MaybeMathJax>
       );
@@ -192,7 +204,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const content = (
         <div className="max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-muted-foreground">
           {/* Titre */}
-          <EditableCell value={item.title || ''} onSave={handleUpdate('title')} className="font-semibold text-[12.5px] sm:text-sm text-foreground p-0" placeholder={t('editor.titlePlaceholder')} highlight={highlight} />
+          <div className="min-h-5 break-words p-0 text-[12.5px] font-semibold text-foreground sm:text-sm">
+            {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
+          </div>
 
           {/* Description : encadré sobre sous le titre */}
           {allowDescription && (
@@ -205,7 +219,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           {item.page && (
             <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground italic">
               <span>(p.</span>
-              <EditableCell value={String(item.page || '')} onSave={handleUpdate('page')} className="p-0" placeholder={t('editor.pagePlaceholder')} />
+              <span>{String(item.page)}</span>
               <span>)</span>
             </div>
           )}

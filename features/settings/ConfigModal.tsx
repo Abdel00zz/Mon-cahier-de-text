@@ -201,7 +201,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+    <section className="settings-section-block relative overflow-hidden p-4 sm:p-5">
       <div className="mb-4 text-center">
         <h3 className="text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
@@ -271,7 +271,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* 1. Profil & Matière */}
-            <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <section className="settings-section-block relative overflow-hidden p-4 sm:p-5">
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                   <User className="h-5 w-5 stroke-[2.2]" />
@@ -353,7 +353,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="relative overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl">
+            <section className="settings-section-block relative overflow-hidden p-4 sm:p-5">
               <header className="flex items-center gap-3 mb-4 pb-3 border-b border-border/50">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
                   <School className="h-5 w-5 stroke-[2.2]" />
@@ -541,7 +541,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-5 shadow-xs backdrop-blur-xl">
+              <div className="settings-surface flex flex-col justify-between p-5">
                 <div>
                   <h4 className="text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -557,7 +557,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </Button>
               </div>
 
-              <div className="flex flex-col justify-between rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-5 shadow-xs backdrop-blur-xl">
+              <div className="settings-surface flex flex-col justify-between p-5">
                 <div>
                   <h4 className="text-sm font-bold text-foreground font-bold tracking-tight mb-1">{t('settings.importTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -610,7 +610,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* Premium Card */}
-            <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-violet-500/5 to-purple-500/10 p-5 backdrop-blur-xl shadow-xs">
+            <div className="settings-surface p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_10px_rgba(99,102,241,0.35)] shrink-0">
@@ -629,7 +629,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* List of actions */}
-            <div className="divide-y divide-border/50 overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 backdrop-blur-xl">
+            <div className="settings-surface divide-y divide-border/50 overflow-hidden">
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
@@ -696,7 +696,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             type="button"
             variant="outline"
             onClick={() => logout()}
-            className="h-10 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 border-destructive/30 hover:border-destructive/60 transition-all cursor-pointer shadow-xs gap-2"
+            className="h-10 rounded-lg border border-destructive/45 bg-transparent px-4 text-xs font-bold text-destructive shadow-none transition-colors hover:border-destructive/70 hover:bg-destructive/[0.06] hover:text-destructive cursor-pointer gap-2"
           >
             <LogOut className="h-4 w-4" />
             {t('account.signOut')}
@@ -767,16 +767,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     ? 'justify-center p-2'
                     : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'bg-gradient-to-r from-indigo-500/15 via-indigo-500/10 to-violet-500/10 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_12px_rgba(99,102,241,0.12)] border border-indigo-500/30'
-                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
+                    ? 'border border-zinc-300 bg-zinc-200/85 text-zinc-950 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50'
+                    : 'border border-transparent bg-zinc-100/75 text-zinc-600 hover:border-zinc-200 hover:bg-zinc-200/70 hover:text-zinc-950 dark:bg-zinc-900/55 dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)] scale-105'
-                      : 'bg-muted/60 text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 group-hover:scale-105'
+                      ? 'bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'bg-zinc-200/80 text-zinc-500 group-hover:bg-zinc-300/80 group-hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:group-hover:bg-zinc-700 dark:group-hover:text-zinc-100'
                   )}
                 >
                   <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
@@ -815,16 +815,16 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     ? 'justify-center p-2'
                     : 'justify-start gap-3 px-3.5 py-2.5 text-start',
                   isActive
-                    ? 'bg-gradient-to-r from-indigo-500/15 via-indigo-500/10 to-violet-500/10 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_12px_rgba(99,102,241,0.12)] border border-indigo-500/30'
-                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent'
+                    ? 'border border-zinc-300 bg-zinc-200/85 text-zinc-950 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50'
+                    : 'border border-transparent bg-zinc-100/75 text-zinc-600 hover:border-zinc-200 hover:bg-zinc-200/70 hover:text-zinc-950 dark:bg-zinc-900/55 dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)] scale-105'
-                      : 'bg-muted/60 text-muted-foreground group-hover:bg-indigo-500/10 group-hover:text-indigo-500 group-hover:scale-105'
+                      ? 'bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'bg-zinc-200/80 text-zinc-500 group-hover:bg-zinc-300/80 group-hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:group-hover:bg-zinc-700 dark:group-hover:text-zinc-100'
                   )}
                 >
                   <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
@@ -848,7 +848,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   if (asPage) {
     const BackIcon = isRtl ? ArrowRight : ArrowLeft;
     return (
-      <div className="rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-background/60">
+      <div className="settings-density rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-zinc-50/80 dark:bg-zinc-950/80">
         {/* Ambient Colorful Glows */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
           <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-600/15 blur-3xl opacity-40" />
@@ -873,7 +873,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Sidebar gauche : Menu des rubriques */}
             <div
               className={cn(
-                'bg-card/85 border border-white/[0.12] dark:border-white/[0.08] rounded-3xl p-3 shadow-xs backdrop-blur-xl transition-all duration-300',
+                'bg-zinc-100/80 border border-zinc-200/80 dark:border-zinc-800 dark:bg-zinc-950/75 rounded-3xl p-3 shadow-xs backdrop-blur-xl transition-all duration-300',
                 isEffectiveCollapsed
                   ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                   : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -886,7 +886,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Panneau droit : Contenu de la rubrique sélectionnée */}
             <div
               className={cn(
-                'flex flex-col bg-card/90 border border-white/[0.12] dark:border-white/[0.08] rounded-3xl p-4 sm:p-6 shadow-xs backdrop-blur-xl min-h-[520px] transition-all duration-300 text-card-foreground',
+                'settings-content-zone flex min-h-[520px] flex-col rounded-3xl border border-zinc-200/80 bg-zinc-100/80 p-4 text-card-foreground shadow-none transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-900/65 sm:p-6',
                 isEffectiveCollapsed
                   ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                   : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
@@ -909,6 +909,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeCategory}
+                    className="settings-page-content"
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
@@ -947,7 +948,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       }
       description={t('settings.description')}
       maxWidth="5xl"
-      className="relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-white/[0.12] dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl"
+      className="settings-density relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-white/[0.12] dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl"
       headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
     >
@@ -964,7 +965,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
         <div
           className={cn(
-            'md:col-span-7 lg:col-span-8 flex flex-col',
+            'settings-content-zone md:col-span-7 lg:col-span-8 flex flex-col rounded-2xl bg-zinc-100/75 p-4 dark:bg-zinc-900/65',
             isRtl ? 'pr-0 md:pr-2' : 'pl-0 md:pl-2',
             !mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
@@ -973,6 +974,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCategory}
+                className="settings-page-content"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}

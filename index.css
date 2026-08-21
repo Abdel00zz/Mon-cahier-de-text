@@ -100,7 +100,7 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
 
-    --content-font-latin: 'Itim', cursive, sans-serif;
+    --content-font-latin: 'Fira Sans', sans-serif;
     --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
   }
 
@@ -226,7 +226,7 @@
   [data-content-direction="ltr"] .content-cell-font,
   [data-content-direction="ltr"] [data-row-content="true"],
   .content-font-latin {
-    font-family: var(--content-font-latin, 'Itim', cursive, sans-serif);
+    font-family: var(--content-font-latin, 'Fira Sans', sans-serif);
   }
 
   [data-content-direction="rtl"] .content-cell-font,
@@ -289,6 +289,96 @@
   button, a, input, select, textarea, [role="button"] {
     touch-action: manipulation;
   }
+}
+
+/* Densité typographique propre à Paramètres : réduction uniforme de 15 %,
+   avec un plancher à 9 px pour conserver la lisibilité des micro-libellés. */
+.settings-density {
+  font-size: 0.85rem;
+}
+
+.settings-density .text-2xl { font-size: 1.275rem !important; }
+.settings-density .text-xl { font-size: 1.0625rem !important; }
+.settings-density .text-lg { font-size: 0.95625rem !important; }
+.settings-density .text-base { font-size: 0.85rem !important; }
+.settings-density .text-sm { font-size: 0.74375rem !important; }
+.settings-density .text-xs { font-size: 0.6375rem !important; }
+.settings-density .text-\[18px\] { font-size: 15.3px !important; }
+.settings-density .text-\[16px\] { font-size: 13.6px !important; }
+.settings-density .text-\[15px\] { font-size: 12.75px !important; }
+.settings-density .text-\[14\.5px\] { font-size: 12.3px !important; }
+.settings-density .text-\[14px\] { font-size: 11.9px !important; }
+.settings-density .text-\[13\.5px\] { font-size: 11.5px !important; }
+.settings-density .text-\[13px\] { font-size: 11.05px !important; }
+.settings-density .text-\[12\.5px\] { font-size: 10.6px !important; }
+.settings-density .text-\[12px\] { font-size: 10.2px !important; }
+.settings-density .text-\[11\.5px\] { font-size: 9.8px !important; }
+.settings-density .text-\[11px\] { font-size: 9.35px !important; }
+.settings-density .text-\[10\.5px\],
+.settings-density .text-\[10px\],
+.settings-density .text-\[9\.5px\],
+.settings-density .text-\[9px\] { font-size: 9px !important; }
+
+/* Architecture des pages Paramètres : une zone de données grise continue,
+   des groupes plats, puis uniquement les surfaces interactives en blanc. */
+.settings-content-zone {
+  background-color: rgb(244 244 245 / 0.82);
+}
+
+.dark .settings-content-zone {
+  background-color: rgb(24 24 27 / 0.72);
+}
+
+.settings-section-block {
+  border: 0 !important;
+  border-bottom: 1px solid rgb(212 212 216 / 0.8) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.dark .settings-section-block {
+  border-bottom-color: rgb(63 63 70 / 0.85) !important;
+}
+
+.settings-surface {
+  border: 1px solid rgb(212 212 216 / 0.9) !important;
+  border-radius: 0.875rem !important;
+  background: rgb(255 255 255 / 0.92) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.dark .settings-surface {
+  border-color: rgb(63 63 70 / 0.9) !important;
+  background: rgb(24 24 27 / 0.9) !important;
+}
+
+.settings-page-content > div {
+  gap: 1rem;
+}
+
+.settings-page-content > div > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1rem !important;
+}
+
+.settings-page-content > div > div:first-child {
+  border-bottom: 1px solid rgb(212 212 216 / 0.8);
+  padding-bottom: 0.75rem;
+}
+
+.dark .settings-page-content > div > div:first-child {
+  border-bottom-color: rgb(63 63 70 / 0.85);
+}
+
+@media (min-width: 640px) {
+  .settings-density .sm\:text-2xl { font-size: 1.275rem !important; }
+  .settings-density .sm\:text-xl { font-size: 1.0625rem !important; }
+  .settings-density .sm\:text-lg { font-size: 0.95625rem !important; }
+  .settings-density .sm\:text-base { font-size: 0.85rem !important; }
+  .settings-density .sm\:text-sm { font-size: 0.74375rem !important; }
+  .settings-density .sm\:text-xs { font-size: 0.6375rem !important; }
 }
 
 /* ── Print utilities ────────────────────────────────────────────────────── */

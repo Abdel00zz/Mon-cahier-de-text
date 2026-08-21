@@ -58,7 +58,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
     );
 
     return (
-        <div className="rounded-2xl border border-border/70 bg-card/65 p-4 sm:p-5 shadow-2xs">
+        <div className="settings-section-block p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border/50">
                 <div className="min-w-0">
                     <h4 className="text-sm font-bold text-foreground">{t('archives.title')}</h4>
@@ -81,7 +81,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                     {archives.map(meta => (
                         <li
                             key={meta.id}
-                            className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-border/70 bg-background/80 px-3.5 py-2.5 shadow-2xs"
+                            className="settings-surface flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2.5"
                         >
                             <div className="min-w-0">
                                 <span className="text-xs font-bold text-foreground">{t('archives.year', { year: meta.yearLabel })}</span>

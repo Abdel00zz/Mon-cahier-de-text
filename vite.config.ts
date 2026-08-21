@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -11,6 +12,8 @@ import {
     type OfficialStudentEventsFile,
 } from './utils/officialStudentEvents';
 import { prepareImportedLessons, summarizeImportedLessons } from './utils/importPipeline';
+
+const PROJECT_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 /*
  * MOCK D'API POUR LE DÉVELOPPEMENT LOCAL (jamais inclus au build : apply 'serve').
@@ -742,7 +745,7 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             alias: {
-                '@': path.resolve(__dirname, '.')
+                '@': path.resolve(PROJECT_ROOT, '.')
             }
         },
         build: {
@@ -752,8 +755,8 @@ export default defineConfig(({ mode }) => {
             emptyOutDir: true,
             rollupOptions: {
                 input: {
-                    main: path.resolve(__dirname, 'index.html'),
-                    admin: path.resolve(__dirname, 'admin.html')
+                    main: path.resolve(PROJECT_ROOT, 'index.html'),
+                    admin: path.resolve(PROJECT_ROOT, 'admin.html')
                 },
                 output: {
                     manualChunks: BUNDLE_OPTIMIZATION.MANUAL_CHUNKS

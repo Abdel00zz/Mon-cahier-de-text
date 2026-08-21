@@ -217,10 +217,10 @@ export const ARABIC_FONTS: FontOption[] = [
 
 export const getLatinFontFamily = (id?: string): string => {
   const font = LATIN_FONTS.find(f => f.id === id);
-  return font ? font.family : LATIN_FONTS[0].family;
+  return font ? font.family : "'Fira Sans', sans-serif";
 };
 
 export const getArabicFontFamily = (id?: string): string => {
   const font = ARABIC_FONTS.find(f => f.id === id);
-  return font ? font.family : ARABIC_FONTS[0].family;
+  return font ? font.family : "'IBM Plex Sans Arabic', sans-serif";
 };

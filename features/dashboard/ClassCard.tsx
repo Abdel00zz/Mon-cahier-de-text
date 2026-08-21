@@ -6,6 +6,8 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Settings, CircleAlert, CircleCheck } from '@/components/ui/icons';
 
+const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-5 sm:h-[22px] items-center justify-center px-2 sm:px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] leading-none border transition-all';
+
 interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
@@ -105,11 +107,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Top area: Minimalist subject pill (Top Left / Start) */}
             <div className="flex items-center justify-start w-full">
                 {subjectBadgeText ? (
-                    <span className={`inline-flex items-center justify-center font-sans font-semibold text-[10px] sm:text-[11px] py-1 px-2.5 rounded-full border border-black/5 dark:border-white/5 transition-all ${visual.badgeStyle}`}>
+                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold border-black/5 dark:border-white/5 ${visual.badgeStyle}`}>
                         {subjectBadgeText}
                     </span>
                 ) : (
-                    <span className="inline-flex items-center justify-center font-sans font-medium text-[10px] sm:text-[11px] py-1 px-2.5 rounded-full bg-slate-100/90 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60">
+                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-medium bg-slate-100/90 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border-slate-200/60 dark:border-zinc-700/60`}>
                         {t('dashboard.notebook')}
                     </span>
                 )}

@@ -44,7 +44,22 @@ interface ScheduleTabProps {
  * (tronqués par la cellule si besoin).
  */
 const abbreviateClassName = (name: string): string => {
-    if (/[؀-ۿ]/.test(name)) return name;
+    if (/[؀-ۿ]/.test(name)) {
+        const cleaned = name.replace(/^قسم\s+/, '').trim();
+        const group = cleaned.match(/\d+\s*$/)?.[0].trim();
+        const compactArabicLevels: Array<[RegExp, string]> = [
+            [/الجذع المشترك العلمي/, 'ج.م.ع'],
+            [/الجذع المشترك الأدبي/, 'ج.م.أ'],
+            [/الأولى إعدادي/, '1إ'],
+            [/الثانية إعدادي/, '2إ'],
+            [/الثالثة إعدادي/, '3إ'],
+            [/(الأولى باك|الأولى بكالوريا)/, '1ب'],
+            [/(الثانية باك|الثانية بكالوريا)/, '2ب'],
+        ];
+        const match = compactArabicLevels.find(([pattern]) => pattern.test(cleaned));
+        if (match) return `${match[1]}${group ?? ''}`;
+        return cleaned;
+    }
     const words = name.trim().split(/\s+/);
     const parts = words.map(word => {
         if (/\d/.test(word)) return word.replace(/(ère|ere|ème|eme|er)$/i, ''); // 1ère → 1, 3AC → 3AC
@@ -60,12 +75,12 @@ const abbreviateClassName = (name: string): string => {
 };
 
 const CLASS_CELL_COLORS = [
-    { bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-500' }, // sauge
-    { bg: 'bg-orange-500/15', border: 'border-orange-500/30', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-500' }, // terracotta
-    { bg: 'bg-blue-500/15', border: 'border-blue-500/30', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-500' }, // bleu doux
-    { bg: 'bg-amber-500/15', border: 'border-amber-500/30', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' }, // ambre
-    { bg: 'bg-indigo-500/15', border: 'border-indigo-500/30', text: 'text-indigo-700 dark:text-indigo-300', dot: 'bg-indigo-500' }, // lavande
-    { bg: 'bg-rose-500/15', border: 'border-rose-500/30', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-500' }, // rose
+    { bg: 'bg-gradient-to-br from-emerald-600 to-teal-700', border: 'border-emerald-400/45', text: 'text-white', dot: 'bg-emerald-600' },
+    { bg: 'bg-gradient-to-br from-orange-500 to-red-600', border: 'border-orange-300/50', text: 'text-white', dot: 'bg-orange-500' },
+    { bg: 'bg-gradient-to-br from-blue-600 to-indigo-700', border: 'border-blue-400/50', text: 'text-white', dot: 'bg-blue-600' },
+    { bg: 'bg-gradient-to-br from-amber-500 to-orange-600', border: 'border-amber-300/55', text: 'text-white', dot: 'bg-amber-500' },
+    { bg: 'bg-gradient-to-br from-violet-600 to-purple-700', border: 'border-violet-400/50', text: 'text-white', dot: 'bg-violet-600' },
+    { bg: 'bg-gradient-to-br from-rose-600 to-pink-700', border: 'border-rose-400/50', text: 'text-white', dot: 'bg-rose-600' },
 ];
 
 type SchedulePeriod = 'all' | 'morning' | 'afternoon';
@@ -189,7 +204,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     return (
         <div className="space-y-5">
-            <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 p-4 sm:p-5 shadow-xs backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
+            <div className="settings-section-block flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="min-w-0 max-w-2xl text-start">
                     <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                         {t('schedule.intro')}
@@ -238,7 +253,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         <h3 className="text-sm font-bold text-foreground">{t('schedule.gridTitle')}</h3>
                         <p className="mt-0.5 text-xs text-muted-foreground">{t('schedule.gridHint')}</p>
                     </div>
-                    <div className="inline-flex w-full rounded-2xl bg-muted/60 p-1 sm:w-auto border border-white/[0.12] dark:border-white/[0.08] shadow-xs" role="group" aria-label={t('schedule.viewLabel')}>
+                    <div className="inline-flex w-full rounded-xl border border-zinc-200 bg-zinc-100/90 p-1 shadow-none dark:border-zinc-800 dark:bg-zinc-900/80 sm:w-auto" role="group" aria-label={t('schedule.viewLabel')}>
                         {periodOptions.map(option => (
                             <button
                                 key={option.value}
@@ -247,8 +262,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 aria-pressed={visiblePeriod === option.value}
                                 className={`min-w-0 flex-1 rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:flex-none sm:px-3.5 cursor-pointer ${
                                     visiblePeriod === option.value
-                                        ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)]'
-                                        : 'text-muted-foreground hover:text-foreground'
+                                        ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
+                                        : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
                                 }`}
                             >
                                 {option.label}
@@ -258,7 +273,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 </div>
 
                 {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
-                <div className="overflow-hidden rounded-2xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 shadow-xs backdrop-blur-xl">
+                <div className="settings-surface overflow-hidden">
                     <div className="overflow-x-auto overscroll-x-contain">
                     <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[44rem]' : 'min-w-full table-fixed'}`}>
                     <thead>
@@ -296,7 +311,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         <td
                                             key={hour.index}
                                             colSpan={span}
-                                            className={`relative p-1.5 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''}`}
+                                            className={`relative p-2 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
@@ -310,10 +325,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
                                                 title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                className={`h-12 w-full cursor-pointer rounded-xl border border-transparent px-2 text-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 ${
+                                                className={`h-16 w-full cursor-pointer rounded-2xl border px-2 text-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
                                                     classInfo && color
-                                                        ? `${color.border} ${color.bg} text-transparent shadow-xs hover:brightness-[0.98]`
-                                                        : 'bg-transparent text-muted-foreground/60 hover:border-border hover:bg-muted/50 hover:text-foreground'
+                                                        ? `${color.border} ${color.bg} text-transparent shadow-[0_7px_18px_-10px_rgba(15,23,42,0.9)] hover:-translate-y-0.5 hover:brightness-105`
+                                                        : 'border-dashed border-border/70 bg-muted/20 text-muted-foreground/70 hover:border-indigo-400/50 hover:bg-indigo-500/[0.06] hover:text-foreground'
                                                 }`}
                                                 aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
@@ -331,13 +346,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                             </select>
                                             {classInfo && color && (
                                                 <span
-                                                    className={`pointer-events-none absolute inset-1.5 flex items-center justify-center truncate px-2 text-xs font-bold ${color.text}`}
+                                                    className={`pointer-events-none absolute inset-2 flex min-w-0 flex-col items-center justify-center px-2 text-center ${color.text}`}
                                                 >
-                                                    {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
+                                                    <span className="max-w-full truncate text-[11px] font-black tracking-[-0.02em] drop-shadow-sm sm:text-xs">
+                                                        {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
+                                                    </span>
+                                                    <span className="mt-0.5 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.08em] text-white/75">
+                                                        {subjectLabel(classInfo.subject)}
+                                                    </span>
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className={`pointer-events-none absolute start-3 top-1 rounded-full bg-card px-1.5 text-[10px] font-bold leading-4 shadow-xs border border-white/[0.12] dark:border-white/[0.08] ${color?.text ?? 'text-indigo-600'}`}>
+                                                <span className="pointer-events-none absolute start-3 top-1.5 rounded-full border border-white/20 bg-black/25 px-1.5 text-[9px] font-bold leading-4 text-white shadow-sm backdrop-blur-sm">
                                                     {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}
@@ -360,7 +380,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     return (
                         <span
                             key={c.id}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-card/85 px-3 py-1.5 text-xs font-bold text-foreground shadow-xs backdrop-blur-xl"
+                            className="settings-surface inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-foreground"
                         >
                             <span className={`h-2.5 w-2.5 rounded-full ${colorFor(c.id).dot}`} />
                             {classLabel(c.name)}

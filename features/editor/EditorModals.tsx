@@ -1,13 +1,13 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { AppConfig, ClassInfo, LessonsData, Indices, ContentDirection } from '@/types';
+import { AppConfig, ClassInfo, LessonsData, Indices, ContentDirection, LessonItem, TopLevelItem, Section, SubSection, SubSubSection } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const AssignDateModal = lazy(() => import('./modals/AssignDateModal').then(module => ({ default: module.AssignDateModal })));
-const DescriptionModal = lazy(() => import('./modals/DescriptionModal').then(module => ({ default: module.DescriptionModal })));
 const AddContentModal = lazy(() => import('./modals/EditItemModal').then(module => ({ default: module.AddContentModal })));
+const EditContentModal = lazy(() => import('./modals/EditContentModal').then(module => ({ default: module.EditContentModal })));
 const AnalysisModal = lazy(() => import('./modals/AnalysisModal').then(module => ({ default: module.AnalysisModal })));
 const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
 
@@ -23,9 +23,6 @@ interface EditorModalsProps {
   handleAssignDates: (date: string) => void;
   selectedCount: number;
   selectedItemsData: any[];
-  handleSaveDescription: (desc: string) => void;
-  descriptionLabel: string;
-  singleSelection: any;
   handleConfirmAddContent: (newItem: any, targetIndices: Indices | null) => void;
   selectedIndices: Indices[];
   /** validation intelligente : renvoie les alertes pour une date donnée */
@@ -33,6 +30,10 @@ interface EditorModalsProps {
   assignDateInitialDate?: string;
   classInfo: ClassInfo;
   contentDirection?: ContentDirection;
+  editingItem: LessonItem | TopLevelItem | Section | SubSection | SubSubSection | null;
+  editingTitleOnly: boolean;
+  editingTitleField: 'title' | 'name';
+  handleConfirmContentEdit: (value: Partial<LessonItem> & { name?: string }) => void;
 }
 
 const ModalFallback = () => {
@@ -58,15 +59,16 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   handleAssignDates,
   selectedCount,
   selectedItemsData,
-  handleSaveDescription,
-  descriptionLabel,
-  singleSelection,
   handleConfirmAddContent,
   selectedIndices,
   getDateWarnings,
   assignDateInitialDate,
   classInfo,
   contentDirection,
+  editingItem,
+  editingTitleOnly,
+  editingTitleField,
+  handleConfirmContentEdit,
 }) => {
   // Garde la dernière modale montée (isOpen=false) le temps de l'animation de
   // sortie : Radix démonte alors son contenu après la transition. Les props
@@ -105,16 +107,6 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             initialDate={assignDateInitialDate}
           />
         );
-      case 'description':
-        return (
-          <DescriptionModal
-            isOpen={isOpen}
-            onClose={handleModalClose}
-            onSave={handleSaveDescription}
-            title={descriptionLabel}
-            initialValue={singleSelection?.description ?? ''}
-          />
-        );
       case 'addContent':
         return (
           <AddContentModal
@@ -125,6 +117,19 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             selectedIndices={selectedIndices.length > 0 ? selectedIndices[selectedIndices.length - 1] : null}
             subject={classInfo.subject}
             contentDirection={contentDirection}
+          />
+        );
+      case 'editContent':
+        return (
+          <EditContentModal
+            isOpen={isOpen}
+            onClose={handleModalClose}
+            item={editingItem}
+            onSave={handleConfirmContentEdit}
+            subject={classInfo.subject}
+            contentDirection={contentDirection}
+            titleOnly={editingTitleOnly}
+            titleField={editingTitleField}
           />
         );
       case 'analyse':

@@ -58,8 +58,8 @@ type ActiveModal =
   | 'analyse'
   | 'evaluations'
   | 'addContent'
+  | 'editContent'
   | 'assignDate'
-  | 'description'
   | 'print'
   | null;
 
@@ -554,6 +554,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleModalClose = useCallback(() => {
     setEditorState(draft => {
       draft.activeModal = null;
+      draft.editingIndices = null;
     });
   }, [setEditorState]);
 
@@ -823,15 +824,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
   }, [selectedIndices, setState, setEditorState]);
 
-  const handleInitiateInlineEdit = useCallback((indices: Indices) => {
+  const handleOpenContentEditor = useCallback((indices: Indices) => {
     setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
     setEditorState(draft => {
       draft.editingIndices = indices;
+      draft.activeModal = 'editContent';
     });
-  }, [setEditorState]);
-
-  const handleCancelInlineEdit = useCallback(() => {
-    setEditorState(draft => { draft.editingIndices = null; });
   }, [setEditorState]);
 
   const handleToggleSelectRow = useCallback((indices: Indices) => {
@@ -861,7 +859,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       startSelectionTransition(() => {
         setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
       });
-      // clic en dehors : annule aussi l'édition en ligne en cours (comportement attendu d'une modale)
+      // Un clic dans le tableau efface aussi la cible d'édition devenue obsolète.
       if (editingIndicesRef.current !== null) {
         setEditorState(draft => { draft.editingIndices = null; });
       }
@@ -944,7 +942,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       showNotification(`${selectedIndices.length} element(s) supprime(s).`, 'success');
   }, [selectedIndices, setState, setEditorState, showNotification]);
 
-  const handleConfirmInlineEdit = useCallback((indices: Indices, updatedData: Partial<LessonItem>) => {
+  const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: Partial<LessonItem> & { name?: string }) => {
       const normalizedType = updatedData.type ? (TYPE_MAP[updatedData.type.toLowerCase()] || updatedData.type) : undefined;
       const finalItem = { ...updatedData };
       if (normalizedType) {
@@ -955,16 +953,17 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         setState(draft => {
             const { item } = findItem(draft, indices);
             if (item) Object.assign(item, finalItem);
-        }, 'inline-edit-item');
-        showNotification("Element mis a jour.", "success");
+        }, 'edit-content-item');
+        showNotification(t('editorNotice.contentUpdated'), "success");
         setEditorState(draft => {
           draft.saveStatus = 'unsaved';
           draft.editingIndices = null;
+          draft.activeModal = null;
         });
       };
       if (typeof finalItem.date === 'string') requestDateCommit(finalItem.date, commit);
       else commit();
-  }, [setState, showNotification, setEditorState, requestDateCommit]);
+  }, [setState, showNotification, setEditorState, requestDateCommit, t]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       try {
@@ -1017,6 +1016,22 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   const filteredData = useLessonSearch(lessonsData, searchQuery);
 
+  const editingItem = useMemo(() => {
+    if (!editingIndices) return null;
+    try {
+      const { item } = findItem(lessonsData, editingIndices);
+      return item as LessonItem | TopLevelItem | Section | SubSection | SubSubSection | null;
+    } catch {
+      return null;
+    }
+  }, [editingIndices, lessonsData]);
+
+  const editingTitleField: 'title' | 'name' = editingItem && 'name' in editingItem ? 'name' : 'title';
+  const editingTitleOnly = Boolean(editingItem && (
+    'name' in editingItem
+    || ('type' in editingItem && String(editingItem.type) in TOP_LEVEL_TYPE_CONFIG)
+  ));
+
   const selectedItemsData = useSelectionData(selectedIndices, lessonsData);
 
   const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
@@ -1025,11 +1040,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const singleSelection = selectedItemsData[0];
   const canAddAfterSelection = selectedCount === 1 && !!singleSelection?.canAddAfter;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
-  const canEditSelection = selectedCount === 1 && !!singleSelection?.canInlineEdit;
-  const canDescribeSelection = selectedCount === 1 && !!singleSelection?.canDescription;
-  const descriptionLabel = singleSelection?.description
-    ? t('descriptionModal.editTitle')
-    : t('descriptionModal.addTitle');
+  const canEditSelection = selectedCount === 1 && !!singleSelection?.canEditContent;
 
   const reorderTarget = selectedCount === 1 && !selectedIndices[0]?.isSeparator ? selectedIndices[0] : null;
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
@@ -1040,27 +1051,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleAssignToday = useCallback(() => {
       handleAssignDates(todayInMorocco());
   }, [handleAssignDates]);
-
-  const handleSaveDescription = useCallback((description: string) => {
-      const target = selectedIndices[0];
-      if (!target) return;
-      setState(draft => {
-          const { item } = findItem(draft, target);
-          if (item) {
-              const trimmed = description.trim();
-              if (trimmed) {
-                  (item as any).description = trimmed;
-              } else {
-                  delete (item as any).description;
-              }
-          }
-      }, 'description-edit');
-      setEditorState(draft => {
-          draft.activeModal = null;
-          draft.saveStatus = 'unsaved';
-      });
-      showNotification(t(description.trim() ? 'editorNotice.descriptionUpdated' : 'editorNotice.descriptionCleared'), "success");
-  }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
   // Offset sticky dynamique : l'en-tête de colonnes du tableau se cale juste
   // sous la barre d'outils collante (top-2 = 8 px). La hauteur de la barre
@@ -1106,7 +1096,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             <MainTable
               lessonsData={filteredData}
               contentDirection={contentDirection}
-              subject={classInfo.subject}
 
               onCellUpdate={handleCellUpdate}
               onDeleteSeparator={handleDeleteSeparator}
@@ -1115,10 +1104,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               descriptionTypes={config.screenDescriptionTypes}
               selectedKeys={selectionState.keys}
               onToggleSelect={handleToggleSelectRow}
-              editingIndices={editingIndices}
-              onInitiateInlineEdit={handleInitiateInlineEdit}
-              onConfirmInlineEdit={handleConfirmInlineEdit}
-              onCancelInlineEdit={handleCancelInlineEdit}
+              onOpenContentEditor={handleOpenContentEditor}
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDateWarnings}
               searchQuery={searchQuery}
@@ -1152,8 +1138,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           hasDate={hasSelectedDate}
           canAdd={canAddAfterSelection}
           canAssignDate={canAssignDateSelection}
-          canDescription={canDescribeSelection}
-          descriptionLabel={descriptionLabel}
           onAdd={() => handleOpenAddContentModal(selectedIndices[selectedIndices.length - 1])}
           onAssignDate={() => {
             setAssignDateInitialDate(undefined);
@@ -1161,8 +1145,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           }}
           onAssignToday={handleAssignToday}
           onClearDate={handleClearSelectedDates}
-          onDescription={() => setEditorState(draft => { draft.activeModal = 'description'; })}
-          onEdit={() => canEditSelection && handleInitiateInlineEdit(selectedIndices[0])}
+          onEdit={() => canEditSelection && handleOpenContentEditor(selectedIndices[0])}
           onDelete={handleBulkDelete}
           onClear={handleDeselectAll}
           canEdit={canEditSelection}
@@ -1200,15 +1183,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         handleAssignDates={handleAssignDates}
         selectedCount={selectedCount}
         selectedItemsData={selectedItemsData}
-        handleSaveDescription={handleSaveDescription}
-        descriptionLabel={descriptionLabel}
-        singleSelection={singleSelection}
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
         assignDateInitialDate={assignDateInitialDate}
         classInfo={classInfo}
         contentDirection={contentDirection}
+        editingItem={editingItem}
+        editingTitleOnly={editingTitleOnly}
+        editingTitleField={editingTitleField}
+        handleConfirmContentEdit={value => {
+          if (editingIndices) handleConfirmContentEdit(editingIndices, value);
+        }}
       />
 
       <DateReviewModal
