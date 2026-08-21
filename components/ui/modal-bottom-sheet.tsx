@@ -100,12 +100,12 @@ export function ModalBottomSheet({
         <DialogPrimitive.Content
           dir={isRtl ? 'rtl' : 'ltr'}
           className={cn(
-            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-3xl rounded-b-none border border-slate-200/80 dark:border-white/[0.08] bg-card/95 text-card-foreground shadow-[0_16px_56px_rgba(0,0,0,0.22)] backdrop-blur-xl outline-none',
+            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-3xl rounded-b-none border border-slate-200/80 bg-white/95 text-card-foreground shadow-xl backdrop-blur-2xl outline-none dark:border-white/[0.08] dark:bg-[#0c142b]/95',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
             'motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100',
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[28px] sm:border sm:border-slate-200/80 dark:sm:border-white/[0.08] sm:shadow-[0_24px_70px_rgba(0,0,0,0.25)]',
+            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[32px] sm:border sm:border-slate-200/80 dark:sm:border-white/[0.08] sm:shadow-xl',
             'landscape:max-h-[min(96dvh,calc(100dvh-1rem))] landscape:inset-0 landscape:m-auto landscape:rounded-2xl',
             'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
@@ -135,8 +135,8 @@ export function ModalBottomSheet({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Ambient Colorful Glows */}
-          <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gradient-to-br from-indigo-500/25 to-violet-600/20 blur-3xl opacity-30 dark:opacity-25" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-tr from-cyan-500/20 to-indigo-600/20 blur-3xl opacity-30 dark:opacity-25" />
+          <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-cyan-500/15 blur-3xl opacity-30 dark:opacity-25" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl opacity-30 dark:opacity-25" />
 
           {/* Material 3 Drag Handle */}
           {dragHandle && (
@@ -153,7 +153,7 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 border-b border-slate-200/70 dark:border-white/[0.08] bg-card/85 backdrop-blur-md px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 landscape:pt-3.5 landscape:pb-2.5 landscape:px-6 text-card-foreground flex flex-col space-y-1 pe-12 text-start',
+                'modal-header relative z-10 shrink-0 border-b border-slate-200/70 bg-white/70 backdrop-blur-md px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 landscape:pt-3.5 landscape:pb-2.5 landscape:px-6 text-card-foreground flex flex-col space-y-1 pe-12 text-start dark:border-white/[0.08] dark:bg-slate-900/60',
                 headerClassName
               )}
             >
@@ -200,7 +200,7 @@ export function ModalBottomSheet({
           {footer && (
             <div
               className={cn(
-                'modal-footer relative z-10 flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200/70 dark:border-white/[0.08] bg-card/85 backdrop-blur-md px-5 py-3.5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-2.5 landscape:px-6 text-card-foreground',
+                'modal-footer relative z-10 flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200/70 bg-white/70 backdrop-blur-md px-5 py-3.5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-2.5 landscape:px-6 text-card-foreground dark:border-white/[0.08] dark:bg-slate-900/60',
                 footerClassName
               )}
             >

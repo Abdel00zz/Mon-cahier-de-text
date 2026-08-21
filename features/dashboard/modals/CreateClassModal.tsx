@@ -1,496 +1,320 @@
-import React, { useState, useEffect } from 'react';
-import { Cycle, ClassInfo } from '@/types';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { ClassInfo, Cycle } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Trash2 } from '@/components/ui/icons';
+import { ArrowLeft, ArrowRight, Check, ChevronRight, GraduationCap, Settings, Trash2 } from '@/components/ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
-import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
+import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 
 interface CreateClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (details: { name: string; subject: string; cycle?: Cycle; color?: string; }) => void;
+  onCreate: (details: { name: string; subject: string; cycle?: Cycle; color?: string }) => void;
   defaultTeacherName?: string;
-  /** cycle actif du tableau de bord, pré-sélectionné */
   defaultCycle?: Cycle;
-  /** matières configurées dans les Paramètres, filtrent le choix de matière */
   teacherSubjects?: string[];
-  /**
-   * cycles configurés dans l'onboarding (puis modifiables dans les
-   * Paramètres), un seul cycle : le champ disparaît, il est hérité ;
-   * plusieurs : le choix est restreint à ces cycles
-   */
   teacherCycles?: Cycle[];
-  /** Classes déjà créées : évite deux groupes identiques au même niveau. */
   existingClasses?: ClassInfo[];
   editingClass?: ClassInfo | null;
   onUpdate?: (classId: string, updates: Partial<ClassInfo>) => void;
   onDelete?: () => void;
 }
 
-type ModalLanguage = AppLocale;
+type WizardStep = 'cycle' | 'level' | 'branch' | 'details';
+type StepDirection = 'forward' | 'back';
 
-const COPY: Record<ModalLanguage, {
-  createTitle: string;
-  editTitle: string;
-  createDescription: string;
-  editDescription: string;
-  cancel: string;
-  create: string;
-  save: string;
-  cycle: string;
-  cyclePlaceholder: string;
-  level: string;
-  levelPlaceholder: string;
-  group: string;
-  groupHint: string;
-  invalidGroup: string;
-  duplicateGroup: string;
-  subject: string;
-  subjectPlaceholder: string;
-  customLevelPlaceholder: string;
-  customSubjectPlaceholder: string;
-  switchToOfficial: string;
-  createCustom: string;
+const COPY: Record<AppLocale, {
+  createTitle: string; editTitle: string; createDescription: string; editDescription: string;
+  cancel: string; back: string; next: string; create: string; save: string;
+  cycle: string; cyclePlaceholder: string; level: string; branch: string; group: string;
+  groupHint: string; invalidGroup: string; duplicateGroup: string;
+  subject: string; subjectPlaceholder: string; customLevelPlaceholder: string; customSubjectPlaceholder: string;
+  createCustom: string; switchToOfficial: string; step: string; selectedClass: string; guidedLabel: string;
   cycleLabels: Record<Cycle, string>;
 }> = {
   fr: {
-    createTitle: 'Créer une nouvelle classe',
-    editTitle: 'Configurer la classe',
-    createDescription: 'Choisissez le niveau et la matière ; le nom est composé automatiquement.',
-    editDescription: 'Modifiez le niveau et la matière de la classe.',
-    cancel: 'Annuler',
-    create: 'Créer la classe',
-    save: 'Enregistrer les modifications',
-    cycle: 'Cycle',
-    cyclePlaceholder: 'Choisir un cycle…',
-    level: 'Niveau / classe',
-    levelPlaceholder: 'Choisir un niveau…',
-    group: 'N° de groupe',
-    groupHint: 'Obligatoire : un numéro unique par niveau.',
-    invalidGroup: 'Saisissez un numéro de 1 à 99.',
-    duplicateGroup: 'Ce numéro est déjà utilisé pour ce niveau.',
-    subject: 'Matière',
-    subjectPlaceholder: 'Choisir une matière…',
-    customLevelPlaceholder: 'Ex. : Groupe soutien, DAOL…',
-    customSubjectPlaceholder: 'Saisir une matière…',
-    switchToOfficial: '← Revenir à la liste officielle',
-    createCustom: 'Niveau non listé ? Créer une classe personnalisée',
+    createTitle: 'Créer une classe', editTitle: 'Modifier la classe',
+    createDescription: 'Choisissez une information à la fois.', editDescription: 'Modifiez uniquement les informations utiles.',
+    cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer', save: 'Enregistrer',
+    cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe / niveau', branch: 'Branche / filière', group: 'N° de groupe',
+    groupHint: 'De 1 à 99. Le premier numéro libre est proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.',
+    subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
+    createCustom: 'Classe non listée', switchToOfficial: 'Liste officielle', step: 'Étape {current} sur {total}', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
   ar: {
-    createTitle: 'إضافة قسم جديد',
-    editTitle: 'إعداد القسم والتهيئة',
-    createDescription: 'اختر السلك، المستوى والمادة التعليمية؛ يُنشأ اسم القسم تلقائياً وفق التسميات الرسمية.',
-    editDescription: 'تعديل سلك ومستوى القسم والمادة المسندة.',
-    cancel: 'إلغاء',
-    create: 'إنشاء القسم',
-    save: 'حفظ التعديلات',
-    cycle: 'السلك التعليمي',
-    cyclePlaceholder: 'اختر السلك…',
-    level: 'المستوى / الشعبة أو المسلك',
-    levelPlaceholder: 'اختر المستوى…',
-    group: 'رقم الفوج / المجموعة',
-    groupHint: 'مطلوب: رقم الفوج داخل نفس المستوى (مثال: 1، 2...).',
-    invalidGroup: 'يرجى إدخال رقم فوج صحيح من 1 إلى 99.',
-    duplicateGroup: 'رقم الفوج هذا مستخدم بالفعل لهذا المستوى.',
-    subject: 'المادة الدراسية',
-    subjectPlaceholder: 'اختر المادة…',
-    customLevelPlaceholder: 'مثال: حصة الدعم، أنشطة الأندية…',
-    customSubjectPlaceholder: 'أدخل المادة أو التخصص…',
-    switchToOfficial: 'العودة إلى اللائحة الرسمية للوزارة ←',
-    createCustom: 'مستوى غير مدرج؟ إنشاء قسم أو نشاط مخصص',
-    cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية للمدارس العليا' },
+    createTitle: 'إضافة قسم', editTitle: 'تعديل القسم',
+    createDescription: 'اختر معلومة واحدة في كل خطوة.', editDescription: 'عدّل المعلومات الضرورية فقط.',
+    cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء', save: 'حفظ',
+    cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم / المستوى', branch: 'الشعبة أو المسلك', group: 'رقم الفوج',
+    groupHint: 'من 1 إلى 99. يُقترح أول رقم فوج متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.',
+    subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
+    createCustom: 'قسم غير مدرج', switchToOfficial: 'اللائحة الرسمية', step: 'المرحلة {current} من {total}', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
   en: {
-    createTitle: 'Create New Class',
-    editTitle: 'Configure Class',
-    createDescription: 'Select level and subject; the official class name is composed automatically.',
-    editDescription: 'Modify class level, subject, and group.',
-    cancel: 'Cancel',
-    create: 'Create Class',
-    save: 'Save Changes',
-    cycle: 'Education Cycle',
-    cyclePlaceholder: 'Select a cycle…',
-    level: 'Grade Level / Stream',
-    levelPlaceholder: 'Select a level…',
-    group: 'Group / Section #',
-    groupHint: 'Required: unique group number per level (1–99).',
-    invalidGroup: 'Please enter a number from 1 to 99.',
-    duplicateGroup: 'This group number is already in use for this level.',
-    subject: 'Subject',
-    subjectPlaceholder: 'Select a subject…',
-    customLevelPlaceholder: 'e.g. Tutoring group, club…',
-    customSubjectPlaceholder: 'Enter subject name…',
-    switchToOfficial: '← Back to official curriculum list',
-    createCustom: 'Level not listed? Create custom class',
-    cycleLabels: { college: 'Middle School', lycee: 'High School', prepa: 'Preparatory Classes' },
+    createTitle: 'Create class', editTitle: 'Edit class',
+    createDescription: 'Choose one item at a time.', editDescription: 'Edit only the information you need.',
+    cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create', save: 'Save',
+    cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class / level', branch: 'Stream', group: 'Group number',
+    groupHint: 'From 1 to 99. The first available number is proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.',
+    subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
+    createCustom: 'Class not listed', switchToOfficial: 'Official list', step: 'Step {current} of {total}', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
+    cycleLabels: { college: 'Middle school', lycee: 'High school', prepa: 'Preparatory class' },
   },
 };
 
+const uniqueValues = (values: string[]) => Array.from(new Set(values.map(value => value.trim()).filter(Boolean)));
+
+const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
+  <button type="button" onClick={onClick} className="group relative flex min-h-[4.5rem] w-full items-center gap-3 overflow-hidden rounded-[20px] border border-slate-200 bg-white px-4 py-3.5 text-start text-sm font-extrabold text-slate-800 shadow-[0_3px_0_rgba(66,85,255,0.14),0_8px_22px_rgba(30,41,59,0.05)] transition-all duration-200 before:absolute before:inset-y-0 before:start-0 before:w-1 before:bg-gradient-to-b before:from-[#4255ff] before:to-[#8b5cf6] hover:-translate-y-1 hover:border-[#4255ff]/45 hover:text-[#4255ff] hover:shadow-[0_6px_0_rgba(66,85,255,0.22),0_14px_30px_rgba(66,85,255,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4255ff]/15 active:translate-y-0 active:shadow-[0_2px_0_rgba(66,85,255,0.18)] dark:border-white/10 dark:bg-slate-900 dark:text-white dark:hover:border-[#8b9cff]/50 dark:hover:text-[#aab4ff]">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#4255ff]/10 text-[#4255ff] transition-all duration-200 group-hover:scale-105 group-hover:bg-[#4255ff] group-hover:text-white dark:bg-[#7788ff]/15 dark:text-[#aab4ff]">
+      <GraduationCap className="h-[18px] w-[18px]" />
+    </span>
+    <span className="min-w-0 flex-1 leading-snug">{children}</span>
+    <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#4255ff] rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+  </button>
+);
+
 export const CreateClassModal: React.FC<CreateClassModalProps> = ({
-  isOpen,
-  onClose,
-  onCreate,
-  defaultCycle = 'lycee',
-  teacherSubjects = [],
-  teacherCycles = [],
-  existingClasses = [],
-  editingClass = null,
-  onUpdate,
-  onDelete,
+  isOpen, onClose, onCreate, defaultCycle = 'lycee', teacherSubjects = [], teacherCycles = [], existingClasses = [], editingClass = null, onUpdate, onDelete,
 }) => {
   const { locale, t } = useLocale();
-  const language: ModalLanguage = locale;
-  const copy = COPY[language] ?? COPY.fr;
-  const isAr = language === 'ar';
+  const copy = COPY[locale] ?? COPY.fr;
   const [cycle, setCycle] = useState<Cycle>(defaultCycle);
   const [level, setLevel] = useState('');
+  const [levelGroupKey, setLevelGroupKey] = useState<ClassLevelGroupKey | ''>('');
   const [group, setGroup] = useState('');
   const [subject, setSubject] = useState('');
-  // Mode « personnalisé » : niveau libre pour les cas rares hors liste officielle.
   const [customMode, setCustomMode] = useState(false);
   const [customLevel, setCustomLevel] = useState('');
   const [customSubject, setCustomSubject] = useState('');
+  const [step, setStep] = useState<WizardStep>('level');
+  const [stepDirection, setStepDirection] = useState<StepDirection>('forward');
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const editingDisplayName = editingClass ? formatLocalizedClassDisplayName(editingClass.name, language) : '';
 
-  /*
-   * Héritage du profil d'inscription (modifiable dans les Paramètres) :
-   * une seule matière ou un seul cycle : champ masqué, valeur héritée ;
-   * plusieurs : choix restreint aux valeurs du professeur.
-   * En édition, la valeur actuelle de la classe reste toujours proposée.
-   */
-  const subjectOptions = React.useMemo(() => {
-    const base = teacherSubjects.length > 0 ? [...teacherSubjects] : [...SUBJECTS];
-    if (editingClass?.subject && !base.includes(editingClass.subject)) base.unshift(editingClass.subject);
-    return base;
-  }, [teacherSubjects, editingClass]);
+  const configuredSubjects = useMemo(() => uniqueValues(teacherSubjects), [teacherSubjects]);
+  const subjectOptions = useMemo(() => {
+    const options = configuredSubjects.length ? [...configuredSubjects] : [...SUBJECTS];
+    if (editingClass?.subject && !options.includes(editingClass.subject)) options.unshift(editingClass.subject);
+    return options;
+  }, [configuredSubjects, editingClass]);
+  const cycleOptions = useMemo(() => {
+    const options = teacherCycles.length ? [...teacherCycles] : (Object.keys(copy.cycleLabels) as Cycle[]);
+    if (editingClass?.cycle && !options.includes(editingClass.cycle)) options.unshift(editingClass.cycle);
+    return options;
+  }, [copy.cycleLabels, editingClass, teacherCycles]);
+  const hasCycleChoice = cycleOptions.length > 1;
+  const showSubjectChoice = configuredSubjects.length !== 1;
+  const levelGroups = useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
+  const activeLevelGroup = levelGroups.find(item => item.key === levelGroupKey) ?? levelGroups.find(item => item.levels.includes(level));
+  const needsBranchChoice = !customMode && cycle === 'lycee' && Boolean(activeLevelGroup && activeLevelGroup.levels.length > 1);
+  const steps = useMemo<WizardStep[]>(() => [...(hasCycleChoice ? ['cycle'] as WizardStep[] : []), 'level', ...(needsBranchChoice ? ['branch'] as WizardStep[] : []), 'details'], [hasCycleChoice, needsBranchChoice]);
+  const stepIndex = Math.max(0, steps.indexOf(step));
+  const effectiveLevel = customMode ? customLevel.trim() : level;
+  const effectiveSubject = customMode ? (customSubject.trim() || subject) : subject;
+  const normalizedGroup = normalizeGroupNumber(group);
+  const duplicateGroup = Boolean(normalizedGroup && effectiveLevel && existingClasses.some(classInfo => classInfo.id !== editingClass?.id && isSameClassGroup(classInfo.name, effectiveLevel, normalizedGroup)));
+  const groupError = group.trim() && !normalizedGroup ? copy.invalidGroup : duplicateGroup ? copy.duplicateGroup : null;
+  const isFormValid = Boolean(effectiveLevel && effectiveSubject && normalizedGroup && !duplicateGroup);
 
-  const cycleOptions = React.useMemo(() => {
-    const base: Cycle[] = teacherCycles.length > 0 ? [...teacherCycles] : (Object.keys(copy.cycleLabels) as Cycle[]);
-    if (editingClass?.cycle && !base.includes(editingClass.cycle)) base.unshift(editingClass.cycle);
-    return base;
-  }, [teacherCycles, editingClass, copy.cycleLabels]);
-
-  // Le sélecteur de matière n'est nécessaire que si le prof a configuré
-  // plusieurs matières (2+) dans les Paramètres ; sinon la matière est héritée.
-  const hideSubjectField = !editingClass && teacherSubjects.length <= 1;
-  const singleCycle = !editingClass && cycleOptions.length === 1 && teacherCycles.length === 1;
+  const firstAvailableGroup = (classLevel: string): string => {
+    for (let number = 1; number <= 99; number += 1) {
+      const candidate = String(number);
+      if (!existingClasses.some(classInfo => classInfo.id !== editingClass?.id && isSameClassGroup(classInfo.name, classLevel, candidate))) return candidate;
+    }
+    return '';
+  };
 
   useEffect(() => {
-    if (!isOpen) setConfirmDelete(false);
-    if (isOpen) {
-      if (editingClass) {
-        const classCycle = editingClass.cycle || 'lycee';
-        setCycle(classCycle);
-        const classLevels = CLASS_LEVELS_BY_CYCLE[classCycle] || [];
-        const matchedLevel = classLevels.find(l => editingClass.name.startsWith(l));
-
-        if (matchedLevel) {
-          setCustomMode(false);
-          setLevel(matchedLevel);
-          setGroup(editingClass.name.slice(matchedLevel.length).trim());
-        } else {
-          setCustomMode(true);
-          const match = editingClass.name.match(/^(.*?)\s+(\d{1,2})$/);
-          if (match) {
-            setCustomLevel(match[1]);
-            setGroup(match[2]);
-          } else {
-            setCustomLevel(editingClass.name);
-            setGroup('');
-          }
-        }
-        setSubject(editingClass.subject || '');
-        setCustomSubject(editingClass.subject || '');
+    if (!isOpen) { setConfirmDelete(false); return; }
+    if (editingClass) {
+      const classCycle = editingClass.cycle ?? defaultCycle;
+      const matchedLevel = (CLASS_LEVELS_BY_CYCLE[classCycle] ?? []).find(item => editingClass.name.startsWith(item));
+      setCycle(classCycle);
+      setSubject(configuredSubjects.length === 1 ? configuredSubjects[0] : (editingClass.subject || SUBJECTS[0]));
+      setCustomSubject(editingClass.subject || '');
+      if (matchedLevel) {
+        setCustomMode(false); setLevel(matchedLevel);
+        setLevelGroupKey(classLevelGroupsForCycle(classCycle).find(item => item.levels.includes(matchedLevel))?.key ?? '');
+        setGroup(editingClass.name.slice(matchedLevel.length).trim());
       } else {
-        // cycle initial : celui du tableau de bord s'il est autorisé par les
-        // paramètres pédagogiques, sinon le premier cycle configuré.
-        const initialCycle: Cycle =
-          teacherCycles.length === 0 || teacherCycles.includes(defaultCycle)
-            ? defaultCycle
-            : teacherCycles[0];
-        setCycle(initialCycle);
-        const firstLevel = CLASS_LEVELS_BY_CYCLE[initialCycle][0] ?? '';
-        setLevel(firstLevel);
-        setGroup('');
-        setSubject(teacherSubjects[0] ?? SUBJECTS[0]);
-        setCustomMode(false);
-        setCustomLevel('');
-        setCustomSubject('');
+        const match = editingClass.name.match(/^(.*?)\s+(\d{1,2})$/);
+        setCustomMode(true); setLevel(''); setLevelGroupKey(''); setCustomLevel(match?.[1] ?? editingClass.name); setGroup(match?.[2] ?? '');
       }
+      setStepDirection('forward'); setStep('details');
+      return;
     }
-  }, [isOpen, defaultCycle, teacherSubjects, teacherCycles, editingClass]);
+    const initialCycle = cycleOptions.includes(defaultCycle) ? defaultCycle : cycleOptions[0] ?? 'lycee';
+    setCycle(initialCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); setSubject(configuredSubjects[0] ?? SUBJECTS[0]);
+    setCustomMode(false); setCustomLevel(''); setCustomSubject(''); setStepDirection('forward'); setStep(hasCycleChoice ? 'cycle' : 'level');
+  }, [configuredSubjects, cycleOptions, defaultCycle, editingClass, hasCycleChoice, isOpen]);
 
-  const levelGroups = React.useMemo(() => classLevelGroupsForCycle(cycle), [cycle]);
-  const activeGroup = levelGroups.find(g => g.levels.includes(level)) ?? levelGroups[0];
-
-  const selectGroup = (groupKey: ClassLevelGroupKey) => {
-    const target = levelGroups.find(g => g.key === groupKey);
-    if (target?.levels.length) setLevel(target.levels[0]);
+  const moveToStep = (nextStep: WizardStep, direction: StepDirection) => {
+    setStepDirection(direction);
+    setStep(nextStep);
   };
-
-  const effectiveLevel = customMode ? customLevel.trim() : level;
-  const effectiveSubject = customMode ? customSubject.trim() : subject;
-  const normalizedGroup = normalizeGroupNumber(group);
-  const duplicateGroup = !!normalizedGroup && existingClasses.some(classInfo =>
-    classInfo.id !== editingClass?.id && isSameClassGroup(classInfo.name, effectiveLevel, normalizedGroup)
-  );
-  const isFormValid = !!effectiveLevel && !!effectiveSubject && !!normalizedGroup && !duplicateGroup;
-  const groupError = group.trim() && !normalizedGroup
-    ? copy.invalidGroup
-    : duplicateGroup
-      ? copy.duplicateGroup
-      : null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isFormValid && normalizedGroup) {
-      const composedName = classNameForLevelAndGroup(effectiveLevel, normalizedGroup);
-      if (editingClass && onUpdate) {
-        onUpdate(editingClass.id, {
-          name: composedName,
-          subject: effectiveSubject,
-          cycle,
-          color: '',
-        });
-        onClose();
-      } else {
-        onCreate({ name: composedName, subject: effectiveSubject, cycle });
-      }
-    }
+  const chooseCycle = (nextCycle: Cycle) => { setCycle(nextCycle); setLevel(''); setLevelGroupKey(''); setGroup(''); moveToStep('level', 'forward'); };
+  const chooseLevel = (nextLevel: string) => {
+    setLevel(nextLevel);
+    setLevelGroupKey(levelGroups.find(item => item.levels.includes(nextLevel))?.key ?? '');
+    setGroup(current => current || firstAvailableGroup(nextLevel));
+    moveToStep('details', 'forward');
   };
+  const chooseLevelGroup = (nextGroup: ClassLevelGroupKey) => {
+    const selected = levelGroups.find(item => item.key === nextGroup);
+    setLevelGroupKey(nextGroup); setLevel('');
+    if (cycle === 'lycee' && selected && selected.levels.length > 1) { moveToStep('branch', 'forward'); return; }
+    if (selected?.levels[0]) chooseLevel(selected.levels[0]);
+  };
+  const continueCustomLevel = () => {
+    const nextLevel = customLevel.trim();
+    if (!nextLevel) return;
+    setGroup(current => current || firstAvailableGroup(nextLevel)); moveToStep('details', 'forward');
+  };
+  const goBack = () => {
+    if (step === 'details') { moveToStep(needsBranchChoice ? 'branch' : 'level', 'back'); return; }
+    if (step === 'branch') { moveToStep('level', 'back'); return; }
+    if (step === 'level' && hasCycleChoice) moveToStep('cycle', 'back');
+  };
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!isFormValid || !normalizedGroup) return;
+    const name = classNameForLevelAndGroup(effectiveLevel, normalizedGroup);
+    if (editingClass && onUpdate) { onUpdate(editingClass.id, { name, subject: effectiveSubject, cycle, color: '' }); onClose(); return; }
+    onCreate({ name, subject: effectiveSubject, cycle });
+  };
+  const selectedClassLabel = customMode ? customLevel : formatLocalizedClassDisplayName(level, locale, { includeClassPrefix: false });
+  const editingLevelOptions = CLASS_LEVELS_BY_CYCLE[cycle] ?? [];
+  const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.selectedClass;
 
-  return (
-    <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={editingClass ? copy.editTitle : copy.createTitle}
-        description={editingClass ? copy.editDescription : copy.createDescription}
-        maxWidth="md"
-        className="sm:max-w-[38rem] sm:rounded-[32px] border border-slate-200/90 dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl shadow-xl overflow-hidden"
-        headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md"
-        bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-        footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md"
-        footer={
-          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-          {editingClass && onDelete && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setConfirmDelete(true)}
-              className="order-2 h-11 w-full gap-2 rounded-xl sm:order-1 sm:me-auto sm:h-10 sm:w-auto cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4" />
-              {t('dashboard.delete')}
-            </Button>
-          )}
-          <div className="order-1 flex w-full gap-2.5 sm:order-2 sm:ms-auto sm:w-auto">
-            <Button type="button" onClick={onClose} variant="secondary" className="h-11 flex-1 rounded-xl border border-slate-200/80 dark:border-white/[0.08] sm:h-10 sm:flex-none cursor-pointer">
-              {copy.cancel}
-            </Button>
-            <Button
-              type="submit"
-              form="create-class-form"
-              variant="accent"
-              disabled={!isFormValid}
-              className="h-11 flex-1 rounded-xl font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 sm:h-10 sm:flex-none cursor-pointer"
-            >
-              {editingClass ? copy.save : copy.create}
-            </Button>
-          </div>
-        </div>
-        }
-      >
-      <form id="create-class-form" onSubmit={handleSubmit} dir={isAr ? 'rtl' : 'ltr'} className="space-y-3 py-1 text-start sm:space-y-4">
-        {/* Cycle : masqué si un seul cycle est configuré dans les paramètres. */}
-        {!singleCycle && (
-          <div className="space-y-1.5">
-            <label htmlFor="cycle" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {copy.cycle} *
-            </label>
-            <Select
-              value={cycle}
-              onValueChange={(value) => {
-                const nextCycle = value as Cycle;
-                setCycle(nextCycle);
-                setLevel(CLASS_LEVELS_BY_CYCLE[nextCycle][0] ?? '');
-              }}
-            >
-              <SelectTrigger id="cycle" className="!h-11 text-sm sm:!h-9 rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80">
-                <SelectValue placeholder={copy.cyclePlaceholder} />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-200/80 dark:border-white/[0.08]">
-                {cycleOptions.map(c => (
-                  <SelectItem key={c} value={c}>{copy.cycleLabels[c]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
+  const editConfiguration = editingClass && (
+    <section className="relative space-y-5 overflow-hidden rounded-[24px] border border-[#4255ff]/15 bg-white p-4 shadow-[0_12px_35px_rgba(66,85,255,0.08)] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-[#4255ff] before:via-[#7c3aed] before:to-[#f59e0b] sm:p-5 dark:border-white/10 dark:bg-slate-900/80">
+      {hasCycleChoice && (
         <div className="space-y-1.5">
-          <span id="level-label" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {copy.level} *
-          </span>
-          {customMode ? (
-            <Input
-              id="level"
-              type="text"
-              value={customLevel}
-              onChange={(e) => setCustomLevel(e.target.value)}
-              placeholder={copy.customLevelPlaceholder}
-              aria-labelledby="level-label"
-              className="rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80"
-              required
-            />
-          ) : (
-            <div role="group" aria-labelledby="level-label" className="space-y-2">
-              {/* Paliers : Tronc commun / 1re Bac / 2e Bac (choix en deux temps) */}
-              <div className="flex flex-wrap gap-1.5">
-                {levelGroups.map(g => {
-                  const isActive = activeGroup?.key === g.key;
-                  return (
-                    <button
-                      key={g.key}
-                      type="button"
-                      onClick={() => selectGroup(g.key)}
-                      aria-pressed={isActive}
-                      className={cn(
-                        'inline-flex h-9 items-center justify-center rounded-xl px-3.5 text-xs font-bold transition-all cursor-pointer',
-                        isActive
-                          ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xs shadow-indigo-500/25 border border-white/15'
-                          : 'bg-muted/50 text-muted-foreground border border-slate-200/80 dark:border-white/[0.08] hover:bg-muted hover:text-foreground'
-                      )}
-                    >
-                      {formatClassLevelGroupLabel(g.key, language)}
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Filières du palier sélectionné */}
-              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {activeGroup?.levels.map(l => {
-                  const isSelected = level === l;
-                  return (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => setLevel(l)}
-                      aria-pressed={isSelected}
-                      className={cn(
-                        'flex items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-start text-xs font-semibold leading-snug transition-all cursor-pointer',
-                        isSelected
-                          ? 'border-indigo-500/80 bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 ring-1 ring-indigo-500/30 shadow-xs'
-                          : 'border-slate-200/80 dark:border-white/[0.08] bg-card text-muted-foreground hover:border-slate-300 dark:hover:border-white/20 hover:text-foreground'
-                      )}
-                    >
-                      <span className="min-w-0 flex-1">
-                        {formatLocalizedClassDisplayName(l, language, { includeClassPrefix: false })}
-                      </span>
-                      {isSelected && <Check className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 stroke-[2.5]" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <label htmlFor="edit-class-cycle" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.cycle}</label>
+          <Select value={cycle} onValueChange={value => {
+            const nextCycle = value as Cycle;
+            setCycle(nextCycle);
+            setLevel('');
+            setLevelGroupKey('');
+          }}>
+            <SelectTrigger id="edit-class-cycle" className="!h-10 rounded-xl border-slate-300 bg-white text-sm dark:border-white/15 dark:bg-slate-900"><SelectValue placeholder={copy.cyclePlaceholder} /></SelectTrigger>
+            <SelectContent className="rounded-xl">{cycleOptions.map(item => <SelectItem key={item} value={item}>{copy.cycleLabels[item]}</SelectItem>)}</SelectContent>
+          </Select>
         </div>
+      )}
 
-        <div className="space-y-1.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-muted/20 p-3 sm:p-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-            <div className="min-w-0 flex-1">
-              <label htmlFor="group" className="block text-xs font-bold uppercase tracking-wider text-foreground">
-                {copy.group} *
-              </label>
-              <p id="group-help" className={cn('mt-0.5 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>
-                {groupError ?? copy.groupHint}
-              </p>
-            </div>
-            <div className="w-full sm:w-auto">
-              <Input
-                id="group"
-                type="text"
-                value={group}
-                onChange={(e) => setGroup(sanitizeGroupNumberInput(e.target.value))}
-                onBlur={() => {
-                  const next = normalizeGroupNumber(group);
-                  if (next) setGroup(next);
-                }}
-                placeholder="1–99"
-                className="h-11 w-full sm:w-28 text-center text-sm font-bold rounded-xl border-2 border-black dark:border-white bg-white dark:bg-slate-950 text-black dark:text-white shadow-xs transition-all focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-black dark:focus-visible:border-white"
-                inputMode="numeric"
-                maxLength={2}
-                aria-invalid={!!groupError}
-                aria-describedby="group-help"
-              />
-            </div>
-          </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="edit-class-level" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.level}</label>
+          <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setCustomLevel(''); }} className="text-[11px] font-bold text-[#4255ff] hover:underline dark:text-[#aab4ff]">
+            {customMode ? copy.switchToOfficial : copy.createCustom}
+          </button>
         </div>
+        {customMode ? (
+          <Input id="edit-class-level" value={customLevel} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-10 rounded-xl border-slate-300 bg-white text-sm dark:border-white/15 dark:bg-slate-900" />
+        ) : (
+          <Select value={level} onValueChange={value => { setLevel(value); setLevelGroupKey(levelGroups.find(item => item.levels.includes(value))?.key ?? ''); }}>
+            <SelectTrigger id="edit-class-level" className="!h-10 rounded-xl border-slate-300 bg-white text-sm dark:border-white/15 dark:bg-slate-900"><SelectValue placeholder={copy.level} /></SelectTrigger>
+            <SelectContent className="rounded-xl">{editingLevelOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</SelectItem>)}</SelectContent>
+          </Select>
+        )}
+      </div>
 
-        {/* Matière : affichée seulement si le prof enseigne plusieurs matières
-            (2+ configurées dans les Paramètres) ; sinon la matière est héritée. */}
-        {!(hideSubjectField && !customMode) && (
+      <div className="grid gap-3 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-end">
+        <div className="space-y-1.5">
+          <label htmlFor="edit-class-group" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.group}</label>
+          <Input id="edit-class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} inputMode="numeric" enterKeyHint="done" maxLength={2} aria-invalid={Boolean(groupError)} className="h-10 rounded-xl border-2 border-[#4255ff]/35 bg-[#f8f9ff] text-center text-sm font-bold focus:border-[#4255ff] dark:border-[#7788ff]/35 dark:bg-slate-950" />
+        </div>
+        {showSubjectChoice && (
           <div className="space-y-1.5">
-            <label htmlFor="subject" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {copy.subject} *
-            </label>
+            <label htmlFor="edit-class-subject" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>
             {customMode ? (
-              <Input
-                id="subject"
-                type="text"
-                value={customSubject}
-                onChange={(e) => setCustomSubject(e.target.value)}
-                placeholder={copy.customSubjectPlaceholder}
-                className="rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80"
-                required
-              />
+              <Input id="edit-class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-10 rounded-xl border-slate-300 bg-white text-sm dark:border-white/15 dark:bg-slate-900" />
             ) : (
-              <Select value={subject} onValueChange={setSubject} required>
-                <SelectTrigger id="subject" className="!h-11 text-sm sm:!h-9 rounded-xl border-slate-200/80 dark:border-white/[0.08] bg-background/80">
-                  <SelectValue placeholder={copy.subjectPlaceholder} />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-slate-200/80 dark:border-white/[0.08]">
-                  {subjectOptions.map(s => (
-                    <SelectItem key={s} value={s}>{formatLocalizedSubjectDisplayName(s, language)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Select value={subject} onValueChange={setSubject}><SelectTrigger id="edit-class-subject" className="!h-10 rounded-xl border-slate-300 bg-white text-sm dark:border-white/15 dark:bg-slate-900"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>
             )}
           </div>
         )}
+      </div>
+      {groupError && <p className="text-xs font-semibold text-destructive">{groupError}</p>}
+    </section>
+  );
 
-        {!editingClass && (
-          <button
-            type="button"
-            onClick={() => setCustomMode(v => !v)}
-            className="mt-2 text-[11px] font-medium text-muted-foreground/70 underline-offset-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer"
-          >
-            {customMode ? copy.switchToOfficial : copy.createCustom}
-          </button>
-        )}
-      </form>
+  return (
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} title={
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#4255ff] to-[#7c3aed] text-white shadow-[0_8px_20px_rgba(66,85,255,0.28)] ring-1 ring-white/25">
+            {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#4255ff] dark:text-[#aab4ff]">{copy.guidedLabel}</span>
+            <span className="mt-0.5 block text-base font-extrabold tracking-[-0.02em] text-foreground sm:text-lg">{editingClass ? copy.editTitle : copy.createTitle}</span>
+          </span>
+        </div>
+      } description={editingClass ? copy.editDescription : copy.createDescription} maxWidth="xl"
+        className="border border-slate-200/80 bg-white/95 shadow-[0_32px_100px_rgba(30,41,59,0.24)] backdrop-blur-2xl sm:max-w-2xl sm:rounded-[32px] dark:border-white/[0.10] dark:bg-[#0c142b]/95"
+        headerClassName="border-b border-[#4255ff]/10 bg-gradient-to-r from-white via-[#fafaff] to-[#f4f1ff] px-5 pb-4 pt-5 backdrop-blur-md sm:px-7 sm:pb-4 sm:pt-6 dark:border-white/[0.08] dark:from-slate-900/90 dark:via-[#111a38]/90 dark:to-[#171638]/90"
+        bodyClassName="bg-[#f7f8fc] px-5 py-5 sm:px-7 sm:py-6 dark:bg-gradient-to-b dark:from-[#0d1630] dark:to-[#0a1125]"
+        footerClassName="border-t border-slate-200/70 bg-white/70 px-5 py-3.5 backdrop-blur-md sm:px-7 sm:py-4 dark:border-white/[0.08] dark:bg-slate-900/60"
+        footer={<div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-10 items-center gap-2">
+            {editingClass && onDelete && <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)} className="h-10 w-full rounded-xl px-4 text-xs font-semibold sm:w-auto sm:text-sm"><Trash2 className="h-4 w-4" />{t('dashboard.delete')}</Button>}
+            {!editingClass && stepIndex > 0 && <Button type="button" variant="outline" onClick={goBack} className="h-10 w-full rounded-xl px-4 text-xs font-semibold sm:w-auto sm:text-sm">
+              {locale === 'ar' ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}{copy.back}
+            </Button>}
+          </div>}
+          <div className="grid grid-cols-2 gap-2 sm:ms-auto sm:flex sm:items-center">
+            <Button type="button" variant="outline" onClick={onClose} className="h-10 w-full rounded-xl border-slate-200 bg-white px-4 text-xs font-semibold shadow-xs sm:w-auto sm:text-sm dark:border-white/10 dark:bg-white/5">{copy.cancel}</Button>
+            {step === 'cycle' && <Button type="button" onClick={() => chooseCycle(cycle)} className="h-10 w-full rounded-xl bg-[#4255ff] px-5 text-xs font-bold text-white shadow-[0_6px_16px_rgba(66,85,255,0.25)] hover:bg-[#3444df] sm:w-auto sm:text-sm">{copy.next}{locale === 'ar' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}</Button>}
+            {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="h-10 w-full rounded-xl bg-[#4255ff] px-5 text-xs font-bold text-white shadow-[0_6px_16px_rgba(66,85,255,0.25)] hover:bg-[#3444df] sm:w-auto sm:text-sm">{copy.next}{locale === 'ar' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}</Button>}
+            {(editingClass || step === 'details') && <Button type="submit" form="class-form" disabled={!isFormValid} className="h-10 w-full rounded-xl bg-[#4255ff] px-5 text-xs font-bold text-white shadow-[0_6px_16px_rgba(66,85,255,0.25)] hover:bg-[#3444df] sm:w-auto sm:text-sm">{editingClass ? copy.save : copy.create}</Button>}
+          </div>
+        </div>}
+      >
+        <form id="class-form" onSubmit={handleSubmit} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-5 text-start">
+          {!editingClass && <nav className="rounded-[20px] border border-[#4255ff]/10 bg-gradient-to-r from-white to-[#f3f1ff] px-3 py-3 shadow-[0_6px_20px_rgba(66,85,255,0.06)] sm:px-4 dark:border-white/10 dark:from-slate-900 dark:to-[#161735]" aria-label={copy.step.replace('{current}', String(stepIndex + 1)).replace('{total}', String(steps.length))}>
+            <div className="flex items-start">
+              {steps.map((item, index) => <React.Fragment key={item}>
+                <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
+                  <span className={cn('flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-extrabold transition-all duration-300', index < stepIndex ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm' : index === stepIndex ? 'border-[#4255ff] bg-[#4255ff] text-white shadow-[0_0_0_5px_rgba(66,85,255,0.12)]' : 'border-slate-200 bg-white text-slate-400 dark:border-white/10 dark:bg-white/5')}>
+                    {index < stepIndex ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                  </span>
+                  <span className={cn('max-w-full truncate text-[9px] font-bold transition-colors sm:text-[10px]', index === stepIndex ? 'text-[#4255ff] dark:text-[#aab4ff]' : index < stepIndex ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground')}>{stepLabel(item)}</span>
+                </div>
+                {index < steps.length - 1 && <span className={cn('mt-3.5 h-0.5 min-w-3 flex-1 rounded-full transition-colors duration-500', index < stepIndex ? 'bg-gradient-to-r from-emerald-400 to-[#4255ff]' : 'bg-slate-200 dark:bg-white/10')} />}
+              </React.Fragment>)}
+            </div>
+            <p className="mt-2 text-center text-[10px] font-semibold text-muted-foreground">{copy.step.replace('{current}', String(stepIndex + 1)).replace('{total}', String(steps.length))}</p>
+          </nav>}
+
+          {!editingClass && <div key={step} className={cn('motion-reduce:animate-none', (stepDirection === 'forward') !== (locale === 'ar') ? 'animate-class-step-forward' : 'animate-class-step-back')}>
+          {step === 'cycle' && hasCycleChoice && <section className="space-y-3"><label htmlFor="class-cycle" className="block text-sm font-bold text-foreground">{copy.cycle}</label><Select value={cycle} onValueChange={value => setCycle(value as Cycle)}><SelectTrigger id="class-cycle" className="!h-12 rounded-2xl border-slate-300 bg-white px-4 text-sm dark:border-white/15 dark:bg-slate-900"><SelectValue placeholder={copy.cyclePlaceholder} /></SelectTrigger><SelectContent className="rounded-2xl">{cycleOptions.map(item => <SelectItem key={item} value={item}>{copy.cycleLabels[item]}</SelectItem>)}</SelectContent></Select></section>}
+
+          {step === 'level' && <section className="space-y-3">
+            <div className="flex items-baseline justify-between gap-3"><h3 className="text-sm font-extrabold text-foreground">{copy.level}</h3>{!editingClass && <button type="button" onClick={() => { setCustomMode(value => !value); setLevel(''); setLevelGroupKey(''); setGroup(''); }} className="text-[11px] font-bold text-[#4255ff] hover:underline dark:text-[#aab4ff]">{customMode ? copy.switchToOfficial : copy.createCustom}</button>}</div>
+            {customMode ? <Input value={customLevel} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-2xl border-slate-300 bg-white px-4 dark:border-white/15 dark:bg-slate-900" autoFocus /> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
+          </section>}
+
+          {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
+
+          {step === 'details' && <section className="space-y-3"><div className="relative overflow-hidden rounded-[22px] border border-[#4255ff]/20 bg-gradient-to-br from-white via-[#f7f7ff] to-[#efedff] p-4 shadow-[0_12px_30px_rgba(66,85,255,0.09)] before:absolute before:inset-y-0 before:start-0 before:w-1 before:bg-gradient-to-b before:from-[#4255ff] before:to-[#8b5cf6] dark:border-[#7788ff]/25 dark:from-[#141a39] dark:via-[#121832] dark:to-[#1a1740]"><div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-end"><div><p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#4255ff] dark:text-[#aab4ff]">{copy.selectedClass}</p><p className="mt-1 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{selectedClassLabel}</p><p id="group-help" className={cn('mt-1 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div><div className="space-y-1"><label htmlFor="class-group" className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">{copy.group}</label><Input id="class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 rounded-xl border-2 border-[#4255ff]/35 bg-white text-center text-sm font-extrabold text-slate-900 shadow-inner focus:border-[#4255ff] dark:border-[#7788ff]/35 dark:bg-slate-950 dark:text-white" /></div></div>
+            {showSubjectChoice && <div className="mt-3 border-t border-[#4255ff]/15 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-10 rounded-xl border-[#4255ff]/20 bg-white text-sm dark:border-[#7788ff]/25 dark:bg-slate-950" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-10 rounded-xl border-[#4255ff]/20 bg-white text-sm dark:border-[#7788ff]/25 dark:bg-slate-950"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}
+          </div></section>}
+          </div>}
+          {editConfiguration}
+        </form>
       </Modal>
-      {editingClass && onDelete && (
-        <ConfirmDialog
-          open={confirmDelete}
-          onOpenChange={setConfirmDelete}
-          title={t('dashboard.deleteNotebookTitle', { name: editingDisplayName })}
-          description={t('dashboard.deleteNotebookDescription')}
-          confirmLabel={t('dashboard.delete')}
-          confirmationPhrase={editingDisplayName}
-          confirmationHint={t('dashboard.deleteNotebookConfirmHint', { name: editingDisplayName })}
-          onConfirm={onDelete}
-        />
-      )}
+
+      {editingClass && onDelete && <ConfirmDialog open={confirmDelete} onOpenChange={setConfirmDelete} title={t('dashboard.deleteNotebookTitle', { name: formatLocalizedClassDisplayName(editingClass.name, locale) })} description={t('dashboard.deleteNotebookDescription')} confirmLabel={t('dashboard.delete')} confirmationPhrase={formatLocalizedClassDisplayName(editingClass.name, locale)} confirmationHint={t('dashboard.deleteNotebookConfirmHint', { name: formatLocalizedClassDisplayName(editingClass.name, locale) })} onConfirm={onDelete} />}
     </>
   );
 };

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import type { ClassInfo, Cycle } from '@/types';
@@ -44,13 +44,22 @@ export const OnboardingPage = ({
     const copy = useMemo(() => copyFor(lang), [lang]);
     const [finishing, setFinishing] = useState(false);
 
-    const cycle = (config.selectedCycles?.[0] as Cycle | undefined) ?? 'lycee';
+    const selectedCycles = (config.selectedCycles?.length ? config.selectedCycles : ['lycee']) as Cycle[];
+    const [classCycle, setClassCycle] = useState<Cycle>(() => selectedCycles[0] ?? 'lycee');
+    const cycle = classCycle;
     const selectedSubjects = config.selectedSubjects ?? [];
     const subjectOptions = useMemo(() => subjectOptionsFor(config.selectedSubjects), [config.selectedSubjects]);
     const isProfileValid = Boolean(config.defaultTeacherName?.trim());
 
+    // Le cycle actif sert uniquement à l'étape de création des classes. Il ne
+    // réduit jamais les cycles déclarés dans le profil de l'enseignant.
+    useEffect(() => {
+        if (!selectedCycles.includes(classCycle)) setClassCycle(selectedCycles[0] ?? 'lycee');
+    }, [classCycle, selectedCycles]);
+
     const classDraft = useOnboardingClassDraft({
         cycle,
+        selectedCycles,
         subject: selectedSubjects[0] ?? '',
         selectedSubjects,
         classes,
@@ -77,10 +86,11 @@ export const OnboardingPage = ({
         onConfigChange({ establishmentName });
     }, [onConfigChange]);
 
-    const handleCycleChange = useCallback((nextCycle: Cycle) => {
-        onConfigChange({ selectedCycles: [nextCycle], showAllCycles: false });
-        classDraft.resetForCycle(nextCycle);
-    }, [classDraft.resetForCycle, onConfigChange]);
+    const handleCyclesChange = useCallback((nextCycles: Cycle[]) => {
+        if (nextCycles.length === 0) return;
+        onConfigChange({ selectedCycles: nextCycles, showAllCycles: false });
+        setClassCycle(current => nextCycles.includes(current) ? current : nextCycles[0]);
+    }, [onConfigChange]);
 
     const handleSubjectToggle = useCallback((subject: string) => {
         const next = selectedSubjects.includes(subject)
@@ -119,11 +129,11 @@ export const OnboardingPage = ({
             <ProfileStep
                 teacherName={config.defaultTeacherName ?? ''}
                 establishmentName={config.establishmentName ?? ''}
-                cycle={cycle}
+                cycles={selectedCycles}
                 copy={copy}
                 onTeacherNameChange={handleTeacherNameChange}
                 onEstablishmentChange={handleEstablishmentChange}
-                onCycleChange={handleCycleChange}
+                onCyclesChange={handleCyclesChange}
             />
         );
     } else if (navigation.step === 3) {
@@ -142,6 +152,7 @@ export const OnboardingPage = ({
             <ClassesStep
                 classes={classes}
                 cycle={cycle}
+                cycles={selectedCycles}
                 lang={lang}
                 copy={copy}
                 selectedSubjects={selectedSubjects}
@@ -149,6 +160,7 @@ export const OnboardingPage = ({
                 controller={classDraft}
                 onRemove={handleRemoveClass}
                 onConfigChange={onConfigChange}
+                onCycleChange={setClassCycle}
             />
         );
     } else {

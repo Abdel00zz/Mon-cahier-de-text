@@ -261,6 +261,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
     }, [classes]);
 
+    const teacherSubjects = useMemo(() => {
+        const configuredSubjects = Array.from(new Set(
+            (config.selectedSubjects ?? []).filter((subject): subject is string => Boolean(subject?.trim()))
+        ));
+        return configuredSubjects.length > 0 ? configuredSubjects : availableSubjects;
+    }, [availableSubjects, config.selectedSubjects]);
+    const shouldShowSubjectBadge = teacherSubjects.length > 1;
+
+    // Un filtre devenu invisible (après le passage à une seule matière) ne
+    // doit jamais laisser le tableau de bord vide.
+    useEffect(() => {
+        if (!shouldShowSubjectBadge || (subjectFilter !== 'all' && !teacherSubjects.includes(subjectFilter))) {
+            setSubjectFilter('all');
+        }
+    }, [shouldShowSubjectBadge, subjectFilter, teacherSubjects]);
+
     if (isLoading) {
         return <DashboardSkeleton />;
     }
@@ -415,19 +431,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-[#fafafa] dark:bg-[#121212] text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
+            className="min-h-screen bg-[#e7f2f5] dark:bg-[#0c142b] text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
             data-dashboard-root
         >
             {/* Ambient Colorful Glows */}
             <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 select-none">
-                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-transparent blur-3xl opacity-35 dark:opacity-25" />
-                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-bl from-violet-600/20 via-fuchsia-500/15 to-transparent blur-3xl opacity-30 dark:opacity-20" />
-                <div className="absolute -bottom-32 left-1/3 h-[420px] w-[420px] rounded-full bg-gradient-to-tr from-cyan-500/15 via-indigo-600/15 to-transparent blur-3xl opacity-35 dark:opacity-25" />
+                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-cyan-100/45 blur-3xl opacity-45 dark:bg-cyan-500/10 dark:opacity-25" />
+                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-violet-100/40 blur-3xl opacity-35 dark:bg-cyan-500/10 dark:opacity-20" />
             </div>
 
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
-                    <header className="mb-4 sm:mb-6 space-y-2 sm:space-y-3 pb-1" id="dashboard-header">
+                    <header className="mb-4 space-y-2 rounded-[24px] border border-white/90 bg-white/75 px-4 py-3 shadow-[0_8px_22px_rgba(45,74,82,0.04)] backdrop-blur-md sm:mb-6 sm:space-y-3 sm:px-5 sm:py-4 dark:border-white/[0.08] dark:bg-slate-900/65" id="dashboard-header">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
                             <div>
                                 <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
@@ -435,7 +450,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     {teacherName && (
                                         <span
                                             dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className="font-itim text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 text-xl sm:text-2xl font-bold tracking-wide"
+                                            className="font-itim text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-600 dark:from-cyan-400 dark:to-cyan-400 text-xl sm:text-2xl font-bold tracking-wide"
                                         >
                                             {teacherName}
                                         </span>
@@ -447,20 +462,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </p>
                             </div>
 
-                            {classes.length > 0 && availableSubjects.length > 1 && (
+                            {classes.length > 0 && shouldShowSubjectBadge && (
                                 <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
                                     <button
                                         type="button"
                                         onClick={() => setSubjectFilter('all')}
                                         className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                                             subjectFilter === 'all'
-                                                ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 border border-white/10'
+                                                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-500/20 border border-white/10'
                                                 : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                                         }`}
                                     >
                                         {t('dashboard.filterAll')}
                                     </button>
-                                    {availableSubjects.map(subject => {
+                                    {teacherSubjects.map(subject => {
                                         const isActive = subjectFilter === subject;
                                         return (
                                             <button
@@ -469,7 +484,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
                                                 className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                                                     isActive
-                                                        ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 border border-white/10'
+                                                        ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-500/20 border border-white/10'
                                                         : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                                                 }`}
                                             >
@@ -490,7 +505,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         <h2 id="classes-heading" className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
                                             <span>{t('dashboard.classes')}</span>
                                             {filteredClasses.length > 0 && (
-                                                <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/30">
+                                                <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-cyan-50 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200/50 dark:border-cyan-800/30">
                                                     {filteredClasses.length}
                                                 </span>
                                             )}
@@ -501,7 +516,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setCreateModalOpen(true)}
-                                            className="inline-flex h-8 items-center gap-1.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 px-3.5 text-xs font-semibold text-white shadow-sm shadow-indigo-500/25 rounded-xl border border-white/15 transition-all hover:shadow-md hover:shadow-indigo-500/40 hover:from-indigo-600 hover:to-violet-700 active:scale-95 cursor-pointer"
+                                            className="inline-flex h-8 items-center gap-1.5 bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 px-3.5 text-xs font-semibold text-white shadow-sm shadow-cyan-500/25 rounded-xl border border-white/15 transition-all hover:shadow-md hover:shadow-cyan-500/40 hover:from-cyan-600 hover:to-cyan-700 active:scale-95 cursor-pointer"
                                             aria-label={t('dashboard.addClass')}
                                             title={t('dashboard.addClass')}
                                         >
@@ -538,7 +553,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                         setClassDisplayMode(option);
                                                                         setDisplayMenuOpen(false);
                                                                     }}
-                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-indigo-500/10 text-indigo-600 font-semibold dark:bg-indigo-500/20 dark:text-indigo-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
+                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-cyan-500/10 text-cyan-600 font-semibold dark:bg-cyan-500/20 dark:text-cyan-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
                                                                 >
                                                                     <span>{displayCopy(option).label}</span>
                                                                 </button>
@@ -554,7 +569,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 {classes.length === 0 ? (
                                     <div className="relative flex flex-col items-center justify-center py-10 sm:py-14 md:py-16 px-4 sm:px-8 text-center rounded-3xl border border-slate-200/60 dark:border-white/[0.06] bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl shadow-xs overflow-hidden">
                                         {/* Colorful Glow behind image */}
-                                        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-96 rounded-full bg-gradient-to-tr from-indigo-500/10 via-violet-500/10 to-amber-500/10 blur-3xl opacity-50 dark:opacity-30" />
+                                        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-96 rounded-full bg-gradient-to-tr from-cyan-500/10 via-cyan-500/10 to-amber-500/10 blur-3xl opacity-50 dark:opacity-30" />
 
                                         {/* Top: Modern Rounded Framed Illustration */}
                                         <div className="relative mb-5 sm:mb-6 flex items-center justify-center p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/80 shadow-[0_6px_24px_-6px_rgba(15,23,42,0.06)] dark:shadow-[0_6px_24px_-6px_rgba(0,0,0,0.4)] backdrop-blur-sm max-w-full overflow-hidden">
@@ -588,7 +603,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                         setOnboardingOpen(true);
                                                     }
                                                 }}
-                                                className="h-10 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 inline-flex items-center gap-2 cursor-pointer shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40"
+                                                className="h-10 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 inline-flex items-center gap-2 cursor-pointer shadow-md shadow-cyan-500/25 hover:shadow-lg hover:shadow-cyan-500/40"
                                             >
                                                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                                 <span>{t('dashboard.addClass')}</span>
@@ -628,6 +643,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     onShowNotifications={() => setNotificationClass(classInfo)}
                                                     notificationCount={notificationCounts.get(classInfo.id) ?? 0}
+                                                    showSubjectBadge={shouldShowSubjectBadge}
                                                 />
                                             </div>
                                         ))}
@@ -648,7 +664,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 defaultTeacherName={teacherName}
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
-                teacherCycles={config.showAllCycles ? undefined : (config.selectedCycles as Cycle[] | undefined)}
+                teacherCycles={config.selectedCycles?.length ? (config.selectedCycles as Cycle[]) : undefined}
                 existingClasses={classes}
                 editingClass={editingClass}
                 onUpdate={(classId, updates) => {

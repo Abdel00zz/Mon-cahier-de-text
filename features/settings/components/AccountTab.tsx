@@ -25,7 +25,7 @@ export const AccountTab: React.FC = () => {
         <div className="space-y-4">
             <div className="settings-surface relative overflow-hidden p-4 sm:p-5">
                 <div className="flex items-start gap-3.5">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-xs">
                         <User className="h-5 w-5 stroke-[2]" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -49,7 +49,7 @@ export const AccountTab: React.FC = () => {
             <div className="settings-surface relative overflow-hidden p-4 sm:p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-start gap-3.5">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-xs">
                             <RefreshCw className="h-5 w-5 stroke-[2]" />
                         </span>
                         <div className="min-w-0">
@@ -68,7 +68,7 @@ export const AccountTab: React.FC = () => {
                     <Button
                         type="button"
                         onClick={syncNow}
-                        className="h-10 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white shadow-[0_4px_14px_rgba(99,102,241,0.3)] transition-all cursor-pointer sm:shrink-0 gap-1.5"
+                        className="h-10 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-[0_4px_14px_rgba(6,182,212,0.3)] transition-all cursor-pointer sm:shrink-0 gap-1.5"
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                         {t('account.syncNow')}

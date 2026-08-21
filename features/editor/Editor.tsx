@@ -38,6 +38,7 @@ import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
+import { getClassVisual } from '@/utils/classVisuals';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
@@ -181,6 +182,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     printTextSize,
     printLineSpacing,
   } = editorState;
+  const chapterSurfaceClass = useMemo(() => getClassVisual(classInfo.name).chapterSurfaceClass, [classInfo.name]);
 
   // Les événements pagehide/démontage doivent toujours voir le dernier rendu,
   // sans dépendre du délai d'autosauvegarde de 1,5 seconde.
@@ -1111,6 +1113,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
               onLoadPredefined={predefinedOffer ? handleLoadPredefined : undefined}
+              chapterSurfaceClass={chapterSurfaceClass}
             />
           </main>
         </div>

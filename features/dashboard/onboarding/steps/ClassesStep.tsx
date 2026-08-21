@@ -1,8 +1,8 @@
-import { memo, useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { classNameForLevelAndGroup, isSameClassGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
-import { LEVEL_GROUPS } from '../content';
+import { LEVEL_GROUPS, ONBOARDING_CYCLES } from '../content';
 import { cn } from '@/lib/utils';
 import { Plus, X, Check, School, GraduationCap, FlaskConical, Layers } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import type { OnboardingClassDraftController } from '../useOnboardingClassDraft'
 interface ClassesStepProps {
     classes: ClassInfo[];
     cycle: Cycle;
+    cycles?: Cycle[];
     lang: ModalLang;
     copy: OnboardingCopy;
     selectedSubjects?: string[];
@@ -21,6 +22,7 @@ interface ClassesStepProps {
     onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
     onRemove: (classInfo: ClassInfo) => void;
     onConfigChange?: (patch: Partial<any>) => void;
+    onCycleChange?: (cycle: Cycle) => void;
 }
 
 const DEFAULT_QUICK_GROUPS = ['1', '2', '3', '4'];
@@ -28,11 +30,13 @@ const DEFAULT_QUICK_GROUPS = ['1', '2', '3', '4'];
 export const ClassesStep = memo<ClassesStepProps>(({
     classes,
     cycle,
+    cycles = [cycle],
     lang,
     copy,
     selectedSubjects = [],
     onCreateClass,
     onRemove,
+    onCycleChange,
 }) => {
     // Liste des paliers pédagogiques pour ce cycle (ex: Tronc commun, 1re Bac, 2e Bac pour le Lycée)
     const levelGroups = useMemo(() => LEVEL_GROUPS[cycle] ?? [], [cycle]);
@@ -50,6 +54,11 @@ export const ClassesStep = memo<ClassesStepProps>(({
     // État pour la saisie d'un autre numéro de groupe (ex: groupe 5, 6...)
     const [otherGroupLevel, setOtherGroupLevel] = useState<string | null>(null);
     const [otherGroupValue, setOtherGroupValue] = useState('');
+
+    useEffect(() => {
+        setActiveGroupKey(levelGroups[0]?.key ?? 'common');
+        setOtherGroupLevel(null);
+    }, [cycle, levelGroups]);
 
     // Palier sélectionné
     const currentLevelGroup = useMemo(() => {
@@ -113,11 +122,35 @@ export const ClassesStep = memo<ClassesStepProps>(({
         setOtherGroupLevel(null);
     }, [otherGroupValue, classes, handleAddClass, activeSubject]);
 
-    // Icône du cycle
-    const CycleIcon = cycle === 'college' ? School : cycle === 'prepa' ? FlaskConical : GraduationCap;
+    const iconForCycle = (value?: Cycle) => value === 'college' ? School : value === 'prepa' ? FlaskConical : GraduationCap;
 
     return (
         <div className="mx-auto max-w-2xl space-y-5 animate-fade-in duration-500">
+            {cycles.length > 1 && (
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {ONBOARDING_CYCLES.filter(option => cycles.includes(option.key)).map(option => {
+                        const active = option.key === cycle;
+                        const Icon = option.icon;
+                        return (
+                            <button
+                                key={option.key}
+                                type="button"
+                                onClick={() => onCycleChange?.(option.key)}
+                                aria-pressed={active}
+                                className={cn(
+                                    'flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 px-3 text-center text-xs font-bold transition-all',
+                                    active
+                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-950 shadow-[0_4px_14px_rgba(99,102,241,0.16)]'
+                                        : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/40',
+                                )}
+                            >
+                                <Icon className={cn('h-4 w-4', active ? 'text-indigo-600' : 'text-slate-400')} />
+                                <span>{copy.cycleLabels[option.key]}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
             {/* ── ZONE 1 : Barre unifiée des classes sélectionnées (Live preview) ── */}
             <div className="relative overflow-hidden rounded-2xl border border-indigo-100/90 bg-gradient-to-br from-indigo-50/70 via-white/90 to-violet-50/50 p-4 shadow-xs backdrop-blur-sm sm:p-5">
                 {/* Ambient glow in corner */}
@@ -165,7 +198,10 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                                         className="group inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-white/95 px-3 py-1.5 text-xs font-bold text-indigo-950 shadow-[0_2px_8px_rgba(99,102,241,0.08)] transition-all hover:border-indigo-300 sm:text-sm"
                                     >
-                                        <CycleIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600" />
+                                        {(() => {
+                                            const ClassCycleIcon = iconForCycle(classInfo.cycle);
+                                            return <ClassCycleIcon className="h-3.5 w-3.5 shrink-0 text-indigo-600" />;
+                                        })()}
                                         <span className="max-w-[220px] truncate sm:max-w-xs">
                                             {formatLocalizedClassDisplayName(classInfo.name, lang)}
                                         </span>

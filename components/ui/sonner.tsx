@@ -16,7 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group font-sans"
       icons={{
         success: <div className="hidden" />,
-        info: <Info className="h-3 w-3 text-blue-500 shrink-0" />,
+        info: <Info className="h-3 w-3 text-cyan-500 shrink-0" />,
         warning: <TriangleAlert className="h-3 w-3 text-amber-500 shrink-0" />,
         error: <CircleX className="h-3 w-3 text-red-500 shrink-0" />,
         loading: <Loader2 className="h-3 w-3 animate-spin shrink-0" />,

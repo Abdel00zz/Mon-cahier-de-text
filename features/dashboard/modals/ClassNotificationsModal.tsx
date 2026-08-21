@@ -158,13 +158,13 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
       onClose={onClose}
       maxWidth="lg"
       hideClose={false}
-      className="border border-slate-200/90 dark:border-white/[0.08] bg-card/95 backdrop-blur-2xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.3)] sm:max-w-[42rem] sm:rounded-[32px] overflow-hidden"
-      headerClassName="border-b border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md px-5 pb-3.5 pt-5 sm:px-7 sm:pt-6 sm:pb-4"
+      className="border border-slate-200/90 bg-white/95 backdrop-blur-2xl shadow-xl sm:max-w-[42rem] sm:rounded-[32px] overflow-hidden dark:border-white/[0.08] dark:bg-[#0c142b]/95"
+      headerClassName="border-b border-slate-200/70 bg-white/70 backdrop-blur-md px-5 pb-3.5 pt-5 sm:px-7 sm:pt-6 sm:pb-4 dark:border-white/[0.08] dark:bg-slate-900/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t border-slate-200/70 dark:border-white/[0.08] bg-card/70 backdrop-blur-md px-5 py-3.5 sm:px-7 sm:py-4"
+      footerClassName="border-t border-slate-200/70 bg-white/70 backdrop-blur-md px-5 py-3.5 sm:px-7 sm:py-4 dark:border-white/[0.08] dark:bg-slate-900/60"
       title={(
         <div className={cn('flex min-w-0 items-center gap-3 text-foreground', isRtl && 'font-bold tracking-normal')}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-xs">
             <Info className="h-5 w-5 stroke-[2.2]" />
           </div>
           <div className="min-w-0 flex-1">
@@ -183,7 +183,7 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           <button
             type="button"
             onClick={openClass}
-            className="flex h-10 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 px-5 text-xs font-bold text-white shadow-md shadow-indigo-500/25 transition-all hover:shadow-lg hover:shadow-indigo-500/40 hover:from-indigo-600 hover:to-violet-700 active:scale-[0.98] sm:h-11 sm:text-sm border border-white/15 cursor-pointer"
+            className="flex h-10 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 px-5 text-xs font-bold text-white shadow-md shadow-cyan-500/25 transition-all hover:shadow-lg hover:shadow-cyan-500/40 hover:from-cyan-600 hover:to-cyan-700 active:scale-[0.98] sm:h-11 sm:text-sm border border-white/15 cursor-pointer"
           >
             {t('notifications.action.openClass')}
           </button>
@@ -222,19 +222,19 @@ export const ClassNotificationsModal: React.FC<ClassNotificationsModalProps> = (
           </div>
 
           {/* Prochaine séance */}
-          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-indigo-500/30 dark:border-indigo-500/25 bg-indigo-500/[0.04] p-4 shadow-xs transition-shadow hover:shadow-sm">
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-cyan-500/30 dark:border-cyan-500/25 bg-cyan-500/[0.04] p-4 shadow-xs transition-shadow hover:shadow-sm">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
                 {t('dashboard.nextSessionStatus')}
               </span>
               {nextSession?.label && (
-                <span className="inline-flex items-center rounded-md bg-indigo-500/15 px-2 py-0.5 font-mono text-[10px] font-medium text-indigo-700 dark:text-indigo-300">
+                <span className="inline-flex items-center rounded-md bg-cyan-500/15 px-2 py-0.5 font-mono text-[10px] font-medium text-cyan-700 dark:text-cyan-300">
                   {nextSession.label}
                 </span>
               )}
             </div>
             <div className="mt-2.5 min-w-0">
-              <div className="line-clamp-2 text-sm font-bold leading-snug text-indigo-700 dark:text-indigo-300">
+              <div className="line-clamp-2 text-sm font-bold leading-snug text-cyan-700 dark:text-cyan-300">
                 <MathText source={nextLessonTitle} inline>
                   {nextLessonTitle ?? t('dashboard.none')}
                 </MathText>

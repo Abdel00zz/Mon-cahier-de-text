@@ -23,7 +23,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       formFieldVariants({ size, variant }),
-      "justify-between data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
+      "cursor-pointer justify-between data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
       className
     )}
     {...props}

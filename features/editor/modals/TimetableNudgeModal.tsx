@@ -64,8 +64,8 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       hideClose
       blockDismiss
       swipeToDismiss={false}
-      className="border-border/70 bg-card shadow-2xl sm:max-w-md sm:rounded-[28px] [&_[data-swipe-dismiss-handle]]:hidden"
-      headerClassName={`px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60 ${isAr ? 'font-ar text-right' : 'text-left'}`}
+      className="border-border/70 bg-white/95 shadow-xl backdrop-blur-2xl dark:bg-[#0c142b]/95 sm:max-w-md sm:rounded-[32px] [&_[data-swipe-dismiss-handle]]:hidden"
+      headerClassName={`px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60 ${isAr ? 'font-ar text-right' : 'text-left'}`}
       bodyClassName="min-h-0 px-5 py-5 sm:px-7 sm:py-6"
       title={
         <span dir={isAr ? 'rtl' : 'ltr'} className={`flex items-center gap-3 text-base sm:text-lg font-bold leading-tight ${isAr ? 'font-ar' : ''}`}>

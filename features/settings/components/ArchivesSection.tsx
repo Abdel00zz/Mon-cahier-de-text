@@ -59,7 +59,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
 
     return (
         <div className="settings-section-block p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
                 <div className="min-w-0">
                     <h4 className="text-sm font-bold text-foreground">{t('archives.title')}</h4>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">

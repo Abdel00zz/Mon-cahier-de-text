@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium tracking-normal ring-offset-background transition-all duration-200 will-change-transform active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
+  "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium tracking-normal ring-offset-background transition-all duration-200 will-change-transform active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground shadow-sm shadow-primary/15 hover:brightness-110 hover:shadow-md hover:shadow-primary/20",
-        accent: "bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 hover:from-indigo-600 hover:to-violet-700 active:brightness-95 border border-white/15",
+        accent: "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-500/25 hover:from-cyan-600 hover:to-cyan-700 hover:shadow-md hover:shadow-cyan-500/30 active:scale-[0.98] border border-white/20",
         destructive: "bg-destructive text-destructive-foreground shadow-sm shadow-destructive/15 hover:brightness-110",
         outline: "border border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground hover:border-primary/30",
         secondary: "bg-secondary text-secondary-foreground hover:bg-muted",

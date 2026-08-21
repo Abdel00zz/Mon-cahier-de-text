@@ -8,21 +8,21 @@ import type { OnboardingCopy } from '../types';
 interface ProfileStepProps {
     teacherName: string;
     establishmentName: string;
-    cycle: Cycle;
+    cycles: Cycle[];
     copy: OnboardingCopy;
     onTeacherNameChange: (name: string) => void;
     onEstablishmentChange: (name: string) => void;
-    onCycleChange: (cycle: Cycle) => void;
+    onCyclesChange: (cycles: Cycle[]) => void;
 }
 
 export const ProfileStep = memo<ProfileStepProps>(({
     teacherName,
     establishmentName,
-    cycle,
+    cycles,
     copy,
     onTeacherNameChange,
     onEstablishmentChange,
-    onCycleChange,
+    onCyclesChange,
 }) => (
     <div className="max-w-2xl space-y-6 animate-fade-in duration-500">
         <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 backdrop-blur-sm sm:p-6 shadow-xs">
@@ -55,13 +55,20 @@ export const ProfileStep = memo<ProfileStepProps>(({
             <p className="text-start text-sm font-bold text-slate-800">{copy.teachingCycle}</p>
             <div className="mx-auto grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
                 {ONBOARDING_CYCLES.map(option => {
-                    const active = cycle === option.key;
+                    const active = cycles.includes(option.key);
                     const Icon = option.icon;
                     return (
                         <button
                             key={option.key}
                             type="button"
-                            onClick={() => onCycleChange(option.key)}
+                            onClick={() => {
+                                if (active && cycles.length === 1) return;
+                                onCyclesChange(
+                                    active
+                                        ? cycles.filter(cycle => cycle !== option.key)
+                                        : [...cycles, option.key],
+                                );
+                            }}
                             aria-pressed={active}
                             className={cn(
                                 'group relative flex min-h-[150px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border p-4 text-center outline-none transition-all duration-300 focus-visible:ring-4 focus-visible:ring-indigo-500/20 active:scale-[0.98]',

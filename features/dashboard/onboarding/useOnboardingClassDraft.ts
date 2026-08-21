@@ -8,6 +8,7 @@ import type { ClassDraft, ClassDraftValidation, OnboardingCopy } from './types';
 
 interface UseOnboardingClassDraftOptions {
     cycle: Cycle;
+    selectedCycles?: Cycle[];
     subject?: string;
     selectedSubjects?: string[];
     classes: ClassInfo[];
@@ -36,6 +37,7 @@ export interface OnboardingClassDraftController {
  */
 export const useOnboardingClassDraft = ({
     cycle,
+    selectedCycles = [],
     subject = '',
     selectedSubjects = [],
     classes,
@@ -59,6 +61,7 @@ export const useOnboardingClassDraft = ({
     }, [draft.subject, selectedSubjects, subject]);
 
     const activeSubject = draft.subject || subject || selectedSubjects[0] || '';
+    const persistedCycles = selectedCycles.includes(cycle) ? selectedCycles : [...selectedCycles, cycle];
 
     const validation = useMemo(() => validateClassDraft(draft, classes), [classes, draft]);
     const isReady = Boolean(activeSubject && validation.name && !validation.issue);
@@ -120,12 +123,12 @@ export const useOnboardingClassDraft = ({
             if (activeSubject && !selectedSubjects.includes(activeSubject)) {
                 onConfigChange({
                     selectedSubjects: [...selectedSubjects, activeSubject],
-                    selectedCycles: [cycle],
+                    selectedCycles: persistedCycles,
                     showAllCycles: false,
                 });
             } else {
                 onConfigChange({
-                    selectedCycles: [cycle],
+                    selectedCycles: persistedCycles,
                     showAllCycles: false,
                 });
             }
@@ -142,7 +145,7 @@ export const useOnboardingClassDraft = ({
                 setIsAdding(false);
             }, 0);
         }
-    }, [activeSubject, copy, cycle, defaultLevel, isAdding, isReady, onConfigChange, onCreateClass, selectedSubjects, validation]);
+    }, [activeSubject, copy, cycle, defaultLevel, isAdding, isReady, onConfigChange, onCreateClass, persistedCycles, selectedSubjects, validation]);
 
     return useMemo(() => ({
         draft,

@@ -42,7 +42,7 @@
   --radius-2xl: 1rem;
   --radius-3xl: 1.25rem;
 
-  --font-sans: 'Roboto Slab', 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: 'Fira Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-itim: 'Itim', cursive, sans-serif;
 }
@@ -64,24 +64,22 @@
 }
 
 @layer base {
-  /* ── Vercel Style (TweakCN) · Light theme ──────────────────────────
-     Style Vercel épuré, clair, minimaliste et haut contraste.
-     Structure 100 % shadcn/ui : un seul jeu de variables sémantiques. */
+  /* ── Palette Slate + Cyan · surfaces calmes, accent net ───────────── */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 188 86% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 188 86% 94%;
+    --accent-foreground: 188 80% 29%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
@@ -89,15 +87,15 @@
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
-    --scheduled: 0 0% 96.1%;
-    --scheduled-foreground: 0 0% 9%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 221.2 83.2% 53.3%;
+    --scheduled: 210 40% 96%;
+    --scheduled-foreground: 222 47% 11%;
+    --border: 214 32% 91%;
+    --input: 0 0% 100%;
+    --ring: 188 86% 43%;
+    --chart-1: 188 86% 43%;
     --chart-2: 142.1 76.2% 36.3%;
     --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
+    --chart-4: 199 89% 48%;
     --chart-5: 340 75% 55%;
 
     --content-font-latin: 'Fira Sans', sans-serif;
@@ -105,20 +103,20 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 225 56% 11%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
+    --card: 224 52% 14%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
+    --popover: 224 52% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 14%;
+    --primary: 188 86% 43%;
+    --primary-foreground: 225 56% 11%;
+    --secondary: 222 32% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 14%;
+    --muted: 222 32% 18%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 16%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 190 74% 16%;
+    --accent-foreground: 190 90% 74%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 210 40% 98%;
     --success: 142.1 70.6% 45.3%;
@@ -126,15 +124,15 @@
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 84.2% 60%;
-    --scheduled: 217.2 32.6% 14%;
+    --scheduled: 222 32% 18%;
     --scheduled-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.8 100% 65%;
-    --chart-1: 220 70% 50%;
+    --border: 220 30% 23%;
+    --input: 224 52% 14%;
+    --ring: 188 86% 55%;
+    --chart-1: 188 86% 55%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
+    --chart-4: 199 89% 58%;
     --chart-5: 340 75% 55%;
   }
 
@@ -186,7 +184,7 @@
   }
 
   [data-dashboard-root] {
-    font-family: 'Fira Sans', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Outfit', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   }
 
   [data-dashboard-root] h1, 
@@ -195,7 +193,7 @@
   .auth-page-shell h1,
   .auth-page-shell h2,
   .auth-page-shell h3 {
-    font-family: 'Roboto Slab', 'Alexandria', 'IBM Plex Sans Arabic', serif;
+    font-family: 'Outfit', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, sans-serif;
   }
 
   /* ── Typographie & Polices pour le contenu du cahier ─────────────────── */
@@ -286,6 +284,13 @@
     border-radius: 4px;
   }
 
+  /* L’arabe ne se compose pas avec l’espacement latin des capitales. */
+  [dir='rtl'] .tracking-wider,
+  [dir='rtl'] .tracking-tight,
+  [dir='rtl'] .tracking-\[0\.09em\] {
+    letter-spacing: normal;
+  }
+
   button, a, input, select, textarea, [role="button"] {
     touch-action: manipulation;
   }
@@ -326,24 +331,24 @@
 }
 
 .dark .settings-content-zone {
-  background-color: rgb(24 24 27 / 0.72);
+  background-color: rgb(15 23 42 / 0.72);
 }
 
 .settings-section-block {
-  border: 0 !important;
-  border-bottom: 1px solid rgb(212 212 216 / 0.8) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
+  border: 1px solid rgb(203 213 225 / 0.9) !important;
+  border-radius: 0.875rem !important;
+  background: rgb(255 255 255 / 0.58) !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
 
 .dark .settings-section-block {
-  border-bottom-color: rgb(63 63 70 / 0.85) !important;
+  border-color: rgb(51 65 85 / 0.9) !important;
+  background: rgb(15 23 42 / 0.38) !important;
 }
 
 .settings-surface {
-  border: 1px solid rgb(212 212 216 / 0.9) !important;
+  border: 1px solid rgb(203 213 225 / 0.95) !important;
   border-radius: 0.875rem !important;
   background: rgb(255 255 255 / 0.92) !important;
   box-shadow: none !important;
@@ -351,8 +356,8 @@
 }
 
 .dark .settings-surface {
-  border-color: rgb(63 63 70 / 0.9) !important;
-  background: rgb(24 24 27 / 0.9) !important;
+  border-color: rgb(51 65 85 / 0.9) !important;
+  background: rgb(15 23 42 / 0.9) !important;
 }
 
 .settings-page-content > div {
@@ -364,12 +369,21 @@
 }
 
 .settings-page-content > div > div:first-child {
-  border-bottom: 1px solid rgb(212 212 216 / 0.8);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0;
 }
 
-.dark .settings-page-content > div > div:first-child {
-  border-bottom-color: rgb(63 63 70 / 0.85);
+/* Les traits sous les titres répétaient déjà la séparation créée par les
+   surfaces. Les modales et les réglages respirent davantage sans eux. */
+.modal-header,
+.modal-footer,
+.settings-section-block > header {
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
+.settings-section-block > header {
+  margin-bottom: 0.75rem !important;
+  padding-bottom: 0 !important;
 }
 
 @media (min-width: 640px) {
@@ -418,6 +432,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   --animate-sheet-in-left: sheet-in-left 300ms var(--ease-modal-in) backwards;
   --animate-sheet-in-right: sheet-in-right 300ms var(--ease-modal-in) backwards;
   --animate-pop-in: pop-in 260ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-class-step-forward: class-step-forward 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-class-step-back: class-step-back 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
   @keyframes overlay-in {
     from { opacity: 0; }
@@ -442,6 +458,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   @keyframes pop-in {
     from { transform: translateY(14px) scale(0.97); opacity: 0; }
+  }
+  @keyframes class-step-forward {
+    from { transform: translateX(28px) scale(0.985); opacity: 0; filter: blur(2px); }
+    to { transform: translateX(0) scale(1); opacity: 1; filter: blur(0); }
+  }
+  @keyframes class-step-back {
+    from { transform: translateX(-28px) scale(0.985); opacity: 0; filter: blur(2px); }
+    to { transform: translateX(0) scale(1); opacity: 1; filter: blur(0); }
   }
 
   @keyframes advanced-blink {

@@ -125,10 +125,23 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     }
 
     if (item.type === 'chapter') {
+      // Un chapitre reste optiquement centré quel que soit son titre : les
+      // retours manuels, les formules LaTeX et les longues formulations ont
+      // une hauteur souple, mais une base commune qui évite les sauts visuels.
+      const chapterTitle = item.title || config.name;
+      const titleLines = Math.max(1, chapterTitle.split(/\r?\n/).length);
+      const titleDensity = chapterTitle.replace(/\$[^$]*\$/g, 'x').trim().length + (titleLines - 1) * 32;
+      const titleSize = titleDensity > 130
+        ? 'text-[13px] sm:text-sm'
+        : titleDensity > 82
+          ? 'text-sm sm:text-[15px]'
+          : 'text-[15px] sm:text-base';
       return (
-        <MaybeMathJax mathSource={item.title} cacheKey={`chapter-${item.title}`}>
-          <div className="flex w-full items-center justify-center py-2 sm:py-2.5 text-center font-bold text-[15px] sm:text-base font-extrabold tracking-tight text-red-700">
-            <HighlightedText text={item.title} query={highlight} />
+        <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
+          <div className={`flex min-h-[3.75rem] w-full items-center justify-center px-2 py-2.5 text-center font-bold ${titleSize} font-extrabold leading-snug tracking-tight text-foreground sm:min-h-[4.25rem] sm:px-4`}>
+            <span className="block max-w-[min(100%,46rem)] break-words text-balance">
+              <HighlightedText text={chapterTitle} query={highlight} />
+            </span>
           </div>
         </MaybeMathJax>
       );

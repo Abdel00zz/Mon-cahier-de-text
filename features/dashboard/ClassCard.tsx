@@ -1,19 +1,19 @@
 import { memo, FC, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
-import { getSubjectVisual } from '@/utils/classVisuals';
+import { getClassVisual, getSubjectVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Settings, CircleAlert, CircleCheck } from '@/components/ui/icons';
 
 const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-5 sm:h-[22px] items-center justify-center px-2 sm:px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] leading-none border transition-all';
-
 interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
     onShowNotifications: () => void;
     notificationCount: number;
+    showSubjectBadge?: boolean;
 }
 
 const renderClassTitleWithFonts = (text: string) => {
@@ -26,7 +26,7 @@ const renderClassTitleWithFonts = (text: string) => {
             const num = matchOrdinal[1];
             const suf = matchOrdinal[2];
             return (
-                <span key={idx} className="inline-block text-blue-600 dark:text-blue-400">
+                <span key={idx} className="inline-block text-cyan-600 dark:text-cyan-400">
                     <span className="font-itim font-bold text-[1.1em]">{num}</span>
                     <sup className="relative -top-[0.4em] text-[0.65em] font-semibold font-sans">{suf}</sup>
                 </span>
@@ -35,7 +35,7 @@ const renderClassTitleWithFonts = (text: string) => {
 
         if (/^[0-9\u0660-\u0669]+$/.test(part)) {
             return (
-                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px] text-blue-600 dark:text-blue-400">
+                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px] text-cyan-600 dark:text-cyan-400">
                     {part}
                 </span>
             );
@@ -51,6 +51,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     onConfigure,
     onShowNotifications,
     notificationCount,
+    showSubjectBadge = true,
 }) => {
     const { impact } = useHapticFeedback();
     const { locale, t } = useLocale();
@@ -82,6 +83,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getSubjectVisual(classInfo.subject);
+    const levelVisual = getClassVisual(classInfo.name);
     const subjectBadgeText = classInfo.subject
         ? formatLocalizedSubjectDisplayName(classInfo.subject, locale)
         : null;
@@ -94,7 +96,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const notificationButtonLabel = issueStatus
         ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
         : t('notifications.classButtonLabel', { className: displayName });
-
     return (
         <article
             role="button"
@@ -102,25 +103,27 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            className="group relative flex h-full w-full min-h-[148px] sm:min-h-[160px] cursor-pointer flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-4 px-4 pb-2.5 sm:pt-4.5 sm:px-5 sm:pb-3 transition-all duration-250 shadow-[0_2px_12px_-2px_rgba(15,23,42,0.04)] hover:shadow-[0_10px_26px_-4px_rgba(37,99,235,0.1)] dark:hover:shadow-[0_10px_26px_-4px_rgba(0,0,0,0.6)] hover:border-blue-400/70 dark:hover:border-blue-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+            className={`group relative flex h-full w-full min-h-[168px] sm:min-h-[180px] cursor-pointer flex-col justify-between rounded-[22px] border backdrop-blur-xs pt-4 px-4 pb-2.5 sm:pt-4.5 sm:px-5 sm:pb-3 transition-all duration-250 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-[0_10px_26px_-4px_rgba(0,0,0,0.6)] dark:hover:border-primary/50 ${levelVisual.cardSurfaceClass}`}
         >
-            {/* Top area: Minimalist subject pill (Top Left / Start) */}
-            <div className="flex items-center justify-start w-full">
-                {subjectBadgeText ? (
-                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold border-black/5 dark:border-white/5 ${visual.badgeStyle}`}>
-                        {subjectBadgeText}
-                    </span>
-                ) : (
-                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-medium bg-slate-100/90 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400 border-slate-200/60 dark:border-zinc-700/60`}>
-                        {t('dashboard.notebook')}
-                    </span>
-                )}
-            </div>
+            {/* La matière est redondante lorsqu’elle est unique pour le professeur. */}
+            {showSubjectBadge && (
+                <div className="flex items-center justify-start w-full">
+                    {subjectBadgeText ? (
+                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold border-black/5 dark:border-white/5 ${visual.badgeStyle}`}>
+                            {subjectBadgeText}
+                        </span>
+                    ) : (
+                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-medium bg-slate-100/90 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200/60 dark:border-slate-700/60`}>
+                            {t('dashboard.notebook')}
+                        </span>
+                    )}
+                </div>
+            )}
 
             {/* Center area: Class title (Airy, centered, high contrast) */}
-            <div className="w-full my-3 sm:my-4 text-center flex flex-col items-center justify-center">
+            <div className={`w-full text-center flex flex-col items-center justify-center ${showSubjectBadge ? 'my-3 sm:my-4' : 'my-auto py-3 sm:py-4'}`}>
                 <h3
-                    className="text-sm sm:text-base lg:text-xl font-semibold lg:font-bold tracking-tight text-slate-900 dark:text-zinc-50 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                    className="text-sm sm:text-base lg:text-xl font-semibold lg:font-bold tracking-tight text-slate-900 dark:text-slate-50 transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-400"
                     title={displayName}
                 >
                     {renderClassTitleWithFonts(displayName)}
@@ -160,11 +163,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <button
                     type="button"
                     onClick={handleConfigureClick}
-                    className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full text-slate-800 hover:text-slate-950 hover:bg-slate-100/90 dark:text-zinc-100 dark:hover:text-white dark:hover:bg-zinc-800 transition-all cursor-pointer active:scale-90"
+                    className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full text-slate-800 hover:text-slate-950 hover:bg-slate-100/90 dark:text-slate-100 dark:hover:text-white dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-90"
                     title={t('dashboard.classSettings')}
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="w-5 h-5 shrink-0 text-slate-800 dark:text-zinc-100" strokeWidth={2.3} />
+                    <Settings className="w-5 h-5 shrink-0 text-slate-800 dark:text-slate-100" strokeWidth={2.3} />
                 </button>
             </div>
         </article>

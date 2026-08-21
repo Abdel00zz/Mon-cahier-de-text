@@ -34,6 +34,8 @@ interface MainTableProps {
   /** programme officiel proposé lorsque le cahier est encore vide */
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
+  /** Surface de chapitre déduite du niveau de la classe ouverte. */
+  chapterSurfaceClass?: string;
 }
 
 interface FlatDataItem {
@@ -249,6 +251,7 @@ interface SessionGroupRowProps {
     descriptionTypes?: string[];
     searchQuery?: string;
     getDateWarnings?: (date: string) => { type: string; message: string }[];
+    chapterSurfaceClass?: string;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
@@ -261,6 +264,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     descriptionTypes = [],
     searchQuery,
     getDateWarnings,
+    chapterSurfaceClass,
 }) => {
     const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
     const uniqueDates = Array.from(new Set(allDates));
@@ -316,6 +320,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             descriptionTypes={descriptionTypes}
                             searchQuery={searchQuery}
                             getDateWarnings={getDateWarnings}
+                            chapterSurfaceClass={chapterSurfaceClass}
                         />
                     );
                 })}
@@ -413,6 +418,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   focusKey,
   predefinedProgramTitle,
   onLoadPredefined,
+  chapterSurfaceClass,
 }) => {
   const flatData = useMemo(() => {
     const result: FlatDataItem[] = [];
@@ -599,6 +605,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
                                   getDateWarnings={getDateWarnings}
+                                  chapterSurfaceClass={chapterSurfaceClass}
                               />
                           </VirtualListRow>
                       );
@@ -640,6 +647,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               descriptionTypes={descriptionTypes}
                               searchQuery={searchQuery}
                               getDateWarnings={getDateWarnings}
+                              chapterSurfaceClass={chapterSurfaceClass}
                           />
                       </VirtualListRow>
                   );

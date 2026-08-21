@@ -83,7 +83,7 @@ const SignalCard: React.FC<{
   const visual = classInfo ? getClassVisual(classInfo.name) : null;
 
   return (
-    <article className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card p-3.5 text-card-foreground shadow-2xs transition-colors hover:border-[#423ed8]/35 sm:flex-row sm:items-center">
+    <article className="flex flex-col justify-between gap-3 rounded-[18px] border border-border/70 bg-white/75 p-3.5 text-card-foreground shadow-[0_8px_20px_rgba(30,68,76,0.045)] transition-all hover:-translate-y-px hover:border-primary/35 dark:bg-slate-900/75 sm:flex-row sm:items-center">
       <div className="flex min-w-0 items-start gap-3">
         <ClassIdentityIcon classInfo={classInfo} fallback={SIGNAL_FALLBACK_ICON[signal.kind]} />
         <div className="min-w-0">
@@ -103,7 +103,7 @@ const SignalCard: React.FC<{
             {ignoreLabel}
           </button>
         )}
-        <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-[#423ed8] px-3 text-xs font-bold text-[#423ed8]-foreground transition-colors hover:bg-[#322ebd]">
+        <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-colors hover:bg-primary/90">
           {actionLabel}
         </button>
       </div>
@@ -113,7 +113,7 @@ const SignalCard: React.FC<{
 
 const EmptyState: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eeaaff]/50 text-[#423ed8]/65">
+    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary/65">
       <Check className="h-6 w-6" />
     </div>
     <h3 className="text-sm font-bold text-foreground">{title}</h3>
@@ -438,7 +438,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-[#423ed8] transition-colors cursor-pointer focus:outline-none flex shrink-0 items-center justify-center"
+          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-primary transition-colors cursor-pointer focus:outline-none flex shrink-0 items-center justify-center"
           title={isSidebarCollapsed ? t('notifications.expandMenu') : t('notifications.collapseMenu')}
         >
           <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
@@ -471,16 +471,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'text-[#423ed8] font-bold'
-                    : 'text-muted-foreground hover:text-[#423ed8]'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'text-[#423ed8] scale-105'
-                      : 'bg-[#eeaaff]/50 text-[#423ed8]/75 group-hover:text-[#423ed8]'
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -501,7 +501,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-[#423ed8]' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -519,11 +519,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-[#423ed8]/70' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-[#423ed8] opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -558,16 +558,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'text-[#423ed8] font-bold'
-                    : 'text-muted-foreground hover:text-[#423ed8]'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'text-[#423ed8] scale-105'
-                      : 'bg-[#eeaaff]/50 text-[#423ed8]/75 group-hover:text-[#423ed8]'
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -581,7 +581,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-[#423ed8]' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -590,11 +590,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-[#423ed8]/70' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-[#423ed8] opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -629,16 +629,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'text-[#423ed8] font-bold'
-                    : 'text-muted-foreground hover:text-[#423ed8]'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
                     isActive
-                      ? 'text-[#423ed8] scale-105'
-                      : 'bg-[#eeaaff]/50 text-[#423ed8]/75 group-hover:text-[#423ed8]'
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -652,7 +652,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-[#423ed8]' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
@@ -661,11 +661,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-[#423ed8]/70' : 'text-muted-foreground')}>
+                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
                         {item.subtitle}
                       </span>
                     </div>
-                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-[#423ed8] opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
+                    <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
                 )}
               </button>
@@ -677,11 +677,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   );
 
   return (
-    <div className={cn('min-h-screen text-foreground', isRtl ? 'font-sans' : 'font-sans')}>
-      <main className="mx-auto max-w-6xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
-        <div className="mb-4 flex items-end justify-between gap-3 px-1 sm:mb-5">
+    <div data-pilotage-root className={cn('min-h-screen bg-[#e7f2f5] text-foreground dark:bg-slate-950', isRtl ? 'font-sans' : 'font-sans')}>
+      <main className="mx-auto max-w-7xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
+        <div className="mb-4 flex items-end justify-between gap-3 rounded-[24px] border border-white/90 bg-white/75 px-4 py-3 shadow-[0_8px_22px_rgba(45,74,82,0.04)] backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/65 sm:mb-5 sm:px-5 sm:py-4">
           <div className="flex items-center gap-3">
-            <PieChart className="h-5 w-5 shrink-0 text-[#423ed8]" />
+            <PieChart className="h-5 w-5 shrink-0 text-primary" />
             <div>
               <h1 className={cn('flex items-center gap-2 font-extrabold text-foreground', titleFontClass)}>
                 {t('notifications.centerTitle')}
@@ -701,7 +701,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           {/* Master Sidebar */}
           <div
             className={cn(
-              'bg-card/88 border border-border/70 rounded-2xl p-3 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm transition-all duration-300 overflow-hidden flex flex-col',
+              'border border-white/90 bg-white/70 rounded-[22px] p-3 shadow-[0_10px_26px_rgba(45,74,82,0.04)] backdrop-blur-sm transition-all duration-300 overflow-hidden flex flex-col dark:border-white/[0.08] dark:bg-slate-900/70',
               isEffectiveCollapsed
                 ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                 : 'md:col-span-4 lg:col-span-3 xl:col-span-3',
@@ -714,7 +714,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           {/* Detail Content */}
           <div
             className={cn(
-              'bg-card/92 border border-border/70 rounded-2xl p-4 sm:p-5 shadow-[0_12px_32px_rgba(30,64,110,0.05)] backdrop-blur-sm min-h-[500px] transition-all duration-300',
+              'border border-white/90 bg-white/78 rounded-[22px] p-4 sm:p-5 shadow-[0_10px_26px_rgba(45,74,82,0.04)] backdrop-blur-sm min-h-[500px] transition-all duration-300 dark:border-white/[0.08] dark:bg-slate-900/75',
               isEffectiveCollapsed
                 ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                 : 'md:col-span-8 lg:col-span-9 xl:col-span-9',
@@ -726,7 +726,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
               <button
                 type="button"
                 onClick={() => setMobileSubViewOpen(false)}
-                className="md:hidden flex items-center gap-1.5 text-xs font-bold text-[#423ed8] mb-4 cursor-pointer"
+                className="md:hidden flex items-center gap-1.5 text-xs font-bold text-primary mb-4 cursor-pointer"
               >
                 <ArrowLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} />
                 <span>{t('notifications.backToMenu')}</span>
@@ -747,7 +747,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     <div className="flex items-center justify-between pb-1">
                       <div>
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
-                          <PieChart className={cn('h-4 w-4', filteredCorrections.length > 0 ? 'text-amber-600' : 'text-[#423ed8]')} />
+                          <PieChart className={cn('h-4 w-4', filteredCorrections.length > 0 ? 'text-amber-600' : 'text-primary')} />
                           {t('notifications.toHandle', { count: filteredCorrections.length })}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -853,10 +853,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 {/* 4. SECTION : CLASSES */}
                 {activeAxis === 'classes' && (
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3 border-b border-border/60 pb-3">
+                    <div className="flex items-start justify-between gap-3 pb-2">
                       <div className="min-w-0">
                         <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
-                          <GraduationCap className="h-4 w-4 text-[#423ed8]" />
+                          <GraduationCap className="h-4 w-4 text-primary" />
                           {t('notifications.classes')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -887,7 +887,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                               onClick={() => openClassById(overview.classInfo.id)}
                               className="group block w-full py-4 text-start outline-none transition-colors hover:bg-muted/25 focus-visible:bg-muted/35 sm:px-1"
                             >
-                              <h3 className="truncate text-xs font-extrabold text-foreground transition-colors group-hover:text-[#423ed8]">
+                              <h3 className="truncate text-xs font-extrabold text-foreground transition-colors group-hover:text-primary">
                                 {overview.className}
                               </h3>
 

@@ -195,7 +195,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="settings-surface space-y-2 p-3.5">
-            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">Français / Latin : {selectedLatinObj.name}</span>
               <Badge variant="outline" className="text-[10px] uppercase">{selectedLatinObj.category}</Badge>
             </div>
@@ -216,7 +216,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           </div>
 
           <div className="settings-surface space-y-2 p-3.5" dir="rtl">
-            <div className="flex items-center justify-between border-b border-border/60 pb-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">العربية : {selectedArabicObj.name}</span>
               <Badge variant="outline" className="text-[10px]">{selectedArabicObj.category}</Badge>
             </div>
@@ -315,7 +315,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
                   <div
                     style={{ fontFamily: font.family }}
-                    className={`mt-3.5 w-full border-t border-border/60 pt-2.5 text-[13px] font-semibold leading-snug ${LATIN_SAMPLE_COLORS[fontIndex % LATIN_SAMPLE_COLORS.length]}`}
+                    className={`mt-3 w-full pt-1 text-[13px] font-semibold leading-snug ${LATIN_SAMPLE_COLORS[fontIndex % LATIN_SAMPLE_COLORS.length]}`}
                   >
                     {font.sampleFr}
                   </div>
@@ -360,7 +360,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
                   <div
                     style={{ fontFamily: font.family }}
-                    className={`mt-3.5 w-full border-t border-border/60 pt-2.5 text-[14px] font-semibold leading-snug ${ARABIC_SAMPLE_COLORS[fontIndex % ARABIC_SAMPLE_COLORS.length]}`}
+                    className={`mt-3 w-full pt-1 text-[14px] font-semibold leading-snug ${ARABIC_SAMPLE_COLORS[fontIndex % ARABIC_SAMPLE_COLORS.length]}`}
                   >
                     {font.sampleAr}
                   </div>

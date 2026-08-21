@@ -455,7 +455,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
         </div>
 
         {/* Footer Security Badge */}
-        <footer className="w-full pt-6 text-center border-t border-slate-100 dark:border-slate-800">
+        <footer className="w-full pt-6 text-center">
           <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">
             <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
             <span>{copy.secure}</span>

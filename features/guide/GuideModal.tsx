@@ -41,7 +41,7 @@ const toHtml = (markdown: string, prefix: ModalLang): string => {
         const t = line.replace('## ', '').trim();
         const id = `${prefix}-sec-${headingIndex}`;
         headingIndex++;
-        return `<h2 id="${id}" class="mb-4 mt-10 scroll-mt-4 pb-2 border-b border-border/40 ${headingFontClass} text-xl font-black text-foreground sm:text-2xl">${t}</h2>`;
+        return `<h2 id="${id}" class="mb-4 mt-10 scroll-mt-4 ${headingFontClass} text-xl font-black text-foreground sm:text-2xl">${t}</h2>`;
       }
       if (line.startsWith('### ')) {
         const t = line.replace('### ', '').trim();
@@ -142,9 +142,9 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       maxWidth="5xl"
       hideClose={false}
       className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-[32px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
       bodyClassName="flex flex-col overflow-hidden bg-card p-0 sm:p-0"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
       footer={
         <div className={`flex w-full ${isAr ? 'justify-start' : 'justify-end'}`}>
           <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="rounded-xl h-10 px-6 font-bold bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto text-xs sm:text-sm shadow-sm">

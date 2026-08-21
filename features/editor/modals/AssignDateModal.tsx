@@ -151,10 +151,10 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       title={t('assignDate.title')}
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="lg"
-      className="sm:max-w-xl sm:rounded-[28px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      className="sm:max-w-xl sm:rounded-[32px]"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">

@@ -20,6 +20,8 @@ interface TableRowProps {
   /** terme de recherche actif, surligné dans les titres/remarques */
   searchQuery?: string;
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** Identité de surface du niveau de la classe, réservée aux chapitres. */
+  chapterSurfaceClass?: string;
 }
 
 export interface DateMergeMeta {
@@ -231,6 +233,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   descriptionTypes = [],
   searchQuery,
   getDateWarnings,
+  chapterSurfaceClass,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
 
@@ -338,7 +341,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${elementType === 'chapter' ? `m-1 rounded-[14px] border shadow-[0_6px_16px_rgba(15,23,42,0.035)] ${chapterSurfaceClass ?? 'border-slate-200 bg-slate-50'}` : ''} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -351,7 +354,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         }}
       >
         <div className="min-w-0 w-full">
-          <div className="flex w-full items-center justify-center py-1">
+          <div className={`flex w-full items-center justify-center ${elementType === 'chapter' ? 'min-h-[4rem]' : 'py-1'}`}>
             <MathText source={item.title} cacheKey={`row-title-${item.type}-${item.title}`} inline>
               <span className={`break-words text-[14.5px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
             </MathText>
@@ -466,6 +469,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.searchQuery !== next.searchQuery) return false;
   if (prev.layout !== next.layout) return false;
   if (prev.lineClassOverride !== next.lineClassOverride) return false;
+  if (prev.chapterSurfaceClass !== next.chapterSurfaceClass) return false;
 
   const pIdx = prev.indices;
   const nIdx = next.indices;
