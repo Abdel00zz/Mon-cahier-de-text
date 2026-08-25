@@ -519,27 +519,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     )}
                                 </p>
                                 <div className="mt-1 flex min-w-0 items-start gap-1.5">
-                                    <span className={`flex h-[19.5px] shrink-0 items-center sm:h-[22.5px] ${
+                                    <span className={`flex h-[16.5px] shrink-0 items-center sm:h-[22.5px] ${
                                         welcome.tone === 'alert' ? 'text-rose-600 dark:text-rose-400' :
                                             welcome.tone === 'vacation' ? 'text-cyan-600 dark:text-cyan-400' :
                                                 welcome.tone === 'deadline' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'
                                     }`} aria-hidden>
                                         {welcome.tone === 'alert' ? <AlertTriangle className="h-3.5 w-3.5" /> : welcome.tone === 'deadline' ? <ClipboardList className="h-3.5 w-3.5" /> : <CalendarDays className="h-3.5 w-3.5" />}
                                     </span>
-                                    <p className="min-w-0 text-[13px] font-medium leading-[1.5] text-slate-700 sm:text-[15px] dark:text-slate-200">
-                                        {welcome.title && <span className="font-semibold text-slate-950 dark:text-white">{welcome.title}{welcome.detail && <span aria-hidden> — </span>}</span>}
-                                        <span>{welcome.detail}</span>
+                                    <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[11px] font-medium leading-[1.5] text-slate-700 sm:text-[15px] dark:text-slate-200">
+                                        <p className="min-w-0">
+                                            {welcome.title && <span className="font-semibold text-slate-950 dark:text-white">{welcome.title}{welcome.detail && <span aria-hidden> — </span>}</span>}
+                                            <span>{welcome.detail}</span>
+                                        </p>
                                         {welcome.action && (
                                             <button
                                                 type="button"
                                                 onClick={welcome.action.onClick}
-                                                className="group/btn ms-1.5 inline-flex items-center gap-0.5 font-semibold text-blue-700 underline underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 cursor-pointer"
+                                                className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-0.5 whitespace-nowrap font-bold text-blue-700 underline underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                                             >
                                                 <span>{welcome.action.label}</span>
                                                 <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
                                             </button>
                                         )}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

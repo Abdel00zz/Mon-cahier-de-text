@@ -132,10 +132,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const titleLines = Math.max(1, chapterTitle.split(/\r?\n/).length);
       const titleDensity = chapterTitle.replace(/\$[^$]*\$/g, 'x').trim().length + (titleLines - 1) * 32;
       const titleSize = titleDensity > 130
-        ? 'text-[13px] sm:text-sm'
+        ? 'text-[13px] max-sm:portrait:text-[10.4px] sm:text-sm'
         : titleDensity > 82
-          ? 'text-sm sm:text-[15px]'
-          : 'text-[15px] sm:text-base';
+          ? 'text-sm max-sm:portrait:text-[11.2px] sm:text-[15px]'
+          : 'text-[15px] max-sm:portrait:text-[12px] sm:text-base';
       return (
         <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className={`flex min-h-[3.75rem] w-full items-center justify-center px-2 py-2.5 text-center font-bold ${titleSize} font-extrabold leading-snug tracking-tight text-foreground sm:min-h-[4.25rem] sm:px-4`}>
@@ -151,7 +151,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`text-[14.5px] sm:text-base font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div className={`text-[14.5px] max-sm:portrait:text-[11.6px] sm:text-base font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <HighlightedText text={item.title} query={highlight} />
         </div>
       </MaybeMathJax>
@@ -163,7 +163,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[13.5px] sm:text-base font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="text-[13.5px] max-sm:portrait:text-[10.8px] sm:text-base font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -172,7 +172,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[12px] sm:text-sm font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="text-[12px] max-sm:portrait:text-[9.6px] sm:text-sm font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -182,7 +182,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[11px] sm:text-sm italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="text-[11px] max-sm:portrait:text-[8.8px] sm:text-sm italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -217,20 +217,20 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const content = (
         <div className="max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-muted-foreground">
           {/* Titre */}
-          <div className="min-h-5 break-words p-0 text-[12.5px] font-semibold text-foreground sm:text-sm">
+          <div className="min-h-5 break-words p-0 text-[12.5px] max-sm:portrait:text-[10px] font-semibold text-foreground sm:text-sm">
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
           {/* Description : encadré sobre sous le titre */}
           {allowDescription && (
-            <div className="mt-1 border border-border px-1.5 py-1 sm:px-2 sm:py-1.5 text-[11.5px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
+            <div className="mt-1 border border-border px-1.5 py-1 sm:px-2 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
 
           {/* Info page */}
           {item.page && (
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground italic">
+            <div className="flex items-center gap-1 text-[10px] max-sm:portrait:text-[8px] sm:text-xs text-muted-foreground italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>
@@ -250,7 +250,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className="flex flex-col items-start gap-1 ps-0.5 py-0.5 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8 sm:py-1">
           <Badge
             variant="outline"
-            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9.5px] sm:text-[11px] font-semibold tracking-normal border min-w-[42px] sm:min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9.5px] max-sm:portrait:text-[7.6px] sm:text-[11px] font-semibold tracking-normal border min-w-[42px] sm:min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >

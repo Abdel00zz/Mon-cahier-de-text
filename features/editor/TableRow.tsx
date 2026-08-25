@@ -102,13 +102,13 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-150 py-0.5">
       <span
-        className={`font-mono text-base sm:text-lg font-black tracking-tight tabular-nums transition-colors ${
+        className={`font-mono text-base max-sm:portrait:text-[12.8px] sm:text-lg font-black tracking-tight tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
         }`}
       >
         {parsed.day}
       </span>
-      <span className={`mt-0.5 font-mono text-[8px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
+      <span className={`mt-0.5 font-mono text-[8px] max-sm:portrait:text-[6.4px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
         {parsed.month} {parsed.year.slice(2)}
       </span>
       {!hasWarning && parsed.isToday && <span className="mt-0.5 h-1 w-1 rounded-full bg-primary" aria-hidden />}
@@ -129,13 +129,13 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-tight animate-in fade-in duration-150 py-0.5">
-      <div className="flex items-center gap-1 font-mono text-[12px] sm:text-sm font-black tracking-tight tabular-nums text-foreground">
+      <div className="flex items-center gap-1 font-mono text-[12px] max-sm:portrait:text-[9.6px] sm:text-sm font-black tracking-tight tabular-nums text-foreground">
         <span className={hasWarning ? 'text-destructive' : first.isToday ? 'text-primary' : 'text-foreground'}>{first.day}</span>
-        <span className={`text-[11px] sm:text-xs font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
+        <span className={`text-[11px] max-sm:portrait:text-[8.8px] sm:text-xs font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
         <span className={hasWarning ? 'text-destructive' : last.isToday ? 'text-primary' : 'text-foreground'}>{last.day}</span>
       </div>
       <div className="mt-0.5 flex items-center">
-        <span className={`font-mono text-[7.5px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
+        <span className={`font-mono text-[7.5px] max-sm:portrait:text-[6px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
           {sameMonthYear ? `${first.month} ${first.year.slice(2)}` : `${first.month}/${last.month}`}
         </span>
       </div>
@@ -204,7 +204,7 @@ const RemarkCell: FC<{
       <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
         {isMiddle && (
           <div className="relative z-10 h-full flex flex-col justify-center w-full">
-            <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
+            <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
           </div>
         )}
       </div>
@@ -213,7 +213,7 @@ const RemarkCell: FC<{
 
   return (
     <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
+      <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
     </div>
   );
 });
@@ -356,7 +356,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         <div className="min-w-0 w-full">
           <div className={`flex w-full items-center justify-center ${elementType === 'chapter' ? 'min-h-[4rem]' : 'py-1'}`}>
             <MathText source={item.title} cacheKey={`row-title-${item.type}-${item.title}`} inline>
-              <span className={`break-words text-[14.5px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
+              <span className={`break-words text-[14.5px] max-sm:portrait:text-[11.6px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
             </MathText>
           </div>
         </div>

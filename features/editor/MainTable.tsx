@@ -66,13 +66,13 @@ const TableHeader: React.FC = React.memo(() => {
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-border/80 px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="font-sans text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
+        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-border/80 px-2 py-1.5 sm:px-3 sm:py-2 text-center">
-        <span className="font-sans text-[10px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
+        <span className="font-sans text-[10px] max-sm:portrait:text-[8px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="font-sans text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
+        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -329,13 +329,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             <div className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
-                        <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{sharedRemark}</div>
+                        <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{sharedRemark}</div>
                     </div>
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map(item => (
                             <div key={item.key} className="min-h-[40px] p-0.5 sm:p-1">
-                                <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{getMergeableRemark(item)}</div>
+                                <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{getMergeableRemark(item)}</div>
                             </div>
                         ))}
                     </div>

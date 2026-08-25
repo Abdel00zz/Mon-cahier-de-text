@@ -49,7 +49,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     type="date"
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="bg-transparent text-muted-foreground text-[11px] font-semibold rounded-md border border-dashed border-border px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-300 hover:border-zinc-400 cursor-pointer text-center w-full max-w-[100px] font-mono"
+                    className="bg-transparent text-muted-foreground text-[11px] max-sm:portrait:text-[8.8px] font-semibold rounded-md border border-dashed border-border px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-300 hover:border-zinc-400 cursor-pointer text-center w-full max-w-[100px] font-mono"
                     title={t('separator.editDate')}
                 />
             </div>
@@ -64,7 +64,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="relative text-center text-[10px] font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted/50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
+                    className="relative text-center text-[10px] max-sm:portrait:text-[8px] font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted/50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
                     dangerouslySetInnerHTML={{ __html: data.content || '' }}
                 />
 
@@ -81,7 +81,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                         onClick={() => onDelete(separatorIndices)}
                         data-tippy-content={t('separator.delete')}
                         aria-label={t('separator.delete')}
-                        className="h-9 w-9 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
+                        className="h-9 w-9 text-xs max-sm:portrait:text-[9.6px] text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </Button>
