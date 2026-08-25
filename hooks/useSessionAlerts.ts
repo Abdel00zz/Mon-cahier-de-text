@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { AppConfig, ClassInfo } from '../types';
+import { ClassInfo } from '../types';
 import { SessionBlock, getDaySessionBlocks } from '../utils/timetable';
 import { collectSessionDates } from '../utils/printMeta';
 import { isHoliday, isVacation, loadHolidayCalendar, todayInMorocco } from '../utils/calendar';
 import { withAbsences } from '../utils/lateness';
+import { readCachedConfig } from '../utils/configStorage';
 import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
 
@@ -58,15 +59,6 @@ const weekdayFromISO = (iso: string): number => {
     return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 };
 
-const readConfig = (): Partial<AppConfig> => {
-    try {
-        const raw = localStorage.getItem('appConfig_v1');
-        return raw ? (JSON.parse(raw) as Partial<AppConfig>) : {};
-    } catch {
-        return {};
-    }
-};
-
 const readClasses = (): ClassInfo[] => {
     try {
         return JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[];
@@ -106,7 +98,7 @@ export const useSessionAlerts = (): void => {
     }, []);
 
     useEffect(() => {
-        const config = readConfig();
+        const config = readCachedConfig();
         const notify = config.notificationSettings;
         if (!notify?.enabled || !notify.sessionVibration) return;
         const timetable = config.timetable ?? [];

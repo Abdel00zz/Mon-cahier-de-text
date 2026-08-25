@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, TeacherDetail as TeacherDetailData } from '../api';
+import { blockTeacher, deleteTeacher, deleteTeacherClass, fetchClassLessons, fetchTeacher, fetchTeacherMessages, notifyTeacher, saveAssessmentDate, upsertTeacherClass, type ClassLessonsImportResult, type TeacherPrintSettings, TeacherDetail as TeacherDetailData } from '../api';
 import { getBundledCalendar, loadHolidayCalendar, todayInMorocco } from '../../utils/calendar';
 import { computeLateness } from '../../utils/lateness';
 import { loadPlanning, resolveClassAssessments, type PlannedAssessment } from '../../utils/assessments';
@@ -7,7 +7,9 @@ import { completionColor, timeAgo } from '../utils';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
-import type { AdminMessage, ClassInfo, ClassSnapshot, Cycle, LessonsData, TeacherSnapshot } from '../../types';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../../types';
+import { PrintView } from '../../features/editor/PrintView';
+import { printDocument, typesetBeforePrint } from '../../utils/printUtils';
 import { ClassJsonImportModal } from './ClassJsonImportModal';
 
 const calendar = getBundledCalendar();
@@ -80,6 +82,18 @@ const formatDateTimeFr = (iso: string | null | undefined): string => {
         return iso;
     }
 };
+
+/** Construit le AppConfig minimal attendu par PrintView à partir des réglages de l'enseignant. */
+const buildPrintConfig = (settings: TeacherPrintSettings | null | undefined, classInfo: ClassInfo): AppConfig => ({
+    establishmentName: settings?.establishmentName ?? '',
+    defaultTeacherName: settings?.defaultTeacherName ?? classInfo.teacherName ?? '',
+    printShowDescriptions: true,
+    academyRegion: settings?.academyRegion,
+    educationProvince: settings?.educationProvince,
+    schoolYearStart: settings?.schoolYearStart,
+    printDescriptionMode: settings?.printDescriptionMode ?? 'all',
+    printDescriptionTypes: settings?.printDescriptionTypes ?? [],
+});
 
 /**
  * Chapitres d'une classe : dépliable à la demande (le cahier complet n'est
@@ -332,6 +346,12 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
     const [importingClass, setImportingClass] = useState<ClassInfo | null>(null);
     const [lessonRevisions, setLessonRevisions] = useState<Record<string, number>>({});
     const [confirmAction, setConfirmAction] = useState<{ kind: 'block' | 'deleteAccount' | 'deleteClass'; classInfo?: ClassInfo } | null>(null);
+    const [printRequest, setPrintRequest] = useState<{
+        classInfo: ClassInfo;
+        lessonsData: LessonsData;
+        contentDirection: ContentDirection;
+    } | null>(null);
+    const [printingClassId, setPrintingClassId] = useState<string | null>(null);
 
     const selectTab = (tab: TeacherDetailTab, focus = false) => {
         setActiveTab(tab);
@@ -486,6 +506,43 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
             setIsBlocked(fresh.user?.blocked === true);
         }).catch(() => undefined);
     };
+
+    const handlePrintClass = async (cls: ClassInfo) => {
+        if (printingClassId) return;
+        setPrintingClassId(cls.id);
+        setActionMessage(null);
+        try {
+            const blob = await fetchClassLessons(phone, cls.id);
+            const lessonsData = Array.isArray(blob.lessonsData) ? blob.lessonsData : [];
+            if (lessonsData.length === 0) {
+                setActionMessage('Ce cahier ne contient aucune séance à imprimer.');
+                return;
+            }
+            setPrintRequest({ classInfo: cls, lessonsData, contentDirection: blob.contentDirection ?? 'ltr' });
+        } catch (err) {
+            setActionMessage(err instanceof Error ? err.message : 'Impression impossible.');
+        } finally {
+            setPrintingClassId(null);
+        }
+    };
+
+    // Monte la vue d'impression (PrintView) puis déclenche le dialogue, en
+    // réutilisant le circuit de l'éditeur : composition MathJax → window.print.
+    useEffect(() => {
+        if (!printRequest) return;
+        let cancelled = false;
+        const timer = window.setTimeout(async () => {
+            try {
+                await typesetBeforePrint();
+            } catch { /* le texte source reste imprimable */ }
+            await printDocument('cahier-de-textes');
+            if (!cancelled) setPrintRequest(null);
+        }, 120);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
+    }, [printRequest]);
 
     useEffect(() => {
         let cancelled = false;
@@ -778,6 +835,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                                         {snapshot ? `${snapshot.plannedCount}/${snapshot.totalItems} éléments` : 'En attente de synchro'}
                                                     </div>
                                                 </div>
+                                                <button onClick={() => void handlePrintClass(cls)} disabled={busy || printingClassId === cls.id} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-foreground hover:bg-muted disabled:opacity-50">Imprimer</button>
                                                 <button onClick={() => setImportingClass(cls)} disabled={busy} className="h-8 rounded-md border border-primary/25 bg-primary/5 px-2.5 text-[11px] font-bold text-primary hover:bg-primary/10 disabled:opacity-50">Importer JSON</button>
                                                 <button onClick={() => openClassModal(cls)} disabled={busy} className="h-8 rounded-md border border-border px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 disabled:opacity-50">Modifier</button>
                                                 <button onClick={() => setConfirmAction({ kind: 'deleteClass', classInfo: cls })} disabled={busy} className="h-8 rounded-md border border-destructive/25 px-2 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50">Supprimer</button>
@@ -818,6 +876,16 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                     </section>
                     </div>
                 </>
+            )}
+
+            {printRequest && (
+                <PrintView
+                    lessonsData={printRequest.lessonsData}
+                    classInfo={printRequest.classInfo}
+                    config={buildPrintConfig(data?.printSettings, printRequest.classInfo)}
+                    contentDirection={printRequest.contentDirection}
+                    newlyAddedIds={[]}
+                />
             )}
 
             <ClassJsonImportModal

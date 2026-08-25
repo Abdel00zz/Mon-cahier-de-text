@@ -18,7 +18,6 @@ interface StoredUser {
   passwordHash: string;
   createdAt: string;
   hasCompletedWelcome?: boolean;
-  lastSyncAt?: string;
   blocked?: boolean;
 }
 
@@ -41,11 +40,14 @@ const publicUser = (user: StoredUser) => ({
   hasCompletedWelcome: user.hasCompletedWelcome === true,
 });
 
+// `lastSyncAt` n'appartient qu'à cette projection : il est réécrit à chaque push
+// par /api/sync. Le compte lui-même ne le porte pas, pour éviter deux sources
+// de vérité dont une seule serait tenue à jour.
 const initialAdminSnapshot = (user: StoredUser) => ({
   phone: user.phone,
   nom: user.nom,
   prenom: user.prenom,
-  lastSyncAt: user.lastSyncAt ?? null,
+  lastSyncAt: null,
   classes: [],
 });
 
@@ -111,10 +113,16 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
     throw new HttpError(401, INVALID_CREDENTIALS);
   }
 
-  await ensureAdminSnapshot(redis, user);
+  // Le quota protège contre le forçage du mot de passe, pas contre l'usage
+  // légitime : une identification réussie libère le budget de la fenêtre.
+  // Sans cela, dix connexions valides (multi-appareils, réinstallation de la
+  // PWA) suffisaient à verrouiller le compte pendant cinq minutes.
+  await redis.del(rateKey).catch(() => undefined);
+
   if (user.blocked) {
     throw new HttpError(403, "Ce compte a été bloqué par l'administration. Contactez votre établissement.");
   }
+  await ensureAdminSnapshot(redis, user);
 
   const token = await signSession({ phone, role: 'teacher' }, SESSION_MAX_AGE);
   setCookie(res, SESSION_COOKIE, token, SESSION_MAX_AGE);

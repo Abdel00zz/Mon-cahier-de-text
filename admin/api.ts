@@ -9,7 +9,19 @@ export interface TeacherDetail {
     classMeta: Record<string, { updatedAt: string }>;
     snapshot: TeacherSnapshot | null;
     assessmentDates: Record<string, Record<string, string>>;
+    /** Sous-ensemble d'AppConfig nécessaire à l'impression d'un cahier par la direction. */
+    printSettings: TeacherPrintSettings | null;
     adminMessages: AdminMessage[];
+}
+
+export interface TeacherPrintSettings {
+    establishmentName?: string;
+    defaultTeacherName?: string;
+    academyRegion?: string;
+    educationProvince?: string;
+    schoolYearStart?: string;
+    printDescriptionMode?: 'all' | 'none' | 'custom';
+    printDescriptionTypes?: string[];
 }
 
 /** Données de pilotage réservées à la vue d'ensemble administrative. */

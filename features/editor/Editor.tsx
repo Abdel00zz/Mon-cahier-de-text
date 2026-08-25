@@ -32,7 +32,7 @@ import {
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
-import { printDocument } from '@/utils/printUtils';
+import { printDocument, typesetBeforePrint } from '@/utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
@@ -77,33 +77,6 @@ interface PendingDateCommit {
   warnings: DateWarning[];
   commit: () => void;
 }
-
-/**
- * MathJax peut être chargé tardivement (ou ne pas être disponible hors ligne).
- * L'impression ne doit pas attendre indéfiniment : on laisse le moteur
- * continuer avec le texte source si le délai est dépassé.
- */
-const typesetBeforePrint = async (timeoutMs = 4000): Promise<boolean> => {
-  let timer: number | undefined;
-  try {
-    const typesetPromise = (window as unknown as {
-      MathJax?: { typesetPromise?: () => Promise<void> };
-    }).MathJax?.typesetPromise?.();
-    if (!typesetPromise) return false;
-
-    await Promise.race([
-      typesetPromise,
-      new Promise<never>((_, reject) => {
-        timer = window.setTimeout(() => reject(new Error('MathJax timeout')), timeoutMs);
-      }),
-    ]);
-    return true;
-  } catch {
-    return false;
-  } finally {
-    if (timer !== undefined) window.clearTimeout(timer);
-  }
-};
 
 const createSelectionState = (indices?: Indices): SelectionState => {
   const keys = new Set<string>();

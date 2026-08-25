@@ -518,13 +518,23 @@ const devApiMockPlugin = (): Plugin => {
                     if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
                     if (action === 'messages') return send(res, 200, { adminMessages: devAdminMessages.slice(0, 20) });
                     if (action === 'teacher') {
+                        const settings = (classesBlob?.settings as Record<string, any> | undefined) ?? {};
                         return send(res, 200, {
                             user: { ...DEV_USER, createdAt: new Date().toISOString(), lastSyncAt: (devSnapshot as any)?.lastSyncAt ?? null, blocked: devTeacherBlocked },
                             classes: (classesBlob?.classes as any) ?? [],
                             schedules: (classesBlob?.schedules as any) ?? [],
                             classMeta: (classesBlob?.classMeta as any) ?? {},
                             snapshot: devSnapshot,
-                            assessmentDates: (classesBlob?.settings as any)?.assessmentDates ?? {},
+                            assessmentDates: settings.assessmentDates ?? {},
+                            printSettings: {
+                                establishmentName: settings.establishmentName ?? '',
+                                defaultTeacherName: settings.defaultTeacherName ?? '',
+                                academyRegion: settings.academyRegion,
+                                educationProvince: settings.educationProvince,
+                                schoolYearStart: settings.schoolYearStart,
+                                printDescriptionMode: settings.printDescriptionMode,
+                                printDescriptionTypes: settings.printDescriptionTypes,
+                            },
                             adminMessages: devAdminMessages,
                         });
                     }
@@ -753,7 +763,9 @@ export default defineConfig(({ mode }) => {
             outDir: 'dist',
             assetsDir: 'assets',
             emptyOutDir: true,
-            chunkSizeWarningLimit: 800,
+            // Un seul budget fait foi (config/optimization.ts) : le seuil de
+            // Rollup et celui du plugin ne peuvent plus diverger.
+            chunkSizeWarningLimit: BUNDLE_OPTIMIZATION.CHUNK_WARN_LIMIT_KB,
             rollupOptions: {
                 input: {
                     main: path.resolve(PROJECT_ROOT, 'index.html'),

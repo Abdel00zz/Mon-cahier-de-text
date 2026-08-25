@@ -131,7 +131,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   return (
     <div
       className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1rem)] items-center justify-between gap-1 overflow-hidden rounded-none border border-border/80 bg-card/95 p-1 text-card-foreground shadow-2xl shadow-black/20 ring-1 ring-black/5 backdrop-blur-xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:inset-x-auto sm:w-fit sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:p-1.5 sm:gap-1.5 print:hidden"
-      style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) backwards' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
       aria-label={t('selection.actionsAria')}

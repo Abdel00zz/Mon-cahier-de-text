@@ -61,7 +61,6 @@ interface StoredUser {
     nom: string;
     prenom: string;
     createdAt: string;
-    lastSyncAt?: string;
     blocked?: boolean;
 }
 
@@ -214,6 +213,20 @@ const handleSaveOfficialEvents = async (body: AdminBody, res: ApiResponse) => {
     res.status(200).json({ ok: true, officialEvents: saved });
 };
 
+/** Sous-ensemble des réglages nécessaires à l'impression d'un cahier par la direction. */
+const pickPrintSettings = (settings: Partial<AppConfig> | undefined) => {
+    if (!settings) return null;
+    return {
+        establishmentName: settings.establishmentName ?? '',
+        defaultTeacherName: settings.defaultTeacherName ?? '',
+        academyRegion: settings.academyRegion,
+        educationProvince: settings.educationProvince,
+        schoolYearStart: settings.schoolYearStart,
+        printDescriptionMode: settings.printDescriptionMode,
+        printDescriptionTypes: settings.printDescriptionTypes,
+    };
+};
+
 const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
     const phone = getQueryParam(req, 'phone');
     if (!phone) throw new HttpError(400, 'Paramètre phone manquant.');
@@ -240,7 +253,8 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
                 nom: user.nom,
                 prenom: user.prenom,
                 createdAt: user.createdAt,
-                lastSyncAt: user.lastSyncAt ?? null,
+                // Seul /api/sync tient cette date à jour, dans la projection admin.
+                lastSyncAt: snapshot?.lastSyncAt ?? null,
                 blocked: user.blocked === true,
             }
             : null,
@@ -249,6 +263,7 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
         assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
+        printSettings: pickPrintSettings(classesBlob?.settings),
         adminMessages: recentAdminMessages(messages),
     });
 };
@@ -501,7 +516,7 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
         phone,
         nom: user.nom,
         prenom: user.prenom,
-        lastSyncAt: user.lastSyncAt ?? null,
+        lastSyncAt: null, // aucun push enseignant encore observé
         classes: [],
     };
     const nextSnapshot: TeacherSnapshot = {

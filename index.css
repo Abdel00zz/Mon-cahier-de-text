@@ -490,6 +490,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
   --animate-advanced-alert: advanced-alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Entrée de la barre de sélection de l'éditeur. Définie hors @theme car
+   consommée par un `style={{ animation }}` inline, sans variable --animate-*.
+   `backwards` (voir SelectionBar) évite un flash au premier rendu. */
+@keyframes slide-in-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* ── Présentation native des Paramètres ────────────────────────────────── */
 
 .app-settings-parent {
@@ -498,7 +506,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
     transform 420ms cubic-bezier(0.32, 0.72, 0, 1),
     border-radius 420ms cubic-bezier(0.32, 0.72, 0, 1),
     filter 260ms ease;
-  will-change: transform, border-radius;
+  /* NB : pas de `will-change: transform` ici — il créerait un bloc conteneur
+     pour les descendants `position: fixed` (SelectionBar, FAB mobile) et les
+     collerait au bas du CONTENU au lieu du bas de l'écran. */
 }
 
 .app-settings-parent[data-settings-sheet-open='true'] {

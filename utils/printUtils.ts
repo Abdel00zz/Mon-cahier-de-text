@@ -34,3 +34,30 @@ export const printDocument = async (fileName: string = 'cahier-de-textes'): Prom
     return false;
   }
 };
+
+/**
+ * MathJax peut être chargé tardivement (ou ne pas être disponible hors ligne).
+ * L'impression ne doit pas attendre indéfiniment : on laisse le moteur
+ * continuer avec le texte source si le délai est dépassé.
+ */
+export const typesetBeforePrint = async (timeoutMs = 4000): Promise<boolean> => {
+  let timer: number | undefined;
+  try {
+    const typesetPromise = (window as unknown as {
+      MathJax?: { typesetPromise?: () => Promise<void> };
+    }).MathJax?.typesetPromise?.();
+    if (!typesetPromise) return false;
+
+    await Promise.race([
+      typesetPromise,
+      new Promise<never>((_, reject) => {
+        timer = window.setTimeout(() => reject(new Error('MathJax timeout')), timeoutMs);
+      }),
+    ]);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    if (timer !== undefined) window.clearTimeout(timer);
+  }
+};

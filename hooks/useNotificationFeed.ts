@@ -54,7 +54,21 @@ export const useNotificationFeed = (
     const onStorage = (event: StorageEvent) => {
       if (!event.key || event.key.startsWith('classData_v1_') || event.key.startsWith('editor_actions_ignored_v1_') || event.key.startsWith('editJournal_v1_') || event.key.startsWith('printMeta_v1_')) refresh();
     };
-    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    /*
+     * Le retour au premier plan ne modifie rien par lui-même : les écritures
+     * locales passent par le syncBus et celles d'un autre onglet par `storage`.
+     * Seul le changement de JOUR peut invalider le calcul (séances manquées,
+     * devoirs à venir, dates dépassées). On ne recalcule donc que dans ce cas,
+     * au lieu de reparser tous les cahiers à chaque bascule d'application.
+     */
+    let lastComputedDay = todayInMorocco(new Date(), getBundledCalendar());
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      const today = todayInMorocco(new Date(), getBundledCalendar());
+      if (today === lastComputedDay) return;
+      lastComputedDay = today;
+      refresh();
+    };
     window.addEventListener('storage', onStorage);
     document.addEventListener('visibilitychange', onVisible);
     return () => {
@@ -76,6 +90,18 @@ export const useNotificationFeed = (
     );
     const classSignals: ClassSignal[] = classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale));
     const globalSignals = collectCrossClassSignals(classes, locale);
+
+    // Un seul Set par classe : plusieurs devoirs d'une même classe partageaient
+    // la même mémoire « ignoré », reconstruite à chaque itération.
+    const ignoredByClass = new Map<string, Set<string>>();
+    const ignoredFor = (classId: string): Set<string> => {
+      let set = ignoredByClass.get(classId);
+      if (!set) {
+        set = readIgnoredActionIds(classId);
+        ignoredByClass.set(classId, set);
+      }
+      return set;
+    };
 
     for (const item of pastAssessments.filter(a => a.type === 'controle')) {
       const saisi = config.assessmentAbsences?.[item.classId]?.[item.id]
@@ -102,7 +128,7 @@ export const useNotificationFeed = (
         }),
         date: item.dateISO,
         dismissible: true,
-        ignored: readIgnoredActionIds(item.classId).has(id),
+        ignored: ignoredFor(item.classId).has(id),
       });
     }
 

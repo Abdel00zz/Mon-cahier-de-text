@@ -3,6 +3,7 @@ import { formatClassDisplayName } from '../constants';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { flattenLessons } from './dataUtils';
 import { readCachedLessons } from './notebookStorage';
+import { readCachedConfig } from './configStorage';
 import { DateWarning, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
@@ -77,7 +78,10 @@ export const readIgnoredActionIds = (classId: string): Set<string> => {
         const scope = classId || GLOBAL_SCOPE;
         const raw = localStorage.getItem(`${ACTIONS_IGNORED_KEY_PREFIX}${scope}`);
         const parsed = raw ? JSON.parse(raw) : [];
-        const config = JSON.parse(localStorage.getItem('appConfig_v1') || '{}') as Pick<AppConfig, 'notificationDismissals'>;
+        // Appelé une fois par classe puis deux fois pour la portée globale à
+        // chaque recalcul du centre : le parse partagé évite de redéserialiser
+        // la plus grosse valeur du stockage à chacun de ces appels.
+        const config = readCachedConfig() as Pick<AppConfig, 'notificationDismissals'>;
         const synced = config.notificationDismissals?.[scope] ?? [];
         return new Set([
             ...(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : []),
@@ -367,19 +371,45 @@ const levelKey = (name: string): string =>
 export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale = 'fr'): ClassSignal[] => {
     const signals: ClassSignal[] = [];
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
+    // Une seule lecture de la mémoire « ignoré » globale : elle ne peut pas
+    // changer pendant le calcul, et elle était relue à chaque signal produit.
+    const ignored = readIgnoredActionIds(GLOBAL_SCOPE);
+
+    /*
+     * Un seul parcours des cahiers pour les deux insights : la comparaison de
+     * progression et le rappel de sauvegarde ont besoin des mêmes données.
+     * Deux boucles séparées relisaient le stockage de chaque classe une seconde
+     * fois, alors que ce calcul se produit à chaque ouverture du centre et à
+     * chaque évènement du syncBus.
+     */
+    const byLevel = new Map<string, { classInfo: ClassInfo; completion: number; totalItems: number }[]>();
+    let hasContent = false;
+    let lastExport: string | null = null;
+    let recentActivity = 0;
+    const now = Date.now();
+
+    for (const classInfo of classes) {
+        const lessons = readClassLessons(classInfo.id);
+        if (lessons.length > 0) hasContent = true;
+
+        const stats = computeProgressionStats(lessons);
+        // Sous 5 éléments, le pourcentage n'est pas comparable entre classes.
+        if (stats.totalItems >= 5) {
+            // Ne jamais comparer deux matières/cycles différents qui portent un
+            // libellé de niveau similaire.
+            const key = `${classInfo.cycle ?? ''}|${classInfo.subject.trim().toLowerCase()}|${levelKey(classInfo.name)}`;
+            const group = byLevel.get(key) ?? [];
+            group.push({ classInfo, completion: stats.completionRate, totalItems: stats.totalItems });
+            byLevel.set(key, group);
+        }
+
+        for (const entry of readJournal(classInfo.id)) {
+            if (entry.op === 'export-data' && (!lastExport || entry.at > lastExport)) lastExport = entry.at;
+            if (now - new Date(entry.at).getTime() <= 14 * DAY_MS) recentActivity += 1;
+        }
+    }
 
     // Écart de progression entre classes du même niveau (≥ 25 points)
-    const byLevel = new Map<string, { classInfo: ClassInfo; completion: number; totalItems: number }[]>();
-    for (const classInfo of classes) {
-        const stats = computeProgressionStats(readClassLessons(classInfo.id));
-        if (stats.totalItems < 5) continue; // trop peu de contenu pour comparer
-        // Ne jamais comparer deux matières/cycles différents qui portent un
-        // libellé de niveau similaire.
-        const key = `${classInfo.cycle ?? ''}|${classInfo.subject.trim().toLowerCase()}|${levelKey(classInfo.name)}`;
-        const group = byLevel.get(key) ?? [];
-        group.push({ classInfo, completion: stats.completionRate, totalItems: stats.totalItems });
-        byLevel.set(key, group);
-    }
     for (const group of byLevel.values()) {
         if (group.length < 2) continue;
         const sorted = [...group].sort((a, b) => b.completion - a.completion);
@@ -392,7 +422,6 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
         if (comparableVolume < 0.8) continue;
         const gap = leader.completion - lagger.completion;
         if (gap < 25) continue;
-        const ignored = readIgnoredActionIds(GLOBAL_SCOPE);
         // Identifiant stable : l'insight ne réapparaît pas seulement parce que
         // le pourcentage varie de quelques points.
         const id = `gap:${leader.classInfo.id}:${lagger.classInfo.id}`;
@@ -417,23 +446,10 @@ export const collectCrossClassSignals = (classes: ClassInfo[], locale: AppLocale
     }
 
     // Sauvegarde : aucune exportation récente alors que les cahiers vivent
-    let hasContent = false;
-    let lastExport: string | null = null;
-    let recentActivity = 0;
-    const now = Date.now();
-    for (const classInfo of classes) {
-        const journal = readJournal(classInfo.id);
-        for (const entry of journal) {
-            if (entry.op === 'export-data' && (!lastExport || entry.at > lastExport)) lastExport = entry.at;
-            if (now - new Date(entry.at).getTime() <= 14 * DAY_MS) recentActivity += 1;
-        }
-        if (!hasContent && readClassLessons(classInfo.id).length > 0) hasContent = true;
-    }
     const daysSinceExport = lastExport ? Math.floor((now - new Date(lastExport).getTime()) / DAY_MS) : null;
     const needsBackup = hasContent && recentActivity >= 5 && (daysSinceExport === null || daysSinceExport > 30);
     if (needsBackup) {
         const monthKey = new Date().toISOString().slice(0, 7);
-        const ignored = readIgnoredActionIds(GLOBAL_SCOPE);
         const id = `backup:${monthKey}`;
         signals.push({
             id,

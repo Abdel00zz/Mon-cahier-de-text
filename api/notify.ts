@@ -15,6 +15,29 @@ interface NotifyBody {
 
 const SEVERITY_RANK: Record<string, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
 
+/*
+ * Le cron parcourt tous les enseignants dans une seule invocation de fonction.
+ * Trois garde-fous rendent ce parcours sûr quand l'effectif grandit :
+ *   • les envois Web Push partent par paquets concurrents, pas un par un ;
+ *   • l'anti-spam est enregistré à la fin de CHAQUE paquet, si bien qu'une
+ *     interruption ne perd au pire qu'un paquet au lieu de tout le passage
+ *     (sinon le lendemain renvoyait l'intégralité des notifications) ;
+ *   • un budget de temps arrête l'envoi avant la coupure de la plateforme et
+ *     le signale dans la réponse, au lieu d'échouer en silence.
+ */
+const CRON_SEND_CONCURRENCY = 8;
+const CRON_TIME_BUDGET_MS = 45_000;
+
+interface CronCandidate {
+    phone: string;
+    entry: PushEntry;
+    severity: string;
+    gap: number;
+    title: string;
+    body: string;
+    wouldSend: boolean;
+}
+
 const dedupeSubs = (subs: PushEntry['subs']): PushEntry['subs'] => {
     const seen = new Set<string>();
     return subs.filter(s => {
@@ -69,38 +92,25 @@ const handleTest = async (res: ApiResponse, phone: string) => {
     res.status(200).json({ ok: sent > 0, sent });
 };
 
-const runCron = async (req: ApiRequest, res: ApiResponse) => {
-    const secret = process.env.CRON_SECRET;
-    const auth = req.headers.authorization;
-    const provided = Array.isArray(auth) ? auth[0] : auth;
-    if (!secret || provided !== `Bearer ${secret}`) {
-        throw new HttpError(401, 'Non autorisé.');
-    }
-
-    const dryRun = getQueryParam(req, 'dry') === '1';
-    const redis = await getRedis();
-    const calendar = (await redis.get<HolidayCalendar>(KEYS.adminCalendar)) ?? getBundledCalendar();
-    const today = todayInMorocco(new Date(), calendar);
-
-    if (isHoliday(today, calendar) || isVacation(today, calendar)) {
-        return res.status(200).json({ today, skipped: 'vacances', sent: 0 });
-    }
-
-    const vapidReady = configureVapid();
-    const [snapshots, subsMap] = await Promise.all([
-        redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots),
-        redis.hgetall<Record<string, PushEntry>>(KEYS.pushSubs),
-    ]);
-
-    const report: Array<{ phone: string; severity: string; gap: number; wouldSend: boolean }> = [];
-    const updates: Record<string, PushEntry> = {};
-    let totalSent = 0;
-
+/**
+ * Décide, sans aucun accès réseau, qui doit être notifié aujourd'hui.
+ * Séparer la décision de l'envoi permet de renvoyer un rapport complet même
+ * lorsque la phase d'envoi est écourtée par le budget de temps.
+ */
+const collectCronCandidates = (
+    snapshots: Record<string, TeacherSnapshot>,
+    subsMap: Record<string, PushEntry>,
+    today: string,
+    calendar: HolidayCalendar,
+): CronCandidate[] => {
+    const candidates: CronCandidate[] = [];
     const [ty, tm, td] = today.split('-').map(Number);
     const todayWeekday = new Date(Date.UTC(ty, tm - 1, td)).getUTCDay();
+    const twoDaysMs = 2 * 24 * 3600 * 1000;
+    const now = Date.now();
 
-    for (const [phone, snapshot] of Object.entries(snapshots ?? {})) {
-        const entry = subsMap?.[phone];
+    for (const [phone, snapshot] of Object.entries(snapshots)) {
+        const entry = subsMap[phone];
         if (!entry || entry.subs.length === 0) continue;
 
         // Absence justifiée en cours (certificat de maladie...) : silence total.
@@ -134,37 +144,87 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
 
         // anti-spam : pas de re-notif < 2 jours sauf aggravation
         const lastNotified = entry.lastNotifiedAt ? new Date(entry.lastNotifiedAt).getTime() : 0;
-        const twoDaysMs = 2 * 24 * 3600 * 1000;
         const severityIncreased = SEVERITY_RANK[summary.severity] > SEVERITY_RANK[entry.lastSeverity ?? 'ok'];
-        const recentlyNotified = Date.now() - lastNotified < twoDaysMs;
-        const wouldSend = !recentlyNotified || severityIncreased;
+        const recentlyNotified = now - lastNotified < twoDaysMs;
 
-        report.push({ phone, severity: summary.severity, gap: perClass.reduce((m, c) => Math.max(m, c.gapSessions), 0), wouldSend });
-
-        if (!wouldSend || dryRun || !vapidReady) continue;
-
-        const { survivingSubs, sent } = await sendToEntry(entry, {
+        candidates.push({
+            phone,
+            entry,
+            severity: summary.severity,
+            gap: perClass.reduce((m, c) => Math.max(m, c.gapSessions), 0),
             title: summary.title,
             body: summary.body,
-            url: '/',
-            kind: 'lateness',
-            tag: `cdt-lateness-${today}`,
-            timestamp: Date.now(),
+            wouldSend: !recentlyNotified || severityIncreased,
         });
-        totalSent += sent;
-        updates[phone] = {
-            ...entry,
-            subs: survivingSubs,
-            lastNotifiedAt: new Date().toISOString(),
-            lastSeverity: summary.severity,
-        };
     }
 
-    if (!dryRun && Object.keys(updates).length > 0) {
+    return candidates;
+};
+
+const runCron = async (req: ApiRequest, res: ApiResponse) => {
+    const secret = process.env.CRON_SECRET;
+    const auth = req.headers.authorization;
+    const provided = Array.isArray(auth) ? auth[0] : auth;
+    if (!secret || provided !== `Bearer ${secret}`) {
+        throw new HttpError(401, 'Non autorisé.');
+    }
+
+    const dryRun = getQueryParam(req, 'dry') === '1';
+    const redis = await getRedis();
+    const calendar = (await redis.get<HolidayCalendar>(KEYS.adminCalendar)) ?? getBundledCalendar();
+    const today = todayInMorocco(new Date(), calendar);
+
+    if (isHoliday(today, calendar) || isVacation(today, calendar)) {
+        return res.status(200).json({ today, skipped: 'vacances', sent: 0 });
+    }
+
+    const vapidReady = configureVapid();
+    const [snapshots, subsMap] = await Promise.all([
+        redis.hgetall<Record<string, TeacherSnapshot>>(KEYS.adminSnapshots),
+        redis.hgetall<Record<string, PushEntry>>(KEYS.pushSubs),
+    ]);
+
+    const candidates = collectCronCandidates(snapshots ?? {}, subsMap ?? {}, today, calendar);
+    const report = candidates.map(({ phone, severity, gap, wouldSend }) => ({ phone, severity, gap, wouldSend }));
+
+    const queue = dryRun || !vapidReady ? [] : candidates.filter(candidate => candidate.wouldSend);
+    const startedAt = Date.now();
+    let totalSent = 0;
+    let truncated = false;
+
+    for (let offset = 0; offset < queue.length; offset += CRON_SEND_CONCURRENCY) {
+        if (Date.now() - startedAt > CRON_TIME_BUDGET_MS) {
+            truncated = true;
+            break;
+        }
+        const batch = queue.slice(offset, offset + CRON_SEND_CONCURRENCY);
+        const results = await Promise.all(batch.map(async candidate => {
+            const { survivingSubs, sent } = await sendToEntry(candidate.entry, {
+                title: candidate.title,
+                body: candidate.body,
+                url: '/',
+                kind: 'lateness',
+                tag: `cdt-lateness-${today}`,
+                timestamp: Date.now(),
+            });
+            return { candidate, survivingSubs, sent };
+        }));
+
+        const updates: Record<string, PushEntry> = {};
+        for (const { candidate, survivingSubs, sent } of results) {
+            totalSent += sent;
+            updates[candidate.phone] = {
+                ...candidate.entry,
+                subs: survivingSubs,
+                lastNotifiedAt: new Date().toISOString(),
+                lastSeverity: candidate.severity,
+            };
+        }
+        // Enregistré à chaque paquet : une coupure ne réarme pas tout l'effectif.
         await redis.hset(KEYS.pushSubs, updates);
     }
 
-    res.status(200).json({ today, dryRun, users: report, sent: totalSent });
+    res.status(200).json({ today, dryRun, users: report, sent: totalSent, queued: queue.length, truncated });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

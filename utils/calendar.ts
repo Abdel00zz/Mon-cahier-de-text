@@ -161,11 +161,23 @@ export const toISODate = (d: Date): string => {
 
 const asISO = (date: string | Date): string => (typeof date === 'string' ? date.slice(0, 10) : toISODate(date));
 
+/*
+ * Construire un Intl.DateTimeFormat coûte plus cher que le formatage lui-même,
+ * et cette fonction est appelée une fois par classe à chaque recalcul des
+ * signaux. Un formateur par fuseau suffit : il est immuable et réutilisable.
+ */
+const isoFormatters = new Map<string, Intl.DateTimeFormat>();
+
 /** Date du jour dans le fuseau marocain, critique côté serveur (fonctions Vercel en UTC). */
 export const todayInMorocco = (now: Date = new Date(), cal: HolidayCalendar = bundled): string => {
     try {
         // 'en-CA' produit le format YYYY-MM-DD
-        return new Intl.DateTimeFormat('en-CA', { timeZone: cal.fuseau }).format(now);
+        let formatter = isoFormatters.get(cal.fuseau);
+        if (!formatter) {
+            formatter = new Intl.DateTimeFormat('en-CA', { timeZone: cal.fuseau });
+            isoFormatters.set(cal.fuseau, formatter);
+        }
+        return formatter.format(now);
     } catch {
         return toISODate(now);
     }
