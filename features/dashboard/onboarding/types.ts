@@ -63,6 +63,7 @@ export interface OnboardingCopy {
     establishment: string;
     establishmentPlaceholder: string;
     teachingCycle: string;
+    cycleSelectionHint: string;
     subjectSelectionHint: (teacherName: string) => string;
     subjectToAssign: string;
     assignSubjectHint: string;
@@ -93,6 +94,7 @@ export interface OnboardingCopy {
     cycleDescriptions: Record<Cycle, string>;
     levelGroupLabels: Record<string, string>;
     selectBranchesHint: string;
+    prepaPathHint: string;
     noClassSelectedYet: string;
     configuredClassesCount: (count: number) => string;
     customClassPrompt: string;

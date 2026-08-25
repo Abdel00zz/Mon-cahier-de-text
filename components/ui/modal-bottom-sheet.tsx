@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from './icons';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,21 @@ export interface ModalBottomSheetProps {
   swipeToDismiss?: boolean;
   swipeFromBody?: boolean;
   blockDismiss?: boolean;
+  /** Paliers de hauteur autorisés sur téléphone portrait, entre 0 et 1. */
+  mobileDetents?: number[];
+  /** Palier affiché à l'ouverture. Par défaut, le plus petit. */
+  initialMobileDetent?: number;
 }
+
+const DEFAULT_MOBILE_DETENTS = [0.55, 0.9];
+
+const normalizeDetents = (values: number[]): number[] => {
+  const normalized = values
+    .filter(Number.isFinite)
+    .map(value => Math.min(0.96, Math.max(0.32, value)))
+    .sort((a, b) => a - b);
+  return Array.from(new Set(normalized.length ? normalized : DEFAULT_MOBILE_DETENTS));
+};
 
 const maxWidthClassMap: Record<string, string> = {
   xs: 'sm:max-w-sm',
@@ -60,6 +74,8 @@ export function ModalBottomSheet({
   swipeToDismiss = true,
   swipeFromBody = false,
   blockDismiss = false,
+  mobileDetents = DEFAULT_MOBILE_DETENTS,
+  initialMobileDetent,
 }: ModalBottomSheetProps) {
   const dismissCallback = useCallback(() => {
     if (onDismissRequest) {
@@ -70,6 +86,37 @@ export function ModalBottomSheet({
   }, [onDismissRequest, onClose]);
 
   const effectiveOpen = Boolean(isOpen);
+  const detentSignature = mobileDetents.join(',');
+  const detents = useMemo(() => normalizeDetents(mobileDetents), [detentSignature]);
+  const [activeDetentIndex, setActiveDetentIndex] = useState(0);
+  const [isCompactSheet, setIsCompactSheet] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px) and (orientation: portrait)');
+    const sync = () => setIsCompactSheet(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!effectiveOpen) return;
+    const requested = initialMobileDetent ?? detents[0];
+    const closestIndex = detents.reduce((best, value, index) => (
+      Math.abs(value - requested) < Math.abs(detents[best] - requested) ? index : best
+    ), 0);
+    setActiveDetentIndex(closestIndex);
+  }, [detentSignature, effectiveOpen, initialMobileDetent]);
+
+  const activeDetent = detents[Math.min(activeDetentIndex, detents.length - 1)] ?? detents[0];
+  const canExpand = isCompactSheet && activeDetentIndex < detents.length - 1;
+  const canCollapse = isCompactSheet && activeDetentIndex > 0;
+  const expandSheet = useCallback(() => {
+    setActiveDetentIndex(index => Math.min(index + 1, detents.length - 1));
+  }, [detents.length]);
+  const collapseSheet = useCallback(() => {
+    setActiveDetentIndex(index => Math.max(index - 1, 0));
+  }, []);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -79,11 +126,18 @@ export function ModalBottomSheet({
 
   const isRtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
   const closeLabel = isRtl ? 'إغلاق' : 'Fermer';
+  const resizeLabel = canExpand
+    ? (isRtl ? 'توسيع النافذة' : 'Agrandir la fenêtre')
+    : (isRtl ? 'تصغير النافذة' : 'Réduire la fenêtre');
 
   const swipe = useSwipeToDismiss({
     onDismiss: dismissCallback,
     enabled: Boolean(swipeToDismiss && !blockDismiss),
     allowFromBody: swipeFromBody,
+    canExpand,
+    canCollapse,
+    onExpand: expandSheet,
+    onCollapse: collapseSheet,
   });
 
   const mwClass = maxWidthClassMap[maxWidth] || maxWidthClassMap.md;
@@ -115,11 +169,19 @@ export function ModalBottomSheet({
             swipe.isDragging && 'select-none',
             mwClass,
             className,
+            isCompactSheet && '!h-[var(--sheet-detent-height)] transition-[height,transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
             // La position appartient au socle modal. Une classe décorative
             // passée par un écran ne doit jamais pouvoir la remplacer.
             '!fixed'
           )}
-          style={swipe.dragStyle}
+          style={{
+            ...(isCompactSheet
+              ? ({ '--sheet-detent-height': `${activeDetent * 100}dvh` } as React.CSSProperties)
+              : {}),
+            ...swipe.dragStyle,
+          }}
+          data-sheet-detent={isCompactSheet ? activeDetent : undefined}
+          data-sheet-resizable={isCompactSheet && detents.length > 1 ? 'true' : 'false'}
           onPointerDownOutside={(e) => {
             if (blockDismiss) e.preventDefault();
           }}
@@ -142,13 +204,21 @@ export function ModalBottomSheet({
         >
           {/* Material 3 Drag Handle */}
           {dragHandle && (
-            <div
+            <button
+              type="button"
               data-swipe-dismiss-handle
-              aria-hidden
+              aria-label={resizeLabel}
+              onClick={() => {
+                if (swipe.isDragging) return;
+                if (canExpand) expandSheet();
+                else if (canCollapse) collapseSheet();
+              }}
               className="absolute left-1/2 top-2.5 z-20 flex h-4 w-16 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
             >
-              <span className="h-1 w-8 rounded-full bg-muted-foreground/35 transition-colors hover:bg-muted-foreground/60" />
-            </div>
+              {typeof dragHandle === 'boolean'
+                ? <span className="h-1 w-8 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 hover:w-10 hover:bg-muted-foreground/55" />
+                : dragHandle}
+            </button>
           )}
 
           {/* Header */}

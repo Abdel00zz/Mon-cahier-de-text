@@ -44,12 +44,12 @@ export const OnboardingPage = ({
     const copy = useMemo(() => copyFor(lang), [lang]);
     const [finishing, setFinishing] = useState(false);
 
-    const selectedCycles = (config.selectedCycles?.length ? config.selectedCycles : ['lycee']) as Cycle[];
+    const selectedCycles = (config.selectedCycles ?? []) as Cycle[];
     const [classCycle, setClassCycle] = useState<Cycle>(() => selectedCycles[0] ?? 'lycee');
     const cycle = classCycle;
     const selectedSubjects = config.selectedSubjects ?? [];
     const subjectOptions = useMemo(() => subjectOptionsFor(config.selectedSubjects), [config.selectedSubjects]);
-    const isProfileValid = Boolean(config.defaultTeacherName?.trim());
+    const isProfileValid = Boolean(config.defaultTeacherName?.trim()) && selectedCycles.length > 0;
 
     // Le cycle actif sert uniquement à l'étape de création des classes. Il ne
     // réduit jamais les cycles déclarés dans le profil de l'enseignant.
@@ -87,9 +87,10 @@ export const OnboardingPage = ({
     }, [onConfigChange]);
 
     const handleCyclesChange = useCallback((nextCycles: Cycle[]) => {
-        if (nextCycles.length === 0) return;
         onConfigChange({ selectedCycles: nextCycles, showAllCycles: false });
-        setClassCycle(current => nextCycles.includes(current) ? current : nextCycles[0]);
+        if (nextCycles.length > 0) {
+            setClassCycle(current => nextCycles.includes(current) ? current : nextCycles[0]);
+        }
     }, [onConfigChange]);
 
     const handleSubjectToggle = useCallback((subject: string) => {

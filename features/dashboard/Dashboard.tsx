@@ -518,13 +518,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </>
                                     )}
                                 </p>
-                                <div className="mt-1 flex min-w-0 items-start gap-1.5">
-                                    <span className={`flex h-[16.5px] shrink-0 items-center sm:h-[22.5px] ${
+                                <div className="mt-1 flex min-w-0 items-start gap-1 sm:gap-1.5">
+                                    <span className={`flex h-[16.5px] w-2.5 shrink-0 items-center justify-center sm:h-[22.5px] sm:w-3.5 ${
                                         welcome.tone === 'alert' ? 'text-rose-600 dark:text-rose-400' :
                                             welcome.tone === 'vacation' ? 'text-cyan-600 dark:text-cyan-400' :
                                                 welcome.tone === 'deadline' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'
                                     }`} aria-hidden>
-                                        {welcome.tone === 'alert' ? <AlertTriangle className="h-3.5 w-3.5" /> : welcome.tone === 'deadline' ? <ClipboardList className="h-3.5 w-3.5" /> : <CalendarDays className="h-3.5 w-3.5" />}
+                                        {welcome.tone === 'alert' ? <AlertTriangle className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" /> : welcome.tone === 'deadline' ? <ClipboardList className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" /> : <CalendarDays className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />}
                                     </span>
                                     <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[11px] font-medium leading-[1.5] text-slate-700 sm:text-[15px] dark:text-slate-200">
                                         <p className="min-w-0">

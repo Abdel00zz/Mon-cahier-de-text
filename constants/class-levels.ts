@@ -21,10 +21,21 @@ export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
     '2ème Bac Lettres',
     '2ème Bac Sciences Humaines',
   ],
-  prepa: ['MPSI', 'PCSI', 'MP', 'PSI', 'TSI', 'ECS', 'ECT'],
+  prepa: [
+    '1re année MPSI',
+    '1re année PCSI',
+    '1re année TSI',
+    '1re année ECS',
+    '1re année ECT',
+    '2e année MP',
+    '2e année PSI',
+    '2e année TSI',
+    '2e année ECS',
+    '2e année ECT',
+  ],
 };
 
-export type ClassLevelGroupKey = 'college' | 'common' | 'firstBac' | 'secondBac' | 'prepa';
+export type ClassLevelGroupKey = 'college' | 'common' | 'firstBac' | 'secondBac' | 'prepa' | 'prepaFirst' | 'prepaSecond';
 
 export interface ClassLevelGroup {
   key: ClassLevelGroupKey;
@@ -47,7 +58,10 @@ export const classLevelGroupsForCycle = (cycle: Cycle): ClassLevelGroup[] => {
         { key: 'secondBac', levels: CLASS_LEVELS_BY_CYCLE.lycee.filter(level => level.startsWith('2ème Bac')) },
       ];
     case 'prepa':
-      return [{ key: 'prepa', levels: CLASS_LEVELS_BY_CYCLE.prepa }];
+      return [
+        { key: 'prepaFirst', levels: CLASS_LEVELS_BY_CYCLE.prepa.filter(level => level.startsWith('1re année')) },
+        { key: 'prepaSecond', levels: CLASS_LEVELS_BY_CYCLE.prepa.filter(level => level.startsWith('2e année')) },
+      ];
   }
 };
 
@@ -58,6 +72,8 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
     firstBac: '1re Bac',
     secondBac: '2e Bac',
     prepa: 'Prépa',
+    prepaFirst: '1re année CPGE',
+    prepaSecond: '2e année CPGE',
   },
   ar: {
     college: 'الإعدادي',
@@ -65,6 +81,8 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
     firstBac: 'الأولى بكالوريا',
     secondBac: 'الثانية بكالوريا',
     prepa: 'الأقسام التحضيرية',
+    prepaFirst: 'السنة الأولى CPGE',
+    prepaSecond: 'السنة الثانية CPGE',
   },
   en: {
     college: 'Middle School',
@@ -72,6 +90,8 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
     firstBac: '1st Bac',
     secondBac: '2nd Bac',
     prepa: 'Preparatory Classes',
+    prepaFirst: 'CPGE Year 1',
+    prepaSecond: 'CPGE Year 2',
   },
 };
 
@@ -122,6 +142,16 @@ const CLASS_LEVEL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
   'TSI': 'Technologie et sciences industrielles',
   'ECS': 'Économie et commerce, option scientifique',
   'ECT': 'Économie et commerce, option technologique',
+  '1re année MPSI': '1re année · MPSI',
+  '1re année PCSI': '1re année · PCSI',
+  '1re année TSI': '1re année · TSI',
+  '1re année ECS': '1re année · ECS',
+  '1re année ECT': '1re année · ECT',
+  '2e année MP': '2e année · MP',
+  '2e année PSI': '2e année · PSI',
+  '2e année TSI': '2e année · TSI',
+  '2e année ECS': '2e année · ECS',
+  '2e année ECT': '2e année · ECT',
 };
 
 const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
@@ -168,6 +198,16 @@ const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
   'TSI': 'تكنولوجيا وعلوم صناعية',
   'ECS': 'اقتصاد وتجارة خيار علمي',
   'ECT': 'اقتصاد وتجارة خيار تكنولوجي',
+  '1re année MPSI': 'السنة الأولى · MPSI',
+  '1re année PCSI': 'السنة الأولى · PCSI',
+  '1re année TSI': 'السنة الأولى · TSI',
+  '1re année ECS': 'السنة الأولى · ECS',
+  '1re année ECT': 'السنة الأولى · ECT',
+  '2e année MP': 'السنة الثانية · MP',
+  '2e année PSI': 'السنة الثانية · PSI',
+  '2e année TSI': 'السنة الثانية · TSI',
+  '2e année ECS': 'السنة الثانية · ECS',
+  '2e année ECT': 'السنة الثانية · ECT',
 };
 
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)

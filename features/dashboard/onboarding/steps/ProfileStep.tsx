@@ -25,7 +25,7 @@ export const ProfileStep = memo<ProfileStepProps>(({
     onCyclesChange,
 }) => (
     <div className="max-w-2xl space-y-6 animate-fade-in duration-500">
-        <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 backdrop-blur-sm sm:p-6 shadow-xs">
+        <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-6">
             <div className="space-y-1.5">
                 <label htmlFor="onboarding-teacher-name" className="block text-start text-xs font-bold uppercase tracking-wide text-slate-700">{copy.fullName}</label>
                 <Input
@@ -52,7 +52,12 @@ export const ProfileStep = memo<ProfileStepProps>(({
         </div>
 
         <div className="space-y-3 pt-1">
-            <p className="text-start text-sm font-bold text-slate-800">{copy.teachingCycle}</p>
+            <div className="flex flex-wrap items-baseline justify-between gap-1.5">
+                <p className="text-start text-sm font-bold text-slate-800">{copy.teachingCycle}</p>
+                {cycles.length === 0 && (
+                    <p className="text-start text-xs font-semibold text-blue-700" role="status">{copy.cycleSelectionHint}</p>
+                )}
+            </div>
             <div className="mx-auto grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
                 {ONBOARDING_CYCLES.map(option => {
                     const active = cycles.includes(option.key);
@@ -62,7 +67,6 @@ export const ProfileStep = memo<ProfileStepProps>(({
                             key={option.key}
                             type="button"
                             onClick={() => {
-                                if (active && cycles.length === 1) return;
                                 onCyclesChange(
                                     active
                                         ? cycles.filter(cycle => cycle !== option.key)
@@ -71,20 +75,17 @@ export const ProfileStep = memo<ProfileStepProps>(({
                             }}
                             aria-pressed={active}
                             className={cn(
-                                'group relative flex min-h-[150px] cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border p-4 text-center outline-none transition-all duration-300 focus-visible:ring-4 focus-visible:ring-indigo-500/20 active:scale-[0.98]',
+                                'group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-center outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 focus-visible:ring-4 focus-visible:ring-blue-500/15 active:scale-[0.99]',
                                 active
-                                    ? 'border-indigo-500/40 bg-gradient-to-br from-indigo-50/90 via-violet-50/40 to-white shadow-[0_12px_28px_rgba(99,102,241,0.16)] ring-2 ring-indigo-500/25'
-                                    : 'border-slate-200/80 bg-white/90 hover:border-indigo-300 hover:bg-slate-50/80 hover:shadow-xs',
+                                    ? 'border-blue-500 bg-blue-50 shadow-[0_8px_24px_rgba(37,99,235,0.10)] ring-1 ring-blue-500'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
                             )}
                         >
-                            {active && (
-                                <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-600/20 blur-lg" />
-                            )}
                             <div className={cn(
                                 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
                                 active
-                                    ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_4px_12px_rgba(99,102,241,0.35)]'
-                                    : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600',
+                                    ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.22)]'
+                                    : 'bg-slate-100 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600',
                             )}>
                                 <Icon className="h-5 w-5" />
                             </div>

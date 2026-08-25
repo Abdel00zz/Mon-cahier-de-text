@@ -140,8 +140,8 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                 className={cn(
                                     'flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 px-3 text-center text-xs font-bold transition-all',
                                     active
-                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-950 shadow-[0_4px_14px_rgba(99,102,241,0.16)]'
-                                        : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/40',
+                                        ? 'border-blue-600 bg-blue-50 text-blue-950 shadow-[0_4px_14px_rgba(37,99,235,0.10)]'
+                                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
                                 )}
                             >
                                 <Icon className={cn('h-4 w-4', active ? 'text-indigo-600' : 'text-slate-400')} />
@@ -152,13 +152,11 @@ export const ClassesStep = memo<ClassesStepProps>(({
                 </div>
             )}
             {/* ── ZONE 1 : Barre unifiée des classes sélectionnées (Live preview) ── */}
-            <div className="relative overflow-hidden rounded-2xl border border-indigo-100/90 bg-gradient-to-br from-indigo-50/70 via-white/90 to-violet-50/50 p-4 shadow-xs backdrop-blur-sm sm:p-5">
-                {/* Ambient glow in corner */}
-                <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-gradient-to-br from-indigo-500/15 to-violet-600/15 blur-2xl" />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-xs sm:p-5">
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
                     <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)]">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.22)]">
                             <Layers className="h-3.5 w-3.5" />
                         </span>
                         <span className="text-xs font-black tracking-wider uppercase text-slate-600">
@@ -169,7 +167,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                     <span className={cn(
                         'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all',
                         classes.length > 0
-                            ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_10px_rgba(99,102,241,0.35)]'
+                            ? 'bg-blue-600 text-white shadow-[0_2px_10px_rgba(37,99,235,0.22)]'
                             : 'bg-slate-200/80 text-slate-600'
                     )}>
                         {classes.length > 0
@@ -252,7 +250,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
 
             {/* ── ONGLETS DES PALIERS (Tronc commun / 1re Bac / 2e Bac...) ── */}
             {levelGroups.length > 1 && (
-                <div className="flex rounded-2xl border border-slate-200/80 bg-slate-100/80 p-1.5 backdrop-blur-xs">
+                <div className="flex rounded-2xl border border-slate-200/80 bg-slate-100/80 p-1.5">
                     {levelGroups.map(group => {
                         const isActive = (activeGroupKey || levelGroups[0]?.key) === group.key;
                         const label = copy.levelGroupLabels[group.key] ?? group.key;
@@ -271,8 +269,8 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                 }}
                                 className={cn(
                                     'relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all sm:text-sm',
-                                    isActive
-                                        ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_4px_14px_rgba(99,102,241,0.3)]'
+                                        isActive
+                                            ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.22)]'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                                 )}
                             >
@@ -289,6 +287,12 @@ export const ClassesStep = memo<ClassesStepProps>(({
                         );
                     })}
                 </div>
+            )}
+
+            {cycle === 'prepa' && (
+                <p className="rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-2 text-start text-xs font-semibold leading-relaxed text-blue-900">
+                    {copy.prepaPathHint}
+                </p>
             )}
 
             {/* ── ZONE 2 : CARTES DE CHOIX DES FILIÈRES & GROUPES (Progressive & Instantanée) ── */}
@@ -319,8 +323,8 @@ export const ClassesStep = memo<ClassesStepProps>(({
                             className={cn(
                                 'relative rounded-2xl border p-3.5 transition-all duration-200 sm:p-4',
                                 isAnyGroupSelected
-                                    ? 'border-indigo-300/80 bg-gradient-to-r from-indigo-50/60 via-violet-50/30 to-white shadow-[0_4px_16px_rgba(99,102,241,0.08)]'
-                                    : 'border-slate-200/80 bg-white/90 hover:border-indigo-200 hover:bg-slate-50/50 hover:shadow-2xs'
+                                    ? 'border-blue-300 bg-blue-50/70 shadow-[0_4px_16px_rgba(37,99,235,0.07)]'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-2xs'
                             )}
                         >
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -333,7 +337,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                     <div className={cn(
                                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                                         isAnyGroupSelected
-                                            ? 'border-transparent bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_2px_8px_rgba(99,102,241,0.35)]'
+                                            ? 'border-transparent bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.22)]'
                                             : 'border-slate-300 bg-white group-hover:border-indigo-400'
                                     )}>
                                         {isAnyGroupSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
@@ -361,7 +365,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                                 className={cn(
                                                     'flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-xl px-2.5 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95',
                                                     isGroupActive
-                                                        ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_3px_10px_rgba(99,102,241,0.35)] hover:from-indigo-600 hover:to-violet-700'
+                                                        ? 'bg-blue-600 text-white shadow-[0_3px_10px_rgba(37,99,235,0.22)] hover:bg-blue-700'
                                                         : 'border border-slate-200/90 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-950'
                                                 )}
                                                 title={`${level} ${groupNum}`}

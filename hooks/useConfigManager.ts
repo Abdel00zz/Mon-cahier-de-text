@@ -35,7 +35,7 @@ const defaultConfig: AppConfig = {
     screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
     printDescriptionMode: 'all',
     printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-    selectedCycles: ['college'], // Un seul cycle par défaut
+    selectedCycles: [], // Choix explicite pendant l'onboarding
     selectedSubjects: [], // Aucune matière par défaut (toutes affichées)
     showAllCycles: false, // false car on a une sélection spécifique
     showAllSubjects: true, // true car aucune matière sélectionnée
@@ -86,7 +86,7 @@ export const useConfigManager = () => {
                     printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
                         ? loadedConfig.printDescriptionTypes
                         : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    selectedCycles: loadedConfig.selectedCycles ?? ['college', 'lycee', 'prepa'],
+                    selectedCycles: loadedConfig.selectedCycles ?? [],
                     selectedSubjects: loadedConfig.selectedSubjects ?? [],
                     showAllCycles: loadedConfig.showAllCycles ?? true,
                     showAllSubjects: loadedConfig.showAllSubjects ?? true,
@@ -117,9 +117,9 @@ export const useConfigManager = () => {
                     screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
                     printDescriptionMode: 'all',
                     printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    selectedCycles: ['college', 'lycee', 'prepa'],
+                    selectedCycles: [],
                     selectedSubjects: [],
-                    showAllCycles: true,
+                    showAllCycles: false,
                     showAllSubjects: true,
                     hasCompletedWelcome: false,
                 }));
@@ -148,9 +148,9 @@ export const useConfigManager = () => {
                     // de l'ancien compte ne doit rester vivant en mémoire.
                     setConfig(() => ({
                         ...defaultConfig,
-                        selectedCycles: ['college', 'lycee', 'prepa'],
+                        selectedCycles: [],
                         selectedSubjects: [],
-                        showAllCycles: true,
+                        showAllCycles: false,
                         showAllSubjects: true,
                         schedules: [],
                         timetable: [],
