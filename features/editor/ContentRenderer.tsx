@@ -247,17 +247,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       return (
-        <div className="flex flex-col items-start gap-1 ps-0.5 py-0.5 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8 sm:py-1">
+        <div className="flex flex-col items-start gap-1 ps-0.5 py-0.5 max-sm:portrait:flex-row max-sm:portrait:items-baseline max-sm:portrait:gap-1.5 max-sm:portrait:ps-0 sm:flex-row sm:items-baseline sm:gap-2.5 sm:ps-8 sm:py-1">
           <Badge
             variant="outline"
-            className={`inline-flex shrink-0 select-none items-center justify-center rounded-md px-1.5 py-0.2 sm:px-2 sm:py-0.5 text-[9.5px] max-sm:portrait:text-[7.6px] sm:text-[11px] font-semibold tracking-normal border min-w-[42px] sm:min-w-[50px] transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`inline-flex min-w-[42px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-md border px-1.5 py-0.2 text-[9.5px] font-semibold leading-tight tracking-normal transition-all duration-150 hover:-translate-y-px hover:shadow-xs cursor-default max-sm:portrait:min-w-[32px] max-sm:portrait:rounded-[4px] max-sm:portrait:px-1 max-sm:portrait:py-0 max-sm:portrait:text-[7.6px] max-sm:portrait:leading-[1.35] sm:min-w-[50px] sm:px-2 sm:py-0.5 sm:text-[11px] ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >
             <span>{badgeText}</span>
-            {item.number ? <span className="ms-1 font-bold">{item.number}</span> : null}
+            {item.number ? <span className="ms-1 font-bold max-sm:portrait:ms-0.5">{item.number}</span> : null}
           </Badge>
-          <div className="w-full flex-grow min-w-0 sm:w-auto">
+          <div className="w-full min-w-0 flex-grow max-sm:portrait:w-auto sm:w-auto">
             <MaybeMathJax mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>
           </div>
         </div>
