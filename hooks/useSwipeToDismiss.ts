@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface SwipeToDismissOptions {
   onDismiss: () => void;
   enabled?: boolean;
+  allowFromBody?: boolean;
 }
 
 interface DragState {
@@ -12,6 +13,7 @@ interface DragState {
   lastY: number;
   lastTime: number;
   height: number;
+  captured: boolean;
 }
 
 const HANDLE_HEIGHT = 88;
@@ -24,10 +26,11 @@ const isInteractiveTarget = (target: EventTarget | null): boolean => {
 };
 
 /**
- * Makes a bottom sheet feel native without stealing the scroll gesture: a
- * dismissal can only begin from its grabber/header area and only downward.
+ * Makes a bottom sheet feel native without stealing the scroll gesture. The
+ * optional body gesture activates only at the top of the scroll region and
+ * only once a downward intent is detected.
  */
-export const useSwipeToDismiss = ({ onDismiss, enabled = true }: SwipeToDismissOptions) => {
+export const useSwipeToDismiss = ({ onDismiss, enabled = true, allowFromBody = false }: SwipeToDismissOptions) => {
   const drag = useRef<DragState | null>(null);
   const dismissRef = useRef(onDismiss);
   const settleTimer = useRef<number | null>(null);
@@ -61,11 +64,20 @@ export const useSwipeToDismiss = ({ onDismiss, enabled = true }: SwipeToDismissO
     if (!enabled || event.pointerType !== 'touch' || !event.isPrimary || isInteractiveTarget(event.target)) return;
 
     const bounds = event.currentTarget.getBoundingClientRect();
-    if (event.clientY - bounds.top > HANDLE_HEIGHT) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const startsFromHandle = event.clientY - bounds.top <= HANDLE_HEIGHT
+      || Boolean(target?.closest('[data-swipe-dismiss-handle], .modal-header'));
+    if (!startsFromHandle && !allowFromBody) return;
 
-    // The header/handle is not scrollable. Preventing the native pan here
-    // keeps the pointer stream attached to the sheet throughout the gesture.
-    event.preventDefault();
+    const scrollRegion = target?.closest<HTMLElement>('[data-swipe-scroll-region]');
+    if (!startsFromHandle && scrollRegion && scrollRegion.scrollTop > 0) return;
+
+    // La poignée est capturée immédiatement. Depuis le contenu, on attend de
+    // connaître la direction afin de laisser intact le défilement vers le haut.
+    if (startsFromHandle) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
     drag.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -73,9 +85,9 @@ export const useSwipeToDismiss = ({ onDismiss, enabled = true }: SwipeToDismissO
       lastY: event.clientY,
       lastTime: performance.now(),
       height: bounds.height,
+      captured: startsFromHandle,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  }, [enabled]);
+  }, [allowFromBody, enabled]);
 
   const onPointerMove = useCallback((event: React.PointerEvent<HTMLElement>) => {
     const current = drag.current;
@@ -86,6 +98,10 @@ export const useSwipeToDismiss = ({ onDismiss, enabled = true }: SwipeToDismissO
     if (deltaY <= 0 || deltaY < Math.abs(deltaX)) return;
 
     event.preventDefault();
+    if (!current.captured) {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      current.captured = true;
+    }
     setIsSettling(false);
     setIsDragging(true);
     setOffset(Math.min(deltaY, current.height * 0.75));

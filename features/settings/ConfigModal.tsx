@@ -49,8 +49,6 @@ interface ConfigModalProps {
   classes?: ClassInfo[];
   /** création de classe depuis la grille d'emploi du temps */
   onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
-  /** rendu en PAGE plein écran (au lieu d'une modale) */
-  asPage?: boolean;
 }
 
 type SettingsCategory =
@@ -139,7 +137,6 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onOpenImport,
   classes = [],
   onCreateClass,
-  asPage = false,
 }) => {
   const { locale, isRtl, t } = useLocale();
   const { user } = useAuth();
@@ -206,8 +203,6 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     onConfigChange(localConfig);
     onClose();
   };
-
-  if (!asPage && !isOpen) return null;
 
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
@@ -589,7 +584,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 <Button
                   type="button"
                   onClick={onExportPlatform}
-                  className="w-full bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 text-white font-bold hover:from-cyan-600 hover:to-cyan-700 shadow-[0_4px_14px_rgba(6,182,212,0.3)] transition-all cursor-pointer rounded-xl h-10"
+                  className="h-10 w-full rounded-xl bg-primary font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 cursor-pointer"
                 >
                   {t('settings.exportAction')}
                 </Button>
@@ -605,10 +600,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    if (!asPage) onClose();
-                    onOpenImport();
-                  }}
+                  onClick={onOpenImport}
                   className="w-full border-border bg-background/60 font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-10"
                 >
                   {t('settings.importAction')}
@@ -651,7 +643,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <div className="settings-section-block p-4 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-[0_2px_10px_rgba(6,182,212,0.35)] shrink-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
                     <CircleCheck className="h-5 w-5" />
                   </div>
                   <div>
@@ -739,7 +731,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             <LogOut className="h-4 w-4" />
             {t('account.signOut')}
           </Button>
-        ) : !asPage ? (
+        ) : (
           <Button
             type="button"
             variant="secondary"
@@ -748,14 +740,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           >
             {t('common.cancel')}
           </Button>
-        ) : null}
+        )}
       </div>
 
       <div className="flex items-center gap-2">
         <Button
           type="button"
           onClick={handleSave}
-          className="h-10 bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white text-xs font-bold px-6 rounded-xl cursor-pointer shadow-[0_4px_16px_rgba(6,182,212,0.35)] hover:shadow-[0_6px_22px_rgba(6,182,212,0.45)] hover:scale-[1.01] active:scale-[0.99] transition-all gap-2"
+          className="h-10 gap-2 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-sm transition-[background-color,transform] hover:bg-primary/90 active:scale-[0.99] cursor-pointer"
         >
           <Save className="h-4 w-4" />
           {t('settings.saveChanges')}
@@ -944,88 +936,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     </div>
   );
 
-  // Vue Plein Écran (`asPage`)
-  if (asPage) {
-    return (
-      <div className="rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-slate-50/80 dark:bg-[#0c142b]">
-        {/* Ambient Colorful Glows */}
-        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-          <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-500/20 to-cyan-600/15 blur-3xl opacity-40" />
-          <div className="absolute top-1/3 -right-32 h-[420px] w-[420px] rounded-full bg-gradient-to-bl from-cyan-600/20 via-cyan-400/10 to-cyan-600/15 blur-3xl opacity-35" />
-          <div className="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-gradient-to-tr from-cyan-500/15 to-cyan-600/15 blur-3xl opacity-35" />
-        </div>
-
-        <main className="relative mx-auto max-w-6xl px-3 py-4 sm:px-6 sm:py-6 pb-8">
-          <div className="mb-4 flex items-center justify-between px-1 text-foreground sm:mb-5">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-xs">
-                <Settings className="h-5 w-5 stroke-[2]" />
-              </span>
-              <h1 className={cn('font-bold tracking-tight text-foreground', isRtl ? 'font-bold tracking-normal text-xl leading-none' : 'text-lg sm:text-xl')}>
-                {t('settings.title')}
-              </h1>
-            </div>
-          </div>
-
-          {/* Grille responsive 2 colonnes */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
-            {/* Sidebar gauche : Menu des rubriques */}
-            <div
-              className={cn(
-                'bg-card/90 border border-border/80 rounded-3xl p-3 sm:p-4 shadow-xs backdrop-blur-xl transition-all duration-300',
-                isEffectiveCollapsed
-                  ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
-                  : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
-                mobileSubViewOpen ? 'hidden md:block' : 'block'
-              )}
-            >
-              {menuListContent}
-            </div>
-
-            {/* Panneau droit : Contenu de la rubrique sélectionnée */}
-            <div
-              className={cn(
-                'settings-content-zone flex min-h-[520px] flex-col rounded-3xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-none transition-all duration-300 sm:p-6',
-                isEffectiveCollapsed
-                  ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
-                  : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
-                !mobileSubViewOpen ? 'hidden md:block' : 'block'
-              )}
-            >
-              <div className="flex-1">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCategory}
-                    className="settings-page-content"
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    {renderCategoryContent()}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              
-              {/* Actions au bas de la zone de contenu */}
-              <div className="mt-8 pt-4">
-                {footer}
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // Rendu sous forme de MODALE
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary">
             <Settings className="h-5 w-5 stroke-[2.2]" />
           </span>
           <span className="text-base sm:text-lg font-bold text-foreground">
@@ -1035,8 +952,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       }
       description={t('settings.description')}
       maxWidth="5xl"
-      className="relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-border/80 bg-card/95 backdrop-blur-2xl"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/70 bg-card/70 backdrop-blur-md"
+      swipeFromBody
+      className="settings-modal-sheet relative overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-[28px]"
+      headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
       bodyClassName="px-4 py-3 sm:px-7 sm:py-5"
     >
       <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[480px]">

@@ -105,6 +105,11 @@ const App: React.FC = () => {
 
   const [view, setView] = useState<View>(initialRouteRef.current.view);
   const [activeClass, setActiveClass] = useState<ClassInfo | null>(initialRouteRef.current.activeClass);
+  const [settingsOrigin, setSettingsOrigin] = useState<RouteSnapshot>(() =>
+    initialRouteRef.current?.view === 'settings'
+      ? { view: 'dashboard', activeClass: null }
+      : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
+  );
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
@@ -139,13 +144,15 @@ const App: React.FC = () => {
     setIsEvaluationsOpen(false);
     setOnboardingVisible(false);
     setActiveClass(null);
+    setSettingsOrigin({ view: 'dashboard', activeClass: null });
     setView('dashboard');
     window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
   }, [authStatus]);
 
   const saveCurrentScroll = useCallback(() => {
-    scrollPositionsRef.current[getScrollKey(view, activeClass)] = window.scrollY;
-  }, [activeClass, view]);
+    const visibleRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
+    scrollPositionsRef.current[getScrollKey(visibleRoute.view, visibleRoute.activeClass)] = window.scrollY;
+  }, [activeClass, settingsOrigin, view]);
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -154,7 +161,8 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const key = getScrollKey(view, activeClass);
+    const visibleRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
+    const key = getScrollKey(visibleRoute.view, visibleRoute.activeClass);
     const top = scrollPositionsRef.current[key] ?? 0;
     const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
     const settleTimer = window.setTimeout(() => window.scrollTo(0, top), 220);
@@ -163,7 +171,7 @@ const App: React.FC = () => {
       window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(settleTimer);
     };
-  }, [activeClass, view]);
+  }, [activeClass, settingsOrigin, view]);
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
     saveCurrentScroll();
@@ -180,10 +188,12 @@ const App: React.FC = () => {
   }, [saveCurrentScroll]);
 
   const handleOpenSettings = useCallback(() => {
+    if (view === 'settings') return;
     saveCurrentScroll();
+    setSettingsOrigin({ view, activeClass });
     setView('settings');
     window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
-  }, [saveCurrentScroll]);
+  }, [activeClass, saveCurrentScroll, view]);
 
   const handleOpenSchedule = useCallback(() => {
     try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* navigation conservée */ }
@@ -201,7 +211,9 @@ const App: React.FC = () => {
   // Garde : sur un chargement direct de #/parametres, aucun état poussé par
   // l'app → history.back() sortirait du site ; on retombe alors sur l'accueil.
   const handleBackFromSettings = useCallback(() => {
-    if (window.history.state?.route === 'settings' || window.history.state?.route === 'notifications') {
+    if (window.history.state?.route === 'settings' && window.history.state?.settingsSubView) {
+      window.history.go(-2); // sous-rubrique mobile + sheet Paramètres
+    } else if (window.history.state?.route === 'settings' || window.history.state?.route === 'notifications') {
       window.history.back(); // popstate → syncRouteFromLocation restaure la vue précédente
     } else {
       handleBackToDashboard();
@@ -217,6 +229,9 @@ const App: React.FC = () => {
     const syncRouteFromLocation = () => {
       saveCurrentScroll();
       const snapshot = readRouteSnapshot();
+      if (snapshot.view === 'settings' && view !== 'settings') {
+        setSettingsOrigin({ view, activeClass });
+      }
       setActiveClass(snapshot.activeClass);
       setView(snapshot.view);
     };
@@ -226,7 +241,11 @@ const App: React.FC = () => {
       window.removeEventListener('popstate', syncRouteFromLocation);
       window.removeEventListener('hashchange', syncRouteFromLocation);
     };
-  }, [saveCurrentScroll]);
+  }, [activeClass, saveCurrentScroll, view]);
+
+  const backgroundRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
+  const backgroundView = backgroundRoute.view === 'settings' ? 'dashboard' : backgroundRoute.view;
+  const backgroundClass = backgroundRoute.view === 'settings' ? null : backgroundRoute.activeClass;
 
   const renderContent = () => {
     // En attente du chargement (auth ignorée si AUTH_REQUIRED est désactivé).
@@ -237,10 +256,7 @@ const App: React.FC = () => {
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} />;
     }
-    if (view === 'settings') {
-      return <SettingsPage onBack={handleBackFromSettings} />;
-    }
-    if (view === 'notifications') {
+    if (backgroundView === 'notifications') {
       return (
         <NotificationsPage
           classes={classes}
@@ -251,8 +267,8 @@ const App: React.FC = () => {
         />
       );
     }
-    if (view === 'editor' && activeClass) {
-      return <Editor classInfo={activeClass} onOpenSettings={handleOpenSettings} />;
+    if (backgroundView === 'editor' && backgroundClass) {
+      return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} />;
     }
     return (
       <Dashboard
@@ -265,9 +281,9 @@ const App: React.FC = () => {
     );
   };
 
-  const routeKey = view === 'editor' && activeClass
-    ? `editor-${activeClass.id}`
-    : view;
+  const routeKey = backgroundView === 'editor' && backgroundClass
+    ? `editor-${backgroundClass.id}`
+    : backgroundView;
 
   const activeTab: TabType = isEvaluationsOpen
     ? 'evaluations'
@@ -303,16 +319,19 @@ const App: React.FC = () => {
   // parcours déclaré par Dashboard. Une classe créée en cours d'onboarding ne
   // peut donc plus faire réapparaître le sidebar prématurément.
   const shouldBootOnboarding =
-    view === 'dashboard' &&
+    backgroundView === 'dashboard' &&
     !config.hasCompletedWelcome &&
     authUser?.hasCompletedWelcome !== true;
   const isCurrentlyOnboarding = isOnboardingVisible || shouldBootOnboarding;
 
-  const showNavigation = !isAuthView && !isBooting && view !== 'editor' && !isCurrentlyOnboarding;
+  const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div className={`min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}>
+    <div
+      data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
+      className={`app-settings-parent min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}
+    >
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -328,6 +347,11 @@ const App: React.FC = () => {
           {renderContent()}
         </Suspense>
       </div>
+      {view === 'settings' && !isAuthView && !isBooting && (
+        <Suspense fallback={null}>
+          <SettingsPage onBack={handleBackFromSettings} />
+        </Suspense>
+      )}
     </div>
   );
 

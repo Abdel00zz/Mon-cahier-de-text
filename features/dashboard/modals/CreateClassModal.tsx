@@ -73,12 +73,12 @@ const COPY: Record<AppLocale, {
 const uniqueValues = (values: string[]) => Array.from(new Set(values.map(value => value.trim()).filter(Boolean)));
 
 const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
-  <button type="button" onClick={onClick} className="group relative flex min-h-[4.5rem] w-full items-center gap-3 overflow-hidden rounded-[20px] border border-slate-200 bg-white px-4 py-3.5 text-start text-sm font-extrabold text-slate-800 shadow-[0_3px_0_rgba(66,85,255,0.14),0_8px_22px_rgba(30,41,59,0.05)] transition-all duration-200 before:absolute before:inset-y-0 before:start-0 before:w-1 before:bg-gradient-to-b before:from-[#4255ff] before:to-[#8b5cf6] hover:-translate-y-1 hover:border-[#4255ff]/45 hover:text-[#4255ff] hover:shadow-[0_6px_0_rgba(66,85,255,0.22),0_14px_30px_rgba(66,85,255,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#4255ff]/15 active:translate-y-0 active:shadow-[0_2px_0_rgba(66,85,255,0.18)] dark:border-white/10 dark:bg-slate-900 dark:text-white dark:hover:border-[#8b9cff]/50 dark:hover:text-[#aab4ff]">
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#4255ff]/10 text-[#4255ff] transition-all duration-200 group-hover:scale-105 group-hover:bg-[#4255ff] group-hover:text-white dark:bg-[#7788ff]/15 dark:text-[#aab4ff]">
+  <button type="button" onClick={onClick} className="group relative flex min-h-[4.5rem] w-full items-center gap-3 rounded-[18px] border border-border/80 bg-card px-4 py-3.5 text-start text-sm font-extrabold text-foreground shadow-[0_2px_8px_rgb(15_23_42/0.04)] transition-[border-color,background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/25 hover:shadow-[0_8px_22px_rgb(15_23_42/0.07)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10 active:translate-y-0">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-primary transition-colors duration-200 group-hover:bg-primary/10">
       <GraduationCap className="h-[18px] w-[18px]" />
     </span>
     <span className="min-w-0 flex-1 leading-snug">{children}</span>
-    <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#4255ff] rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/55 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
   </button>
 );
 
@@ -195,7 +195,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const stepLabel = (item: WizardStep) => item === 'cycle' ? copy.cycle : item === 'level' ? copy.level : item === 'branch' ? copy.branch : copy.selectedClass;
 
   const editConfiguration = editingClass && (
-    <section className="relative space-y-5 overflow-hidden rounded-[24px] border border-[#4255ff]/15 bg-white p-4 shadow-[0_12px_35px_rgba(66,85,255,0.08)] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-[#4255ff] before:via-[#7c3aed] before:to-[#f59e0b] sm:p-5 dark:border-white/10 dark:bg-slate-900/80">
+    <section className="space-y-5 rounded-[22px] border border-border/75 bg-card p-4 shadow-[0_4px_18px_rgb(15_23_42/0.05)] sm:p-5">
       {hasCycleChoice && (
         <div className="space-y-1.5">
           <label htmlFor="edit-class-cycle" className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">{copy.cycle}</label>
@@ -252,19 +252,19 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#4255ff] to-[#7c3aed] text-white shadow-[0_8px_20px_rgba(66,85,255,0.28)] ring-1 ring-white/25">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-primary/15 bg-primary/10 text-primary">
             {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
           </span>
           <span className="min-w-0">
-            <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#4255ff] dark:text-[#aab4ff]">{copy.guidedLabel}</span>
+            <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground">{copy.guidedLabel}</span>
             <span className="mt-0.5 block text-base font-extrabold tracking-[-0.02em] text-foreground sm:text-lg">{editingClass ? copy.editTitle : copy.createTitle}</span>
           </span>
         </div>
       } description={editingClass ? copy.editDescription : undefined} maxWidth="xl"
-        className="border border-slate-200/80 bg-white/95 shadow-[0_32px_100px_rgba(30,41,59,0.24)] backdrop-blur-2xl sm:max-w-2xl sm:rounded-[32px] dark:border-white/[0.10] dark:bg-[#0c142b]/95"
-        headerClassName="border-b border-[#4255ff]/10 bg-gradient-to-r from-white via-[#fafaff] to-[#f4f1ff] px-5 pb-4 pt-5 backdrop-blur-md sm:px-7 sm:pb-4 sm:pt-6 dark:border-white/[0.08] dark:from-slate-900/90 dark:via-[#111a38]/90 dark:to-[#171638]/90"
-        bodyClassName="bg-[#f7f8fc] px-5 py-5 sm:px-7 sm:py-6 dark:bg-gradient-to-b dark:from-[#0d1630] dark:to-[#0a1125]"
-        footerClassName="border-t border-slate-200/70 bg-white/70 px-5 py-3.5 backdrop-blur-md sm:px-7 sm:py-4 dark:border-white/[0.08] dark:bg-slate-900/60"
+        className="border border-border/80 bg-card shadow-[0_30px_90px_rgb(15_23_42/0.22)] sm:max-w-2xl sm:rounded-[28px]"
+        headerClassName="border-b border-border/55 bg-card px-5 pb-4 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
+        bodyClassName="bg-muted/20 px-5 py-5 sm:px-7 sm:py-6"
+        footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
         footer={<div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-10 items-center gap-2">
             {editingClass && onDelete && <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)} className="h-10 w-full rounded-xl px-4 text-xs font-semibold sm:w-auto sm:text-sm"><Trash2 className="h-4 w-4" />{t('dashboard.delete')}</Button>}
@@ -318,8 +318,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
           {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
-          {step === 'details' && <section className="space-y-3"><div className="relative overflow-hidden rounded-[22px] border border-[#4255ff]/20 bg-gradient-to-br from-white via-[#f7f7ff] to-[#efedff] p-4 shadow-[0_12px_30px_rgba(66,85,255,0.09)] before:absolute before:inset-y-0 before:start-0 before:w-1 before:bg-gradient-to-b before:from-[#4255ff] before:to-[#8b5cf6] dark:border-[#7788ff]/25 dark:from-[#141a39] dark:via-[#121832] dark:to-[#1a1740]"><div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-end"><div><p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#4255ff] dark:text-[#aab4ff]">{copy.selectedClass}</p><p className="mt-1 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{selectedClassLabel}</p><p id="group-help" className={cn('mt-1 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div><div className="space-y-1"><label htmlFor="class-group" className="block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">{copy.group}</label><Input id="class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 rounded-xl border-2 border-[#4255ff]/35 bg-white text-center text-sm font-extrabold text-slate-900 shadow-inner focus:border-[#4255ff] dark:border-[#7788ff]/35 dark:bg-slate-950 dark:text-white" /></div></div>
-            {showSubjectChoice && <div className="mt-3 border-t border-[#4255ff]/15 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-10 rounded-xl border-[#4255ff]/20 bg-white text-sm dark:border-[#7788ff]/25 dark:bg-slate-950" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-10 rounded-xl border-[#4255ff]/20 bg-white text-sm dark:border-[#7788ff]/25 dark:bg-slate-950"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}
+          {step === 'details' && <section className="space-y-3"><div className="rounded-[20px] border border-border/75 bg-card p-4 shadow-[0_4px_16px_rgb(15_23_42/0.05)]"><div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-end"><div><p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-1 text-lg font-extrabold tracking-tight text-foreground">{selectedClassLabel}</p><p id="group-help" className={cn('mt-1 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div><div className="space-y-1"><label htmlFor="class-group" className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.group}</label><Input id="class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 rounded-xl border border-border bg-background text-center text-sm font-extrabold text-foreground shadow-none focus:border-primary" /></div></div>
+            {showSubjectChoice && <div className="mt-3 border-t border-border/55 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-10 rounded-xl border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-10 rounded-xl border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-xl">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}
           </div></section>}
           </div>}
           {editConfiguration}

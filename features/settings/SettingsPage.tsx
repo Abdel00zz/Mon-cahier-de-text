@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { ConfigModal } from './ConfigModal';
@@ -14,17 +14,24 @@ interface SettingsPageProps {
     onBack: () => void;
 }
 
-/**
- * Paramètres en PAGE plein écran (au lieu d'une modale) : plus structuré,
- * plus confortable, avec barre d'actions collante. Réutilise entièrement le
- * contenu (onglets Affichage / Emploi du temps / Notifications / Données /
- * Compte) via `ConfigModal asPage`.
- */
+/** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     const { t } = useLocale();
     const { classes, addClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isImportOpen, setImportOpen] = useState(false);
+    const [isSheetOpen, setSheetOpen] = useState(true);
+    const closeTimerRef = useRef<number | null>(null);
+
+    const requestClose = useCallback(() => {
+        if (!isSheetOpen) return;
+        setSheetOpen(false);
+        closeTimerRef.current = window.setTimeout(onBack, 300);
+    }, [isSheetOpen, onBack]);
+
+    useEffect(() => () => {
+        if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+    }, []);
 
     if (isClassesLoading || isConfigLoading) return <DashboardSkeleton />;
 
@@ -45,9 +52,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     return (
         <>
             <ConfigModal
-                asPage
-                isOpen
-                onClose={onBack}
+                isOpen={isSheetOpen}
+                onClose={requestClose}
                 config={config}
                 onConfigChange={updateConfig}
                 onExportPlatform={() => {
