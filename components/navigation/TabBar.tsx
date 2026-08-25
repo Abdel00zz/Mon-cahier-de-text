@@ -88,7 +88,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Desktop sidebar — modern, crisp, professional */}
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden w-[80px] flex-col bg-card/95 backdrop-blur-md py-4 text-foreground print:hidden sm:flex shadow-[1px_0_12px_rgba(15,23,42,0.03)]',
+          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[80px] flex-col overflow-hidden bg-card/95 py-4 text-foreground print:hidden sm:flex shadow-[1px_0_12px_rgba(15,23,42,0.03)]',
           isRtl ? 'right-0 border-l border-border/80' : 'left-0 border-r border-border/80',
           isExpanded ? 'lg:w-[260px]' : 'lg:w-[80px]',
           'transition-[width] duration-200 ease-out',
@@ -110,7 +110,7 @@ export const TabBar = React.memo<TabBarProps>(({
           </div>
         </div>
 
-        <div className="mt-3 flex flex-1 flex-col gap-1 px-2.5">
+        <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-2.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

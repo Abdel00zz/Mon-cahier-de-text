@@ -5,9 +5,12 @@ import ReactDOM from 'react-dom/client';
 // in environments (like AI Studio preview) where it is read-only (getter only).
 try {
   const desc = Object.getOwnPropertyDescriptor(window, 'fetch');
-  if (desc && !desc.set && desc.configurable) {
+  const nativeFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+  if (desc && nativeFetch && !desc.set && desc.configurable) {
     Object.defineProperty(window, 'fetch', {
-      get: desc.get,
+      // `fetch` est généralement une propriété de données (`value`) et non
+      // un getter. Réutiliser uniquement `desc.get` la rendait indéfinie.
+      get: () => nativeFetch,
       set: function(val) {
         console.warn('Ignored attempt to re-assign window.fetch', val);
       },

@@ -94,7 +94,7 @@ export function ModalBottomSheet({
         {/* Material 3 Scrim Overlay */}
         <DialogPrimitive.Overlay
           className={cn(
-            'fixed inset-0 z-50 bg-slate-950/42 backdrop-blur-[1px]',
+            'fixed inset-0 z-[100] bg-slate-950/42 backdrop-blur-[1px]',
             'data-[state=open]:animate-overlay-in data-[state=closed]:animate-overlay-out motion-reduce:animate-none'
           )}
         />
@@ -103,7 +103,7 @@ export function ModalBottomSheet({
         <DialogPrimitive.Content
           dir={isRtl ? 'rtl' : 'ltr'}
           className={cn(
-            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-50 grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-3xl rounded-b-none border border-border/80 bg-card text-card-foreground shadow-[0_24px_70px_rgb(15_23_42/0.22)] outline-none',
+            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-3xl rounded-b-none border border-border/80 bg-card text-card-foreground shadow-[0_24px_70px_rgb(15_23_42/0.22)] outline-none',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
@@ -114,7 +114,10 @@ export function ModalBottomSheet({
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
             swipe.isDragging && 'select-none',
             mwClass,
-            className
+            className,
+            // La position appartient au socle modal. Une classe décorative
+            // passée par un écran ne doit jamais pouvoir la remplacer.
+            '!fixed'
           )}
           style={swipe.dragStyle}
           onPointerDownOutside={(e) => {

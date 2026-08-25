@@ -328,10 +328,7 @@ const App: React.FC = () => {
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
   const appSurface = (
-    <div
-      data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
-      className={`app-settings-parent min-h-screen text-foreground relative overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}
-    >
+    <div className="relative min-h-screen overflow-x-clip text-foreground">
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -342,10 +339,15 @@ const App: React.FC = () => {
           isRtl={isRtl}
         />
       )}
-      <div key={routeKey} className="min-h-screen relative z-10">
-        <Suspense fallback={<AppBootSkeleton />}>
-          {renderContent()}
-        </Suspense>
+      <div
+        data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
+        className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}
+      >
+        <div key={routeKey} className="relative z-10 min-h-screen">
+          <Suspense fallback={<AppBootSkeleton />}>
+            {renderContent()}
+          </Suspense>
+        </div>
       </div>
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>

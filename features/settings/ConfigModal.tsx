@@ -953,7 +953,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       description={t('settings.description')}
       maxWidth="5xl"
       swipeFromBody
-      className="settings-modal-sheet relative overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-[28px]"
+      className="settings-modal-sheet overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-[28px]"
       headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
       bodyClassName="px-4 py-3 sm:px-7 sm:py-5"
     >
