@@ -13,6 +13,7 @@ import {
   Sparkles,
   Sliders,
   CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
 import { AppConfig, ThemeMode, ThemeCustomization } from '@/types';
 import { LATIN_FONTS, ARABIC_FONTS } from '@/constants/typography';
@@ -30,27 +31,19 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { MathText } from '@/components/ui/math-text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AppearanceTabProps {
   config: AppConfig;
   onConfigChange: (newConfig: Partial<AppConfig>) => void;
 }
-
-const LATIN_SAMPLE_COLORS = [
-  'text-indigo-700 dark:text-indigo-300',
-  'text-emerald-700 dark:text-emerald-300',
-  'text-rose-700 dark:text-rose-300',
-  'text-sky-700 dark:text-sky-300',
-  'text-amber-700 dark:text-amber-300',
-];
-
-const ARABIC_SAMPLE_COLORS = [
-  'text-teal-700 dark:text-teal-300',
-  'text-violet-700 dark:text-violet-300',
-  'text-orange-700 dark:text-orange-300',
-  'text-blue-700 dark:text-blue-300',
-  'text-fuchsia-700 dark:text-fuchsia-300',
-];
 
 const CARD_STYLES: { id: CardStyleOption; labelFr: string; labelAr: string; descFr: string }[] = [
   {
@@ -107,8 +100,7 @@ const TABLE_STYLES: { id: TableStyleOption; labelFr: string; labelAr: string; de
 ];
 
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigChange }) => {
-  const { t, isRtl } = useLocale();
-  const [activeFontTab, setActiveFontTab] = useState<'latin' | 'arabic'>('latin');
+  const { t, isRtl, locale } = useLocale();
   const [showAdvancedColors, setShowAdvancedColors] = useState(false);
 
   const currentTheme = config.theme || 'light';
@@ -156,6 +148,12 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
   const selectedLatinObj = LATIN_FONTS.find(f => f.id === currentLatinFont) || LATIN_FONTS[0];
   const selectedArabicObj = ARABIC_FONTS.find(f => f.id === currentArabicFont) || ARABIC_FONTS[0];
+  const selectedUIFont = UI_FONTS_MAP[currentUIFont] || UI_FONTS_MAP.jakarta;
+  const fontCopy = locale === 'ar'
+    ? { title: 'الخطوط', subtitle: 'خطوط الواجهة ومحتوى الجداول في قائمة واحدة', open: 'فتح قائمة الخطوط', ui: 'واجهة التطبيق', latin: 'المحتوى اللاتيني', arabic: 'المحتوى العربي' }
+    : locale === 'en'
+      ? { title: 'Typography', subtitle: 'Interface and table-content fonts in one list', open: 'Open font list', ui: 'App interface', latin: 'Latin content', arabic: 'Arabic content' }
+      : { title: 'Typographie', subtitle: 'Polices de l’interface et du contenu réunies dans une seule liste', open: 'Ouvrir la liste des polices', ui: 'Interface de l’application', latin: 'Contenu français et latin', arabic: 'Contenu arabe' };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -529,55 +527,103 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </section>
 
-      {/* ── Section 6 : Police de l'Interface UI ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="ui-font-section">
+      {/* ── Section 6 : Typographie unifiée ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="typography-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Type className="h-5 w-5" />
           </div>
           <div>
             <h3 className="text-base font-bold text-foreground">
-              {isRtl ? 'خط واجهة التطبيق' : 'Police de l’Interface Utilisateur'}
+              {fontCopy.title}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {isRtl ? 'اختر خط القوائم والأزرار والعناوين' : 'Sélectionnez la typographie globale des menus, tableaux de bord et boutons'}
+              {fontCopy.subtitle}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(Object.keys(UI_FONTS_MAP) as UIFontOption[]).map(fontKey => {
-            const fontObj = UI_FONTS_MAP[fontKey];
-            const isSelected = currentUIFont === fontKey;
-            return (
-              <button
-                key={fontKey}
-                type="button"
-                onClick={() => updateCustomization({ uiFont: fontKey })}
-                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
-                  isSelected
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
-                    : 'border-border/70 hover:border-border hover:bg-muted/40'
-                }`}
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground" style={{ fontFamily: fontObj.family }}>
-                      {isRtl ? fontObj.labelAr : fontObj.labelFr}
-                    </span>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                  </div>
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">
-                    {fontObj.descriptionFr}
-                  </p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={fontCopy.open}
+              className="group flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 text-start shadow-xs transition-all hover:border-primary/35 hover:bg-muted/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:px-4"
+            >
+              <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+                <div className="min-w-0">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{fontCopy.ui}</span>
+                  <span className="mt-0.5 block truncate text-xs font-semibold text-foreground" style={{ fontFamily: selectedUIFont.family }}>
+                    {isRtl ? selectedUIFont.labelAr : selectedUIFont.labelFr}
+                  </span>
                 </div>
-                <div className="mt-2 text-xs font-medium text-primary/80 truncate" style={{ fontFamily: fontObj.family }}>
-                  Cahier de Textes Interactif 2025/2026
+                <div className="min-w-0 border-t border-border/60 pt-2 sm:border-s sm:border-t-0 sm:ps-3 sm:pt-0">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{fontCopy.latin}</span>
+                  <span className="mt-0.5 block truncate text-xs font-semibold text-foreground" style={{ fontFamily: selectedLatinObj.family }} dir="ltr">
+                    {selectedLatinObj.name}
+                  </span>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+                <div className="min-w-0 border-t border-border/60 pt-2 sm:border-s sm:border-t-0 sm:ps-3 sm:pt-0">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{fontCopy.arabic}</span>
+                  <span className="mt-0.5 block truncate text-xs font-semibold text-foreground" style={{ fontFamily: selectedArabicObj.family }} dir="rtl">
+                    {selectedArabicObj.name}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align={isRtl ? 'end' : 'start'}
+            sideOffset={8}
+            className="w-[min(32rem,calc(100vw-2rem))] max-h-[min(70dvh,36rem)] overscroll-contain p-2"
+          >
+            <DropdownMenuLabel>{fontCopy.ui}</DropdownMenuLabel>
+            {(Object.keys(UI_FONTS_MAP) as UIFontOption[]).map(fontKey => {
+              const font = UI_FONTS_MAP[fontKey];
+              const selected = currentUIFont === fontKey;
+              return (
+                <DropdownMenuItem key={`ui-${fontKey}`} onSelect={() => updateCustomization({ uiFont: fontKey })} className="py-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center">{selected && <Check className="text-primary" />}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground" style={{ fontFamily: font.family }}>{isRtl ? font.labelAr : font.labelFr}</span>
+                    <span className="block truncate text-[10px] text-muted-foreground">{font.descriptionFr}</span>
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>{fontCopy.latin}</DropdownMenuLabel>
+            {LATIN_FONTS.map(font => {
+              const selected = currentLatinFont === font.id;
+              return (
+                <DropdownMenuItem key={`latin-${font.id}`} onSelect={() => onConfigChange({ contentFontLatin: font.id })} className="py-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center">{selected && <Check className="text-primary" />}</span>
+                  <span className="min-w-0 flex-1" dir="ltr">
+                    <span className="block truncate text-sm font-semibold text-foreground" style={{ fontFamily: font.family }}>{font.name}</span>
+                    <span className="block truncate text-[10px] text-muted-foreground" style={{ fontFamily: font.family }}>{font.sampleFr}</span>
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>{fontCopy.arabic}</DropdownMenuLabel>
+            {ARABIC_FONTS.map(font => {
+              const selected = currentArabicFont === font.id;
+              return (
+                <DropdownMenuItem key={`arabic-${font.id}`} onSelect={() => onConfigChange({ contentFontArabic: font.id })} className="py-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center">{selected && <Check className="text-primary" />}</span>
+                  <span className="min-w-0 flex-1" dir="rtl">
+                    <span className="block truncate text-sm font-semibold text-foreground" style={{ fontFamily: font.family }}>{font.name}</span>
+                    <span className="block truncate text-[10px] text-muted-foreground" style={{ fontFamily: font.family }}>{font.sampleAr}</span>
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </section>
 
       {/* ── Section 7 : Aperçu Typographique & Pédagogique ── */}
@@ -634,140 +680,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </section>
 
-      {/* ── Section 8 : Sélection des Polices de Contenu (Français vs Arabe) ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="content-font-section">
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Type className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-foreground">
-              {t('settings.appearance.fontTitle')}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {t('settings.appearance.fontSubtitle')}
-            </p>
-          </div>
-        </div>
-
-        {/* Onglets Latin / Arabe */}
-        <div className="mb-5 flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-100/90 p-1 dark:border-zinc-800 dark:bg-zinc-900/80">
-          <button
-            type="button"
-            onClick={() => setActiveFontTab('latin')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeFontTab === 'latin'
-                ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
-                : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
-            }`}
-          >
-            {t('settings.appearance.latinTab')} ({LATIN_FONTS.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFontTab('arabic')}
-            className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeFontTab === 'arabic'
-                ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
-                : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
-            }`}
-          >
-            {t('settings.appearance.arabicTab')} ({ARABIC_FONTS.length})
-          </button>
-        </div>
-
-        {/* Grille des polices Latines */}
-        {activeFontTab === 'latin' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {LATIN_FONTS.map((font, fontIndex) => {
-              const isSelected = currentLatinFont === font.id;
-              return (
-                <button
-                  key={font.id}
-                  type="button"
-                  onClick={() => onConfigChange({ contentFontLatin: font.id })}
-                  className={`group flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20'
-                      : 'border-border/70 hover:border-border hover:bg-muted/30'
-                  }`}
-                >
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-foreground">
-                        {font.name}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase font-mono">
-                          {font.category}
-                        </span>
-                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">
-                      {isRtl ? font.descriptionAr : font.descriptionFr}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{ fontFamily: font.family }}
-                    className={`mt-3 w-full pt-1 text-[13px] font-semibold leading-snug ${LATIN_SAMPLE_COLORS[fontIndex % LATIN_SAMPLE_COLORS.length]}`}
-                  >
-                    {font.sampleFr}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Grille des polices Arabes */}
-        {activeFontTab === 'arabic' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" dir="rtl">
-            {ARABIC_FONTS.map((font, fontIndex) => {
-              const isSelected = currentArabicFont === font.id;
-              return (
-                <button
-                  key={font.id}
-                  type="button"
-                  onClick={() => onConfigChange({ contentFontArabic: font.id })}
-                  className={`group flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20'
-                      : 'border-border/70 hover:border-border hover:bg-muted/30'
-                  }`}
-                >
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-foreground">
-                        {font.name}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                          {font.category}
-                        </span>
-                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">
-                      {font.descriptionAr}
-                    </p>
-                  </div>
-
-                  <div
-                    style={{ fontFamily: font.family }}
-                    className={`mt-3 w-full pt-1 text-[14px] font-semibold leading-snug ${ARABIC_SAMPLE_COLORS[fontIndex % ARABIC_SAMPLE_COLORS.length]}`}
-                  >
-                    {font.sampleAr}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* ── Section 9 : Personnalisation Directe & Avancée des Couleurs ── */}
+      {/* ── Section 8 : Personnalisation Directe & Avancée des Couleurs ── */}
       <section className="settings-section-block p-4 sm:p-6" id="advanced-colors-section">
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2.5">

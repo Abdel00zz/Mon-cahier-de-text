@@ -60,17 +60,16 @@ export function useTheme(
 
     if (isDark) {
       root.classList.add('dark');
-      root.style.colorScheme = 'dark';
+      root.style.colorScheme = 'only dark';
     } else {
       root.classList.remove('dark');
-      root.style.colorScheme = 'light';
+      root.style.colorScheme = 'only light';
     }
 
     // Update theme-color meta tag for PWA and mobile status bar
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', isDark ? '#0b1120' : '#ffffff');
-    }
+    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+      meta.setAttribute('content', isDark ? '#0b1120' : '#ffffff');
+    });
 
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
     if (metaColorScheme) {
