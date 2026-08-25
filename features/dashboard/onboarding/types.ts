@@ -86,6 +86,7 @@ export interface OnboardingCopy {
     missingLabel: string;
     existingClass: string;
     understood: string;
+    finishWithoutSchedule: string;
     back: string;
     next: string;
     ignoreClass: string;

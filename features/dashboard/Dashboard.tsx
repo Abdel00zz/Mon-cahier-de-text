@@ -493,7 +493,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
+            className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden"
             data-dashboard-root
         >
             {/* Ambient Subtle Glows */}
@@ -503,46 +503,72 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
-                    <header className="mb-3 rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 shadow-[0_6px_20px_rgba(15,23,42,0.05)] backdrop-blur-md sm:mb-4 sm:rounded-2xl sm:px-4 sm:py-3 dark:border-slate-800 dark:bg-slate-900/85" id="dashboard-header" aria-live="polite">
-                        <div className="min-w-0 leading-[1.45]">
+                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-3 pb-3 sm:px-6 sm:pt-4 lg:px-8 pl-safe pr-safe">
+                    {/* ── SLEEK FLOATING BANNER (Independent, rounded capsule, not full-width navbar) ── */}
+                    <header
+                        id="dashboard-header"
+                        aria-live="polite"
+                        className="mb-4 sm:mb-5 rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/85 px-4 py-2.5 sm:px-5 sm:py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all dark:border-slate-800/80 dark:bg-slate-900/85 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
+                    >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            {/* Compact Greeting */}
                             <div className="min-w-0">
-                                <p className="text-[18px] font-bold leading-tight text-slate-950 sm:text-[20px] dark:text-white">
+                                <h1 className="text-[17px] font-bold tracking-tight text-slate-900 sm:text-[19px] dark:text-white">
                                     <span>{t('dashboard.welcome.greeting', { teacher: '' })}</span>
                                     {teacherName && (
                                         <>
-                                            <span aria-hidden>{locale === 'ar' ? '، ' : ', '}</span>
-                                            <span className="font-itim text-[1.2em] font-bold tracking-[0.015em] text-blue-600 dark:text-blue-400" dir="auto">
+                                            <span aria-hidden className="text-slate-400 font-normal">{locale === 'ar' ? '، ' : ', '}</span>
+                                            <span className="font-itim text-[1.18em] font-bold text-blue-600 dark:text-blue-400" dir="auto">
                                                 {teacherName}
                                             </span>
                                         </>
                                     )}
-                                </p>
-                                <div className="mt-1 flex min-w-0 items-start gap-1 sm:gap-1.5">
-                                    <span className={`flex h-[16.5px] w-2.5 shrink-0 items-center justify-center sm:h-[22.5px] sm:w-3.5 ${
-                                        welcome.tone === 'alert' ? 'text-rose-600 dark:text-rose-400' :
-                                            welcome.tone === 'vacation' ? 'text-cyan-600 dark:text-cyan-400' :
-                                                welcome.tone === 'deadline' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'
-                                    }`} aria-hidden>
-                                        {welcome.tone === 'alert' ? <AlertTriangle className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" /> : welcome.tone === 'deadline' ? <ClipboardList className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" /> : <CalendarDays className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />}
-                                    </span>
-                                    <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[11px] font-medium leading-[1.5] text-slate-700 sm:text-[15px] dark:text-slate-200">
-                                        <p className="min-w-0">
-                                            {welcome.title && <span className="font-semibold text-slate-950 dark:text-white">{welcome.title}{welcome.detail && <span aria-hidden> — </span>}</span>}
-                                            <span>{welcome.detail}</span>
-                                        </p>
-                                        {welcome.action && (
-                                            <button
-                                                type="button"
-                                                onClick={welcome.action.onClick}
-                                                className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-0.5 whitespace-nowrap font-bold text-blue-700 underline underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
-                                            >
-                                                <span>{welcome.action.label}</span>
-                                                <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
-                                            </button>
-                                        )}
-                                    </div>
+                                </h1>
+                            </div>
+
+                            {/* Minimalist Context Pill */}
+                            <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                                welcome.tone === 'alert'
+                                    ? 'border-rose-200/80 bg-rose-50/80 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/50 dark:text-rose-200'
+                                    : welcome.tone === 'vacation'
+                                        ? 'border-cyan-200/80 bg-cyan-50/80 text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-950/50 dark:text-cyan-200'
+                                        : welcome.tone === 'deadline'
+                                            ? 'border-amber-200/80 bg-amber-50/80 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200'
+                                            : 'border-slate-200/80 bg-slate-100/80 text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300'
+                            }`}>
+                                <span className="flex shrink-0 items-center justify-center" aria-hidden>
+                                    {welcome.tone === 'alert' ? (
+                                        <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+                                    ) : welcome.tone === 'deadline' ? (
+                                        <ClipboardList className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                    ) : (
+                                        <CalendarDays className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                                    )}
+                                </span>
+
+                                <div className="flex min-w-0 items-center gap-1.5 truncate">
+                                    {welcome.title && (
+                                        <span className="font-semibold text-slate-900 dark:text-white truncate">
+                                            {welcome.title}
+                                        </span>
+                                    )}
+                                    {welcome.detail && (
+                                        <span className="text-slate-600 dark:text-slate-400 truncate">
+                                            {welcome.title ? `— ${welcome.detail}` : welcome.detail}
+                                        </span>
+                                    )}
                                 </div>
+
+                                {welcome.action && (
+                                    <button
+                                        type="button"
+                                        onClick={welcome.action.onClick}
+                                        className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-0.5 font-bold text-blue-600 underline underline-offset-2 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                    >
+                                        <span>{welcome.action.label}</span>
+                                        <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </header>

@@ -121,7 +121,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                                         onClick={onSkip}
                                         className="h-11 cursor-pointer rounded-xl border-rose-200 bg-rose-50 px-3 text-sm font-semibold text-rose-700 shadow-none hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:px-5 sm:text-base dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
                                     >
-                                        {copy.understood}
+                                        {copy.finishWithoutSchedule}
                                     </Button>
                                 )}
 

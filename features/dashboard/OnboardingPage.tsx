@@ -180,7 +180,7 @@ export const OnboardingPage = ({
             subtitle={navigation.step === 1 ? copy.subtitle : undefined}
             canContinue={navigation.canContinue}
             finishing={finishing}
-            canComplete={classes.length > 0}
+            canComplete={(config.timetable?.length ?? 0) > 0}
             copy={copy}
             onBack={navigation.back}
             onNext={navigation.next}
