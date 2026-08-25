@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── shadcn/ui · Light theme ────────────────────────────────────────────── */
+/* ── shadcn/ui · Modern Clean Academic Theme ────────────────────────────── */
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -37,12 +37,12 @@
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.25rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 
-  --font-sans: 'Fira Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-itim: 'Itim', cursive, sans-serif;
 }
@@ -64,22 +64,22 @@
 }
 
 @layer base {
-  /* ── Palette Slate + Cyan · surfaces calmes, accent net ───────────── */
+  /* ── Modern Sophisticated Light Theme ──────────────────────────────── */
   :root {
-    --background: 210 40% 98%;
+    --background: 215 28% 97%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 188 86% 43%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
+    --secondary: 215 25% 93%;
     --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
+    --muted: 215 25% 94%;
     --muted-foreground: 215 16% 47%;
-    --accent: 188 86% 94%;
-    --accent-foreground: 188 80% 29%;
+    --accent: 217 91% 95%;
+    --accent-foreground: 221 83% 45%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
@@ -87,53 +87,53 @@
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
-    --scheduled: 210 40% 96%;
+    --scheduled: 215 25% 94%;
     --scheduled-foreground: 222 47% 11%;
-    --border: 214 32% 91%;
+    --border: 214 28% 88%;
     --input: 0 0% 100%;
-    --ring: 188 86% 43%;
-    --chart-1: 188 86% 43%;
+    --ring: 221 83% 53%;
+    --chart-1: 221 83% 53%;
     --chart-2: 142.1 76.2% 36.3%;
     --chart-3: 38 92% 50%;
     --chart-4: 199 89% 48%;
-    --chart-5: 340 75% 55%;
+    --chart-5: 262 83% 58%;
 
     --content-font-latin: 'Fira Sans', sans-serif;
     --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
   }
 
   .dark {
-    --background: 225 56% 11%;
+    --background: 222 47% 8%;
     --foreground: 210 40% 98%;
-    --card: 224 52% 14%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 224 52% 14%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 188 86% 43%;
-    --primary-foreground: 225 56% 11%;
-    --secondary: 222 32% 18%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 8%;
+    --secondary: 220 30% 16%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 222 32% 18%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 190 74% 16%;
-    --accent-foreground: 190 90% 74%;
-    --destructive: 0 62.8% 50%;
+    --muted: 220 30% 16%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 91% 18%;
+    --accent-foreground: 217 91% 75%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
     --success: 142.1 70.6% 45.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 84.2% 60%;
-    --scheduled: 222 32% 18%;
+    --scheduled: 220 30% 16%;
     --scheduled-foreground: 210 40% 98%;
-    --border: 220 30% 23%;
-    --input: 224 52% 14%;
-    --ring: 188 86% 55%;
-    --chart-1: 188 86% 55%;
+    --border: 220 30% 18%;
+    --input: 222 47% 11%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 199 89% 58%;
-    --chart-5: 340 75% 55%;
+    --chart-5: 262 83% 58%;
   }
 
   * {
@@ -176,15 +176,15 @@
   }
 
   .auth-page-shell {
-    background-color: #f8fafc;
+    background-color: hsl(var(--background));
     background-image:
-      radial-gradient(at 0% 0%, hsla(217, 100%, 94%, 1) 0, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(210, 100%, 95%, 1) 0, transparent 50%);
-    font-family: 'Fira Sans', 'Roboto Slab', 'IBM Plex Sans Arabic', sans-serif !important;
+      radial-gradient(at 0% 0%, hsl(var(--primary) / 0.08) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(var(--accent) / 0.4) 0, transparent 50%);
+    font-family: var(--font-sans);
   }
 
   [data-dashboard-root] {
-    font-family: 'Outfit', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans);
   }
 
   [data-dashboard-root] h1, 
@@ -193,7 +193,55 @@
   .auth-page-shell h1,
   .auth-page-shell h2,
   .auth-page-shell h3 {
-    font-family: 'Outfit', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, sans-serif;
+    font-family: var(--font-sans);
+  }
+
+  /* ── Custom Centralized Card Styles ─────────────────────────────────── */
+  [data-card-style="glass"] .bg-card,
+  [data-card-style="glass"] article,
+  [data-card-style="glass"] .settings-surface {
+    background-color: hsl(var(--card) / 0.75) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-color: hsl(var(--border) / 0.8) !important;
+  }
+
+  [data-card-style="elevated"] .bg-card,
+  [data-card-style="elevated"] article,
+  [data-card-style="elevated"] .settings-surface {
+    box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .dark[data-card-style="elevated"] .bg-card,
+  .dark[data-card-style="elevated"] article,
+  .dark[data-card-style="elevated"] .settings-surface {
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  [data-card-style="bordered"] .bg-card,
+  [data-card-style="bordered"] article,
+  [data-card-style="bordered"] .settings-surface {
+    border-width: 1.5px !important;
+    border-color: hsl(var(--border)) !important;
+    box-shadow: none !important;
+  }
+
+  /* ── Custom Centralized Table Styles ────────────────────────────────── */
+  [data-table-style="striped"] tbody tr:nth-child(even) td {
+    background-color: hsl(var(--muted) / 0.35) !important;
+  }
+
+  [data-table-style="bordered"] table {
+    border: 1px solid hsl(var(--border)) !important;
+  }
+  [data-table-style="bordered"] th,
+  [data-table-style="bordered"] td {
+    border-right: 1px solid hsl(var(--border) / 0.7) !important;
+  }
+
+  [data-table-style="compact"] tbody td {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
   }
 
   /* ── Typographie & Polices pour le contenu du cahier ─────────────────── */
@@ -296,84 +344,41 @@
   }
 }
 
-/* Densité typographique propre à Paramètres : réduction uniforme de 15 %,
-   avec un plancher à 9 px pour conserver la lisibilité des micro-libellés. */
-.settings-density {
-  font-size: 0.85rem;
-}
-
-.settings-density .text-2xl { font-size: 1.275rem !important; }
-.settings-density .text-xl { font-size: 1.0625rem !important; }
-.settings-density .text-lg { font-size: 0.95625rem !important; }
-.settings-density .text-base { font-size: 0.85rem !important; }
-.settings-density .text-sm { font-size: 0.74375rem !important; }
-.settings-density .text-xs { font-size: 0.6375rem !important; }
-.settings-density .text-\[18px\] { font-size: 15.3px !important; }
-.settings-density .text-\[16px\] { font-size: 13.6px !important; }
-.settings-density .text-\[15px\] { font-size: 12.75px !important; }
-.settings-density .text-\[14\.5px\] { font-size: 12.3px !important; }
-.settings-density .text-\[14px\] { font-size: 11.9px !important; }
-.settings-density .text-\[13\.5px\] { font-size: 11.5px !important; }
-.settings-density .text-\[13px\] { font-size: 11.05px !important; }
-.settings-density .text-\[12\.5px\] { font-size: 10.6px !important; }
-.settings-density .text-\[12px\] { font-size: 10.2px !important; }
-.settings-density .text-\[11\.5px\] { font-size: 9.8px !important; }
-.settings-density .text-\[11px\] { font-size: 9.35px !important; }
-.settings-density .text-\[10\.5px\],
-.settings-density .text-\[10px\],
-.settings-density .text-\[9\.5px\],
-.settings-density .text-\[9px\] { font-size: 9px !important; }
-
-/* Architecture des pages Paramètres : une zone de données grise continue,
-   des groupes plats, puis uniquement les surfaces interactives en blanc. */
+/* Architecture moderne et aérée des réglages */
 .settings-content-zone {
-  background-color: rgb(244 244 245 / 0.82);
-}
-
-.dark .settings-content-zone {
-  background-color: rgb(15 23 42 / 0.72);
+  background-color: transparent;
 }
 
 .settings-section-block {
-  border: 1px solid rgb(203 213 225 / 0.9) !important;
-  border-radius: 0.875rem !important;
-  background: rgb(255 255 255 / 0.58) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
+  border: 1px solid hsl(var(--border) / 0.7) !important;
+  border-radius: 1rem !important;
+  background: hsl(var(--card)) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
 }
 
 .dark .settings-section-block {
-  border-color: rgb(51 65 85 / 0.9) !important;
-  background: rgb(15 23 42 / 0.38) !important;
+  border-color: hsl(var(--border) / 0.8) !important;
+  background: hsl(var(--card) / 0.8) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25) !important;
 }
 
 .settings-surface {
-  border: 1px solid rgb(203 213 225 / 0.95) !important;
+  border: 1px solid hsl(var(--border) / 0.6) !important;
   border-radius: 0.875rem !important;
-  background: rgb(255 255 255 / 0.92) !important;
+  background: hsl(var(--muted) / 0.3) !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
 }
 
 .dark .settings-surface {
-  border-color: rgb(51 65 85 / 0.9) !important;
-  background: rgb(15 23 42 / 0.9) !important;
+  border-color: hsl(var(--border) / 0.6) !important;
+  background: hsl(var(--muted) / 0.2) !important;
 }
 
 .settings-page-content > div {
   gap: 1rem;
 }
 
-.settings-page-content > div > :not([hidden]) ~ :not([hidden]) {
-  margin-top: 1rem !important;
-}
-
-.settings-page-content > div > div:first-child {
-  padding-bottom: 0;
-}
-
-/* Les traits sous les titres répétaient déjà la séparation créée par les
-   surfaces. Les modales et les réglages respirent davantage sans eux. */
+/* Les modales et les réglages respirent */
 .modal-header,
 .modal-footer,
 .settings-section-block > header {
@@ -384,15 +389,6 @@
 .settings-section-block > header {
   margin-bottom: 0.75rem !important;
   padding-bottom: 0 !important;
-}
-
-@media (min-width: 640px) {
-  .settings-density .sm\:text-2xl { font-size: 1.275rem !important; }
-  .settings-density .sm\:text-xl { font-size: 1.0625rem !important; }
-  .settings-density .sm\:text-lg { font-size: 0.95625rem !important; }
-  .settings-density .sm\:text-base { font-size: 0.85rem !important; }
-  .settings-density .sm\:text-sm { font-size: 0.74375rem !important; }
-  .settings-density .sm\:text-xs { font-size: 0.6375rem !important; }
 }
 
 /* ── Print utilities ────────────────────────────────────────────────────── */

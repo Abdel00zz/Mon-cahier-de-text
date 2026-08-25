@@ -10,16 +10,7 @@ const VALID_AXES = new Set<NotificationsAxisId>([
     'ignores',
 ]);
 
-/** Prépare la section exacte à ouvrir lors de la prochaine navigation. */
-export const requestNotificationsAxis = (axis: NotificationsAxisId): void => {
-    try {
-        sessionStorage.setItem(INITIAL_AXIS_KEY, axis);
-    } catch {
-        // La navigation reste possible si le stockage est indisponible.
-    }
-};
-
-/** Consomme une seule fois la destination demandée par une carte ou un modal. */
+/** Consomme une seule fois la destination demandée par une navigation interne. */
 export const consumeNotificationsAxis = (): NotificationsAxisId | null => {
     try {
         const axis = sessionStorage.getItem(INITIAL_AXIS_KEY);

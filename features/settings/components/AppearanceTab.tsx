@@ -1,7 +1,31 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Laptop, Type, Check, Eye, RotateCcw } from 'lucide-react';
-import { AppConfig, ThemeMode } from '@/types';
+import {
+  Sun,
+  Moon,
+  Laptop,
+  Type,
+  Check,
+  Eye,
+  RotateCcw,
+  Palette,
+  Layout,
+  Table as TableIcon,
+  Sparkles,
+  Sliders,
+  CheckCircle2,
+} from 'lucide-react';
+import { AppConfig, ThemeMode, ThemeCustomization } from '@/types';
 import { LATIN_FONTS, ARABIC_FONTS } from '@/constants/typography';
+import {
+  ACCENT_PALETTES,
+  BORDER_RADIUS_MAP,
+  UI_FONTS_MAP,
+  AccentColorKey,
+  BorderRadiusOption,
+  CardStyleOption,
+  TableStyleOption,
+  UIFontOption,
+} from '@/constants/themePresets';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { MathText } from '@/components/ui/math-text';
 import { Badge } from '@/components/ui/badge';
@@ -28,24 +52,87 @@ const ARABIC_SAMPLE_COLORS = [
   'text-fuchsia-700 dark:text-fuchsia-300',
 ];
 
+const CARD_STYLES: { id: CardStyleOption; labelFr: string; labelAr: string; descFr: string }[] = [
+  {
+    id: 'classic',
+    labelFr: 'Classique & Épuré',
+    labelAr: 'كلاسيكي ونقي',
+    descFr: 'Fond blanc/sombre standard, bordures légères',
+  },
+  {
+    id: 'bordered',
+    labelFr: 'Bordures Précises',
+    labelAr: 'إطارات محددة',
+    descFr: 'Contour accentué et sans ombre superflue',
+  },
+  {
+    id: 'elevated',
+    labelFr: 'Élégance & Relief',
+    labelAr: 'أناقة وظلال ناعمة',
+    descFr: 'Ombre portée douce et subtile profondeur',
+  },
+  {
+    id: 'glass',
+    labelFr: 'Verre Dépoli (Glass)',
+    labelAr: 'زجاج ضبابي عصري',
+    descFr: 'Transparence et flou d’arrière-plan moderne',
+  },
+];
+
+const TABLE_STYLES: { id: TableStyleOption; labelFr: string; labelAr: string; descFr: string }[] = [
+  {
+    id: 'clean',
+    labelFr: 'Moderne Épuré',
+    labelAr: 'عصري نقي',
+    descFr: 'Lignes épurées et lisibilité maximale',
+  },
+  {
+    id: 'striped',
+    labelFr: 'Lignes Alternées (Zébré)',
+    labelAr: 'خطوط متناوبة (مخطط)',
+    descFr: 'Alternance de teintes douces une ligne sur deux',
+  },
+  {
+    id: 'bordered',
+    labelFr: 'Quadrillage Défini',
+    labelAr: 'شبكة مؤطرة',
+    descFr: 'Bordures verticales et horizontales distinctes',
+  },
+  {
+    id: 'compact',
+    labelFr: 'Vue Compacte',
+    labelAr: 'عرض مكثف',
+    descFr: 'Densité optimisée pour afficher plus de contenu',
+  },
+];
+
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigChange }) => {
   const { t, isRtl } = useLocale();
-  const [activeTab, setActiveTab] = useState<'latin' | 'arabic'>('latin');
+  const [activeFontTab, setActiveFontTab] = useState<'latin' | 'arabic'>('latin');
+  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
 
   const currentTheme = config.theme || 'light';
+  const custom = config.themeCustomization || {};
+  const currentAccent: AccentColorKey = custom.accentColor || 'blue';
+  const currentCustomHex: string = custom.customPrimaryColor || '#2563eb';
+  const currentRadius: BorderRadiusOption = custom.borderRadius || 'default';
+  const currentCardStyle: CardStyleOption = custom.cardStyle || 'classic';
+  const currentTableStyle: TableStyleOption = custom.tableStyle || 'clean';
+  const currentUIFont: UIFontOption = custom.uiFont || 'jakarta';
   const currentLatinFont = config.contentFontLatin || 'fira';
   const currentArabicFont = config.contentFontArabic || 'ibm-plex';
 
+  const updateCustomization = (partial: Partial<ThemeCustomization>) => {
+    onConfigChange({
+      themeCustomization: {
+        ...custom,
+        ...partial,
+      },
+    });
+  };
+
   const handleSelectTheme = (theme: ThemeMode) => {
     onConfigChange({ theme });
-  };
-
-  const handleSelectLatinFont = (fontId: string) => {
-    onConfigChange({ contentFontLatin: fontId });
-  };
-
-  const handleSelectArabicFont = (fontId: string) => {
-    onConfigChange({ contentFontArabic: fontId });
   };
 
   const handleResetDefaults = () => {
@@ -53,6 +140,17 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       theme: 'light',
       contentFontLatin: 'fira',
       contentFontArabic: 'ibm-plex',
+      themeCustomization: {
+        accentColor: 'blue',
+        customPrimaryColor: '#2563eb',
+        borderRadius: 'default',
+        cardStyle: 'classic',
+        tableStyle: 'clean',
+        uiFont: 'jakarta',
+        customBackgroundColor: undefined,
+        customTextColor: undefined,
+        customCardColor: undefined,
+      },
     });
   };
 
@@ -61,8 +159,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
-      {/* ── Section 1 : Thème de l'interface (Clair / Sombre / Système) ── */}
-      <section className="settings-section-block p-4 sm:p-6">
+      {/* ── Section 1 : Thème Global (Clair / Sombre / Système) ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="theme-mode-section">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -83,7 +181,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             variant="ghost"
             size="sm"
             onClick={handleResetDefaults}
-            className="text-xs text-muted-foreground hover:text-foreground h-8 gap-1.5"
+            className="text-xs text-muted-foreground hover:text-foreground h-8 gap-1.5 cursor-pointer"
             title={t('settings.appearance.resetDefaults')}
           >
             <RotateCcw className="h-3.5 w-3.5" />
@@ -184,8 +282,306 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </section>
 
-      {/* ── Section 2 : aperçu typographique en situation ── */}
-      <section className="settings-section-block p-4 sm:p-5">
+      {/* ── Section 2 : Palette d'Accent & Couleur Principale ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="accent-color-section">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Palette className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              {isRtl ? 'لون التمييز والواجهة الرئيسي' : 'Couleur d’Accent & Palette de l’Application'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? 'اختر اللون المميز للأزرار والشارات والمؤشرات في كامل التطبيق' : 'Personnalisez la couleur active des boutons, onglets, badges et sélections'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {ACCENT_PALETTES.map(palette => {
+            const isSelected = currentAccent === palette.id;
+            return (
+              <button
+                key={palette.id}
+                type="button"
+                onClick={() => updateCustomization({ accentColor: palette.id })}
+                className={`flex flex-col items-center gap-2.5 rounded-xl border-2 p-3 text-center transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-border/70 hover:border-border hover:bg-muted/40'
+                }`}
+              >
+                <div
+                  className="h-8 w-8 rounded-full shadow-xs border-2 border-white dark:border-slate-800 flex items-center justify-center"
+                  style={{ backgroundColor: palette.hex }}
+                >
+                  {isSelected && <Check className="h-4 w-4 text-white" />}
+                </div>
+                <div className="w-full">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {isRtl ? palette.nameAr : palette.nameFr}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                    {palette.hex}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Option Sur-Mesure / Custom Hex Picker */}
+          <div
+            className={`flex flex-col items-center justify-between gap-2 rounded-xl border-2 p-3 text-center transition-all ${
+              currentAccent === 'custom'
+                ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                : 'border-border/70 hover:border-border hover:bg-muted/40'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <input
+                type="color"
+                value={currentCustomHex}
+                onChange={e => {
+                  updateCustomization({
+                    accentColor: 'custom',
+                    customPrimaryColor: e.target.value,
+                  });
+                }}
+                className="h-8 w-8 rounded-full cursor-pointer border-0 p-0 overflow-hidden"
+                title={isRtl ? 'اختر لوناً مخصصاً' : 'Choisir une couleur personnalisée'}
+              />
+            </div>
+            <div className="w-full">
+              <button
+                type="button"
+                onClick={() => updateCustomization({ accentColor: 'custom' })}
+                className="text-xs font-bold text-foreground truncate block w-full cursor-pointer"
+              >
+                {isRtl ? 'لون مخصص' : 'Sur-Mesure'}
+              </button>
+              <input
+                type="text"
+                value={currentCustomHex}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
+                    updateCustomization({
+                      accentColor: 'custom',
+                      customPrimaryColor: val,
+                    });
+                  }
+                }}
+                maxLength={7}
+                placeholder="#2563eb"
+                className="mt-1 w-full text-center text-[10px] font-mono px-1 py-0.5 rounded border border-border bg-background text-foreground"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 3 : Rayon de Courbure & Arrondi des Composants ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="border-radius-section">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Layout className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              {isRtl ? 'انحناء حواف المكونات والبطاقات' : 'Rayon & Courbure des Angles'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? 'حدد درجة استدارة البطاقات والأزرار والنوافذ' : 'Choisissez le style géométrique des cartes, boutons et champs de saisie'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {(Object.keys(BORDER_RADIUS_MAP) as BorderRadiusOption[]).map(radiusKey => {
+            const rad = BORDER_RADIUS_MAP[radiusKey];
+            const isSelected = currentRadius === radiusKey;
+            return (
+              <button
+                key={radiusKey}
+                type="button"
+                onClick={() => updateCustomization({ borderRadius: radiusKey })}
+                className={`flex flex-col items-center gap-3 rounded-xl border-2 p-3.5 text-center transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-border/70 hover:border-border hover:bg-muted/40'
+                }`}
+              >
+                <div
+                  className={`h-9 w-16 border-2 border-primary/60 bg-primary/10 flex items-center justify-center`}
+                  style={{
+                    borderRadius: rad.md,
+                  }}
+                >
+                  <span className="text-[10px] font-bold text-primary">{rad.md}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    {isRtl ? rad.labelAr : rad.labelFr}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Section 4 : Style des Cartes & Surfaces ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="card-style-section">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              {isRtl ? 'مظهر وأسلوب البطاقات والأسطح' : 'Style des Surfaces & Cartes'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? 'تحكم في عمق وتظليل وخلفيات بطاقات الأقسام' : 'Définissez le traitement visuel des conteneurs, blocs et listes'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {CARD_STYLES.map(style => {
+            const isSelected = currentCardStyle === style.id;
+            return (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => updateCustomization({ cardStyle: style.id })}
+                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-border/70 hover:border-border hover:bg-muted/40'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground">
+                      {isRtl ? style.labelAr : style.labelFr}
+                    </span>
+                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {style.descFr}
+                  </p>
+                </div>
+                <div className="mt-3 pt-2 border-t border-border/40 flex items-center gap-1.5 text-[10px] font-semibold text-primary">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Actif</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Section 5 : Style du Tableau du Cahier de Textes ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="table-style-section">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <TableIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              {isRtl ? 'نمط شبكة وجدول دفتر النصوص' : 'Style du Tableau du Cahier'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? 'تخصيص نمط العرض والتسطير والتظليل لصفوف الجذاذات والدروس' : 'Personnalisez le lignage, les bandes alternées et l’espacement des séances'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {TABLE_STYLES.map(style => {
+            const isSelected = currentTableStyle === style.id;
+            return (
+              <button
+                key={style.id}
+                type="button"
+                onClick={() => updateCustomization({ tableStyle: style.id })}
+                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-border/70 hover:border-border hover:bg-muted/40'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground">
+                      {isRtl ? style.labelAr : style.labelFr}
+                    </span>
+                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {style.descFr}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Section 6 : Police de l'Interface UI ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="ui-font-section">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Type className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">
+              {isRtl ? 'خط واجهة التطبيق' : 'Police de l’Interface Utilisateur'}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? 'اختر خط القوائم والأزرار والعناوين' : 'Sélectionnez la typographie globale des menus, tableaux de bord et boutons'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {(Object.keys(UI_FONTS_MAP) as UIFontOption[]).map(fontKey => {
+            const fontObj = UI_FONTS_MAP[fontKey];
+            const isSelected = currentUIFont === fontKey;
+            return (
+              <button
+                key={fontKey}
+                type="button"
+                onClick={() => updateCustomization({ uiFont: fontKey })}
+                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-border/70 hover:border-border hover:bg-muted/40'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground" style={{ fontFamily: fontObj.family }}>
+                      {isRtl ? fontObj.labelAr : fontObj.labelFr}
+                    </span>
+                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground line-clamp-1">
+                    {fontObj.descriptionFr}
+                  </p>
+                </div>
+                <div className="mt-2 text-xs font-medium text-primary/80 truncate" style={{ fontFamily: fontObj.family }}>
+                  Cahier de Textes Interactif 2025/2026
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Section 7 : Aperçu Typographique & Pédagogique ── */}
+      <section className="settings-section-block p-4 sm:p-5" id="font-preview-section">
         <div className="mb-3 flex items-center gap-2">
           <Eye className="h-4 w-4 text-primary" />
           <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -238,8 +634,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
       </section>
 
-      {/* ── Section 3 : Sélection des Polices du Contenu (Français vs Arabe) ── */}
-      <section className="settings-section-block p-4 sm:p-6">
+      {/* ── Section 8 : Sélection des Polices de Contenu (Français vs Arabe) ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="content-font-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Type className="h-5 w-5" />
@@ -254,13 +650,13 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           </div>
         </div>
 
-        {/* Onglets de bascule Latin / Arabe */}
+        {/* Onglets Latin / Arabe */}
         <div className="mb-5 flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-100/90 p-1 dark:border-zinc-800 dark:bg-zinc-900/80">
           <button
             type="button"
-            onClick={() => setActiveTab('latin')}
+            onClick={() => setActiveFontTab('latin')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'latin'
+              activeFontTab === 'latin'
                 ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
                 : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
             }`}
@@ -269,9 +665,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('arabic')}
+            onClick={() => setActiveFontTab('arabic')}
             className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'arabic'
+              activeFontTab === 'arabic'
                 ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
                 : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
             }`}
@@ -280,8 +676,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           </button>
         </div>
 
-        {/* Grille des polices Latines (Français / Anglais) */}
-        {activeTab === 'latin' && (
+        {/* Grille des polices Latines */}
+        {activeFontTab === 'latin' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {LATIN_FONTS.map((font, fontIndex) => {
               const isSelected = currentLatinFont === font.id;
@@ -289,7 +685,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 <button
                   key={font.id}
                   type="button"
-                  onClick={() => handleSelectLatinFont(font.id)}
+                  onClick={() => onConfigChange({ contentFontLatin: font.id })}
                   className={`group flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
                     isSelected
                       ? 'border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20'
@@ -326,7 +722,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         )}
 
         {/* Grille des polices Arabes */}
-        {activeTab === 'arabic' && (
+        {activeFontTab === 'arabic' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" dir="rtl">
             {ARABIC_FONTS.map((font, fontIndex) => {
               const isSelected = currentArabicFont === font.id;
@@ -334,7 +730,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 <button
                   key={font.id}
                   type="button"
-                  onClick={() => handleSelectArabicFont(font.id)}
+                  onClick={() => onConfigChange({ contentFontArabic: font.id })}
                   className={`group flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
                     isSelected
                       ? 'border-primary bg-primary/5 shadow-xs ring-2 ring-primary/20'
@@ -367,6 +763,104 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 </button>
               );
             })}
+          </div>
+        )}
+      </section>
+
+      {/* ── Section 9 : Personnalisation Directe & Avancée des Couleurs ── */}
+      <section className="settings-section-block p-4 sm:p-6" id="advanced-colors-section">
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sliders className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">
+                {isRtl ? 'تخصيص متقدم لدرجات الألوان' : 'Personnalisation Avancée des Couleurs & Zones'}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {isRtl ? 'تحكم دقيق في درجات خلفية التطبيق والنصوص والبطاقات' : 'Ajustement précis des codes hexadécimaux pour le fond, le texte et les cartes'}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAdvancedColors(!showAdvancedColors)}
+            className="text-xs cursor-pointer"
+          >
+            {showAdvancedColors ? (isRtl ? 'إخفاء' : 'Masquer') : (isRtl ? 'إظهار' : 'Afficher')}
+          </Button>
+        </div>
+
+        {showAdvancedColors && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-border/70">
+            {/* Fond Global */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground block">
+                {isRtl ? 'لون خلفية الصفحة' : 'Arrière-plan global (Fond)'}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={custom.customBackgroundColor || (currentTheme === 'dark' ? '#0b1120' : '#f8fafc')}
+                  onChange={e => updateCustomization({ customBackgroundColor: e.target.value })}
+                  className="h-8 w-8 rounded cursor-pointer border border-border"
+                />
+                <input
+                  type="text"
+                  placeholder={currentTheme === 'dark' ? '#0b1120' : '#f8fafc'}
+                  value={custom.customBackgroundColor || ''}
+                  onChange={e => updateCustomization({ customBackgroundColor: e.target.value || undefined })}
+                  className="flex-1 text-xs font-mono px-2 py-1 rounded border border-border bg-background text-foreground"
+                />
+              </div>
+            </div>
+
+            {/* Texte Principal */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground block">
+                {isRtl ? 'لون النص الأساسي' : 'Couleur du texte principal'}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={custom.customTextColor || (currentTheme === 'dark' ? '#f8fafc' : '#0f172a')}
+                  onChange={e => updateCustomization({ customTextColor: e.target.value })}
+                  className="h-8 w-8 rounded cursor-pointer border border-border"
+                />
+                <input
+                  type="text"
+                  placeholder={currentTheme === 'dark' ? '#f8fafc' : '#0f172a'}
+                  value={custom.customTextColor || ''}
+                  onChange={e => updateCustomization({ customTextColor: e.target.value || undefined })}
+                  className="flex-1 text-xs font-mono px-2 py-1 rounded border border-border bg-background text-foreground"
+                />
+              </div>
+            </div>
+
+            {/* Fond des Cartes */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground block">
+                {isRtl ? 'لون خلفية البطاقات' : 'Arrière-plan des Cartes'}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={custom.customCardColor || (currentTheme === 'dark' ? '#1e293b' : '#ffffff')}
+                  onChange={e => updateCustomization({ customCardColor: e.target.value })}
+                  className="h-8 w-8 rounded cursor-pointer border border-border"
+                />
+                <input
+                  type="text"
+                  placeholder={currentTheme === 'dark' ? '#1e293b' : '#ffffff'}
+                  value={custom.customCardColor || ''}
+                  onChange={e => updateCustomization({ customCardColor: e.target.value || undefined })}
+                  className="flex-1 text-xs font-mono px-2 py-1 rounded border border-border bg-background text-foreground"
+                />
+              </div>
+            </div>
           </div>
         )}
       </section>

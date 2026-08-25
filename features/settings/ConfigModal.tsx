@@ -28,8 +28,6 @@ import {
   CircleHelp,
   ChevronRight,
   CircleCheck,
-  ArrowLeft,
-  ArrowRight,
   Save,
   LogOut,
   Palette,
@@ -68,6 +66,7 @@ type SettingsCategory =
 interface SettingMenuItem {
   id: SettingsCategory;
   titleKey: string;
+  descKey: string;
   icon: React.ComponentType<{ className?: string }>;
   group: 'main' | 'support';
 }
@@ -76,48 +75,56 @@ const SETTING_ITEMS: SettingMenuItem[] = [
   {
     id: 'compte',
     titleKey: 'settings.item.account',
+    descKey: 'settings.desc.account',
     icon: User,
     group: 'main',
   },
   {
     id: 'profil',
     titleKey: 'settings.item.profile',
+    descKey: 'settings.desc.profile',
     icon: School,
     group: 'main',
   },
   {
     id: 'apparence',
     titleKey: 'settings.item.appearance',
+    descKey: 'settings.desc.appearance',
     icon: Palette,
     group: 'main',
   },
   {
     id: 'emploi',
     titleKey: 'settings.item.schedule',
+    descKey: 'settings.desc.schedule',
     icon: CalendarRange,
     group: 'main',
   },
   {
     id: 'notifications',
     titleKey: 'settings.item.notifications',
+    descKey: 'settings.desc.notifications',
     icon: Bell,
     group: 'main',
   },
   {
     id: 'donnees',
     titleKey: 'settings.item.data',
+    descKey: 'settings.desc.data',
     icon: Database,
     group: 'main',
   },
   {
     id: 'archives',
     titleKey: 'settings.item.archives',
+    descKey: 'settings.desc.archives',
     icon: FolderOpen,
     group: 'main',
   },
   {
     id: 'assistance',
     titleKey: 'settings.item.support',
+    descKey: 'settings.desc.support',
     icon: CircleHelp,
     group: 'support',
   },
@@ -139,8 +146,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const [localConfig, setLocalConfig] = useState(config);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
-  // Sur ordinateur, le contenu reste prioritaire : le menu s’ouvre à la demande.
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  // Sur ordinateur : menu ouvert avec labels visibles par défaut
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   useEffect(() => {
@@ -148,6 +155,24 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       setLocalConfig(config);
     }
   }, [isOpen, config]);
+
+  const handleSelectCategory = (id: SettingsCategory) => {
+    setActiveCategory(id);
+    if (window.innerWidth < 768) {
+      setMobileSubViewOpen(true);
+      window.history.pushState({ ...window.history.state, settingsSubView: id }, '');
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (mobileSubViewOpen && !e.state?.settingsSubView) {
+        setMobileSubViewOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [mobileSubViewOpen]);
 
   // Consomme d'éventuels liens directs (ex. vers l'emploi du temps)
   useEffect(() => {
@@ -206,7 +231,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   const toggleCycle = (cycle: Cycle) => {
     setLocalConfig(prev => {
-      const current = prev.selectedCycles?.length ? prev.selectedCycles : ['college'];
+      const current: Cycle[] = prev.selectedCycles?.length ? prev.selectedCycles : ['college'];
       if (current.includes(cycle)) {
         // Un profil doit toujours conserver au moins un cycle pédagogique.
         if (current.length === 1) return prev;
@@ -258,8 +283,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     switch (activeCategory) {
       case 'compte':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <User className="h-5 w-5 text-primary" />
                 {t('settings.section.accountTitle')}
@@ -275,8 +300,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'profil':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <School className="h-5 w-5 text-primary" />
                 {t('settings.section.profileTitle')}
@@ -490,8 +515,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'apparence':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <Palette className="h-5 w-5 text-primary" />
                 {t('settings.section.appearanceTitle')}
@@ -513,8 +538,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'emploi':
         return (
-          <div className="space-y-5">
-            <div>
+          <div className="space-y-4 sm:space-y-5">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <CalendarRange className="h-5 w-5 text-primary" />
                 {t('settings.section.scheduleTitle')}
@@ -526,8 +551,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'notifications':
         return (
-          <div className="space-y-5">
-            <div>
+          <div className="space-y-4 sm:space-y-5">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <Bell className="h-5 w-5 text-primary" />
                 {t('settings.section.notificationsTitle')}
@@ -542,8 +567,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'donnees':
         return (
-          <div className="space-y-5">
-            <div>
+          <div className="space-y-4 sm:space-y-5">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <Database className="h-5 w-5 text-primary" />
                 {t('settings.section.dataTitle')}
@@ -554,7 +579,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="settings-surface flex flex-col justify-between p-5">
+              <div className="settings-section-block flex flex-col justify-between p-4 sm:p-5">
                 <div>
                   <h4 className="text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -570,7 +595,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </Button>
               </div>
 
-              <div className="settings-surface flex flex-col justify-between p-5">
+              <div className="settings-section-block flex flex-col justify-between p-4 sm:p-5">
                 <div>
                   <h4 className="text-sm font-bold text-foreground font-bold tracking-tight mb-1">{t('settings.importTitle')}</h4>
                   <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
@@ -584,7 +609,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     if (!asPage) onClose();
                     onOpenImport();
                   }}
-                  className="w-full border-white/[0.12] dark:border-white/[0.08] bg-background/60 font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-10"
+                  className="w-full border-border bg-background/60 font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-10"
                 >
                   {t('settings.importAction')}
                 </Button>
@@ -595,8 +620,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'archives':
         return (
-          <div className="space-y-5">
-            <div>
+          <div className="space-y-4 sm:space-y-5">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <FolderOpen className="h-5 w-5 text-cyan-500" />
                 {t('settings.section.archivesTitle')}
@@ -611,8 +636,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'assistance':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="mb-4">
               <h2 className={cn('text-lg font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
                 <CircleHelp className="h-5 w-5 text-cyan-500" />
                 {t('settings.section.supportTitle')}
@@ -623,7 +648,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* Premium Card */}
-            <div className="settings-surface p-5">
+            <div className="settings-section-block p-4 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-[0_2px_10px_rgba(6,182,212,0.35)] shrink-0">
@@ -642,7 +667,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
 
             {/* List of actions */}
-            <div className="settings-surface divide-y divide-border/50 overflow-hidden">
+            <div className="settings-section-block divide-y divide-border/50 overflow-hidden">
               <div className="p-4 flex items-center justify-between gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
@@ -670,7 +695,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     sessionStorage.setItem('open_guide_now', 'true');
                     onClose();
                   }}
-                  className="text-xs font-bold cursor-pointer border-white/[0.12] dark:border-white/[0.08] rounded-xl"
+                  className="text-xs font-bold cursor-pointer border-border rounded-xl"
                 >
                   {t('settings.support.openGuide')}
                 </Button>
@@ -739,6 +764,52 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     </div>
   );
 
+  const getCategoryDescription = (id: SettingsCategory, userLocale: AppLocale): string => {
+    const map: Record<SettingsCategory, Record<AppLocale, string>> = {
+      compte: {
+        fr: 'Langue, identifiants & session',
+        ar: 'اللغة، المعرفات والحساب',
+        en: 'Language, login & session',
+      },
+      profil: {
+        fr: 'Nom, cycles, matière & académie',
+        ar: 'الاسم، الأسلاك، المادة والأكاديمية',
+        en: 'Name, cycles, subject & academy',
+      },
+      apparence: {
+        fr: 'Couleurs, polices & styles visuels',
+        ar: 'الألوان، الخطوط والتأثيرات البصرية',
+        en: 'Colors, typography & visual theme',
+      },
+      emploi: {
+        fr: 'Créneaux horaires & répartition',
+        ar: 'الحصص وتوزيع الساعات الأسبوعية',
+        en: 'Weekly slots & schedule balance',
+      },
+      notifications: {
+        fr: 'Alertes intelligentes & rappels',
+        ar: 'التنبيهات الذكية والإشعارات',
+        en: 'Smart alerts & reminders',
+      },
+      donnees: {
+        fr: 'Sauvegardes, export & reset',
+        ar: 'النسخ الاحتياطي والاستيراد',
+        en: 'Backups, export & reset',
+      },
+      archives: {
+        fr: 'Années scolaires & historique',
+        ar: 'السنوات السابقة والدفاتر المؤرشفة',
+        en: 'School years & archived notebooks',
+      },
+      assistance: {
+        fr: 'Guide d’utilisation & support',
+        ar: 'دليل الاستعمال والدعم الفني',
+        en: 'User guide & support',
+      },
+    };
+    return map[id]?.[userLocale] ?? map[id]?.fr ?? '';
+  };
+
   const mainMenuItems = SETTING_ITEMS.filter(i => i.group === 'main');
   const supportMenuItems = SETTING_ITEMS.filter(i => i.group === 'support');
 
@@ -759,96 +830,112 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         </button>
       </div>
 
+      {/* Mobile Header (When on Phone) */}
+      <div className="block md:hidden mb-2 px-1">
+        <h2 className="text-base font-bold text-foreground">
+          {t('settings.title')}
+        </h2>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {locale === 'ar' ? 'تخصيص الخيارات، المظهر، استعمال الزمن والبيانات' : 'Personnalisez vos options, apparence et emploi du temps'}
+        </p>
+      </div>
+
       {/* Paramètres principaux */}
       <div className="flex-1">
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {mainMenuItems.map(item => {
             const isActive = activeCategory === item.id;
             const Icon = item.icon;
+            const desc = getCategoryDescription(item.id, locale);
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => {
-                  setActiveCategory(item.id);
-                  setMobileSubViewOpen(true);
-                }}
+                onClick={() => handleSelectCategory(item.id)}
                 title={t(item.titleKey)}
                 className={cn(
                   'w-full flex items-center transition-all duration-200 cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/40',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2'
-                    : 'justify-start gap-3 px-3.5 py-2.5 text-start',
+                  'md:' + (isEffectiveCollapsed ? 'justify-center p-2' : 'justify-start gap-3 px-3.5 py-2.5 text-start'),
+                  'justify-start gap-3 px-3.5 py-3 text-start',
                   isActive
-                    ? 'border border-slate-300 bg-slate-200/85 text-slate-950 shadow-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50'
-                    : 'border border-transparent bg-slate-100/75 text-slate-600 hover:border-slate-200 hover:bg-slate-200/70 hover:text-slate-950 dark:bg-slate-900/55 dark:text-slate-400 dark:hover:border-slate-800 dark:hover:bg-slate-800/80 dark:hover:text-slate-100'
+                    ? 'border border-primary/30 bg-primary/10 text-foreground shadow-xs'
+                    : 'border border-border/60 bg-card/70 text-card-foreground hover:border-border hover:bg-accent/60'
                 )}
               >
                 <div
                   className={cn(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
-                      : 'bg-slate-200/80 text-slate-500 group-hover:bg-slate-300/80 group-hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700 dark:group-hover:text-slate-100'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary'
                   )}
                 >
-                  <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
+                  <Icon className="h-5 w-5 stroke-[2.2]" />
                 </div>
-                {!isEffectiveCollapsed && (
-                  <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground group-hover:text-foreground')}>
+                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden md:hidden' : 'block')}>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
                       {t(item.titleKey)}
                     </span>
+                    <ChevronRight className={cn('h-4 w-4 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5', isRtl && 'rotate-180 group-hover:-translate-x-0.5', isActive && 'text-primary')} />
                   </div>
-                )}
+                  {desc && (
+                    <span className="block text-[11px] text-muted-foreground leading-tight truncate mt-0.5">
+                      {desc}
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Paiements et assistance */}
-      <div className="pt-4">
-        <div className="space-y-1.5">
+      {/* Assistance & Aide */}
+      <div className="pt-2">
+        <div className="space-y-2">
           {supportMenuItems.map(item => {
             const isActive = activeCategory === item.id;
             const Icon = item.icon;
+            const desc = getCategoryDescription(item.id, locale);
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => {
-                  setActiveCategory(item.id);
-                  setMobileSubViewOpen(true);
-                }}
+                onClick={() => handleSelectCategory(item.id)}
                 title={t(item.titleKey)}
                 className={cn(
                   'w-full flex items-center transition-all duration-200 cursor-pointer group rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/40',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2'
-                    : 'justify-start gap-3 px-3.5 py-2.5 text-start',
+                  'md:' + (isEffectiveCollapsed ? 'justify-center p-2' : 'justify-start gap-3 px-3.5 py-2.5 text-start'),
+                  'justify-start gap-3 px-3.5 py-3 text-start',
                   isActive
-                    ? 'border border-slate-300 bg-slate-200/85 text-slate-950 shadow-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50'
-                    : 'border border-transparent bg-slate-100/75 text-slate-600 hover:border-slate-200 hover:bg-slate-200/70 hover:text-slate-950 dark:bg-slate-900/55 dark:text-slate-400 dark:hover:border-slate-800 dark:hover:bg-slate-800/80 dark:hover:text-slate-100'
+                    ? 'border border-primary/30 bg-primary/10 text-foreground shadow-xs'
+                    : 'border border-border/60 bg-card/70 text-card-foreground hover:border-border hover:bg-accent/60'
                 )}
               >
                 <div
                   className={cn(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
                     isActive
-                      ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
-                      : 'bg-slate-200/80 text-slate-500 group-hover:bg-slate-300/80 group-hover:text-slate-800 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700 dark:group-hover:text-slate-100'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary'
                   )}
                 >
-                  <Icon className="h-4.5 w-4.5 stroke-[2.2]" />
+                  <Icon className="h-5 w-5 stroke-[2.2]" />
                 </div>
-                {!isEffectiveCollapsed && (
-                  <div className="min-w-0 flex-1">
-                    <span className={cn('block text-sm truncate transition-colors duration-200', isActive ? 'font-bold text-foreground' : 'font-semibold text-muted-foreground group-hover:text-foreground')}>
+                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden md:hidden' : 'block')}>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
                       {t(item.titleKey)}
                     </span>
+                    <ChevronRight className={cn('h-4 w-4 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5', isRtl && 'rotate-180 group-hover:-translate-x-0.5', isActive && 'text-primary')} />
                   </div>
-                )}
+                  {desc && (
+                    <span className="block text-[11px] text-muted-foreground leading-tight truncate mt-0.5">
+                      {desc}
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}
@@ -859,9 +946,8 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   // Vue Plein Écran (`asPage`)
   if (asPage) {
-    const BackIcon = isRtl ? ArrowRight : ArrowLeft;
     return (
-      <div className="settings-density rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-slate-50/80 dark:bg-[#0c142b]">
+      <div className="rtl-flow relative min-h-screen pb-[env(safe-area-inset-bottom,1rem)] bg-slate-50/80 dark:bg-[#0c142b]">
         {/* Ambient Colorful Glows */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
           <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-500/20 to-cyan-600/15 blur-3xl opacity-40" />
@@ -881,12 +967,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </div>
           </div>
 
-          {/* Grille responsive 2 colonnes avec réducteur automatique */}
+          {/* Grille responsive 2 colonnes */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
             {/* Sidebar gauche : Menu des rubriques */}
             <div
               className={cn(
-                'bg-slate-100/80 border border-slate-200/80 dark:border-slate-800 dark:bg-[#0c142b]/75 rounded-3xl p-3 shadow-xs backdrop-blur-xl transition-all duration-300',
+                'bg-card/90 border border-border/80 rounded-3xl p-3 sm:p-4 shadow-xs backdrop-blur-xl transition-all duration-300',
                 isEffectiveCollapsed
                   ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
                   : 'md:col-span-4 lg:col-span-3.5 xl:col-span-3',
@@ -899,25 +985,13 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             {/* Panneau droit : Contenu de la rubrique sélectionnée */}
             <div
               className={cn(
-                'settings-content-zone flex min-h-[520px] flex-col rounded-3xl border border-slate-200/80 bg-slate-100/80 p-4 text-card-foreground shadow-none transition-all duration-300 dark:border-slate-800 dark:bg-slate-900/65 sm:p-6',
+                'settings-content-zone flex min-h-[520px] flex-col rounded-3xl border border-border/80 bg-card/90 p-4 text-card-foreground shadow-none transition-all duration-300 sm:p-6',
                 isEffectiveCollapsed
                   ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
                   : 'md:col-span-8 lg:col-span-8.5 xl:col-span-9',
                 !mobileSubViewOpen ? 'hidden md:block' : 'block'
               )}
             >
-              {/* Mobile Back to Menu */}
-              <div className="mb-4 pb-1 md:hidden flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMobileSubViewOpen(false)}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer shadow-xs"
-                >
-                  <BackIcon className="h-3.5 w-3.5" />
-                  {t('settings.title')}
-                </button>
-              </div>
-
               <div className="flex-1">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -961,9 +1035,9 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       }
       description={t('settings.description')}
       maxWidth="5xl"
-      className="settings-density relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-slate-200/80 bg-white/95 backdrop-blur-2xl dark:border-white/[0.08] dark:bg-[#0c142b]/95"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      className="relative overflow-hidden sm:max-w-5xl sm:rounded-[32px] border border-border/80 bg-card/95 backdrop-blur-2xl"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/70 bg-card/70 backdrop-blur-md"
+      bodyClassName="px-4 py-3 sm:px-7 sm:py-5"
     >
       <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[480px]">
         <div
@@ -978,7 +1052,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
         <div
           className={cn(
-            'settings-content-zone md:col-span-7 lg:col-span-8 flex flex-col rounded-2xl bg-slate-100/75 p-4 dark:bg-slate-900/65',
+            'settings-content-zone md:col-span-7 lg:col-span-8 flex flex-col rounded-2xl bg-card/75 p-3 sm:p-4',
             isRtl ? 'pr-0 md:pr-2' : 'pl-0 md:pl-2',
             !mobileSubViewOpen ? 'hidden md:block' : 'block'
           )}
@@ -998,7 +1072,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </AnimatePresence>
           </div>
           
-          <div className="mt-8 pt-4">
+          <div className="mt-6 pt-3">
             {footer}
           </div>
         </div>

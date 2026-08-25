@@ -111,7 +111,13 @@ const App: React.FC = () => {
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
   const { classes } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
-  useTheme(config.theme, config.contentFontLatin, config.contentFontArabic, (newTheme) => updateConfig({ theme: newTheme }));
+  useTheme(
+    config.theme,
+    config.contentFontLatin,
+    config.contentFontArabic,
+    (newTheme) => updateConfig({ theme: newTheme }),
+    config.themeCustomization
+  );
   const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);
@@ -254,7 +260,6 @@ const App: React.FC = () => {
         notificationFeed={notificationFeed}
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOpenSchedule={handleOpenSchedule}
-        onOpenNotifications={handleOpenNotifications}
         onOnboardingVisibilityChange={setOnboardingVisible}
       />
     );

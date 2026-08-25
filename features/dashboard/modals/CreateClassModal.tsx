@@ -30,42 +30,42 @@ type WizardStep = 'cycle' | 'level' | 'branch' | 'details';
 type StepDirection = 'forward' | 'back';
 
 const COPY: Record<AppLocale, {
-  createTitle: string; editTitle: string; createDescription: string; editDescription: string;
+  createTitle: string; editTitle: string; editDescription: string;
   cancel: string; back: string; next: string; create: string; save: string;
   cycle: string; cyclePlaceholder: string; level: string; branch: string; group: string;
   groupHint: string; invalidGroup: string; duplicateGroup: string;
   subject: string; subjectPlaceholder: string; customLevelPlaceholder: string; customSubjectPlaceholder: string;
-  createCustom: string; switchToOfficial: string; step: string; selectedClass: string; guidedLabel: string;
+  createCustom: string; switchToOfficial: string; selectedClass: string; guidedLabel: string;
   cycleLabels: Record<Cycle, string>;
 }> = {
   fr: {
     createTitle: 'Créer une classe', editTitle: 'Modifier la classe',
-    createDescription: 'Choisissez une information à la fois.', editDescription: 'Modifiez uniquement les informations utiles.',
+    editDescription: 'Modifiez uniquement les informations utiles.',
     cancel: 'Annuler', back: 'Retour', next: 'Continuer', create: 'Créer', save: 'Enregistrer',
     cycle: 'Cycle', cyclePlaceholder: 'Choisir un cycle', level: 'Classe / niveau', branch: 'Branche / filière', group: 'N° de groupe',
     groupHint: 'De 1 à 99. Le premier numéro libre est proposé automatiquement.', invalidGroup: 'Saisissez un numéro de 1 à 99.', duplicateGroup: 'Ce groupe existe déjà pour cette classe.',
     subject: 'Matière', subjectPlaceholder: 'Choisir une matière', customLevelPlaceholder: 'Ex. : Groupe de soutien', customSubjectPlaceholder: 'Saisir la matière',
-    createCustom: 'Classe non listée', switchToOfficial: 'Liste officielle', step: 'Étape {current} sur {total}', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
+    createCustom: 'Classe non listée', switchToOfficial: 'Liste officielle', selectedClass: 'Classe choisie', guidedLabel: 'Configuration guidée',
     cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Classe préparatoire' },
   },
   ar: {
     createTitle: 'إضافة قسم', editTitle: 'تعديل القسم',
-    createDescription: 'اختر معلومة واحدة في كل خطوة.', editDescription: 'عدّل المعلومات الضرورية فقط.',
+    editDescription: 'عدّل المعلومات الضرورية فقط.',
     cancel: 'إلغاء', back: 'رجوع', next: 'متابعة', create: 'إنشاء', save: 'حفظ',
     cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم / المستوى', branch: 'الشعبة أو المسلك', group: 'رقم الفوج',
     groupHint: 'من 1 إلى 99. يُقترح أول رقم فوج متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
-    createCustom: 'قسم غير مدرج', switchToOfficial: 'اللائحة الرسمية', step: 'المرحلة {current} من {total}', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    createCustom: 'قسم غير مدرج', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
   en: {
     createTitle: 'Create class', editTitle: 'Edit class',
-    createDescription: 'Choose one item at a time.', editDescription: 'Edit only the information you need.',
+    editDescription: 'Edit only the information you need.',
     cancel: 'Cancel', back: 'Back', next: 'Continue', create: 'Create', save: 'Save',
     cycle: 'Education cycle', cyclePlaceholder: 'Choose a cycle', level: 'Class / level', branch: 'Stream', group: 'Group number',
     groupHint: 'From 1 to 99. The first available number is proposed automatically.', invalidGroup: 'Enter a number from 1 to 99.', duplicateGroup: 'This group already exists for this class.',
     subject: 'Subject', subjectPlaceholder: 'Choose a subject', customLevelPlaceholder: 'e.g. Support group', customSubjectPlaceholder: 'Enter subject',
-    createCustom: 'Class not listed', switchToOfficial: 'Official list', step: 'Step {current} of {total}', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
+    createCustom: 'Class not listed', switchToOfficial: 'Official list', selectedClass: 'Selected class', guidedLabel: 'Guided setup',
     cycleLabels: { college: 'Middle school', lycee: 'High school', prepa: 'Preparatory class' },
   },
 };
@@ -260,7 +260,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
             <span className="mt-0.5 block text-base font-extrabold tracking-[-0.02em] text-foreground sm:text-lg">{editingClass ? copy.editTitle : copy.createTitle}</span>
           </span>
         </div>
-      } description={editingClass ? copy.editDescription : copy.createDescription} maxWidth="xl"
+      } description={editingClass ? copy.editDescription : undefined} maxWidth="xl"
         className="border border-slate-200/80 bg-white/95 shadow-[0_32px_100px_rgba(30,41,59,0.24)] backdrop-blur-2xl sm:max-w-2xl sm:rounded-[32px] dark:border-white/[0.10] dark:bg-[#0c142b]/95"
         headerClassName="border-b border-[#4255ff]/10 bg-gradient-to-r from-white via-[#fafaff] to-[#f4f1ff] px-5 pb-4 pt-5 backdrop-blur-md sm:px-7 sm:pb-4 sm:pt-6 dark:border-white/[0.08] dark:from-slate-900/90 dark:via-[#111a38]/90 dark:to-[#171638]/90"
         bodyClassName="bg-[#f7f8fc] px-5 py-5 sm:px-7 sm:py-6 dark:bg-gradient-to-b dark:from-[#0d1630] dark:to-[#0a1125]"
@@ -281,19 +281,31 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         </div>}
       >
         <form id="class-form" onSubmit={handleSubmit} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-5 text-start">
-          {!editingClass && <nav className="rounded-[20px] border border-[#4255ff]/10 bg-gradient-to-r from-white to-[#f3f1ff] px-3 py-3 shadow-[0_6px_20px_rgba(66,85,255,0.06)] sm:px-4 dark:border-white/10 dark:from-slate-900 dark:to-[#161735]" aria-label={copy.step.replace('{current}', String(stepIndex + 1)).replace('{total}', String(steps.length))}>
-            <div className="flex items-start">
-              {steps.map((item, index) => <React.Fragment key={item}>
-                <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center">
-                  <span className={cn('flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-extrabold transition-all duration-300', index < stepIndex ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm' : index === stepIndex ? 'border-[#4255ff] bg-[#4255ff] text-white shadow-[0_0_0_5px_rgba(66,85,255,0.12)]' : 'border-slate-200 bg-white text-slate-400 dark:border-white/10 dark:bg-white/5')}>
-                    {index < stepIndex ? <Check className="h-3.5 w-3.5" /> : index + 1}
+          {!editingClass && <nav className="relative overflow-hidden rounded-[22px] border border-[#d9e7f7] bg-[#f4f8fc] px-3 py-4 shadow-[0_10px_28px_rgba(37,78,126,0.07)] sm:px-5 sm:py-5 dark:border-white/10 dark:bg-[#101c32]" aria-label={copy.guidedLabel}>
+            <ol className="relative grid" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
+              {steps.map((item, index) => {
+                const isComplete = index < stepIndex;
+                const isActive = index === stepIndex;
+                return <li key={item} className="relative flex min-w-0 flex-col items-center gap-2 text-center" aria-current={isActive ? 'step' : undefined}>
+                  {index < steps.length - 1 && <span aria-hidden="true" className="absolute start-1/2 top-[18px] h-[3px] w-full rounded-full bg-[#dbe6f2] dark:bg-white/10">
+                    <span className={cn('block h-full origin-left rounded-full bg-[#4d7ff0] transition-transform duration-500 motion-reduce:transition-none rtl:origin-right', isComplete ? 'scale-x-100' : 'scale-x-0')} />
+                  </span>}
+                  <span className={cn(
+                    'relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-xs font-black transition-all duration-300 motion-reduce:transition-none sm:h-10 sm:w-10',
+                    isComplete && 'border-[#4d7ff0] bg-[#4d7ff0] text-white shadow-[0_5px_12px_rgba(77,127,240,0.18)]',
+                    isActive && 'border-[#2f66dc] bg-white text-[#2f66dc] shadow-[0_0_0_5px_rgba(77,127,240,0.10),0_6px_16px_rgba(37,78,126,0.12)] dark:bg-[#172743] dark:text-[#9bbcff]',
+                    !isComplete && !isActive && 'border-[#d3dfed] bg-white/80 text-[#8496ab] dark:border-white/15 dark:bg-white/5 dark:text-slate-400',
+                  )}>
+                    {isComplete ? <Check className="h-4 w-4 stroke-[3]" /> : index + 1}
+                    {isActive && <span aria-hidden="true" className="absolute -inset-2 -z-10 rounded-full border border-[#4d7ff0]/15" />}
                   </span>
-                  <span className={cn('max-w-full truncate text-[9px] font-bold transition-colors sm:text-[10px]', index === stepIndex ? 'text-[#4255ff] dark:text-[#aab4ff]' : index < stepIndex ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground')}>{stepLabel(item)}</span>
-                </div>
-                {index < steps.length - 1 && <span className={cn('mt-3.5 h-0.5 min-w-3 flex-1 rounded-full transition-colors duration-500', index < stepIndex ? 'bg-gradient-to-r from-emerald-400 to-[#4255ff]' : 'bg-slate-200 dark:bg-white/10')} />}
-              </React.Fragment>)}
-            </div>
-            <p className="mt-2 text-center text-[10px] font-semibold text-muted-foreground">{copy.step.replace('{current}', String(stepIndex + 1)).replace('{total}', String(steps.length))}</p>
+                  <span className={cn(
+                    'max-w-full truncate px-1 text-[10px] font-bold leading-tight tracking-[-0.01em] transition-colors sm:text-[11px]',
+                    isActive ? 'text-[#244f9f] dark:text-[#b8cdff]' : isComplete ? 'text-[#3c67bd] dark:text-[#91b4ff]' : 'text-[#7d8fa3] dark:text-slate-400',
+                  )}>{stepLabel(item)}</span>
+                </li>;
+              })}
+            </ol>
           </nav>}
 
           {!editingClass && <div key={step} className={cn('motion-reduce:animate-none', (stepDirection === 'forward') !== (locale === 'ar') ? 'animate-class-step-forward' : 'animate-class-step-back')}>

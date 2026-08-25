@@ -753,6 +753,7 @@ export default defineConfig(({ mode }) => {
             outDir: 'dist',
             assetsDir: 'assets',
             emptyOutDir: true,
+            chunkSizeWarningLimit: 800,
             rollupOptions: {
                 input: {
                     main: path.resolve(PROJECT_ROOT, 'index.html'),

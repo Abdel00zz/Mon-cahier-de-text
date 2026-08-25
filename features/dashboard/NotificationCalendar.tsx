@@ -124,12 +124,12 @@ const EVENT_STYLES: Record<
     iconColor: 'text-amber-600 dark:text-amber-400',
   },
   pedagogical: {
-    dot: 'bg-purple-500',
-    badge: 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20',
-    border: 'border-purple-500/30',
-    text: 'text-purple-700 dark:text-purple-300',
-    bgLight: 'bg-purple-500/[0.04]',
-    iconColor: 'text-purple-600 dark:text-purple-400',
+    dot: 'bg-cyan-500',
+    badge: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
+    border: 'border-cyan-500/30',
+    text: 'text-cyan-700 dark:text-cyan-300',
+    bgLight: 'bg-cyan-500/[0.04]',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
   },
 };
 

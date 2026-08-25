@@ -128,13 +128,13 @@ const PasswordInput: React.FC<{
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 ps-11 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-300 focus:border-blue-600 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-900/60 dark:text-white dark:hover:border-blue-500 sm:text-[13px]"
+          className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 pr-11 pl-4 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-300 focus:border-blue-600 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-900/60 dark:text-white dark:hover:border-blue-500 sm:text-[13px]"
           dir="ltr"
         />
         <button
           type="button"
           onClick={() => setVisible(v => !v)}
-          className="absolute inset-y-0 end-0 flex w-10 items-center justify-center text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none"
           aria-label={visible ? hideLabel : showLabel}
           aria-pressed={visible}
         >
@@ -372,10 +372,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                     placeholder="06 12 34 56 78"
                     required
                     aria-describedby={error ? errorId : undefined}
-                    className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 ps-11 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-white sm:text-[13px]"
+                    className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 pr-11 pl-4 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-white sm:text-[13px]"
                     dir="ltr"
                   />
-                  {phoneValid && <CircleCheck className="pointer-events-none absolute end-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-emerald-500 animate-in fade-in duration-200" />}
+                  {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-emerald-500 animate-in fade-in duration-200" />}
                 </div>
               </label>
 

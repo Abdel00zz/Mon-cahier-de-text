@@ -4,15 +4,13 @@ import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } fr
 import { getClassVisual, getSubjectVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Settings, CircleAlert, CircleCheck } from '@/components/ui/icons';
+import { Settings } from '@/components/ui/icons';
 
 const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-5 sm:h-[22px] items-center justify-center px-2 sm:px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] leading-none border transition-all';
 interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
-    onShowNotifications: () => void;
-    notificationCount: number;
     showSubjectBadge?: boolean;
 }
 
@@ -26,7 +24,7 @@ const renderClassTitleWithFonts = (text: string) => {
             const num = matchOrdinal[1];
             const suf = matchOrdinal[2];
             return (
-                <span key={idx} className="inline-block text-cyan-600 dark:text-cyan-400">
+                <span key={idx} className="inline-block text-blue-600 dark:text-blue-400">
                     <span className="font-itim font-bold text-[1.1em]">{num}</span>
                     <sup className="relative -top-[0.4em] text-[0.65em] font-semibold font-sans">{suf}</sup>
                 </span>
@@ -35,7 +33,7 @@ const renderClassTitleWithFonts = (text: string) => {
 
         if (/^[0-9\u0660-\u0669]+$/.test(part)) {
             return (
-                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px] text-cyan-600 dark:text-cyan-400">
+                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px] text-blue-600 dark:text-blue-400">
                     {part}
                 </span>
             );
@@ -49,8 +47,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     classInfo,
     onSelect,
     onConfigure,
-    onShowNotifications,
-    notificationCount,
     showSubjectBadge = true,
 }) => {
     const { impact } = useHapticFeedback();
@@ -60,12 +56,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         event.stopPropagation();
         impact('light');
         onConfigure();
-    };
-
-    const handleNotificationsClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation();
-        impact('light');
-        onShowNotifications();
     };
 
     const handleCardClick = () => {
@@ -88,14 +78,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         ? formatLocalizedSubjectDisplayName(classInfo.subject, locale)
         : null;
 
-    const issueStatus = notificationCount === 1
-        ? t('notifications.classIssueCount.one', { count: notificationCount })
-        : notificationCount > 1
-            ? t('notifications.classIssueCount.many', { count: notificationCount })
-            : null;
-    const notificationButtonLabel = issueStatus
-        ? `${t('notifications.classSummaryTitle', { className: displayName })}. ${issueStatus}`
-        : t('notifications.classButtonLabel', { className: displayName });
     return (
         <article
             role="button"
@@ -103,71 +85,42 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            className={`group relative flex h-full w-full min-h-[168px] sm:min-h-[180px] cursor-pointer flex-col justify-between rounded-[22px] border backdrop-blur-xs pt-4 px-4 pb-2.5 sm:pt-4.5 sm:px-5 sm:pb-3 transition-all duration-250 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-[0_10px_26px_-4px_rgba(0,0,0,0.6)] dark:hover:border-primary/50 ${levelVisual.cardSurfaceClass}`}
+            className={`group relative grid h-full w-full min-h-[164px] grid-rows-[2.25rem_minmax(0,1fr)_2.25rem] overflow-hidden rounded-[16px] border-[3px] px-3.5 py-3 sm:min-h-[184px] sm:rounded-[20px] sm:px-4 sm:py-3.5 lg:min-h-[198px] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none dark:bg-slate-900/90 dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] ${levelVisual.cardSurfaceClass}`}
         >
-            {/* La matière est redondante lorsqu’elle est unique pour le professeur. */}
-            {showSubjectBadge && (
-                <div className="flex items-center justify-start w-full">
-                    {subjectBadgeText ? (
-                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold border-black/5 dark:border-white/5 ${visual.badgeStyle}`}>
-                            {subjectBadgeText}
-                        </span>
-                    ) : (
-                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-medium bg-slate-100/90 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200/60 dark:border-slate-700/60`}>
-                            {t('dashboard.notebook')}
-                        </span>
-                    )}
-                </div>
-            )}
+            {/* Slot fixed: the title stays optically centered with or without a subject. */}
+            <div className="flex h-9 items-center justify-start">
+                {showSubjectBadge && subjectBadgeText ? (
+                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle}`}>
+                        {subjectBadgeText}
+                    </span>
+                ) : null}
+            </div>
 
-            {/* Center area: Class title (Airy, centered, high contrast) */}
-            <div className={`w-full text-center flex flex-col items-center justify-center ${showSubjectBadge ? 'my-3 sm:my-4' : 'my-auto py-3 sm:py-4'}`}>
+            {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
+            <div className="flex min-h-0 w-full items-center justify-center px-1 py-1.5 text-center sm:px-2">
                 <h3
-                    className="text-sm sm:text-base lg:text-xl font-semibold lg:font-bold tracking-tight text-slate-900 dark:text-slate-50 transition-colors group-hover:text-cyan-600 dark:group-hover:text-cyan-400"
+                    className="max-w-[23ch] text-balance font-fira text-[clamp(0.98rem,1vw+0.62rem,1.28rem)] font-bold leading-[1.18] tracking-[-0.025em] text-foreground transition-colors group-hover:text-primary"
                     title={displayName}
                 >
                     {renderClassTitleWithFonts(displayName)}
                 </h3>
             </div>
 
-            {/* Bottom area: Status Pill (Left) + Settings button (Right) */}
+            {/* Bottom area: settings only. Alerts live in the dashboard banner. */}
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="flex items-center justify-between gap-2 mt-auto"
+                className="flex h-9 items-center justify-end"
             >
-                {/* Status Pill (Opens detailed information & issues) */}
-                <button
-                    type="button"
-                    onClick={handleNotificationsClick}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 min-h-[28px] rounded-full font-sans text-xs font-medium transition-all cursor-pointer active:scale-95 ${
-                        issueStatus
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60'
-                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
-                    }`}
-                    title={notificationButtonLabel}
-                    aria-label={notificationButtonLabel}
-                    aria-haspopup="dialog"
-                >
-                    {issueStatus ? (
-                        <CircleAlert className="w-3.5 h-3.5 shrink-0 text-rose-600 dark:text-rose-400" />
-                    ) : (
-                        <CircleCheck className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400 opacity-90" />
-                    )}
-                    <span className="truncate max-w-[140px] sm:max-w-[190px]">
-                        {issueStatus || t('notifications.classUpToDateTitle')}
-                    </span>
-                </button>
-
-                {/* Settings Button: Large, dark and bold */}
+                {/* Settings Button */}
                 <button
                     type="button"
                     onClick={handleConfigureClick}
-                    className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full text-slate-800 hover:text-slate-950 hover:bg-slate-100/90 dark:text-slate-100 dark:hover:text-white dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-90"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-white/75 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md active:scale-90 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:bg-blue-950/60 dark:hover:text-blue-300 cursor-pointer"
                     title={t('dashboard.classSettings')}
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="w-5 h-5 shrink-0 text-slate-800 dark:text-slate-100" strokeWidth={2.3} />
+                    <Settings className="h-5 w-5 shrink-0 stroke-[2.6]" />
                 </button>
             </div>
         </article>

@@ -76,7 +76,7 @@ const STATUS_STYLE: Record<AssessmentLink['status'], { labelKey: string; tone: '
 };
 
 const PEDAGOGICAL_EVENT_CONFIG: Record<PedagogicalEventType, { labelKey: string; badgeColor: string }> = {
-  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeColor: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20' },
+  evaluation_diagnostic: { labelKey: 'evaluations.event.evaluation_diagnostic', badgeColor: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
   olympiade: { labelKey: 'evaluations.event.olympiade', badgeColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' },
   concours: { labelKey: 'evaluations.event.concours', badgeColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20' },
   soutien: { labelKey: 'evaluations.event.soutien', badgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' },

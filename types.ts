@@ -13,11 +13,38 @@ export interface ClassInfo {
     cycle?: Cycle; // optional for backward compatibility
 }
 
+import type { AccentColorKey, BorderRadiusOption, CardStyleOption, TableStyleOption, UIFontOption, BackgroundContrastOption } from '@/constants/themePresets';
+
 export type ThemeMode = 'light' | 'dark' | 'system';
+
+export interface ThemeCustomization {
+  /** Palette d'accent de l'application */
+  accentColor?: AccentColorKey;
+  /** Code couleur hexadécimal si accentColor === 'custom' */
+  customPrimaryColor?: string;
+  /** Rayon de courbure / arrondi des angles */
+  borderRadius?: BorderRadiusOption;
+  /** Style visuel des cartes et surfaces */
+  cardStyle?: CardStyleOption;
+  /** Style d'affichage du tableau du cahier de textes */
+  tableStyle?: TableStyleOption;
+  /** Police de l'interface utilisateur */
+  uiFont?: UIFontOption;
+  /** Contraste et niveau de gris d'arrière-plan */
+  backgroundContrast?: BackgroundContrastOption;
+  /** Couleur personnalisée de fond (optionnelle) */
+  customBackgroundColor?: string;
+  /** Couleur personnalisée de texte principal (optionnelle) */
+  customTextColor?: string;
+  /** Couleur personnalisée de carte/surface (optionnelle) */
+  customCardColor?: string;
+}
 
 export interface AppConfig {
   /** Mode d'affichage (Clair / Sombre / Système). */
   theme?: ThemeMode;
+  /** Personnalisation centralisée du style et des couleurs */
+  themeCustomization?: ThemeCustomization;
   /** Police d'écriture pour les contenus latins/français. */
   contentFontLatin?: string;
   /** Police d'écriture pour les contenus arabes. */

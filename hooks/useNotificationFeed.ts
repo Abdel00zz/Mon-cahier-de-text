@@ -17,7 +17,7 @@ import {
 import { subscribe } from '@/utils/syncBus';
 
 export interface NotificationFeed {
-  /** Alertes opérationnelles, propriétaires d'une classe et affichées dans son modal i. */
+  /** Alertes opérationnelles rattachées à une classe, reprises par les cartes et le bandeau du tableau de bord. */
   corrections: ClassSignal[];
   ignoredCorrections: ClassSignal[];
   /** Informations transversales, propriétaires du centre global. */
@@ -35,40 +35,6 @@ interface UpcomingPedagogicalEvent {
   event: PedagogicalEvent;
   inDays: number;
 }
-
-export interface ClassNotificationFeed extends NotificationFeed {
-  totalCount: number;
-}
-
-/**
- * Projection canonique d'une classe. Le modal i et son badge consomment cette
- * vue ; le centre global consomme séparément `insights` et `officialEvents`.
- * Une donnée peut informer deux vues, mais une alerte n'a qu'un propriétaire.
- */
-export const notificationFeedForClass = (
-  feed: NotificationFeed,
-  classInfo: Pick<ClassInfo, 'id'>,
-): ClassNotificationFeed => {
-  const corrections = feed.corrections.filter(signal => signal.classId === classInfo.id);
-  const ignoredCorrections = feed.ignoredCorrections.filter(signal => signal.classId === classInfo.id);
-  const assessments = feed.assessments.filter(item => item.classId === classInfo.id);
-  const pedagogicalEvents = feed.pedagogicalEvents.filter(item => item.classId === classInfo.id);
-  const officialEvents = feed.officialEvents.filter(item => item.classIds.includes(classInfo.id));
-
-  return {
-    corrections,
-    ignoredCorrections,
-    insights: [],
-    ignoredInsights: [],
-    assessments,
-    pedagogicalEvents,
-    officialEvents,
-    // Le badge de la carte compte uniquement les actions, jamais les simples
-    // échéances : le chiffre reste petit et correspond à « À traiter ».
-    attentionCount: corrections.length,
-    totalCount: corrections.length + assessments.length + pedagogicalEvents.length + officialEvents.length,
-  };
-};
 
 export const useNotificationFeed = (
   classes: ClassInfo[],

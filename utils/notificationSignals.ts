@@ -144,8 +144,8 @@ export interface ClassSignal {
     id: string;
     kind: SignalKind;
     action: SignalAction;
-    /** propriétaire canonique : une alerte de classe n'apparaît que dans son modal i ;
-     *  un insight global appartient uniquement au centre de pilotage. */
+    /** propriétaire canonique : une alerte de classe alimente sa carte et le
+     *  bandeau du tableau de bord ; un insight global appartient au centre de pilotage. */
     scope: 'class' | 'global';
     classId: string;
     /** nom complet affichable de la classe (vide pour un signal global) */

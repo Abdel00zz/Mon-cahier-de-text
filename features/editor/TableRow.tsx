@@ -152,7 +152,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
     : hasWarning
       ? 'bg-warning/[0.12]'
     : hasAssignedDate
-      ? 'bg-zinc-50/80'
+      ? 'bg-muted/40'
       : 'bg-card';
 
   if (isMerged) {
@@ -341,7 +341,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${elementType === 'chapter' ? `m-1 rounded-[14px] border shadow-[0_6px_16px_rgba(15,23,42,0.035)] ${chapterSurfaceClass ?? 'border-slate-200 bg-slate-50'}` : ''} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${elementType === 'chapter' ? `m-1 rounded-[14px] border shadow-[0_6px_16px_rgba(15,23,42,0.035)] ${chapterSurfaceClass ?? 'border-border bg-card'}` : ''} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;

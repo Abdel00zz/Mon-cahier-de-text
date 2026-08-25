@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,6 @@ import {
   User,
   Users,
   ChevronRight,
-  ArrowLeft,
 } from '@/components/ui/icons';
 import { computeProgressionStats } from '@/utils/progression';
 import { getNewDates } from '@/utils/printMeta';
@@ -237,7 +236,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Le centre global ne consomme que les insights transversaux. Les alertes
-  // opérationnelles et les évaluations d'une classe appartiennent à son modal i.
+  // opérationnelles de classe restent visibles sur les cartes et le bandeau.
   const corrections = feed.insights;
   const ignoredCorrections = feed.ignoredInsights;
   const officialEvents = feed.officialEvents;
@@ -286,6 +285,27 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     ? Math.round(rankedOverviews.reduce((total, item) => total + item.completionRate, 0) / rankedOverviews.length)
     : 0;
   const activitySource = allActivityEntries.slice(0, 50);
+
+  const handleSelectAxis = useCallback((axis: AxisId) => {
+    setActiveAxis(axis);
+    if (!mobileSubViewOpen) {
+      window.history.pushState({ route: 'notifications', subView: axis }, '', '');
+      setMobileSubViewOpen(true);
+    } else {
+      window.history.replaceState({ route: 'notifications', subView: axis }, '', '');
+    }
+  }, [mobileSubViewOpen]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (!state || state.route !== 'notifications' || !state.subView) {
+        setMobileSubViewOpen(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const filteredActivity = activityFilter === 'all'
     ? activitySource
     : activitySource.filter(entry => activityCategory(entry.op) === activityFilter);
@@ -461,8 +481,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => {
-                  setActiveAxis(item.id);
-                  setMobileSubViewOpen(true);
+                  handleSelectAxis(item.id);
                 }}
                 title={item.label}
                 className={cn(
@@ -548,8 +567,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => {
-                  setActiveAxis(item.id);
-                  setMobileSubViewOpen(true);
+                  handleSelectAxis(item.id);
                 }}
                 title={item.label}
                 className={cn(
@@ -619,8 +637,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => {
-                  setActiveAxis(item.id);
-                  setMobileSubViewOpen(true);
+                  handleSelectAxis(item.id);
                 }}
                 title={item.label}
                 className={cn(
@@ -721,18 +738,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
               !mobileSubViewOpen ? 'hidden md:block' : 'block'
             )}
           >
-            {/* Mobile Back Button */}
-            {mobileSubViewOpen && (
-              <button
-                type="button"
-                onClick={() => setMobileSubViewOpen(false)}
-                className="md:hidden flex items-center gap-1.5 text-xs font-bold text-primary mb-4 cursor-pointer"
-              >
-                <ArrowLeft className={cn('h-4 w-4', isRtl && 'rotate-180')} />
-                <span>{t('notifications.backToMenu')}</span>
-              </button>
-            )}
-
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeAxis}
@@ -807,21 +812,21 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         {filteredOfficial.map(item => (
                           <div
                             key={`official-${item.event.id}`}
-                            className="flex flex-col justify-between rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-3.5 text-start border border-purple-200/80 dark:border-purple-900/50 shadow-2xs"
+                            className="flex flex-col justify-between rounded-xl border border-cyan-200/80 bg-gradient-to-br from-cyan-50/80 via-white to-blue-50/60 p-3.5 text-start shadow-[0_6px_18px_rgba(8,145,178,0.07)] transition-all hover:border-cyan-300 hover:shadow-[0_8px_22px_rgba(8,145,178,0.11)] dark:border-cyan-900/60 dark:from-cyan-950/30 dark:via-slate-900 dark:to-blue-950/25"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="rounded bg-purple-200/60 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 px-2 py-0.5 text-[10px] font-extrabold uppercase">
+                                <span className="rounded-md border border-cyan-200/80 bg-cyan-100/80 px-2 py-0.5 text-[10px] font-extrabold uppercase text-cyan-800 dark:border-cyan-800/70 dark:bg-cyan-950/70 dark:text-cyan-200">
                                   {t('notifications.officialEvent')}
                                 </span>
-                                <span className="rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 text-[10px] font-bold">
+                                <span className="rounded-full bg-blue-100/80 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/70 dark:text-blue-300">
                                   {delayLabel(item.inDays, t)}
                                 </span>
                               </div>
-                              <h3 className="text-xs font-bold text-purple-950 dark:text-purple-100">
+                              <h3 className="text-xs font-bold text-slate-950 dark:text-slate-100">
                                 {item.event.title}
                               </h3>
-                              <p className="mt-1 text-[11px] text-purple-800/80 dark:text-purple-300/80">
+                              <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
                                 {t('notifications.concerns', { classes: item.classNames.slice(0, 3).map(name => formatLocalizedClassDisplayName(name, locale)).join(', ') })}
                               </p>
                             </div>

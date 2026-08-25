@@ -31,42 +31,41 @@ const visual = (
     iconClass,
 });
 
-// Les quatre niveaux gardent une surface très claire, lisible et calme.
-// L'identité est partagée par les cartes, les jauges et les chapitres.
+// Modern, accessible, and balanced visual identity for classes and levels
 const TRONC_COMMUN = visual(
-    'bg-[#b5dc90]',
-    'bg-[#e8ffd1] text-[#365126] dark:bg-[#375428] dark:text-[#e8ffd1]',
-    'bg-[#e8ffd1] text-[#4b712f] dark:bg-[#263b21] dark:text-[#cfeeb4]',
-    'text-[#587d3c]',
-    'border-[#cfeab7] bg-[#e8ffd1] shadow-[0_10px_24px_rgba(100,142,63,0.10)] hover:border-[#b9df9b] hover:shadow-[0_14px_28px_rgba(100,142,63,0.14)]',
-    'border-[#cfeab7] bg-[#e8ffd1]'
+    'bg-emerald-500',
+    'bg-emerald-50 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40',
+    'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+    'text-emerald-600 dark:text-emerald-400',
+    'border-emerald-300/80 bg-white shadow-[0_4px_20px_rgba(16,185,129,0.08)] hover:border-emerald-500 hover:shadow-[0_8px_24px_rgba(16,185,129,0.14)] dark:border-emerald-800/70',
+    'border-emerald-200/60 bg-emerald-50/40'
 );
 
 const PREMIERE_ANNEE = visual(
-    'bg-[#ded6c8]',
-    'bg-[#fffcf6] text-[#665e51] dark:bg-[#4c473f] dark:text-[#fffcf6]',
-    'bg-[#fffcf6] text-[#756c5d] dark:bg-[#37322b] dark:text-[#eee6d8]',
-    'text-[#756c5d]',
-    'border-[#eee7da] bg-[#fffcf6] shadow-[0_10px_24px_rgba(103,93,76,0.07)] hover:border-[#dfd3c1] hover:shadow-[0_14px_28px_rgba(103,93,76,0.11)]',
-    'border-[#eee7da] bg-[#fffcf6]'
+    'bg-blue-500',
+    'bg-blue-50 text-blue-800 border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/40',
+    'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+    'text-blue-600 dark:text-blue-400',
+    'border-blue-300/80 bg-white shadow-[0_4px_20px_rgba(59,130,246,0.08)] hover:border-blue-500 hover:shadow-[0_8px_24px_rgba(59,130,246,0.14)] dark:border-blue-800/70',
+    'border-blue-200/60 bg-blue-50/40'
 );
 
 const DEUXIEME_ANNEE = visual(
-    'bg-[#d6c84e]',
-    'bg-[#fffcbb] text-[#655c13] dark:bg-[#665d17] dark:text-[#fffcbb]',
-    'bg-[#fffcbb] text-[#756a19] dark:bg-[#454012] dark:text-[#fff7a7]',
-    'text-[#827622]',
-    'border-[#eee392] bg-[#fffcbb] shadow-[0_10px_24px_rgba(135,120,31,0.10)] hover:border-[#dfd275] hover:shadow-[0_14px_28px_rgba(135,120,31,0.15)]',
-    'border-[#eee392] bg-[#fffcbb]'
+    'bg-amber-500',
+    'bg-amber-50 text-amber-900 border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/40',
+    'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+    'text-amber-600 dark:text-amber-400',
+    'border-amber-300/80 bg-white shadow-[0_4px_20px_rgba(245,158,11,0.08)] hover:border-amber-500 hover:shadow-[0_8px_24px_rgba(245,158,11,0.14)] dark:border-amber-800/70',
+    'border-amber-200/60 bg-amber-50/40'
 );
 
 const TROISIEME_ANNEE = visual(
-    'bg-[#e2b9e1]',
-    'bg-[#ffedff] text-[#6d3f6d] dark:bg-[#673d68] dark:text-[#ffedff]',
-    'bg-[#ffedff] text-[#875489] dark:bg-[#432b45] dark:text-[#f5d9f5]',
-    'text-[#925d94]',
-    'border-[#ebcdea] bg-[#ffedff] shadow-[0_10px_24px_rgba(146,84,148,0.10)] hover:border-[#dfb6df] hover:shadow-[0_14px_28px_rgba(146,84,148,0.15)]',
-    'border-[#ebcdea] bg-[#ffedff]'
+    'bg-purple-500',
+    'bg-purple-50 text-purple-900 border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/40',
+    'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
+    'text-purple-600 dark:text-purple-400',
+    'border-purple-300/80 bg-white shadow-[0_4px_20px_rgba(168,85,247,0.08)] hover:border-purple-500 hover:shadow-[0_8px_24px_rgba(168,85,247,0.14)] dark:border-purple-800/70',
+    'border-purple-200/60 bg-purple-50/40'
 );
 
 /*
@@ -173,21 +172,21 @@ const SUBJECT_ALIASES: Record<string, string> = {
 };
 
 const SUBJECT_VISUALS: Record<string, ClassVisual> = {
-    'Mathématiques': visual('bg-[#8fb8ff]', 'bg-blue-100 text-blue-900 dark:bg-blue-900/60 dark:text-blue-100', 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300', 'text-blue-600'),
-    'Physique-Chimie': visual('bg-[#c3a6ff]', 'bg-purple-100 text-purple-900 dark:bg-purple-900/60 dark:text-purple-100', 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300', 'text-purple-600'),
-    'Sciences de la Vie et de la Terre': visual('bg-[#93ddb0]', 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-100', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', 'text-emerald-600'),
-    'Sciences de l’Ingénieur': visual('bg-[#aeb9cc]', 'bg-slate-100 text-slate-900 dark:bg-slate-900/60 dark:text-slate-100', 'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300', 'text-slate-600'),
-    'Sciences Économiques et Gestion': visual('bg-[#ffcf7d]', 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-100', 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300', 'text-amber-600'),
-    'Informatique': visual('bg-[#9aa8ff]', 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/60 dark:text-indigo-100', 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300', 'text-indigo-600'),
-    'Français': visual('bg-[#ffa8cc]', 'bg-rose-100 text-rose-900 dark:bg-rose-900/60 dark:text-rose-100', 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300', 'text-rose-600'),
-    'Arabe': visual('bg-[#7fd6cf]', 'bg-teal-100 text-teal-900 dark:bg-teal-900/60 dark:text-teal-100', 'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300', 'text-teal-600'),
-    'Anglais': visual('bg-[#ff9f9f]', 'bg-red-100 text-red-900 dark:bg-red-900/60 dark:text-red-100', 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300', 'text-red-600'),
-    'Espagnol': visual('bg-[#ffb879]', 'bg-orange-100 text-orange-900 dark:bg-orange-900/60 dark:text-orange-100', 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300', 'text-orange-600'),
-    'Allemand': visual('bg-[#f2dc7a]', 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/60 dark:text-yellow-100', 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300', 'text-yellow-600'),
-    'Philosophie': visual('bg-[#7fd4f5]', 'bg-cyan-100 text-cyan-900 dark:bg-cyan-900/60 dark:text-cyan-100', 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300', 'text-cyan-600'),
-    'Histoire-Géographie': visual('bg-[#f09be0]', 'bg-fuchsia-100 text-fuchsia-900 dark:bg-fuchsia-900/60 dark:text-fuchsia-100', 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300', 'text-fuchsia-600'),
-    'Éducation Islamique': visual('bg-[#cfe58a]', 'bg-lime-100 text-lime-900 dark:bg-lime-900/60 dark:text-lime-100', 'bg-lime-100 text-lime-700 dark:bg-lime-950 dark:text-lime-300', 'text-lime-600'),
-    'Éducation Physique et Sportive': visual('bg-[#bcc99a]', 'bg-stone-100 text-stone-900 dark:bg-stone-900/60 dark:text-stone-100', 'bg-stone-100 text-stone-700 dark:bg-stone-950 dark:text-stone-300', 'text-stone-600'),
+    'Mathématiques': visual('bg-blue-500', 'bg-blue-50 text-blue-800 border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-200 dark:border-blue-800/40', 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300', 'text-blue-600'),
+    'Physique-Chimie': visual('bg-purple-500', 'bg-purple-50 text-purple-800 border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-200 dark:border-purple-800/40', 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300', 'text-purple-600'),
+    'Sciences de la Vie et de la Terre': visual('bg-emerald-500', 'bg-emerald-50 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/40', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', 'text-emerald-600'),
+    'Sciences de l’Ingénieur': visual('bg-slate-500', 'bg-slate-100 text-slate-800 border-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:border-slate-700/40', 'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300', 'text-slate-600'),
+    'Sciences Économiques et Gestion': visual('bg-amber-500', 'bg-amber-50 text-amber-800 border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800/40', 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', 'text-amber-600'),
+    'Informatique': visual('bg-indigo-500', 'bg-indigo-50 text-indigo-800 border-indigo-200/80 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800/40', 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300', 'text-indigo-600'),
+    'Français': visual('bg-rose-500', 'bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800/40', 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300', 'text-rose-600'),
+    'Arabe': visual('bg-teal-500', 'bg-teal-50 text-teal-800 border-teal-200/80 dark:bg-teal-950/60 dark:text-teal-200 dark:border-teal-800/40', 'bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300', 'text-teal-600'),
+    'Anglais': visual('bg-sky-500', 'bg-sky-50 text-sky-800 border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800/40', 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300', 'text-sky-600'),
+    'Espagnol': visual('bg-orange-500', 'bg-orange-50 text-orange-800 border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-200 dark:border-orange-800/40', 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300', 'text-orange-600'),
+    'Allemand': visual('bg-yellow-500', 'bg-yellow-50 text-yellow-800 border-yellow-200/80 dark:bg-yellow-950/60 dark:text-yellow-200 dark:border-yellow-800/40', 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300', 'text-yellow-600'),
+    'Philosophie': visual('bg-cyan-500', 'bg-cyan-50 text-cyan-800 border-cyan-200/80 dark:bg-cyan-950/60 dark:text-cyan-200 dark:border-cyan-800/40', 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300', 'text-cyan-600'),
+    'Histoire-Géographie': visual('bg-fuchsia-500', 'bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200/80 dark:bg-fuchsia-950/60 dark:text-fuchsia-200 dark:border-fuchsia-800/40', 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300', 'text-fuchsia-600'),
+    'Éducation Islamique': visual('bg-lime-500', 'bg-lime-50 text-lime-800 border-lime-200/80 dark:bg-lime-950/60 dark:text-lime-200 dark:border-lime-800/40', 'bg-lime-50 text-lime-700 dark:bg-lime-950 dark:text-lime-300', 'text-lime-600'),
+    'Éducation Physique et Sportive': visual('bg-stone-500', 'bg-stone-100 text-stone-800 border-stone-200/80 dark:bg-stone-900/60 dark:text-stone-200 dark:border-stone-700/40', 'bg-stone-100 text-stone-700 dark:bg-stone-950 dark:text-stone-300', 'text-stone-600'),
 };
 
 const SUBJECT_VISUAL_KEYS = Object.keys(SUBJECT_VISUALS);

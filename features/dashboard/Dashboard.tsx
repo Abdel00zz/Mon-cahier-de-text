@@ -9,7 +9,6 @@ import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
-import { ClassNotificationsModal } from './modals/ClassNotificationsModal';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
@@ -17,19 +16,18 @@ import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
-import { readCachedLessons } from '@/utils/notebookStorage';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { NotificationFeed, notificationFeedForClass } from '@/hooks/useNotificationFeed';
+import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
-import { buildSessionIndex, SessionIndex } from '@/utils/sessionIndex';
 import { useOrientation } from '@/hooks/useOrientation';
+import { Radio, Clock, ArrowRight, ArrowLeft, AlertTriangle, CalendarDays, ClipboardList } from 'lucide-react';
+import { computeClassHoursInsight } from '@/utils/scheduleInsights';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
     notificationFeed: NotificationFeed;
     accountTeacherName?: string;
     onOpenSchedule?: () => void;
-    onOpenNotifications?: () => void;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
 }
 
@@ -37,29 +35,19 @@ type ClassDisplayMode = 'list' | 'single' | 'double';
 
 const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 
-/** Salutation selon l'heure, petite touche vivante, esprit app mobile. */
-const getGreeting = (locale: 'fr' | 'en' | 'ar', hour: number): string => {
-    if (locale === 'en') {
-        if (hour < 5) return 'Good evening';
-        if (hour < 13) return 'Good morning';
-        if (hour < 18) return 'Good afternoon';
-        return 'Good evening';
-    }
-    if (locale === 'ar') {
-        return hour < 13 ? 'صباح الخير' : 'مساء الخير';
-    }
-    if (hour < 5) return 'Bonsoir';
-    if (hour < 13) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
-};
+const subjectKey = (value: string) => value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('fr');
+
+const teacherKey = (value: string) => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('fr');
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
     notificationFeed,
     accountTeacherName = '',
     onOpenSchedule,
-    onOpenNotifications,
     onOnboardingVisibilityChange,
 }) => {
     const { locale, t, isRtl } = useLocale();
@@ -68,9 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
-    const [notificationClass, setNotificationClass] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
-    const [sessionIndexes, setSessionIndexes] = useState<Record<string, SessionIndex>>({});
     const { type: deviceType } = useDevice();
     const isMobile = deviceType === 'phone';
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
@@ -81,7 +67,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
     const [now, setNow] = useState(() => new Date());
-    const sessionIndexDay = todayInMorocco(now, getBundledCalendar());
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true;
 
@@ -105,24 +90,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }, []);
 
     const isLoading = isClassesLoading || isConfigLoading;
-    const notificationCounts = useMemo(
-        () => new Map(classes.map(classInfo => [
-            classInfo.id,
-            notificationFeedForClass(notificationFeed, classInfo).attentionCount,
-        ])),
-        [classes, notificationFeed],
-    );
-    useEffect(() => {
-        if (isClassesLoading) return;
-
-        const indexes: Record<string, SessionIndex> = {};
-        classes.forEach(classInfo => {
-            const lessons = readCachedLessons(classInfo.id);
-            indexes[classInfo.id] = buildSessionIndex(lessons, sessionIndexDay);
-        });
-        setSessionIndexes(indexes);
-    }, [classes, isClassesLoading, notificationFeed, sessionIndexDay]);
-
     useEffect(() => {
         if (!isDisplayMenuOpen) return;
         const closeMenu = (event: PointerEvent) => {
@@ -255,18 +222,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (Object.keys(patch).length > 0) updateConfig(patch);
     }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.manualAssessments, config.removedAssessments, config.assessmentOrder, config.notificationDismissals, config.timetable, updateConfig]);
 
-    const availableSubjects = useMemo(() => {
-        const set = new Set<string>();
-        classes.forEach(c => { if (c.subject) set.add(c.subject); });
-        return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
-    }, [classes]);
-
     const teacherSubjects = useMemo(() => {
-        const configuredSubjects = Array.from(new Set(
-            (config.selectedSubjects ?? []).filter((subject): subject is string => Boolean(subject?.trim()))
-        ));
-        return configuredSubjects.length > 0 ? configuredSubjects : availableSubjects;
-    }, [availableSubjects, config.selectedSubjects]);
+        const currentTeacher = teacherKey(teacherName);
+        const matchingClasses = currentTeacher
+            ? classes.filter(classInfo => teacherKey(classInfo.teacherName) === currentTeacher)
+            : [];
+        // Les anciennes classes sans nom d'enseignant restent visibles : elles
+        // constituent le repli, sans faire apparaître de filtre fantôme.
+        const currentClasses = matchingClasses.length > 0 ? matchingClasses : classes;
+        const activeSubjects = new Map<string, string>();
+        currentClasses.forEach(classInfo => {
+            if (classInfo.subject?.trim()) activeSubjects.set(subjectKey(classInfo.subject), classInfo.subject.trim());
+        });
+        const configuredSubjects = new Set(
+            (config.selectedSubjects ?? [])
+                .filter((subject): subject is string => Boolean(subject?.trim()))
+                .map(subjectKey),
+        );
+        const subjects = Array.from(activeSubjects.entries())
+            .filter(([key]) => configuredSubjects.size === 0 || configuredSubjects.has(key))
+            .map(([, subject]) => subject);
+        // Une configuration devenue obsolète ne doit pas masquer toutes les
+        // matières réellement présentes dans les cahiers actifs.
+        return (subjects.length > 0 ? subjects : Array.from(activeSubjects.values()))
+            .sort((a, b) => a.localeCompare(b, 'fr'));
+    }, [classes, config.selectedSubjects, teacherName]);
     const shouldShowSubjectBadge = teacherSubjects.length > 1;
 
     // Un filtre devenu invisible (après le passage à une seule matière) ne
@@ -276,10 +256,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             setSubjectFilter('all');
         }
     }, [shouldShowSubjectBadge, subjectFilter, teacherSubjects]);
-
-    if (isLoading) {
-        return <DashboardSkeleton />;
-    }
 
     const calendar = getBundledCalendar();
     const calendarWithAbsences = withAbsences(calendar, config.absences);
@@ -301,6 +277,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const inDays = daysBetweenISO(todayISO, item.dateISO);
         return inDays >= 0 && inDays <= 6;
     }).length;
+    const assessmentsNextWeek = notificationFeed.assessments.filter(item => {
+        const inDays = daysBetweenISO(todayISO, item.dateISO);
+        return inDays >= 7 && inDays <= 13;
+    }).length;
+    const attentionCount = notificationFeed.corrections.length + notificationFeed.attentionCount;
+    const affectedClassCount = new Set(notificationFeed.corrections.map(signal => signal.classId)).size;
+    const upcomingVacation = calendar.vacances
+        .map(vacation => ({ vacation, inDays: daysBetweenISO(todayISO, vacation.debut) }))
+        .filter(({ inDays }) => inDays > 0 && inDays <= 21)
+        .sort((a, b) => a.inDays - b.inDays)[0] ?? null;
+    const scheduleIncompleteCount = classes.filter(cls => {
+        const insight = computeClassHoursInsight(cls, config.timetable);
+        return insight.officialHours !== null && insight.deviation !== 'match';
+    }).length;
     const sessionStates = classes.map(classInfo => nextSession(classInfo.id)?.kind).filter(Boolean);
     const hasCurrentSession = sessionStates.includes('now');
     const hasSessionToday = sessionStates.includes('today');
@@ -315,12 +305,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     } catch {
         // Le fuseau local du navigateur reste un repli sûr.
     }
-    const todayLabel = new Intl.DateTimeFormat(localeCode, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        timeZone: calendar.fuseau,
-    }).format(now);
     const vacationResumeISO = vacationToday
         ? (() => {
             const nextDay = new Date(`${vacationToday.fin}T12:00:00Z`);
@@ -339,58 +323,113 @@ export const Dashboard: React.FC<DashboardProps> = ({
         : currentHour < 18
             ? 'dashboard.welcome.afternoonDetail'
             : 'dashboard.welcome.eveningDetail';
-    const welcome: { eyebrow: string; title: string; detail: string } = (() => {
+    const formatClassCount = (count: number) => {
+        if (locale !== 'fr') return t('dashboard.classCount', { count, plural: count > 1 ? 's' : '' });
+        const words = ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix'];
+        return `${words[count] ?? new Intl.NumberFormat('fr-MA').format(count)} classe${count > 1 ? 's' : ''}`;
+    };
+    const formatVacationDate = (dateISO: string) => new Intl.DateTimeFormat(localeCode, {
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+    }).format(new Date(`${dateISO}T12:00:00Z`));
+    const welcome: {
+        title: React.ReactNode;
+        detail: React.ReactNode;
+        tone: 'neutral' | 'alert' | 'vacation' | 'deadline';
+        action?: { label: string; onClick: () => void };
+    } = (() => {
         if (classes.length === 0) {
             return {
-                eyebrow: t('dashboard.welcome.startLabel'),
                 title: t('dashboard.welcome.startTitle'),
                 detail: t('dashboard.welcome.startDetail'),
+                tone: 'neutral',
+            };
+        }
+        if (scheduleIncompleteCount > 0) {
+            const classLabel = formatClassCount(scheduleIncompleteCount);
+            return {
+                title: locale === 'ar'
+                    ? `مهم: ${scheduleIncompleteCount} أقسام تحتاج إلى انتباهك`
+                    : locale === 'en'
+                        ? `Important: ${scheduleIncompleteCount} ${scheduleIncompleteCount === 1 ? 'class needs' : 'classes need'} your attention`
+                        : `Important : ${classLabel} ${scheduleIncompleteCount === 1 ? 'nécessite' : 'nécessitent'} votre attention`,
+                detail: '',
+                tone: 'alert',
+                action: onOpenSchedule ? {
+                    label: locale === 'ar' ? 'تعديل' : locale === 'en' ? 'Adjust' : 'Ajuster',
+                    onClick: onOpenSchedule,
+                } : undefined,
+            };
+        }
+        if (attentionCount > 0) {
+            const scope = affectedClassCount > 0 ? formatClassCount(affectedClassCount) : t('dashboard.classes').toLowerCase();
+            return {
+                title: t(attentionCount === 1 ? 'dashboard.welcome.alertTitleOne' : 'dashboard.welcome.alertTitleMany', { count: attentionCount }),
+                detail: locale === 'fr'
+                    ? <><strong>{scope}</strong> demandent une vérification avant la prochaine séance.</>
+                    : t('dashboard.welcome.alertsDetail'),
+                tone: 'alert',
             };
         }
         if (holidayToday) {
             return {
-                eyebrow: localizeCalendarName(holidayToday.nom, locale),
                 title: t('dashboard.welcome.holidayTitle'),
                 detail: t('dashboard.welcome.holidayDetail'),
+                tone: 'vacation',
             };
         }
         if (vacationToday) {
             return {
-                eyebrow: localizeCalendarName(vacationToday.nom, locale),
                 title: '',
                 detail: t('dashboard.welcome.vacationDetail', { date: vacationResumeLabel }),
+                tone: 'vacation',
+            };
+        }
+        if (upcomingVacation) {
+            return {
+                title: localizeCalendarName(upcomingVacation.vacation.nom, locale),
+                detail: t('dashboard.welcome.vacationSoonDetail', {
+                    date: formatVacationDate(upcomingVacation.vacation.debut),
+                    count: upcomingVacation.inDays,
+                }),
+                tone: 'vacation',
             };
         }
         if (assessmentsThisWeek > 0) {
             return {
-                eyebrow: t('dashboard.welcome.assessmentsLabel'),
                 title: t(assessmentsThisWeek === 1 ? 'dashboard.welcome.assessmentTitleOne' : 'dashboard.welcome.assessmentTitleMany', { count: assessmentsThisWeek }),
                 detail: t('dashboard.welcome.assessmentsDetail'),
+                tone: 'deadline',
+            };
+        }
+        if (assessmentsNextWeek > 0) {
+            return {
+                title: t(assessmentsNextWeek === 1 ? 'dashboard.welcome.nextWeekTitleOne' : 'dashboard.welcome.nextWeekTitleMany', { count: assessmentsNextWeek }),
+                detail: t('dashboard.welcome.nextWeekDetail'),
+                tone: 'deadline',
             };
         }
         if (hasCurrentSession) {
             return {
-                eyebrow: t('dashboard.welcome.nowLabel'),
                 title: t('dashboard.welcome.nowTitle'),
                 detail: t('dashboard.welcome.nowDetail'),
+                tone: 'neutral',
             };
         }
         if (hasSessionToday) {
             return {
-                eyebrow: t('dashboard.welcome.todayLabel'),
                 title: t('dashboard.welcome.todayTitle'),
                 detail: t('dashboard.welcome.todayDetail'),
+                tone: 'neutral',
             };
         }
         return {
-            eyebrow: todayLabel,
             title: '',
             detail: t(timeDetailKey),
+            tone: 'neutral',
         };
     })();
-    const greeting = getGreeting(locale, currentHour);
-    const teacherNameIsArabic = /[\u0600-\u06FF]/.test(teacherName);
-
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -399,10 +438,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return true;
     });
 
+    const spotlightInfo = useMemo(() => {
+        if (classes.length === 0) return null;
+        for (const cls of classes) {
+            const info = nextSession(cls.id);
+            if (info?.kind === 'now') {
+                return { classInfo: cls, info, isActiveNow: true };
+            }
+        }
+        for (const cls of classes) {
+            const info = nextSession(cls.id);
+            if (info?.kind === 'today') {
+                return { classInfo: cls, info, isActiveNow: false };
+            }
+        }
+        return null;
+    }, [classes, nextSession]);
+
+    if (isLoading) {
+        return <DashboardSkeleton />;
+    }
+
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-xl mx-auto'
-        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(350px,1fr))]';
+        : 'grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] sm:grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))]';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -413,6 +473,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const [labelKey, descriptionKey] = keys[value];
         return { label: t(labelKey), description: t(descriptionKey) };
     };
+
+    const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
@@ -431,46 +493,76 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-[#e7f2f5] dark:bg-[#0c142b] text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
+            className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden pl-safe pr-safe"
             data-dashboard-root
         >
-            {/* Ambient Colorful Glows */}
+            {/* Ambient Subtle Glows */}
             <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 select-none">
-                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-cyan-100/45 blur-3xl opacity-45 dark:bg-cyan-500/10 dark:opacity-25" />
-                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-violet-100/40 blur-3xl opacity-35 dark:bg-cyan-500/10 dark:opacity-20" />
+                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-blue-100/40 blur-3xl opacity-50 dark:bg-blue-600/10 dark:opacity-20" />
+                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-100/40 blur-3xl opacity-40 dark:bg-indigo-600/10 dark:opacity-15" />
             </div>
 
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-[1440px] px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
-                    <header className="mb-4 space-y-2 rounded-[24px] border border-white/90 bg-white/75 px-4 py-3 shadow-[0_8px_22px_rgba(45,74,82,0.04)] backdrop-blur-md sm:mb-6 sm:space-y-3 sm:px-5 sm:py-4 dark:border-white/[0.08] dark:bg-slate-900/65" id="dashboard-header">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
-                            <div>
-                                <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-lg sm:text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
-                                    <span>{greeting}{teacherName ? (locale === 'ar' ? '،' : ',') : ''}</span>
+                    <header className="mb-3 rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 shadow-[0_6px_20px_rgba(15,23,42,0.05)] backdrop-blur-md sm:mb-4 sm:rounded-2xl sm:px-4 sm:py-3 dark:border-slate-800 dark:bg-slate-900/85" id="dashboard-header" aria-live="polite">
+                        <div className="min-w-0 leading-[1.45]">
+                            <div className="min-w-0">
+                                <p className="text-[18px] font-bold leading-tight text-slate-950 sm:text-[20px] dark:text-white">
+                                    <span>{t('dashboard.welcome.greeting', { teacher: '' })}</span>
                                     {teacherName && (
-                                        <span
-                                            dir={teacherNameIsArabic ? 'rtl' : 'ltr'}
-                                            className="font-itim text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-cyan-600 dark:from-cyan-400 dark:to-cyan-400 text-xl sm:text-2xl font-bold tracking-wide"
-                                        >
-                                            {teacherName}
-                                        </span>
+                                        <>
+                                            <span aria-hidden>{locale === 'ar' ? '، ' : ', '}</span>
+                                            <span className="font-itim text-[1.2em] font-bold tracking-[0.015em] text-blue-600 dark:text-blue-400" dir="auto">
+                                                {teacherName}
+                                            </span>
+                                        </>
                                     )}
-                                </h1>
-                                <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-[13px] mt-0.5 max-w-2xl leading-normal">
-                                    {welcome.title && <span className="font-medium text-slate-700 dark:text-zinc-300">{welcome.title} · </span>}
-                                    <span>{welcome.detail}</span>
                                 </p>
+                                <div className="mt-1 flex min-w-0 items-start gap-1.5">
+                                    <span className={`flex h-[19.5px] shrink-0 items-center sm:h-[22.5px] ${
+                                        welcome.tone === 'alert' ? 'text-rose-600 dark:text-rose-400' :
+                                            welcome.tone === 'vacation' ? 'text-cyan-600 dark:text-cyan-400' :
+                                                welcome.tone === 'deadline' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'
+                                    }`} aria-hidden>
+                                        {welcome.tone === 'alert' ? <AlertTriangle className="h-3.5 w-3.5" /> : welcome.tone === 'deadline' ? <ClipboardList className="h-3.5 w-3.5" /> : <CalendarDays className="h-3.5 w-3.5" />}
+                                    </span>
+                                    <p className="min-w-0 text-[13px] font-medium leading-[1.5] text-slate-700 sm:text-[15px] dark:text-slate-200">
+                                        {welcome.title && <span className="font-semibold text-slate-950 dark:text-white">{welcome.title}{welcome.detail && <span aria-hidden> — </span>}</span>}
+                                        <span>{welcome.detail}</span>
+                                        {welcome.action && (
+                                            <button
+                                                type="button"
+                                                onClick={welcome.action.onClick}
+                                                className="group/btn ms-1.5 inline-flex items-center gap-0.5 font-semibold text-blue-700 underline underline-offset-2 transition-colors hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 cursor-pointer"
+                                            >
+                                                <span>{welcome.action.label}</span>
+                                                <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
+                                            </button>
+                                        )}
+                                    </p>
+                                </div>
                             </div>
-
-                            {classes.length > 0 && shouldShowSubjectBadge && (
-                                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+                        </div>
+                    </header>
+                    {classes.length > 0 && (
+                        <div className="mb-3 flex min-h-8 flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
+                            <h2 id="classes-heading" className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100 sm:text-sm">
+                                <span>{t('dashboard.classes')}</span>
+                                {filteredClasses.length > 0 && (
+                                    <span className="inline-flex h-4.5 min-w-[20px] items-center justify-center rounded-full border border-blue-200/60 bg-blue-50 px-1.5 text-[10px] font-bold text-blue-700 dark:border-blue-800/40 dark:bg-blue-950/60 dark:text-blue-300">
+                                        {filteredClasses.length}
+                                    </span>
+                                )}
+                            </h2>
+                            {shouldShowSubjectBadge ? (
+                                <div className="order-3 flex w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar sm:order-none sm:w-auto sm:flex-1" aria-label={t('dashboard.filterAll')}>
                                     <button
                                         type="button"
                                         onClick={() => setSubjectFilter('all')}
-                                        className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                                        className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-semibold transition-all cursor-pointer active:scale-95 ${
                                             subjectFilter === 'all'
-                                                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-500/20 border border-white/10'
-                                                : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-slate-900'
+                                                : 'border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:text-white'
                                         }`}
                                     >
                                         {t('dashboard.filterAll')}
@@ -482,10 +574,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 key={subject}
                                                 type="button"
                                                 onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                                                className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-semibold transition-all cursor-pointer active:scale-95 ${
                                                     isActive
-                                                        ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-sm shadow-cyan-500/20 border border-white/10'
-                                                        : 'border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                        ? 'bg-blue-600 text-white shadow-xs'
+                                                        : 'border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:text-white'
                                                 }`}
                                             >
                                                 {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -493,79 +585,115 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         );
                                     })}
                                 </div>
+                            ) : null}
+                            <div className="ms-auto flex shrink-0 items-center gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => setCreateModalOpen(true)}
+                                className="inline-flex h-7 shrink-0 items-center gap-1 rounded-lg bg-blue-600 px-2.5 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95 cursor-pointer"
+                                aria-label={t('dashboard.addClass')}
+                                title={t('dashboard.addClass')}
+                            >
+                                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                <span>{t('dashboard.classShort')}</span>
+                            </button>
+                            {isLandscape && (
+                                <div ref={displayMenuRef} className="relative hidden shrink-0 sm:block">
+                                    <button
+                                        type="button"
+                                        onClick={() => setDisplayMenuOpen(open => !open)}
+                                        aria-haspopup="menu"
+                                        aria-expanded={isDisplayMenuOpen}
+                                        className="flex h-7 items-center gap-1 rounded-lg border border-slate-200/90 bg-white px-2.5 text-[11px] font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 cursor-pointer"
+                                    >
+                                        <span>{displayCopy(currentDisplay).label}</span>
+                                        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {isDisplayMenuOpen && (
+                                        <div
+                                            role="menu"
+                                            className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
+                                        >
+                                            {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                const isActive = option === currentDisplay;
+                                                return (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        role="menuitemradio"
+                                                        aria-checked={isActive}
+                                                        onClick={() => {
+                                                            setClassDisplayMode(option);
+                                                            setDisplayMenuOpen(false);
+                                                        }}
+                                                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/60 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'}`}
+                                                    >
+                                                        <span>{displayCopy(option).label}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             )}
+                            </div>
                         </div>
-                    </header>
+                    )}
+                    {/* Spotlight Intelligent: Séance active ou prochaine du jour */}
+                    {spotlightInfo && (
+                        <div
+                            onClick={() => onSelectClass(spotlightInfo.classInfo)}
+                            className="mb-4 rounded-2xl border border-blue-500/25 bg-gradient-to-r from-blue-500/10 via-white/80 to-indigo-500/5 dark:via-slate-900/80 dark:to-indigo-950/20 p-3.5 sm:p-4 shadow-sm backdrop-blur-sm cursor-pointer transition-all hover:border-blue-500/45 hover:shadow-md active:scale-[0.99] group"
+                        >
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${spotlightInfo.isActiveNow ? 'bg-emerald-600 text-white shadow-emerald-600/30' : 'bg-blue-600 text-white shadow-blue-600/30'} shadow-md`}>
+                                        {spotlightInfo.isActiveNow ? (
+                                            <Radio className="h-5 w-5 animate-pulse" />
+                                        ) : (
+                                            <Clock className="h-5 w-5" />
+                                        )}
+                                        {spotlightInfo.isActiveNow && (
+                                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-blue-500/15 text-blue-700 dark:text-blue-300'}`}>
+                                                {spotlightInfo.isActiveNow ? (locale === 'ar' ? 'الآن · حصة جارية' : 'En ce moment · En direct') : (locale === 'ar' ? 'اليوم · الحصة القادمة' : 'Aujourd’hui · Séance à venir')}
+                                            </span>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+                                                {spotlightInfo.info.label}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate mt-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {spotlightInfo.classInfo.name}
+                                            {spotlightInfo.classInfo.subject && (
+                                                <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1.5">
+                                                    ({formatLocalizedSubjectDisplayName(spotlightInfo.classInfo.subject, locale)})
+                                                </span>
+                                            )}
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 hidden md:inline group-hover:underline">
+                                        {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
+                                    </span>
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        <ArrowIcon className="h-4 w-4" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
-                            {classes.length > 0 && (
-                                <div className="mb-3 sm:mb-4 flex items-center justify-between gap-2 flex-wrap">
-                                    <div className="flex items-center gap-2">
-                                        <h2 id="classes-heading" className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                            <span>{t('dashboard.classes')}</span>
-                                            {filteredClasses.length > 0 && (
-                                                <span className="inline-flex items-center justify-center min-w-[20px] h-4.5 px-1.5 text-[10px] font-semibold rounded-md bg-cyan-50 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200/50 dark:border-cyan-800/30">
-                                                    {filteredClasses.length}
-                                                </span>
-                                            )}
-                                        </h2>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setCreateModalOpen(true)}
-                                            className="inline-flex h-8 items-center gap-1.5 bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 px-3.5 text-xs font-semibold text-white shadow-sm shadow-cyan-500/25 rounded-xl border border-white/15 transition-all hover:shadow-md hover:shadow-cyan-500/40 hover:from-cyan-600 hover:to-cyan-700 active:scale-95 cursor-pointer"
-                                            aria-label={t('dashboard.addClass')}
-                                            title={t('dashboard.addClass')}
-                                        >
-                                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                                            <span>{t('dashboard.classShort')}</span>
-                                        </button>
-
-                                        {isLandscape && (
-                                            <div ref={displayMenuRef} className="relative shrink-0 hidden sm:block">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setDisplayMenuOpen(open => !open)}
-                                                    aria-haspopup="menu"
-                                                    aria-expanded={isDisplayMenuOpen}
-                                                    className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/90 px-3 text-xs font-medium text-slate-700 shadow-2xs backdrop-blur-sm transition-colors hover:bg-slate-50 dark:text-zinc-300 cursor-pointer"
-                                                >
-                                                    <span>{displayCopy(currentDisplay).label}</span>
-                                                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                                {isDisplayMenuOpen && (
-                                                    <div
-                                                        role="menu"
-                                                        className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white/95 backdrop-blur-md p-1 shadow-lg dark:bg-zinc-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
-                                                    >
-                                                        {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                            const isActive = option === currentDisplay;
-                                                            return (
-                                                                <button
-                                                                    key={option}
-                                                                    type="button"
-                                                                    role="menuitemradio"
-                                                                    aria-checked={isActive}
-                                                                    onClick={() => {
-                                                                        setClassDisplayMode(option);
-                                                                        setDisplayMenuOpen(false);
-                                                                    }}
-                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-cyan-500/10 text-cyan-600 font-semibold dark:bg-cyan-500/20 dark:text-cyan-300' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}`}
-                                                                >
-                                                                    <span>{displayCopy(option).label}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                                 {classes.length === 0 ? (
                                     <div className="relative flex flex-col items-center justify-center py-10 sm:py-14 md:py-16 px-4 sm:px-8 text-center rounded-3xl border border-slate-200/60 dark:border-white/[0.06] bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl shadow-xs overflow-hidden">
                                         {/* Colorful Glow behind image */}
@@ -623,26 +751,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => onSelectClass(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
-                                                    onShowNotifications={() => setNotificationClass(classInfo)}
-                                                    notificationCount={notificationCounts.get(classInfo.id) ?? 0}
                                                 />
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} gap-4 sm:gap-5 lg:gap-6 w-full`}>
+                                    <div className={`grid ${classGridClass} w-full gap-3 sm:gap-4 lg:gap-5`}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
-                                                className="h-full w-full max-w-[420px] sm:max-w-none mx-auto animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                className="h-full w-full max-w-[430px] sm:max-w-none mx-auto animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard
                                                     classInfo={classInfo}
                                                     onSelect={() => onSelectClass(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
-                                                    onShowNotifications={() => setNotificationClass(classInfo)}
-                                                    notificationCount={notificationCounts.get(classInfo.id) ?? 0}
                                                     showSubjectBadge={shouldShowSubjectBadge}
                                                 />
                                             </div>
@@ -675,18 +799,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     handleDeleteClass(editingClass.id);
                     setEditingClass(null);
                 } : undefined}
-            />
-            <ClassNotificationsModal
-                isOpen={!!notificationClass}
-                classInfo={notificationClass}
-                config={config}
-                feed={notificationFeed}
-                sessionIndex={notificationClass ? sessionIndexes[notificationClass.id] : undefined}
-                nextSession={notificationClass ? nextSession(notificationClass.id) : null}
-                onClose={() => setNotificationClass(null)}
-                onSelectClass={onSelectClass}
-                onOpenSchedule={onOpenSchedule}
-                onOpenNotifications={onOpenNotifications}
             />
         </div>
     );
