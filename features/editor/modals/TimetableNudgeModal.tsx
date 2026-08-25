@@ -15,32 +15,38 @@ interface TimetableNudgeModalProps {
   className: string;
 }
 
-type NudgeLocale = 'fr' | 'ar';
+type NudgeLocale = 'fr' | 'ar' | 'en';
 
 /** Textes concis, cohérents avec la langue principale de l'application. */
 const TEXTS: Record<NudgeLocale, {
   title: string;
   message: (classLabel: string) => string;
   fill: string;
-  skip: string;
+  understood: string;
 }> = {
   fr: {
     title: "Ajouter à l'emploi du temps",
     message: classLabel => `Ajoutez les créneaux de « ${classLabel} » à votre emploi du temps pour activer le suivi.`,
     fill: "Ajouter à l'emploi du temps",
-    skip: 'Plus tard',
+    understood: 'J’ai compris',
   },
   ar: {
     title: 'إضافة الحصص إلى استعمال الزمن',
     message: classLabel => `أضف حصص « ${classLabel} » إلى استعمال الزمن لتفعيل المتابعة.`,
     fill: 'إضافة إلى استعمال الزمن',
-    skip: 'لاحقًا',
+    understood: 'فهمت',
+  },
+  en: {
+    title: 'Add to timetable',
+    message: classLabel => `Add the lessons for “${classLabel}” to your timetable to enable tracking.`,
+    fill: 'Add to timetable',
+    understood: 'I understand',
   },
 };
 
 /**
  * Invitation FLUIDE à renseigner l'emploi du temps, jamais bloquante :
- * affichée une fois par session et par classe, avec un « passer » discret.
+ * affichée une fois par session et par classe, avec un acquittement discret.
  * Elle suit la langue de l'application pour ne pas dissocier le nom de classe
  * de son interface (ex. « قسم الأولى إعدادي 5 » en arabe).
  */
@@ -51,7 +57,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
   className,
 }) => {
   const { locale } = useLocale();
-  const lang: NudgeLocale = locale === 'ar' ? 'ar' : 'fr';
+  const lang: NudgeLocale = locale === 'ar' ? 'ar' : locale === 'en' ? 'en' : 'fr';
   const t = TEXTS[lang];
   const isAr = lang === 'ar';
   const classLabel = formatLocalizedClassDisplayName(className, locale);
@@ -92,11 +98,11 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
 
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={onSkip}
-            className="h-10 w-full rounded-xl text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground"
+            className="h-10 w-full rounded-xl border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700 shadow-none hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:text-sm dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
           >
-            {t.skip}
+            {t.understood}
           </Button>
         </div>
       </div>

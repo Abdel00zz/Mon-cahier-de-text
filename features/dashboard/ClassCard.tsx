@@ -99,7 +99,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
             <div className="flex min-h-0 w-full items-center justify-center px-1 py-1.5 text-center sm:px-2">
                 <h3
-                    className="max-w-[23ch] text-balance font-fira text-[clamp(0.98rem,1vw+0.62rem,1.28rem)] font-bold leading-[1.18] tracking-[-0.025em] text-foreground transition-colors group-hover:text-primary"
+                    className="max-w-[23ch] text-balance font-fira text-[clamp(1.127rem,1.15vw+0.713rem,1.472rem)] font-bold leading-[1.18] tracking-[-0.025em] text-foreground transition-colors group-hover:text-primary"
                     title={displayName}
                 >
                     {renderClassTitleWithFonts(displayName)}

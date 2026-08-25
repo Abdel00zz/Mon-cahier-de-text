@@ -40,7 +40,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                     <Users className={`h-4 w-4 ${visual.iconClass}`} />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-xs sm:text-[13px] font-bold text-foreground">{displayName}</h3>
+                    <h3 className="truncate text-sm font-bold text-foreground sm:text-[15px]">{displayName}</h3>
                     {classInfo.subject && (
                         <p className="truncate text-[10px] sm:text-[11px] font-medium text-muted-foreground">
                             {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}

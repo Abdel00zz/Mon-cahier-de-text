@@ -159,7 +159,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         try {
             await completeWelcome();
         } catch {
-            // Même stratégie que « Plus tard » : persistance locale + sync.
+            // La fermeture reste persistée localement puis synchronisée.
         }
     }, [completeWelcome, config.notificationSettings, updateConfig]);
 
