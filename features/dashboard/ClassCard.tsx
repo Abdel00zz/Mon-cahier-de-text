@@ -88,7 +88,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
             style={{ aspectRatio: frame.aspectRatio }}
-            className="group relative w-full bg-transparent cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-xl active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
+            className="group relative w-full portrait:w-[85%] portrait:max-w-[420px] portrait:mx-auto landscape:w-[95%] landscape:max-w-[480px] landscape:mx-auto bg-transparent cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-xl active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
             <img
                 src={frame.src}
@@ -99,18 +99,18 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain drop-shadow-md"
             />
 
-            <div className="relative z-10 flex h-full w-full flex-col justify-between px-[5%] py-[4%] sm:px-[6%] sm:py-[5%]">
+            <div className="relative z-10 flex h-full w-full flex-col justify-between px-[5%] py-[4%] sm:px-[6%] sm:py-[5%] landscape:px-[6%] landscape:py-[4%]">
                 {/* Slot fixed: the title stays optically centered with or without a subject. */}
                 <div className="flex items-center justify-start">
                     {showSubjectBadge && subjectBadgeText ? (
-                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} shadow-sm backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-black/5 dark:border-white/10`}>
+                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} shadow-sm backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-black/5 dark:border-white/10 portrait:shadow-none portrait:backdrop-blur-none portrait:bg-transparent portrait:dark:bg-transparent portrait:border-transparent portrait:px-1`}>
                             {subjectBadgeText}
                         </span>
                     ) : null}
                 </div>
 
                 {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
-                <div className="flex min-h-0 w-full items-center justify-center px-1 py-1 text-center sm:px-2 pt-[6%]">
+                <div className="flex min-h-0 w-full items-center justify-center px-1 py-1 text-center sm:px-2 pt-[6%] landscape:pt-[4%]">
                     <h3
                         className="max-w-[23ch] text-balance font-fira text-[clamp(1.15rem,1.5vw+0.75rem,1.8rem)] font-bold leading-[1.25] tracking-[-0.02em] text-slate-800 dark:text-slate-100 transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-300"
                         title={displayName}
@@ -129,11 +129,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     <button
                         type="button"
                         onClick={handleConfigureClick}
-                        className="group/btn flex h-[28px] w-[28px] sm:h-[34px] sm:w-[34px] shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/30 text-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:text-blue-600 active:scale-95 dark:border-white/20 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-blue-400 cursor-pointer"
+                        className="group/btn flex h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] landscape:h-[36px] landscape:w-[36px] shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/30 text-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:text-blue-600 active:scale-95 dark:border-white/20 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-blue-400 cursor-pointer portrait:border-transparent portrait:bg-transparent portrait:shadow-none portrait:backdrop-blur-none portrait:text-slate-900 portrait:dark:text-white landscape:border-white/50 landscape:bg-white/40 landscape:shadow-md"
                         title={t('dashboard.classSettings')}
                         aria-label={`${t('dashboard.edit')} ${displayName}`}
                     >
-                        <Settings className="h-[14px] w-[14px] sm:h-[16px] sm:w-[16px] shrink-0 stroke-[2.2] transition-transform duration-500 group-hover/btn:rotate-90" />
+                        <Settings className="h-[18px] w-[18px] sm:h-[16px] sm:w-[16px] landscape:h-[20px] landscape:w-[20px] shrink-0 stroke-[2.2] portrait:stroke-[3] landscape:stroke-[2.5] transition-transform duration-500 group-hover/btn:rotate-90" />
                     </button>
                 </div>
             </div>
