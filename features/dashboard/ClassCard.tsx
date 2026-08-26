@@ -101,9 +101,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
             <div className="relative z-10 flex h-full w-full flex-col justify-between px-[5%] py-[4%] sm:px-[6%] sm:py-[5%] landscape:px-[6%] landscape:py-[4%]">
                 {/* Slot fixed: the title stays optically centered with or without a subject. */}
-                <div className="flex items-center justify-start">
+                <div className="flex items-center justify-start mt-[2%] sm:mt-[3%] ml-[1%] sm:ml-[2%]">
                     {showSubjectBadge && subjectBadgeText ? (
-                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} shadow-sm backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-black/5 dark:border-white/10 portrait:shadow-none portrait:backdrop-blur-none portrait:bg-transparent portrait:dark:bg-transparent portrait:border-transparent portrait:px-1`}>
+                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} border border-white/50 bg-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/20 dark:bg-slate-900/50 portrait:shadow-none portrait:backdrop-blur-none portrait:bg-transparent portrait:dark:bg-transparent portrait:border-transparent portrait:px-1`}>
                             {subjectBadgeText}
                         </span>
                     ) : null}
