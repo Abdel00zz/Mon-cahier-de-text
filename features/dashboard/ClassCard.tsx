@@ -1,7 +1,7 @@
 import { memo, FC, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
-import { getClassVisual, getSubjectVisual } from '@/utils/classVisuals';
+import { getSubjectVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Settings } from '@/components/ui/icons';
@@ -73,7 +73,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getSubjectVisual(classInfo.subject);
-    const levelVisual = getClassVisual(classInfo.name);
+    const frame = locale === 'ar'
+        ? { src: '/cadre-AR.png', aspectRatio: '1672 / 941' }
+        : { src: '/cadre-fr.png', aspectRatio: '1536 / 1024' };
     const subjectBadgeText = classInfo.subject
         ? formatLocalizedSubjectDisplayName(classInfo.subject, locale)
         : null;
@@ -85,43 +87,55 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            className={`group relative grid h-full w-full min-h-[164px] grid-rows-[2.25rem_minmax(0,1fr)_2.25rem] overflow-hidden rounded-[16px] border-[3px] px-3.5 py-3 sm:min-h-[184px] sm:rounded-[20px] sm:px-4 sm:py-3.5 lg:min-h-[198px] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none dark:bg-slate-900/90 dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] ${levelVisual.cardSurfaceClass}`}
+            style={{ aspectRatio: frame.aspectRatio }}
+            className="group relative w-full bg-transparent cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-xl active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
-            {/* Slot fixed: the title stays optically centered with or without a subject. */}
-            <div className="flex h-9 items-center justify-start">
-                {showSubjectBadge && subjectBadgeText ? (
-                    <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle}`}>
-                        {subjectBadgeText}
-                    </span>
-                ) : null}
-            </div>
+            <img
+                src={frame.src}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                loading="lazy"
+                className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain drop-shadow-md"
+            />
 
-            {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
-            <div className="flex min-h-0 w-full items-center justify-center px-1 py-1.5 text-center sm:px-2">
-                <h3
-                    className="max-w-[23ch] text-balance font-fira text-[clamp(1.127rem,1.15vw+0.713rem,1.472rem)] font-bold leading-[1.18] tracking-[-0.025em] text-foreground transition-colors group-hover:text-primary"
-                    title={displayName}
-                >
-                    {renderClassTitleWithFonts(displayName)}
-                </h3>
-            </div>
+            <div className="relative z-10 flex h-full w-full flex-col justify-between px-[5%] py-[4%] sm:px-[6%] sm:py-[5%]">
+                {/* Slot fixed: the title stays optically centered with or without a subject. */}
+                <div className="flex items-center justify-start">
+                    {showSubjectBadge && subjectBadgeText ? (
+                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} shadow-sm backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-black/5 dark:border-white/10`}>
+                            {subjectBadgeText}
+                        </span>
+                    ) : null}
+                </div>
 
-            {/* Bottom area: settings only. Alerts live in the dashboard banner. */}
-            <div
-                role="group"
-                aria-label={t('dashboard.classActions', { className: displayName })}
-                className="flex h-9 items-center justify-end"
-            >
-                {/* Settings Button */}
-                <button
-                    type="button"
-                    onClick={handleConfigureClick}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-white/75 text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md active:scale-90 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:bg-blue-950/60 dark:hover:text-blue-300 cursor-pointer"
-                    title={t('dashboard.classSettings')}
-                    aria-label={`${t('dashboard.edit')} ${displayName}`}
+                {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
+                <div className="flex min-h-0 w-full items-center justify-center px-1 py-1 text-center sm:px-2 pt-[6%]">
+                    <h3
+                        className="max-w-[23ch] text-balance font-fira text-[clamp(1.15rem,1.5vw+0.75rem,1.8rem)] font-bold leading-[1.25] tracking-[-0.02em] text-slate-800 dark:text-slate-100 transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-300"
+                        title={displayName}
+                    >
+                        {renderClassTitleWithFonts(displayName)}
+                    </h3>
+                </div>
+
+                {/* Bottom area: settings only. Alerts live in the dashboard banner. */}
+                <div
+                    role="group"
+                    aria-label={t('dashboard.classActions', { className: displayName })}
+                    className="flex items-center justify-end"
                 >
-                    <Settings className="h-5 w-5 shrink-0 stroke-[2.6]" />
-                </button>
+                    {/* Settings Button */}
+                    <button
+                        type="button"
+                        onClick={handleConfigureClick}
+                        className="group/btn flex h-[28px] w-[28px] sm:h-[34px] sm:w-[34px] shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/30 text-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:text-blue-600 active:scale-95 dark:border-white/20 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-blue-400 cursor-pointer"
+                        title={t('dashboard.classSettings')}
+                        aria-label={`${t('dashboard.edit')} ${displayName}`}
+                    >
+                        <Settings className="h-[14px] w-[14px] sm:h-[16px] sm:w-[16px] shrink-0 stroke-[2.2] transition-transform duration-500 group-hover/btn:rotate-90" />
+                    </button>
+                </div>
             </div>
         </article>
     );
