@@ -86,32 +86,32 @@ export const TabBar = React.memo<TabBarProps>(({
 
   return (
     <>
-      {/* Desktop sidebar — modern, crisp, professional */}
+      {/* Desktop sidebar — sleek pure black & modern circle style */}
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[76px] flex-col overflow-hidden bg-[linear-gradient(180deg,#fcf8f0_0%,#f5ecdd_58%,#f1e5d3_100%)] py-3 text-slate-900 print:hidden shadow-[6px_0_28px_rgba(92,70,42,0.07)] sm:flex landscape:py-2 dark:bg-[linear-gradient(180deg,#172033_0%,#101827_100%)] dark:text-slate-100 dark:shadow-[6px_0_28px_rgba(0,0,0,0.24)]',
-          isRtl ? 'right-0 border-l border-[#e5d6c0] dark:border-slate-800' : 'left-0 border-r border-[#e5d6c0] dark:border-slate-800',
-          isExpanded ? 'lg:w-[248px]' : 'lg:w-[76px]',
+          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[76px] flex-col overflow-hidden bg-black text-white print:hidden shadow-[8px_0_32px_rgba(0,0,0,0.45)] sm:flex py-3.5 landscape:py-2.5',
+          isRtl ? 'right-0 border-l border-zinc-800' : 'left-0 border-r border-zinc-800',
+          isExpanded ? 'lg:w-[252px]' : 'lg:w-[76px]',
           'transition-[width] duration-200 ease-out',
         )}
         aria-label={copy.mainNav}
       >
-        <div className={cn('flex h-11 items-center justify-center px-2.5 landscape:h-10', isExpanded && 'lg:justify-start lg:px-3.5')}>
+        <div className={cn('flex h-11 shrink-0 items-center justify-center px-2.5 landscape:h-10', isExpanded && 'lg:justify-start lg:px-3.5')}>
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#75644f] transition-colors hover:bg-white/65 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-9 landscape:w-9 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-9 landscape:w-9 cursor-pointer active:scale-95"
             aria-label={isExpanded ? copy.collapse : copy.expand}
           >
-            <Menu className="h-[20px] w-[20px]" />
+            <Menu className="h-[19px] w-[19px]" />
           </button>
-          <div className={cn('ms-3 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[170px]')}>
-            <span className="block truncate text-[15px] font-bold tracking-tight text-[#2f2922] dark:text-white">{copy.brand}</span>
-            <span className="block truncate text-[11px] font-medium text-[#81715d] dark:text-slate-400">{copy.teacherSpace}</span>
+          <div className={cn('ms-3 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[175px]')}>
+            <span className="block truncate text-[14px] font-bold tracking-tight text-white">{copy.brand}</span>
+            <span className="block truncate text-[11px] font-medium text-zinc-400">{copy.teacherSpace}</span>
           </div>
         </div>
 
-        <div className="modern-scrollbar mt-2.5 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-2 landscape:mt-1.5">
+        <div className="modern-scrollbar mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain px-2.5 pb-2 landscape:mt-2">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -123,33 +123,35 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'group relative flex h-11 w-full items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 cursor-pointer',
-                  isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
+                  'group relative flex h-11 w-full items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
+                  isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
                   isActive
-                    ? 'border border-white/80 bg-white/75 text-primary font-semibold shadow-[0_5px_16px_rgba(92,70,42,0.08)] dark:border-white/10 dark:bg-white/10'
-                    : 'text-[#756752] hover:bg-white/55 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white',
+                    ? 'bg-zinc-800/80 text-white'
+                    : 'text-zinc-400 hover:bg-zinc-900/90 hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <span className="relative flex shrink-0 items-center justify-center">
-                  <Icon className={cn(
-                    'h-[20px] w-[20px] transition-colors duration-150',
-                    isActive ? 'text-primary' : 'text-[#81715d] group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white',
-                  )} />
+                <span className={cn(
+                  'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all',
+                  isActive
+                    ? 'bg-white text-black shadow-sm'
+                    : 'bg-zinc-900 border border-zinc-800 text-zinc-300 group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white',
+                )}>
+                  <Icon className="h-[19px] w-[19px] shrink-0" />
                   {count ? (
                     <span className={cn(
-                      'absolute -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-[#f8f1e5] dark:ring-slate-900',
-                      isRtl ? '-left-3' : '-right-3',
+                      'absolute -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-600 px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-black',
+                      isRtl ? '-left-1' : '-right-1',
                     )}>
                       {countLabel(count)}
                     </span>
                   ) : null}
                 </span>
                 <span className={cn(
-                  'hidden min-w-0 flex-1 truncate text-start text-[14px] transition-all duration-150',
+                  'hidden min-w-0 flex-1 truncate text-start text-[14px] leading-normal py-0.5 transition-all duration-150',
                   isExpanded && 'lg:block',
-                  isActive ? 'font-semibold text-primary' : 'font-medium',
+                  isActive ? 'font-bold text-white' : 'font-medium text-zinc-300 group-hover:text-white',
                 )}>
                   {copy[tab.id]}
                 </span>
@@ -158,49 +160,69 @@ export const TabBar = React.memo<TabBarProps>(({
           })}
         </div>
 
-        <div className="mt-auto flex flex-col gap-1 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] landscape:pb-1.5">
+        <div className="mt-auto flex shrink-0 flex-col gap-1.5 px-2.5 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] border-t border-zinc-900 landscape:pb-2">
           <button
             type="button"
             onClick={() => goTo('settings')}
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
             className={cn(
-              'group flex h-11 w-full items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 cursor-pointer',
-              isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
+              'group flex h-11 w-full items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
+              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
               activeTab === 'settings'
-                ? 'border border-white/80 bg-white/75 text-primary font-semibold shadow-[0_5px_16px_rgba(92,70,42,0.08)] dark:border-white/10 dark:bg-white/10'
-                : 'text-[#756752] hover:bg-white/55 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white',
+                ? 'bg-zinc-800/80 text-white'
+                : 'text-zinc-400 hover:bg-zinc-900/90 hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[20px] w-[20px] shrink-0 transition-colors duration-150', activeTab === 'settings' ? 'text-primary' : 'text-[#81715d] group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white')} />
-            <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' ? 'font-semibold text-primary' : '')}>{copy.settings}</span>
+            <span className={cn(
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all',
+              activeTab === 'settings'
+                ? 'bg-white text-black shadow-sm'
+                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white',
+            )}>
+              <Settings className="h-[19px] w-[19px] shrink-0" />
+            </span>
+            <span className={cn(
+              'hidden flex-1 text-start text-[14px] leading-normal py-0.5',
+              isExpanded && 'lg:block',
+              activeTab === 'settings' ? 'font-bold text-white' : 'font-medium text-zinc-300 group-hover:text-white',
+            )}>
+              {copy.settings}
+            </span>
           </button>
           <button
             type="button"
             onClick={() => goTo('help')}
             className={cn(
-              'group flex h-11 w-full items-center justify-center rounded-xl text-[#756752] transition-all duration-150 hover:bg-white/55 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white cursor-pointer',
-              isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
+              'group flex h-11 w-full items-center justify-center rounded-full text-zinc-400 transition-all duration-150 hover:bg-zinc-900/90 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
+              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-[20px] w-[20px] shrink-0 text-[#81715d] transition-colors duration-150 group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white" />
-            <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 transition-all group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white">
+              <CircleHelp className="h-[19px] w-[19px] shrink-0" />
+            </span>
+            <span className={cn(
+              'hidden flex-1 text-start text-[14px] leading-normal py-0.5 font-medium text-zinc-300 group-hover:text-white',
+              isExpanded && 'lg:block',
+            )}>
+              {copy.help}
+            </span>
           </button>
         </div>
       </nav>
 
-      {/* Mobile bottom tab bar with clean labels */}
+      {/* Mobile bottom tab bar — pure black & circular icons, no text clipping */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-[#e5d6c0] bg-[linear-gradient(135deg,rgba(252,248,240,0.97),rgba(245,236,221,0.97))] text-[#514535] shadow-[0_10px_28px_rgba(92,70,42,0.14)] backdrop-blur-xl print:hidden sm:hidden will-change-transform dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(23,32,51,0.97),rgba(16,24,39,0.97))] dark:text-slate-200"
-        style={{ bottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}
+        className="mobile-tab-bar fixed inset-x-2.5 z-40 overflow-visible rounded-2xl border border-zinc-800 bg-black/95 text-zinc-200 shadow-[0_12px_36px_rgba(0,0,0,0.55)] backdrop-blur-xl print:hidden sm:hidden will-change-transform"
+        style={{ bottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="mx-auto flex h-[58px] max-w-md items-center justify-around px-1.5">
+        <div className="mx-auto flex h-[62px] max-w-md items-center justify-around px-1 py-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -212,21 +234,23 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'relative flex flex-1 flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
-                  'min-h-[46px] min-w-[48px]',
-                  isActive ? 'text-primary font-bold' : 'text-[#756752] hover:text-slate-950 dark:text-slate-400 dark:hover:text-white',
+                  'relative flex flex-1 flex-col items-center justify-center py-0.5 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
+                  'min-h-[50px] min-w-[48px]',
+                  isActive ? 'text-white font-bold' : 'text-zinc-400 hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <div className={cn(
-                  'relative flex items-center justify-center rounded-xl px-2.5 py-0.5 transition-all',
-                  isActive ? 'bg-white/75 text-primary shadow-xs scale-105 dark:bg-white/10' : ''
+                  'relative flex h-8 w-8 items-center justify-center rounded-full transition-all',
+                  isActive
+                    ? 'bg-white text-black shadow-xs scale-105'
+                    : 'bg-zinc-900 border border-zinc-800 text-zinc-300',
                 )}>
-                  <Icon className="h-[19px] w-[19px]" />
+                  <Icon className="h-[17px] w-[17px]" />
                   {count ? (
                     <span className={cn(
-                      'absolute -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rose-500 px-1 text-[8px] font-bold leading-none text-white ring-2 ring-card shadow-xs',
+                      'absolute -top-1 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rose-600 px-1 text-[8px] font-bold leading-none text-white ring-2 ring-black shadow-xs',
                       isRtl ? '-left-1.5' : '-right-1.5',
                     )}>
                       {countLabel(count)}
@@ -234,8 +258,8 @@ export const TabBar = React.memo<TabBarProps>(({
                   ) : null}
                 </div>
                 <span className={cn(
-                  'mt-0.5 text-[10px] tracking-tight leading-none truncate max-w-[68px]',
-                  isActive ? 'font-bold text-primary' : 'font-medium text-[#756752] dark:text-slate-400'
+                  'mt-1 text-[11px] leading-tight text-center whitespace-nowrap px-1',
+                  isActive ? 'font-bold text-white' : 'font-medium text-zinc-400',
                 )}>
                   {copy[tab.id]}
                 </span>
@@ -249,22 +273,24 @@ export const TabBar = React.memo<TabBarProps>(({
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
             className={cn(
-              'relative flex flex-1 flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
-              'min-h-[46px] min-w-[48px]',
-              activeTab === 'settings' ? 'text-primary font-bold' : 'text-[#756752] hover:text-slate-950 dark:text-slate-400 dark:hover:text-white',
+              'relative flex flex-1 flex-col items-center justify-center py-0.5 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
+              'min-h-[50px] min-w-[48px]',
+              activeTab === 'settings' ? 'text-white font-bold' : 'text-zinc-400 hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
             <div className={cn(
-              'relative flex items-center justify-center rounded-xl px-2.5 py-0.5 transition-all',
-              activeTab === 'settings' ? 'bg-white/75 text-primary shadow-xs scale-105 dark:bg-white/10' : ''
+              'relative flex h-8 w-8 items-center justify-center rounded-full transition-all',
+              activeTab === 'settings'
+                ? 'bg-white text-black shadow-xs scale-105'
+                : 'bg-zinc-900 border border-zinc-800 text-zinc-300',
             )}>
-              <Settings className="h-[19px] w-[19px]" />
+              <Settings className="h-[17px] w-[17px]" />
             </div>
             <span className={cn(
-              'mt-0.5 text-[10px] tracking-tight leading-none truncate max-w-[68px]',
-              activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-[#756752] dark:text-slate-400'
+              'mt-1 text-[11px] leading-tight text-center whitespace-nowrap px-1',
+              activeTab === 'settings' ? 'font-bold text-white' : 'font-medium text-zinc-400',
             )}>
               {copy.settings}
             </span>

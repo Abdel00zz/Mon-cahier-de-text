@@ -20,8 +20,9 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
-import { Radio, Clock, ArrowRight, ArrowLeft, AlertTriangle, CalendarDays, ClipboardList } from 'lucide-react';
+import { Radio, Clock, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
 import { computeClassHoursInsight } from '@/utils/scheduleInsights';
+import { isArabicText } from '@/utils/textFormat';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -324,7 +325,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
             ? 'dashboard.welcome.afternoonDetail'
             : 'dashboard.welcome.eveningDetail';
     const formatClassCount = (count: number) => {
-        if (locale !== 'fr') return t('dashboard.classCount', { count, plural: count > 1 ? 's' : '' });
+        if (locale === 'ar') {
+            if (count === 0) return 'لا توجد أقسام';
+            if (count === 1) return 'قسم واحد';
+            if (count === 2) return 'قسمان';
+            if (count >= 3 && count <= 10) return `${count} أقسام`;
+            return `${count} قسماً`;
+        }
+        if (locale === 'en') {
+            return `${count} ${count === 1 ? 'class' : 'classes'}`;
+        }
         const words = ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix'];
         return `${words[count] ?? new Intl.NumberFormat('fr-MA').format(count)} classe${count > 1 ? 's' : ''}`;
     };
@@ -348,9 +358,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
         if (scheduleIncompleteCount > 0) {
             const classLabel = formatClassCount(scheduleIncompleteCount);
+            const arabicScheduleAlert = scheduleIncompleteCount === 1
+                ? 'مهم : قسم واحد يحتاج إلى انتباهكم'
+                : scheduleIncompleteCount === 2
+                    ? 'مهم : قسمان يحتاجان إلى انتباهكم'
+                    : scheduleIncompleteCount <= 10
+                        ? `مهم : ${scheduleIncompleteCount} أقسام تحتاج إلى انتباهكم`
+                        : `مهم : ${scheduleIncompleteCount} قسماً يحتاج إلى انتباهكم`;
+
             return {
                 title: locale === 'ar'
-                    ? `مهم: ${scheduleIncompleteCount} أقسام تحتاج إلى انتباهك`
+                    ? arabicScheduleAlert
                     : locale === 'en'
                         ? `Important: ${scheduleIncompleteCount} ${scheduleIncompleteCount === 1 ? 'class needs' : 'classes need'} your attention`
                         : `Important : ${classLabel} ${scheduleIncompleteCount === 1 ? 'nécessite' : 'nécessitent'} votre attention`,
@@ -475,7 +493,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
-    const teacherInitial = teacherName.trim().charAt(0) || '•';
+    const displayTeacherName = teacherName?.trim() || t('settings.defaultTeacherName');
 
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
@@ -504,72 +522,69 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-3 pb-3 sm:px-6 sm:pt-4 lg:px-8 pl-safe pr-safe">
-                    {/* En-tête d'accueil, visuellement lié à la navigation crème. */}
-                    <header
-                        id="dashboard-header"
-                        aria-live="polite"
-                        className="mb-4 overflow-hidden rounded-2xl border border-[#e5d6c0] bg-[linear-gradient(135deg,#fcf8f0_0%,#f5ecdd_100%)] px-3.5 py-2.5 shadow-[0_10px_30px_rgba(92,70,42,0.07)] transition-all sm:mb-5 sm:rounded-3xl sm:px-5 sm:py-3 landscape:py-2 dark:border-slate-800 dark:bg-[linear-gradient(135deg,#172033_0%,#101827_100%)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
-                    >
-                        <div className="flex flex-col gap-2.5 landscape:flex-row landscape:items-center landscape:justify-between landscape:gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/80 bg-white/75 font-itim text-base font-bold text-blue-700 shadow-[0_4px_12px_rgba(92,70,42,0.08)] sm:h-10 sm:w-10 sm:rounded-2xl sm:text-lg dark:border-white/10 dark:bg-white/10 dark:text-blue-300">
-                                    {teacherInitial}
-                                </span>
-                                <div className="min-w-0 text-start">
-                                    <p className="text-[11px] font-bold leading-none text-[#75644f] dark:text-slate-300">
-                                        {t('dashboard.welcome.greeting', { teacher: '' })}
-                                    </p>
-                                    <h1 className="mt-1 truncate font-itim text-lg font-bold leading-none text-[#2f2922] sm:text-xl dark:text-white" dir="auto">
-                                        {teacherName || t('settings.defaultTeacherName')}
-                                    </h1>
-                                </div>
-                            </div>
+                {/* En-tête Notion / Linear plein-largeur sans arrondi, poussé en haut */}
+                <header
+                    id="dashboard-header"
+                    aria-live="polite"
+                    className="w-full rounded-none border-b border-zinc-200/80 bg-white shadow-2xs dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                    <div className="mx-auto max-w-5xl px-3.5 py-4 sm:px-6 sm:py-5 lg:px-8 pl-safe pr-safe">
+                        {/* 1. Zone supérieure – Bienvenue + Nom d'utilisateur harmonisé */}
+                        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                            <h1
+                                className={`font-bold text-zinc-950 dark:text-white leading-tight tracking-tight ${
+                                    isRtl ? 'font-lateef text-3xl sm:text-4xl' : 'font-itim text-2xl sm:text-3xl'
+                                }`}
+                                dir="auto"
+                            >
+                                {isRtl ? 'مرحباً :' : locale === 'en' ? 'Welcome :' : 'Bienvenue :'}
+                            </h1>
 
-                            <div className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2 text-[11px] font-medium leading-[1.4] transition-all landscape:w-auto landscape:max-w-[60%] sm:w-auto sm:max-w-[32rem] sm:flex-1 sm:rounded-2xl sm:text-xs ${
-                                welcome.tone === 'alert'
-                                    ? 'border-rose-200/80 bg-rose-50/80 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/50 dark:text-rose-200'
-                                    : welcome.tone === 'vacation'
-                                        ? 'border-cyan-200/80 bg-cyan-50/80 text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-950/50 dark:text-cyan-200'
-                                        : welcome.tone === 'deadline'
-                                            ? 'border-amber-200/80 bg-amber-50/80 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200'
-                                        : 'border-white/80 bg-white/55 text-[#665846] dark:border-white/10 dark:bg-white/[0.07] dark:text-slate-300'
-                            }`}>
-                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/75 shadow-xs dark:bg-white/10" aria-hidden>
-                                    {welcome.tone === 'alert' ? (
-                                        <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                                    ) : welcome.tone === 'deadline' ? (
-                                        <ClipboardList className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                                    ) : (
-                                        <CalendarDays className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                                    )}
-                                </span>
-
-                                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5 text-start">
-                                    {welcome.title && (
-                                        <span className="font-bold text-slate-900 dark:text-white">
-                                            {welcome.title}
-                                        </span>
-                                    )}
-                                    {welcome.action && (
-                                        <button
-                                            type="button"
-                                            onClick={welcome.action.onClick}
-                                            className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 font-bold text-blue-700 transition-colors hover:bg-blue-50/70 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
-                                        >
-                                            <span>{welcome.action.label}</span>
-                                            <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
-                                        </button>
-                                    )}
-                                    {welcome.detail && (
-                                        <span className="basis-full text-[#776854] dark:text-slate-400">
-                                            {welcome.detail}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                            <span
+                                className={`inline-flex max-w-full items-center justify-center rounded-lg border border-zinc-200/90 bg-zinc-100/95 px-3 py-0.5 text-zinc-900 shadow-2xs transition-colors dark:border-zinc-700/80 dark:bg-zinc-800/90 dark:text-zinc-100 ${
+                                    isArabicText(displayTeacherName)
+                                        ? 'font-lateef text-3xl sm:text-4xl font-bold leading-tight'
+                                        : 'font-itim text-2xl sm:text-3xl font-bold leading-tight'
+                                }`}
+                                dir="auto"
+                            >
+                                {displayTeacherName}
+                            </span>
                         </div>
-                    </header>
+
+                        {/* 2. Zone inférieure – Message important */}
+                        {(welcome.title || welcome.detail || scheduleIncompleteCount > 0) && (
+                            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 rounded-[8px] border border-[#fbcfe8] bg-[#fdf2f8] px-3.5 py-2.5 text-xs text-rose-950 transition-all sm:text-sm dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+                                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" strokeWidth={2.2} />
+                                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                                        <span className="font-bold text-rose-950 dark:text-rose-100">
+                                            {welcome.title || (isRtl ? 'مهم : قسم واحد يحتاج إلى انتباهكم' : 'Important : 1 classe nécessite votre attention')}
+                                        </span>
+                                        {welcome.detail && (
+                                            <span className="text-rose-800/80 dark:text-rose-300/80 text-xs">
+                                                {welcome.detail}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {welcome.action && (
+                                    <button
+                                        type="button"
+                                        onClick={welcome.action.onClick}
+                                        className="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 font-bold text-rose-700 hover:text-rose-900 transition-colors dark:text-rose-300 dark:hover:text-white"
+                                    >
+                                        <span>{welcome.action.label}</span>
+                                        <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </header>
+
+                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 sm:pt-5 lg:px-8 pl-safe pr-safe">
                     {classes.length > 0 && (
                         <div className="mb-3 flex min-h-8 flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
                             <h2 id="classes-heading" className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100 sm:text-sm">

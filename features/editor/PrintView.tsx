@@ -19,6 +19,7 @@ import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { schoolYearLabelFromDate } from '@/utils/calendar';
 import { getAcademyById } from '@/utils/moroccoEducation';
+import { isArabicText } from '@/utils/textFormat';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
 // Props interfaces
@@ -273,7 +274,13 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
-                    <strong className="print-field-value font-itim text-[#0056D2] font-bold">{classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}</strong>
+                    <strong className={`print-field-value text-[#0056D2] font-bold ${
+                        isArabicText(classInfo.teacherName || config.defaultTeacherName)
+                            ? 'font-lateef text-[1.15em]'
+                            : 'font-itim'
+                    }`}>
+                        {classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}
+                    </strong>
                 </div>
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'القسم / الفوج' : 'Classe'}</span>

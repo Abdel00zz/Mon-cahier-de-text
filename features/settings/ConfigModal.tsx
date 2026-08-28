@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect, useRef, useCallback, FC } from 'react';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, Cycle } from '@/types';
 import { localeMetadata, useLocale } from '@/i18n/LocaleProvider';
@@ -176,6 +176,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const { locale, isRtl, t } = useLocale();
   const { user } = useAuth();
   const [localConfig, setLocalConfig] = useState(config);
+  const wasOpenRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
   const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
   // Sur ordinateur : menu ouvert avec labels visibles par défaut
@@ -183,17 +184,26 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpenRef.current) {
       setLocalConfig(config);
     }
+    wasOpenRef.current = isOpen;
   }, [isOpen, config]);
 
   const handleSelectCategory = (id: SettingsCategory) => {
     setActiveCategory(id);
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < 1024) {
       setMobileSubViewOpen(true);
       window.history.pushState({ ...window.history.state, settingsSubView: id }, '');
     }
+  };
+
+  const handleBackToCategories = () => {
+    if (window.history.state?.settingsSubView) {
+      window.history.back();
+      return;
+    }
+    setMobileSubViewOpen(false);
   };
 
   useEffect(() => {
@@ -229,13 +239,18 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     }
   }, []);
 
-  const applyLive = (patch: Partial<AppConfig>) => {
+  const applyLive = useCallback((patch: Partial<AppConfig>) => {
     setLocalConfig(prev => ({ ...prev, ...patch }));
     onConfigChange(patch);
-  };
+  }, [onConfigChange]);
 
   const handleSave = () => {
-    onConfigChange(localConfig);
+    const changedEntries = (Object.keys(localConfig) as Array<keyof AppConfig>)
+      .filter(key => JSON.stringify(localConfig[key]) !== JSON.stringify(config[key]))
+      .map(key => [key, localConfig[key]] as const);
+    if (changedEntries.length > 0) {
+      onConfigChange(Object.fromEntries(changedEntries) as Partial<AppConfig>);
+    }
     onClose();
   };
 
@@ -757,7 +772,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
   const { logout } = useAuth();
 
-  const footer = (
+  const footer = activeCategory === 'apparence' ? (
+    <div className="flex w-full items-center justify-between gap-3">
+      <span className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <CircleCheck className="h-4 w-4" />
+        {locale === 'ar' ? 'يُطبّق كل اختيار فوراً' : locale === 'en' ? 'Each choice is applied instantly' : 'Chaque choix est appliqué immédiatement'}
+      </span>
+      <Button type="button" onClick={onClose} className="touch-target rounded-xl px-5 text-xs font-bold">
+        {t('common.close')}
+      </Button>
+    </div>
+  ) : (
     <div className="flex w-full flex-wrap items-center justify-between gap-3">
       <div>
         {activeCategory === 'compte' && user ? (
@@ -850,7 +875,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   const menuListContent = (
     <div className="space-y-3 transition-all duration-300 h-full flex flex-col">
       {/* Sidebar Toggle Button (Desktop Only) */}
-      <div className={cn("hidden md:flex items-center justify-between pb-1", isEffectiveCollapsed ? "justify-center" : "")}>
+      <div className={cn("hidden lg:flex items-center justify-between pb-1", isEffectiveCollapsed ? "justify-center" : "")}>
         {!isEffectiveCollapsed && (
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
             {locale === 'ar' ? 'الأقسام' : 'Sections'}
@@ -859,7 +884,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/40"
+          className="touch-target flex items-center justify-center rounded-xl bg-muted/50 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/40"
           title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
           <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
@@ -867,7 +892,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       </div>
 
       {/* Mobile Header (When on Phone) */}
-      <div className="block md:hidden mb-2 px-1">
+      <div className="block lg:hidden mb-2 px-1">
         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           {locale === 'ar' ? 'أقسام الإعدادات' : 'Sections des paramètres'}
         </span>
@@ -911,7 +936,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   >
                     <Icon className="h-5 w-5 stroke-[2.2]" />
                   </div>
-                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden md:hidden' : 'block')}>
+                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
                     <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
                       {t(item.titleKey)}
                     </span>
@@ -979,7 +1004,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   >
                     <Icon className="h-5 w-5 stroke-[2.2]" />
                   </div>
-                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden md:hidden' : 'block')}>
+                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
                     <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
                       {t(item.titleKey)}
                     </span>
@@ -1029,17 +1054,17 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       maxWidth="5xl"
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
-      initialMobileDetent={0.68}
+      initialMobileDetent={0.92}
       className="settings-modal-sheet overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-[28px]"
       headerClassName="border-b border-border/55 bg-card px-5 py-4 sm:px-7 sm:py-4.5"
       bodyClassName="p-4 sm:p-6"
     >
-      <div className="rtl-config-split grid grid-cols-1 md:grid-cols-12 gap-6 min-h-[480px]">
+      <div className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 min-h-[480px]">
         <div
           className={cn(
-            'md:col-span-5 lg:col-span-4 flex flex-col',
-            isRtl ? 'border-l border-border/60 pl-0 md:pl-5' : 'border-r border-border/60 pr-0 md:pr-5',
-            mobileSubViewOpen ? 'hidden md:flex' : 'flex'
+            'lg:col-span-4 flex flex-col',
+            isRtl ? 'border-l border-border/60 pl-0 lg:pl-5' : 'border-r border-border/60 pr-0 lg:pr-5',
+            mobileSubViewOpen ? 'hidden lg:flex' : 'flex'
           )}
         >
           {menuListContent}
@@ -1047,11 +1072,29 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
         <div
           className={cn(
-            'settings-content-zone md:col-span-7 lg:col-span-8 flex flex-col',
-            isRtl ? 'pr-0 md:pr-1' : 'pl-0 md:pl-1',
-            !mobileSubViewOpen ? 'hidden md:flex' : 'flex'
+            'settings-content-zone lg:col-span-8 flex flex-col',
+            isRtl ? 'pr-0 lg:pr-1' : 'pl-0 lg:pl-1',
+            !mobileSubViewOpen ? 'hidden lg:flex' : 'flex'
           )}
         >
+          <div className="mb-4 flex items-center gap-3 border-b border-border/50 pb-3 lg:hidden">
+            <button
+              type="button"
+              onClick={handleBackToCategories}
+              className="touch-target flex shrink-0 items-center justify-center rounded-xl border border-border/70 bg-card text-foreground shadow-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              aria-label={locale === 'ar' ? 'العودة إلى أقسام الإعدادات' : 'Retour aux sections des paramètres'}
+            >
+              <ChevronRight className={cn('h-5 w-5', !isRtl && 'rotate-180')} />
+            </button>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                {locale === 'ar' ? 'الإعدادات' : 'Paramètres'}
+              </span>
+              <span className="block truncate text-sm font-bold text-foreground">
+                {t(SETTING_ITEMS.find(item => item.id === activeCategory)?.titleKey ?? 'settings.title')}
+              </span>
+            </div>
+          </div>
           <div className="flex-1">
             <div key={activeCategory} className="settings-page-content animate-in fade-in duration-100">
               {renderCategoryContent()}

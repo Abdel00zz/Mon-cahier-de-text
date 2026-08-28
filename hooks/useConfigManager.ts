@@ -53,7 +53,7 @@ const defaultConfig: AppConfig = {
     assessmentOrder: {},
 };
 
-export const parseStoredConfig = (storedConfig: string | null): AppConfig => {
+const parseStoredConfig = (storedConfig: string | null): AppConfig => {
     if (!storedConfig) {
         return {
             ...defaultConfig,
@@ -124,7 +124,7 @@ export const useConfigManager = () => {
         }
         return defaultConfig;
     });
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
     const configRef = useRef<AppConfig>(config);
     const configSourceRef = useRef(Symbol('config-manager'));
 

@@ -101,7 +101,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="flex min-h-[22px] items-center justify-start">
                     {showSubjectBadge && subjectBadgeText ? (
                         <span
-                            className={`${SUBJECT_BADGE_BASE_CLASSES} ${visual.badgeStyle} border border-slate-200/70 dark:border-zinc-700/50 bg-white/95 dark:bg-zinc-900/95 shadow-2xs backdrop-blur-md transition-transform duration-200 group-hover:scale-105`}
+                            className={`${SUBJECT_BADGE_BASE_CLASSES} ${visual.badgeStyle} shadow-2xs backdrop-blur-sm transition-transform duration-200 group-hover:scale-105`}
                         >
                             {subjectBadgeText}
                         </span>

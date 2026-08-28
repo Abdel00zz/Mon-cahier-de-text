@@ -322,7 +322,7 @@ const App: React.FC = () => {
       )}
       <div
         data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
-        className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-8' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[248px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[248px]' : 'lg:pl-[76px]'}`}` : ''}`}
+        className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? `${isRtl ? `sm:pr-[76px] ${isSidebarExpanded ? 'lg:pr-[252px]' : 'lg:pr-[76px]'}` : `sm:pl-[76px] ${isSidebarExpanded ? 'lg:pl-[252px]' : 'lg:pl-[76px]'}`}` : ''}`}
       >
         <div key={routeKey} className="relative z-10 min-h-screen">
           <Suspense fallback={<AppBootSkeleton />}>

@@ -470,10 +470,12 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                     {style.descFr}
                   </p>
                 </div>
-                <div className="mt-3 pt-2 border-t border-border/40 flex items-center gap-1.5 text-[10px] font-semibold text-primary">
-                  <CheckCircle2 className="h-3 w-3" />
-                  <span>Actif</span>
-                </div>
+                {isSelected && (
+                  <div className="mt-3 flex items-center gap-1.5 border-t border-primary/20 pt-2 text-[10px] font-bold text-primary">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>{isRtl ? 'مفعّل' : locale === 'en' ? 'Active' : 'Actif'}</span>
+                  </div>
+                )}
               </button>
             );
           })}

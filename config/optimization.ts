@@ -15,7 +15,7 @@
  */
 
 /** Budget d'alerte par chunk non compressé (kB). Référence unique du projet. */
-export const CHUNK_WARN_LIMIT_KB = 320;
+const CHUNK_WARN_LIMIT_KB = 320;
 
 /*
  * N'inscrire ici QUE des dépendances déjà présentes dans le chemin critique.
@@ -32,7 +32,7 @@ const vendorGroups: Array<{ chunk: string; test: RegExp }> = [
   { chunk: 'ui', test: /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils|lucide-react)[\\/]/ },
 ];
 
-export const manualChunks = (id: string): string | undefined => {
+const manualChunks = (id: string): string | undefined => {
   const normalized = id.replace(/\\/g, '/');
 
   if (!normalized.includes('/node_modules/')) {

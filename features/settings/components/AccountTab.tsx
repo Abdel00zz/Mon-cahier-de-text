@@ -4,6 +4,7 @@ import { useSync } from '@/contexts/SyncContext';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { User, RefreshCw, ShieldCheck } from '@/components/ui/icons';
+import { isArabicText } from '@/utils/textFormat';
 
 const timeAgo = (iso: string, locale: string, unknownDate: string): string => {
     const then = new Date(iso).getTime();
@@ -38,7 +39,9 @@ export const AccountTab: React.FC = () => {
                                 </span>
                             )}
                         </div>
-                        <p className="mt-0.5 text-sm sm:text-base font-bold text-foreground">
+                        <p className={`mt-0.5 text-sm sm:text-base font-bold text-foreground ${
+                            user && isArabicText(`${user.prenom} ${user.nom}`) ? 'font-lateef text-base sm:text-lg' : 'font-itim'
+                        }`}>
                             {user ? `${user.prenom} ${user.nom}` : t('account.notSignedIn')}
                         </p>
                         {user && <p className="text-xs text-muted-foreground font-medium mt-0.5 font-mono">{user.phone}</p>}

@@ -9,7 +9,7 @@ const STORAGE_KEY  = 'classManager_v1';
 const DATA_PREFIX  = 'classData_v1_';
 const LAUNCH_FLAG  = 'app_first_launch_v1';
 
-export const parseStoredClasses = (storedRaw: string | null): ClassInfo[] => {
+const parseStoredClasses = (storedRaw: string | null): ClassInfo[] => {
     if (!storedRaw) return [];
     try {
         const stored = JSON.parse(storedRaw);

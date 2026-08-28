@@ -140,3 +140,11 @@ function applyInlineFormatting(segment: string, keyBase: string): React.ReactNod
 
   return out;
 }
+
+/**
+ * Détecte si un texte contient principalement des caractères arabes.
+ */
+export function isArabicText(text: string | null | undefined): boolean {
+  if (!text) return false;
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+}

@@ -65,12 +65,6 @@ export const FuturisticCardFrame: React.FC<FuturisticCardFrameProps> = memo(({
           className="fill-white dark:fill-zinc-900 transition-all duration-300 ease-out group-hover:stroke-width-[3.25]"
         />
 
-        {/* ── SUBTLE CORNER ACCENT DOTS (In Badge Color) ────────────────── */}
-        <circle cx="20" cy="34" r="2" fill={colorTheme.primaryHex} opacity="0.85" />
-        <circle cx="440" cy="34" r="2" fill={colorTheme.primaryHex} opacity="0.85" />
-        <circle cx="20" cy="224" r="2" fill={colorTheme.primaryHex} opacity="0.8" />
-        <circle cx="440" cy="224" r="2" fill={colorTheme.primaryHex} opacity="0.8" />
-
         {/* ── CLEAN TOP CUTOUT NOTCH (Breaks the top stroke so it connects cleanly into badge) ── */}
         <rect
           x="142"

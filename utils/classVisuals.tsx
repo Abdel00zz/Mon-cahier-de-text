@@ -172,28 +172,103 @@ const SUBJECT_ALIASES: Record<string, string> = {
 };
 
 const SUBJECT_VISUALS: Record<string, ClassVisual> = {
-    'Mathématiques': visual('bg-blue-500', 'bg-blue-50 text-blue-800 border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-200 dark:border-blue-800/40', 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300', 'text-blue-600'),
-    'Physique-Chimie': visual('bg-purple-500', 'bg-purple-50 text-purple-800 border-purple-200/80 dark:bg-purple-950/60 dark:text-purple-200 dark:border-purple-800/40', 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300', 'text-purple-600'),
-    'Sciences de la Vie et de la Terre': visual('bg-emerald-500', 'bg-emerald-50 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/40', 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', 'text-emerald-600'),
-    'Sciences de l’Ingénieur': visual('bg-slate-500', 'bg-slate-100 text-slate-800 border-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:border-slate-700/40', 'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300', 'text-slate-600'),
-    'Sciences Économiques et Gestion': visual('bg-amber-500', 'bg-amber-50 text-amber-800 border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800/40', 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300', 'text-amber-600'),
-    'Informatique': visual('bg-indigo-500', 'bg-indigo-50 text-indigo-800 border-indigo-200/80 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800/40', 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300', 'text-indigo-600'),
-    'Français': visual('bg-rose-500', 'bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800/40', 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300', 'text-rose-600'),
-    'Arabe': visual('bg-teal-500', 'bg-teal-50 text-teal-800 border-teal-200/80 dark:bg-teal-950/60 dark:text-teal-200 dark:border-teal-800/40', 'bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300', 'text-teal-600'),
-    'Anglais': visual('bg-sky-500', 'bg-sky-50 text-sky-800 border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800/40', 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300', 'text-sky-600'),
-    'Espagnol': visual('bg-orange-500', 'bg-orange-50 text-orange-800 border-orange-200/80 dark:bg-orange-950/60 dark:text-orange-200 dark:border-orange-800/40', 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300', 'text-orange-600'),
-    'Allemand': visual('bg-yellow-500', 'bg-yellow-50 text-yellow-800 border-yellow-200/80 dark:bg-yellow-950/60 dark:text-yellow-200 dark:border-yellow-800/40', 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300', 'text-yellow-600'),
-    'Philosophie': visual('bg-cyan-500', 'bg-cyan-50 text-cyan-800 border-cyan-200/80 dark:bg-cyan-950/60 dark:text-cyan-200 dark:border-cyan-800/40', 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300', 'text-cyan-600'),
-    'Histoire-Géographie': visual('bg-fuchsia-500', 'bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200/80 dark:bg-fuchsia-950/60 dark:text-fuchsia-200 dark:border-fuchsia-800/40', 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300', 'text-fuchsia-600'),
-    'Éducation Islamique': visual('bg-lime-500', 'bg-lime-50 text-lime-800 border-lime-200/80 dark:bg-lime-950/60 dark:text-lime-200 dark:border-lime-800/40', 'bg-lime-50 text-lime-700 dark:bg-lime-950 dark:text-lime-300', 'text-lime-600'),
-    'Éducation Physique et Sportive': visual('bg-stone-500', 'bg-stone-100 text-stone-800 border-stone-200/80 dark:bg-stone-900/60 dark:text-stone-200 dark:border-stone-700/40', 'bg-stone-100 text-stone-700 dark:bg-stone-950 dark:text-stone-300', 'text-stone-600'),
+    'Mathématiques': visual(
+        'bg-blue-500',
+        'bg-blue-50/80 text-blue-700 border border-blue-200/70 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700/40',
+        'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        'text-blue-600'
+    ),
+    'Physique-Chimie': visual(
+        'bg-purple-500',
+        'bg-purple-50/80 text-purple-700 border border-purple-200/70 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-700/40',
+        'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+        'text-purple-600'
+    ),
+    'Sciences de la Vie et de la Terre': visual(
+        'bg-emerald-500',
+        'bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700/40',
+        'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+        'text-emerald-600'
+    ),
+    'Sciences de l’Ingénieur': visual(
+        'bg-slate-500',
+        'bg-slate-50/80 text-slate-700 border border-slate-200/70 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700/40',
+        'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300',
+        'text-slate-600'
+    ),
+    'Sciences Économiques et Gestion': visual(
+        'bg-amber-500',
+        'bg-amber-50/80 text-amber-700 border border-amber-200/70 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700/40',
+        'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+        'text-amber-600'
+    ),
+    'Informatique': visual(
+        'bg-indigo-500',
+        'bg-indigo-50/80 text-indigo-700 border border-indigo-200/70 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-700/40',
+        'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
+        'text-indigo-600'
+    ),
+    'Français': visual(
+        'bg-rose-500',
+        'bg-rose-50/80 text-rose-700 border border-rose-200/70 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-700/40',
+        'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+        'text-rose-600'
+    ),
+    'Arabe': visual(
+        'bg-teal-500',
+        'bg-teal-50/80 text-teal-700 border border-teal-200/70 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-700/40',
+        'bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300',
+        'text-teal-600'
+    ),
+    'Anglais': visual(
+        'bg-sky-500',
+        'bg-sky-50/80 text-sky-700 border border-sky-200/70 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-700/40',
+        'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300',
+        'text-sky-600'
+    ),
+    'Espagnol': visual(
+        'bg-orange-500',
+        'bg-orange-50/80 text-orange-700 border border-orange-200/70 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-700/40',
+        'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
+        'text-orange-600'
+    ),
+    'Allemand': visual(
+        'bg-yellow-500',
+        'bg-yellow-50/80 text-yellow-700 border border-yellow-200/70 dark:bg-yellow-950/40 dark:text-yellow-300 dark:border-yellow-700/40',
+        'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
+        'text-yellow-600'
+    ),
+    'Philosophie': visual(
+        'bg-cyan-500',
+        'bg-cyan-50/80 text-cyan-700 border border-cyan-200/70 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-700/40',
+        'bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300',
+        'text-cyan-600'
+    ),
+    'Histoire-Géographie': visual(
+        'bg-fuchsia-500',
+        'bg-fuchsia-50/80 text-fuchsia-700 border border-fuchsia-200/70 dark:bg-fuchsia-950/40 dark:text-fuchsia-300 dark:border-fuchsia-700/40',
+        'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300',
+        'text-fuchsia-600'
+    ),
+    'Éducation Islamique': visual(
+        'bg-lime-500',
+        'bg-lime-50/80 text-lime-700 border border-lime-200/70 dark:bg-lime-950/40 dark:text-lime-300 dark:border-lime-700/40',
+        'bg-lime-50 text-lime-700 dark:bg-lime-950 dark:text-lime-300',
+        'text-lime-600'
+    ),
+    'Éducation Physique et Sportive': visual(
+        'bg-stone-500',
+        'bg-stone-50/80 text-stone-700 border border-stone-200/70 dark:bg-stone-900/40 dark:text-stone-300 dark:border-stone-700/40',
+        'bg-stone-100 text-stone-700 dark:bg-stone-950 dark:text-stone-300',
+        'text-stone-600'
+    ),
 };
 
 const SUBJECT_VISUAL_KEYS = Object.keys(SUBJECT_VISUALS);
 
 const NEUTRAL_VISUAL = visual(
     'bg-slate-300',
-    'bg-slate-100 text-slate-900 dark:bg-slate-900/60 dark:text-slate-100',
+    'bg-slate-50/80 text-slate-700 border border-slate-200/70 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-700/40',
     'bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300',
     'text-slate-600',
 );
