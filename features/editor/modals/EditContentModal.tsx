@@ -72,8 +72,8 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
     if (!item || !isDirty) return;
     onSave(formData);
   };
-  const labelClass = 'mb-1.5 block text-[10px] font-extrabold uppercase tracking-[0.09em] text-muted-foreground';
-  const fieldClass = 'h-11 rounded-xl border-border/75 bg-background shadow-sm focus-visible:ring-2 focus-visible:ring-primary/20';
+  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground';
+  const fieldClass = 'h-11 rounded-xl border-border/75 bg-background shadow-xs focus-visible:ring-2 focus-visible:ring-primary/20';
   const description = String(formData.description ?? '');
   const editedTitleField: 'title' | 'name' = titleOnly ? titleField : 'title';
   const editedTitle = String(formData[editedTitleField] ?? '');
@@ -114,11 +114,11 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
               />
             </section>
             <aside className="min-w-0 rounded-2xl border border-border/70 bg-muted/20 p-4">
-              <div className="border-b border-border/60 pb-2 text-[10px] font-extrabold uppercase tracking-[0.09em] text-muted-foreground">
+              <div className="border-b border-border/60 pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {t('editContent.preview')}
               </div>
               <MathText source={editedTitle}>
-                <h3 className="mt-4 min-h-11 break-words text-start text-base font-extrabold leading-snug text-foreground">
+                <h3 className="mt-4 min-h-11 break-words text-start text-sm sm:text-base font-bold leading-snug text-foreground">
                   {editedTitle || t('editContent.untitled')}
                 </h3>
               </MathText>
@@ -159,7 +159,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
               </section>
 
               <aside className="min-w-0 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:sticky lg:top-0 lg:min-h-[260px]">
-                <div className="border-b border-border/60 pb-2 text-[10px] font-extrabold uppercase tracking-[0.09em] text-muted-foreground">
+                <div className="border-b border-border/60 pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   {t('editContent.preview')}
                 </div>
                 <MathText source={`${editedTitle}\n${description}`}>
@@ -169,7 +169,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                       {formData.number ? <span>· {String(formData.number)}</span> : null}
                       {formData.page ? <span className="text-muted-foreground">p. {String(formData.page)}</span> : null}
                     </div>
-                    <h3 className="mt-2 text-base font-extrabold leading-snug text-foreground">
+                    <h3 className="mt-2 text-sm sm:text-base font-bold leading-snug text-foreground">
                       {editedTitle || t('editContent.untitled')}
                     </h3>
                     <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">

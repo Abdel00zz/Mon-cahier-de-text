@@ -4,7 +4,9 @@
 
 export type SyncEvent = 'dirty' | 'pull-applied' | 'config-changed' | 'classes-changed' | 'notifications-changed';
 
-const listeners = new Map<SyncEvent, Set<() => void>>();
+type SyncListener = (source?: symbol) => void;
+
+const listeners = new Map<SyncEvent, Set<SyncListener>>();
 const SYNC_PENDING_KEY = 'syncPending_v1';
 const SYNC_META_KEY = 'syncMeta_v1';
 const SETTINGS_SYNC_META_KEY = 'settingsSyncMeta_v1';
@@ -150,11 +152,11 @@ const removeClassSyncMeta = (classId: string): void => {
     }
 };
 
-const emit = (event: SyncEvent): void => {
-    listeners.get(event)?.forEach(listener => listener());
+const emit = (event: SyncEvent, source?: symbol): void => {
+    listeners.get(event)?.forEach(listener => listener(source));
 };
 
-export const subscribe = (event: SyncEvent, listener: () => void): (() => void) => {
+export const subscribe = (event: SyncEvent, listener: SyncListener): (() => void) => {
     if (!listeners.has(event)) listeners.set(event, new Set());
     listeners.get(event)!.add(listener);
     return () => listeners.get(event)?.delete(listener);
@@ -193,8 +195,8 @@ export const notifyClassesChanged = (): void => {
 };
 
 /** Synchronise les instances locales de configuration entre les vues. */
-export const notifyConfigChanged = (): void => {
-    emit('config-changed');
+export const notifyConfigChanged = (source?: symbol): void => {
+    emit('config-changed', source);
 };
 
 /** Rafraîchit les projections de notifications après une mutation locale

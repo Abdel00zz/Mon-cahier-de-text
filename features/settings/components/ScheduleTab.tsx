@@ -13,9 +13,117 @@ import {
 } from '@/utils/timetable';
 import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
-import { getClassVisual } from '@/utils/classVisuals';
 import { TriangleAlert, CircleCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+
+export interface ModernClassColor {
+    key: string;
+    bg: string;
+    border: string;
+    text: string;
+    subtext: string;
+    dot: string;
+}
+
+/** Palette moderne, plus foncée, contrastée et saturée pour les créneaux d'emploi du temps */
+export const MODERN_SCHEDULE_PALETTE: ModernClassColor[] = [
+    {
+        key: 'emerald',
+        bg: 'bg-emerald-600 dark:bg-emerald-600',
+        border: 'border-emerald-700/60 dark:border-emerald-500/50',
+        text: 'text-white',
+        subtext: 'text-emerald-100/90',
+        dot: 'bg-emerald-500',
+    },
+    {
+        key: 'indigo',
+        bg: 'bg-indigo-600 dark:bg-indigo-600',
+        border: 'border-indigo-700/60 dark:border-indigo-500/50',
+        text: 'text-white',
+        subtext: 'text-indigo-100/90',
+        dot: 'bg-indigo-500',
+    },
+    {
+        key: 'amber',
+        bg: 'bg-amber-600 dark:bg-amber-600',
+        border: 'border-amber-700/60 dark:border-amber-500/50',
+        text: 'text-white',
+        subtext: 'text-amber-100/90',
+        dot: 'bg-amber-500',
+    },
+    {
+        key: 'purple',
+        bg: 'bg-purple-600 dark:bg-purple-600',
+        border: 'border-purple-700/60 dark:border-purple-500/50',
+        text: 'text-white',
+        subtext: 'text-purple-100/90',
+        dot: 'bg-purple-500',
+    },
+    {
+        key: 'teal',
+        bg: 'bg-teal-600 dark:bg-teal-600',
+        border: 'border-teal-700/60 dark:border-teal-500/50',
+        text: 'text-white',
+        subtext: 'text-teal-100/90',
+        dot: 'bg-teal-500',
+    },
+    {
+        key: 'rose',
+        bg: 'bg-rose-600 dark:bg-rose-600',
+        border: 'border-rose-700/60 dark:border-rose-500/50',
+        text: 'text-white',
+        subtext: 'text-rose-100/90',
+        dot: 'bg-rose-500',
+    },
+    {
+        key: 'sky',
+        bg: 'bg-sky-600 dark:bg-sky-600',
+        border: 'border-sky-700/60 dark:border-sky-500/50',
+        text: 'text-white',
+        subtext: 'text-sky-100/90',
+        dot: 'bg-sky-500',
+    },
+    {
+        key: 'orange',
+        bg: 'bg-orange-600 dark:bg-orange-600',
+        border: 'border-orange-700/60 dark:border-orange-500/50',
+        text: 'text-white',
+        subtext: 'text-orange-100/90',
+        dot: 'bg-orange-500',
+    },
+    {
+        key: 'fuchsia',
+        bg: 'bg-fuchsia-600 dark:bg-fuchsia-600',
+        border: 'border-fuchsia-700/60 dark:border-fuchsia-500/50',
+        text: 'text-white',
+        subtext: 'text-fuchsia-100/90',
+        dot: 'bg-fuchsia-500',
+    },
+    {
+        key: 'cyan',
+        bg: 'bg-cyan-600 dark:bg-cyan-600',
+        border: 'border-cyan-700/60 dark:border-cyan-500/50',
+        text: 'text-white',
+        subtext: 'text-cyan-100/90',
+        dot: 'bg-cyan-500',
+    },
+    {
+        key: 'lime',
+        bg: 'bg-lime-700 dark:bg-lime-600',
+        border: 'border-lime-800/60 dark:border-lime-500/50',
+        text: 'text-white',
+        subtext: 'text-lime-100/90',
+        dot: 'bg-lime-500',
+    },
+    {
+        key: 'slate',
+        bg: 'bg-slate-700 dark:bg-slate-600',
+        border: 'border-slate-800/60 dark:border-slate-500/50',
+        text: 'text-white',
+        subtext: 'text-slate-200/90',
+        dot: 'bg-slate-500',
+    },
+];
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -119,16 +227,66 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return map;
     }, [classes]);
 
-    const colorFor = (classId: string) => {
-        const visual = getClassVisual(classById.get(classId)?.name ?? '');
-        return {
-            bg: visual.chapterSurfaceClass,
-            border: '',
-            text: visual.iconClass,
-            subtext: 'text-foreground/65 dark:text-white/75',
-            dot: visual.frameBg,
+    /**
+     * Attribution de couleurs modernes, foncées et distinctes par classe.
+     * Tient compte du niveau/cycle tout en garantissant qu'aucune classe
+     * ne partage la même couleur avec une autre dans l'emploi du temps.
+     */
+    const classColorMap = React.useMemo(() => {
+        const map = new Map<string, ModernClassColor>();
+        const usedIndices = new Set<number>();
+
+        const getPreferredIndex = (c: ClassInfo, defaultIdx: number): number => {
+            const name = (c.name || '').toLowerCase();
+            // Tronc Commun / جذع مشترك
+            if (name.includes('tronc') || name.startsWith('tc') || name.includes('جذع') || name.includes('ج.م') || name.includes('ج م')) {
+                return 0; // Emerald
+            }
+            // 1er Bac / 1AC / الأولى
+            if (name.startsWith('1') || name.includes('1er') || name.includes('1ere') || name.includes('1bac') || name.includes('1ac') || name.includes('أولى') || name.includes('1ب')) {
+                return 1; // Indigo
+            }
+            // 2ème Bac / 2AC / الثانية
+            if (name.startsWith('2') || name.includes('2eme') || name.includes('2ème') || name.includes('2bac') || name.includes('2ac') || name.includes('ثانية') || name.includes('2ب')) {
+                return 2; // Amber
+            }
+            // 3ème AC / الثالثة
+            if (name.startsWith('3') || name.includes('3eme') || name.includes('3ème') || name.includes('3ac') || name.includes('ثالثة') || name.includes('3ب')) {
+                return 3; // Purple
+            }
+            // Prépas
+            if (['mpsi', 'pcsi', 'mp', 'psi', 'tsi', 'ecs', 'ect'].some(p => name.includes(p))) {
+                return 6; // Sky
+            }
+            return defaultIdx % MODERN_SCHEDULE_PALETTE.length;
         };
-    };
+
+        classes.forEach((c, idx) => {
+            const pref = getPreferredIndex(c, idx);
+            let chosen = pref;
+            if (usedIndices.has(chosen)) {
+                for (let offset = 1; offset < MODERN_SCHEDULE_PALETTE.length; offset++) {
+                    const candidate = (pref + offset) % MODERN_SCHEDULE_PALETTE.length;
+                    if (!usedIndices.has(candidate)) {
+                        chosen = candidate;
+                        break;
+                    }
+                }
+            }
+            usedIndices.add(chosen);
+            map.set(c.id, MODERN_SCHEDULE_PALETTE[chosen]);
+        });
+
+        return map;
+    }, [classes]);
+
+    const colorFor = React.useCallback((classId: string): ModernClassColor => {
+        const existing = classColorMap.get(classId);
+        if (existing) return existing;
+        let hash = 0;
+        for (let i = 0; i < classId.length; i++) hash = (hash * 31 + classId.charCodeAt(i)) >>> 0;
+        return MODERN_SCHEDULE_PALETTE[hash % MODERN_SCHEDULE_PALETTE.length];
+    }, [classColorMap]);
 
     /*
      * Avis intelligent en TEMPS RÉEL : après chaque modif de la grille, on
@@ -261,11 +419,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             {visibleHourSlots.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border/70 bg-muted/70 px-2 py-3 text-center font-bold text-foreground/70 ${
+                                    className={`border-b border-border/70 bg-muted/70 px-1 py-2 text-center text-[9px] sm:text-[10px] font-bold text-foreground/75 ${
                                         hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''
                                     }`}
                                 >
-                                    <span dir="ltr">{hourLabel(hour.startMin, hour.endMin)}</span>
+                                    <span dir="ltr" className="inline-block leading-tight tracking-tight">{hourLabel(hour.startMin, hour.endMin)}</span>
                                 </th>
                             ))}
                         </tr>
@@ -302,39 +460,39 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
                                                 title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                    className={`h-16 w-full cursor-pointer rounded-2xl border px-2 text-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
-                                                        classInfo && color
-                                                        ? `${color.border} ${color.bg} text-transparent shadow-[0_8px_20px_-13px_rgba(15,23,42,0.6)] hover:-translate-y-0.5 hover:saturate-[1.04]`
-                                                        : 'border-dashed border-border/70 bg-muted/20 text-muted-foreground/70 hover:border-primary/40 hover:bg-primary/[0.06] hover:text-foreground'
+                                                className={`h-16 w-full cursor-pointer rounded-2xl border px-2 text-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                                                    classInfo && color
+                                                    ? `${color.border} ${color.bg} text-transparent shadow-[0_6px_18px_-6px_rgba(0,0,0,0.22)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-6px_rgba(0,0,0,0.30)] hover:brightness-105 active:scale-[0.99]`
+                                                    : 'border-dashed border-border/70 bg-muted/20 text-zinc-700 dark:text-zinc-300 hover:border-primary/40 hover:bg-primary/[0.06] hover:text-zinc-950 dark:hover:text-zinc-50'
                                                 }`}
                                                 aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
-                                                <option value="" className="text-slate-800">{t('schedule.noClass')}</option>
+                                                <option value="" className="text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800">{t('schedule.noClass')}</option>
                                                 {classes.map(c => (
-                                                    <option key={c.id} value={c.id} className="text-slate-800">
+                                                    <option key={c.id} value={c.id} className="text-slate-800 dark:text-slate-100 dark:bg-zinc-800">
                                                         {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                     </option>
                                                 ))}
                                                 {canCreateFromSchedule && (
-                                                    <option value="__create__" className="text-slate-800 font-bold">
+                                                    <option value="__create__" className="text-slate-800 dark:text-slate-100 dark:bg-zinc-800 font-bold">
                                                         ＋ {t('schedule.createClass')}
                                                     </option>
                                                 )}
                                             </select>
                                             {classInfo && color && (
                                                 <span
-                                                    className={`pointer-events-none absolute inset-2 flex min-w-0 flex-col items-center justify-center px-2 text-center ${color.text}`}
+                                                    className={`pointer-events-none absolute inset-2 flex min-w-0 flex-col items-center justify-center px-1.5 text-center ${color.text}`}
                                                 >
-                                                    <span className="max-w-full truncate text-[11px] font-black tracking-[-0.02em] drop-shadow-sm sm:text-xs">
+                                                    <span className="max-w-full truncate text-[11.5px] font-black tracking-tight drop-shadow-xs sm:text-xs">
                                                         {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
                                                     </span>
-                                                    <span className={`mt-0.5 max-w-full truncate text-[9px] font-bold uppercase tracking-[0.08em] ${color.subtext}`}>
+                                                    <span className={`mt-0.5 max-w-full truncate text-[9.5px] font-bold uppercase tracking-wider ${color.subtext}`}>
                                                         {subjectLabel(classInfo.subject)}
                                                     </span>
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className="pointer-events-none absolute start-3 top-1.5 rounded-full border border-slate-900/10 bg-white/55 px-1.5 text-[9px] font-bold leading-4 text-slate-700 shadow-sm backdrop-blur-sm dark:border-white/20 dark:bg-black/25 dark:text-white">
+                                                <span className="pointer-events-none absolute start-3 top-1.5 rounded-full border border-white/30 bg-black/30 px-1.5 text-[9px] font-bold leading-4 text-white shadow-xs backdrop-blur-xs">
                                                     {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}

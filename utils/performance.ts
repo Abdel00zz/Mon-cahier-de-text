@@ -61,3 +61,18 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
 
   return debounced;
 }
+
+let settingsPreloadPromise: Promise<unknown> | null = null;
+
+/**
+ * Préchargement de la page de paramètres pour éliminer la latence au clic.
+ */
+export const preloadSettingsPage = () => {
+  if (!settingsPreloadPromise && typeof window !== 'undefined') {
+    settingsPreloadPromise = Promise.all([
+      import('@/features/settings/SettingsPage'),
+      import('@/features/settings/components/AppearanceTab'),
+    ]);
+  }
+  return settingsPreloadPromise;
+};

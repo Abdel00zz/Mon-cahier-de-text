@@ -83,7 +83,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                         aria-label={t('separator.delete')}
                         className="h-9 w-9 text-xs max-sm:portrait:text-[9.6px] text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
                     >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
                     </Button>
                 </div>
             </div>

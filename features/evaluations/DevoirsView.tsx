@@ -6,7 +6,6 @@ import { formatClassDisplayName } from '@/constants';
 import { useClassAssessments } from '@/hooks/useAssessments';
 import { migrateLessonsData } from '@/utils/dataUtils';
 import { getBundledCalendar, schoolYearLabelFromDate, todayInMorocco } from '@/utils/calendar';
-import { daysBetweenISO } from '@/utils/assessments';
 import { AssessmentLink, findNotebookAssessments, linkAssessments } from '@/utils/assessmentSync';
 import { getClassSchoolSegment } from '@/utils/officialStudentEvents';
 import { getClassVisual } from '@/utils/classVisuals';
@@ -30,8 +29,6 @@ import {
   Trash2,
   Users,
   X,
-  Clock,
-  Pencil,
   AwardIcon,
   BookOpen,
 } from '@/components/ui/icons';
@@ -163,17 +160,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     onConfigChange({ assessmentDates: next });
   };
 
-  const alignOnNotebook = (link: AssessmentLink) => {
-    if (!link.entry?.date) return;
-    setAssessmentDate(link.planned.id, link.entry.date);
-    toast.success(
-      t('evaluations.alignedToast', {
-        assessment: `${t(`evaluations.type.${link.planned.type}`)} n°${link.planned.num}`,
-        date: formatLongDate(link.entry.date, locale),
-      })
-    );
-  };
-
   const savePedagogicalEvents = (events: PedagogicalEvent[]) => {
     if (!selectedClass) return;
     onConfigChange({
@@ -267,7 +253,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl bg-card border border-border/80 shadow-xs">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
-          <CalendarCheck className="h-7 w-7" />
+          <CalendarCheck className="h-7 w-7 stroke-[2.2]" />
         </div>
         <h3 className="text-base font-bold text-foreground">{t('evaluations.createClass')}</h3>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground leading-relaxed">
@@ -285,7 +271,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       : undefined;
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-4 font-sans sm:space-y-5">
       {/* Class Selector (when not embedded) */}
       {!embedded && (
         <section
@@ -293,7 +279,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
           className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-1.5 sm:p-2 shadow-xs backdrop-blur-xs"
         >
           <span className={cn('flex h-7.5 w-7.5 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg', classVisual?.iconSurfaceClass ?? 'bg-primary/10 text-primary')}>
-            <Users className={cn('h-4 w-4', classVisual?.iconClass)} aria-hidden />
+            <Users className={cn('h-4 w-4 stroke-[2.2]', classVisual?.iconClass)} aria-hidden />
           </span>
 
           <div className="min-w-0 flex-1">
@@ -305,7 +291,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <SelectContent>
                 {classGroups.map((group) => (
                   <SelectGroup key={group.id}>
-                    <SelectLabel className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">
+                    <SelectLabel className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                       {group.label}
                     </SelectLabel>
                     {group.classes.map((classInfo) => {
@@ -325,14 +311,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
       )}
 
       {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         {/* Organic Pill Segmented Filter */}
-        <div className="inline-flex items-center rounded-full bg-muted/50 p-0.5 shadow-2xs backdrop-blur-xs self-start flex-wrap gap-0.5">
+        <div className="modern-scrollbar flex w-full items-center gap-0.5 overflow-x-auto rounded-full bg-muted/50 p-0.5 shadow-2xs backdrop-blur-xs sm:w-auto">
           <button
             type="button"
             onClick={() => setActiveTab('all')}
             className={cn(
-              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
               activeTab === 'all'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -344,7 +330,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             type="button"
             onClick={() => setActiveTab('s1')}
             className={cn(
-              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
               activeTab === 's1'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -356,7 +342,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             type="button"
             onClick={() => setActiveTab('s2')}
             className={cn(
-              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
               activeTab === 's2'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -368,7 +354,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             type="button"
             onClick={() => setActiveTab('events')}
             className={cn(
-              'px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-[0.97]',
+              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
               activeTab === 'events'
                 ? 'bg-card text-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -379,21 +365,21 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         </div>
 
         {/* Floating Action Buttons */}
-        <div className="flex items-center gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5 sm:flex sm:items-center">
           <button
             type="button"
             onClick={() => setEventEditorOpen(true)}
-            className="inline-flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full bg-muted/60 hover:bg-muted px-2.5 sm:px-3 text-[10.5px] sm:text-xs font-semibold text-foreground shadow-2xs transition-all cursor-pointer active:scale-[0.97]"
+            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-muted/60 px-2.5 text-[10.5px] font-semibold text-foreground shadow-2xs transition-all hover:bg-muted active:scale-[0.97] sm:px-3 sm:text-xs cursor-pointer"
           >
-            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary" />
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.2] text-primary" />
             <span>{t('evaluations.addActivity')}</span>
           </button>
           <button
             type="button"
             onClick={openCreateAssessment}
-            className="inline-flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full bg-primary px-3 sm:px-3.5 text-[10.5px] sm:text-xs font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 cursor-pointer active:scale-[0.97]"
+            className="inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-full bg-primary px-3 text-[10.5px] font-semibold text-primary-foreground shadow-xs transition-all hover:brightness-110 active:scale-[0.97] sm:px-3.5 sm:text-xs cursor-pointer"
           >
-            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[2.2]" />
             <span>{t('evaluations.addDevoir')}</span>
           </button>
         </div>
@@ -416,7 +402,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
             {!hasPlan ? (
               <div className="rounded-3xl border border-dashed border-border bg-card/40 p-8 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
-                  <BookOpen className="h-6 w-6" />
+                  <BookOpen className="h-6 w-6 stroke-[2.2]" />
                 </div>
                 <h4 className="text-sm font-bold text-foreground">{t('evaluations.noOfficialPlan')}</h4>
                 <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
@@ -427,7 +413,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   onClick={openCreateAssessment}
                   className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-xs hover:brightness-110 cursor-pointer"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-4 w-4 stroke-[2.2]" />
                   {t('evaluations.addDevoir')}
                 </button>
               </div>
@@ -439,10 +425,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                   return (
                     <section key={sem} className="space-y-2.5">
                       <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-black">
-                            {sem}
-                          </span>
+                        <div className="flex items-center">
                           <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                             {t('evaluations.semester', { number: number.format(sem) })}
                           </h3>
@@ -455,7 +438,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                       <div className="grid gap-2.5">
                         {ofSemester.map((link) => {
                           const a = link.planned;
-                          const inDays = daysBetweenISO(today, a.dateISO);
                           const custom = !!(
                             config.assessmentDates?.[selectedClass!.id]?.[a.id]
                             ?? (a.legacyId ? config.assessmentDates?.[selectedClass!.id]?.[a.legacyId] : undefined)
@@ -468,9 +450,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                           const isSupervised = a.type !== 'maison';
 
                           // Type accents
-                          const isMaison = a.type === 'maison';
-                          const isCourt = a.type === 'controle_court' || a.type === 'oral';
-
                           return (
                             <div
                               key={a.id}
@@ -480,37 +459,17 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                               )}
                             >
                               {/* Left Info */}
-                              <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={cn(
-                                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black shadow-2xs',
-                                      isMaison
-                                        ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/20'
-                                        : isCourt
-                                          ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 ring-1 ring-teal-500/20'
-                                          : 'bg-primary/10 text-primary ring-1 ring-primary/20'
-                                    )}
-                                  >
-                                    n°{a.num}
-                                  </span>
-
+                              <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                                <div className="flex min-w-0 items-center">
                                   <button
                                     type="button"
                                     onClick={() => openEditAssessment(a)}
-                                    className="group/title inline-flex cursor-pointer items-center gap-1.5 rounded-lg text-start transition-colors"
+                                    className="group/title inline-flex min-h-9 min-w-0 cursor-pointer items-center rounded-xl px-1 text-start transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                                     title={t('evaluations.editDevoir')}
                                   >
-                                    <span className="text-sm font-bold text-foreground transition-colors group-hover/title:text-primary">
-                                      {t(`evaluations.type.${a.type}`)}
+                                    <span className="truncate text-sm font-bold text-foreground transition-colors group-hover/title:text-primary">
+                                      {t(`evaluations.type.${a.type}`)} {number.format(a.num)}
                                     </span>
-                                    {a.duree && (
-                                      <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                                        <Clock className="h-2.5 w-2.5" />
-                                        {a.duree}
-                                      </span>
-                                    )}
-                                    <Pencil className="h-3 w-3 text-muted-foreground/40 group-hover/title:text-primary transition-opacity" />
                                   </button>
                                 </div>
 
@@ -518,61 +477,29 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {link.status === 'done' && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/20">
-                                      <Check className="h-3 w-3 stroke-[3]" />
+                                      <Check className="h-3 w-3 stroke-[2.5]" />
                                       {t(status.labelKey)}
                                     </span>
                                   )}
 
                                   {link.status === 'mismatch' && (
-                                    <div className="inline-flex items-center gap-1.5">
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/20">
-                                        <CircleAlert className="h-3 w-3" />
-                                        {t(status.labelKey)}
-                                      </span>
-                                      {link.entry?.date && (
-                                        <button
-                                          type="button"
-                                          onClick={() => alignOnNotebook(link)}
-                                          className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 transition-colors cursor-pointer"
-                                          title={t('evaluations.align')}
-                                        >
-                                          <span>⚡ {formatLongDate(link.entry.date, locale)}</span>
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {link.status === 'upcoming' && (
-                                    <span
-                                      className={cn(
-                                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1',
-                                        inDays === 0
-                                          ? 'bg-blue-600 text-white ring-blue-600'
-                                          : inDays === 1
-                                            ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-amber-500/25'
-                                            : 'bg-muted text-muted-foreground ring-border/80'
-                                      )}
-                                    >
-                                      {inDays === 0
-                                        ? t('evaluations.today')
-                                        : inDays === 1
-                                          ? t('evaluations.tomorrow')
-                                          : inDays > 1 && inDays <= 30
-                                            ? t('evaluations.inDays', { count: number.format(inDays) })
-                                            : formatLongDate(a.dateISO, locale)}
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-400">
+                                      <CircleAlert className="h-3 w-3 stroke-[2.2]" />
+                                      {t(status.labelKey)}
                                     </span>
                                   )}
+
                                 </div>
                               </div>
 
                               {/* Right Actions & Date Selector */}
-                              <div className="flex items-center gap-2 shrink-0 sm:pt-0">
+                              <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:pt-0">
                                 {isSupervised && (
                                   <button
                                     type="button"
                                     onClick={() => setAbsencesFor(link)}
                                     className={cn(
-                                      'inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-xs font-bold transition-all cursor-pointer shadow-2xs',
+                                      'inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border px-3 text-[11px] font-bold transition-all cursor-pointer shadow-2xs sm:w-auto sm:text-xs',
                                       absents.length > 0
                                         ? 'border-rose-300 bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
                                         : 'border-border/80 bg-background/80 text-muted-foreground hover:bg-accent hover:text-foreground'
@@ -585,14 +512,14 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                                   </button>
                                 )}
 
-                                <div className="flex items-center gap-1.5 bg-background/80 border border-border/80 rounded-xl p-0.5 shadow-2xs">
-                                  <div className="relative flex items-center">
+                                <div className="flex w-full min-w-0 items-center gap-1.5 rounded-xl border border-border/80 bg-background/80 p-0.5 shadow-2xs sm:w-auto">
+                                  <div className="relative flex min-w-0 flex-1 items-center sm:flex-none">
                                     <input
                                       type="date"
                                       value={a.dateISO}
                                       onChange={(e) => setAssessmentDate(a.id, e.target.value)}
                                       className={cn(
-                                        'h-8 rounded-lg bg-transparent px-2.5 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer',
+                                        'h-8 w-full min-w-0 rounded-lg bg-transparent px-2 text-[11px] font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 cursor-pointer sm:w-auto sm:px-2.5 sm:text-xs',
                                         custom && 'text-primary font-black'
                                       )}
                                       title={a.fenetre ? t('evaluations.windowHint', { window: a.fenetre }) : t('evaluations.adjustDate')}
@@ -648,7 +575,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <AwardIcon className="h-5 w-5" />
             </span>
             <div>
-              <span className="text-base font-bold text-foreground">{t('evaluations.addActivity')}</span>
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">{t('evaluations.addActivity')}</span>
               {selectedClass && (
                 <p className="text-xs font-medium text-muted-foreground mt-0.5">{selectedClassDisplayName}</p>
               )}
@@ -670,19 +597,20 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
-        className="sm:rounded-3xl border border-border/80 shadow-2xl"
-        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        className="border border-border/80 shadow-2xl sm:rounded-3xl"
+        headerClassName="border-b border-border/60 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5"
+        bodyClassName="px-4 py-3.5 sm:px-7 sm:py-5"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-              <CalendarCheck className="h-5 w-5" />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 sm:h-10 sm:w-10 sm:rounded-2xl">
+              <CalendarCheck className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </span>
-            <div>
-              <span className="text-base font-bold text-foreground">
+            <div className="min-w-0">
+              <span className="block text-sm font-bold leading-tight tracking-tight text-foreground sm:text-base">
                 {editingAssessment ? t('evaluations.editDevoir') : t('evaluations.addDevoir')}
               </span>
               {selectedClass && (
-                <p className="text-xs font-medium text-muted-foreground mt-0.5">{selectedClassDisplayName}</p>
+                <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground sm:text-xs">{selectedClassDisplayName}</p>
               )}
             </div>
           </div>
@@ -710,7 +638,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
               <Users className="h-5 w-5" />
             </span>
             <div>
-              <span className="text-base font-bold text-foreground">
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                 {absencesFor && selectedClass
                   ? t('evaluations.absencesTitle', {
                       assessment: `${t(`evaluations.type.${absencesFor.planned.type}`)} n°${absencesFor.planned.num}`,
@@ -1054,15 +982,15 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3.5">
-        <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3.5 sm:space-y-4">
+      <div className="space-y-3 sm:space-y-3.5">
+        <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2">
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualType')}</span>
             <select
               value={type}
               onChange={(event) => changeType(event.target.value as DevoirType)}
-              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
             >
               <option value="controle">{t('evaluations.type.controle')}</option>
               <option value="controle_court">{t('evaluations.type.controle_court')}</option>
@@ -1076,7 +1004,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             <select
               value={semestre}
               onChange={(event) => setSemestre(Number(event.target.value) as 1 | 2)}
-              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
             >
               <option value={1}>{t('evaluations.semester', { number: 1 })}</option>
               <option value={2}>{t('evaluations.semester', { number: 2 })}</option>
@@ -1084,7 +1012,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-foreground">{t('evaluations.manualNum')}</span>
             <input
@@ -1095,7 +1023,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setNum(event.target.value);
                 setError('');
               }}
-              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-2.5 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:px-3"
               inputMode="numeric"
             />
           </label>
@@ -1108,7 +1036,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
                 setDate(event.target.value);
                 setError('');
               }}
-              className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-9.5 w-full min-w-0 rounded-xl border border-border/80 bg-background px-2 text-[11px] font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:px-3 sm:text-xs"
             />
           </label>
         </div>
@@ -1121,7 +1049,7 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
             value={duree}
             onChange={(event) => setDuree(event.target.value)}
             placeholder="1h, 2h…"
-            className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 text-xs font-semibold text-foreground transition-all hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10"
           />
         </label>
 
@@ -1131,18 +1059,18 @@ const ManualAssessmentEditor: React.FC<ManualAssessmentEditorProps> = ({ today, 
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+        <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:flex sm:items-center sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 px-4 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer"
+            className="h-9.5 rounded-xl bg-muted px-3 text-[11px] font-bold text-muted-foreground transition-all hover:bg-accent hover:text-foreground sm:h-10 sm:px-4 sm:text-xs cursor-pointer"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
+            className="h-9.5 rounded-xl bg-primary px-4 text-[11px] font-bold text-primary-foreground shadow-xs transition-all hover:brightness-110 sm:h-10 sm:px-5 sm:text-xs cursor-pointer"
           >
             {initial ? t('common.save') : t('evaluations.add')}
           </button>

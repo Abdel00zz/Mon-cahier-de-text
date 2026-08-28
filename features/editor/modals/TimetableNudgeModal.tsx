@@ -74,7 +74,7 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       headerClassName={`px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60 ${isAr ? 'font-ar text-right' : 'text-left'}`}
       bodyClassName="min-h-0 px-5 py-5 sm:px-7 sm:py-6"
       title={
-        <span dir={isAr ? 'rtl' : 'ltr'} className={`flex items-center gap-3 text-base sm:text-lg font-bold leading-tight ${isAr ? 'font-ar' : ''}`}>
+        <span dir={isAr ? 'rtl' : 'ltr'} className={`flex items-center gap-3 text-lg sm:text-xl font-bold tracking-tight leading-tight ${isAr ? 'font-ar' : ''}`}>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
             <CalendarRange className="h-5 w-5 stroke-[2.2]" />
           </span>

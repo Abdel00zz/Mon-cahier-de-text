@@ -35,17 +35,17 @@ const toHtml = (markdown: string, prefix: ModalLang): string => {
     .map(line => {
       if (line.startsWith('# ')) {
         const t = line.replace('# ', '').trim();
-        return `<h1 class="mb-4 ${headingFontClass} text-2xl font-black text-foreground sm:text-3xl">${t}</h1>`;
+        return `<h1 class="mb-4 ${headingFontClass} text-xl sm:text-2xl font-black text-foreground">${t}</h1>`;
       }
       if (line.startsWith('## ')) {
         const t = line.replace('## ', '').trim();
         const id = `${prefix}-sec-${headingIndex}`;
         headingIndex++;
-        return `<h2 id="${id}" class="mb-4 mt-10 scroll-mt-4 ${headingFontClass} text-xl font-black text-foreground sm:text-2xl">${t}</h2>`;
+        return `<h2 id="${id}" class="mb-3.5 mt-8 scroll-mt-4 ${headingFontClass} text-lg sm:text-xl font-bold text-foreground">${t}</h2>`;
       }
       if (line.startsWith('### ')) {
         const t = line.replace('### ', '').trim();
-        return `<h3 class="mb-3 mt-6 ${headingFontClass} text-base font-extrabold text-foreground sm:text-lg">${t}</h3>`;
+        return `<h3 class="mb-2.5 mt-5 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${t}</h3>`;
       }
 
       const imageMatch = line.match(/^!\[(.+?)\]\((\/guide\/[^\s)]+\.(?:png|jpe?g|webp|gif))\)$/i);
@@ -122,10 +122,10 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               <BookOpen className="h-5 w-5 stroke-[2.2]" />
             </span>
             <div>
-              <span className={`${isAr ? 'font-bold tracking-normal' : 'font-bold tracking-tight'} text-base sm:text-lg font-bold text-foreground block`}>
+              <span className={`${isAr ? 'font-bold tracking-normal' : 'font-bold tracking-tight'} text-lg sm:text-xl text-foreground block`}>
                 {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
               </span>
-              <span className="block text-xs font-semibold text-muted-foreground mt-0.5">
+              <span className="block text-xs font-medium text-muted-foreground mt-0.5">
                 {isAr ? 'الأساسيات خطوة بخطوة, ببساطة ووضوح' : "L'essentiel pas à pas, simple et complet"}
               </span>
             </div>

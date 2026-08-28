@@ -9,15 +9,37 @@ const STORAGE_KEY  = 'classManager_v1';
 const DATA_PREFIX  = 'classData_v1_';
 const LAUNCH_FLAG  = 'app_first_launch_v1';
 
+export const parseStoredClasses = (storedRaw: string | null): ClassInfo[] => {
+    if (!storedRaw) return [];
+    try {
+        const stored = JSON.parse(storedRaw);
+        if (Array.isArray(stored)) {
+            return stored.map((classInfo: ClassInfo) => ({
+                ...classInfo,
+                name: normalizeOfficialClassName(classInfo.name),
+                color: '',
+            }));
+        }
+    } catch (e) {
+        logger.error('Failed to parse stored classes', e);
+    }
+    return [];
+};
+
 export const useClassManager = () => {
-    const [classes, setClasses] = useImmer<ClassInfo[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [classes, setClasses] = useImmer<ClassInfo[]>(() => {
+        if (typeof window !== 'undefined') {
+            return parseStoredClasses(localStorage.getItem(STORAGE_KEY));
+        }
+        return [];
+    });
+    const [isLoading, setIsLoading] = useState(false);
     // Guard: skip the persistence effect until after the initial load completes
-    const [ready, setReady] = useState(false);
+    const [ready, setReady] = useState(true);
     const skipNextPersistRef = useRef(true);
     // Les créations groupées (onboarding) doivent toujours partir de la liste
     // la plus récente, même avant le prochain rendu React.
-    const classesRef = useRef<ClassInfo[]>([]);
+    const classesRef = useRef<ClassInfo[]>(classes);
 
     useEffect(() => {
         classesRef.current = classes;

@@ -148,7 +148,16 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('assignDate.title')}
+      title={
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+            <CalendarPlus className="h-5 w-5 stroke-[2.2]" />
+          </span>
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+            {t('assignDate.title')}
+          </span>
+        </div>
+      }
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="lg"
       className="sm:max-w-xl sm:rounded-[32px]"
@@ -189,7 +198,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               value: 'associate',
               label: (
                 <span className="flex items-center gap-1.5">
-                  <CalendarPlus className="h-3.5 w-3.5" /> {t('assignDate.assign')}
+                  <CalendarPlus className="h-3.5 w-3.5 stroke-[2.2]" /> {t('assignDate.assign')}
                 </span>
               ),
             },
@@ -197,7 +206,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               value: 'dissociate',
               label: (
                 <span className="flex items-center gap-1.5">
-                  <CalendarMinus className="h-3.5 w-3.5" /> {t('assignDate.unassign')}
+                  <CalendarMinus className="h-3.5 w-3.5 stroke-[2.2]" /> {t('assignDate.unassign')}
                 </span>
               ),
             },
@@ -207,7 +216,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         {/* Dynamic & Centered Middle Section */}
         {actionType === 'associate' ? (
           <div className="space-y-3.5 animate-fade-in duration-200 text-center max-w-sm mx-auto py-1">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               {t('assignDate.chooseDate')}
             </span>
             
@@ -281,7 +290,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         ) : (
           <div className="mx-auto max-w-sm animate-fade-in duration-200 space-y-1.5 rounded-2xl border border-rose-200 bg-rose-50/70 dark:border-rose-900/50 dark:bg-rose-950/20 p-4 text-center">
             <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 mb-1">
-              <CalendarX className="h-4.5 w-4.5" />
+              <CalendarX className="h-4.5 w-4.5 stroke-[2.2]" />
             </div>
             <h4 className="text-xs font-bold text-rose-800 dark:text-rose-200 uppercase tracking-wider">{t('assignDate.removeTitle')}</h4>
             <p className="text-xs text-rose-600 dark:text-rose-300 font-medium leading-relaxed max-w-xs mx-auto">
@@ -292,7 +301,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
         {/* Compact selected items list preview with transition preview */}
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1">
+          <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
             <span>{t('assignDate.preview')}</span>
             <span>{t('assignDate.change')}</span>
           </div>
@@ -340,7 +349,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
                     {isDateable && (
                       <div className="flex items-center gap-1.5 animate-fade-in duration-200">
-                        <ChevronRight className={`h-3 w-3 text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
+                        <ChevronRight className={`h-3 w-3 stroke-[2.2] text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
                         {actionType === 'associate' ? (
                           <span className="px-2 py-0.5 rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold shadow-2xs">
                             {formatShortDate(selectedDate, localeCode, t('assignDate.noDate'))}

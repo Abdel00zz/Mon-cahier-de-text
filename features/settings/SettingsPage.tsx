@@ -1,24 +1,30 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useClassManager } from '@/hooks/useClassManager';
-import { useConfigManager } from '@/hooks/useConfigManager';
+import React, { Suspense, useCallback, useEffect, useRef, useState, lazy } from 'react';
 import { ConfigModal } from './ConfigModal';
-import { ImportPlatformModal } from './ImportPlatformModal';
 import { downloadBackup, restoreBackup } from '@/utils/backup';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
-import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
-import type { Cycle } from '@/types';
+import type { AppConfig, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
+
+const ImportPlatformModal = lazy(() => import('./ImportPlatformModal').then(m => ({ default: m.ImportPlatformModal })));
 
 interface SettingsPageProps {
     onBack: () => void;
+    config: AppConfig;
+    onConfigChange: (config: Partial<AppConfig>) => void;
+    classes: ClassInfo[];
+    addClass: (details: { name: string; subject: string; cycle?: Cycle; teacherName?: string }) => ClassInfo;
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
-export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({
+    onBack,
+    config,
+    onConfigChange: updateConfig,
+    classes,
+    addClass,
+}) => {
     const { t } = useLocale();
-    const { classes, addClass, isLoading: isClassesLoading } = useClassManager();
-    const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isImportOpen, setImportOpen] = useState(false);
     const [isSheetOpen, setSheetOpen] = useState(true);
     const closeTimerRef = useRef<number | null>(null);
@@ -32,8 +38,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     useEffect(() => () => {
         if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
     }, []);
-
-    if (isClassesLoading || isConfigLoading) return <DashboardSkeleton />;
 
     const handleImport = (fileContent: string) => {
         try {
@@ -75,7 +79,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                     })
                 }
             />
-            <ImportPlatformModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} onImport={handleImport} />
+            {isImportOpen && (
+                <Suspense fallback={null}>
+                    <ImportPlatformModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} onImport={handleImport} />
+                </Suspense>
+            )}
         </>
     );
 };

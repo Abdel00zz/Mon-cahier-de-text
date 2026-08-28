@@ -51,7 +51,7 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-7.5 w-7.5 shrink-0 items-center justify-center gap-1 rounded-none border border-transparent p-0 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 active:scale-90 sm:h-8 sm:w-auto sm:px-2 ${
+    className={`group relative flex h-7.5 w-7.5 shrink-0 items-center justify-center gap-1 rounded-lg border border-transparent p-0 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-25 active:scale-90 sm:h-8 sm:w-auto sm:px-2.5 ${
       danger
         ? 'text-rose-600 hover:border-rose-200 hover:bg-rose-50 dark:text-rose-400 dark:hover:border-rose-900/60 dark:hover:bg-rose-950/40'
         : accent
@@ -60,9 +60,9 @@ const ActionButton: FC<{
     }`}
     aria-label={title}
   >
-    <Icon aria-hidden className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+    <Icon aria-hidden className="h-3.5 w-3.5 stroke-[2.2] shrink-0 transition-transform duration-200 group-hover:scale-105" />
     {label && <span className="hidden whitespace-nowrap text-[11px] font-semibold sm:inline">{label}</span>}
-    <span className="pointer-events-none absolute -top-9 left-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-none border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
+    <span className="pointer-events-none absolute -top-9 left-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
       {title}
     </span>
   </Button>
@@ -130,7 +130,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1rem)] items-center justify-between gap-1 overflow-hidden rounded-none border border-border/80 bg-card/95 p-1 text-card-foreground shadow-2xl shadow-black/20 ring-1 ring-black/5 backdrop-blur-xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:inset-x-auto sm:w-fit sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:p-1.5 sm:gap-1.5 print:hidden"
+      className="fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1rem)] items-center justify-between gap-1 overflow-hidden rounded-2xl border border-border/80 bg-card/90 p-1 text-card-foreground shadow-2xl shadow-black/20 ring-1 ring-black/5 backdrop-blur-md sm:bottom-6 sm:left-1/2 sm:right-auto sm:inset-x-auto sm:w-fit sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:p-1.5 sm:gap-1.5 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) backwards' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
@@ -138,7 +138,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
     >
       {/* Badge indicateur de nombre */}
       <div
-        className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-none bg-primary text-primary-foreground px-1.5 text-[11px] font-extrabold tracking-tight font-mono shadow-xs"
+        className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground px-2 text-[11px] font-extrabold tracking-tight font-mono shadow-xs"
         title={t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount })}
       >
         {count > 1 ? `×${formattedCount}` : formattedCount}
@@ -164,10 +164,10 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         size="icon"
         onClick={onClear}
         title={t('selection.closeShortcut')}
-        className="h-7 w-7 shrink-0 rounded-none border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground cursor-pointer active:scale-90"
+        className="h-7 w-7 shrink-0 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground cursor-pointer active:scale-90"
         aria-label={t('selection.clearAria')}
       >
-        <X className="h-3.5 w-3.5" />
+        <X className="h-3.5 w-3.5 stroke-[2.2]" />
       </Button>
     </div>
   );

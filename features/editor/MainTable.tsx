@@ -4,6 +4,7 @@ import { DateCard, MultiDateCard, DateMergeMeta, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { BookOpen } from '@/components/ui/icons';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
@@ -361,12 +362,9 @@ const EmptyState: React.FC<{
             <div aria-hidden="true" className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-primary/[0.055] blur-2xl" />
             <div aria-hidden="true" className="absolute -bottom-24 -left-12 h-40 w-40 rounded-full bg-primary/[0.035] blur-2xl" />
             <div className="relative mx-auto flex max-w-xl flex-col items-center text-center">
-                <img
-                    src="/icons/icon-192.png"
-                    alt=""
-                    aria-hidden="true"
-                    className="h-16 w-16 rounded-2xl shadow-md ring-4 ring-border"
-                />
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-md">
+                    <BookOpen className="h-8 w-8 stroke-[2.2]" />
+                </div>
                 <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">{t('emptyNotebook.label')}</p>
                 <p className="mt-3 max-w-md text-base leading-7 text-foreground">
                     {canLoadPredefined ? (

@@ -66,14 +66,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex select-none items-start gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 ${
+      className={`group relative flex min-h-[56px] select-none items-center gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
         disabled
           ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
-          : 'bg-card hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.98] cursor-pointer shadow-xs hover:shadow-sm'
+          : 'bg-card hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
       }`}
       title={tooltip}
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
         <Icon className="h-5 w-5 stroke-[2.2]" />
       </div>
       <div className="min-w-0 flex-1">
@@ -83,7 +83,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         )}
         {disabled && tooltip && (
           <div className="text-[10px] text-rose-500 font-medium mt-1 leading-tight flex items-center gap-1">
-            <CircleAlert className="h-3 w-3 shrink-0" />
+            <CircleAlert className="h-3 w-3 shrink-0 stroke-[2.2]" />
             <span className="truncate">{tooltip}</span>
           </div>
         )}
@@ -207,7 +207,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     }
   };
 
-  const labelClasses = "block text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5";
+  const labelClasses = "block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1.5";
 
   // Math detected on currently edited form
   const hasMath = useMemo(() => {
@@ -396,10 +396,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-muted flex-shrink-0 cursor-pointer"
           aria-label={t('addContent.back')}
         >
-          <ArrowLeft className={`h-3.5 w-3.5 text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
+          <ArrowLeft className={`h-3.5 w-3.5 stroke-[2.2] text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
         </Button>
       )}
-      <span className="truncate">{modalTitle}</span>
+      <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">{modalTitle}</span>
     </div>
   );
 
@@ -415,9 +415,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       }
       maxWidth={stage === 'select' ? "3xl" : "xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-[28px]" : "sm:max-w-2xl sm:rounded-[28px]"}
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/70 bg-card/85 backdrop-blur-md"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/70 bg-card/85 backdrop-blur-md"
       footer={
         stage === 'form' ? (
           <div className="flex w-full items-center justify-end gap-2.5">
@@ -444,7 +444,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       {/* Context Target Banner */}
       <div className="mb-4 p-3 bg-muted/60 border border-border/70 rounded-2xl text-xs text-muted-foreground flex items-center gap-3 shrink-0">
         <div className="flex h-8 w-8 items-center justify-center bg-card border border-border text-foreground rounded-xl shrink-0 shadow-2xs">
-          <MapPin className="h-4 w-4" />
+          <MapPin className="h-4 w-4 stroke-[2.2]" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-bold text-foreground text-xs">{t('addContent.insertionPoint')}</div>
@@ -579,7 +579,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             <div className="mt-2 p-3.5 rounded-xl border border-border bg-muted/50 space-y-2 animate-fade-in duration-200 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-                  <Sigma className="h-3 w-3" />
+                  <Sigma className="h-3 w-3 stroke-[2.2]" />
                   <span>{t('descriptionModal.preview')}</span>
                 </span>
                 <span className="text-[9px] text-muted-foreground font-medium">{t('descriptionModal.generated')}</span>

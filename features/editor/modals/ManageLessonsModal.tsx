@@ -120,7 +120,16 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={t('manageLessons.title')}
+        title={
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+              <FolderOpen className="h-5 w-5 stroke-[2.2]" />
+            </span>
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+              {t('manageLessons.title')}
+            </span>
+          </div>
+        }
         description={t('manageLessons.description')}
         maxWidth="2xl"
         className="sm:max-w-3xl sm:rounded-[32px]"
@@ -150,7 +159,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
                 {t('manageLessons.descriptionSettings')}
               </span>
-              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 stroke-[2.2]" aria-hidden />
             </summary>
             <DescriptionVisibilityControl
               context="screen"
@@ -183,12 +192,12 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   if (!itemConfig) {
                     return (
                       <li key={itemKey(item)} className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50/70 p-3 dark:border-rose-900/50 dark:bg-rose-950/20">
-                        <TriangleAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                        <TriangleAlert className="h-4 w-4 shrink-0 text-rose-600 stroke-[2.2]" />
                         <span className="min-w-0 flex-1 truncate text-xs font-semibold text-rose-800 dark:text-rose-200">
                           {t('manageLessons.corrupted', { title: item.title })}
                         </span>
                         <Button type="button" variant="destructive" onClick={() => requestDelete(index)} className="h-9 w-9 rounded-xl p-0" title={t('manageLessons.delete')}>
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
                         </Button>
                       </li>
                     );
@@ -200,7 +209,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                       className="flex items-center gap-3 rounded-2xl border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs transition-all hover:border-border hover:shadow-xs"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/60">
-                        <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5`} />
+                        <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5 stroke-[2.2]`} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-xs font-bold text-foreground">
@@ -213,14 +222,14 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                       <span className="flex shrink-0 items-center gap-1.5">
                         <span className="flex overflow-hidden rounded-xl border border-border/80 bg-muted/30">
                           <Button type="button" variant="ghost" disabled={index === 0} onClick={() => moveUp(index)} className="h-9 w-9 rounded-none border-0 p-0 hover:bg-muted disabled:opacity-25" title={t('manageLessons.moveUp')} aria-label={t('manageLessons.moveUp')}>
-                            <ArrowUp className="h-3.5 w-3.5 text-muted-foreground" />
+                            <ArrowUp className="h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" />
                           </Button>
                           <Button type="button" variant="ghost" disabled={index === localLessons.length - 1} onClick={() => moveDown(index)} className="h-9 w-9 rounded-none border-0 border-s border-border/80 p-0 hover:bg-muted disabled:opacity-25" title={t('manageLessons.moveDown')} aria-label={t('manageLessons.moveDown')}>
-                            <ArrowDown className="h-3.5 w-3.5 text-muted-foreground" />
+                            <ArrowDown className="h-3.5 w-3.5 text-muted-foreground stroke-[2.2]" />
                           </Button>
                         </span>
                         <Button type="button" variant="ghost" onClick={() => requestDelete(index)} className="h-9 w-9 rounded-xl border border-border/80 bg-background p-0 text-muted-foreground hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30" title={t('manageLessons.delete')} aria-label={t('manageLessons.delete')}>
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
                         </Button>
                       </span>
                     </li>
@@ -229,7 +238,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
               </ul>
             ) : (
               <div className="m-3 rounded-lg border border-dashed border-border bg-card px-4 py-8 text-center">
-                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+                <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground stroke-[2.2]" />
                 <p className="text-xs font-bold text-foreground">{t('manageLessons.emptyTitle')}</p>
                 <p className="mt-1 text-[10px] font-medium text-muted-foreground">{t('manageLessons.emptyHint')}</p>
               </div>

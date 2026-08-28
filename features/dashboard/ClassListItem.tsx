@@ -67,7 +67,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                     className="flex h-full w-9.5 sm:w-10.5 touch-manipulation items-center justify-center text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-blue-950/50 dark:hover:text-blue-300 transition-colors cursor-pointer"
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                 >
-                    <Settings className="h-5 w-5 stroke-[2.6]" />
+                    <Settings className="h-4.5 w-4.5 stroke-[2.2]" />
                 </button>
             </div>
         </article>

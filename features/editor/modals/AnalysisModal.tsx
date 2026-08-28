@@ -58,7 +58,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
             <PieChart className="h-5 w-5 stroke-[2.2]" />
           </span>
-          <span className="text-base sm:text-lg font-bold text-foreground">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             {t('analysis.title')}
           </span>
         </div>

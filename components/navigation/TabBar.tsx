@@ -3,6 +3,7 @@ import { Users, Settings, CircleHelp, PieChart, CalendarCheck, Menu } from '@/co
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
+import { preloadSettingsPage } from '@/utils/performance';
 
 export type TabType = 'dashboard' | 'evaluations' | 'settings' | 'notifications' | 'help';
 
@@ -88,29 +89,29 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Desktop sidebar — modern, crisp, professional */}
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[80px] flex-col overflow-hidden bg-card/95 py-4 text-foreground print:hidden sm:flex shadow-[1px_0_12px_rgba(15,23,42,0.03)]',
-          isRtl ? 'right-0 border-l border-border/80' : 'left-0 border-r border-border/80',
-          isExpanded ? 'lg:w-[260px]' : 'lg:w-[80px]',
+          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[76px] flex-col overflow-hidden bg-[linear-gradient(180deg,#fcf8f0_0%,#f5ecdd_58%,#f1e5d3_100%)] py-3 text-slate-900 print:hidden shadow-[6px_0_28px_rgba(92,70,42,0.07)] sm:flex landscape:py-2 dark:bg-[linear-gradient(180deg,#172033_0%,#101827_100%)] dark:text-slate-100 dark:shadow-[6px_0_28px_rgba(0,0,0,0.24)]',
+          isRtl ? 'right-0 border-l border-[#e5d6c0] dark:border-slate-800' : 'left-0 border-r border-[#e5d6c0] dark:border-slate-800',
+          isExpanded ? 'lg:w-[248px]' : 'lg:w-[76px]',
           'transition-[width] duration-200 ease-out',
         )}
         aria-label={copy.mainNav}
       >
-        <div className={cn('flex h-12 items-center justify-center px-3', isExpanded && 'lg:justify-start lg:px-4')}>
+        <div className={cn('flex h-11 items-center justify-center px-2.5 landscape:h-10', isExpanded && 'lg:justify-start lg:px-3.5')}>
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none cursor-pointer"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#75644f] transition-colors hover:bg-white/65 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-9 landscape:w-9 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer"
             aria-label={isExpanded ? copy.collapse : copy.expand}
           >
             <Menu className="h-[20px] w-[20px]" />
           </button>
           <div className={cn('ms-3 hidden min-w-0', isExpanded && 'lg:block lg:max-w-[170px]')}>
-            <span className="block truncate text-[15px] font-bold text-foreground tracking-tight">{copy.brand}</span>
-            <span className="block truncate text-[11px] font-medium text-muted-foreground">{copy.teacherSpace}</span>
+            <span className="block truncate text-[15px] font-bold tracking-tight text-[#2f2922] dark:text-white">{copy.brand}</span>
+            <span className="block truncate text-[11px] font-medium text-[#81715d] dark:text-slate-400">{copy.teacherSpace}</span>
           </div>
         </div>
 
-        <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-2.5">
+        <div className="modern-scrollbar mt-2.5 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-2 landscape:mt-1.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -122,11 +123,11 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'group relative flex h-[46px] w-full items-center justify-center rounded-xl transition-all duration-150 focus:outline-none cursor-pointer',
+                  'group relative flex h-11 w-full items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 cursor-pointer',
                   isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
                   isActive
-                    ? 'bg-primary/10 text-primary font-semibold shadow-xs'
-                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                    ? 'border border-white/80 bg-white/75 text-primary font-semibold shadow-[0_5px_16px_rgba(92,70,42,0.08)] dark:border-white/10 dark:bg-white/10'
+                    : 'text-[#756752] hover:bg-white/55 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
@@ -134,11 +135,11 @@ export const TabBar = React.memo<TabBarProps>(({
                 <span className="relative flex shrink-0 items-center justify-center">
                   <Icon className={cn(
                     'h-[20px] w-[20px] transition-colors duration-150',
-                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+                    isActive ? 'text-primary' : 'text-[#81715d] group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white',
                   )} />
                   {count ? (
                     <span className={cn(
-                      'absolute -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-card',
+                      'absolute -top-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-[5px] text-[9px] font-bold leading-none text-white ring-2 ring-[#f8f1e5] dark:ring-slate-900',
                       isRtl ? '-left-3' : '-right-3',
                     )}>
                       {countLabel(count)}
@@ -157,33 +158,35 @@ export const TabBar = React.memo<TabBarProps>(({
           })}
         </div>
 
-        <div className="mt-auto px-2.5 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] flex flex-col gap-1">
+        <div className="mt-auto flex flex-col gap-1 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] landscape:pb-1.5">
           <button
             type="button"
             onClick={() => goTo('settings')}
+            onPointerEnter={preloadSettingsPage}
+            onFocus={preloadSettingsPage}
             className={cn(
-              'group flex h-[46px] w-full items-center justify-center rounded-xl transition-all duration-150 focus:outline-none cursor-pointer',
+              'group flex h-11 w-full items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 cursor-pointer',
               isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
               activeTab === 'settings'
-                ? 'bg-primary/10 text-primary font-semibold shadow-xs'
-                : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                ? 'border border-white/80 bg-white/75 text-primary font-semibold shadow-[0_5px_16px_rgba(92,70,42,0.08)] dark:border-white/10 dark:bg-white/10'
+                : 'text-[#756752] hover:bg-white/55 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-[20px] w-[20px] shrink-0 transition-colors duration-150', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+            <Settings className={cn('h-[20px] w-[20px] shrink-0 transition-colors duration-150', activeTab === 'settings' ? 'text-primary' : 'text-[#81715d] group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white')} />
             <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block', activeTab === 'settings' ? 'font-semibold text-primary' : '')}>{copy.settings}</span>
           </button>
           <button
             type="button"
             onClick={() => goTo('help')}
             className={cn(
-              'group flex h-[46px] w-full items-center justify-center rounded-xl text-muted-foreground transition-all duration-150 hover:bg-muted/80 hover:text-foreground focus:outline-none cursor-pointer',
+              'group flex h-11 w-full items-center justify-center rounded-xl text-[#756752] transition-all duration-150 hover:bg-white/55 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 landscape:h-10 dark:text-slate-400 dark:hover:bg-white/8 dark:hover:text-white cursor-pointer',
               isExpanded && 'lg:justify-start lg:gap-3.5 lg:px-3.5',
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-[20px] w-[20px] shrink-0 text-muted-foreground group-hover:text-foreground transition-colors duration-150" />
+            <CircleHelp className="h-[20px] w-[20px] shrink-0 text-[#81715d] transition-colors duration-150 group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-white" />
             <span className={cn('hidden flex-1 text-start text-[14px] font-medium', isExpanded && 'lg:block')}>{copy.help}</span>
           </button>
         </div>
@@ -191,7 +194,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
       {/* Mobile bottom tab bar with clean labels */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border/80 bg-card/95 text-foreground shadow-[0_8px_24px_rgba(15,23,42,0.1)] backdrop-blur-lg print:hidden sm:hidden will-change-transform"
+        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-[#e5d6c0] bg-[linear-gradient(135deg,rgba(252,248,240,0.97),rgba(245,236,221,0.97))] text-[#514535] shadow-[0_10px_28px_rgba(92,70,42,0.14)] backdrop-blur-xl print:hidden sm:hidden will-change-transform dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(23,32,51,0.97),rgba(16,24,39,0.97))] dark:text-slate-200"
         style={{ bottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
@@ -211,14 +214,14 @@ export const TabBar = React.memo<TabBarProps>(({
                 className={cn(
                   'relative flex flex-1 flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
                   'min-h-[46px] min-w-[48px]',
-                  isActive ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground',
+                  isActive ? 'text-primary font-bold' : 'text-[#756752] hover:text-slate-950 dark:text-slate-400 dark:hover:text-white',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
                 <div className={cn(
                   'relative flex items-center justify-center rounded-xl px-2.5 py-0.5 transition-all',
-                  isActive ? 'bg-primary/15 text-primary scale-105' : ''
+                  isActive ? 'bg-white/75 text-primary shadow-xs scale-105 dark:bg-white/10' : ''
                 )}>
                   <Icon className="h-[19px] w-[19px]" />
                   {count ? (
@@ -232,7 +235,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 </div>
                 <span className={cn(
                   'mt-0.5 text-[10px] tracking-tight leading-none truncate max-w-[68px]',
-                  isActive ? 'font-bold text-primary' : 'font-medium text-muted-foreground'
+                  isActive ? 'font-bold text-primary' : 'font-medium text-[#756752] dark:text-slate-400'
                 )}>
                   {copy[tab.id]}
                 </span>
@@ -242,23 +245,26 @@ export const TabBar = React.memo<TabBarProps>(({
           <button
             type="button"
             onClick={() => goTo('settings')}
+            onTouchStart={preloadSettingsPage}
+            onPointerEnter={preloadSettingsPage}
+            onFocus={preloadSettingsPage}
             className={cn(
               'relative flex flex-1 flex-col items-center justify-center py-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer',
               'min-h-[46px] min-w-[48px]',
-              activeTab === 'settings' ? 'text-primary font-bold' : 'text-muted-foreground hover:text-foreground',
+              activeTab === 'settings' ? 'text-primary font-bold' : 'text-[#756752] hover:text-slate-950 dark:text-slate-400 dark:hover:text-white',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
             <div className={cn(
               'relative flex items-center justify-center rounded-xl px-2.5 py-0.5 transition-all',
-              activeTab === 'settings' ? 'bg-primary/15 text-primary scale-105' : ''
+              activeTab === 'settings' ? 'bg-white/75 text-primary shadow-xs scale-105 dark:bg-white/10' : ''
             )}>
               <Settings className="h-[19px] w-[19px]" />
             </div>
             <span className={cn(
               'mt-0.5 text-[10px] tracking-tight leading-none truncate max-w-[68px]',
-              activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-muted-foreground'
+              activeTab === 'settings' ? 'font-bold text-primary' : 'font-medium text-[#756752] dark:text-slate-400'
             )}>
               {copy.settings}
             </span>

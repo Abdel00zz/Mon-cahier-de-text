@@ -53,10 +53,80 @@ const defaultConfig: AppConfig = {
     assessmentOrder: {},
 };
 
+export const parseStoredConfig = (storedConfig: string | null): AppConfig => {
+    if (!storedConfig) {
+        return {
+            ...defaultConfig,
+            printShowDescriptions: true,
+            screenDescriptionMode: 'all',
+            screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            printDescriptionMode: 'all',
+            printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            selectedCycles: [],
+            selectedSubjects: [],
+            showAllCycles: false,
+            showAllSubjects: true,
+            hasCompletedWelcome: false,
+        };
+    }
+    try {
+        const loadedConfig = JSON.parse(storedConfig);
+        const loadedPrintDescriptionMode: AppConfig['printDescriptionMode'] =
+            loadedConfig.printDescriptionMode === 'all' || loadedConfig.printDescriptionMode === 'none' || loadedConfig.printDescriptionMode === 'custom'
+                ? loadedConfig.printDescriptionMode
+                : loadedConfig.printShowDescriptions === false ? 'none' : 'all';
+        const loadedTeacherName = loadedConfig.defaultTeacherName === 'Prof Dev' ? '' : (loadedConfig.defaultTeacherName ?? '');
+        return {
+            ...defaultConfig,
+            ...loadedConfig,
+            defaultTeacherName: loadedTeacherName,
+            printShowDescriptions: loadedConfig.printShowDescriptions ?? (loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : true)),
+            screenDescriptionMode: loadedConfig.screenDescriptionMode ?? 'all',
+            screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
+                ? loadedConfig.screenDescriptionTypes
+                : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            printDescriptionMode: loadedPrintDescriptionMode,
+            printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
+                ? loadedConfig.printDescriptionTypes
+                : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
+            selectedCycles: loadedConfig.selectedCycles ?? [],
+            selectedSubjects: loadedConfig.selectedSubjects ?? [],
+            showAllCycles: loadedConfig.showAllCycles ?? true,
+            showAllSubjects: loadedConfig.showAllSubjects ?? true,
+            hasCompletedWelcome: loadedConfig.hasCompletedWelcome ?? false,
+            schedules: effectiveSchedules(loadedConfig),
+            timetable: loadedConfig.timetable ?? [],
+            notificationSettings: { ...defaultNotificationSettings, ...(loadedConfig.notificationSettings ?? {}) },
+            notificationDismissals: loadedConfig.notificationDismissals ?? {},
+            absences: loadedConfig.absences ?? [],
+            assessmentDates: loadedConfig.assessmentDates ?? {},
+            assessmentAbsences: loadedConfig.assessmentAbsences ?? {},
+            pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
+            manualAssessments: loadedConfig.manualAssessments ?? {},
+            removedAssessments: loadedConfig.removedAssessments ?? {},
+            assessmentOrder: loadedConfig.assessmentOrder ?? {},
+            schoolYearStart: loadedConfig.schoolYearStart,
+            theme: loadedConfig.theme ?? 'light',
+            contentFontLatin: loadedConfig.contentFontLatin ?? 'fira',
+            contentFontArabic: loadedConfig.contentFontArabic ?? 'ibm-plex',
+            applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
+        };
+    } catch (error) {
+        logger.error("Failed to parse config from localStorage", error);
+        return defaultConfig;
+    }
+};
+
 export const useConfigManager = () => {
-    const [config, setConfig] = useImmer<AppConfig>(defaultConfig);
-    const [isLoading, setIsLoading] = useState(true);
-    const configRef = useRef<AppConfig>(defaultConfig);
+    const [config, setConfig] = useImmer<AppConfig>(() => {
+        if (typeof window !== 'undefined') {
+            return parseStoredConfig(localStorage.getItem(CONFIG_STORAGE_KEY));
+        }
+        return defaultConfig;
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const configRef = useRef<AppConfig>(config);
+    const configSourceRef = useRef(Symbol('config-manager'));
 
     useEffect(() => {
         configRef.current = config;
@@ -66,74 +136,19 @@ export const useConfigManager = () => {
         try {
             const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
             if (storedConfig) {
-                const loadedConfig = JSON.parse(storedConfig);
-                const loadedPrintDescriptionMode: AppConfig['printDescriptionMode'] =
-                    loadedConfig.printDescriptionMode === 'all' || loadedConfig.printDescriptionMode === 'none' || loadedConfig.printDescriptionMode === 'custom'
-                        ? loadedConfig.printDescriptionMode
-                        : loadedConfig.printShowDescriptions === false ? 'none' : 'all';
-                const loadedTeacherName = loadedConfig.defaultTeacherName === 'Prof Dev' ? '' : (loadedConfig.defaultTeacherName ?? '');
-                setConfig(() => ({
-                    ...defaultConfig,
-                    ...loadedConfig,
-                    defaultTeacherName: loadedTeacherName,
-                    printShowDescriptions: loadedConfig.printShowDescriptions ?? (loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : true)),
-                    screenDescriptionMode: loadedConfig.screenDescriptionMode ?? 'all',
-                    screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
-                        ? loadedConfig.screenDescriptionTypes
-                        : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    // Migration explicite de l'ancien booléen printShowDescriptions.
-                    printDescriptionMode: loadedPrintDescriptionMode,
-                    printDescriptionTypes: loadedConfig.printDescriptionTypes && loadedConfig.printDescriptionTypes.length > 0
-                        ? loadedConfig.printDescriptionTypes
-                        : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    selectedCycles: loadedConfig.selectedCycles ?? [],
-                    selectedSubjects: loadedConfig.selectedSubjects ?? [],
-                    showAllCycles: loadedConfig.showAllCycles ?? true,
-                    showAllSubjects: loadedConfig.showAllSubjects ?? true,
-                    hasCompletedWelcome: loadedConfig.hasCompletedWelcome ?? false,
-                    // toujours re-dérivé de la grille (source de vérité, règle évolutive)
-                    schedules: effectiveSchedules(loadedConfig),
-                    timetable: loadedConfig.timetable ?? [],
-                    notificationSettings: { ...defaultNotificationSettings, ...(loadedConfig.notificationSettings ?? {}) },
-                    notificationDismissals: loadedConfig.notificationDismissals ?? {},
-                    absences: loadedConfig.absences ?? [],
-                    assessmentDates: loadedConfig.assessmentDates ?? {},
-                    assessmentAbsences: loadedConfig.assessmentAbsences ?? {},
-                    pedagogicalEvents: loadedConfig.pedagogicalEvents ?? {},
-                    manualAssessments: loadedConfig.manualAssessments ?? {},
-                    removedAssessments: loadedConfig.removedAssessments ?? {},
-                    assessmentOrder: loadedConfig.assessmentOrder ?? {},
-                    schoolYearStart: loadedConfig.schoolYearStart,
-                    theme: loadedConfig.theme ?? 'light',
-                    contentFontLatin: loadedConfig.contentFontLatin ?? 'fira',
-                    contentFontArabic: loadedConfig.contentFontArabic ?? 'ibm-plex',
-                    applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
-                }));
-            } else {
-                setConfig(currentConfig => ({
-                    ...currentConfig,
-                    printShowDescriptions: true,
-                    screenDescriptionMode: 'all',
-                    screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    printDescriptionMode: 'all',
-                    printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
-                    selectedCycles: [],
-                    selectedSubjects: [],
-                    showAllCycles: false,
-                    showAllSubjects: true,
-                    hasCompletedWelcome: false,
-                }));
+                setConfig(parseStoredConfig(storedConfig));
             }
         } catch (error) {
             logger.error("Failed to load config from localStorage", error);
-        } finally {
-            setIsLoading(false);
         }
     }, [setConfig]);
 
     // ── Rechargement quand un pull cloud a réécrit le localStorage ─────────
     useEffect(() => {
-        const reload = () => {
+        const reload = (source?: symbol) => {
+            // L'instance qui vient d'écrire possède déjà la valeur exacte en
+            // mémoire. Seules les autres vues doivent relire le stockage.
+            if (source === configSourceRef.current) return;
             try {
                 const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
                 if (stored) {
@@ -203,7 +218,7 @@ export const useConfigManager = () => {
             touchSettingsSyncMeta();
             markClassesListDirty();
         }
-        notifyConfigChanged();
+        notifyConfigChanged(configSourceRef.current);
     }, [setConfig]);
 
     return { config, updateConfig, isLoading };

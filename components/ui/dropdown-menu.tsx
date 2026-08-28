@@ -19,7 +19,7 @@ const DropdownMenuContent = React.forwardRef<
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          "z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg text-start",
+          "modern-scrollbar z-[200] max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg text-start",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           "origin-[--radix-dropdown-menu-content-transform-origin]",
           className

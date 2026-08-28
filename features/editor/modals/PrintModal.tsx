@@ -155,7 +155,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
             <Printer className="h-5 w-5 stroke-[2.2]" />
           </span>
-          <span className="text-base sm:text-lg font-bold text-foreground">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             {t('print.title')}
           </span>
         </div>
@@ -192,15 +192,15 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           <div className="grid grid-cols-3 divide-x divide-border/70 text-center">
             <div className="flex flex-col items-center justify-center p-3 sm:py-4">
               <span className="text-xl sm:text-2xl font-black text-foreground">{number.format(totalDates)}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.sessions')}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.sessions')}</span>
             </div>
             <div className="flex flex-col items-center justify-center p-3 sm:py-4">
               <span className="text-xl sm:text-2xl font-black text-muted-foreground">{number.format(printedCount)}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.printed')}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">{t('print.printed')}</span>
             </div>
             <div className="flex flex-col items-center justify-center p-3 sm:py-4 bg-emerald-500/[0.08] dark:bg-emerald-950/20">
               <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400">{number.format(newDates.length)}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mt-0.5">{t('print.new')}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mt-0.5">{t('print.new')}</span>
             </div>
           </div>
           {lastPrintedAt && (
@@ -228,7 +228,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                     selected ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:bg-card hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35'
                   }`}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0 stroke-[2.2]" />
                   <span className="truncate">{item.label}</span>
                 </button>
               );

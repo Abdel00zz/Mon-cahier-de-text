@@ -5,16 +5,20 @@ import { getSubjectVisual } from '@/utils/classVisuals';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Settings } from '@/components/ui/icons';
+import { FuturisticCardFrame } from '@/components/ui/FuturisticCardFrame';
+import { getClassScheduleColor } from '@/utils/scheduleColors';
 
-const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-5 sm:h-[22px] items-center justify-center px-2 sm:px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] leading-none border transition-all';
+const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-[22px] sm:h-6 items-center justify-center px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] font-bold tracking-wider uppercase leading-none transition-all';
+
 interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
     showSubjectBadge?: boolean;
+    allClasses?: ClassInfo[];
 }
 
-const renderClassTitleWithFonts = (text: string) => {
+const renderClassTitleWithFonts = (text: string, accentColorClass: string) => {
     const parts = text.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème)?)/g);
     return parts.map((part, idx) => {
         if (!part) return null;
@@ -24,7 +28,7 @@ const renderClassTitleWithFonts = (text: string) => {
             const num = matchOrdinal[1];
             const suf = matchOrdinal[2];
             return (
-                <span key={idx} className="inline-block text-blue-600 dark:text-blue-400">
+                <span key={idx} className={`inline-block ${accentColorClass}`}>
                     <span className="font-itim font-bold text-[1.1em]">{num}</span>
                     <sup className="relative -top-[0.4em] text-[0.65em] font-semibold font-sans">{suf}</sup>
                 </span>
@@ -33,7 +37,7 @@ const renderClassTitleWithFonts = (text: string) => {
 
         if (/^[0-9\u0660-\u0669]+$/.test(part)) {
             return (
-                <span key={idx} className="font-itim font-bold text-[1.12em] px-[1px] text-blue-600 dark:text-blue-400">
+                <span key={idx} className={`font-itim font-bold text-[1.12em] px-[1px] ${accentColorClass}`}>
                     {part}
                 </span>
             );
@@ -48,9 +52,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     onSelect,
     onConfigure,
     showSubjectBadge = true,
+    allClasses = [],
 }) => {
     const { impact } = useHapticFeedback();
     const { locale, t } = useLocale();
+    const isRtl = locale === 'ar';
 
     const handleConfigureClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -73,9 +79,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const visual = getSubjectVisual(classInfo.subject);
-    const frame = locale === 'ar'
-        ? { src: '/cadre-AR.png', aspectRatio: '1672 / 941' }
-        : { src: '/cadre-fr.png', aspectRatio: '1536 / 1024' };
+    const colorTheme = getClassScheduleColor(classInfo, allClasses);
     const subjectBadgeText = classInfo.subject
         ? formatLocalizedSubjectDisplayName(classInfo.subject, locale)
         : null;
@@ -86,54 +90,48 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             tabIndex={0}
             onClick={handleCardClick}
             onKeyDown={handleCardKeyDown}
+            dir={isRtl ? 'rtl' : 'ltr'}
             aria-label={t('dashboard.openClass', { className: displayName })}
-            style={{ aspectRatio: frame.aspectRatio }}
-            className="group relative w-full portrait:w-[85%] portrait:max-w-[420px] portrait:mx-auto landscape:w-[95%] landscape:max-w-[480px] landscape:mx-auto bg-transparent cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:drop-shadow-xl active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
+            style={{ aspectRatio: '460 / 250' }}
+            className="group relative w-full portrait:w-[94%] portrait:max-w-[370px] portrait:mx-auto landscape:w-[96%] landscape:max-w-[420px] landscape:mx-auto bg-transparent cursor-pointer rounded-[24px] shadow-xs hover:shadow-md dark:shadow-zinc-950/40 dark:hover:shadow-zinc-950/70 transition-all duration-300 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
-            <img
-                src={frame.src}
-                alt=""
-                aria-hidden="true"
-                draggable={false}
-                loading="lazy"
-                className="pointer-events-none absolute inset-0 h-full w-full select-none object-contain drop-shadow-md"
-            />
+            <FuturisticCardFrame colorTheme={colorTheme} />
 
-            <div className="relative z-10 flex h-full w-full flex-col justify-between px-[5%] py-[4%] sm:px-[6%] sm:py-[5%] landscape:px-[6%] landscape:py-[4%]">
-                {/* Slot fixed: the title stays optically centered with or without a subject. */}
-                <div className="flex items-center justify-start mt-[2%] sm:mt-[3%] ml-[1%] sm:ml-[2%]">
+            <div className="relative z-10 flex h-full w-full flex-col justify-between pt-5 pb-3.5 px-5 sm:px-6">
+                <div className="flex min-h-[22px] items-center justify-start">
                     {showSubjectBadge && subjectBadgeText ? (
-                        <span className={`${SUBJECT_BADGE_BASE_CLASSES} font-semibold ${visual.badgeStyle} border border-white/50 bg-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/20 dark:bg-slate-900/50 portrait:shadow-none portrait:backdrop-blur-none portrait:bg-transparent portrait:dark:bg-transparent portrait:border-transparent portrait:px-1`}>
+                        <span
+                            className={`${SUBJECT_BADGE_BASE_CLASSES} ${visual.badgeStyle} border border-slate-200/70 dark:border-zinc-700/50 bg-white/95 dark:bg-zinc-900/95 shadow-2xs backdrop-blur-md transition-transform duration-200 group-hover:scale-105`}
+                        >
                             {subjectBadgeText}
                         </span>
-                    ) : null}
+                    ) : (
+                        <div className="h-3" />
+                    )}
                 </div>
 
-                {/* Centre optique : même équilibre pour un titre court ou sur deux lignes. */}
-                <div className="flex min-h-0 w-full items-center justify-center px-1 py-1 text-center sm:px-2 pt-[6%] landscape:pt-[4%]">
+                <div className="my-auto flex min-h-0 w-full items-center justify-center px-2 py-0.5 text-center">
                     <h3
-                        className="max-w-[23ch] text-balance font-fira text-[clamp(1.15rem,1.5vw+0.75rem,1.8rem)] font-bold leading-[1.25] tracking-[-0.02em] text-slate-800 dark:text-slate-100 transition-colors group-hover:text-blue-700 dark:group-hover:text-blue-300"
+                        className={`max-w-[24ch] text-balance text-[clamp(1.12rem,1.2vw+0.7rem,1.5rem)] font-extrabold leading-snug tracking-tight text-slate-900 dark:text-zinc-50 transition-colors duration-200 group-hover:text-slate-950 dark:group-hover:text-white drop-shadow-2xs ${isRtl ? 'font-ibm-arabic' : 'font-sans'}`}
                         title={displayName}
                     >
-                        {renderClassTitleWithFonts(displayName)}
+                        {renderClassTitleWithFonts(displayName, colorTheme.textClass)}
                     </h3>
                 </div>
 
-                {/* Bottom area: settings only. Alerts live in the dashboard banner. */}
                 <div
                     role="group"
                     aria-label={t('dashboard.classActions', { className: displayName })}
-                    className="flex items-center justify-end"
+                    className="flex min-h-[32px] items-center justify-end"
                 >
-                    {/* Settings Button */}
                     <button
                         type="button"
                         onClick={handleConfigureClick}
-                        className="group/btn flex h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] landscape:h-[36px] landscape:w-[36px] shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/30 text-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600/50 transition-all duration-300 hover:scale-110 hover:bg-white/60 hover:text-blue-600 active:scale-95 dark:border-white/20 dark:bg-slate-900/40 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-blue-400 cursor-pointer portrait:border-transparent portrait:bg-transparent portrait:shadow-none portrait:backdrop-blur-none portrait:text-slate-900 portrait:dark:text-white landscape:border-white/50 landscape:bg-white/40 landscape:shadow-md"
+                        className="group/btn relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 hover:scale-110 active:scale-95 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 cursor-pointer"
                         title={t('dashboard.classSettings')}
                         aria-label={`${t('dashboard.edit')} ${displayName}`}
                     >
-                        <Settings className="h-[18px] w-[18px] sm:h-[16px] sm:w-[16px] landscape:h-[20px] landscape:w-[20px] shrink-0 stroke-[2.2] portrait:stroke-[3] landscape:stroke-[2.5] transition-transform duration-500 group-hover/btn:rotate-90" />
+                        <Settings className="h-5 w-5 shrink-0 stroke-[1.75] transition-transform duration-300 ease-out group-hover/btn:rotate-90" />
                     </button>
                 </div>
             </div>

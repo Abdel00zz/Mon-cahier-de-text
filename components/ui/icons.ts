@@ -72,6 +72,12 @@ import {
   Award,
   Layers as LucideLayers,
   Palette as LucidePalette,
+  Bold as LucideBold,
+  Braces as LucideBraces,
+  Italic as LucideItalic,
+  List as LucideList,
+  ListOrdered as LucideListOrdered,
+  Underline as LucideUnderline,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -173,3 +179,9 @@ export const LogOut = createIcon(LucideLogOut);
 export const AwardIcon = createIcon(Award);
 export const Layers = createIcon(LucideLayers);
 export const Palette = createIcon(LucidePalette);
+export const Bold = createIcon(LucideBold);
+export const Braces = createIcon(LucideBraces);
+export const Italic = createIcon(LucideItalic);
+export const List = createIcon(LucideList);
+export const ListOrdered = createIcon(LucideListOrdered);
+export const Underline = createIcon(LucideUnderline);

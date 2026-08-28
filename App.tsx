@@ -17,6 +17,7 @@ import { useClassManager } from './hooks/useClassManager';
 import { useTheme } from './hooks/useTheme';
 import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
+import { preloadSettingsPage } from './utils/performance';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -84,7 +85,7 @@ const App: React.FC = () => {
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
-  const { classes } = useClassManager();
+  const { classes, addClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(
     config.theme,
@@ -101,6 +102,16 @@ const App: React.FC = () => {
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const requestIdle = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1200));
+    const cancelIdle = (window as any).cancelIdleCallback || clearTimeout;
+    const idleHandle = requestIdle(() => {
+      preloadSettingsPage();
+    });
+    return () => cancelIdle(idleHandle);
+  }, []);
 
   // Une authentification déclenchée depuis une ancienne vue (par exemple les
   // paramètres après une déconnexion) doit reprendre à l'accueil. Cela permet
@@ -321,7 +332,13 @@ const App: React.FC = () => {
       </div>
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>
-          <SettingsPage onBack={handleBackFromSettings} />
+          <SettingsPage
+            onBack={handleBackFromSettings}
+            config={config}
+            onConfigChange={updateConfig}
+            classes={classes}
+            addClass={addClass}
+          />
         </Suspense>
       )}
     </div>

@@ -82,11 +82,11 @@ const passwordStrength = (pw: string, labels: readonly string[]): { score: numbe
   if (/[^A-Za-z0-9]/.test(pw)) score++;
   const level = Math.min(score, 4);
   const map = [
-    { label: labels[0], barClass: 'bg-red-500', textClass: 'text-red-500' },
-    { label: labels[1], barClass: 'bg-red-500', textClass: 'text-red-500' },
-    { label: labels[2], barClass: 'bg-amber-500', textClass: 'text-amber-500' },
-    { label: labels[3], barClass: 'bg-emerald-500', textClass: 'text-emerald-500' },
-    { label: labels[4], barClass: 'bg-emerald-500', textClass: 'text-emerald-500' },
+    { label: labels[0], barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-400' },
+    { label: labels[1], barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-400' },
+    { label: labels[2], barClass: 'bg-amber-500', textClass: 'text-amber-600 dark:text-amber-400' },
+    { label: labels[3], barClass: 'bg-emerald-500', textClass: 'text-emerald-600 dark:text-emerald-400' },
+    { label: labels[4], barClass: 'bg-emerald-500', textClass: 'text-emerald-600 dark:text-emerald-400' },
   ];
   return { score: level, ...map[level] };
 };
@@ -128,13 +128,13 @@ const PasswordInput: React.FC<{
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 pr-11 pl-4 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-300 focus:border-blue-600 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-900/60 dark:text-white dark:hover:border-blue-500 sm:text-[13px]"
+          className="h-12 rounded-xl border border-slate-300/90 bg-white dark:border-slate-700/80 dark:bg-slate-900/90 pr-11 pl-4 text-left text-xs font-semibold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600/20 dark:text-white dark:hover:border-blue-500 sm:text-[13px]"
           dir="ltr"
         />
         <button
           type="button"
           onClick={() => setVisible(v => !v)}
-          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 focus-visible:outline-none cursor-pointer"
           aria-label={visible ? hideLabel : showLabel}
           aria-pressed={visible}
         >
@@ -142,8 +142,8 @@ const PasswordInput: React.FC<{
         </button>
       </div>
       {capsLock && (
-        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 animate-in fade-in duration-200">
-          <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-500" /> {capsLockLabel}
+        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 animate-in fade-in duration-200">
+          <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-600" /> {capsLockLabel}
         </p>
       )}
     </div>
@@ -151,8 +151,8 @@ const PasswordInput: React.FC<{
 };
 
 const LiveCheck: React.FC<{ ok: boolean; label: string }> = ({ ok, label }) => (
-  <span className={`inline-flex items-center gap-1 text-[10.5px] font-bold transition-colors ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
-    <CircleCheck className={`h-3.5 w-3.5 ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-600'}`} /> {label}
+  <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold transition-colors ${ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+    <CircleCheck className={`h-3.5 w-3.5 ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} /> {label}
   </span>
 );
 
@@ -209,12 +209,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
   };
 
   const renderLanguageSwitch = () => (
-    <div dir="ltr" className="flex items-center rounded-xl border border-slate-200/80 bg-slate-100/90 p-1 shadow-inner dark:border-slate-800 dark:bg-slate-800/80" role="group" aria-label={copy.languageLabel}>
+    <div dir="ltr" className="flex items-center rounded-xl border border-slate-300/80 bg-white/90 p-1 shadow-xs dark:border-slate-700 dark:bg-slate-800/90" role="group" aria-label={copy.languageLabel}>
       <button
         type="button"
         onClick={() => onLocaleChange('ar')}
         aria-pressed={displayLocale === 'ar'}
-        className={`min-h-[36px] rounded-lg px-3 text-xs font-extrabold transition-all cursor-pointer ${displayLocale === 'ar' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
+        className={`min-h-[36px] rounded-lg px-3.5 text-xs font-black transition-all cursor-pointer font-ibm-arabic ${displayLocale === 'ar' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'}`}
       >
         العربية
       </button>
@@ -222,7 +222,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
         type="button"
         onClick={() => onLocaleChange('fr')}
         aria-pressed={displayLocale === 'fr'}
-        className={`min-h-[36px] rounded-lg px-3 text-xs font-extrabold transition-all cursor-pointer ${displayLocale === 'fr' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
+        className={`min-h-[36px] rounded-lg px-3.5 text-xs font-black transition-all cursor-pointer ${displayLocale === 'fr' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'}`}
       >
         FR
       </button>
@@ -233,11 +233,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
       lang={displayLocale}
-      className="auth-page-shell font-['Roboto_Slab',serif] min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-x-hidden selection:bg-[#2563eb] selection:text-white"
+      className={`auth-page-shell min-h-screen w-full flex flex-col lg:flex-row bg-[#F8FAFC] dark:bg-slate-950 text-slate-950 dark:text-slate-50 overflow-x-hidden selection:bg-[#2563eb] selection:text-white ${isRtl ? 'font-ibm-arabic' : "font-['Roboto_Slab',serif]"}`}
     >
       {/* ================= HERO / BANNER IMAGE PANEL (DESKTOP ONLY) ================= */}
-      <aside className="relative hidden lg:flex lg:w-1/2 xl:w-[52%] items-center justify-center p-6 lg:p-10 bg-slate-100 dark:bg-slate-950 overflow-hidden shrink-0 min-h-screen">
-        <div className="relative w-full h-full max-w-2xl flex items-center justify-center overflow-hidden rounded-3xl shadow-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-5">
+      <aside className="relative hidden lg:flex lg:w-1/2 xl:w-[52%] items-center justify-center p-6 lg:p-10 bg-slate-100/90 dark:bg-slate-950 overflow-hidden shrink-0 min-h-screen">
+        <div className="relative w-full h-full max-w-2xl flex items-center justify-center overflow-hidden rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6">
           <img
             key={displayLocale}
             src={displayLocale === 'ar' ? '/login_ar.png' : '/login_fr.png'}
@@ -247,20 +247,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
         </div>
       </aside>
 
-      {/* ================= FORM PANEL (UNIFIED HYPER-MODERN SINGLE PIECE ON MOBILE & DESKTOP) ================= */}
-      <main className="w-full lg:w-1/2 xl:w-[48%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-14 bg-slate-50 lg:bg-white dark:bg-slate-950 lg:dark:bg-slate-900 shrink-0">
+      {/* ================= FORM PANEL ================= */}
+      <main className="w-full lg:w-1/2 xl:w-[48%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-14 bg-[#FAFCFF] lg:bg-white dark:bg-slate-950 lg:dark:bg-slate-900 shrink-0">
         
         {/* Top Navigation Row */}
         <header className="w-full flex items-center justify-between pb-4 sm:pb-6">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/25">
-              <BookOpen className="h-4.5 w-4.5 sm:h-5 sm:w-5" aria-hidden="true" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/30">
+              <BookOpen className="h-5 w-5" aria-hidden="true" />
             </div>
-            <div className="flex flex-col">
-              <span className={`font-black text-slate-900 dark:text-white text-base sm:text-lg leading-tight ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif]' : ''}`}>
+            <div className="flex flex-col text-start">
+              <span className={`font-black text-slate-950 dark:text-white text-base sm:text-lg leading-tight ${isRtl ? 'font-ibm-arabic' : ''}`}>
                 {copy.brand}
               </span>
-              <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
                 {copy.teacherAccess}
               </span>
             </div>
@@ -271,7 +271,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
         {/* Center Form Card */}
         <div className="w-full max-w-md mx-auto my-auto py-2 sm:py-6">
-          <div className="w-full rounded-2xl sm:rounded-3xl bg-white sm:bg-transparent dark:bg-slate-900 sm:dark:bg-transparent p-5 sm:p-0 shadow-lg sm:shadow-none border border-slate-200/80 sm:border-none dark:border-slate-800">
+          <div className="w-full rounded-2xl sm:rounded-3xl bg-white sm:bg-transparent dark:bg-slate-900 sm:dark:bg-transparent p-6 sm:p-0 shadow-lg sm:shadow-none border border-slate-200/90 sm:border-none dark:border-slate-800">
           
           <motion.div
             key={mode}
@@ -281,17 +281,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             className="w-full"
           >
             {/* Main Welcome Header */}
-            <div className="text-start mb-5 sm:mb-6">
-              <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight ${isRtl ? 'font-["Alexandria","IBM_Plex_Sans_Arabic",sans-serif] leading-tight' : ''}`}>
+            <div className="text-start mb-6">
+              <h2 className={`text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tight ${isRtl ? 'font-ibm-arabic leading-snug' : ''}`}>
                 {isRegister ? copy.createTitle : copy.welcomeTitle}
               </h2>
               
-              <div className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5 font-medium">
+              <div className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 flex flex-wrap items-center gap-1.5 font-medium">
                 <span>{isRegister ? copy.createSubtitle : copy.welcomeSubtitle}</span>
                 <button
                   type="button"
                   onClick={() => switchMode(isRegister ? 'login' : 'register')}
-                  className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer focus:outline-none"
+                  className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer focus:outline-none"
                 >
                   {isRegister ? copy.login : copy.createAccount}
                 </button>
@@ -299,22 +299,22 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
             </div>
 
             {/* Segmented Mode Control */}
-            <div className="mb-5 sm:mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-100/90 p-1.5 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60">
               {(['login', 'register'] as const).map(value => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => switchMode(value)}
-                  className={`relative min-h-[40px] sm:min-h-[44px] rounded-xl px-2 py-1.5 text-xs font-extrabold transition-colors focus:outline-none cursor-pointer ${mode === value ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+                  className={`relative min-h-[42px] sm:min-h-[44px] rounded-xl px-3 py-2 text-xs font-black transition-colors focus:outline-none cursor-pointer ${mode === value ? 'text-slate-950 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                 >
                   {mode === value && (
                     <motion.span
                       layoutId="auth-tab-split"
-                      className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-slate-700 border border-slate-200/60 dark:border-slate-600/50"
+                      className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-slate-700 border border-slate-200/90 dark:border-slate-600/70"
                       transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
                     />
                   )}
-                  <span className="relative z-10">{value === 'login' ? copy.login : copy.createAccount}</span>
+                  <span className={`relative z-10 ${isRtl ? 'font-ibm-arabic' : ''}`}>{value === 'login' ? copy.login : copy.createAccount}</span>
                 </button>
               ))}
             </div>
@@ -333,23 +333,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                     className="grid grid-cols-1 gap-3 overflow-hidden min-[390px]:grid-cols-2"
                   >
                     <label className="block text-start">
-                      <span className={`mb-1.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400 ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.name}</span>
+                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.name}</span>
                       <Input
                         value={nom}
                         onChange={e => setNom(e.target.value)}
                         autoComplete="family-name"
                         placeholder={isRtl ? 'العلمي' : 'Benali'}
-                        className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-white sm:text-[13px]"
+                        className={`h-12 rounded-xl border border-slate-300/90 bg-white text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px] ${isRtl ? 'font-ibm-arabic' : ''}`}
                       />
                     </label>
                     <label className="block text-start">
-                      <span className={`mb-1.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400 ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.firstName}</span>
+                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.firstName}</span>
                       <Input
                         value={prenom}
                         onChange={e => setPrenom(e.target.value)}
                         autoComplete="given-name"
                         placeholder={isRtl ? 'سلمى' : 'Malek'}
-                        className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-white sm:text-[13px]"
+                        className={`h-12 rounded-xl border border-slate-300/90 bg-white text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px] ${isRtl ? 'font-ibm-arabic' : ''}`}
                       />
                     </label>
                   </motion.div>
@@ -358,7 +358,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
               {/* Phone Input */}
               <label className="block text-start">
-                <span className={`mb-1.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400 ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.phone}</span>
+                <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.phone}</span>
                 <div className="relative">
                   <Input
                     type="tel"
@@ -372,16 +372,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                     placeholder="06 12 34 56 78"
                     required
                     aria-describedby={error ? errorId : undefined}
-                    className="h-12 rounded-xl border border-slate-200 bg-slate-50/80 pr-11 pl-4 text-left text-xs font-semibold text-slate-900 shadow-none transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-white sm:text-[13px]"
+                    className="h-12 rounded-xl border border-slate-300/90 bg-white pr-11 pl-4 text-left text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px]"
                     dir="ltr"
                   />
-                  {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-emerald-500 animate-in fade-in duration-200" />}
+                  {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-200" />}
                 </div>
               </label>
 
               {/* Password Input */}
               <label className="block text-start">
-                <span className={`mb-1.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400 ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.password}</span>
+                <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.password}</span>
                 <PasswordInput
                   value={password}
                   onChange={setPassword}
@@ -406,23 +406,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
                     className="space-y-3.5 overflow-hidden text-start"
                   >
                     <label className="block text-start">
-                      <span className={`mb-1.5 block text-[11px] font-bold text-slate-500 dark:text-slate-400 ${isRtl ? '' : 'uppercase tracking-wider'}`}>{copy.confirmPassword}</span>
+                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.confirmPassword}</span>
                       <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" showLabel={copy.showPassword} hideLabel={copy.hidePassword} capsLockLabel={copy.capsLock} />
                     </label>
 
                     {/* Jauge de force */}
                     {password.length > 0 && (
-                      <div className="flex items-center gap-2 animate-in fade-in duration-200 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700/50">
-                        <div className="flex flex-1 gap-1" aria-hidden>
+                      <div className="flex items-center gap-2.5 animate-in fade-in duration-200 bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200/90 dark:border-slate-700/70 shadow-xs">
+                        <div className="flex flex-1 gap-1.5" aria-hidden>
                           {[0, 1, 2, 3].map(i => (
-                            <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-slate-200 dark:bg-slate-700'}`} />
+                            <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-slate-200 dark:bg-slate-700'}`} />
                           ))}
                         </div>
-                        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${strength.textClass}`}>{strength.label}</span>
+                        <span className={`shrink-0 text-[11px] font-black uppercase tracking-wider ${strength.textClass}`}>{strength.label}</span>
                       </div>
                     )}
 
-                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                    <div className="flex flex-wrap gap-x-3.5 gap-y-1.5">
                       <LiveCheck ok={passwordLongEnough} label={copy.passwordMin} />
                       <LiveCheck ok={passwordsMatch} label={copy.samePassword} />
                     </div>
@@ -432,7 +432,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
               {/* Error Message */}
               {error && (
-                <p ref={errorRef} id={errorId} tabIndex={-1} className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-600 outline-none animate-in fade-in duration-200 text-start dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400" role="alert">
+                <p ref={errorRef} id={errorId} tabIndex={-1} className="rounded-xl border border-red-300 bg-red-50 p-3.5 text-xs font-bold text-red-700 outline-none animate-in fade-in duration-200 text-start dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-300 shadow-xs" role="alert">
                   {error}
                 </p>
               )}
@@ -441,7 +441,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative mt-2 flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-extrabold text-white shadow-md shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/35 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                className={`group relative mt-2 flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-black text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer ${isRtl ? 'font-ibm-arabic text-base' : ''}`}
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> {copy.wait}</span>
@@ -456,9 +456,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
 
         {/* Footer Security Badge */}
         <footer className="w-full pt-6 text-center">
-          <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500">
-            <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
-            <span>{copy.secure}</span>
+          <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className={isRtl ? 'font-ibm-arabic' : ''}>{copy.secure}</span>
           </p>
         </footer>
 

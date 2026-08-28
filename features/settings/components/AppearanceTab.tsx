@@ -161,15 +161,15 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       <section className="settings-section-block p-4 sm:p-6" id="theme-mode-section">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Sun className="h-5 w-5 dark:hidden" />
-              <Moon className="h-5 w-5 hidden dark:block" />
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sun className="h-4.5 w-4.5 dark:hidden" />
+              <Moon className="h-4.5 w-4.5 hidden dark:block" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
                 {t('settings.appearance.themeTitle')}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 {t('settings.appearance.themeSubtitle')}
               </p>
             </div>
@@ -283,14 +283,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       {/* ── Section 2 : Palette d'Accent & Couleur Principale ── */}
       <section className="settings-section-block p-4 sm:p-6" id="accent-color-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Palette className="h-5 w-5" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Palette className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {isRtl ? 'لون التمييز والواجهة الرئيسي' : 'Couleur d’Accent & Palette de l’Application'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {isRtl ? 'اختر اللون المميز للأزرار والشارات والمؤشرات في كامل التطبيق' : 'Personnalisez la couleur active des boutons, onglets, badges et sélections'}
             </p>
           </div>
@@ -382,14 +382,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       {/* ── Section 3 : Rayon de Courbure & Arrondi des Composants ── */}
       <section className="settings-section-block p-4 sm:p-6" id="border-radius-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Layout className="h-5 w-5" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Layout className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {isRtl ? 'انحناء حواف المكونات والبطاقات' : 'Rayon & Courbure des Angles'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {isRtl ? 'حدد درجة استدارة البطاقات والأزرار والنوافذ' : 'Choisissez le style géométrique des cartes, boutons et champs de saisie'}
             </p>
           </div>
@@ -432,14 +432,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       {/* ── Section 4 : Style des Cartes & Surfaces ── */}
       <section className="settings-section-block p-4 sm:p-6" id="card-style-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Sparkles className="h-5 w-5" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Sparkles className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {isRtl ? 'مظهر وأسلوب البطاقات والأسطح' : 'Style des Surfaces & Cartes'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {isRtl ? 'تحكم في عمق وتظليل وخلفيات بطاقات الأقسام' : 'Définissez le traitement visuel des conteneurs, blocs et listes'}
             </p>
           </div>
@@ -483,14 +483,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       {/* ── Section 5 : Style du Tableau du Cahier de Textes ── */}
       <section className="settings-section-block p-4 sm:p-6" id="table-style-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <TableIcon className="h-5 w-5" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <TableIcon className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {isRtl ? 'نمط شبكة وجدول دفتر النصوص' : 'Style du Tableau du Cahier'}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {isRtl ? 'تخصيص نمط العرض والتسطير والتظليل لصفوف الجذاذات والدروس' : 'Personnalisez le lignage, les bandes alternées et l’espacement des séances'}
             </p>
           </div>
@@ -530,14 +530,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       {/* ── Section 6 : Typographie unifiée ── */}
       <section className="settings-section-block p-4 sm:p-6" id="typography-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Type className="h-5 w-5" />
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Type className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {fontCopy.title}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {fontCopy.subtitle}
             </p>
           </div>
@@ -684,14 +684,14 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       <section className="settings-section-block p-4 sm:p-6" id="advanced-colors-section">
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Sliders className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Sliders className="h-4.5 w-4.5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground">
+              <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
                 {isRtl ? 'تخصيص متقدم لدرجات الألوان' : 'Personnalisation Avancée des Couleurs & Zones'}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 {isRtl ? 'تحكم دقيق في درجات خلفية التطبيق والنصوص والبطاقات' : 'Ajustement précis des codes hexadécimaux pour le fond, le texte et les cartes'}
               </p>
             </div>

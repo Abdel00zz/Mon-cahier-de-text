@@ -71,7 +71,7 @@ export function ConfirmDialog({
                             <CircleHelp className="h-5 w-5 stroke-[2.2]" />
                         )}
                     </span>
-                    <span className="text-base sm:text-lg font-bold text-foreground">
+                    <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
                         {title}
                     </span>
                 </div>

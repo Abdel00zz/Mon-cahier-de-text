@@ -475,6 +475,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+    const teacherInitial = teacherName.trim().charAt(0) || '•';
 
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
@@ -504,39 +505,37 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-3 pb-3 sm:px-6 sm:pt-4 lg:px-8 pl-safe pr-safe">
-                    {/* ── SLEEK FLOATING BANNER (Independent, rounded capsule, not full-width navbar) ── */}
+                    {/* En-tête d'accueil, visuellement lié à la navigation crème. */}
                     <header
                         id="dashboard-header"
                         aria-live="polite"
-                        className="mb-4 sm:mb-5 rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/85 px-4 py-2.5 sm:px-5 sm:py-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all dark:border-slate-800/80 dark:bg-slate-900/85 dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
+                        className="mb-4 overflow-hidden rounded-2xl border border-[#e5d6c0] bg-[linear-gradient(135deg,#fcf8f0_0%,#f5ecdd_100%)] px-3.5 py-2.5 shadow-[0_10px_30px_rgba(92,70,42,0.07)] transition-all sm:mb-5 sm:rounded-3xl sm:px-5 sm:py-3 landscape:py-2 dark:border-slate-800 dark:bg-[linear-gradient(135deg,#172033_0%,#101827_100%)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.3)]"
                     >
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            {/* Compact Greeting */}
-                            <div className="min-w-0">
-                                <h1 className="text-[17px] font-bold tracking-tight text-slate-900 sm:text-[19px] dark:text-white">
-                                    <span>{t('dashboard.welcome.greeting', { teacher: '' })}</span>
-                                    {teacherName && (
-                                        <>
-                                            <span aria-hidden className="text-slate-400 font-normal">{locale === 'ar' ? '، ' : ', '}</span>
-                                            <span className="font-itim text-[1.18em] font-bold text-blue-600 dark:text-blue-400" dir="auto">
-                                                {teacherName}
-                                            </span>
-                                        </>
-                                    )}
-                                </h1>
+                        <div className="flex flex-col gap-2.5 landscape:flex-row landscape:items-center landscape:justify-between landscape:gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/80 bg-white/75 font-itim text-base font-bold text-blue-700 shadow-[0_4px_12px_rgba(92,70,42,0.08)] sm:h-10 sm:w-10 sm:rounded-2xl sm:text-lg dark:border-white/10 dark:bg-white/10 dark:text-blue-300">
+                                    {teacherInitial}
+                                </span>
+                                <div className="min-w-0 text-start">
+                                    <p className="text-[11px] font-bold leading-none text-[#75644f] dark:text-slate-300">
+                                        {t('dashboard.welcome.greeting', { teacher: '' })}
+                                    </p>
+                                    <h1 className="mt-1 truncate font-itim text-lg font-bold leading-none text-[#2f2922] sm:text-xl dark:text-white" dir="auto">
+                                        {teacherName || t('settings.defaultTeacherName')}
+                                    </h1>
+                                </div>
                             </div>
 
-                            {/* Minimalist Context Pill */}
-                            <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                            <div className={`flex w-full min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2 text-[11px] font-medium leading-[1.4] transition-all landscape:w-auto landscape:max-w-[60%] sm:w-auto sm:max-w-[32rem] sm:flex-1 sm:rounded-2xl sm:text-xs ${
                                 welcome.tone === 'alert'
                                     ? 'border-rose-200/80 bg-rose-50/80 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/50 dark:text-rose-200'
                                     : welcome.tone === 'vacation'
                                         ? 'border-cyan-200/80 bg-cyan-50/80 text-cyan-800 dark:border-cyan-900/50 dark:bg-cyan-950/50 dark:text-cyan-200'
                                         : welcome.tone === 'deadline'
                                             ? 'border-amber-200/80 bg-amber-50/80 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-200'
-                                            : 'border-slate-200/80 bg-slate-100/80 text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300'
+                                        : 'border-white/80 bg-white/55 text-[#665846] dark:border-white/10 dark:bg-white/[0.07] dark:text-slate-300'
                             }`}>
-                                <span className="flex shrink-0 items-center justify-center" aria-hidden>
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/75 shadow-xs dark:bg-white/10" aria-hidden>
                                     {welcome.tone === 'alert' ? (
                                         <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
                                     ) : welcome.tone === 'deadline' ? (
@@ -546,29 +545,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     )}
                                 </span>
 
-                                <div className="flex min-w-0 items-center gap-1.5 truncate">
+                                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5 text-start">
                                     {welcome.title && (
-                                        <span className="font-semibold text-slate-900 dark:text-white truncate">
+                                        <span className="font-bold text-slate-900 dark:text-white">
                                             {welcome.title}
                                         </span>
                                     )}
+                                    {welcome.action && (
+                                        <button
+                                            type="button"
+                                            onClick={welcome.action.onClick}
+                                            className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 font-bold text-blue-700 transition-colors hover:bg-blue-50/70 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+                                        >
+                                            <span>{welcome.action.label}</span>
+                                            <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
+                                        </button>
+                                    )}
                                     {welcome.detail && (
-                                        <span className="text-slate-600 dark:text-slate-400 truncate">
-                                            {welcome.title ? `— ${welcome.detail}` : welcome.detail}
+                                        <span className="basis-full text-[#776854] dark:text-slate-400">
+                                            {welcome.detail}
                                         </span>
                                     )}
                                 </div>
-
-                                {welcome.action && (
-                                    <button
-                                        type="button"
-                                        onClick={welcome.action.onClick}
-                                        className="group/btn inline-flex shrink-0 cursor-pointer items-center gap-0.5 font-bold text-blue-600 underline underline-offset-2 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                                    >
-                                        <span>{welcome.action.label}</span>
-                                        <ArrowIcon className="h-3 w-3 transition-transform group-hover/btn:translate-x-0.5 rtl:group-hover/btn:-translate-x-0.5" />
-                                    </button>
-                                )}
                             </div>
                         </div>
                     </header>
@@ -671,26 +669,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {spotlightInfo && (
                         <div
                             onClick={() => onSelectClass(spotlightInfo.classInfo)}
-                            className="mb-4 rounded-2xl border border-blue-500/25 bg-gradient-to-r from-blue-500/10 via-white/80 to-indigo-500/5 dark:via-slate-900/80 dark:to-indigo-950/20 p-3.5 sm:p-4 shadow-sm backdrop-blur-sm cursor-pointer transition-all hover:border-blue-500/45 hover:shadow-md active:scale-[0.99] group"
+                            className="mb-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-3.5 sm:p-4 shadow-xs backdrop-blur-md cursor-pointer transition-all hover:border-blue-500/40 hover:shadow-md active:scale-[0.99] group"
                         >
                             <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${spotlightInfo.isActiveNow ? 'bg-emerald-600 text-white shadow-emerald-600/30' : 'bg-blue-600 text-white shadow-blue-600/30'} shadow-md`}>
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${spotlightInfo.isActiveNow ? 'bg-emerald-600 text-white shadow-emerald-600/25' : 'bg-blue-600 text-white shadow-blue-600/25'} shadow-sm`}>
                                         {spotlightInfo.isActiveNow ? (
-                                            <Radio className="h-5 w-5 animate-pulse" />
+                                            <Radio className="h-5 w-5 animate-pulse stroke-[2.2]" />
                                         ) : (
-                                            <Clock className="h-5 w-5" />
+                                            <Clock className="h-5 w-5 stroke-[2.2]" />
                                         )}
                                         {spotlightInfo.isActiveNow && (
-                                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                                             </span>
                                         )}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-blue-500/15 text-blue-700 dark:text-blue-300'}`}>
+                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40' : 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40'}`}>
                                                 {spotlightInfo.isActiveNow ? (locale === 'ar' ? 'الآن · حصة جارية' : 'En ce moment · En direct') : (locale === 'ar' ? 'اليوم · الحصة القادمة' : 'Aujourd’hui · Séance à venir')}
                                             </span>
                                             <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
@@ -712,8 +710,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 hidden md:inline group-hover:underline">
                                         {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
                                     </span>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <ArrowIcon className="h-4 w-4" />
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 group-hover:border-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                        <ArrowIcon className="h-4 w-4 stroke-[2.2]" />
                                     </div>
                                 </div>
                             </div>
@@ -796,6 +794,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onSelect={() => onSelectClass(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     showSubjectBadge={shouldShowSubjectBadge}
+                                                    allClasses={classes}
                                                 />
                                             </div>
                                         ))}

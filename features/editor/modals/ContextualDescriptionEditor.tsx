@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Bold, Braces, Italic, List, ListOrdered, Underline } from 'lucide-react';
+import { Bold, Braces, Italic, List, ListOrdered, Underline } from '@/components/ui/icons';
 import { Textarea } from '@/components/ui/textarea';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -98,7 +98,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               aria-label={t(labelKey)}
               title={t(labelKey)}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3.5 w-3.5 stroke-[2.2]" />
             </button>
           ))}
         </div>

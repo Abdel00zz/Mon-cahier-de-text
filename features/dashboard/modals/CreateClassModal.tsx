@@ -73,8 +73,12 @@ const COPY: Record<AppLocale, {
 const uniqueValues = (values: string[]) => Array.from(new Set(values.map(value => value.trim()).filter(Boolean)));
 
 const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
-  <button type="button" onClick={onClick} className="group relative flex min-h-[4.5rem] w-full items-center gap-3 rounded-[18px] border border-border/80 bg-card px-4 py-3.5 text-start text-sm font-extrabold text-foreground shadow-[0_2px_8px_rgb(15_23_42/0.04)] transition-[border-color,background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/25 hover:shadow-[0_8px_22px_rgb(15_23_42/0.07)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10 active:translate-y-0">
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-primary transition-colors duration-200 group-hover:bg-primary/10">
+  <button
+    type="button"
+    onClick={onClick}
+    className="group relative flex min-h-[4.25rem] w-full items-center gap-3.5 rounded-[18px] border border-border/80 bg-card px-4 py-3.5 text-start text-sm font-extrabold text-foreground shadow-2xs transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted/30 hover:shadow-xs focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15 active:translate-y-0 active:scale-[0.98]"
+  >
+    <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl bg-muted text-primary transition-colors duration-200 group-hover:bg-primary/10">
       <GraduationCap className="h-[18px] w-[18px]" />
     </span>
     <span className="min-w-0 flex-1 leading-snug">{children}</span>
@@ -252,12 +256,12 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-primary/15 bg-primary/10 text-primary">
+          <span className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-[15px] border border-primary/15 bg-primary/10 text-primary">
             {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
           </span>
           <span className="min-w-0">
-            <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground">{copy.guidedLabel}</span>
-            <span className="mt-0.5 block text-base font-extrabold tracking-[-0.02em] text-foreground sm:text-lg">{editingClass ? copy.editTitle : copy.createTitle}</span>
+            <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{copy.guidedLabel}</span>
+            <span className="mt-0.5 block text-lg sm:text-xl font-bold tracking-tight text-foreground">{editingClass ? copy.editTitle : copy.createTitle}</span>
           </span>
         </div>
       } description={editingClass ? copy.editDescription : undefined} maxWidth="xl"

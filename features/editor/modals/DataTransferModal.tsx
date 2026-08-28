@@ -99,7 +99,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
             {panel === 'export' ? <FileDown className="h-5 w-5 stroke-[2.2]" /> : <FileUp className="h-5 w-5 stroke-[2.2]" />}
           </span>
-          <span className="text-base sm:text-lg font-bold text-foreground">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             {t('transfer.title')}
           </span>
         </div>
@@ -142,7 +142,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
         {panel === 'export' ? (
           <section className="flex flex-col items-start gap-4 p-5 rounded-2xl border border-border/70 bg-card shadow-xs sm:flex-row sm:items-center">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-muted/60 text-primary shadow-2xs">
-              <FileDown className="h-6 w-6" aria-hidden />
+              <FileDown className="h-6 w-6 stroke-[2.2]" aria-hidden />
             </span>
             <div className="min-w-0">
               <h3 className="text-sm font-bold text-foreground sm:text-base">{t('transfer.exportTitle')}</h3>
@@ -166,7 +166,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border/80 shadow-2xs mb-2 text-primary">
-                  <FileUp className="h-5 w-5" aria-hidden />
+                  <FileUp className="h-5 w-5 stroke-[2.2]" aria-hidden />
                 </div>
                 <span className="text-xs sm:text-sm font-bold text-foreground">{fileName || t('transfer.chooseFile')}</span>
                 <span className="mt-1 text-[11px] text-muted-foreground font-medium">{t('transfer.fileLimit')}</span>

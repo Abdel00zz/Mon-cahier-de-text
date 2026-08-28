@@ -52,7 +52,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         logger.error("ContentRenderer Error: Invalid top-level item type encountered.", { data });
         return (
             <div className="text-lg font-bold text-center py-3 text-destructive flex items-center justify-center gap-3">
-                <TriangleAlert className="h-5 w-5" />
+                <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
                 <span>{t('editor.unknownContent')}</span>
             </div>
         );

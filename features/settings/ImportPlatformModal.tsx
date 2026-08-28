@@ -53,7 +53,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive shadow-xs">
             <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
           </span>
-          <span className="text-base sm:text-lg font-bold text-foreground">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
             {t('settings.importModal.title')}
           </span>
         </div>

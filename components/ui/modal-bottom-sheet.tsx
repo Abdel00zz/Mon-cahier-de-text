@@ -225,12 +225,12 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 border-b border-border/55 bg-card px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 landscape:pt-3.5 landscape:pb-2.5 landscape:px-6 text-card-foreground flex flex-col space-y-1 pe-12 text-start',
+                'modal-header relative z-10 shrink-0 border-b border-border/55 bg-card px-5 py-4 sm:px-7 sm:py-5 landscape:py-3 landscape:px-6 text-card-foreground flex flex-col justify-center space-y-1 pe-14 text-start',
                 headerClassName
               )}
             >
               {title && (
-                <DialogPrimitive.Title className="text-base sm:text-lg font-bold leading-snug tracking-tight text-foreground">
+                <DialogPrimitive.Title className="text-lg sm:text-xl font-bold leading-snug tracking-tight text-foreground">
                   {title}
                 </DialogPrimitive.Title>
               )}
@@ -247,8 +247,8 @@ export function ModalBottomSheet({
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute top-3.5 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4 sm:h-10 sm:w-10 landscape:top-2.5 landscape:h-8 landscape:w-8 cursor-pointer',
-                isRtl ? 'left-4' : 'right-4'
+                'dialog-close absolute top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted/70 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4.5 sm:h-9 sm:w-9 landscape:top-2.5 landscape:h-8 landscape:w-8 cursor-pointer',
+                isRtl ? 'left-4 sm:left-6' : 'right-4 sm:right-6'
               )}
             >
               <X className="h-4 w-4" strokeWidth={2.2} />
@@ -260,7 +260,7 @@ export function ModalBottomSheet({
           <div
             data-swipe-scroll-region
             className={cn(
-              'modal-body min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5 landscape:py-3 landscape:px-6 [overflow-anchor:none]',
+              'modal-body modern-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5 landscape:py-3 landscape:px-6 [overflow-anchor:none] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch]',
               !(title || description) && 'pt-8 sm:pt-6 landscape:pt-4',
               !footer && 'pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
               bodyClassName
