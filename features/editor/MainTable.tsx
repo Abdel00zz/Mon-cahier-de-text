@@ -63,17 +63,17 @@ const TableHeader: React.FC = React.memo(() => {
      avec celles des rangées (elles aussi sans padding de cadre). En-tête
      de colonnes NON collant : il défile avec le tableau (seule la barre
      d'outils reste épinglée en haut). */
-  <div className="border-b border-border/80 bg-card/[0.52] backdrop-blur-xl dark:bg-slate-950/[0.42]">
+  <div className="border-b border-slate-300/80 bg-slate-100/95 shadow-[inset_0_-1px_0_rgba(148,163,184,0.16)] dark:border-slate-700/80 dark:bg-slate-800/90 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.04)]">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-e border-border/80 px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.date')}</span>
+      <div className="flex items-center justify-center border-e border-slate-300/75 px-1 py-1.5 text-center dark:border-slate-700/80 sm:px-2.5 sm:py-2">
+        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-e border-border/80 px-2 py-1.5 sm:px-3 sm:py-2 text-center">
-        <span className="font-sans text-[10px] max-sm:portrait:text-[8px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-foreground dark:text-slate-300">{t('editor.content')}</span>
+      <div className="flex items-center justify-center border-e border-slate-300/75 px-2 py-1.5 text-center dark:border-slate-700/80 sm:px-3 sm:py-2">
+        <span className="font-sans text-[10px] max-sm:portrait:text-[8px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-slate-800 dark:text-slate-100">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-muted-foreground dark:text-muted-foreground">{t('editor.remark')}</span>
+        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
