@@ -8,7 +8,7 @@ import { Settings } from '@/components/ui/icons';
 import { FuturisticCardFrame } from '@/components/ui/FuturisticCardFrame';
 import { getClassScheduleColor } from '@/utils/scheduleColors';
 
-const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-[22px] sm:h-6 items-center justify-center px-2.5 rounded-full font-sans text-[9px] sm:text-[10px] font-bold tracking-wider uppercase leading-none transition-all';
+const SUBJECT_BADGE_BASE_CLASSES = 'inline-flex h-[22px] items-center justify-center rounded-md px-2.5 font-sans text-[9px] font-bold uppercase leading-none tracking-wider transition-colors sm:h-6 sm:text-[10px]';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -93,7 +93,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             dir={isRtl ? 'rtl' : 'ltr'}
             aria-label={t('dashboard.openClass', { className: displayName })}
             style={{ aspectRatio: '460 / 250' }}
-            className="group relative w-full portrait:w-[94%] portrait:max-w-[370px] portrait:mx-auto landscape:w-[96%] landscape:max-w-[420px] landscape:mx-auto bg-transparent cursor-pointer rounded-[24px] shadow-xs hover:shadow-md dark:shadow-zinc-950/40 dark:hover:shadow-zinc-950/70 transition-all duration-300 ease-out hover:-translate-y-1 active:translate-y-0 active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:ring-offset-2 focus-visible:outline-none"
+            className="group relative w-full cursor-pointer rounded-xl bg-transparent shadow-xs transition-[box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.99] portrait:mx-auto portrait:w-[94%] portrait:max-w-[370px] landscape:mx-auto landscape:w-[96%] landscape:max-w-[420px] dark:shadow-zinc-950/40 dark:hover:shadow-zinc-950/70"
         >
             <FuturisticCardFrame colorTheme={colorTheme} />
 
@@ -101,7 +101,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 <div className="flex min-h-[22px] items-center justify-start">
                     {showSubjectBadge && subjectBadgeText ? (
                         <span
-                            className={`${SUBJECT_BADGE_BASE_CLASSES} ${visual.badgeStyle} shadow-2xs backdrop-blur-sm transition-transform duration-200 group-hover:scale-105`}
+                            className={`${SUBJECT_BADGE_BASE_CLASSES} ${visual.badgeStyle}`}
                         >
                             {subjectBadgeText}
                         </span>
@@ -112,7 +112,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 <div className="my-auto flex min-h-0 w-full items-center justify-center px-2 py-0.5 text-center">
                     <h3
-                        className={`max-w-[24ch] text-balance text-[clamp(1.12rem,1.2vw+0.7rem,1.5rem)] font-extrabold leading-snug tracking-tight text-slate-900 dark:text-zinc-50 transition-colors duration-200 group-hover:text-slate-950 dark:group-hover:text-white drop-shadow-2xs ${isRtl ? 'font-ibm-arabic' : 'font-sans'}`}
+                        className={`max-w-[24ch] text-balance text-[clamp(1.12rem,1.2vw+0.7rem,1.5rem)] font-bold leading-snug tracking-tight text-foreground transition-colors duration-200 ${isRtl ? 'font-ibm-arabic' : 'font-sans'}`}
                         title={displayName}
                     >
                         {renderClassTitleWithFonts(displayName, colorTheme.textClass)}
@@ -127,11 +127,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     <button
                         type="button"
                         onClick={handleConfigureClick}
-                        className="group/btn relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-transparent text-slate-400 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-100 hover:scale-110 active:scale-95 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 cursor-pointer"
+                        className="group/btn relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                         title={t('dashboard.classSettings')}
                         aria-label={`${t('dashboard.edit')} ${displayName}`}
                     >
-                        <Settings className="h-5 w-5 shrink-0 stroke-[1.75] transition-transform duration-300 ease-out group-hover/btn:rotate-90" />
+                        <Settings className="h-4 w-4 shrink-0 stroke-[1.9]" />
                     </button>
                 </div>
             </div>

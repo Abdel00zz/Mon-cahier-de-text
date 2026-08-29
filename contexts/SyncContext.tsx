@@ -272,6 +272,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 readLessonsCached,
                 config.absences,
                 config.schoolYearStart,
+                config.applicationLocale ?? 'ar',
             );
 
             const pushedIds: string[] = [];

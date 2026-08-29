@@ -236,8 +236,8 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                     className={cn(
                                         'cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all',
                                         isSelected
-                                            ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_3px_10px_rgba(99,102,241,0.3)]'
-                                            : 'border border-slate-200/90 bg-white/90 text-slate-700 hover:border-indigo-300 hover:bg-slate-50'
+                                            ? 'bg-primary text-primary-foreground shadow-sm'
+                                            : 'border border-border bg-card text-foreground hover:border-primary/30 hover:bg-muted/50'
                                     )}
                                 >
                                     {formatLocalizedSubjectDisplayName(subj, lang)}
@@ -250,7 +250,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
 
             {/* ── ONGLETS DES PALIERS (Tronc commun / 1re Bac / 2e Bac...) ── */}
             {levelGroups.length > 1 && (
-                <div className="flex rounded-2xl border border-slate-200/80 bg-slate-100/80 p-1.5">
+                <div className="flex rounded-xl border border-border bg-muted/70 p-1.5">
                     {levelGroups.map(group => {
                         const isActive = (activeGroupKey || levelGroups[0]?.key) === group.key;
                         const label = copy.levelGroupLabels[group.key] ?? group.key;
@@ -270,15 +270,15 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                 className={cn(
                                     'relative flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all sm:text-sm',
                                         isActive
-                                            ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.22)]'
-                                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                                            ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:bg-card hover:text-foreground'
                                 )}
                             >
                                 <span>{label}</span>
                                 {countInThisGroup > 0 && (
                                     <span className={cn(
                                         'flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-[10px] font-black',
-                                        isActive ? 'bg-white text-indigo-950 shadow-xs' : 'bg-slate-300 text-slate-800'
+                                        isActive ? 'bg-card text-primary shadow-xs' : 'bg-muted text-muted-foreground'
                                     )}>
                                         {countInThisGroup}
                                     </span>
@@ -323,8 +323,8 @@ export const ClassesStep = memo<ClassesStepProps>(({
                             className={cn(
                                 'relative rounded-2xl border p-3.5 transition-all duration-200 sm:p-4',
                                 isAnyGroupSelected
-                                    ? 'border-blue-300 bg-blue-50/70 shadow-[0_4px_16px_rgba(37,99,235,0.07)]'
-                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-2xs'
+                                    ? 'border-primary/35 bg-primary/[0.045] shadow-xs'
+                                    : 'border-border bg-card hover:border-primary/25 hover:bg-muted/25 hover:shadow-2xs'
                             )}
                         >
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -337,14 +337,14 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                     <div className={cn(
                                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                                         isAnyGroupSelected
-                                            ? 'border-transparent bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.22)]'
-                                            : 'border-slate-300 bg-white group-hover:border-indigo-400'
+                                            ? 'border-transparent bg-primary text-primary-foreground shadow-xs'
+                                            : 'border-border bg-card group-hover:border-primary/50'
                                     )}>
                                         {isAnyGroupSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
                                     </div>
                                     <span className={cn(
                                         'text-sm font-bold transition-colors sm:text-base',
-                                        isAnyGroupSelected ? 'text-indigo-950' : 'text-slate-800 group-hover:text-indigo-950'
+                                        isAnyGroupSelected ? 'text-foreground' : 'text-foreground group-hover:text-primary'
                                     )}>
                                         {formatLocalizedClassDisplayName(level, lang, { includeClassPrefix: false })}
                                     </span>
@@ -363,10 +363,10 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                                 type="button"
                                                 onClick={() => handleToggleGroup(level, groupNum)}
                                                 className={cn(
-                                                    'flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-xl px-2.5 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95',
+                                                    'flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-lg px-2.5 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95',
                                                     isGroupActive
-                                                        ? 'bg-blue-600 text-white shadow-[0_3px_10px_rgba(37,99,235,0.22)] hover:bg-blue-700'
-                                                        : 'border border-slate-200/90 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-950'
+                                                        ? 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90'
+                                                        : 'border border-border bg-card text-foreground hover:border-primary/30 hover:bg-muted/60'
                                                 )}
                                                 title={`${level} ${groupNum}`}
                                             >
@@ -383,7 +383,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                                 setOtherGroupLevel(level);
                                                 setOtherGroupValue('');
                                             }}
-                                            className="flex h-8 cursor-pointer items-center gap-1 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-2 text-xs font-medium text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 hover:text-indigo-700 focus-visible:outline-none"
+                                            className="flex h-8 cursor-pointer items-center gap-1 rounded-lg border border-dashed border-border bg-muted/40 px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted hover:text-primary focus-visible:outline-none"
                                             title={copy.otherGroupNumber}
                                         >
                                             <Plus className="h-3 w-3" />
@@ -403,12 +403,12 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                                     if (e.key === 'Escape') setOtherGroupLevel(null);
                                                 }}
                                                 placeholder="N°"
-                                                className="h-8 w-12 rounded-lg border-indigo-400 px-1.5 text-center text-xs font-bold"
+                                                className="h-8 w-12 rounded-lg border-primary/50 px-1.5 text-center text-xs font-bold"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => handleAddOtherGroup(level)}
-                                                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xs hover:from-indigo-600 hover:to-violet-700"
+                                                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
                                             >
                                                 <Check className="h-3.5 w-3.5 stroke-[3]" />
                                             </button>
@@ -434,7 +434,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                     <button
                         type="button"
                         onClick={() => setIsCustomOpen(true)}
-                        className="flex cursor-pointer items-center gap-1.5 text-xs font-bold text-indigo-600 transition-colors hover:text-indigo-800 focus-visible:outline-none sm:text-sm"
+                        className="flex cursor-pointer items-center gap-1.5 text-xs font-bold text-primary transition-colors hover:text-primary/80 focus-visible:outline-none sm:text-sm"
                     >
                         <Plus className="h-3.5 w-3.5" />
                         <span>{copy.customClassPrompt}</span>
@@ -444,7 +444,7 @@ export const ClassesStep = memo<ClassesStepProps>(({
                         initial={{ opacity: 0, y: -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         onSubmit={handleAddCustomClass}
-                        className="space-y-2.5 rounded-2xl border border-slate-200/90 bg-slate-50/90 p-3.5 backdrop-blur-xs sm:p-4"
+                        className="space-y-2.5 rounded-xl border border-border bg-muted/35 p-3.5 sm:p-4"
                     >
                         <div className="flex items-center justify-between">
                             <label htmlFor="custom-class-input" className="text-xs font-bold text-slate-700">
@@ -472,11 +472,11 @@ export const ClassesStep = memo<ClassesStepProps>(({
                                     setCustomError(null);
                                 }}
                                 placeholder={copy.customClassNamePlaceholder}
-                                className="h-11 flex-1 rounded-xl border-slate-200 bg-white px-3 text-sm shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-indigo-500/20"
+                                className="h-11 flex-1 rounded-xl border-border bg-card px-3 text-sm shadow-2xs focus-visible:border-primary focus-visible:ring-primary/20"
                             />
                             <Button
                                 type="submit"
-                                className="h-11 cursor-pointer rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(99,102,241,0.35)] hover:from-indigo-600 hover:to-violet-700 active:scale-95"
+                                className="h-11 cursor-pointer px-5 text-xs font-bold shadow-sm active:scale-95"
                             >
                                 <Plus className="mr-1 h-3.5 w-3.5" />
                                 {copy.addClass}

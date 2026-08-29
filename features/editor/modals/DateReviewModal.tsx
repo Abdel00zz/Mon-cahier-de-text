@@ -40,7 +40,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
         date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(new Date(`${date}T12:00:00Z`)),
       }) : undefined}
       maxWidth="md"
-      className="sm:max-w-lg sm:rounded-[28px]"
+      className="sm:max-w-lg sm:rounded-2xl"
       headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/70 bg-card/85 backdrop-blur-md"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
       footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/70 bg-card/85 backdrop-blur-md"
@@ -55,7 +55,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
         </div>
       }
     >
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.07] p-4" role="status" aria-live="polite">
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.07] p-4" role="status" aria-live="polite">
         <p className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">{t('dateReview.check')}</p>
         <ul className="mt-2.5 divide-y divide-amber-500/15">
           {distinctWarnings.map((warning, index) => (
@@ -81,4 +81,3 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
     </Modal>
   );
 };
-

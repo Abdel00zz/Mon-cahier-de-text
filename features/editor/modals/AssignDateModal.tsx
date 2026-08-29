@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus, CalendarMinus, ChevronRight } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarMinus, ChevronRight, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -160,10 +160,10 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       }
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="lg"
-      className="sm:max-w-xl sm:rounded-[32px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      className="sm:max-w-xl sm:rounded-2xl"
+      headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -240,7 +240,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
               <div className="mx-auto max-w-sm space-y-1 rounded-2xl border border-amber-500/30 bg-amber-500/[0.08] p-3 text-start animate-fade-in duration-200" role="status">
                 {dateWarnings.map((warning, i) => (
                   <p key={i} className="flex items-start gap-1.5 text-xs font-medium leading-snug text-amber-800 dark:text-amber-300">
-                    <span aria-hidden className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400">⚠</span>
+                    <TriangleAlert aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
                     {warning.message}
                   </p>
                 ))}

@@ -4,7 +4,7 @@ import { computeProgressionStats } from '@/utils/progression';
 import { Modal } from '@/components/ui/modal';
 import { MathText } from '@/components/ui/math-text';
 import { Button } from '@/components/ui/button';
-import { PieChart } from '@/components/ui/icons';
+import { PieChart, TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface AnalysisModalProps {
@@ -65,10 +65,10 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
       }
       description={t('analysis.description')}
       maxWidth="3xl"
-      className="sm:max-w-4xl sm:rounded-[32px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      className="sm:max-w-4xl sm:rounded-2xl"
+      headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
       hideClose={false}
       footer={
         <div className="flex w-full items-center justify-end gap-2.5">
@@ -151,7 +151,8 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
                   <div className="space-y-1 mt-0.5">
                     {item.messages.map((m, i) => (
                       <p key={i} className="border-s-2 border-amber-400 ps-2.5 text-[11px] font-medium text-muted-foreground">
-                        ⚠ {m}
+                        <TriangleAlert aria-hidden className="me-1 inline-block h-3.5 w-3.5 align-[-0.2em] text-amber-600 dark:text-amber-400" />
+                        {m}
                       </p>
                     ))}
                   </div>

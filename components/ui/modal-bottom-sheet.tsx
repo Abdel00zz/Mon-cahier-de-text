@@ -4,6 +4,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from './icons';
 import { cn } from '@/lib/utils';
 import { useSwipeToDismiss } from '@/hooks/useSwipeToDismiss';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 export interface ModalBottomSheetProps {
   isOpen?: boolean;
@@ -77,6 +78,7 @@ export function ModalBottomSheet({
   mobileDetents = DEFAULT_MOBILE_DETENTS,
   initialMobileDetent,
 }: ModalBottomSheetProps) {
+  const { isRtl, t } = useLocale();
   const dismissCallback = useCallback(() => {
     if (onDismissRequest) {
       onDismissRequest();
@@ -124,11 +126,10 @@ export function ModalBottomSheet({
     }
   };
 
-  const isRtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
-  const closeLabel = isRtl ? 'إغلاق' : 'Fermer';
+  const closeLabel = t('common.close');
   const resizeLabel = canExpand
-    ? (isRtl ? 'توسيع النافذة' : 'Agrandir la fenêtre')
-    : (isRtl ? 'تصغير النافذة' : 'Réduire la fenêtre');
+    ? t('modal.expand')
+    : t('modal.collapse');
 
   const swipe = useSwipeToDismiss({
     onDismiss: dismissCallback,
@@ -162,7 +163,7 @@ export function ModalBottomSheet({
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
             'motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100',
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[28px] sm:border sm:border-border/80',
+            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-2xl sm:border sm:border-border/80',
             'landscape:max-h-[min(96dvh,calc(100dvh-1rem))] landscape:inset-0 landscape:m-auto landscape:rounded-2xl',
             'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
@@ -230,7 +231,7 @@ export function ModalBottomSheet({
               )}
             >
               {title && (
-                <DialogPrimitive.Title className="text-lg sm:text-xl font-bold leading-snug tracking-tight text-foreground">
+                <DialogPrimitive.Title data-ui-title className="text-lg sm:text-xl font-bold leading-snug tracking-tight text-foreground">
                   {title}
                 </DialogPrimitive.Title>
               )}
@@ -247,7 +248,7 @@ export function ModalBottomSheet({
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-muted/70 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4.5 sm:h-9 sm:w-9 landscape:top-2.5 landscape:h-8 landscape:w-8 cursor-pointer',
+                'dialog-close absolute top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted/70 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:top-4.5 sm:h-9 sm:w-9 landscape:top-2.5 landscape:h-8 landscape:w-8 cursor-pointer',
                 isRtl ? 'left-4 sm:left-6' : 'right-4 sm:right-6'
               )}
             >

@@ -1,32 +1,44 @@
 import React from 'react';
+import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 
-export const AppBootSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-background p-4 sm:p-8">
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-11 w-11 rounded-full" />
-          <div>
-            <Skeleton className="h-6 w-44" />
-            <Skeleton className="mt-2 h-3 w-56" />
-          </div>
+export type AppBootStage = 'workspace' | 'latex';
+
+interface AppBootSkeletonProps {
+  stage?: AppBootStage;
+  /** Couvre l'application pendant que le moteur LaTeX finit réellement de charger. */
+  overlay?: boolean;
+}
+
+export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'workspace', overlay = false }) => {
+  const { isRtl, t } = useLocale();
+
+  const isLatexLoading = stage === 'latex';
+  const title = isLatexLoading
+    ? t('boot.latex.title')
+    : t('boot.workspace.title');
+  const detail = isLatexLoading ? t('boot.latex.detail') : t('boot.workspace.detail');
+
+  return (
+    <div
+      className={`relative flex items-center justify-center overflow-hidden bg-background px-6 py-[max(2rem,env(safe-area-inset-top))] text-foreground ${overlay ? 'fixed inset-0 z-[90] min-h-[100dvh]' : 'min-h-screen'}`}
+      role="status"
+      aria-live="polite"
+      aria-label={isLatexLoading ? t('boot.latex.ariaLabel') : t('boot.teacher.ariaLabel')}
+      dir={isRtl ? 'rtl' : 'ltr'}
+    >
+      <section className="relative w-full max-w-xs text-center sm:max-w-sm">
+        <div className="mx-auto flex h-11 w-11 items-center justify-center text-primary">
+          <span className="h-7 w-7 animate-spin rounded-full border-2 border-primary/20 border-t-primary motion-reduce:animate-none" aria-hidden="true" />
         </div>
-        <Skeleton className="h-9 w-9 rounded-full" />
-      </div>
-      <div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-[92px] rounded-xl" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Skeleton key={index} className="h-[128px] rounded-2xl" />
-        ))}
-      </div>
+        <p className="mt-4 font-sans text-sm font-semibold leading-relaxed text-foreground">
+          {title}
+        </p>
+        <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">{detail}</p>
+      </section>
     </div>
-  </div>
-);
+  );
+};
 
 export const DashboardSkeleton: React.FC = () => (
   <div className="min-h-screen bg-background p-3 pb-8 sm:p-8">

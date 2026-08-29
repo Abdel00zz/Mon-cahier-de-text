@@ -23,8 +23,17 @@ export interface NativeNotificationActivation {
     permission: NotificationPermission | 'unsupported';
     /** abonnement au push serveur ; distinct de l'autorisation native locale */
     subscribed: boolean;
-    reason?: string;
+    reason?: NotificationActivationReason;
 }
+
+export type NotificationActivationReason =
+    | 'unsupported'
+    | 'iosInstallRequired'
+    | 'permissionDenied'
+    | 'permissionDismissed'
+    | 'nativeUnavailable'
+    | 'vapidMissing'
+    | 'serverRegistrationFailed';
 
 /**
  * Déclenche uniquement la demande NATIVE du navigateur. Cette étape reste
@@ -33,10 +42,10 @@ export interface NativeNotificationActivation {
  */
 const requestNativeNotificationPermission = async (): Promise<NativeNotificationActivation> => {
     if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
-        return { permission: 'unsupported', subscribed: false, reason: 'non-supporté' };
+        return { permission: 'unsupported', subscribed: false, reason: 'unsupported' };
     }
     if (isIOS() && !isStandalone()) {
-        return { permission: 'unsupported', subscribed: false, reason: 'installation requise sur iPhone/iPad' };
+        return { permission: 'unsupported', subscribed: false, reason: 'iosInstallRequired' };
     }
     try {
         const permission = Notification.permission === 'default'
@@ -45,10 +54,10 @@ const requestNativeNotificationPermission = async (): Promise<NativeNotification
         return {
             permission,
             subscribed: false,
-            reason: permission === 'granted' ? undefined : permission === 'denied' ? 'permission refusée' : 'demande ignorée',
+            reason: permission === 'granted' ? undefined : permission === 'denied' ? 'permissionDenied' : 'permissionDismissed',
         };
     } catch {
-        return { permission: 'unsupported', subscribed: false, reason: 'demande native indisponible' };
+        return { permission: 'unsupported', subscribed: false, reason: 'nativeUnavailable' };
     }
 };
 
@@ -70,14 +79,14 @@ const deviceLabel = (): string => {
     return 'Appareil';
 };
 
-const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<{ ok: boolean; reason?: string }> => {
-    if (!pushSupported()) return { ok: false, reason: 'non-supporté' };
-    if (!VAPID_PUBLIC_KEY) return { ok: false, reason: 'clé VAPID manquante' };
+const subscribeToPush = async (options: { requestPermission?: boolean } = {}): Promise<{ ok: boolean; reason?: NotificationActivationReason }> => {
+    if (!pushSupported()) return { ok: false, reason: 'unsupported' };
+    if (!VAPID_PUBLIC_KEY) return { ok: false, reason: 'vapidMissing' };
 
     const permission = Notification.permission === 'default' && options.requestPermission !== false
         ? await Notification.requestPermission()
         : Notification.permission;
-    if (permission !== 'granted') return { ok: false, reason: 'permission refusée' };
+    if (permission !== 'granted') return { ok: false, reason: 'permissionDenied' };
 
     const registration = await navigator.serviceWorker.ready;
     const existing = await registration.pushManager.getSubscription();
@@ -94,7 +103,7 @@ const subscribeToPush = async (options: { requestPermission?: boolean } = {}): P
         credentials: 'same-origin',
         body: JSON.stringify({ action: 'subscribe', subscription, device: deviceLabel() }),
     });
-    return response.ok ? { ok: true } : { ok: false, reason: 'enregistrement serveur échoué' };
+    return response.ok ? { ok: true } : { ok: false, reason: 'serverRegistrationFailed' };
 };
 
 /** Autorisation système puis abonnement serveur si celui-ci est configuré. */

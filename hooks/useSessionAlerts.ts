@@ -8,6 +8,7 @@ import { withAbsences } from '../utils/lateness';
 import { readCachedConfig } from '../utils/configStorage';
 import { subscribe } from '../utils/syncBus';
 import { showLocalNotification } from '../utils/push';
+import { translateLocaleMessage } from '../i18n/LocaleProvider';
 
 /**
  * Rappels locaux de fin de séance, client uniquement, temps réel, aucun
@@ -99,6 +100,8 @@ export const useSessionAlerts = (): void => {
 
     useEffect(() => {
         const config = readCachedConfig();
+        const t = (key: string, values: Record<string, string | number> = {}) =>
+            translateLocaleMessage(config.applicationLocale ?? 'ar', key, values);
         const notify = config.notificationSettings;
         if (!notify?.enabled || !notify.sessionVibration) return;
         const timetable = config.timetable ?? [];
@@ -120,7 +123,7 @@ export const useSessionAlerts = (): void => {
             if (blocks.length === 0) return;
 
             const classNames = new Map(readClasses().map(c => [c.id, c.name]));
-            const nameOf = (classId: string): string => classNames.get(classId) ?? 'votre classe';
+            const nameOf = (classId: string): string => classNames.get(classId) ?? t('sessionAlert.classFallback');
             const nowMin = clockMinutesInZone(now, calendar.fuseau);
 
             // blocs partageant la même fin → un seul signal groupé (règle §Q)
@@ -139,11 +142,11 @@ export const useSessionAlerts = (): void => {
                 const reminderDelay = (endMin - 1 - nowMin) * 60_000;
                 if (reminderDelay > 0) {
                     timers.push(window.setTimeout(() => {
-                        const message = `Fin de séance dans 1 minute (${names}). Pensez à dater le travail effectué.`;
+                        const message = t('sessionAlert.endSoonBody', { classes: names });
                         const url = group.length === 1 ? `/#/classe/${encodeURIComponent(group[0].classId)}` : '/';
                         vibrate([200, 100, 200]);
                         toast.info(message);
-                        void showLocalNotification('Fin de séance imminente', message, `cdt-session-end-${todayISO}-${endMin}`, url);
+                        void showLocalNotification(t('sessionAlert.endSoonTitle'), message, `cdt-session-end-${todayISO}-${endMin}`, url);
                     }, reminderDelay));
                 }
 
@@ -155,13 +158,12 @@ export const useSessionAlerts = (): void => {
                         const missing = missingBlocks.map(g => nameOf(g.classId));
                         if (missing.length === 0) return;
                         const url = missingBlocks.length === 1 ? `/#/classe/${encodeURIComponent(missingBlocks[0].classId)}` : '/';
-                        const message =
-                            missing.length === 1
-                                ? `Séance terminée : aucune date affectée aujourd'hui en ${missing[0]}. Vous pouvez la poser quand vous voulez.`
-                                : `${missing.length} séances terminées sans date affectée (${missing.join(', ')}).`;
+                        const message = missing.length === 1
+                            ? t('sessionAlert.missingDateOne', { className: missing[0] })
+                            : t('sessionAlert.missingDateMany', { count: missing.length, classes: missing.join(', ') });
                         vibrate([300, 120, 300, 120, 300]);
                         toast.warning(message);
-                        void showLocalNotification('Date de séance à poser', message, `cdt-session-missing-${todayISO}-${endMin}`, url);
+                        void showLocalNotification(t('sessionAlert.missingDateTitle'), message, `cdt-session-missing-${todayISO}-${endMin}`, url);
                     }, endDelay));
                 }
             }

@@ -100,7 +100,7 @@ const PushActivationCard: React.FC<{
     return (
         <div className="settings-surface p-4 sm:p-5">
             <div className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-[0_2px_10px_rgba(6,182,212,0.35)]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
                     <Bell className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ const PushActivationCard: React.FC<{
                 type="button"
                 onClick={onActivate}
                 disabled={busy}
-                className="mt-3.5 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 text-xs font-bold text-white shadow-[0_4px_14px_rgba(6,182,212,0.3)] transition-all hover:from-cyan-600 hover:to-cyan-700 disabled:opacity-60 cursor-pointer"
+                className="mt-3.5 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
                 <Bell className="h-4 w-4" />
                 {label}
@@ -186,7 +186,10 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 patch({ pushEnabled: true });
                 setMessage(t('notifications.pushEnabled'));
             } else {
-                setMessage(t('notifications.activationFailed', { reason: result.reason ?? t('notifications.unknownReason') }));
+                const reason = result.reason
+                    ? t(`notifications.activationReason.${result.reason}`)
+                    : t('notifications.unknownReason');
+                setMessage(t('notifications.activationFailed', { reason }));
             }
         } finally {
             setBusy(false);
@@ -387,7 +390,7 @@ const AbsencesSection: React.FC<{
                     type="button"
                     onClick={addAbsence}
                     disabled={!debut}
-                    className="col-span-2 h-10 rounded-xl bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white disabled:opacity-40 sm:col-span-1 px-4 text-xs font-bold shadow-[0_4px_14px_rgba(6,182,212,0.3)] transition-all active:scale-95 cursor-pointer"
+                    className="col-span-2 h-10 cursor-pointer rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40 sm:col-span-1"
                 >
                     {t('notifications.add')}
                 </button>

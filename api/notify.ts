@@ -4,7 +4,7 @@ import { getRedis, KEYS } from './_lib/redis.js';
 import { requireUser } from './_lib/auth.js';
 import { getBundledCalendar, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from '../utils/calendar.js';
 import { ClassLateness, computeLateness, summarizeForTeacher } from '../utils/lateness.js';
-import type { TeacherSnapshot } from '../types.js';
+import type { AppLocale, TeacherSnapshot } from '../types.js';
 
 interface NotifyBody {
     action?: string;
@@ -14,6 +14,11 @@ interface NotifyBody {
 }
 
 const SEVERITY_RANK: Record<string, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
+const TEST_NOTIFICATION_COPY: Record<AppLocale, { title: string; body: string }> = {
+    fr: { title: 'Cahier de textes', body: 'Notification de test : tout fonctionne correctement.' },
+    en: { title: 'Lesson notebook', body: 'Test notification: everything is working correctly.' },
+    ar: { title: 'دفتر النصوص', body: 'إشعار تجريبي: تعمل الخدمة بشكل سليم.' },
+};
 
 /*
  * Le cron parcourt tous les enseignants dans une seule invocation de fonction.
@@ -80,9 +85,11 @@ const handleTest = async (res: ApiResponse, phone: string) => {
     const redis = await getRedis();
     const entry = await redis.hget<PushEntry>(KEYS.pushSubs, phone);
     if (!entry || entry.subs.length === 0) throw new HttpError(400, 'Aucun appareil abonné.');
+    const snapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone);
+    const copy = TEST_NOTIFICATION_COPY[snapshot?.applicationLocale ?? 'ar'];
     const { survivingSubs, sent } = await sendToEntry(entry, {
-        title: 'Cahier de textes',
-        body: 'Notification de test, tout fonctionne !',
+        title: copy.title,
+        body: copy.body,
         url: '/',
         kind: 'test',
         tag: 'cdt-test',
@@ -139,7 +146,7 @@ const collectCronCandidates = (
                 className: c.name,
             }));
 
-        const summary = summarizeForTeacher(perClass);
+        const summary = summarizeForTeacher(perClass, snapshot.applicationLocale ?? 'ar');
         if (!summary) continue;
 
         // anti-spam : pas de re-notif < 2 jours sauf aggravation

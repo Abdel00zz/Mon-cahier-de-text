@@ -85,6 +85,9 @@ const App: React.FC = () => {
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
+  // Le moteur MathJax est une dépendance réelle du rendu des cahiers. L'état
+  // évite de révéler une formule brute avant que ses notations soient prêtes.
+  const [mathJaxState, setMathJaxState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const { classes, addClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(
@@ -295,6 +298,7 @@ const App: React.FC = () => {
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
+  const isLatexBooting = !isBooting && !isAuthView && mathJaxState === 'loading';
 
   // L'accueil masque la navigation dès le premier rendu puis pendant tout le
   // parcours déclaré par Dashboard. Une classe créée en cours d'onboarding ne
@@ -329,6 +333,7 @@ const App: React.FC = () => {
             {renderContent()}
           </Suspense>
         </div>
+        {isLatexBooting && <AppBootSkeleton stage="latex" overlay />}
       </div>
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>
@@ -353,7 +358,15 @@ const App: React.FC = () => {
           l'application, et pas uniquement la vue de l'éditeur.
         */}
         <Suspense fallback={<AppBootSkeleton />}>
-          <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
+          <MathJaxContext
+            version={3}
+            src={MATHJAX_V4_SRC}
+            config={mathJaxConfig}
+            onLoad={() => setMathJaxState('ready')}
+            // Une coupure réseau ne doit jamais bloquer l'accès aux cahiers :
+            // MathText laisse alors la syntaxe source visible et utilisable.
+            onError={() => setMathJaxState('unavailable')}
+          >
             {appSurface}
           </MathJaxContext>
         </Suspense>

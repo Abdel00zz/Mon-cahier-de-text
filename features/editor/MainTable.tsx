@@ -358,14 +358,12 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.045] px-5 py-12 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:px-8 sm:py-14">
-            <div aria-hidden="true" className="absolute -right-16 -top-20 h-44 w-44 rounded-full bg-primary/[0.055] blur-2xl" />
-            <div aria-hidden="true" className="absolute -bottom-24 -left-12 h-40 w-40 rounded-full bg-primary/[0.035] blur-2xl" />
-            <div className="relative mx-auto flex max-w-xl flex-col items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-md">
+        <section className="rounded-xl border border-border/80 bg-card px-5 py-12 shadow-xs sm:px-8 sm:py-14">
+            <div className="mx-auto flex max-w-xl flex-col items-center text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                     <BookOpen className="h-8 w-8 stroke-[2.2]" />
                 </div>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-primary">{t('emptyNotebook.label')}</p>
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-primary">{t('emptyNotebook.label')}</p>
                 <p className="mt-3 max-w-md text-base leading-7 text-foreground">
                     {canLoadPredefined ? (
                         <>

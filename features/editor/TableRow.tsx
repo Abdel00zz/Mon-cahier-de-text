@@ -3,6 +3,7 @@ import { Indices, ElementType, TopLevelItem } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
 import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
+import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 
 interface TableRowProps {
   data: any;
@@ -37,7 +38,9 @@ export interface DateMergeMeta {
   isDatedSequenceEnd?: boolean;
 }
 
-const parseDate = (dateStr?: string) => {
+const DATE_LOCALES: Record<AppLocale, string> = { fr: 'fr-MA', en: 'en-GB', ar: 'ar-MA' };
+
+const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
   if (!dateStr) return null;
   try {
     let dateObj: Date;
@@ -74,11 +77,13 @@ const parseDate = (dateStr?: string) => {
     const local = new Date(dateObj);
     local.setHours(0, 0, 0, 0);
     
+    const dateLocale = DATE_LOCALES[locale];
+    const numberFormatter = new Intl.NumberFormat(dateLocale, { minimumIntegerDigits: 2, useGrouping: false });
     return {
       isToday: local.getTime() === today.getTime(),
-      day: local.getDate().toString().padStart(2, '0'),
-      month: local.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', ''),
-      year: local.getFullYear().toString(),
+      day: numberFormatter.format(local.getDate()),
+      month: local.toLocaleDateString(dateLocale, { month: 'short' }).replace('.', ''),
+      year: new Intl.NumberFormat(dateLocale, { useGrouping: false }).format(local.getFullYear()),
     };
   } catch {
     return null;
@@ -91,7 +96,8 @@ const parseDate = (dateStr?: string) => {
  * est signalé par la couleur primaire et un point, rien d'autre.
  */
 export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => {
-  const parsed = parseDate(dateStr);
+  const { locale } = useLocale();
+  const parsed = parseDate(dateStr, locale);
 
   if (!parsed) {
     return (
@@ -119,7 +125,8 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
 DateCard.displayName = 'DateCard';
 
 export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo(({ dates, hasWarning }) => {
-  const parsedDates = dates.map(d => parseDate(d)).filter(Boolean);
+  const { locale } = useLocale();
+  const parsedDates = dates.map(d => parseDate(d, locale)).filter(Boolean);
   if (parsedDates.length === 0) return null;
   if (parsedDates.length === 1) return <DateCard dateStr={dates[0]} hasWarning={hasWarning} />;
 

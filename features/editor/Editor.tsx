@@ -206,18 +206,21 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       try {
           const prepared = await loadPredefinedContent(predefinedOffer);
           setState(
-            () => withStarterDiagnostic(prepared.lessonsData, config.applicationLocale ?? 'ar'),
+            () => withStarterDiagnostic(
+              prepared.lessonsData,
+              contentLocaleFromDirection(prepared.direction.direction),
+            ),
             'import-data',
           );
           setEditorState(draft => {
             draft.contentDirection = prepared.direction.direction;
             draft.saveStatus = 'unsaved';
           });
-          toast.success('Programme prédéfini chargé, adaptez-le librement.');
+          toast.success(t('editorNotice.predefinedLoaded'));
       } catch {
-          toast.error('Impossible de charger le contenu prédéfini.');
+          toast.error(t('editorNotice.predefinedLoadError'));
       }
-  }, [predefinedOffer, config.applicationLocale, setState, setEditorState]);
+  }, [predefinedOffer, setState, setEditorState, t]);
 
   /*
    * Journal des actions : chaque opération d'édition (operationType du
@@ -551,7 +554,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const insertAfterIndex = anchor.itemIndex;
           const newItem: EmbeddableTopLevelItem = { type: type as EmbeddableTopLevelType, title: data.title, _tempId: newId };
           setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-embedded-item');
-          notificationMessage = "Bloc insere.";
+          notificationMessage = t('editorNotice.blockInserted');
           addNewItemHighlight(newId);
       } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type)) {
           const insertAfterIndex = anchor?.chapterIndex;
@@ -564,28 +567,28 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               }
               addTopLevelItem(draft, newItem, insertAfterIndex);
           }, 'add-top-level');
-          notificationMessage = "Element principal ajoute.";
+          notificationMessage = t('editorNotice.topLevelAdded');
           addNewItemHighlight(newId);
       } else if (type === 'section' && anchor) {
           const parentIndices = { chapterIndex: anchor.chapterIndex };
           const insertAfterIndex = anchor.sectionIndex;
           const newSection: Section = { name: data.name, items: [], _tempId: newId };
           setState(draft => addSection(draft, parentIndices, newSection, insertAfterIndex), 'add-section');
-          notificationMessage = "Section ajoutee.";
+          notificationMessage = t('editorNotice.sectionAdded');
           addNewItemHighlight(newId);
       } else if (type === 'subsection' && anchor && anchor.sectionIndex !== undefined) {
           const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex };
           const insertAfterIndex = anchor.subsectionIndex;
           const newSubSection: SubSection = { name: data.name, items: [], _tempId: newId };
           setState(draft => addSubSection(draft, parentIndices, newSubSection, insertAfterIndex), 'add-subsection');
-          notificationMessage = "Sous-section ajoutee.";
+          notificationMessage = t('editorNotice.subsectionAdded');
           addNewItemHighlight(newId);
       } else if (type === 'subsubsection' && anchor && anchor.sectionIndex !== undefined && anchor.subsectionIndex !== undefined) {
           const parentIndices = { chapterIndex: anchor.chapterIndex, sectionIndex: anchor.sectionIndex, subsectionIndex: anchor.subsectionIndex };
           const insertAfterIndex = anchor.subsubsectionIndex;
           const newSubSubSection: SubSubSection = { name: data.name, items: [], _tempId: newId };
           setState(draft => addSubSubSection(draft, parentIndices, newSubSubSection, insertAfterIndex), 'add-subsubsection');
-          notificationMessage = "Sous-sous-section ajoutee.";
+          notificationMessage = t('editorNotice.subsubsectionAdded');
           addNewItemHighlight(newId);
       } else if (type === 'item' && anchor) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
@@ -597,19 +600,19 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const normalizedType = TYPE_MAP[data.type.toLowerCase()] || data.type;
           const newItem: LessonItem = { ...data, type: normalizedType, _tempId: newId };
           setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-item');
-          notificationMessage = "Element ajoute.";
+          notificationMessage = t('editorNotice.itemAdded');
           addNewItemHighlight(newId);
       } else if (type === 'separator' && anchor) {
           setState(draft => {
               const { item } = findItem(draft, anchor);
               if (item) {
                   if (item.separatorAfter) {
-                      showNotification("Un separateur existe deja a cet endroit.", "info");
+                      showNotification(t('editorNotice.separatorExists'), "info");
                       return;
                   }
                   const newSeparator: Separator = { content: data.content || '---', date: data.date || item.date || '', manual: true, _tempId: newId };
                   item.separatorAfter = newSeparator;
-                  notificationMessage = "Separateur ajoute.";
+                  notificationMessage = t('editorNotice.separatorAdded');
                   addNewItemHighlight(newId);
               }
           }, 'add-separator');
@@ -621,7 +624,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       setSelectionState(createSelectionState());
       handleModalClose();
-  }, [selectedIndices, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState]);
+  }, [selectedIndices, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -860,12 +863,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         draft.saveStatus = 'unsaved';
         draft.activeModal = null;
       });
-      showNotification("Date(s) affectée(s).", "success");
+      showNotification(t('editorNotice.datesAssigned'), "success");
       // garde intelligente sur les dates distinctes affectées
       };
       if (typeof dateOrAssignments === 'string') requestDateCommit(dateOrAssignments, commit);
       else commit();
-  }, [selectedIndices, setState, setEditorState, showNotification, requestDateCommit]);
+  }, [selectedIndices, setState, setEditorState, showNotification, requestDateCommit, t]);
 
   const handleClearSelectedDates = useCallback(() => {
       if (selectedIndices.length === 0) return;
@@ -881,8 +884,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => {
         draft.saveStatus = 'unsaved';
       });
-      showNotification("Date dissociee.", "success");
-  }, [selectedIndices, setState, setEditorState, showNotification]);
+      showNotification(t('editorNotice.dateUnassigned'), "success");
+  }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
   const handleBulkDelete = useCallback(() => {
       if (selectedIndices.length === 0) return;
@@ -914,8 +917,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => {
         draft.saveStatus = 'unsaved';
       });
-      showNotification(`${selectedIndices.length} element(s) supprime(s).`, 'success');
-  }, [selectedIndices, setState, setEditorState, showNotification]);
+      showNotification(t('editorNotice.itemsDeleted', { count: selectedIndices.length }), 'success');
+  }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
   const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: Partial<LessonItem> & { name?: string }) => {
       const normalizedType = updatedData.type ? (TYPE_MAP[updatedData.type.toLowerCase()] || updatedData.type) : undefined;
@@ -944,7 +947,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       try {
         const { lessonsData: preparedLessons, report, direction } = prepareImportedLessons(data);
         if (preparedLessons.length === 0) {
-          showNotification("Import refuse: aucun tableau de lecons exploitable.", "error");
+          showNotification(t('editorNotice.importNoLessons'), "error");
           return false;
         }
 
@@ -953,7 +956,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             // L'évaluation diagnostique ouvre chaque cahier, y compris importé :
             // un diagnostic déjà présent est conservé (remonté, sans doublon),
             // sinon il est injecté en tête.
-            return withStarterDiagnostic(combined, config.applicationLocale ?? 'ar');
+            return withStarterDiagnostic(combined, contentLocaleFromDirection(direction.direction));
         }, 'import-data');
         // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
         // toutes ses colonnes. Un import de remplacement (ou le premier import)
@@ -964,30 +967,35 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           draft.saveStatus = 'unsaved';
         });
         handleModalClose();
-        showNotification(
-          `Import maitrise: ${report.topLevelCount} bloc(s), ${report.itemCount} element(s), ${report.normalizedDates} date(s) normalisee(s)${shouldAdoptImportedDirection ? ` : ${direction.direction.toUpperCase()} applique` : ''}.`,
-          "success",
-        );
+        const directionNotice = shouldAdoptImportedDirection
+          ? t('editorNotice.importDirection', { direction: direction.direction.toUpperCase() })
+          : '';
+        showNotification(t('editorNotice.importSummary', {
+          blocks: report.topLevelCount,
+          items: report.itemCount,
+          dates: report.normalizedDates,
+          direction: directionNotice,
+        }), "success");
         return true;
       } catch (error) {
         logger.error('Failed to prepare imported JSON', error);
-        showNotification("Import refuse: structure JSON non compatible avec le tableau.", "error");
+        showNotification(t('editorNotice.importInvalidStructure'), "error");
         return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length, config.applicationLocale]);
+  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length, t]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setState(() => newLessons, 'manage-lessons');
       handleModalClose();
-      showNotification(`Lecons mises a jour.`, 'success');
+      showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [setState, showNotification, handleModalClose, setEditorState]);
+  }, [setState, showNotification, handleModalClose, setEditorState, t]);
 
   const handleDeleteSeparator = useCallback((indices: Indices) => {
     setState(draft => deleteSeparator(draft, indices), 'delete-separator');
-    showNotification("Separateur supprime.", "success");
+    showNotification(t('editorNotice.separatorDeleted'), "success");
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [setState, showNotification, setEditorState]);
+  }, [setState, showNotification, setEditorState, t]);
 
   const filteredData = useLessonSearch(lessonsData, searchQuery);
 
@@ -1195,7 +1203,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           ignoreDateException(pending.date, pending.warnings);
           setPendingDateCommit(null);
           pending.commit();
-          toast.info('Date conservée comme exception. Le contrôle reste réactivable depuis le centre de notifications de l’accueil.');
+          toast.info(t('editorNotice.exceptionKept'));
         }}
       />
 

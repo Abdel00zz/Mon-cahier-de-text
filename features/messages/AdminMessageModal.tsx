@@ -3,6 +3,7 @@ import type { AdminMessage } from '../../types';
 import { Button } from '../../components/ui/button';
 import { Modal } from '../../components/ui/modal';
 import { ShieldCheck } from '@/components/ui/icons';
+import { useLocale } from '@/i18n/LocaleProvider';
 
 interface AdminMessageModalProps {
     message: AdminMessage;
@@ -11,6 +12,7 @@ interface AdminMessageModalProps {
 
 /** Message direction obligatoire : il n'est fermé qu'après accusé explicite. */
 export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, onAcknowledge }) => {
+    const { t } = useLocale();
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -19,8 +21,8 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
         setError(null);
         try {
             await onAcknowledge(message.id);
-        } catch (reason) {
-            setError(reason instanceof Error ? reason.message : 'Accusé de réception impossible.');
+        } catch {
+            setError(t('adminMessage.acknowledgeError'));
         } finally {
             setIsSending(false);
         }
@@ -42,11 +44,11 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                         <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
                     </span>
                     <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-                        Direction administrative
+                        {t('adminMessage.title')}
                     </span>
                 </div>
             }
-            description="Message réservé à votre établissement"
+            description={t('adminMessage.description')}
             footer={(
                 <div className="flex items-center justify-end w-full">
                     <Button
@@ -55,7 +57,7 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                         disabled={isSending}
                         className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6 h-10 text-xs sm:text-sm shadow-sm"
                     >
-                        {isSending ? 'Validation…' : "J’ai compris"}
+                        {isSending ? t('adminMessage.confirming') : t('adminMessage.acknowledge')}
                     </Button>
                 </div>
             )}
@@ -66,9 +68,8 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{message.body}</p>
                 </div>
                 {error && <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-xs font-semibold text-destructive">{error}</p>}
-                <p className="text-xs text-muted-foreground font-medium">Votre confirmation sera transmise automatiquement à la direction.</p>
+                <p className="text-xs text-muted-foreground font-medium">{t('adminMessage.confirmationHint')}</p>
             </article>
         </Modal>
     );
 };
-

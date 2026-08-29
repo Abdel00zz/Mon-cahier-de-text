@@ -204,6 +204,8 @@ export interface TeacherSnapshot {
     phone: string;
     nom: string;
     prenom: string;
+    /** Langue de l'interface utilisée aussi pour les notifications système. */
+    applicationLocale?: AppLocale;
     lastSyncAt: string | null;
     notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & { pushEnabled?: boolean };
     /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */

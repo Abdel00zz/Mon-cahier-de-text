@@ -132,10 +132,10 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         }
         description={t('manageLessons.description')}
         maxWidth="2xl"
-        className="sm:max-w-3xl sm:rounded-[32px]"
-        headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+        className="sm:max-w-3xl sm:rounded-2xl"
+        headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-        footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+        footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
         footer={(
           <div className="flex w-full items-center justify-end gap-2.5">
             <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -153,7 +153,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         )}
       >
         <div className="space-y-4">
-          <details open className="group overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
+          <details open className="group overflow-hidden rounded-xl border border-border/70 bg-card shadow-xs">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-muted/40 px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
@@ -170,7 +170,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
             />
           </details>
 
-          <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
+          <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-xs">
             <div className="flex items-center justify-between gap-4 border-b border-border/60 bg-muted/40 px-4 py-3">
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.contents')}</h3>
@@ -206,7 +206,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                   return (
                     <li
                       key={itemKey(item)}
-                      className="flex items-center gap-3 rounded-2xl border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs transition-all hover:border-border hover:shadow-xs"
+                      className="flex items-center gap-3 rounded-xl border border-border/80 bg-background px-3.5 py-2.5 shadow-2xs transition-all hover:border-border hover:shadow-xs"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-muted/60">
                         <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5 stroke-[2.2]`} />

@@ -1,4 +1,4 @@
-import { AbsencePeriod, NotificationSettings, ScheduleSlot } from '../types.js';
+import { AbsencePeriod, AppLocale, NotificationSettings, ScheduleSlot } from '../types.js';
 import {
     HolidayCalendar,
     countExpectedSessions,
@@ -85,7 +85,39 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
     return { expectedSessions, actualSessions: sessionsCount, gapSessions, daysSinceLastEntry, severity };
 };
 
-const formatLatenessMessage = (result: LatenessResult, className: string): string => {
+const formatLatenessMessage = (result: LatenessResult, className: string, locale: AppLocale): string => {
+    if (locale === 'ar') {
+        if (result.severity === 'critical') {
+            return `يبدو أن دفتر قسم ${className} يحتاج إلى استكمال نحو ${result.gapSessions} حصص مقارنة باستعمال الزمن. يمكنكم تحيينه تدريجياً.`;
+        }
+        if (result.severity === 'warning') {
+            if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
+                return `آخر تدوين في قسم ${className} كان قبل ${result.daysSinceLastEntry} من أيام الدراسة. يمكنكم استكمال الحصص غير المدونة عند التفرغ.`;
+            }
+            return `يبدو أن دفتر قسم ${className} يحتاج إلى استكمال نحو ${result.gapSessions} حصص. يمكنكم تحيينه وفق وتيرتكم.`;
+        }
+        if (result.severity === 'notice') {
+            return `دفتر قسم ${className} يحتاج إلى استكمال ${result.gapSessions} حصص عند التفرغ.`;
+        }
+        return `دفتر قسم ${className} محيَّن.`;
+    }
+
+    if (locale === 'en') {
+        if (result.severity === 'critical') {
+            return `${className}: about ${result.gapSessions} sessions may need completing compared with the timetable. You can update them progressively.`;
+        }
+        if (result.severity === 'warning') {
+            if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
+                return `The last entry for ${className} was ${result.daysSinceLastEntry} school day(s) ago. Complete the missing sessions when convenient.`;
+            }
+            return `${className}: about ${result.gapSessions} sessions may need completing. Update them at your pace.`;
+        }
+        if (result.severity === 'notice') {
+            return `${className}: ${result.gapSessions} session(s) can be completed when convenient.`;
+        }
+        return `${className} is up to date.`;
+    }
+
     if (result.severity === 'critical') {
         return `${className} : environ ${result.gapSessions} séances semblent à compléter par rapport à l'emploi du temps. Vous avancez à votre rythme.`;
     }
@@ -111,7 +143,10 @@ const SEVERITY_RANK: Record<LatenessSeverity, number> = { ok: 0, notice: 1, warn
 export const worstSeverity = (results: ClassLateness[]): LatenessSeverity =>
     results.reduce<LatenessSeverity>((worst, r) => (SEVERITY_RANK[r.severity] > SEVERITY_RANK[worst] ? r.severity : worst), 'ok');
 
-export const summarizeForTeacher = (results: ClassLateness[]): { title: string; body: string; severity: LatenessSeverity } | null => {
+export const summarizeForTeacher = (
+    results: ClassLateness[],
+    locale: AppLocale = 'fr',
+): { title: string; body: string; severity: LatenessSeverity } | null => {
     const flagged = results.filter(r => r.severity !== 'ok');
     if (flagged.length === 0) return null;
 
@@ -119,9 +154,24 @@ export const summarizeForTeacher = (results: ClassLateness[]): { title: string; 
     const severity = flagged[0].severity;
 
     if (flagged.length === 1) {
-        return { title: 'Cahier de textes', body: formatLatenessMessage(flagged[0], flagged[0].className), severity };
+        const title = locale === 'ar' ? 'دفتر النصوص' : locale === 'en' ? 'Lesson notebook' : 'Cahier de textes';
+        return { title, body: formatLatenessMessage(flagged[0], flagged[0].className, locale), severity };
     }
     const names = flagged.slice(0, 3).map(r => r.className).join(', ');
+    if (locale === 'ar') {
+        return {
+            title: `${flagged.length} أقسام تحتاج إلى التحيين`,
+            body: `بعض حصص الأقسام ${names}${flagged.length > 3 ? '…' : ''} لم تُدوَّن بعد. يمكنكم استكمالها وفق وتيرتكم.`,
+            severity,
+        };
+    }
+    if (locale === 'en') {
+        return {
+            title: `${flagged.length} classes need updating`,
+            body: `Some sessions for ${names}${flagged.length > 3 ? '…' : ''} have not been entered yet. Update them at your pace.`,
+            severity,
+        };
+    }
     return {
         title: `${flagged.length} classes à compléter`,
         body: `Certaines séances de ${names}${flagged.length > 3 ? '…' : ''} ne sont pas encore renseignées. Vous avancez à votre rythme.`,

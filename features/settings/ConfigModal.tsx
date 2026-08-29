@@ -73,6 +73,7 @@ const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[
 ];
 
 const SETTINGS_MOBILE_DETENTS = [0.68, 0.92];
+const SETTINGS_INTERFACE_LOCALES = localeMetadata.filter(option => option.value === 'fr' || option.value === 'ar');
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -113,10 +114,10 @@ const SETTING_ITEMS: SettingMenuItem[] = [
     group: 'main',
   },
   {
-    id: 'profil',
-    titleKey: 'settings.item.profile',
-    descKey: 'settings.desc.profile',
-    icon: School,
+    id: 'emploi',
+    titleKey: 'settings.item.schedule',
+    descKey: 'settings.desc.schedule',
+    icon: CalendarRange,
     group: 'main',
   },
   {
@@ -127,10 +128,10 @@ const SETTING_ITEMS: SettingMenuItem[] = [
     group: 'main',
   },
   {
-    id: 'emploi',
-    titleKey: 'settings.item.schedule',
-    descKey: 'settings.desc.schedule',
-    icon: CalendarRange,
+    id: 'profil',
+    titleKey: 'settings.item.profile',
+    descKey: 'settings.desc.profile',
+    icon: School,
     group: 'main',
   },
   {
@@ -293,19 +294,19 @@ export const ConfigModal: FC<ConfigModalProps> = ({
         <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-        {localeMetadata.map(option => {
+        {SETTINGS_INTERFACE_LOCALES.map(option => {
           const active = (localConfig.applicationLocale ?? 'fr') === option.value;
           return (
             <button
               key={option.value}
               type="button"
-              onClick={() => setLocalConfig(prev => ({ ...prev, applicationLocale: option.value as AppLocale }))}
+              onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
               aria-pressed={active}
               className={cn(
                 'flex min-w-[110px] sm:min-w-[130px] flex-col items-center justify-center gap-2 rounded-2xl border p-3.5 sm:p-4 text-center transition-all duration-200 cursor-pointer shadow-xs',
                 active
-                  ? 'border-cyan-500/40 bg-gradient-to-br from-cyan-500/15 to-cyan-600/15 text-cyan-600 dark:text-cyan-400 ring-1 ring-cyan-500/30 font-bold scale-[1.02] shadow-[0_4px_16px_rgba(6,182,212,0.18)]'
-                  : 'border-white/[0.08] dark:border-white/[0.06] bg-background/60 text-muted-foreground hover:border-cyan-500/30 hover:bg-muted/50 hover:text-foreground'
+                  ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/25 font-bold shadow-sm'
+                  : 'border-border bg-background/60 text-muted-foreground hover:border-primary/30 hover:bg-muted/50 hover:text-foreground'
               )}
             >
               <div className="flex h-9 items-center justify-center">
@@ -463,14 +464,14 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           className={cn(
                             'group flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 transition-all duration-200 outline-none cursor-pointer',
                             active
-                              ? 'border-cyan-500/40 bg-gradient-to-br from-cyan-500/15 to-cyan-600/15 shadow-[0_4px_16px_rgba(6,182,212,0.18)] ring-1 ring-inset ring-cyan-500/30 scale-[1.02]'
-                              : 'border-border/60 bg-background/60 hover:border-cyan-500/30 hover:bg-muted/40'
+                              ? 'border-primary/40 bg-primary/10 shadow-sm ring-1 ring-inset ring-primary/25'
+                              : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/40'
                           )}
                         >
                           <span className={cn(
                             'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200 group-hover:scale-105',
                             active
-                              ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-[0_2px_8px_rgba(6,182,212,0.35)]'
+                              ? 'bg-primary text-primary-foreground shadow-xs'
                               : 'bg-muted/60 text-muted-foreground'
                           )}>
                             <c.icon className="h-4 w-4" />
@@ -1055,11 +1056,11 @@ export const ConfigModal: FC<ConfigModalProps> = ({
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.92}
-      className="settings-modal-sheet overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-[28px]"
+      className="settings-modal-sheet overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-2xl"
       headerClassName="border-b border-border/55 bg-card px-5 py-4 sm:px-7 sm:py-4.5"
       bodyClassName="p-4 sm:p-6"
     >
-      <div className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 min-h-[480px]">
+      <div data-settings-ui className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 min-h-[480px]">
         <div
           className={cn(
             'lg:col-span-4 flex flex-col',

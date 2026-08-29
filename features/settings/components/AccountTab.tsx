@@ -71,7 +71,7 @@ export const AccountTab: React.FC = () => {
                     <Button
                         type="button"
                         onClick={syncNow}
-                        className="h-9 sm:h-10 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 via-cyan-600 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-[0_4px_14px_rgba(6,182,212,0.3)] transition-all cursor-pointer sm:shrink-0 gap-1.5"
+                        className="h-9 gap-1.5 rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:h-10 sm:shrink-0"
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                         {t('account.syncNow')}

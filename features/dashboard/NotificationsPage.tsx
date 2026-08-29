@@ -812,7 +812,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         {filteredOfficial.map(item => (
                           <div
                             key={`official-${item.event.id}`}
-                            className="flex flex-col justify-between rounded-xl border border-cyan-200/80 bg-gradient-to-br from-cyan-50/80 via-white to-blue-50/60 p-3.5 text-start shadow-[0_6px_18px_rgba(8,145,178,0.07)] transition-all hover:border-cyan-300 hover:shadow-[0_8px_22px_rgba(8,145,178,0.11)] dark:border-cyan-900/60 dark:from-cyan-950/30 dark:via-slate-900 dark:to-blue-950/25"
+                            className="flex flex-col justify-between rounded-xl border border-border bg-card p-3.5 text-start shadow-xs transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">

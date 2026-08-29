@@ -177,19 +177,19 @@
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    --background: 215 28% 97%;
-    --foreground: 222 47% 11%;
+    --background: 220 17% 97%;
+    --foreground: 222 28% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222 28% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222 28% 12%;
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 93%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 215 25% 94%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 217 91% 95%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 222 28% 12%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 218 13% 43%;
+    --accent: 221 80% 96%;
     --accent-foreground: 221 83% 45%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -198,9 +198,9 @@
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
-    --scheduled: 215 25% 94%;
-    --scheduled-foreground: 222 47% 11%;
-    --border: 214 28% 88%;
+    --scheduled: 220 14% 94%;
+    --scheduled-foreground: 222 28% 12%;
+    --border: 220 13% 87%;
     --input: 0 0% 100%;
     --ring: 221 83% 53%;
     --chart-1: 221 83% 53%;
@@ -270,6 +270,29 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Interface arabe : IBM Plex garde les contrôles compacts très lisibles.
+     Lateef est réservé aux titres d'interface, jamais au contenu pédagogique. */
+  html[lang="ar"] body,
+  html[lang="ar"] button,
+  html[lang="ar"] input,
+  html[lang="ar"] textarea,
+  html[lang="ar"] select {
+    font-family: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: normal;
+  }
+
+  html[lang="ar"] [data-ui-title],
+  html[lang="ar"] [data-settings-ui] h2,
+  html[lang="ar"] [data-settings-ui] h3,
+  html[lang="ar"] [data-dashboard-root] h1,
+  html[lang="ar"] [data-dashboard-root] h2,
+  html[lang="ar"] [data-pilotage-root] h1,
+  html[lang="ar"] [data-pilotage-root] h2 {
+    font-family: 'Lateef', 'IBM Plex Sans Arabic', serif;
+    letter-spacing: normal;
+    line-height: 1.35;
   }
 
   html {

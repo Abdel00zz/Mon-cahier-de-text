@@ -512,28 +512,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-foreground antialiased pb-20 sm:pb-8 relative overflow-hidden"
+            className="min-h-screen bg-background text-foreground antialiased pb-20 sm:pb-8"
             data-dashboard-root
         >
-            {/* Ambient Subtle Glows */}
-            <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 select-none">
-                <div className="absolute -top-32 -left-32 h-[450px] w-[450px] rounded-full bg-blue-100/40 blur-3xl opacity-50 dark:bg-blue-600/10 dark:opacity-20" />
-                <div className="absolute top-1/4 -right-32 h-[500px] w-[500px] rounded-full bg-indigo-100/40 blur-3xl opacity-40 dark:bg-indigo-600/10 dark:opacity-15" />
-            </div>
-
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                {/* En-tête Notion / Linear plein-largeur sans arrondi, poussé en haut */}
+                {/* En-tête unifié : nom et information restent sur le même fond neutre. */}
                 <header
                     id="dashboard-header"
                     aria-live="polite"
-                    className="w-full rounded-none border-b border-zinc-200/80 bg-white shadow-2xs dark:border-zinc-800 dark:bg-zinc-900"
+                    className="w-full border-b border-border bg-card"
                 >
                     <div className="mx-auto max-w-5xl px-3.5 py-4 sm:px-6 sm:py-5 lg:px-8 pl-safe pr-safe">
                         {/* 1. Zone supérieure – Bienvenue + Nom d'utilisateur harmonisé */}
                         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                             <h1
-                                className={`font-bold text-zinc-950 dark:text-white leading-tight tracking-tight ${
-                                    isRtl ? 'font-lateef text-3xl sm:text-4xl' : 'font-itim text-2xl sm:text-3xl'
+                                className={`font-semibold text-foreground leading-tight tracking-tight ${
+                                    isRtl ? 'font-lateef text-3xl sm:text-4xl' : 'font-sans text-xl sm:text-2xl'
                                 }`}
                                 dir="auto"
                             >
@@ -541,7 +535,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </h1>
 
                             <span
-                                className={`inline-flex max-w-full items-center justify-center rounded-lg border border-zinc-200/90 bg-zinc-100/95 px-3 py-0.5 text-zinc-900 shadow-2xs transition-colors dark:border-zinc-700/80 dark:bg-zinc-800/90 dark:text-zinc-100 ${
+                                className={`inline-flex max-w-full items-center justify-center rounded-md border border-border bg-muted px-3 py-1 text-foreground transition-colors ${
                                     isArabicText(displayTeacherName)
                                         ? 'font-lateef text-3xl sm:text-4xl font-bold leading-tight'
                                         : 'font-itim text-2xl sm:text-3xl font-bold leading-tight'
@@ -554,15 +548,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* 2. Zone inférieure – Message important */}
                         {(welcome.title || welcome.detail || scheduleIncompleteCount > 0) && (
-                            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 rounded-[8px] border border-[#fbcfe8] bg-[#fdf2f8] px-3.5 py-2.5 text-xs text-rose-950 transition-all sm:text-sm dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+                            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-warning/30 bg-warning/[0.08] px-3.5 py-2.5 text-xs text-foreground sm:text-sm">
                                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" strokeWidth={2.2} />
+                                    <AlertCircle className="h-4 w-4 shrink-0 text-warning-strong" strokeWidth={2.2} />
                                     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-                                        <span className="font-bold text-rose-950 dark:text-rose-100">
+                                        <span className="font-bold text-foreground">
                                             {welcome.title || (isRtl ? 'مهم : قسم واحد يحتاج إلى انتباهكم' : 'Important : 1 classe nécessite votre attention')}
                                         </span>
                                         {welcome.detail && (
-                                            <span className="text-rose-800/80 dark:text-rose-300/80 text-xs">
+                                            <span className="text-muted-foreground text-xs">
                                                 {welcome.detail}
                                             </span>
                                         )}
@@ -573,7 +567,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <button
                                         type="button"
                                         onClick={welcome.action.onClick}
-                                        className="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 font-bold text-rose-700 hover:text-rose-900 transition-colors dark:text-rose-300 dark:hover:text-white"
+                                        className="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 font-bold text-primary hover:text-primary/80 transition-colors"
                                     >
                                         <span>{welcome.action.label}</span>
                                         <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
@@ -736,12 +730,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
-                                    <div className="relative flex flex-col items-center justify-center py-10 sm:py-14 md:py-16 px-4 sm:px-8 text-center rounded-3xl border border-slate-200/60 dark:border-white/[0.06] bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl shadow-xs overflow-hidden">
-                                        {/* Colorful Glow behind image */}
-                                        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-96 rounded-full bg-gradient-to-tr from-cyan-500/10 via-cyan-500/10 to-amber-500/10 blur-3xl opacity-50 dark:opacity-30" />
-
-                                        {/* Top: Modern Rounded Framed Illustration */}
-                                        <div className="relative mb-5 sm:mb-6 flex items-center justify-center p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-zinc-900/80 shadow-[0_6px_24px_-6px_rgba(15,23,42,0.06)] dark:shadow-[0_6px_24px_-6px_rgba(0,0,0,0.4)] backdrop-blur-sm max-w-full overflow-hidden">
+                                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
+                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 p-2 sm:mb-6 sm:p-2.5">
                                             <img
                                                 src="/dashboard.png"
                                                 alt="Illustration tableau de bord"
@@ -752,17 +742,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </div>
 
                                         {/* Middle: Proportionally Refined Typography (Title & Subtitle) */}
-                                        <div className="relative z-10 max-w-md mx-auto space-y-1 sm:space-y-1.5 px-2">
-                                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight leading-snug">
+                                        <div className="max-w-md space-y-1 px-2 sm:space-y-1.5">
+                                            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg md:text-xl">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
-                                            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 leading-relaxed max-w-sm mx-auto">
+                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground sm:text-sm">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                         </div>
 
                                         {/* Bottom: Centered Button */}
-                                        <div className="relative z-10 mt-5 sm:mt-6">
+                                        <div className="mt-5 sm:mt-6">
                                             <Button
                                                 variant="accent"
                                                 onClick={() => {
@@ -772,7 +762,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                         setOnboardingOpen(true);
                                                     }
                                                 }}
-                                                className="h-10 px-6 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 inline-flex items-center gap-2 cursor-pointer shadow-md shadow-cyan-500/25 hover:shadow-lg hover:shadow-cyan-500/40"
+                                                className="h-10 px-6 text-xs font-semibold shadow-sm sm:text-sm"
                                             >
                                                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                                 <span>{t('dashboard.addClass')}</span>

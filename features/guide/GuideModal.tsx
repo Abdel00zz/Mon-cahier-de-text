@@ -163,6 +163,16 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           lang={lang}
         >
           <div className="mx-auto max-w-4xl px-5 py-6 sm:px-10 sm:py-8">
+            <div className="mb-7 overflow-hidden rounded-[22px] border border-amber-100/90 bg-[#f8f1e7] shadow-[0_14px_34px_rgba(71,48,27,0.09)] sm:mb-9 sm:rounded-[26px]">
+              <img
+                src="/login.png"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                className="block aspect-[16/9] h-auto w-full object-cover object-center"
+              />
+            </div>
             <div
               className={`max-w-none ${isAr ? 'text-right' : ''}`}
               dangerouslySetInnerHTML={{ __html: html }}

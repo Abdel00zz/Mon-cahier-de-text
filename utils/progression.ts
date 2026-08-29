@@ -1,4 +1,4 @@
-import { AbsencePeriod, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, TeacherSnapshot } from '../types.js';
+import { AbsencePeriod, AppLocale, ClassInfo, ClassSchedule, ClassSnapshot, LessonsData, NotificationSettings, TeacherSnapshot } from '../types.js';
 import { flattenLessons } from './dataUtils.js';
 
 /*
@@ -111,10 +111,12 @@ export const computeTeacherSnapshot = (
     readLessons: (classId: string) => LessonsData,
     absences?: AbsencePeriod[],
     schoolYearStart?: string,
+    applicationLocale: AppLocale = 'ar',
 ): TeacherSnapshot => ({
     phone: user.phone,
     nom: user.nom,
     prenom: user.prenom,
+    applicationLocale,
     lastSyncAt: new Date().toISOString(),
     absences: absences && absences.length > 0 ? absences : undefined,
     schoolYearStart,
