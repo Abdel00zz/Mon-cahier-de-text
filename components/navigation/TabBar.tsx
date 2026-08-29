@@ -86,10 +86,10 @@ export const TabBar = React.memo<TabBarProps>(({
 
   return (
     <>
-      {/* Desktop sidebar — sleek pure black & modern circle style */}
+      {/* Navigation sombre neutre, compacte et lisible. */}
       <nav
         className={cn(
-          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[76px] flex-col overflow-hidden bg-black text-white print:hidden shadow-[8px_0_32px_rgba(0,0,0,0.45)] sm:flex py-3.5 landscape:py-2.5',
+          'fixed inset-y-0 z-40 hidden h-[100dvh] max-h-[100dvh] w-[76px] flex-col overflow-hidden bg-zinc-950 text-white print:hidden shadow-[8px_0_32px_rgba(9,9,11,0.3)] sm:flex py-3.5 landscape:py-2.5',
           isRtl ? 'right-0 border-l border-zinc-800' : 'left-0 border-r border-zinc-800',
           isExpanded ? 'lg:w-[252px]' : 'lg:w-[76px]',
           'transition-[width] duration-200 ease-out',
@@ -100,7 +100,7 @@ export const TabBar = React.memo<TabBarProps>(({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-9 landscape:w-9 cursor-pointer active:scale-95"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-9 landscape:w-9 active:scale-95"
             aria-label={isExpanded ? copy.collapse : copy.expand}
           >
             <Menu className="h-[19px] w-[19px]" />
@@ -123,8 +123,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 type="button"
                 onClick={() => goTo(tab.id)}
                 className={cn(
-                  'group relative flex h-11 w-full items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
-                  isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
+                  'group relative flex h-11 w-full cursor-pointer items-center justify-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10',
+                  isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5',
                   isActive
                     ? 'bg-zinc-800/80 text-white'
                     : 'text-zinc-400 hover:bg-zinc-900/90 hover:text-white',
@@ -133,7 +133,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 aria-current={isActive ? 'page' : undefined}
               >
                 <span className={cn(
-                  'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all',
+                  'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors',
                   isActive
                     ? 'bg-white text-black shadow-sm'
                     : 'bg-zinc-900 border border-zinc-800 text-zinc-300 group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white',
@@ -167,8 +167,8 @@ export const TabBar = React.memo<TabBarProps>(({
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
             className={cn(
-              'group flex h-11 w-full items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
-              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
+              'group flex h-11 w-full cursor-pointer items-center justify-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10',
+              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5',
               activeTab === 'settings'
                 ? 'bg-zinc-800/80 text-white'
                 : 'text-zinc-400 hover:bg-zinc-900/90 hover:text-white',
@@ -177,7 +177,7 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
             <span className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all',
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors',
               activeTab === 'settings'
                 ? 'bg-white text-black shadow-sm'
                 : 'bg-zinc-900 border border-zinc-800 text-zinc-300 group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white',
@@ -196,12 +196,12 @@ export const TabBar = React.memo<TabBarProps>(({
             type="button"
             onClick={() => goTo('help')}
             className={cn(
-              'group flex h-11 w-full items-center justify-center rounded-full text-zinc-400 transition-all duration-150 hover:bg-zinc-900/90 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10 cursor-pointer',
-              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5 lg:rounded-2xl',
+              'group flex h-11 w-full cursor-pointer items-center justify-center rounded-xl text-zinc-400 transition-colors duration-150 hover:bg-zinc-900/90 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 landscape:h-10',
+              isExpanded && 'lg:justify-start lg:gap-3 lg:px-1.5',
             )}
             aria-label={copy.help}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 transition-all group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 transition-colors group-hover:border-zinc-700 group-hover:bg-zinc-800 group-hover:text-white">
               <CircleHelp className="h-[19px] w-[19px] shrink-0" />
             </span>
             <span className={cn(
@@ -214,9 +214,9 @@ export const TabBar = React.memo<TabBarProps>(({
         </div>
       </nav>
 
-      {/* Mobile bottom tab bar — pure black & circular icons, no text clipping */}
+      {/* Barre mobile compacte : texte court, zones tactiles de 48 px minimum. */}
       <nav
-        className="mobile-tab-bar fixed inset-x-2.5 z-40 overflow-visible rounded-2xl border border-zinc-800 bg-black/95 text-zinc-200 shadow-[0_12px_36px_rgba(0,0,0,0.55)] backdrop-blur-xl print:hidden sm:hidden will-change-transform"
+        className="mobile-tab-bar fixed inset-x-2.5 z-40 overflow-visible rounded-xl border border-zinc-800 bg-zinc-950/95 text-zinc-200 shadow-[0_12px_36px_rgba(9,9,11,0.38)] backdrop-blur-xl print:hidden sm:hidden will-change-transform"
         style={{ bottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
@@ -242,7 +242,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 aria-current={isActive ? 'page' : undefined}
               >
                 <div className={cn(
-                  'relative flex h-8 w-8 items-center justify-center rounded-full transition-all',
+                  'relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
                   isActive
                     ? 'bg-white text-black shadow-xs scale-105'
                     : 'bg-zinc-900 border border-zinc-800 text-zinc-300',
@@ -281,7 +281,7 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
             <div className={cn(
-              'relative flex h-8 w-8 items-center justify-center rounded-full transition-all',
+              'relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
               activeTab === 'settings'
                 ? 'bg-white text-black shadow-xs scale-105'
                 : 'bg-zinc-900 border border-zinc-800 text-zinc-300',
