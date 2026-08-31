@@ -9,6 +9,7 @@ export interface ClassInfo {
   teacherName: string;
   subject: string;
   createdAt: string;
+  lastOpenedAt?: string;
   color: string;
     cycle?: Cycle; // optional for backward compatibility
 }

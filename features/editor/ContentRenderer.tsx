@@ -253,9 +253,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
-          {/* Description : encadré sobre sous le titre */}
+          {/* Description : encadré sobre sous le titre avec branchement */}
           {allowDescription && (
-            <div className="mt-1 border border-border px-1.5 py-1 sm:px-2 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
+            <div className="mt-1.5 ms-[18px] sm:ms-[22px] border-l-[2px] border-border/70 bg-muted/10 pl-2.5 sm:pl-3 py-1 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
@@ -282,7 +282,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <div className="flex min-w-0 items-center gap-1.5 py-1 sm:gap-2.5 sm:ps-8">
           <Badge
             variant="outline"
-            className={`inline-flex min-w-[42px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-tight tracking-normal transition-colors duration-150 hover:shadow-xs cursor-default max-sm:portrait:min-w-[34px] max-sm:portrait:px-1 max-sm:portrait:py-0.5 max-sm:portrait:text-[8.5px] sm:min-w-[50px] sm:px-2 sm:text-[11px] ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`inline-flex min-w-[42px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-none border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight tracking-wider transition-colors duration-150 hover:shadow-xs cursor-default max-sm:portrait:min-w-[34px] max-sm:portrait:px-1 max-sm:portrait:py-0.5 max-sm:portrait:text-[8.5px] sm:min-w-[50px] sm:px-2 sm:text-[11px] ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >

@@ -1,4 +1,5 @@
 import { HttpError } from './http.js';
+import { latestClassOpening } from '../../utils/classOpening.js';
 import type { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableEntry } from '../../types.js';
 
 const MAX_BODY_BYTES = 950_000; // marge sous la limite ~1 MB des requêtes Upstash
@@ -70,6 +71,7 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
       teacherName: typeof item.teacherName === 'string' ? item.teacherName.slice(0, 120) : '',
       subject: assertStringField(item.subject, 'Matière', 120),
       createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+      lastOpenedAt: latestClassOpening(item.lastOpenedAt),
       color: typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color) ? item.color : '#3b82f6',
       cycle: VALID_CYCLES.has(item.cycle as string) ? item.cycle : undefined,
     };

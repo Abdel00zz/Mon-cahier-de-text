@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ThemeMode, ThemeCustomization } from '@/types';
+import { ThemeMode, ThemeCustomization, AppLocale } from '@/types';
 import { getLatinFontFamily, getArabicFontFamily } from '@/constants/typography';
 import {
   ACCENT_PALETTES,
@@ -15,7 +15,8 @@ export function useTheme(
   contentFontLatin?: string,
   contentFontArabic?: string,
   onThemeChange?: (theme: ThemeMode) => void,
-  themeCustomization?: ThemeCustomization
+  themeCustomization?: ThemeCustomization,
+  locale: AppLocale = 'fr'
 ) {
   const [themeState, setThemeState] = useState<ThemeMode>(() => {
     if (configTheme) return configTheme;
@@ -117,7 +118,7 @@ export function useTheme(
 
     // 3. UI Font Family
     const uiFont = UI_FONTS_MAP[uiFontKey] || UI_FONTS_MAP.jakarta;
-    root.style.setProperty('--font-sans', uiFont.family);
+    root.style.setProperty('--font-sans', locale === 'ar' ? "'Lateef', 'IBM Plex Sans Arabic', serif" : uiFont.family);
 
     // 4. Custom Direct Colors if set
     if (themeCustomization?.customBackgroundColor) {
@@ -148,7 +149,7 @@ export function useTheme(
     root.setAttribute('data-table-style', tableStyleKey);
     root.setAttribute('data-radius', borderRadiusKey);
     root.setAttribute('data-ui-font', uiFontKey);
-  }, [isDark, themeCustomization]);
+  }, [isDark, themeCustomization, locale]);
 
   // Update dynamic content fonts on CSS variables
   useEffect(() => {

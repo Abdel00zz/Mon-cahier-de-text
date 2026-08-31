@@ -9,6 +9,8 @@ export interface FontOption {
   sampleAr: string;
 }
 
+export const DEFAULT_ARABIC_FONT = 'lateef';
+
 export const LATIN_FONTS: FontOption[] = [
   {
     id: 'itim',
@@ -222,5 +224,5 @@ export const getLatinFontFamily = (id?: string): string => {
 
 export const getArabicFontFamily = (id?: string): string => {
   const font = ARABIC_FONTS.find(f => f.id === id);
-  return font ? font.family : "'IBM Plex Sans Arabic', sans-serif";
+  return font ? font.family : "'Lateef', serif";
 };

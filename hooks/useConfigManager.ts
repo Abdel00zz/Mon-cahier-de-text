@@ -6,6 +6,7 @@ import { effectiveSchedules } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
+import { DEFAULT_ARABIC_FONT } from '../constants/typography';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
@@ -25,7 +26,7 @@ export const defaultNotificationSettings = {
 const defaultConfig: AppConfig = {
     theme: 'light',
     contentFontLatin: 'fira',
-    contentFontArabic: 'ibm-plex',
+    contentFontArabic: DEFAULT_ARABIC_FONT,
     applicationLocale: 'ar',
     establishmentName: '',
     defaultTeacherName: '',
@@ -109,7 +110,7 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             schoolYearStart: loadedConfig.schoolYearStart,
             theme: loadedConfig.theme ?? 'light',
             contentFontLatin: loadedConfig.contentFontLatin ?? 'fira',
-            contentFontArabic: loadedConfig.contentFontArabic ?? 'ibm-plex',
+            contentFontArabic: loadedConfig.contentFontArabic ?? DEFAULT_ARABIC_FONT,
             applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
         };
     } catch (error) {

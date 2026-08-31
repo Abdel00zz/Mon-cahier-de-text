@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, ArrowRight, Check, ChevronRight, GraduationCap, Settings, Trash2 } from '@/components/ui/icons';
+import { ArrowLeft, ArrowRight, Check, ChevronRight, GraduationCap, Settings, Trash2, Sparkles } from '@/components/ui/icons';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -262,7 +262,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       <Modal isOpen={isOpen} onClose={() => { if (!submittingRef.current) onClose(); }} blockDismiss={submitting} hideClose={submitting} title={
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-[8px] border border-[#e0e0e0] bg-muted text-muted-foreground dark:border-[#5f6368]">
-            {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
+            {editingClass ? <Settings className="h-5 w-5 stroke-[2.2]" /> : (!editingClass && hasCycleChoice) ? <Sparkles className="h-5 w-5 stroke-[2.2] text-primary" /> : <GraduationCap className="h-5 w-5 stroke-[2.2]" />}
           </span>
           <span className="min-w-0">
             <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{hasCycleChoice ? copy.guidedLabel : copy.cycleLabels[cycle]}</span>

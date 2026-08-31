@@ -3,6 +3,7 @@ import { getRedis, KEYS } from './_lib/redis.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
+import { latestClassOpening } from '../utils/classOpening.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
 
 interface ClassesBlob {
@@ -122,7 +123,10 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const classIds = new Set([...existingById.keys(), ...requestedById.keys()]);
     const classes = Array.from(classIds)
         .filter(classId => !deletedClassIds.has(classId))
-        .map(classId => adminClassOverrides[classId] ?? requestedById.get(classId) ?? existingById.get(classId)!)
+        .map(classId => ({
+            ...(adminClassOverrides[classId] ?? requestedById.get(classId) ?? existingById.get(classId)!),
+            lastOpenedAt: latestClassOpening(requestedById.get(classId)?.lastOpenedAt, existingById.get(classId)?.lastOpenedAt),
+        }))
         .filter(Boolean);
 
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LucideProps } from 'lucide-react';
 import {
+  Play as LucidePlay,
   Cloud as LucideCloud,
   PenLine as LucidePenLine,
   LockKeyhole as LucideLockKeyhole,
@@ -81,6 +82,7 @@ import {
   List as LucideList,
   ListOrdered as LucideListOrdered,
   Underline as LucideUnderline,
+  Sparkles as LucideSparkles,
 } from 'lucide-react';
 
 export interface AppIconProps extends LucideProps {
@@ -112,6 +114,7 @@ const createIcon = (LucideComponent: React.ComponentType<LucideProps>): React.FC
 };
 
 export const Plus = createIcon(LucidePlus);
+export const Play = createIcon(LucidePlay);
 export const X = createIcon(LucideX);
 export const Check = createIcon(LucideCheck);
 export const CheckCheck = createIcon(LucideCheckCheck);
@@ -191,3 +194,4 @@ export const Italic = createIcon(LucideItalic);
 export const List = createIcon(LucideList);
 export const ListOrdered = createIcon(LucideListOrdered);
 export const Underline = createIcon(LucideUnderline);
+export const Sparkles = createIcon(LucideSparkles);

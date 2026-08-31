@@ -190,30 +190,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setStatus('authenticated');
   }, []);
 
-  const register = useCallback(async (input: RegisterInput) => {
-    const version = ++requestVersion.current;
-    initialRequest.current?.abort();
-    await logoutRequest.current;
-    const {setup, ...credentials} = input;
-    const createdUser = await postAuth({ action: 'register', ...credentials });
-    if (version !== requestVersion.current) return;
-    activateUserWorkspace(createdUser);
-    if (setup) {
-      try {
-        const classId = applyRegistrationSetup(setup, createdUser.phone);
-        if (classId) {
-          touchClassSyncMeta(classId); touchSettingsSyncMeta();
-          markClassDirty(classId); markClassesListDirty();
-          notifyClassesChanged(); notifyConfigChanged();
-        }
-      } catch {
-        toast.error(setup.applicationLocale === 'ar' ? 'أُنشئ حسابك، لكن تعذّر حفظ القسم محلياً. وفّر مساحة تخزين ثم أضفه من لوحة التحكم.' : 'Compte créé, mais la classe n’a pas pu être conservée localement. Libérez de l’espace puis ajoutez-la depuis le tableau de bord.');
-      }
-    }
-    setUser(createdUser);
-    setStatus('authenticated');
-  }, []);
-
   const completeWelcome = useCallback(async () => {
     const scope = readWorkspaceScope();
     const version = requestVersion.current;
@@ -224,6 +200,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     cacheUser(completedUser);
     applyProfileToConfig(completedUser);
   }, []);
+
+  const register = useCallback(async (input: RegisterInput) => {
+    const version = ++requestVersion.current;
+    initialRequest.current?.abort();
+    await logoutRequest.current;
+    const {setup, ...credentials} = input;
+    const createdUser = await postAuth({ action: 'register', ...credentials });
+    if (version !== requestVersion.current) return;
+    activateUserWorkspace(createdUser);
+    let preparationCompleted = false;
+    if (setup) {
+      try {
+        const classId = applyRegistrationSetup(setup, createdUser.phone);
+        if (classId) {
+          preparationCompleted = setup.preparationCompleted === true;
+          touchClassSyncMeta(classId); touchSettingsSyncMeta();
+          markClassDirty(classId); markClassesListDirty();
+          notifyClassesChanged(); notifyConfigChanged();
+        }
+      } catch {
+        toast.error(setup.applicationLocale === 'ar' ? 'أُنشئ حسابك، لكن تعذّر حفظ القسم محلياً. وفّر مساحة تخزين ثم أضفه من لوحة التحكم.' : 'Compte créé, mais la classe n’a pas pu être conservée localement. Libérez de l’espace puis ajoutez-la depuis le tableau de bord.');
+      }
+    }
+    setUser(createdUser);
+    setStatus('authenticated');
+    if (preparationCompleted) {
+      // Open the prepared space immediately. The synced local flag remains a
+      // fallback if this profile acknowledgement temporarily fails offline.
+      void completeWelcome().catch(() => {});
+    }
+  }, [completeWelcome]);
 
   const logout = useCallback(async () => {
     ++requestVersion.current;

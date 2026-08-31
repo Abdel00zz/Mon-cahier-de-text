@@ -8,6 +8,8 @@ export interface RegistrationSetup {
   subject: string;
   applicationLocale: 'fr' | 'ar';
   firstTitle?: string;
+  /** Explicitly completed preparation: do not repeat onboarding after registration. */
+  preparationCompleted?: boolean;
 }
 
 export function normalizeRegistrationSetup(
@@ -43,6 +45,9 @@ export function normalizeRegistrationSetup(
     subject: item.subject.trim(),
     applicationLocale: item.applicationLocale!,
     firstTitle: item.firstTitle?.trim() || undefined,
+    ...(item.preparationCompleted === true
+      ? { preparationCompleted: true }
+      : {}),
   };
 }
 
@@ -88,6 +93,9 @@ export function applyRegistrationSetup(
       selectedSubjects: [setup.subject],
       showAllCycles: false,
       showAllSubjects: false,
+      ...(setup.preparationCompleted
+        ? { hasCompletedWelcome: true, showGettingStarted: true }
+        : {}),
     }),
     classManager_v1: JSON.stringify([classInfo]),
     app_first_launch_v1: 'true',

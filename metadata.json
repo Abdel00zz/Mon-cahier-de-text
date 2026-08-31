@@ -1,6 +1,6 @@
 {
   "name": "Mon cahier de textes",
-  "description": "Cahier de textes enseignant interactif avec progression pédagogique, gestion de l'emploi du temps, évaluations et synchronisation.",
+  "description": "Cahier de textes enseignant avec progression, emploi du temps, évaluations et accès hors connexion.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

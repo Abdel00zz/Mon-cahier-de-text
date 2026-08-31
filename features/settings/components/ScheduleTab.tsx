@@ -15,6 +15,7 @@ import { getOfficialWeeklyHours } from '@/utils/officialHours';
 import { computeScheduleInsights } from '@/utils/scheduleInsights';
 import { TriangleAlert, CircleCheck } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { keepToneForClass, KEEP_TONES } from '@/utils/keepTheme';
 
 export interface ModernClassColor {
     key: string;
@@ -25,105 +26,51 @@ export interface ModernClassColor {
     dot: string;
 }
 
-/** Palette moderne, plus foncée, contrastée et saturée pour les créneaux d'emploi du temps */
-export const MODERN_SCHEDULE_PALETTE: ModernClassColor[] = [
-    {
-        key: 'emerald',
-        bg: 'bg-emerald-600 dark:bg-emerald-600',
-        border: 'border-emerald-700/60 dark:border-emerald-500/50',
-        text: 'text-white',
-        subtext: 'text-emerald-100/90',
-        dot: 'bg-emerald-500',
+/** Palette synchronisée avec les cartes de classes (Google Keep tones) */
+export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
+    sand: {
+        key: 'sand',
+        bg: 'bg-[#fff8b8] dark:bg-[#4b443a]',
+        border: 'border-[#ebd966] dark:border-[#5c5448]',
+        text: 'text-[#3c362a] dark:text-[#f8f5ee]',
+        subtext: 'text-[#6b6250] dark:text-[#ded7cb]',
+        dot: 'bg-[#fbc02d]',
     },
-    {
-        key: 'indigo',
-        bg: 'bg-indigo-600 dark:bg-indigo-600',
-        border: 'border-indigo-700/60 dark:border-indigo-500/50',
-        text: 'text-white',
-        subtext: 'text-indigo-100/90',
-        dot: 'bg-indigo-500',
+    mint: {
+        key: 'mint',
+        bg: 'bg-[#e2f6d3] dark:bg-[#345039]',
+        border: 'border-[#bfe5a5] dark:border-[#436449]',
+        text: 'text-[#233d27] dark:text-[#ebf7eb]',
+        subtext: 'text-[#4c7352] dark:text-[#c4e6c8]',
+        dot: 'bg-[#4caf50]',
     },
-    {
-        key: 'amber',
-        bg: 'bg-amber-600 dark:bg-amber-600',
-        border: 'border-amber-700/60 dark:border-amber-500/50',
-        text: 'text-white',
-        subtext: 'text-amber-100/90',
-        dot: 'bg-amber-500',
-    },
-    {
-        key: 'purple',
-        bg: 'bg-purple-600 dark:bg-purple-600',
-        border: 'border-purple-700/60 dark:border-purple-500/50',
-        text: 'text-white',
-        subtext: 'text-purple-100/90',
-        dot: 'bg-purple-500',
-    },
-    {
-        key: 'teal',
-        bg: 'bg-teal-600 dark:bg-teal-600',
-        border: 'border-teal-700/60 dark:border-teal-500/50',
-        text: 'text-white',
-        subtext: 'text-teal-100/90',
-        dot: 'bg-teal-500',
-    },
-    {
-        key: 'rose',
-        bg: 'bg-rose-600 dark:bg-rose-600',
-        border: 'border-rose-700/60 dark:border-rose-500/50',
-        text: 'text-white',
-        subtext: 'text-rose-100/90',
-        dot: 'bg-rose-500',
-    },
-    {
+    sky: {
         key: 'sky',
-        bg: 'bg-sky-600 dark:bg-sky-600',
-        border: 'border-sky-700/60 dark:border-sky-500/50',
-        text: 'text-white',
-        subtext: 'text-sky-100/90',
-        dot: 'bg-sky-500',
+        bg: 'bg-[#d4e4ed] dark:bg-[#2d4855]',
+        border: 'border-[#b0d1e3] dark:border-[#3d5d6c]',
+        text: 'text-[#1e3440] dark:text-[#e8f1f5]',
+        subtext: 'text-[#46697d] dark:text-[#bad7e7]',
+        dot: 'bg-[#29b6f6]',
     },
-    {
-        key: 'orange',
-        bg: 'bg-orange-600 dark:bg-orange-600',
-        border: 'border-orange-700/60 dark:border-orange-500/50',
-        text: 'text-white',
-        subtext: 'text-orange-100/90',
-        dot: 'bg-orange-500',
+    lavender: {
+        key: 'lavender',
+        bg: 'bg-[#e9e3f4] dark:bg-[#443e50]',
+        border: 'border-[#cebfe4] dark:border-[#554e63]',
+        text: 'text-[#2d2539] dark:text-[#f1edf7]',
+        subtext: 'text-[#5d5172] dark:text-[#d3c8e7]',
+        dot: 'bg-[#ab47bc]',
     },
-    {
-        key: 'fuchsia',
-        bg: 'bg-fuchsia-600 dark:bg-fuchsia-600',
-        border: 'border-fuchsia-700/60 dark:border-fuchsia-500/50',
-        text: 'text-white',
-        subtext: 'text-fuchsia-100/90',
-        dot: 'bg-fuchsia-500',
+    coral: {
+        key: 'coral',
+        bg: 'bg-[#f8e2dd] dark:bg-[#594340]',
+        border: 'border-[#e6beb4] dark:border-[#6e5450]',
+        text: 'text-[#3d2724] dark:text-[#f8ece9]',
+        subtext: 'text-[#74504a] dark:text-[#e4c8c2]',
+        dot: 'bg-[#ff7043]',
     },
-    {
-        key: 'cyan',
-        bg: 'bg-cyan-600 dark:bg-cyan-600',
-        border: 'border-cyan-700/60 dark:border-cyan-500/50',
-        text: 'text-white',
-        subtext: 'text-cyan-100/90',
-        dot: 'bg-cyan-500',
-    },
-    {
-        key: 'lime',
-        bg: 'bg-lime-700 dark:bg-lime-600',
-        border: 'border-lime-800/60 dark:border-lime-500/50',
-        text: 'text-white',
-        subtext: 'text-lime-100/90',
-        dot: 'bg-lime-500',
-    },
-    {
-        key: 'slate',
-        bg: 'bg-slate-700 dark:bg-slate-600',
-        border: 'border-slate-800/60 dark:border-slate-500/50',
-        text: 'text-white',
-        subtext: 'text-slate-200/90',
-        dot: 'bg-slate-500',
-    },
-];
+};
+
+export const MODERN_SCHEDULE_PALETTE: ModernClassColor[] = Object.values(KEEP_SCHEDULE_PALETTE);
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -228,65 +175,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [classes]);
 
     /**
-     * Attribution de couleurs modernes, foncées et distinctes par classe.
-     * Tient compte du niveau/cycle tout en garantissant qu'aucune classe
-     * ne partage la même couleur avec une autre dans l'emploi du temps.
+     * Attribution de la couleur synchronisée avec la carte de classe (Google Keep tone).
      */
-    const classColorMap = React.useMemo(() => {
-        const map = new Map<string, ModernClassColor>();
-        const usedIndices = new Set<number>();
-
-        const getPreferredIndex = (c: ClassInfo, defaultIdx: number): number => {
-            const name = (c.name || '').toLowerCase();
-            // Tronc Commun / جذع مشترك
-            if (name.includes('tronc') || name.startsWith('tc') || name.includes('جذع') || name.includes('ج.م') || name.includes('ج م')) {
-                return 0; // Emerald
-            }
-            // 1er Bac / 1AC / الأولى
-            if (name.startsWith('1') || name.includes('1er') || name.includes('1ere') || name.includes('1bac') || name.includes('1ac') || name.includes('أولى') || name.includes('1ب')) {
-                return 1; // Indigo
-            }
-            // 2ème Bac / 2AC / الثانية
-            if (name.startsWith('2') || name.includes('2eme') || name.includes('2ème') || name.includes('2bac') || name.includes('2ac') || name.includes('ثانية') || name.includes('2ب')) {
-                return 2; // Amber
-            }
-            // 3ème AC / الثالثة
-            if (name.startsWith('3') || name.includes('3eme') || name.includes('3ème') || name.includes('3ac') || name.includes('ثالثة') || name.includes('3ب')) {
-                return 3; // Purple
-            }
-            // Prépas
-            if (['mpsi', 'pcsi', 'mp', 'psi', 'tsi', 'ecs', 'ect'].some(p => name.includes(p))) {
-                return 6; // Sky
-            }
-            return defaultIdx % MODERN_SCHEDULE_PALETTE.length;
-        };
-
-        classes.forEach((c, idx) => {
-            const pref = getPreferredIndex(c, idx);
-            let chosen = pref;
-            if (usedIndices.has(chosen)) {
-                for (let offset = 1; offset < MODERN_SCHEDULE_PALETTE.length; offset++) {
-                    const candidate = (pref + offset) % MODERN_SCHEDULE_PALETTE.length;
-                    if (!usedIndices.has(candidate)) {
-                        chosen = candidate;
-                        break;
-                    }
-                }
-            }
-            usedIndices.add(chosen);
-            map.set(c.id, MODERN_SCHEDULE_PALETTE[chosen]);
-        });
-
-        return map;
-    }, [classes]);
-
     const colorFor = React.useCallback((classId: string): ModernClassColor => {
-        const existing = classColorMap.get(classId);
-        if (existing) return existing;
-        let hash = 0;
-        for (let i = 0; i < classId.length; i++) hash = (hash * 31 + classId.charCodeAt(i)) >>> 0;
-        return MODERN_SCHEDULE_PALETTE[hash % MODERN_SCHEDULE_PALETTE.length];
-    }, [classColorMap]);
+        const tone = keepToneForClass(classId);
+        return KEEP_SCHEDULE_PALETTE[tone] || KEEP_SCHEDULE_PALETTE.sand;
+    }, []);
 
     /*
      * Avis intelligent en TEMPS RÉEL : après chaque modif de la grille, on

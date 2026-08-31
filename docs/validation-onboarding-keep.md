@@ -2,6 +2,8 @@
 
 Date : 31 août 2026.
 
+Actualisation : le parcours des nouveaux visiteurs et sa validation mobile sont décrits dans [Entrée principale et mobile](validation-entree-mobile.md). La préparation y devient l’entrée principale et mène directement au dashboard après inscription ; les résultats ci-dessous décrivent l’itération précédente, avec continuation après inscription.
+
 ## Analyse UX : trois choix
 
 1. **Montrer la valeur avant l’inscription.** Un nouveau visiteur prépare une vraie classe et peut saisir son premier titre de chapitre. L’inscription sert ensuite à conserver cette préparation. Le bouton de connexion reste directement accessible.

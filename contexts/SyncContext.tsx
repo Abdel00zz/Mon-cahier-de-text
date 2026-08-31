@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../types';
 import { computeTeacherSnapshot } from '../utils/progression';
+import { latestClassOpening } from '../utils/classOpening';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { toast } from 'sonner';
 import {
@@ -523,6 +524,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const localUpdatedAt = meta?.localUpdatedAt;
                     const lastSyncedAt = meta?.lastSyncedAt;
                     const localIndex = mergedClasses.findIndex(c => c.id === serverClass.id);
+                    const lastOpenedAt = latestClassOpening(serverClass.lastOpenedAt, mergedClasses[localIndex]?.lastOpenedAt);
+                    serverClass = { ...serverClass, lastOpenedAt };
+                    if (localIndex !== -1 && mergedClasses[localIndex].lastOpenedAt !== lastOpenedAt) {
+                        mergedClasses[localIndex] = { ...mergedClasses[localIndex], lastOpenedAt };
+                        localChanged = true;
+                    }
 
                     const serverIsNewer =
                         !!serverUpdatedAt && (!localUpdatedAt || serverUpdatedAt > localUpdatedAt);

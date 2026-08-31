@@ -629,13 +629,19 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     }
                     .print-item-kind {
                         display: inline-block;
-                        min-width: 3.9em;
-                        margin-right: 0.45em;
+                        min-width: 4.5em;
+                        margin-right: 0.6em;
+                        padding: 0.15em 0.4em;
+                        border: 1pt solid #7a5e35;
+                        border-radius: 0;
                         color: #7a5e35;
-                        font-size: 7.2pt;
+                        background-color: #fdfbf7;
+                        font-size: 7pt;
                         font-weight: 700;
                         text-transform: uppercase;
-                        letter-spacing: 0.02em;
+                        letter-spacing: 0.05em;
+                        text-align: center;
+                        vertical-align: middle;
                     }
                     .print-item-title {
                         font-weight: 600;
@@ -645,11 +651,14 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         font-style: italic;
                     }
                     .print-item-description {
-                        margin-top: 1px !important;
-                        padding-left: 4.35em;
+                        margin-top: 3px !important;
+                        margin-bottom: 2px !important;
+                        margin-left: 2em;
+                        padding-left: 2.35em;
+                        border-left: 1pt solid #d1d5db; /* Structural line connecting description */
                         color: #374151;
                         font-size: ${sizes.description};
-                        line-height: 1.2;
+                        line-height: 1.25;
                         white-space: pre-wrap;
                     }
 

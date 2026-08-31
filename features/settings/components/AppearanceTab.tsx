@@ -16,7 +16,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { AppConfig, ThemeMode, ThemeCustomization } from '@/types';
-import { LATIN_FONTS, ARABIC_FONTS } from '@/constants/typography';
+import { LATIN_FONTS, ARABIC_FONTS, DEFAULT_ARABIC_FONT } from '@/constants/typography';
 import {
   ACCENT_PALETTES,
   BORDER_RADIUS_MAP,
@@ -112,7 +112,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   const currentTableStyle: TableStyleOption = custom.tableStyle || 'clean';
   const currentUIFont: UIFontOption = custom.uiFont || 'jakarta';
   const currentLatinFont = config.contentFontLatin || 'fira';
-  const currentArabicFont = config.contentFontArabic || 'ibm-plex';
+  const currentArabicFont = config.contentFontArabic || DEFAULT_ARABIC_FONT;
 
   const updateCustomization = (partial: Partial<ThemeCustomization>) => {
     onConfigChange({
@@ -131,7 +131,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
     onConfigChange({
       theme: 'light',
       contentFontLatin: 'fira',
-      contentFontArabic: 'ibm-plex',
+      contentFontArabic: DEFAULT_ARABIC_FONT,
       themeCustomization: {
         accentColor: 'blue',
         customPrimaryColor: '#2563eb',

@@ -88,14 +88,15 @@ const App: React.FC = () => {
   // Le moteur MathJax est une dépendance réelle du rendu des cahiers. L'état
   // évite de révéler une formule brute avant que ses notations soient prêtes.
   const [mathJaxState, setMathJaxState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
-  const { classes, addClass } = useClassManager();
+  const { classes, addClass, recordClassOpened } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(
     config.theme,
     config.contentFontLatin,
     config.contentFontArabic,
     (newTheme) => updateConfig({ theme: newTheme }),
-    config.themeCustomization
+    config.themeCustomization,
+    config.applicationLocale
   );
   const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
@@ -163,6 +164,13 @@ const App: React.FC = () => {
     setView('editor');
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
   }, [saveCurrentScroll]);
+
+  // Also covers opening a saved class URL, not just a click on its card.
+  useEffect(() => {
+    if (!isConfigLoading && (!AUTH_REQUIRED || authStatus === 'authenticated') && view === 'editor' && activeClass) {
+      recordClassOpened(activeClass.id);
+    }
+  }, [isConfigLoading, authStatus, view, activeClass?.id, recordClassOpened]);
 
   const handleBackToDashboard = useCallback(() => {
     saveCurrentScroll();
