@@ -16,6 +16,7 @@ interface TabBarProps {
   isExpanded: boolean;
   onToggleExpanded: () => void;
   isRtl: boolean;
+  teacherName?: string;
 }
 
 const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
@@ -56,12 +57,13 @@ export const TabBar = React.memo<TabBarProps>(({
   isExpanded,
   onToggleExpanded,
   isRtl,
+  teacherName,
 }) => {
   const { impact } = useHapticFeedback();
   const { locale } = useLocale();
   const { user } = useAuth();
   const copy = NAV_COPY[locale] ?? NAV_COPY.fr;
-  const userName = user ? `${user.prenom || ''} ${user.nom || ''}`.trim() : copy.teacherSpace;
+  const userName = teacherName?.trim() || (user ? `${user.prenom || ''} ${user.nom || ''}`.trim() : '') || copy.teacherSpace;
   const touchStartX = useRef(0);
 
   const goTo = useCallback((tab: TabType) => {
@@ -142,7 +144,10 @@ export const TabBar = React.memo<TabBarProps>(({
             >
               {copy.brand}
             </span>
-            <span className="block truncate text-[10px] font-bold tracking-wider text-blue-500 uppercase mt-0.5 font-sans">
+            <span className={cn(
+              "block truncate text-[10px] font-bold tracking-wider text-blue-500 uppercase mt-0.5 font-sans",
+              locale === 'ar' && "text-[12px]"
+            )}>
               {userName || copy.teacherSpace}
             </span>
           </div>
@@ -193,6 +198,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 <span
                   className={cn(
                     'hidden min-w-0 flex-1 truncate text-start text-[13px] leading-normal transition-all duration-150',
+                    locale === 'ar' && 'text-[15px]',
                     isExpanded && 'block',
                     isRtl ? 'mr-3' : 'ml-3',
                     isActive ? 'font-bold text-[#202124] dark:text-amber-100' : 'text-[#5f6368] dark:text-[#9aa0a6] group-hover:text-[#202124] dark:hover:text-[#e8eaed]'
@@ -232,6 +238,7 @@ export const TabBar = React.memo<TabBarProps>(({
             <span
               className={cn(
                 'hidden flex-1 truncate text-start text-[13px] leading-normal',
+                locale === 'ar' && 'text-[15px]',
                 isExpanded && 'block',
                 isRtl ? 'mr-3' : 'ml-3',
                 activeTab === 'settings' ? 'font-bold text-[#202124] dark:text-amber-100' : 'text-[#5f6368] dark:text-[#9aa0a6] group-hover:text-[#202124] dark:hover:text-[#e8eaed]'
@@ -255,6 +262,7 @@ export const TabBar = React.memo<TabBarProps>(({
             <span
               className={cn(
                 'hidden flex-1 truncate text-start text-[13px] leading-normal font-medium text-[#5f6368] dark:text-[#9aa0a6] group-hover:text-[#202124] dark:hover:text-[#e8eaed]',
+                locale === 'ar' && 'text-[15px]',
                 isExpanded && 'block',
                 isRtl ? 'mr-3' : 'ml-3',
               )}
@@ -273,7 +281,7 @@ export const TabBar = React.memo<TabBarProps>(({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="mx-auto flex h-[62px] max-w-md items-center justify-around px-1 py-1">
+        <div className="mx-auto flex h-[64px] max-w-md items-center justify-around px-1 py-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -305,7 +313,10 @@ export const TabBar = React.memo<TabBarProps>(({
                     </span>
                   ) : null}
                 </div>
-                <span className="mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium">
+                <span className={cn(
+                  "mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium",
+                  locale === 'ar' && "text-[12px] font-bold leading-none"
+                )}>
                   {copy[tab.id]}
                 </span>
               </button>
@@ -329,7 +340,10 @@ export const TabBar = React.memo<TabBarProps>(({
             <div className="relative flex items-center justify-center">
               <Settings className="h-5 w-5" />
             </div>
-            <span className="mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium">
+            <span className={cn(
+              "mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium",
+              locale === 'ar' && "text-[12px] font-bold leading-none"
+            )}>
               {copy.settings}
             </span>
           </button>

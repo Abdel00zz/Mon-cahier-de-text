@@ -97,3 +97,59 @@ test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de li
     /hasProfileChanges \? 'items-stretch justify-between' : 'items-end justify-end'/,
   );
 });
+
+test('éditeur : chapitre X en bleu (-5%) et reste du titre (-15%)', () => {
+  const content = readFileSync(
+    new URL('../features/editor/ContentRenderer.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(content, /text-blue-600 dark:text-blue-400/);
+  assert.match(content, /text-\[0\.95em\]/);
+  assert.match(content, /text-\[0\.85em\]/);
+  assert.match(content, /renderChapterLabel/);
+});
+
+test('modales & sidebar arabe : augmentation de taille (+15%)', () => {
+  const css = readFileSync(
+    new URL('../index.css', import.meta.url),
+    'utf8',
+  );
+  assert.match(css, /html\[lang="ar"\] \[role="dialog"\]/);
+  assert.match(css, /0\.75rem \* 1\.15/);
+  assert.match(css, /0\.875rem \* 1\.15/);
+
+  const tabBar = readFileSync(
+    new URL('../components/navigation/TabBar.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(tabBar, /locale === 'ar' && ["']text-\[15px\]["']/);
+  assert.match(tabBar, /locale === 'ar' && ["']text-\[12px\]/);
+});
+
+test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au survol sur PC', () => {
+  const card = readFileSync(
+    new URL('../features/dashboard/ClassCard.tsx', import.meta.url),
+    'utf8',
+  );
+  const list = readFileSync(
+    new URL('../features/dashboard/ClassListItem.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(card, /useClassPress/);
+  assert.match(list, /useClassPress/);
+  assert.match(card, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
+  assert.match(list, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
+});
+
+test('sidebar : le nom de l’enseignant reflète la configuration active', () => {
+  const app = readFileSync(
+    new URL('../App.tsx', import.meta.url),
+    'utf8',
+  );
+  const tabBar = readFileSync(
+    new URL('../components/navigation/TabBar.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(app, /teacherName=\{config\.defaultTeacherName/);
+  assert.match(tabBar, /userName = teacherName\?\.trim\(\)/);
+});

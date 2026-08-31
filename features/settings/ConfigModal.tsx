@@ -753,7 +753,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
                 <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                  <span className={cn('block text-xs leading-snug truncate transition-colors', isActive ? 'font-bold' : 'font-medium')}>
+                  <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
                     {t(item.titleKey)}
                   </span>
                 </div>
@@ -808,7 +808,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
                 <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                  <span className={cn('block text-xs leading-snug truncate transition-colors', isActive ? 'font-bold' : 'font-medium')}>
+                  <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
                     {t(item.titleKey)}
                   </span>
                 </div>

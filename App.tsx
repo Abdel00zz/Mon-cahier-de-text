@@ -322,6 +322,7 @@ const App: React.FC = () => {
           isExpanded={isSidebarExpanded}
           onToggleExpanded={() => setSidebarExpanded(expanded => !expanded)}
           isRtl={isRtl}
+          teacherName={config.defaultTeacherName || (authUser ? `${authUser.prenom || ''} ${authUser.nom || ''}`.trim() : '')}
         />
       )}
       <div

@@ -41,37 +41,56 @@ const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, que
   return <>{parts}</>;
 };
 
-const renderChapterTitleStyled = (text: string, isAr: boolean) => {
-  if (isAr) {
-    return <span className="font-sans text-2xl sm:text-3xl font-bold leading-tight text-[#202124] dark:text-[#e8eaed] dark:text-foreground">{text}</span>;
-  }
-  const parts = text.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème)?)/gi);
+const renderChapterLabel = (label: string) => {
+  const parts = label.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème|st|nd|rd|th)?)/gi);
   return parts.map((part, idx) => {
     if (!part) return null;
-    const matchOrdinal = part.match(/^([0-9\u0660-\u0669]+)(er|ere|eme|ère|ème)$/i);
+    const matchOrdinal = part.match(/^([0-9\u0660-\u0669]+)(er|ere|eme|ère|ème|st|nd|rd|th)$/i);
     if (matchOrdinal) {
       const num = matchOrdinal[1];
       const suf = matchOrdinal[2];
       return (
-        <span key={idx} className="inline-block text-primary font-bold font-sans">
+        <span key={idx} className="inline-block">
           <span>{num}</span>
           <sup className="relative -top-[0.45em] text-[0.6em] font-semibold">{suf}</sup>
         </span>
       );
     }
-    if (/^[0-9\u0660-\u0669]+$/.test(part)) {
-      return (
-        <span key={idx} className="text-primary font-bold font-sans px-[1.5px]">
-          {part}
-        </span>
-      );
-    }
+    return <span key={idx}>{part}</span>;
+  });
+};
+
+const renderChapterTitleStyled = (text: string, isAr: boolean) => {
+  const trimmed = text.trim();
+  const match = trimmed.match(
+    /^(Chapitre\s+[^:\-–—\n]+|Chapter\s+[^:\-–—\n]+|الفصل\s+[^:\-–—\n]+|الباب\s+[^:\-–—\n]+|الوحدة\s+[^:\-–—\n]+|الدرس\s+[^:\-–—\n]+|المحور\s+[^:\-–—\n]+)(?:\s*([:\-–—])\s*(.*))?$/i
+  );
+
+  if (match) {
+    const chapterPrefix = match[1].trim();
+    const separator = match[2];
+    const restTitle = match[3]?.trim();
+
     return (
-      <span key={idx} className="font-bold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
-        {part}
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
+        <span className="text-[0.95em] font-bold text-blue-600 dark:text-blue-400 font-sans tracking-tight">
+          {renderChapterLabel(chapterPrefix)}
+          {separator ? <span className="ms-1 text-blue-600/80 dark:text-blue-400/80">{separator}</span> : null}
+        </span>
+        {restTitle ? (
+          <span className="text-[0.85em] font-semibold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
+            {restTitle}
+          </span>
+        ) : null}
       </span>
     );
-  });
+  }
+
+  return (
+    <span className="text-[0.85em] font-bold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
+      {text}
+    </span>
+  );
 };
 
 export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
@@ -163,7 +182,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
       return (
         <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="my-3 flex w-full items-center justify-center text-center font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug select-none text-primary">
+          <div className="my-3 flex w-full items-center justify-center text-center font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug select-none">
             <span className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight ? (
                 <HighlightedText text={chapterTitle} query={highlight} />

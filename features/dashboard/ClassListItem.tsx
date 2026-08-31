@@ -7,6 +7,7 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
+import { useClassPress } from '@/hooks/useClassPress';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -23,10 +24,12 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const { impact } = useHapticFeedback();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
     const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
-    const selectClass = () => {
-        impact('light');
-        onSelect();
-    };
+
+    const pressHandlers = useClassPress(
+        () => { impact('light'); onSelect(); },
+        () => { impact('medium'); onConfigure(); }
+    );
+
     return (
         <article
             data-keep-tone={keepToneForClass(classInfo.id)}
@@ -34,8 +37,8 @@ export const ClassListItem: FC<ClassListItemProps> = ({
         >
             <button
                 type="button"
-                onClick={selectClass}
-                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-slate-50 dark:hover:bg-[#3c4043] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                {...pressHandlers}
+                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-slate-50 dark:hover:bg-[#3c4043] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 cursor-pointer"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-black/5 text-[#5f6368] dark:bg-white/10 dark:text-[#bdc1c6]" aria-hidden>
@@ -61,18 +64,20 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
                 className={cn(
-                    'flex shrink-0 items-center border-[#e0e0e0] dark:border-[#5f6368]',
+                    'hidden md:flex shrink-0 items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 border-[#e0e0e0] dark:border-[#5f6368]',
                     isRtl ? 'border-r' : 'border-l',
                 )}
             >
                 <button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.stopPropagation();
                         impact('light');
                         onConfigure();
                     }}
                     className="flex h-full w-12 sm:w-14 touch-manipulation items-center justify-center text-[#5f6368] dark:text-[#bdc1c6] hover:bg-slate-50 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
+                    title={t('dashboard.classSettings')}
                 >
                     <Settings className="h-5 w-5 stroke-[2]" />
                 </button>

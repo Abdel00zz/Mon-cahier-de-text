@@ -329,6 +329,51 @@
     letter-spacing: normal;
   }
 
+  /* Modales en version arabe : augmentation de taille (+15%) pour une lisibilité optimale */
+  html[lang="ar"] [role="dialog"],
+  html[lang="ar"] [data-sheet-detent],
+  html[lang="ar"] .modal-body,
+  html[lang="ar"] .modal-header,
+  html[lang="ar"] .modal-footer {
+    --modal-text-scale: 1.15;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xs, .text-\[10px\], .text-\[11px\], [data-slot="description"], .form-hint) {
+    font-size: calc(0.75rem * 1.15);
+    line-height: 1.45;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-sm, label, input, select, textarea) {
+    font-size: calc(0.875rem * 1.15);
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] button:not(.dialog-close) {
+    font-size: calc(0.875rem * 1.15);
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-base) {
+    font-size: calc(1rem * 1.15);
+    line-height: 1.5;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-lg, h3) {
+    font-size: calc(1.125rem * 1.15);
+    line-height: 1.4;
+  }
+
+  html[lang="ar"] [role="dialog"] :is(.text-xl, h2, [data-ui-title]) {
+    font-size: calc(1.25rem * 1.15);
+    line-height: 1.35;
+  }
+
+  /* Navigation & Barre latérale / mobile en version arabe (+15%) */
+  html[lang="ar"] .mobile-tab-bar button span {
+    font-size: 0.775rem;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
   html[lang="ar"] [data-ui-title],
   html[lang="ar"] [data-settings-ui] h2,
   html[lang="ar"] [data-settings-ui] h3,
