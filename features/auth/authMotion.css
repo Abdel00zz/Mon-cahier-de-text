@@ -1,0 +1,64 @@
+/* Short, compositor-friendly transitions: never hold up navigation or input.
+   No persistent will-change, blur, layout animation or delayed exit screen. */
+.auth-page-shell {
+  --auth-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auth-page-shell .auth-view-enter {
+  animation: auth-view-enter 280ms var(--auth-ease-out) backwards;
+}
+
+.auth-page-shell .auth-reveal {
+  animation: auth-detail-enter 220ms var(--auth-ease-out) backwards;
+}
+
+.auth-page-shell .auth-action,
+.auth-page-shell .auth-choice {
+  transition: transform 160ms var(--auth-ease-out),
+    background-color 160ms ease-out, border-color 160ms ease-out,
+    color 160ms ease-out, opacity 160ms ease-out;
+}
+
+.auth-page-shell .auth-action:active:not(:disabled),
+.auth-page-shell .auth-choice:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .auth-page-shell .auth-action:hover:not(:disabled),
+  .auth-page-shell .auth-choice:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .auth-page-shell .auth-action:active:not(:disabled),
+  .auth-page-shell .auth-choice:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes auth-view-enter {
+  from { opacity: 0.72; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes auth-detail-enter {
+  from { opacity: 0.65; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-page-shell .auth-view-enter,
+  .auth-page-shell .auth-reveal {
+    animation: none;
+  }
+
+  .auth-page-shell .auth-action,
+  .auth-page-shell .auth-choice {
+    transition: none;
+  }
+
+  .auth-page-shell .auth-action:is(:hover, :active):not(:disabled),
+  .auth-page-shell .auth-choice:is(:hover, :active):not(:disabled) {
+    transform: none;
+  }
+}

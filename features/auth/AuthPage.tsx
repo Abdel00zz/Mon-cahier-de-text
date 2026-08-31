@@ -6,10 +6,10 @@ import React, {
   useRef,
   useState,
   useCallback,
-} from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
-import { Input } from '@/components/ui/input';
+} from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
 import {
   CircleCheck,
   Eye,
@@ -17,128 +17,119 @@ import {
   Loader2,
   TriangleAlert,
   LockKeyhole,
-  ArrowLeft,
-  ArrowRight,
-} from '@/components/ui/icons';
-import { CountryFlag } from '@/components/ui/CountryFlags';
-import type { AppLocale } from '@/types';
-import { AuthShowcase } from './AuthShowcase';
-import { LandingPage } from './LandingPage';
+} from "@/components/ui/icons";
+import { CountryFlag } from "@/components/ui/CountryFlags";
+import type { AppLocale } from "@/types";
+import { AuthShowcase } from "./AuthShowcase";
+import { LandingPage } from "./LandingPage";
+import "./authMotion.css";
 import {
   formatMoroccanPhone,
   isCompleteMoroccanPhone,
   passwordScore,
-} from './authForm';
+} from "./authForm";
 import {
   readWorkspaceScope,
   WorkspaceSwitchError,
-} from '@/utils/accountWorkspace';
-import type { RegistrationSetup } from './registrationSetup';
+} from "@/utils/accountWorkspace";
+import type { RegistrationSetup, RegistrationDraft } from "./registrationSetup";
 import {
   authRouteHash,
   resolveAuthRoute,
   type AuthMode as Mode,
   type AuthView,
-} from './authNavigation';
+} from "./authNavigation";
 
-const GuestPreview = lazy(() =>
-  import('./GuestPreview').then((module) => ({ default: module.GuestPreview })),
+const RegistrationOnboarding = lazy(() =>
+  import("./RegistrationOnboarding").then((module) => ({
+    default: module.RegistrationOnboarding,
+  })),
 );
-
-type AuthLocale = Extract<AppLocale, 'ar' | 'fr'>;
+type AuthLocale = Extract<AppLocale, "ar" | "fr">;
 const AUTH_COPY = {
   fr: {
-    brand: 'Mon cahier de textes',
-    teacherAccess: 'Espace enseignant',
-    back: 'Retour',
-    backToHome: 'Retour à l’accueil',
-    tryFirst: 'Créer mon espace',
-    returnToPreview: 'Modifier ma préparation',
-    savePreparation: 'Conservez votre premier cahier.',
+    brand: "Mon cahier de textes",
+    teacherAccess: "Espace enseignant",
+    backToHome: "Retour à l’accueil",
+    returnToPreparation: "Modifier ma classe",
+    savePreparation: "Conservez votre premier cahier.",
     savePreparationDetail:
-      'Dernière étape : créez votre compte pour retrouver votre classe et votre premier contenu.',
+      "Dernière étape : créez votre compte pour conserver votre classe et ouvrir votre cahier.",
     existingAccountHint:
-      'La connexion ouvre votre compte existant, sans remplacer ses cahiers par cette préparation.',
+      "La connexion retrouve vos cahiers existants, sans les remplacer par cette préparation.",
     workspaceError:
-      'Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.',
-    welcomeTitle: 'Retrouvez votre cahier.',
-    createTitle: 'Votre espace commence ici.',
-    welcomeDetail: 'Connectez-vous pour préparer et suivre vos séances.',
-    createDetail:
-      'Créez votre compte, puis configurez vos classes à votre rythme.',
-    login: 'Se connecter',
-    createAccount: 'Créer mon espace',
-    modeLabel: 'Accès au compte',
-    name: 'Nom',
-    firstName: 'Prénom',
-    phone: 'Numéro de téléphone',
-    phoneComplete: 'Format du numéro valide',
-    password: 'Mot de passe',
-    confirmPassword: 'Confirmer le mot de passe',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
-    capsLock: 'Verr. maj. activée',
-    passwordMin: '8 caractères minimum',
-    samePassword: 'Mots de passe identiques',
-    wait: 'Traitement en cours…',
-    createMyAccount: 'Créer mon compte et ouvrir mon espace',
-    secure: 'Vos identifiants restent personnels.',
-    languageLabel: 'Choisir la langue',
-    nameRequired: 'Renseignez votre nom et votre prénom.',
-    passwordRequired: 'Le mot de passe doit contenir au moins 8 caractères.',
-    passwordMismatch: 'Les deux mots de passe ne correspondent pas.',
+      "Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.",
+    welcomeTitle: "Retrouvez votre cahier.",
+    welcomeDetail: "Connectez-vous pour préparer et suivre vos séances.",
+    login: "Se connecter",
+    createAccount: "Créer un compte",
+    modeLabel: "Accès au compte",
+    name: "Nom",
+    firstName: "Prénom",
+    phone: "Numéro de téléphone",
+    phoneComplete: "Format du numéro valide",
+    password: "Mot de passe",
+    confirmPassword: "Confirmer le mot de passe",
+    showPassword: "Afficher le mot de passe",
+    hidePassword: "Masquer le mot de passe",
+    capsLock: "Verr. maj. activée",
+    passwordMin: "8 caractères minimum",
+    samePassword: "Mots de passe identiques",
+    wait: "Traitement en cours…",
+    createMyAccount: "Créer mon compte",
+    secure: "Vos identifiants restent personnels.",
+    languageLabel: "Choisir la langue",
+    nameRequired: "Renseignez votre nom et votre prénom.",
+    passwordRequired: "Le mot de passe doit contenir au moins 8 caractères.",
+    passwordMismatch: "Les deux mots de passe ne correspondent pas.",
     unknownError:
-      'Connexion impossible. Vérifiez vos identifiants et votre connexion Internet.',
-    strengthLabel: 'Robustesse indicative',
-    strength: ['Faible', 'Moyenne', 'Bonne', 'Forte'],
+      "Connexion impossible. Vérifiez vos identifiants et votre connexion Internet.",
+    strengthLabel: "Robustesse indicative",
+    strength: ["Faible", "Moyenne", "Bonne", "Forte"],
   },
   ar: {
-    brand: 'دفتر نصوصي',
-    teacherAccess: 'فضاء الأستاذ',
-    back: 'رجوع',
-    backToHome: 'العودة إلى الرئيسية',
-    tryFirst: 'إنشاء فضائي',
-    returnToPreview: 'تعديل إعداداتي',
-    savePreparation: 'احفظ دفترك الأول.',
+    brand: "دفتر نصوصي",
+    teacherAccess: "فضاء الأستاذ",
+    backToHome: "العودة إلى الرئيسية",
+    returnToPreparation: "تعديل قسمي",
+    savePreparation: "احفظ دفترك الأول.",
     savePreparationDetail:
-      'الخطوة الأخيرة: أنشئ حسابك لحفظ قسمك ومحتواك الأول.',
+      "الخطوة الأخيرة: أنشئ حسابك لحفظ قسمك وفتح دفتر نصوصك.",
     existingAccountHint:
-      'يفتح تسجيل الدخول حسابك الحالي دون استبدال دفاترك بهذه الإعدادات.',
+      "يفتح تسجيل الدخول دفاترك الحالية دون استبدالها بهذه الإعدادات.",
     workspaceError:
-      'أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.',
-    welcomeTitle: 'دفترك في انتظارك.',
-    createTitle: 'فضاؤك يبدأ من هنا.',
-    welcomeDetail: 'سجّل الدخول لتحضير حصصك وتتبعها.',
-    createDetail: 'أنشئ حسابك، ثم أضف أقسامك حسب حاجتك.',
-    login: 'تسجيل الدخول',
-    createAccount: 'إنشاء فضائي',
-    modeLabel: 'الولوج إلى الحساب',
-    name: 'الاسم العائلي',
-    firstName: 'الاسم الشخصي',
-    phone: 'رقم الهاتف',
-    phoneComplete: 'صيغة الرقم صحيحة',
-    password: 'كلمة المرور',
-    confirmPassword: 'تأكيد كلمة المرور',
-    showPassword: 'إظهار كلمة المرور',
-    hidePassword: 'إخفاء كلمة المرور',
-    capsLock: 'مفتاح الأحرف الكبيرة مفعّل',
-    passwordMin: '8 أحرف على الأقل',
-    samePassword: 'كلمتا المرور متطابقتان',
-    wait: 'جارٍ المعالجة…',
-    createMyAccount: 'إنشاء حسابي وفتح فضائي',
-    secure: 'بيانات الدخول خاصة بك، لا تشاركها.',
-    languageLabel: 'اختيار اللغة',
-    nameRequired: 'أدخل الاسم الشخصي والعائلي.',
-    passwordRequired: 'يجب أن تتضمن كلمة المرور 8 أحرف على الأقل.',
-    passwordMismatch: 'كلمتا المرور غير متطابقتين.',
-    unknownError: 'تعذّر الاتصال. تحقق من بيانات الدخول ومن اتصالك بالإنترنت.',
-    strengthLabel: 'مؤشر قوة كلمة المرور',
-    strength: ['ضعيفة', 'متوسطة', 'جيدة', 'قوية'],
+      "أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.",
+    welcomeTitle: "دفترك في انتظارك.",
+    welcomeDetail: "سجّل الدخول لتحضير حصصك وتتبعها.",
+    login: "تسجيل الدخول",
+    createAccount: "إنشاء حساب جديد",
+    modeLabel: "الولوج إلى الحساب",
+    name: "الاسم العائلي",
+    firstName: "الاسم الشخصي",
+    phone: "رقم الهاتف",
+    phoneComplete: "صيغة الرقم صحيحة",
+    password: "كلمة المرور",
+    confirmPassword: "تأكيد كلمة المرور",
+    showPassword: "إظهار كلمة المرور",
+    hidePassword: "إخفاء كلمة المرور",
+    capsLock: "مفتاح الأحرف الكبيرة مفعّل",
+    passwordMin: "8 أحرف على الأقل",
+    samePassword: "كلمتا المرور متطابقتان",
+    wait: "جارٍ المعالجة…",
+    createMyAccount: "إنشاء حسابي",
+    secure: "بيانات الدخول خاصة بك، لا تشاركها.",
+    languageLabel: "اختيار اللغة",
+    nameRequired: "أدخل الاسم الشخصي والعائلي.",
+    passwordRequired: "يجب أن تتضمن كلمة المرور 8 أحرف على الأقل.",
+    passwordMismatch: "كلمتا المرور غير متطابقتين.",
+    unknownError: "تعذّر الاتصال. تحقق من بيانات الدخول ومن اتصالك بالإنترنت.",
+    strengthLabel: "مؤشر قوة كلمة المرور",
+    strength: ["ضعيفة", "متوسطة", "جيدة", "قوية"],
   },
 } as const;
 const FIELD_CLASS =
-  'h-12 rounded-[8px] border border-stone-300 bg-white px-3 text-base font-normal text-stone-900 shadow-none placeholder:text-stone-400 focus-visible:border-stone-600 focus-visible:ring-2 focus-visible:ring-stone-500/20 dark:border-[#5f6368] dark:bg-[#202124] dark:text-stone-100';
-const LABEL_CLASS = 'mb-2 block text-sm font-medium';
+  "h-12 rounded-[8px] border border-stone-300 bg-white px-3 text-base font-normal text-stone-900 shadow-none placeholder:text-stone-400 focus-visible:border-stone-600 focus-visible:ring-2 focus-visible:ring-stone-500/20 dark:border-[#5f6368] dark:bg-[#202124] dark:text-stone-100";
+const LABEL_CLASS = "mb-2 block text-sm font-medium";
 
 const PasswordInput = ({
   id,
@@ -160,14 +151,14 @@ const PasswordInput = ({
   const [visible, setVisible] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
   const detectCaps = (event: React.KeyboardEvent<HTMLInputElement>) =>
-    setCapsLock(event.getModifierState('CapsLock'));
+    setCapsLock(event.getModifierState("CapsLock"));
   return (
     <div>
       <div className="relative">
         <Input
           id={id}
           name={id}
-          type={visible ? 'text' : 'password'}
+          type={visible ? "text" : "password"}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={detectCaps}
@@ -179,8 +170,8 @@ const PasswordInput = ({
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          aria-describedby={capsLock ? id + '-caps' : undefined}
-          className={FIELD_CLASS + ' pe-12'}
+          aria-describedby={capsLock ? id + "-caps" : undefined}
+          className={FIELD_CLASS + " pe-12"}
         />
         <button
           type="button"
@@ -199,7 +190,7 @@ const PasswordInput = ({
       </div>
       {capsLock && (
         <p
-          id={id + '-caps'}
+          id={id + "-caps"}
           role="status"
           className="mt-2 flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300"
         >
@@ -216,9 +207,8 @@ export const AuthPage: React.FC<{
   onLocaleChange: (locale: AuthLocale) => void;
 }> = ({ locale, onLocaleChange }) => {
   const { login, register } = useAuth();
-  const displayLocale: AuthLocale = locale === 'ar' ? 'ar' : 'fr';
+  const displayLocale: AuthLocale = locale === "ar" ? "ar" : "fr";
   const copy = AUTH_COPY[displayLocale];
-  const BackArrow = displayLocale === 'ar' ? ArrowRight : ArrowLeft;
   const reducedMotion = useReducedMotion();
 
   const getInitialState = () => {
@@ -226,9 +216,9 @@ export const AuthPage: React.FC<{
     try {
       returning =
         Boolean(readWorkspaceScope()?.owner) ||
-        localStorage.getItem('authSignedOut_v1') === 'true';
+        localStorage.getItem("authSignedOut_v1") === "true";
     } catch {
-      /* fresh visitor */
+      /* storage unavailable */
     }
     return resolveAuthRoute(window.location.hash, false, returning);
   };
@@ -237,93 +227,104 @@ export const AuthPage: React.FC<{
   const [mode, setMode] = useState<Mode>(initial.mode);
   const [setup, setSetup] = useState<RegistrationSetup | null>(null);
   const [view, setView] = useState<AuthView>(initial.view);
+  const [draft, setDraft] = useState<RegistrationDraft>({
+    cycle: "",
+    levelGroup: "",
+    level: "",
+    subject: "",
+    group: "1",
+  });
+  const setupRef = useRef(setup);
+  setupRef.current = setup;
+  const pageRef = useRef<HTMLDivElement>(null);
 
-  const [nom, setNom] = useState('');
-  const [prenom, setPrenom] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [nom, setNom] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const id = useId();
-  const isRegister = mode === 'register';
+  const isRegister = mode === "register";
   const score = passwordScore(password);
   const phoneValid = isCompleteMoroccanPhone(phone);
   const passwordsMatch =
     confirmPassword.length > 0 && password === confirmPassword;
 
-  const pageRef = useRef<HTMLDivElement>(null);
-  const setupRef = useRef(setup);
-  setupRef.current = setup;
-
   const navigateTo = useCallback(
-    (nextView: AuthView, nextMode: Mode = 'login', replace = false) => {
+    (nextView: AuthView, nextMode: Mode = "login") => {
       if (submittingRef.current) return;
-      const resolved = resolveAuthRoute(
+      const route = resolveAuthRoute(
         authRouteHash(nextView, nextMode),
         Boolean(setupRef.current),
       );
       setError(null);
-      setMode(resolved.mode);
-      setView(resolved.view);
-      const url = authRouteHash(resolved.view, resolved.mode);
-      if (replace) window.history.replaceState(null, '', url);
-      else if (window.location.hash !== url)
-        window.history.pushState(null, '', url);
+      setMode(route.mode);
+      setView(route.view);
+      const hash = authRouteHash(route.view, route.mode);
+      if (window.location.hash !== hash)
+        window.history.pushState(null, "", hash);
     },
     [],
   );
 
-  // The in-page back action stays inside this flow, even on a direct URL.
-  const handleGoBack = useCallback(() => {
-    navigateTo(view === 'auth' && mode === 'register' ? 'preview' : 'landing');
-  }, [navigateTo, view, mode]);
+  const completePreparation = (nextSetup: RegistrationSetup) => {
+    const next = { ...setupRef.current, ...nextSetup };
+    setupRef.current = next;
+    setSetup(next);
+    navigateTo("auth", "register");
+  };
 
   useEffect(() => {
     window.history.replaceState(
       null,
-      '',
+      "",
       authRouteHash(initial.view, initial.mode),
     );
     const onLocationChange = () => {
-      const resolved = resolveAuthRoute(
+      const route = resolveAuthRoute(
         window.location.hash,
         Boolean(setupRef.current),
       );
-      setView(resolved.view);
-      setMode(resolved.mode);
+      setView(route.view);
+      setMode(route.mode);
       setError(null);
-      const canonical = authRouteHash(resolved.view, resolved.mode);
-      if (window.location.hash !== canonical)
-        window.history.replaceState(null, '', canonical);
+      const hash = authRouteHash(route.view, route.mode);
+      if (window.location.hash !== hash)
+        window.history.replaceState(null, "", hash);
     };
-    window.addEventListener('popstate', onLocationChange);
-    window.addEventListener('hashchange', onLocationChange);
+    window.addEventListener("popstate", onLocationChange);
+    window.addEventListener("hashchange", onLocationChange);
     return () => {
-      window.removeEventListener('popstate', onLocationChange);
-      window.removeEventListener('hashchange', onLocationChange);
+      window.removeEventListener("popstate", onLocationChange);
+      window.removeEventListener("hashchange", onLocationChange);
     };
   }, [initial]);
 
   useEffect(() => {
     pageRef.current
-      ?.querySelector<HTMLElement>('h1')
+      ?.querySelector<HTMLElement>("h1")
       ?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [view, mode]);
   useEffect(() => {
     if (error) errorRef.current?.focus();
   }, [error]);
 
-  const switchMode = (next: Mode) => navigateTo('auth', next);
+  const switchMode = (next: Mode) => navigateTo("auth", next);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (submittingRef.current) return;
     setError(null);
     if (isRegister) {
+      if (!setupRef.current) {
+        navigateTo("onboarding");
+        return;
+      }
       if (!nom.trim() || !prenom.trim()) return setError(copy.nameRequired);
       if (password.length < 8) return setError(copy.passwordRequired);
       if (password !== confirmPassword) return setError(copy.passwordMismatch);
@@ -332,7 +333,7 @@ export const AuthPage: React.FC<{
     setIsSubmitting(true);
     try {
       // Preserve the backend contract, including legacy accounts with shorter local numbers.
-      if (mode === 'login') await login(phone, password);
+      if (mode === "login") await login(phone, password);
       else
         await register({
           nom: nom.trim(),
@@ -347,7 +348,7 @@ export const AuthPage: React.FC<{
       setError(
         err instanceof WorkspaceSwitchError
           ? copy.workspaceError
-          : displayLocale === 'fr' && err instanceof Error
+          : displayLocale === "fr" && err instanceof Error
             ? err.message
             : copy.unknownError,
       );
@@ -360,30 +361,17 @@ export const AuthPage: React.FC<{
   return (
     <div
       ref={pageRef}
-      dir={displayLocale === 'ar' ? 'rtl' : 'ltr'}
+      dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
       className="auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100"
     >
       <header className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-          {view !== 'landing' && (
-            <button
-              type="button"
-              onClick={handleGoBack}
-              disabled={isSubmitting}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-[8px] border border-[#e0e0e0] dark:border-[#5f6368] bg-stone-50/80 dark:bg-[#3c4043]/80 px-2.5 py-1 text-xs font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#3c4043] transition-colors focus-visible:outline-2"
-              title={copy.back}
-              aria-label={copy.back}
-            >
-              <BackArrow className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden sm:inline">{copy.back}</span>
-            </button>
-          )}
           <button
             type="button"
             onClick={() => {
-              if (view !== 'landing') {
-                navigateTo('landing');
+              if (view !== "landing") {
+                navigateTo("landing");
               }
             }}
             disabled={isSubmitting}
@@ -396,13 +384,13 @@ export const AuthPage: React.FC<{
               width="36"
               height="36"
               alt=""
-              className="h-9 w-9 shrink-0 rounded-[8px] object-contain transition-transform group-hover:scale-105"
+              className="h-9 w-9 shrink-0 rounded-[8px] object-contain transition-transform group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
             />
             <div className="min-w-0">
               <p className="text-xs sm:text-sm font-bold leading-tight group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
                 {copy.brand}
               </p>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 {copy.teacherAccess}
               </p>
             </div>
@@ -414,7 +402,7 @@ export const AuthPage: React.FC<{
           aria-label={copy.languageLabel}
           className="flex shrink-0 gap-1 rounded-[10px] border border-[#e0e0e0] p-0.5 dark:border-[#5f6368]"
         >
-          {(['ar', 'fr'] as const).map((value) => (
+          {(["ar", "fr"] as const).map((value) => (
             <button
               key={value}
               type="button"
@@ -426,26 +414,26 @@ export const AuthPage: React.FC<{
               }}
               aria-pressed={displayLocale === value}
               className={
-                'flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 ' +
+                "flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
                 (displayLocale === value
-                  ? 'bg-stone-100 text-stone-950 dark:bg-[#3c4043] dark:text-white'
-                  : 'text-stone-500 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-white/5')
+                  ? "bg-stone-100 text-stone-950 dark:bg-[#3c4043] dark:text-white"
+                  : "text-stone-500 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-white/5")
               }
             >
               <CountryFlag code={value} className="h-3 w-4.5" />
-              <span>{value === 'ar' ? 'العربية' : 'FR'}</span>
+              <span>{value === "ar" ? "العربية" : "FR"}</span>
             </button>
           ))}
         </div>
       </header>
-      {view === 'landing' && (
+      {view === "landing" && (
         <LandingPage
           locale={displayLocale}
-          onLogin={() => navigateTo('auth', 'login')}
-          onStart={() => navigateTo('preview')}
+          onLogin={() => navigateTo("auth", "login")}
+          onRegister={() => navigateTo("onboarding")}
         />
       )}
-      {view === 'preview' && (
+      {view === "onboarding" && (
         <Suspense
           fallback={
             <main className="mx-auto w-full max-w-3xl p-6" aria-busy="true">
@@ -454,102 +442,97 @@ export const AuthPage: React.FC<{
             </main>
           }
         >
-          <GuestPreview
+          <RegistrationOnboarding
             locale={displayLocale}
-            setup={setup}
-            onChange={setSetup}
-            onRegister={() => navigateTo('auth', 'register')}
+            draft={draft}
+            onChange={(next) => {
+              setDraft(next);
+              setSetup(null);
+              setupRef.current = null;
+            }}
+            onComplete={completePreparation}
           />
         </Suspense>
       )}
-      {view === 'auth' && (
-        <div className="grid flex-1 lg:grid-cols-2">
+      {view === "auth" && (
+        <div className="auth-view-enter grid flex-1 lg:grid-cols-2">
           <AuthShowcase locale={displayLocale} />
           <main className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
             <div className="mx-auto w-full max-w-[400px]">
               <h1
                 tabIndex={-1}
-                id={id + '-title'}
+                id={id + "-title"}
                 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl"
               >
-                {isRegister
-                  ? setup
-                    ? copy.savePreparation
-                    : copy.createTitle
-                  : copy.welcomeTitle}
+                {isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
                 {isRegister
-                  ? setup
-                    ? copy.savePreparationDetail
-                    : copy.createDetail
+                  ? copy.savePreparationDetail
                   : setup
                     ? copy.existingAccountHint
                     : copy.welcomeDetail}
               </p>
-              {isRegister && (
-                <p className="mt-3 text-sm text-stone-500 dark:text-stone-400">
-                  {displayLocale === 'ar'
-                    ? 'الخطوة 3 من 3 · حسابي'
-                    : 'Étape 3 sur 3 · Mon compte'}
-                </p>
+              {setup && (
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => navigateTo("onboarding")}
+                  className="mt-2 min-h-11 rounded-lg text-sm font-medium underline underline-offset-4 focus-visible:outline-2"
+                >
+                  {copy.returnToPreparation}
+                </button>
               )}
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => navigateTo('preview')}
-                className="mt-2 min-h-11 rounded-lg text-sm font-medium underline underline-offset-4 focus-visible:outline-2"
-              >
-                {setup ? copy.returnToPreview : copy.tryFirst}
-              </button>
               <div
                 role="group"
                 aria-label={copy.modeLabel}
                 className="my-6 grid grid-cols-2 gap-1 rounded-[12px] bg-stone-100 p-1 dark:bg-[#303134]"
               >
-                {(['login', 'register'] as const).map((value) => (
+                {(["login", "register"] as const).map((value) => (
                   <button
                     key={value}
                     type="button"
                     disabled={isSubmitting}
                     aria-pressed={mode === value}
-                    aria-controls={id + '-form'}
+                    aria-controls={id + "-form"}
                     onClick={() => switchMode(value)}
                     className="relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
                   >
                     {mode === value && (
                       <motion.span
-                        layoutId={id + '-active-mode'}
+                        layoutId={id + "-active-mode"}
                         aria-hidden="true"
                         className="absolute inset-0 rounded-[8px] border border-[#e0e0e0] bg-white shadow-sm dark:border-[#5f6368] dark:bg-[#202124]"
                         transition={
                           reducedMotion
                             ? { duration: 0 }
-                            : { type: 'spring', stiffness: 450, damping: 36 }
+                            : { type: "spring", stiffness: 450, damping: 36 }
                         }
                       />
                     )}
                     <span className="relative">
-                      {value === 'login' ? copy.login : copy.createAccount}
+                      {value === "login" ? copy.login : copy.createAccount}
                     </span>
                   </button>
                 ))}
               </div>
               <form
-                id={id + '-form'}
+                key={mode}
+                className="auth-reveal"
+                id={id + "-form"}
                 onSubmit={handleSubmit}
-                aria-labelledby={id + '-title'}
+                aria-labelledby={id + "-title"}
                 aria-busy={isSubmitting}
               >
                 <fieldset disabled={isSubmitting} className="min-w-0 space-y-4">
                   {isRegister && (
                     <div className="grid grid-cols-1 gap-4 min-[390px]:grid-cols-2">
                       <div>
-                        <label htmlFor={id + '-name'} className={LABEL_CLASS}>
+                        <label htmlFor={id + "-name"} className={LABEL_CLASS}>
                           {copy.name}
                         </label>
                         <Input
-                          id={id + '-name'}
+                          id={id + "-name"}
                           name="family-name"
                           value={nom}
                           onChange={(event) => setNom(event.target.value)}
@@ -560,13 +543,13 @@ export const AuthPage: React.FC<{
                       </div>
                       <div>
                         <label
-                          htmlFor={id + '-first-name'}
+                          htmlFor={id + "-first-name"}
                           className={LABEL_CLASS}
                         >
                           {copy.firstName}
                         </label>
                         <Input
-                          id={id + '-first-name'}
+                          id={id + "-first-name"}
                           name="given-name"
                           value={prenom}
                           onChange={(event) => setPrenom(event.target.value)}
@@ -578,12 +561,12 @@ export const AuthPage: React.FC<{
                     </div>
                   )}
                   <div>
-                    <label htmlFor={id + '-phone'} className={LABEL_CLASS}>
+                    <label htmlFor={id + "-phone"} className={LABEL_CLASS}>
                       {copy.phone}
                     </label>
                     <div className="relative" dir="ltr">
                       <Input
-                        id={id + '-phone'}
+                        id={id + "-phone"}
                         name="phone"
                         type="tel"
                         inputMode="tel"
@@ -596,15 +579,15 @@ export const AuthPage: React.FC<{
                         placeholder="06 12 34 56 78"
                         required
                         aria-describedby={
-                          phoneValid ? id + '-phone-valid' : undefined
+                          phoneValid ? id + "-phone-valid" : undefined
                         }
                         className={
-                          FIELD_CLASS + ' pr-11 text-left tabular-nums'
+                          FIELD_CLASS + " pr-11 text-left tabular-nums"
                         }
                       />
                       {phoneValid && (
                         <span
-                          id={id + '-phone-valid'}
+                          id={id + "-phone-valid"}
                           role="status"
                           className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300"
                         >
@@ -615,15 +598,15 @@ export const AuthPage: React.FC<{
                     </div>
                   </div>
                   <div>
-                    <label htmlFor={id + '-password'} className={LABEL_CLASS}>
+                    <label htmlFor={id + "-password"} className={LABEL_CLASS}>
                       {copy.password}
                     </label>
                     <PasswordInput
-                      id={id + '-password'}
+                      id={id + "-password"}
                       value={password}
                       onChange={setPassword}
                       autoComplete={
-                        isRegister ? 'new-password' : 'current-password'
+                        isRegister ? "new-password" : "current-password"
                       }
                       required
                       minLength={isRegister ? 8 : undefined}
@@ -646,14 +629,14 @@ export const AuthPage: React.FC<{
                             <span
                               key={level}
                               className={
-                                'h-1 flex-1 rounded-full transition-colors motion-reduce:transition-none ' +
+                                "h-1 flex-1 rounded-full transition-colors motion-reduce:transition-none " +
                                 (level > score
-                                  ? 'bg-stone-200 dark:bg-stone-700'
+                                  ? "bg-stone-200 dark:bg-stone-700"
                                   : score === 1
-                                    ? 'bg-red-600'
+                                    ? "bg-red-600"
                                     : score === 2
-                                      ? 'bg-amber-600'
-                                      : 'bg-emerald-600')
+                                      ? "bg-amber-600"
+                                      : "bg-emerald-600")
                               }
                             />
                           ))}
@@ -661,7 +644,7 @@ export const AuthPage: React.FC<{
                         <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">
                           {score
                             ? copy.strengthLabel +
-                              ' : ' +
+                              " : " +
                               copy.strength[score - 1]
                             : copy.passwordMin}
                         </p>
@@ -670,11 +653,11 @@ export const AuthPage: React.FC<{
                   </div>
                   {isRegister && (
                     <div>
-                      <label htmlFor={id + '-confirm'} className={LABEL_CLASS}>
+                      <label htmlFor={id + "-confirm"} className={LABEL_CLASS}>
                         {copy.confirmPassword}
                       </label>
                       <PasswordInput
-                        id={id + '-confirm'}
+                        id={id + "-confirm"}
                         value={confirmPassword}
                         onChange={setConfirmPassword}
                         autoComplete="new-password"

@@ -7,11 +7,13 @@ import {
 import { createLongPress, type PressClock } from "../utils/longPress";
 import { classOpeningLabel, latestClassOpening } from "../utils/classOpening";
 import { assertValidClasses } from "../api/_lib/validate";
+import * as typography from "../constants/typography";
 import {
-  DEFAULT_ARABIC_FONT,
-  getArabicFontFamily,
-} from "../constants/typography";
-import { applyRegistrationSetup } from "../features/auth/registrationSetup";
+  applyRegistrationSetup,
+  registrationSetupFromDraft,
+  type RegistrationDraft,
+} from "../features/auth/registrationSetup";
+import { CLASS_LEVELS_BY_CYCLE, classLevelGroupsForCycle } from "../constants";
 import { switchAccountWorkspace } from "../utils/accountWorkspace";
 
 test("dernière ouverture : une ancienne synchronisation ne fait pas reculer la date", () => {
@@ -29,11 +31,14 @@ test("API : conserve la date valide et ignore une valeur invalide", () => {
     lastOpenedAt: "2026-08-31T08:00:00Z",
   };
   assert.equal(
-    assertValidClasses([item])[0].lastOpenedAt,
+    Reflect.get(assertValidClasses([item])[0], "lastOpenedAt"),
     "2026-08-31T08:00:00.000Z",
   );
   assert.equal(
-    assertValidClasses([{ ...item, lastOpenedAt: "bad" }])[0].lastOpenedAt,
+    Reflect.get(
+      assertValidClasses([{ ...item, lastOpenedAt: "bad" }])[0],
+      "lastOpenedAt",
+    ),
     undefined,
   );
 });
@@ -43,10 +48,10 @@ test("nouveau visiteur : entrée principale et inscription après préparation",
     view: "landing",
     mode: "login",
   });
-  assert.equal(resolveAuthRoute("#register", false).view, "preview");
+  assert.equal(resolveAuthRoute("#register", false).view, "onboarding");
   assert.equal(resolveAuthRoute("#register", true).view, "auth");
-  assert.equal(resolveAuthRoute("#start", false).view, "preview");
-  assert.equal(authRouteHash("preview", "register"), "#start");
+  assert.equal(resolveAuthRoute("#start", false).view, "onboarding");
+  assert.equal(authRouteHash("onboarding", "register"), "#start");
 });
 test("connexion directe conservée ; ancien lien preview encore reconnu", () => {
   assert.deepEqual(resolveAuthRoute("", false, true), {
@@ -57,7 +62,8 @@ test("connexion directe conservée ; ancien lien preview encore reconnu", () => 
     view: "auth",
     mode: "login",
   });
-  assert.equal(resolveAuthRoute("#preview", false).view, "preview");
+  assert.equal(resolveAuthRoute("#preview", false).view, "onboarding");
+  assert.equal(resolveAuthRoute("#onboarding", false).view, "onboarding");
   assert.equal(resolveAuthRoute("#landing", false, true).view, "landing");
 });
 const point = {
@@ -68,6 +74,63 @@ const point = {
   isPrimary: true,
   button: 0,
 };
+const draft: RegistrationDraft = {
+  cycle: "college",
+  levelGroup: "",
+  level: CLASS_LEVELS_BY_CYCLE.college[0],
+  subject: "Mathématiques",
+  group: "3",
+};
+test("inscription : groupe arabe normalisé et préparation marquée terminée", () => {
+  const value = registrationSetupFromDraft({ ...draft, group: "٣" }, "ar");
+  assert.ok(value);
+  assert.equal(value.className, `${draft.level} 3`);
+  assert.equal(value.preparationCompleted, true);
+  assert.equal(value.applicationLocale, "ar");
+});
+test("inscription : zéro, groupe vide et parcours incomplet sont refusés", () => {
+  for (const patch of [
+    { group: "0" },
+    { group: "" },
+    { group: "100" },
+    { cycle: "" as const },
+    { level: "" },
+    { subject: "" },
+  ]) {
+    assert.equal(
+      registrationSetupFromDraft({ ...draft, ...patch }, "fr"),
+      null,
+    );
+  }
+});
+test("inscription : changement de cycle ne conserve pas un niveau incompatible", () => {
+  assert.equal(
+    registrationSetupFromDraft({ ...draft, cycle: "lycee" }, "fr"),
+    null,
+  );
+  const branch = classLevelGroupsForCycle("lycee")[0];
+  assert.ok(
+    registrationSetupFromDraft(
+      {
+        ...draft,
+        cycle: "lycee",
+        levelGroup: branch.key,
+        level: branch.levels[0],
+      },
+      "fr",
+    ),
+  );
+});
+test("inscription : matières invalides et niveaux inventés sont refusés", () => {
+  assert.equal(
+    registrationSetupFromDraft({ ...draft, subject: "__invalid__" }, "fr"),
+    null,
+  );
+  assert.equal(
+    registrationSetupFromDraft({ ...draft, level: "__invalid__" }, "fr"),
+    null,
+  );
+});
 function gesture() {
   let pending: (() => void) | null = null;
   let holds = 0;
@@ -158,10 +221,10 @@ test("date réelle, état jamais ouvert et invalides sans date inventée", () =>
   assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /آخر فتح/);
 });
 test("Lateef par défaut ; choix explicite IBM conservé", () => {
-  assert.equal(DEFAULT_ARABIC_FONT, "lateef");
-  assert.equal(getArabicFontFamily(), "'Lateef', serif");
+  assert.equal(Reflect.get(typography, "DEFAULT_ARABIC_FONT"), "lateef");
+  assert.equal(typography.getArabicFontFamily(), "'Lateef', serif");
   assert.equal(
-    getArabicFontFamily("ibm-plex"),
+    typography.getArabicFontFamily("ibm-plex"),
     "'IBM Plex Sans Arabic', sans-serif",
   );
 });

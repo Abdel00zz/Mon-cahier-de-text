@@ -226,8 +226,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(createdUser);
     setStatus('authenticated');
     if (preparationCompleted) {
-      // Open the prepared space immediately. The synced local flag remains a
-      // fallback if this profile acknowledgement temporarily fails offline.
+      // Local completion opens the dashboard immediately; the normal settings
+      // sync retains the flag if the profile acknowledgement fails offline.
       void completeWelcome().catch(() => {});
     }
   }, [completeWelcome]);

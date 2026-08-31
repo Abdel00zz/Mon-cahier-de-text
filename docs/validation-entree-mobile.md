@@ -2,6 +2,51 @@
 
 Date : 31 août 2026. Complète et actualise `validation-onboarding-keep.md`.
 
+## Actualisation : transitions du parcours d’inscription
+
+- Bouton Retour de l’en-tête supprimé : l’historique natif conserve les choix de classe et les champs d’inscription. Le lien contextuel de modification de classe et l’accès accueil restent disponibles.
+- Sous-titre arabe demandé repris exactement sous « لنبدأ بقسمك الأول. ».
+- Apparition des vues en 280 ms et des champs progressifs en 220 ms, uniquement par opacité et translation verticale courte. Pas de délai de sortie, d’animation de hauteur, de flou animé ni de `will-change` permanent.
+- Retours tactiles en 160 ms ; survol réservé aux pointeurs précis. Les animations ajoutées sont désactivées avec `prefers-reduced-motion`. Les badges informatifs n’ont plus de zoom au survol.
+- Recliquer sur le cycle ou la filière sélectionnés ne réinitialise plus les choix suivants. Les champs ne sont pas remontés à chaque saisie.
+- Recette sur le serveur local : préparation AR → collège → matière → groupe `٣` normalisé en `3` → inscription ; Précédent/Suivant natifs conservent groupe et nom. Déroulant fonctionnel, contrôles ≥ 44 px, aucun débordement horizontal relevé à 320, 393 (394 rapportés) et 768 px ; passage FR/AR vérifié. Aucun compte créé.
+- TypeScript strict et audit des traductions validés. Les modifications locales de typographie, dashboard, synchronisation et serveur hors de ce parcours sont exclues de cette publication.
+- Validation de la version à publier dans un worktree isolé : **67/67 tests réussis**, TypeScript strict et build de production réussis. La feuille d’animation compilée pèse 1,41 Ko (0,39 Ko gzip), sans nouvelle dépendance. Le rendu compilé à 393 px conserve Lateef et ne déborde pas horizontalement. La recette navigateur ne crée aucun compte réel ; aucune mesure de 60 fps ni test matériel iOS/Android n’est revendiqué.
+
+## Actualisation : adapter l’existant, sans mode guest distinct
+
+Cette section décrit le dernier ajustement demandé. Les sections suivantes restent le journal de l’itération précédente et ne décrivent pas toutes l’état local actuel.
+
+### Trois choix UX
+
+1. Le bouton existant « Créer un compte / إنشاء حساب جديد » ouvre directement le formulaire de préparation, puis l’inscription. La connexion existante reste directe. Aucun nouvel écran ni nouvelle modale ajoutés.
+2. Le formulaire inline conserve ses contrôles et son style. Les choix restent dans le parent lors des retours, des changements de langue et du passage au formulaire d’identifiants. Les données de classe sont enregistrées seulement après inscription réussie.
+3. Le parcours d’essai parallèle, sa confirmation intermédiaire et son délai artificiel de 2,5 secondes sont supprimés. Les règles de groupes sont réutilisées depuis le dashboard ; les champs et sélections ont des labels accessibles et des cibles d’au moins 44 px.
+
+| Élément existant | Adaptation | Interaction | Objectif |
+| --- | --- | --- | --- |
+| Accueil | Composition et aperçu conservés ; lien d’essai retiré | Créer un compte → préparation | Une entrée claire pour le nouvel enseignant |
+| Formulaire de classe | Ancien composant renommé `RegistrationOnboarding`, contrôles conservés | Cycle → classe → matière / groupe → inscription | Pas de second système de création ni de modale dormante |
+| Inscription | Formulaire sécurisé conservé, texte de dernière étape | Retour modifiable ; compte existant toujours accessible | Enregistrer les choix sans recommencer l’onboarding |
+
+### Branchements et nettoyage
+
+- `authNavigation` est de nouveau utilisé par l’écran réel, pour les clics, `popstate` et `hashchange`. `#register` sans préparation validée renvoie à `#start`. `#preview` reste uniquement un alias compatible, pas un parcours distinct.
+- Une modification du brouillon invalide sa validation précédente ; elle ne permet pas de finaliser une ancienne classe par un lien direct.
+- Suppression des callbacks d’essai, du bouton Retour dupliqué, du code de modale inaccessible, des états d’attente et des imports inutilisés du parcours. Le contrôle de choix existant est déplacé hors du rendu pour conserver le focus.
+- Préparation terminée : flag local synchronisable et accusé de fin d’accueil serveur, sans attendre cet accusé pour ouvrir le dashboard. Les garde-fous d’identité et de conservation des espaces existants restent actifs.
+- Aucun changement des préférences typographiques, cartes du dashboard, dates d’ouverture ou code serveur hors de l’authentification. Aucun push effectué dans cette intervention.
+
+### Vérifications de cette adaptation
+
+- Navigateur, vrais composants et providers avec stockage en mémoire et API simulées : CTA arabe → collège → groupe `٣` normalisé en `3` → inscription ; groupe `0` refusé ; retour conservant classe et nom ; changement en groupe 4 → validation exigée avant inscription ; compte fictif → dashboard avec classe 4, sans second onboarding.
+- FR/AR et viewports 320×740, 393×852 (394 px rapportés), 768×1024 : aucun débordement horizontal observé ; contrôles du formulaire mesurés à 44 px. Pas de test matériel iOS/Android ni de compte cloud réel.
+- TypeScript / architecture, i18n et build validés. Suite globale : **65 tests réussis sur 67**. Les deux régressions préexistantes sur Lateef et la conservation API de `lastOpenedAt` restent signalées. Les assertions sont conservées, mais leur chargement n’empêche plus les autres tests de démarrer.
+- L’audit global de code inutilisé signale encore des éléments hors de ce parcours et des scripts de test non déclarés comme points d’entrée. Pas de suppression automatique à l’échelle du projet.
+- Les fichiers temporaires de recette sont retirés ; aucun compte ou cahier réel modifié.
+
+## Journal de l’itération précédente
+
 ## Analyse UX : trois décisions
 
 1. **Préparer avant de demander les identifiants.** « Créer mon espace » est désormais l’action principale : classe → premier titre facultatif → inscription. La connexion reste accessible aux enseignants déjà inscrits. Le libellé « Essayer sans compte » ne présente plus ce parcours comme une option secondaire.

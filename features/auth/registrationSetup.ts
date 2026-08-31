@@ -1,42 +1,86 @@
-import type { AppConfig, ClassInfo, Cycle } from '@/types';
-import { readWorkspaceScope } from '@/utils/accountWorkspace';
+import type { AppConfig, ClassInfo, Cycle } from "@/types";
+import { readWorkspaceScope } from "@/utils/accountWorkspace";
+import {
+  CLASS_LEVELS_BY_CYCLE,
+  SUBJECTS,
+  classLevelGroupsForCycle,
+} from "@/constants";
+import {
+  classNameForLevelAndGroup,
+  normalizeGroupNumber,
+} from "@/utils/classGroup";
 
-/** Only user-entered preview data, held in memory until explicit registration. */
+export interface RegistrationDraft {
+  cycle: Cycle | "";
+  levelGroup: string;
+  level: string;
+  subject: string;
+  group: string;
+}
+
+/** Use the same official levels and group rules as the dashboard. */
+export function registrationSetupFromDraft(
+  draft: RegistrationDraft,
+  locale: "fr" | "ar",
+): RegistrationSetup | null {
+  if (!draft.cycle) return null;
+  const levels =
+    draft.cycle === "college"
+      ? CLASS_LEVELS_BY_CYCLE.college
+      : (classLevelGroupsForCycle(draft.cycle).find(
+          (group) => group.key === draft.levelGroup,
+        )?.levels ?? []);
+  const group = normalizeGroupNumber(draft.group);
+  if (
+    !levels.includes(draft.level) ||
+    !SUBJECTS.some((subject) => subject === draft.subject) ||
+    !group
+  )
+    return null;
+  return {
+    cycle: draft.cycle,
+    className: classNameForLevelAndGroup(draft.level, group),
+    subject: draft.subject,
+    applicationLocale: locale,
+    preparationCompleted: true,
+  };
+}
+
+/** Only user-entered onboarding data, held in memory until explicit registration. */
 export interface RegistrationSetup {
   cycle: Cycle;
   className: string;
   subject: string;
-  applicationLocale: 'fr' | 'ar';
+  applicationLocale: "fr" | "ar";
   firstTitle?: string;
-  /** Explicitly completed preparation: do not repeat onboarding after registration. */
   preparationCompleted?: boolean;
 }
 
 export function normalizeRegistrationSetup(
   value: unknown,
 ): RegistrationSetup | null {
-  if (!value || typeof value !== 'object') return null;
+  if (!value || typeof value !== "object") return null;
   const item = value as Partial<RegistrationSetup>;
   if (
-    !['college', 'lycee', 'prepa'].includes(item.cycle ?? '') ||
-    !['fr', 'ar'].includes(item.applicationLocale ?? '')
+    !["college", "lycee", "prepa"].includes(item.cycle ?? "") ||
+    !["fr", "ar"].includes(item.applicationLocale ?? "")
   )
     return null;
   if (
-    typeof item.className !== 'string' ||
+    typeof item.className !== "string" ||
     !item.className.trim() ||
     item.className.length > 120
   )
     return null;
   if (
-    typeof item.subject !== 'string' ||
+    typeof item.subject !== "string" ||
     !item.subject.trim() ||
     item.subject.length > 120
   )
     return null;
   if (
     item.firstTitle !== undefined &&
-    (typeof item.firstTitle !== 'string' || item.firstTitle.length > 300)
+    (typeof item.firstTitle !== "string" || item.firstTitle.length > 300)
   )
     return null;
   return {
@@ -60,12 +104,12 @@ export function applyRegistrationSetup(
   const setup = normalizeRegistrationSetup(value);
   if (!setup) return null;
   if (readWorkspaceScope(storage)?.owner !== owner)
-    throw new Error('Workspace owner mismatch');
+    throw new Error("Workspace owner mismatch");
   const config: Partial<AppConfig> = JSON.parse(
-    storage.getItem('appConfig_v1') ?? '{}',
+    storage.getItem("appConfig_v1") ?? "{}",
   );
   const classes: ClassInfo[] = JSON.parse(
-    storage.getItem('classManager_v1') ?? '[]',
+    storage.getItem("classManager_v1") ?? "[]",
   );
   if (
     !Array.isArray(classes) ||
@@ -81,9 +125,9 @@ export function applyRegistrationSetup(
     name: setup.className,
     subject: setup.subject,
     cycle: setup.cycle,
-    teacherName: config.defaultTeacherName ?? '',
+    teacherName: config.defaultTeacherName ?? "",
     createdAt: new Date().toISOString(),
-    color: '',
+    color: "",
   };
   const entries = {
     appConfig_v1: JSON.stringify({
@@ -98,12 +142,12 @@ export function applyRegistrationSetup(
         : {}),
     }),
     classManager_v1: JSON.stringify([classInfo]),
-    app_first_launch_v1: 'true',
-    ['classData_v1_' + id]: JSON.stringify({
+    app_first_launch_v1: "true",
+    ["classData_v1_" + id]: JSON.stringify({
       lessonsData: setup.firstTitle
         ? [
             {
-              type: 'chapter',
+              type: "chapter",
               title: setup.firstTitle,
               sections: [],
               _tempId: crypto.randomUUID(),
@@ -112,11 +156,11 @@ export function applyRegistrationSetup(
         : [],
       contentDirection: setup.firstTitle
         ? /[\u0600-\u06ff]/.test(setup.firstTitle)
-          ? 'rtl'
-          : 'ltr'
-        : setup.applicationLocale === 'ar'
-          ? 'rtl'
-          : 'ltr',
+          ? "rtl"
+          : "ltr"
+        : setup.applicationLocale === "ar"
+          ? "rtl"
+          : "ltr",
     }),
   };
   const previous = Object.keys(entries).map(
