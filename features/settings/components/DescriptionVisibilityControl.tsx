@@ -59,7 +59,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
   };
 
   return (
-    <div className={cn("space-y-2 rounded-xl border border-border bg-secondary/50 p-3", className)}>
+    <div className={cn("space-y-2 rounded-md border border-border bg-secondary/50 p-3", className)}>
       <span className="text-xs font-semibold text-foreground/80">{t(`descriptionVisibility.${context}.title`)}</span>
 
       {/* Segmenté 3 états */}
@@ -93,7 +93,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
 
           {showTypes && (
             <div className="space-y-2.5">
-              <div className="flex flex-wrap justify-center gap-1.5 rounded-xl border border-border bg-card p-2">
+              <div className="flex flex-wrap justify-center gap-1.5 rounded-md border border-border bg-card p-2">
                 {uniqueTypes.map(type => {
                   const isSelected = types.includes(type);
                   return (

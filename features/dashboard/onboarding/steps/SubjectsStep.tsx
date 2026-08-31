@@ -40,17 +40,14 @@ export const SubjectsStep = memo<SubjectsStepProps>(({ subjects, selectedSubject
                         aria-checked={selected}
                         onClick={() => onToggle(subject)}
                         className={cn(
-                            'group flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-start text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 active:scale-[0.99] sm:text-base',
-                            selected
-                                ? 'border-blue-500 bg-blue-50 text-blue-950 shadow-[0_4px_14px_rgba(37,99,235,0.10)] ring-1 ring-blue-500'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                            'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base',
                         )}
                     >
                         <span className={cn(
                             'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                             selected
-                                ? 'border-transparent bg-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
-                                : 'border-slate-300 bg-white group-hover:border-blue-400'
+                                ? 'border-transparent bg-stone-800 dark:bg-stone-600'
+                                : 'border-[#e0e0e0] bg-transparent dark:border-[#5f6368]'
                         )}>
                             {selected && (
                                 <svg className="h-3 w-3 text-white stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

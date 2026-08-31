@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, BookOpen } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,8 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
 }) => {
     const isLastStep = step === ONBOARDING_TOTAL_STEPS;
     const isRtl = lang === 'ar';
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, [step]);
 
     return (
         <div dir={isRtl ? 'rtl' : 'ltr'} className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[#f5f7fa] font-sans text-slate-900 selection:bg-blue-600 selection:text-white dark:bg-slate-950 dark:text-slate-100">
@@ -66,35 +68,40 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                     isLastStep ? 'max-w-[1180px]' : 'max-w-[780px]',
                 )}>
                     <div className={cn('flex-1 px-5 pb-6 pt-7 sm:pb-8 sm:pt-9', isLastStep ? 'sm:px-8' : 'sm:px-10')}>
-                        <div
-                            role="progressbar"
-                            aria-label={copy.step(step, ONBOARDING_TOTAL_STEPS)}
-                            aria-valuemin={1}
-                            aria-valuemax={ONBOARDING_TOTAL_STEPS}
-                            aria-valuenow={step}
-                            className="mb-8 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
-                        >
+                        {step <= ONBOARDING_TOTAL_STEPS && (
                             <div
-                                className="h-full rounded-full bg-blue-600 transition-[width] duration-500 ease-out"
-                                style={{ width: `${(step / ONBOARDING_TOTAL_STEPS) * 100}%` }}
-                            />
-                        </div>
+                                role="progressbar"
+                                aria-label={copy.step(step, ONBOARDING_TOTAL_STEPS)}
+                                aria-valuemin={1}
+                                aria-valuemax={ONBOARDING_TOTAL_STEPS}
+                                aria-valuenow={step}
+                                className="mb-8 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
+                            >
+                                <div
+                                    className="h-full rounded-full bg-blue-600 transition-[width] duration-200 ease-out motion-reduce:transition-none"
+                                    style={{ width: `${(step / ONBOARDING_TOTAL_STEPS) * 100}%` }}
+                                />
+                            </div>
+                        )}
 
-                        <div className="mb-7 animate-fade-in text-start">
-                            <h1 className="mb-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl dark:text-white">{title}</h1>
-                            {subtitle && <p className="text-base font-medium leading-relaxed text-slate-500 sm:text-lg dark:text-slate-400">{subtitle}</p>}
-                        </div>
+                        {title ? (
+                            <div className="mb-7 animate-fade-in text-start">
+                                <h1 ref={headingRef} tabIndex={-1} className="mb-2 text-2xl font-bold tracking-tight text-slate-950 outline-none sm:text-3xl dark:text-white">{title}</h1>
+                                {subtitle && <p className="text-base font-medium leading-relaxed text-slate-500 sm:text-lg dark:text-slate-400">{subtitle}</p>}
+                            </div>
+                        ) : null}
 
-                        {children}
+                        <fieldset disabled={finishing} aria-busy={finishing} className="min-w-0">{children}</fieldset>
                     </div>
 
-                    <footer className="border-t border-slate-100 bg-slate-50/70 p-4 sm:px-10 sm:py-5 dark:border-white/10 dark:bg-slate-950/35">
+                    {step <= ONBOARDING_TOTAL_STEPS && (<footer className="border-t border-slate-100 bg-slate-50/70 p-4 sm:px-10 sm:py-5 dark:border-white/10 dark:bg-slate-950/35">
                         <div className={cn('flex w-full flex-wrap items-center gap-3', step === 1 ? 'justify-end' : 'justify-between')}>
                             {step > 1 && (
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={onBack}
+                                    disabled={finishing}
                                     className="inline-flex h-11 min-w-[7rem] cursor-pointer items-center gap-2 rounded-xl border-slate-200/90 bg-white/90 px-4 text-sm font-semibold text-slate-700 shadow-2xs transition-all hover:border-indigo-300 hover:bg-white hover:text-indigo-950 sm:px-6 sm:text-base"
                                 >
                                     <ChevronLeft className="h-4 w-4 rtl:rotate-180 sm:h-5 sm:w-5" />
@@ -102,12 +109,13 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                                 </Button>
                             )}
 
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex min-w-0 flex-wrap items-center justify-end gap-2.5">
                                 {showIgnore && (
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={onIgnore}
+                                        disabled={finishing}
                                         className="h-11 cursor-pointer rounded-xl border-slate-200/90 bg-white/90 px-3 text-sm font-semibold text-slate-700 shadow-2xs hover:border-slate-300 hover:bg-white sm:px-5 sm:text-base"
                                     >
                                         {copy.ignoreClass}
@@ -119,6 +127,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                                         type="button"
                                         variant="outline"
                                         onClick={onSkip}
+                                        disabled={finishing}
                                         className="h-11 cursor-pointer rounded-xl border-rose-200 bg-rose-50 px-3 text-sm font-semibold text-rose-700 shadow-none hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:px-5 sm:text-base dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
                                     >
                                         {copy.finishWithoutSchedule}
@@ -128,7 +137,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                                 {!isLastStep ? (
                                     <Button
                                         type="button"
-                                        disabled={!canContinue}
+                                        disabled={!canContinue || finishing}
                                         onClick={onNext}
                                         className="inline-flex h-11 min-w-[7.5rem] cursor-pointer items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-[0_6px_18px_rgba(37,99,235,0.22)] transition-all hover:bg-blue-700 hover:shadow-[0_8px_22px_rgba(37,99,235,0.28)] active:scale-[0.98] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:opacity-100 sm:px-7 sm:text-base"
                                     >
@@ -148,7 +157,7 @@ export const OnboardingShell: React.FC<OnboardingShellProps> = ({
                                 )}
                             </div>
                         </div>
-                    </footer>
+                    </footer>)}
                 </main>
             </div>
         </div>

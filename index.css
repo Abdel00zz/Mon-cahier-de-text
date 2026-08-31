@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* The application theme controller owns .dark (including system mode). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── shadcn/ui · Modern Clean Academic Theme ────────────────────────────── */
 
 @theme inline {
@@ -171,13 +174,56 @@
   font-family: 'Lateef', cursive, serif;
 }
 
+@utility font-caveat {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.font-caveat {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+@utility font-space-grotesk {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-space-grotesk {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+}
+
+@utility shadow-cahier-rest {
+  box-shadow: 0 10px 24px -12px rgba(43, 38, 32, 0.28), 0 2px 6px -2px rgba(43, 38, 32, 0.18);
+}
+
+@utility shadow-cahier-hover {
+  box-shadow: 0 18px 34px -14px rgba(43, 38, 32, 0.32), 0 4px 10px -2px rgba(43, 38, 32, 0.2);
+}
+
 @layer base {
   /* ── Modern Sophisticated Light Theme ──────────────────────────────── */
   :root {
+    /* Design Tokens · Cahier de textes */
+    --paper: #F6F1E4;
+    --paper-deep: #EDE5D0;
+    --ink: #2B2620;
+    --ink-soft: #6B6255;
+    --rule: #D9CFB6;
+    --binder: #211D18;
+
+    --bleu: #3D6FB4;
+    --bleu-tint: #E7EEF8;
+    --vert: #2F7A5C;
+    --vert-tint: #E5F1EA;
+    --cerise: #B23A50;
+    --cerise-tint: #F7E7EA;
+    --violet: #6D4FA0;
+    --violet-tint: #EFE9F6;
+    --ambre: #C1791F;
+    --ambre-tint: #F7EBDA;
+
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    --background: 220 17% 97%;
+    --background: 0 0% 100%;
     --foreground: 222 28% 12%;
     --card: 0 0% 100%;
     --card-foreground: 222 28% 12%;
@@ -187,7 +233,7 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 93%;
     --secondary-foreground: 222 28% 12%;
-    --muted: 220 14% 94%;
+    --muted: 0 0% 96%;
     --muted-foreground: 218 13% 43%;
     --accent: 221 80% 96%;
     --accent-foreground: 221 83% 45%;
@@ -254,7 +300,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    min-width: 320px;
+    min-width: 0;
     min-height: 100dvh;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
@@ -349,11 +395,12 @@
   }
 
   .auth-page-shell {
-    background-color: hsl(var(--background));
-    background-image:
-      radial-gradient(at 0% 0%, hsl(var(--primary) / 0.08) 0, transparent 50%),
-      radial-gradient(at 100% 100%, hsl(var(--accent) / 0.4) 0, transparent 50%);
+    background-color: #fff;
     font-family: var(--font-sans);
+  }
+
+  .auth-page-shell[lang="ar"] {
+    --font-sans: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   }
 
   [data-dashboard-root] {
@@ -471,10 +518,7 @@
   }
 
   .dark .auth-page-shell {
-    background-color: #0b1120;
-    background-image:
-      radial-gradient(at 0% 0%, hsla(220, 80%, 15%, 1) 0, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(217, 90%, 10%, 1) 0, transparent 50%);
+    background-color: #202124;
   }
 
   /* Rendu net des formules MathJax & KaTeX en mode sombre */
@@ -542,30 +586,15 @@
 .settings-content-zone {
   background-color: transparent;
 }
-
-.settings-section-block {
-  border: 1px solid hsl(var(--border) / 0.7) !important;
-  border-radius: 1rem !important;
-  background: hsl(var(--card)) !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
-}
-
-.dark .settings-section-block {
-  border-color: hsl(var(--border) / 0.8) !important;
-  background: hsl(var(--card) / 0.8) !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25) !important;
-}
-
 .settings-surface {
-  border: 1px solid hsl(var(--border) / 0.6) !important;
-  border-radius: 0.875rem !important;
-  background: hsl(var(--muted) / 0.3) !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 12px !important;
+  background: hsl(var(--card)) !important;
   box-shadow: none !important;
 }
 
 .dark .settings-surface {
-  border-color: hsl(var(--border) / 0.6) !important;
-  background: hsl(var(--muted) / 0.2) !important;
+  border-color: #5f6368 !important;
 }
 
 .settings-page-content > div {
@@ -574,13 +603,6 @@
 
 /* Les modales et les réglages respirent */
 .modal-header,
-.modal-footer,
-.settings-section-block > header {
-  border-top-color: transparent !important;
-  border-bottom-color: transparent !important;
-}
-
-.modal-header,
 .modal-footer {
   background-color: hsl(var(--card)) !important;
   background-image: none !important;
@@ -588,10 +610,7 @@
   box-shadow: none !important;
 }
 
-.settings-section-block > header {
-  margin-bottom: 0.75rem !important;
-  padding-bottom: 0 !important;
-}
+
 
 /* ── Print utilities ────────────────────────────────────────────────────── */
 
@@ -720,7 +739,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
     width: auto !important;
     max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
-    border-radius: 1.75rem !important;
+    border-radius: 12px !important;
     border-width: 1px !important;
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
@@ -730,5 +749,65 @@ html[data-keyboard='open'] .mobile-tab-bar {
 @media (prefers-reduced-motion: reduce) {
   .app-settings-parent {
     transition: none;
+  }
+}
+
+@theme {
+  @keyframes bounce-x {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+  }
+  --animate-bounce-x: bounce-x 1s ease-in-out infinite;
+}
+
+/* Shared Keep surfaces: no filters or perpetual animations. */
+@layer components {
+  .keep-surface {
+    --keep-border: #e0e0e0;
+    border: 1px solid var(--keep-border);
+    border-radius: 12px;
+    background-color: var(--keep-light, #fff);
+    color: #202124;
+  }
+  .dark .keep-surface {
+    --keep-border: #5f6368;
+    background-color: var(--keep-dark, #202124);
+    color: #e8eaed;
+  }
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #fff8b8; --keep-dark: #4b443a; }
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #e2f6d3; --keep-dark: #345039; }
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #d4e4ed; --keep-dark: #2d4855; }
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #e9e3f4; --keep-dark: #443e50; }
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #f8e2dd; --keep-dark: #594340; }
+  .keep-interactive {
+    transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+  .keep-interactive:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  .keep-choice[aria-pressed="true"],
+  .keep-choice[aria-checked="true"],
+  .keep-choice[data-selected="true"] {
+    background-color: #feefc3;
+    border-color: #b69b55;
+  }
+  .dark .keep-choice[aria-pressed="true"],
+  .dark .keep-choice[aria-checked="true"],
+  .dark .keep-choice[data-selected="true"] {
+    background-color: #41331c;
+    border-color: #a89462;
+  }
+  @media (hover: hover) {
+    .keep-interactive:hover {
+      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .keep-interactive { transition: none; }
   }
 }

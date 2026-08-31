@@ -21,22 +21,13 @@ export const LanguageStep = memo<LanguageStepProps>(({ lang, copy, onSelect }) =
                         onClick={() => onSelect(language)}
                         aria-pressed={active}
                         className={cn(
-                            'group relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border p-6 text-center outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 focus-visible:ring-4 focus-visible:ring-blue-500/15 active:scale-[0.99] sm:p-8',
-                            active
-                                ? 'border-blue-500 bg-blue-50 text-blue-950 shadow-[0_8px_24px_rgba(37,99,235,0.10)] ring-1 ring-blue-500'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                            'keep-surface keep-interactive keep-choice group relative flex cursor-pointer flex-col items-center justify-center gap-3 p-6 text-center sm:p-8',
                         )}
                     >
-                        <span className={cn(
-                            'text-lg font-black tracking-tight sm:text-xl transition-colors',
-                            active ? 'text-indigo-950' : 'text-slate-800 group-hover:text-indigo-900'
-                        )}>
+                        <span lang={language} className="text-lg font-semibold tracking-tight sm:text-xl">
                             {language === 'fr' ? 'Français' : 'العربية'}
                         </span>
-                        <span className={cn(
-                            'text-xs font-semibold',
-                            active ? 'text-indigo-600' : 'text-slate-400'
-                        )}>
+                        <span lang={language} className="text-xs text-[#5f6368] dark:text-[#bdc1c6]">
                             {language === 'fr' ? 'Interface en langue française' : 'واجهة باللغة العربية'}
                         </span>
                     </button>

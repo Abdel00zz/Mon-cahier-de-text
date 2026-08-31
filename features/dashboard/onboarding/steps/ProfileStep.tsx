@@ -34,7 +34,7 @@ export const ProfileStep = memo<ProfileStepProps>(({
                     value={teacherName}
                     onChange={event => onTeacherNameChange(event.target.value)}
                     placeholder={copy.fullNamePlaceholder}
-                    className="h-12 rounded-xl border-slate-200 bg-white px-4 text-start text-lg font-itim font-bold text-[#0056D2] shadow-2xs transition-all placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:text-base hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
+                    className="h-12 rounded-[12px] border-slate-200 bg-white px-4 text-start text-lg font-itim font-bold text-[#0056D2] shadow-2xs transition-all placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:text-base hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
                     autoFocus
                 />
             </div>
@@ -46,7 +46,7 @@ export const ProfileStep = memo<ProfileStepProps>(({
                     value={establishmentName}
                     onChange={event => onEstablishmentChange(event.target.value)}
                     placeholder={copy.establishmentPlaceholder}
-                    className="h-12 rounded-xl border-slate-200 bg-white px-4 text-start text-base shadow-2xs transition-all placeholder:text-slate-400 hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
+                    className="h-12 rounded-[12px] border-slate-200 bg-white px-4 text-start text-base shadow-2xs transition-all placeholder:text-slate-400 hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
                 />
             </div>
         </div>
@@ -75,25 +75,19 @@ export const ProfileStep = memo<ProfileStepProps>(({
                             }}
                             aria-pressed={active}
                             className={cn(
-                                'group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-center outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 focus-visible:ring-4 focus-visible:ring-blue-500/15 active:scale-[0.99]',
-                                active
-                                    ? 'border-blue-500 bg-blue-50 shadow-[0_8px_24px_rgba(37,99,235,0.10)] ring-1 ring-blue-500'
-                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                                'keep-surface keep-interactive keep-choice group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center gap-3 p-4 text-center',
                             )}
                         >
                             <div className={cn(
-                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-300',
-                                active
-                                    ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.22)]'
-                                    : 'bg-slate-100 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600',
+                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] bg-black/5 dark:bg-white/10',
                             )}>
                                 <Icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <span className={cn('block text-sm font-black sm:text-base', active ? 'text-indigo-950' : 'text-slate-900')}>
+                                <span className="block text-sm font-semibold sm:text-base">
                                     {copy.cycleLabels[option.key]}
                                 </span>
-                                <span className={cn('mt-0.5 block text-xs font-medium', active ? 'text-indigo-700 font-semibold' : 'text-slate-500')}>
+                                <span className="mt-0.5 block text-xs text-[#5f6368] dark:text-[#bdc1c6]">
                                     {copy.cycleDescriptions[option.key]}
                                 </span>
                             </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { useDebouncedCallback } from '../utils/performance';
+import { captureWorkspaceLease } from '../utils/accountWorkspace';
 
 export function useOptimizedLocalStorage<T>(
   key: string,
@@ -8,12 +9,14 @@ export function useOptimizedLocalStorage<T>(
   debounceMs: number = 1500
 ) {
   const [value, setValue] = useState<T>(defaultValue);
+  const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const initializedRef = useRef(false);
 
   // Load from localStorage on mount
   useEffect(() => {
+    if (!workspaceIsActive()) return;
     try {
       const storedValue = localStorage.getItem(key);
       if (storedValue) {
@@ -38,11 +41,11 @@ export function useOptimizedLocalStorage<T>(
       setIsLoading(false);
       initializedRef.current = true;
     }
-  }, [key]);
+  }, [key, workspaceIsActive]);
 
   // Debounced save to localStorage
   const debouncedSave = useDebouncedCallback((valueToSave: T) => {
-    if (!initializedRef.current) return;
+    if (!initializedRef.current || !workspaceIsActive()) return;
     
     try {
       localStorage.setItem(key, JSON.stringify(valueToSave));
@@ -67,6 +70,7 @@ export function useOptimizedLocalStorage<T>(
 
   // Immediate save (bypass debouncing)
   const saveImmediately = useCallback(() => {
+    if (!workspaceIsActive()) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
       setError(null);
@@ -74,10 +78,11 @@ export function useOptimizedLocalStorage<T>(
       logger.error(`Failed to immediately save ${key} to localStorage`, err);
       setError(`Erreur de sauvegarde immédiate: ${key}`);
     }
-  }, [key, value]);
+  }, [key, value, workspaceIsActive]);
 
   // Clear storage
   const clearValue = useCallback(() => {
+    if (!workspaceIsActive()) return;
     try {
       localStorage.removeItem(key);
       setValue(defaultValue);
@@ -86,7 +91,7 @@ export function useOptimizedLocalStorage<T>(
       logger.error(`Failed to clear ${key} from localStorage`, err);
       setError(`Erreur de suppression: ${key}`);
     }
-  }, [key, defaultValue]);
+  }, [key, defaultValue, workspaceIsActive]);
 
   return {
     value,

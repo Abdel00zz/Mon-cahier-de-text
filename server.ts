@@ -88,7 +88,7 @@ export function setupMockApi(app: express.Express) {
                     }
                     if (body.action === 'register') {
                         sessionUser = {
-                            phone: String(body.phone ?? DEV_PHONE),
+                            phone: String(body.phone ?? DEV_PHONE).replace(/\D/g, ''),
                             nom: String(body.nom ?? 'Dev'),
                             prenom: String(body.prenom ?? 'Prof'),
                             hasCompletedWelcome: false,
@@ -114,6 +114,7 @@ export function setupMockApi(app: express.Express) {
             app.use('/api/sync', async (req, res) => {
                 if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
                 const { phone, workspace } = workspaceForCurrentSession();
+                if (req.headers['x-workspace-owner'] !== phone) return send(res, 409, { error: 'Le compte actif a changé. Rechargez la page avant de synchroniser.' });
                 if (req.method === 'GET') {
                     const url = new URL(req.url ?? '/', 'http://localhost');
                     const classId = url.searchParams.get('classId');

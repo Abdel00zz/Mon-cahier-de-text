@@ -2,6 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { getRedis, KEYS } from './_lib/redis.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
+import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
 
 interface ClassesBlob {
@@ -201,6 +202,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     res.setHeader('Cache-Control', 'no-store');
     try {
         const { phone } = await requireUser(req);
+        assertWorkspaceOwner(req.headers['x-workspace-owner'], phone);
         if (req.method === 'GET') {
             return await handlePull(req, res, phone);
         }

@@ -24,16 +24,17 @@ import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from
 import { effectiveSchedules } from '../utils/timetable';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { isContentDirection } from '../utils/contentDirection';
+import { readWorkspaceScope, workspaceIsCurrent } from '../utils/accountWorkspace';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
 interface SyncContextValue {
     syncStatus: SyncStatus;
     lastSyncAt: string | null;
-    syncNow: () => void;
+    syncNow: () => Promise<void>;
 }
 
-const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: () => {} });
+const SyncContext = createContext<SyncContextValue>({ syncStatus: 'idle', lastSyncAt: null, syncNow: async () => {} });
 
 const PUSH_DEBOUNCE_MS = 20_000;
 /** budget par requête de push, marge confortable sous la limite serveur (~950 Ko) */
@@ -120,14 +121,16 @@ interface RemoteLessonsBlob {
     updatedAt?: string;
 }
 
-const fetchLessonsBlob = async (classId: string): Promise<RemoteLessonsBlob | null> => {
+const fetchLessonsBlob = async (classId: string, owner: string, signal: AbortSignal): Promise<RemoteLessonsBlob | null> => {
     try {
         const response = await fetch(`/api/sync?classId=${encodeURIComponent(classId)}`, {
             credentials: 'same-origin',
+            headers: { 'X-Workspace-Owner': owner },
+            signal,
         });
         return response.ok ? ((await response.json()) as RemoteLessonsBlob) : null;
     } catch (error) {
-        logger.error('Pull d\'une classe impossible', error);
+        if (!signal.aborted) logger.error('Pull d\'une classe impossible', error);
         return null;
     }
 };
@@ -170,6 +173,9 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const debounceRef = useRef<number | null>(null);
     const scheduledPushAtRef = useRef<number | null>(null);
     const pushingRef = useRef(false);
+    const pushAbortRef = useRef<AbortController | null>(null);
+    const authStatusRef = useRef(authStatus);
+    authStatusRef.current = authStatus;
     const userRef = useRef(user);
     userRef.current = user;
     // dernière cause d'erreur notifiée : un toast par cause, pas par tentative
@@ -184,6 +190,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastErrorKeyRef.current = key;
         if (status === 401) {
             toast.error(syncText('sync.sessionExpired'), { duration: 10_000 });
+        } else if (status === 409) {
+            toast.error(syncText('sync.accountChanged'), { duration: 10_000 });
         } else if (status === 413) {
             toast.error(message ?? syncText('sync.tooLarge'), { duration: 10_000 });
         } else {
@@ -196,7 +204,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const push = useCallback(async (options?: { keepalive?: boolean }) => {
         const currentUser = userRef.current;
-        if (!currentUser || pushingRef.current || !hasPendingWork()) return;
+        const scope = readWorkspaceScope();
+        if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== currentUser.phone || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
+
+        const controller = new AbortController();
+        pushAbortRef.current = controller;
+        const isCurrent = () => !controller.signal.aborted && userRef.current?.phone === currentUser.phone && workspaceIsCurrent(scope);
 
         pushingRef.current = true;
         setSyncStatus('syncing');
@@ -281,11 +294,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             let failure: { status: number; message?: string; firstBatch: boolean } | null = null;
 
             for (let i = 0; i < batches.length; i++) {
+                if (!isCurrent()) return;
                 const isFirst = i === 0;
                 const includeSettings = isFirst && work.classesListDirty;
                 const response = await fetch('/api/sync', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-Workspace-Owner': currentUser.phone },
+                    signal: controller.signal,
                     credentials: 'same-origin',
                     // keepalive : la requête survit à la fermeture de la page (flush
                     // pagehide). Limite ~64 Ko : au-delà le fetch rejette et le
@@ -307,6 +322,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }),
                 });
 
+                if (!isCurrent()) return;
                 if (!response.ok) {
                     let message: string | undefined;
                     try {
@@ -317,6 +333,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
 
                 const data = (await response.json()) as { serverTime?: string };
+                if (!isCurrent()) return;
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
                 if (includeSettings) pushedSettingsAt = settingsUpdatedAt;
                 for (const entry of batches[i]) {
@@ -326,6 +343,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
 
+            if (!isCurrent()) return;
             if (!failure) {
                 if (pushedSettingsAt) markSettingsSynced(pushedSettingsAt);
                 clearPendingWork(work);
@@ -366,12 +384,22 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }, 60_000);
             }
         } catch (error) {
+            if (!isCurrent()) return;
             logger.error('Sync push failed (offline?)', error);
             setSyncStatus('offline');
         } finally {
-            pushingRef.current = false;
+            if (pushAbortRef.current === controller) {
+                pushingRef.current = false;
+                pushAbortRef.current = null;
+            }
         }
     }, []);
+
+    useEffect(() => () => {
+        pushAbortRef.current?.abort();
+        pushingRef.current = false;
+        if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+    }, [authStatus, user?.phone]);
 
     const schedulePush = useCallback(
         (delayMs: number = PUSH_DEBOUNCE_MS) => {
@@ -398,27 +426,31 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             debounceRef.current = null;
             scheduledPushAtRef.current = null;
         }
-        void push();
+        return push();
     }, [push]);
 
     // ── Pull initial après authentification ────────────────────────────────
     useEffect(() => {
         if (authStatus !== 'authenticated' || !user) return;
         let cancelled = false;
+        const scope = readWorkspaceScope();
+        if (scope?.owner !== user.phone || !workspaceIsCurrent(scope)) return;
+        const controller = new AbortController();
+        const isCurrent = () => !cancelled && !controller.signal.aborted && workspaceIsCurrent(scope);
 
         (async () => {
             setSyncStatus('syncing');
             try {
-                const response = await fetch('/api/sync', { credentials: 'same-origin' });
+                const response = await fetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': user.phone }, signal: controller.signal });
                 if (!response.ok) {
-                    if (!cancelled) {
+                    if (isCurrent()) {
                         setSyncStatus('error');
                         notifySyncError(response.status);
                     }
                     return;
                 }
                 const server = (await response.json()) as ServerClassesBlob;
-                if (cancelled) return;
+                if (!isCurrent()) return;
 
                 const localClasses = readLocalClasses();
                 const syncMeta = readSyncMeta();
@@ -440,6 +472,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             action: {
                                 label: syncText('sync.linkAction'),
                                 onClick: () => {
+                                    if (!isCurrent()) return;
                                     localClasses.forEach(c => markClassDirty(c.id));
                                     markClassesListDirty();
                                     schedulePush(500);
@@ -511,6 +544,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
                 await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer }) => {
+                    if (!isCurrent()) return;
                     if (action === 'apply') {
                         // le cloud va remplacer le local : archiver la version locale perdante
                         if (conflict) {
@@ -522,7 +556,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // ce cas, on conserve le cahier local et on applique seulement
                         // ses métadonnées (nom, matière, cycle).
                         const shouldFetchLessons = localIndex === -1 || serverIsNewer;
-                        const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id) : null;
+                        const blob = shouldFetchLessons ? await fetchLessonsBlob(serverClass.id, user.phone, controller.signal) : null;
+                        if (!isCurrent()) return;
                         if (blob) {
                             const contentDirection = isContentDirection(blob.contentDirection)
                                 ? blob.contentDirection
@@ -547,13 +582,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     } else if (action === 'requeue') {
                         // le local va écraser le cloud au prochain push : archiver la version cloud perdante
                         if (conflict) {
-                            const blob = await fetchLessonsBlob(serverClass.id);
+                            const blob = await fetchLessonsBlob(serverClass.id, user.phone, controller.signal);
+                            if (!isCurrent()) return;
                             if (blob) backupConflictVersion(serverClass.id, blob.lessonsData ?? [], 'cloud');
                             conflictNames.push(serverClass.name);
                         }
                         markClassDirty(serverClass.id);
                     }
                 }));
+                if (!isCurrent()) return;
 
                 if (conflictNames.length > 0) {
                     toast.warning(
@@ -634,13 +671,16 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setSyncStatus('synced');
                 }
             } catch (error) {
-                logger.error('Sync pull failed (offline?)', error);
-                if (!cancelled) setSyncStatus('offline');
+                if (isCurrent()) {
+                    logger.error('Sync pull failed (offline?)', error);
+                    setSyncStatus('offline');
+                }
             }
         })();
 
         return () => {
             cancelled = true;
+            controller.abort();
         };
     }, [authStatus, user, schedulePush]);
 

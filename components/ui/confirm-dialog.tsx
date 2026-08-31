@@ -56,8 +56,10 @@ export function ConfirmDialog({
             isOpen={open}
             onClose={() => onOpenChange(false)}
             maxWidth="sm"
+            mobilePresentation="dialog"
+            dragHandle={false}
+            swipeToDismiss={false}
             blockDismiss={requiresTypedConfirmation}
-            className="gap-4"
             title={
                 <div className="flex items-center gap-3">
                     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
@@ -78,12 +80,12 @@ export function ConfirmDialog({
             }
             description={description}
             footer={
-                <div className="flex flex-row items-center justify-end gap-2.5 w-full">
+                <div className="flex w-full flex-col-reverse items-stretch justify-end gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
                     <Button
                         type="button"
                         variant="secondary"
                         onClick={handleCancel}
-                        className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm"
+                        className="min-h-11 h-auto rounded-lg px-4 py-2 whitespace-normal text-sm font-semibold"
                     >
                         {cancelLabel ?? t('common.cancel')}
                     </Button>
@@ -92,13 +94,14 @@ export function ConfirmDialog({
                         variant={variant === 'destructive' ? 'destructive' : 'default'}
                         onClick={handleConfirm}
                         disabled={!confirmationIsValid}
-                        className="rounded-xl h-10 px-5 text-xs font-bold sm:text-sm shadow-sm"
+                        className="min-h-11 h-auto rounded-lg px-5 py-2 whitespace-normal text-sm font-semibold shadow-sm"
                     >
                         {confirmLabel ?? t('common.confirm')}
                     </Button>
                 </div>
             }
         >
+            <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
             {requiresTypedConfirmation && (
                 <label className="space-y-2 pt-1 block">
                     <span className="block text-xs font-semibold leading-relaxed text-foreground">

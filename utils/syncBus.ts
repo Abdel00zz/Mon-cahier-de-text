@@ -219,6 +219,19 @@ export const resetSyncState = (): void => {
     }
 };
 
+/** Restore the queue belonging to the newly activated account, without deleting it. */
+export const reloadSyncState = (): void => {
+    const state = readPendingState();
+    dirtyClassVersions.clear();
+    deletedClasses.clear();
+    for (const [id, version] of Object.entries(state?.dirtyClassVersions ?? {})) dirtyClassVersions.set(id, version);
+    for (const [id, deletedAt] of Object.entries(state?.deletedClasses ?? {})) deletedClasses.set(id, deletedAt);
+    for (const id of state?.deletedClassIds ?? []) if (!deletedClasses.has(id)) deletedClasses.set(id, new Date(0).toISOString());
+    dirtySeq = state?.dirtySeq ?? 0;
+    classesListVersion = state?.classesListVersion ?? 0;
+    classesListSyncedVersion = state?.classesListSyncedVersion ?? 0;
+};
+
 export interface PendingWork {
     dirtyClassIds: string[];
     /** version capturée par classe : ne nettoyer que si inchangée depuis */

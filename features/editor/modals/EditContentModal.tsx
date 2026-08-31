@@ -72,8 +72,8 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
     if (!item || !isDirty) return;
     onSave(formData);
   };
-  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground';
-  const fieldClass = 'h-11 rounded-xl border-border/75 bg-background shadow-xs focus-visible:ring-2 focus-visible:ring-primary/20';
+  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]';
+  const fieldClass = 'h-11 rounded-xl border-transparent bg-white dark:bg-[#202124] shadow-none focus-visible:ring-2 focus-visible:ring-transparent focus-visible:border-transparent';
   const description = String(formData.description ?? '');
   const editedTitleField: 'title' | 'name' = titleOnly ? titleField : 'title';
   const editedTitle = String(formData[editedTitleField] ?? '');
@@ -86,12 +86,12 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
       description={t(titleOnly ? 'editContent.titleOnlyDescription' : 'editContent.description')}
       maxWidth={titleOnly ? 'lg' : '2xl'}
       className={titleOnly ? 'sm:max-w-2xl sm:rounded-2xl' : 'sm:max-w-4xl sm:rounded-2xl'}
-      headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7"
+      headerClassName="border-b-0 bg-white dark:bg-[#202124] px-5 pb-3.5 pt-5 sm:px-7"
       bodyClassName="px-5 py-5 sm:px-7"
-      footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7"
+      footerClassName="border-t-0 bg-white dark:bg-[#202124] px-5 py-3.5 sm:px-7"
       footer={(
         <div className="flex w-full items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={reset} disabled={!isDirty} className="h-9 rounded-xl px-3 text-xs text-muted-foreground">
+          <Button type="button" variant="ghost" onClick={reset} disabled={!isDirty} className="h-9 rounded-xl px-3 text-xs text-[#5f6368] dark:text-[#9aa0a6]">
             {t('editContent.reset')}
           </Button>
           <div className="flex items-center gap-2">
@@ -113,12 +113,12 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 className={`${fieldClass} font-semibold`}
               />
             </section>
-            <aside className="min-w-0 rounded-2xl border border-border/70 bg-muted/20 p-4">
-              <div className="border-b border-border/60 pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <aside className="min-w-0 rounded-2xl border border-transparent bg-transparent border-none p-4">
+              <div className="border-b border-[#e0e0e0] dark:border-[#5f6368] pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]">
                 {t('editContent.preview')}
               </div>
               <MathText source={editedTitle}>
-                <h3 className="mt-4 min-h-11 break-words text-start text-sm sm:text-base font-bold leading-snug text-foreground">
+                <h3 className="mt-4 min-h-11 break-words text-start text-sm sm:text-base font-bold leading-snug text-[#202124] dark:text-[#e8eaed]">
                   {editedTitle || t('editContent.untitled')}
                 </h3>
               </MathText>
@@ -158,22 +158,22 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 />
               </section>
 
-              <aside className="min-w-0 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:sticky lg:top-0 lg:min-h-[260px]">
-                <div className="border-b border-border/60 pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <aside className="min-w-0 rounded-2xl border border-transparent bg-transparent border-none p-4 lg:sticky lg:top-0 lg:min-h-[260px]">
+                <div className="border-b border-[#e0e0e0] dark:border-[#5f6368] pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]">
                   {t('editContent.preview')}
                 </div>
                 <MathText source={`${editedTitle}\n${description}`}>
                   <article className="mt-3 min-w-0 break-words text-start">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-primary">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-blue-500">
                       <span>{tc(`contentType.${String(formData.type ?? '')}`)}</span>
                       {formData.number ? <span>· {String(formData.number)}</span> : null}
-                      {formData.page ? <span className="text-muted-foreground">p. {String(formData.page)}</span> : null}
+                      {formData.page ? <span className="text-[#5f6368] dark:text-[#9aa0a6]">p. {String(formData.page)}</span> : null}
                     </div>
-                    <h3 className="mt-2 text-sm sm:text-base font-bold leading-snug text-foreground">
+                    <h3 className="mt-2 text-sm sm:text-base font-bold leading-snug text-[#202124] dark:text-[#e8eaed]">
                       {editedTitle || t('editContent.untitled')}
                     </h3>
-                    <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
-                      {description ? renderDescriptionWithBold(description) : <span className="italic text-muted-foreground/50">{t('editContent.previewEmpty')}</span>}
+                    <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#5f6368] dark:text-[#9aa0a6]">
+                      {description ? renderDescriptionWithBold(description) : <span className="italic text-[#5f6368] dark:text-[#9aa0a6]/50">{t('editContent.previewEmpty')}</span>}
                     </div>
                   </article>
                 </MathText>

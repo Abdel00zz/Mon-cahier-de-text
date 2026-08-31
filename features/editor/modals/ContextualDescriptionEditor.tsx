@@ -125,7 +125,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
           applyFormat(action, { start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd });
         }}
         rows={10}
-        className="min-h-[230px] resize-y rounded-2xl border-border/75 bg-background px-4 py-4 text-start text-sm leading-7 shadow-sm focus-visible:ring-2 focus-visible:ring-primary/20"
+        className="min-h-[230px] resize-y rounded-2xl border-transparent bg-white dark:bg-[#202124] px-4 py-4 text-start text-sm leading-7 shadow-none focus-visible:ring-2 focus-visible:ring-transparent focus-visible:border-transparent"
         placeholder={placeholder}
         spellCheck
       />

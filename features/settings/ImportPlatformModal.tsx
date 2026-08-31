@@ -61,9 +61,9 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       description={t('settings.importModal.description')}
       maxWidth="xl"
       className="sm:max-w-2xl sm:rounded-2xl"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/60"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">

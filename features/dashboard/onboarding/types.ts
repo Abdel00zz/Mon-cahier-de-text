@@ -2,9 +2,9 @@ import type { ComponentType } from 'react';
 import type { AppConfig, ClassInfo, Cycle } from '@/types';
 import type { ModalLang } from '@/components/ui/lang-toggle';
 
-export const ONBOARDING_TOTAL_STEPS = 5 as const;
+export const ONBOARDING_TOTAL_STEPS = 6 as const;
 
-export type OnboardingStep = 1 | 2 | 3 | 4 | 5;
+export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
 type ClassCreationMode = 'catalog' | 'manual';
 type ClassDraftIssue = 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass';
 
@@ -15,7 +15,7 @@ export interface OnboardingPageProps {
     onCreateClass: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
     onDeleteClass: (classId: string) => void;
     onComplete: () => Promise<void> | void;
-    onSkip: () => void;
+    onSkip: () => Promise<void> | void;
 }
 
 export interface CycleOption {

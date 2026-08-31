@@ -1,14 +1,31 @@
-import React, { useState, useEffect, useRef, useCallback, FC } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, FC } from 'react';
 import { cn } from '@/lib/utils';
 import { AppConfig, AppLocale, ClassInfo, Cycle } from '@/types';
 import { localeMetadata, useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { Modal } from '@/components/ui/modal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CountryFlag } from '@/components/ui/CountryFlags';
 import { AccountTab } from './components/AccountTab';
 import { getProvincesForAcademy, MOROCCO_EDUCATION_ACADEMIES } from '@/utils/moroccoEducation';
+import { SUBJECTS, formatLocalizedSubjectDisplayName } from '@/constants';
+import {
+  CalendarRange,
+  Bell,
+  Database,
+  User,
+  School,
+  GraduationCap,
+  FlaskConical,
+  FolderOpen,
+  CircleHelp,
+  ChevronRight,
+  CircleCheck,
+  Save,
+  Palette,
+} from '@/components/ui/icons';
 
 const ScheduleTab = React.lazy(() => import('./components/ScheduleTab').then(m => ({ default: m.ScheduleTab })));
 const NotificationsTab = React.lazy(() => import('./components/NotificationsTab').then(m => ({ default: m.NotificationsTab })));
@@ -35,36 +52,11 @@ const preloadTabComponent = (tab: SettingsCategory) => {
 };
 
 const TabLoadingSkeleton: FC = () => (
-  <div className="space-y-4 p-2 sm:p-3">
-    <div className="flex items-center gap-3.5 mb-5">
-      <div className="h-10 w-10 shrink-0 rounded-xl skeleton-shimmer" />
-      <div className="space-y-2 flex-1 min-w-0">
-        <div className="h-5 w-44 rounded-md skeleton-shimmer" />
-        <div className="h-3.5 w-64 max-w-full rounded-md skeleton-shimmer" />
-      </div>
-    </div>
-    <div className="h-28 w-full rounded-2xl skeleton-shimmer border border-border/40" />
-    <div className="h-44 w-full rounded-2xl skeleton-shimmer border border-border/30" />
+  <div className="space-y-3 p-2 sm:p-3">
+    <div className="h-24 w-full rounded-xl skeleton-shimmer border border-border/40" />
+    <div className="h-36 w-full rounded-xl skeleton-shimmer border border-border/30" />
   </div>
 );
-import { SUBJECTS, formatLocalizedSubjectDisplayName } from '@/constants';
-import {
-  CalendarRange,
-  Bell,
-  Database,
-  User,
-  School,
-  GraduationCap,
-  FlaskConical,
-  Settings,
-  FolderOpen,
-  CircleHelp,
-  ChevronRight,
-  CircleCheck,
-  Save,
-  LogOut,
-  Palette,
-} from '@/components/ui/icons';
 
 const CYCLES: { key: Cycle; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: 'college', icon: School },
@@ -78,6 +70,7 @@ const SETTINGS_INTERFACE_LOCALES = localeMetadata.filter(option => option.value 
 interface ConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenGuide: () => void;
   config: AppConfig;
   onConfigChange: (newConfig: Partial<AppConfig>) => void;
   onExportPlatform: () => void;
@@ -88,11 +81,11 @@ interface ConfigModalProps {
 }
 
 type SettingsCategory =
-  | 'compte'
+  | 'emploi'
   | 'profil'
   | 'apparence'
-  | 'emploi'
   | 'notifications'
+  | 'compte'
   | 'donnees'
   | 'archives'
   | 'assistance';
@@ -105,26 +98,13 @@ interface SettingMenuItem {
   group: 'main' | 'support';
 }
 
+/** Ordre de mérite pédagogique et professionnel */
 const SETTING_ITEMS: SettingMenuItem[] = [
-  {
-    id: 'compte',
-    titleKey: 'settings.item.account',
-    descKey: 'settings.desc.account',
-    icon: User,
-    group: 'main',
-  },
   {
     id: 'emploi',
     titleKey: 'settings.item.schedule',
     descKey: 'settings.desc.schedule',
     icon: CalendarRange,
-    group: 'main',
-  },
-  {
-    id: 'apparence',
-    titleKey: 'settings.item.appearance',
-    descKey: 'settings.desc.appearance',
-    icon: Palette,
     group: 'main',
   },
   {
@@ -135,10 +115,24 @@ const SETTING_ITEMS: SettingMenuItem[] = [
     group: 'main',
   },
   {
+    id: 'apparence',
+    titleKey: 'settings.item.appearance',
+    descKey: 'settings.desc.appearance',
+    icon: Palette,
+    group: 'main',
+  },
+  {
     id: 'notifications',
     titleKey: 'settings.item.notifications',
     descKey: 'settings.desc.notifications',
     icon: Bell,
+    group: 'main',
+  },
+  {
+    id: 'compte',
+    titleKey: 'settings.item.account',
+    descKey: 'settings.desc.account',
+    icon: User,
     group: 'main',
   },
   {
@@ -153,7 +147,7 @@ const SETTING_ITEMS: SettingMenuItem[] = [
     titleKey: 'settings.item.archives',
     descKey: 'settings.desc.archives',
     icon: FolderOpen,
-    group: 'main',
+    group: 'support',
   },
   {
     id: 'assistance',
@@ -164,9 +158,10 @@ const SETTING_ITEMS: SettingMenuItem[] = [
   },
 ];
 
-export const ConfigModal: FC<ConfigModalProps> = ({
+export const ConfigModal: React.FC<ConfigModalProps> = ({
   isOpen,
   onClose,
+  onOpenGuide,
   config,
   onConfigChange,
   onExportPlatform,
@@ -175,49 +170,46 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   onCreateClass,
 }) => {
   const { locale, isRtl, t } = useLocale();
+  const currentLocale = config.applicationLocale ?? locale;
   const { user } = useAuth();
-  const [localConfig, setLocalConfig] = useState(config);
+  // Seuls les champs de profil réellement modifiés attendent « Enregistrer ».
+  // Les autres onglets suivent toujours la configuration courante (synchro incluse).
+  const [profileDraft, setProfileDraft] = useState<Partial<AppConfig>>({});
+  const [pendingExit, setPendingExit] = useState<'close' | 'guide' | null>(null);
+  const hasProfileChanges = useMemo(() => Object.entries(profileDraft).some(([key, value]) =>
+    JSON.stringify(value) !== JSON.stringify(config[key as keyof AppConfig])), [profileDraft, config]);
+  const finishExit = (destination: 'close' | 'guide') => {
+    setProfileDraft({});
+    setPendingExit(null);
+    if (destination === 'guide') onOpenGuide();
+    else onClose();
+  };
+  const requestExit = (destination: 'close' | 'guide' = 'close') => {
+    if (hasProfileChanges) setPendingExit(destination);
+    else finishExit(destination);
+  };
+  const localConfig = useMemo(() => ({ ...config, ...profileDraft }), [config, profileDraft]);
+  const updateProfileDraft = (patch: Partial<AppConfig>) => {
+    setProfileDraft(previous => ({ ...previous, ...patch }));
+  };
   const wasOpenRef = useRef(false);
-  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('compte');
-  const [mobileSubViewOpen, setMobileSubViewOpen] = useState(false);
-  // Sur ordinateur : menu ouvert avec labels visibles par défaut
+  const [activeCategory, setActiveCategory] = useState<SettingsCategory>('emploi');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   useEffect(() => {
     if (isOpen && !wasOpenRef.current) {
-      setLocalConfig(config);
+      setProfileDraft({});
+      setPendingExit(null);
     }
     wasOpenRef.current = isOpen;
   }, [isOpen, config]);
 
   const handleSelectCategory = (id: SettingsCategory) => {
     setActiveCategory(id);
-    if (window.innerWidth < 1024) {
-      setMobileSubViewOpen(true);
-      window.history.pushState({ ...window.history.state, settingsSubView: id }, '');
-    }
   };
 
-  const handleBackToCategories = () => {
-    if (window.history.state?.settingsSubView) {
-      window.history.back();
-      return;
-    }
-    setMobileSubViewOpen(false);
-  };
-
-  useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      if (mobileSubViewOpen && !e.state?.settingsSubView) {
-        setMobileSubViewOpen(false);
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [mobileSubViewOpen]);
-
-  // Consomme d'éventuels liens directs (ex. vers l'emploi du temps)
+  // Consomme d'éventuels liens directs
   useEffect(() => {
     try {
       const requested = sessionStorage.getItem('config_initial_tab_v1');
@@ -229,10 +221,12 @@ export const ConfigModal: FC<ConfigModalProps> = ({
           donnees: 'donnees',
           compte: 'compte',
           profil: 'profil',
+          apparence: 'apparence',
+          archives: 'archives',
+          assistance: 'assistance',
         };
         if (mapping[requested]) {
           setActiveCategory(mapping[requested]);
-          setMobileSubViewOpen(true);
         }
       }
     } catch {
@@ -241,32 +235,23 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   }, []);
 
   const applyLive = useCallback((patch: Partial<AppConfig>) => {
-    setLocalConfig(prev => ({ ...prev, ...patch }));
     onConfigChange(patch);
   }, [onConfigChange]);
 
   const handleSave = () => {
-    const changedEntries = (Object.keys(localConfig) as Array<keyof AppConfig>)
-      .filter(key => JSON.stringify(localConfig[key]) !== JSON.stringify(config[key]))
-      .map(key => [key, localConfig[key]] as const);
-    if (changedEntries.length > 0) {
-      onConfigChange(Object.fromEntries(changedEntries) as Partial<AppConfig>);
+    if (Object.keys(profileDraft).length > 0) {
+      onConfigChange(profileDraft);
     }
     onClose();
   };
 
   const selectedAcademy = localConfig.academyRegion ?? '';
   const availableProvinces = getProvincesForAcademy(selectedAcademy);
-  const sectionTitleClass = 'font-bold tracking-tight text-base sm:text-[17px]';
 
-  // Matières enseignées (multi-sélection) : filtrent le choix de matière à la
-  // création d'une classe et pilotent le domaine des types de contenu.
   const selectedSubjects = localConfig.selectedSubjects ?? [];
   const toggleSubject = (subject: string) => {
-    setLocalConfig(prev => {
-      const current = prev.selectedSubjects ?? [];
-      // Le profil conserve toujours une matière : les écrans de création
-      // peuvent ainsi l'hériter sans demander un choix redondant.
+    setProfileDraft(prev => {
+      const current = prev.selectedSubjects ?? config.selectedSubjects ?? [];
       if (current.length === 1 && current.includes(subject)) return prev;
       const next = current.includes(subject)
         ? current.filter(s => s !== subject)
@@ -276,26 +261,26 @@ export const ConfigModal: FC<ConfigModalProps> = ({
   };
 
   const toggleCycle = (cycle: Cycle) => {
-    setLocalConfig(prev => {
-      const current: Cycle[] = prev.selectedCycles?.length ? prev.selectedCycles : ['college'];
-      if (current.includes(cycle)) {
-        // Un profil doit toujours conserver au moins un cycle pédagogique.
-        if (current.length === 1) return prev;
-        return { ...prev, selectedCycles: current.filter(item => item !== cycle), showAllCycles: false };
-      }
-      return { ...prev, selectedCycles: [...current, cycle], showAllCycles: false };
+    setProfileDraft(prev => {
+      const current = prev.selectedCycles ?? config.selectedCycles ?? [];
+      if (current.length === 1 && current.includes(cycle)) return prev;
+      const next = current.includes(cycle)
+        ? current.filter(c => c !== cycle)
+        : [...current, cycle];
+      return { ...prev, selectedCycles: next, showAllCycles: false };
     });
   };
 
   const languageSection = (
-    <section className="settings-section-block relative overflow-hidden p-4 sm:p-5">
-      <div className="mb-4 text-center">
-        <h3 className="text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">{t('language.settings.description')}</p>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+    <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-3.5 shadow-2xs">
+      <header className="mb-2.5">
+        <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5">{t('language.settings.description')}</p>
+      </header>
+
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-2.5">
         {SETTINGS_INTERFACE_LOCALES.map(option => {
-          const active = (localConfig.applicationLocale ?? 'fr') === option.value;
+          const active = currentLocale === option.value;
           return (
             <button
               key={option.value}
@@ -303,19 +288,22 @@ export const ConfigModal: FC<ConfigModalProps> = ({
               onClick={() => applyLive({ applicationLocale: option.value as AppLocale })}
               aria-pressed={active}
               className={cn(
-                'flex min-w-[110px] sm:min-w-[130px] flex-col items-center justify-center gap-2 rounded-2xl border p-3.5 sm:p-4 text-center transition-all duration-200 cursor-pointer shadow-xs',
+                'relative flex min-w-[105px] sm:min-w-[125px] flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-3 text-center transition-all duration-200 cursor-pointer active:scale-95',
                 active
-                  ? 'border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/25 font-bold shadow-sm'
-                  : 'border-border bg-background/60 text-muted-foreground hover:border-primary/30 hover:bg-muted/50 hover:text-foreground'
+                  ? 'border-amber-400 bg-[#feefc3] text-[#202124] dark:border-amber-500/50 dark:bg-[#41331c] dark:text-amber-100 font-bold shadow-xs ring-1 ring-amber-400/40'
+                  : 'border-border/70 bg-card/80 text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed] hover:border-amber-300/60'
               )}
             >
-              <div className="flex h-9 items-center justify-center">
-                <CountryFlag code={option.value as 'fr' | 'ar' | 'en'} className="w-8 h-5.5 rounded-xs shadow-xs" />
+              {active && (
+                <span className="absolute top-1.5 right-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#41331c]" />
+              )}
+              <div className="flex h-8 items-center justify-center">
+                <CountryFlag code={option.value as 'fr' | 'ar' | 'en'} className="w-8 h-5 rounded-xs shadow-xs" />
               </div>
-              <span className={cn('text-sm font-bold leading-tight', option.value === 'ar' && 'font-bold tracking-normal')}>
+              <span className={cn('text-xs font-bold leading-tight', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[11px] font-medium text-muted-foreground', active && 'text-cyan-600 dark:text-cyan-400 font-semibold')}>
+              <span className={cn('text-[10px] font-semibold', active ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground')}>
                 {option.nativeName}
               </span>
             </button>
@@ -329,81 +317,59 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     switch (activeCategory) {
       case 'compte':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <User className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.accountTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.accountDescription')}
-              </p>
-            </div>
-            {languageSection}
+          <div className="space-y-3 sm:space-y-3.5">
             <AccountTab />
+            {languageSection}
           </div>
         );
 
       case 'profil':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <School className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.profileTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.profileDescription')}
-              </p>
-            </div>
-
+          <div className="space-y-3 sm:space-y-3.5">
             {/* 1. Profil & Matière */}
-            <section className="settings-section-block relative overflow-hidden p-3.5 sm:p-4.5">
-              <header className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-border/50">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-2xs">
-                  <User className="h-4 w-4 stroke-[2]" />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">{t('settings.group.profile')}</h3>
-                  <p className="text-[11px] sm:text-xs leading-relaxed text-muted-foreground">{t('settings.subjectsHint')}</p>
-                </div>
+            <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-4 shadow-2xs">
+              <header className="mb-2.5">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.profile')}</h3>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t('settings.subjectsHint')}</p>
               </header>
 
-              <div className="space-y-3.5">
-                <div className="grid gap-3.5 sm:grid-cols-2">
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
+                    <label htmlFor="settings-teacher-name" className="block text-xs font-semibold text-foreground/80">
                       {t('settings.teacherName')}
                     </label>
                     <Input
+                      id="settings-teacher-name"
                       type="text"
                       value={localConfig.defaultTeacherName || ''}
-                      onChange={e => setLocalConfig(prev => ({ ...prev, defaultTeacherName: e.target.value }))}
+                      onChange={e => updateProfileDraft({ defaultTeacherName: e.target.value })}
                       placeholder={t('settings.teacherPlaceholder')}
-                      className="h-9 sm:h-10 rounded-xl border-border/70 bg-background/80 px-3.5 text-sm font-medium text-foreground shadow-2xs placeholder:text-muted-foreground/60 focus:border-cyan-500/50"
+                      className="h-11 rounded-lg border-border/70 bg-background/80 px-3 text-base sm:text-sm font-medium text-foreground shadow-2xs placeholder:text-muted-foreground/60 focus:border-amber-400"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
+                    <label htmlFor="settings-phone" className="block text-xs font-semibold text-foreground/80">
                       {t('settings.phone')}
                     </label>
                     <Input
+                      id="settings-phone"
                       type="tel"
                       value={user?.phone ?? ''}
                       disabled
                       readOnly
                       placeholder="—"
-                      className="h-9 sm:h-10 rounded-xl border-border/40 bg-muted/40 px-3.5 text-sm shadow-2xs text-muted-foreground"
+                      className="h-11 rounded-lg border-border/40 bg-muted/40 px-3 text-base sm:text-sm shadow-2xs text-muted-foreground font-mono"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5 pt-0.5">
-                  <label className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
+                <div className="space-y-1 pt-0.5">
+                  <label className="block text-xs font-semibold text-foreground/80">
                     {t('settings.subjects')}
                   </label>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {SUBJECTS.slice(0, subjectExpanded ? SUBJECTS.length : 6).map(subject => {
                       const active = selectedSubjects.includes(subject);
                       return (
@@ -413,10 +379,10 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                           aria-pressed={active}
                           onClick={() => toggleSubject(subject)}
                           className={cn(
-                            'rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer shadow-2xs',
+                            'rounded-xl border px-2.5 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer shadow-2xs',
                             active
-                              ? 'border-cyan-500/40 bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 ring-1 ring-inset ring-cyan-500/30 shadow-[0_2px_8px_rgba(6,182,212,0.18)] scale-[1.02]'
-                              : 'border-border/60 bg-background/60 text-muted-foreground hover:border-cyan-500/30 hover:bg-muted/50 hover:text-foreground'
+                              ? 'border-amber-400/80 bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 dark:border-amber-500/50 shadow-xs ring-1 ring-amber-400/30'
+                              : 'border-border/60 bg-background/60 text-muted-foreground hover:border-amber-400/40 hover:bg-muted/50 hover:text-foreground'
                           )}
                         >
                           {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -425,11 +391,11 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                     })}
                   </div>
                   {SUBJECTS.length > 6 && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         onClick={() => setSubjectExpanded(v => !v)}
-                        className="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                        className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline cursor-pointer"
                       >
                         {subjectExpanded ? t('settings.subjectsSeeLess') : t('settings.subjectsSeeMore')}
                       </button>
@@ -440,45 +406,40 @@ export const ConfigModal: FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="settings-section-block relative overflow-hidden p-3.5 sm:p-4.5">
-              <header className="flex items-center gap-2.5 mb-3.5 pb-2.5 border-b border-border/50">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 shadow-2xs">
-                  <School className="h-4 w-4 stroke-[2]" />
-                </span>
-                <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">{t('settings.group.school')}</h3>
+            <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-4 shadow-2xs">
+              <header className="mb-2.5">
+                <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
               </header>
 
-              <div className="space-y-3.5">
-                <div className="space-y-1.5">
-                  <label className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-foreground/80">
                     {t('settings.cycle')}
                   </label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+                  <div className="grid grid-cols-3 gap-2">
                     {CYCLES.map(c => {
-                      const active = (localConfig.selectedCycles ?? ['college']).includes(c.key);
+                      const active = (localConfig.selectedCycles ?? []).includes(c.key);
                       return (
                         <button
                           key={c.key}
                           type="button"
                           onClick={() => toggleCycle(c.key)}
+                          aria-pressed={active}
                           className={cn(
-                            'group flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 transition-all duration-200 outline-none cursor-pointer',
-                            active
-                              ? 'border-primary/40 bg-primary/10 shadow-sm ring-1 ring-inset ring-primary/25'
-                              : 'border-border/60 bg-background/60 hover:border-primary/30 hover:bg-muted/40'
+                            'keep-surface keep-choice keep-interactive group flex min-h-11 flex-col items-center justify-center gap-1 p-2 cursor-pointer'
                           )}
                         >
                           <span className={cn(
-                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200 group-hover:scale-105',
+                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all',
                             active
-                              ? 'bg-primary text-primary-foreground shadow-xs'
+                              ? 'bg-amber-400/30 text-amber-950 dark:text-amber-100'
                               : 'bg-muted/60 text-muted-foreground'
                           )}>
-                            <c.icon className="h-4 w-4" />
+                            <c.icon className="h-3.5 w-3.5" />
                           </span>
                           <span className={cn(
                             'text-xs font-semibold leading-tight text-center',
-                            active ? 'text-cyan-600 dark:text-cyan-400' : 'text-muted-foreground'
+                            active ? 'text-[#202124] dark:text-amber-100 font-bold' : 'text-muted-foreground'
                           )}>
                             {t(`settings.cycle.${c.key}`)}
                           </span>
@@ -489,38 +450,32 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
-                    {t('settings.establishment')}
+                  <label htmlFor="settings-school" className="block text-sm font-medium text-foreground/80">
+                    {t('settings.school')}
                   </label>
                   <Input
                     type="text"
+                    id="settings-school"
                     value={localConfig.establishmentName || ''}
-                    onChange={e => setLocalConfig(prev => ({ ...prev, establishmentName: e.target.value }))}
-                    placeholder={t('settings.establishmentPlaceholder')}
-                    className="h-9 sm:h-10 rounded-xl border-border/70 bg-background/80 px-3.5 text-sm shadow-2xs focus:border-cyan-500/50"
+                    onChange={e => updateProfileDraft({ establishmentName: e.target.value })}
+                    placeholder={t('settings.schoolPlaceholder')}
+                    className="h-11 rounded-lg border-[#e0e0e0] bg-background px-3 text-base text-foreground shadow-none dark:border-[#5f6368]"
                   />
                 </div>
 
-                <div className="grid gap-3.5 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor="academy-region" className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
-                      {t('settings.academy')}
+                    <label htmlFor="settings-academy" className="block text-sm font-medium text-foreground/80">
+                      {t('settings.academyRegion')}
                     </label>
                     <select
-                      id="academy-region"
+                      id="settings-academy"
                       value={selectedAcademy}
-                      onChange={event => {
-                        const academyRegion = event.target.value;
-                        const provinces = getProvincesForAcademy(academyRegion);
-                        setLocalConfig(prev => ({
-                          ...prev,
-                          academyRegion,
-                          educationProvince: provinces.some(province => province.id === prev.educationProvince)
-                            ? prev.educationProvince
-                            : '',
-                        }));
-                      }}
-                      className="h-9 sm:h-10 w-full rounded-xl border border-border/70 bg-background/80 px-3.5 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+                      onChange={event => updateProfileDraft({
+                        academyRegion: event.target.value,
+                        educationProvince: '',
+                      })}
+                      className="h-11 w-full min-w-0 rounded-lg border border-[#e0e0e0] bg-background px-2.5 text-base focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-[#5f6368] cursor-pointer"
                     >
                       <option value="">{t('settings.chooseAcademy')}</option>
                       {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
@@ -532,15 +487,15 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="education-province" className="block text-xs sm:text-[13px] font-semibold text-foreground/80">
-                      {t('settings.province')}
+                    <label htmlFor="settings-province" className="block text-sm font-medium text-foreground/80">
+                      {t('settings.educationProvince')}
                     </label>
                     <select
-                      id="education-province"
+                      id="settings-province"
                       value={localConfig.educationProvince ?? ''}
-                      disabled={!selectedAcademy}
-                      onChange={event => setLocalConfig(prev => ({ ...prev, educationProvince: event.target.value }))}
-                      className="h-9 sm:h-10 w-full rounded-xl border border-border/70 bg-background/80 px-3.5 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60"
+                      disabled={!selectedAcademy || availableProvinces.length === 0}
+                      onChange={event => updateProfileDraft({ educationProvince: event.target.value })}
+                      className="h-11 w-full min-w-0 rounded-lg border border-[#e0e0e0] bg-background px-2.5 text-base focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-[#5f6368] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                     >
                       <option value="">
                         {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
@@ -561,16 +516,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'apparence':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <Palette className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.appearanceTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.appearanceDescription')}
-              </p>
-            </div>
+          <div className="space-y-3 sm:space-y-3.5">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <AppearanceTab
                 config={localConfig}
@@ -582,13 +528,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'emploi':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <CalendarRange className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.scheduleTitle')}
-              </h2>
-            </div>
+          <div className="space-y-3 sm:space-y-3.5">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} />
             </React.Suspense>
@@ -597,16 +537,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'notifications':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <Bell className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.notificationsTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.notificationsDescription')}
-              </p>
-            </div>
+          <div className="space-y-3 sm:space-y-3.5">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <NotificationsTab config={localConfig} onChange={applyLive} />
             </React.Suspense>
@@ -615,38 +546,28 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'donnees':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <Database className="h-4.5 w-4.5 text-primary shrink-0" />
-                {t('settings.section.dataTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.dataDescription')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="settings-section-block flex flex-col justify-between p-3.5 sm:p-4.5">
+          <div className="space-y-3 sm:space-y-3.5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border/80 bg-card/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">{t('settings.exportTitle')}</h3>
-                  <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h3>
+                  <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
                     {t('settings.exportDescription')}
                   </p>
                 </div>
                 <Button
                   type="button"
                   onClick={onExportPlatform}
-                  className="h-10 w-full rounded-xl bg-primary font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 cursor-pointer"
+                  className="h-8.5 w-full rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 cursor-pointer"
                 >
                   {t('settings.exportAction')}
                 </Button>
               </div>
 
-              <div className="settings-section-block flex flex-col justify-between p-3.5 sm:p-4.5">
+              <div className="rounded-xl border border-border/80 bg-card/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground tracking-tight mb-1">{t('settings.importTitle')}</h3>
-                  <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1">{t('settings.importTitle')}</h3>
+                  <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
                     {t('settings.importDescription')}
                   </p>
                 </div>
@@ -654,7 +575,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
                   type="button"
                   variant="outline"
                   onClick={onOpenImport}
-                  className="w-full border-border bg-background/60 font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-10"
+                  className="w-full border-border bg-background/60 text-xs font-bold hover:bg-muted/60 transition-all cursor-pointer rounded-xl h-8.5"
                 >
                   {t('settings.importAction')}
                 </Button>
@@ -665,16 +586,7 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'archives':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <FolderOpen className="h-4.5 w-4.5 text-cyan-500 shrink-0" />
-                {t('settings.section.archivesTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.archivesDescription')}
-              </p>
-            </div>
+          <div className="space-y-3 sm:space-y-3.5">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ArchivesSection schoolYearStart={config.schoolYearStart} />
             </React.Suspense>
@@ -683,81 +595,66 @@ export const ConfigModal: FC<ConfigModalProps> = ({
 
       case 'assistance':
         return (
-          <div className="space-y-4 sm:space-y-5">
-            <div className="mb-3.5 sm:mb-4">
-              <h2 className={cn('text-base sm:text-[17px] font-bold text-foreground flex items-center gap-2', sectionTitleClass)}>
-                <CircleHelp className="h-4.5 w-4.5 text-cyan-500 shrink-0" />
-                {t('settings.section.supportTitle')}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t('settings.section.supportDescription')}
-              </p>
-            </div>
-
-            {/* Premium Card */}
-            <div className="settings-section-block p-3.5 sm:p-4.5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
-                    <CircleCheck className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {t('settings.support.planTitle')}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {t('settings.support.planDescription')}
-                    </p>
-                  </div>
+          <div className="space-y-3 sm:space-y-3.5">
+            {/* Plan Info Card */}
+            <div className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-3.5 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30">
+                  <CircleCheck className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground">
+                    {t('settings.support.planTitle')}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('settings.support.planDescription')}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* List of actions */}
-            <div className="settings-section-block divide-y divide-border/50 overflow-hidden">
-              <div className="p-3.5 sm:p-4 flex items-center justify-between gap-4">
+            <div className="rounded-xl border border-border/80 bg-card/60 shadow-2xs overflow-hidden divide-y-0 space-y-0.5">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-foreground">{t('settings.support.devicesTitle')}</h4>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
                     {t('settings.support.devicesDescription')}
                   </p>
                 </div>
-                <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 ring-1 ring-emerald-500/20">
+                <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 ring-1 ring-emerald-500/20 shrink-0">
                   {t('settings.support.connected')}
                 </span>
               </div>
 
-              <div className="p-4 flex items-center justify-between gap-4">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">{t('settings.support.guideTitle')}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t('settings.support.guideDescription')}
+                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.guideTitle')}</h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {locale === 'ar' ? 'استكشف شرح جميع الميزات' : 'Explorez le guide complet'}
                   </p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    sessionStorage.setItem('open_guide_now', 'true');
-                    onClose();
-                  }}
-                  className="text-xs font-bold cursor-pointer border-border rounded-xl"
+                  onClick={() => requestExit('guide')}
+                  className="text-xs font-medium cursor-pointer border-border rounded-lg h-11 px-3 shrink-0"
                 >
                   {t('settings.support.openGuide')}
                 </Button>
               </div>
 
-              <div className="p-4 flex items-center justify-between gap-4">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">{t('settings.support.feedbackTitle')}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t('settings.support.feedbackDescription')}
+                  <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.feedbackTitle')}</h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {locale === 'ar' ? 'تواصل مع فريق الدعم والتطوير' : 'Contactez le support'}
                   </p>
                 </div>
                 <a
                   href="mailto:support@cahier-textes.ma"
-                  className="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline"
+                  className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline shrink-0"
                 >
                   {t('settings.support.contact')}
                 </a>
@@ -771,342 +668,236 @@ export const ConfigModal: FC<ConfigModalProps> = ({
     }
   };
 
-  const { logout } = useAuth();
-
-  const footer = activeCategory === 'apparence' ? (
-    <div className="flex w-full items-center justify-between gap-3">
-      <span className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-        <CircleCheck className="h-4 w-4" />
-        {locale === 'ar' ? 'يُطبّق كل اختيار فوراً' : locale === 'en' ? 'Each choice is applied instantly' : 'Chaque choix est appliqué immédiatement'}
-      </span>
-      <Button type="button" onClick={onClose} className="touch-target rounded-xl px-5 text-xs font-bold">
-        {t('common.close')}
+  const footer = (
+    <div className="space-y-3">
+    <p className="text-xs leading-relaxed text-muted-foreground">{t('settings.liveChangesHint')}</p>
+    <div className="flex w-full flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => requestExit()}
+        className="text-xs font-medium cursor-pointer rounded-lg min-h-11 px-4 border border-border/60"
+      >
+        {t(hasProfileChanges ? 'settings.discardProfile' : 'common.close')}
       </Button>
-    </div>
-  ) : (
-    <div className="flex w-full flex-wrap items-center justify-between gap-3">
-      <div>
-        {activeCategory === 'compte' && user ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => logout()}
-            className="h-10 rounded-lg border border-destructive/45 bg-transparent px-4 text-xs font-bold text-destructive shadow-none transition-colors hover:border-destructive/70 hover:bg-destructive/[0.06] hover:text-destructive cursor-pointer gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            {t('account.signOut')}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-            className="text-xs font-bold cursor-pointer rounded-xl h-10 border border-white/[0.08]"
-          >
-            {t('common.cancel')}
-          </Button>
-        )}
-      </div>
 
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          onClick={handleSave}
-          className="h-10 gap-2 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-sm transition-[background-color,transform] hover:bg-primary/90 active:scale-[0.99] cursor-pointer"
-        >
-          <Save className="h-4 w-4" />
-          {t('settings.saveChanges')}
-        </Button>
-      </div>
+      {hasProfileChanges && <Button
+        type="button"
+        onClick={handleSave}
+        className="min-h-11 gap-1.5 rounded-lg bg-[#feefc3] text-[#202124] hover:bg-amber-200 dark:bg-[#41331c] dark:text-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-500/40 px-4 text-xs font-semibold cursor-pointer"
+      >
+        <Save className="h-3.5 w-3.5" />
+        <span>{t('settings.saveProfile')}</span>
+      </Button>}
+    </div>
     </div>
   );
 
-  const getCategoryDescription = (id: SettingsCategory, userLocale: AppLocale): string => {
-    const map: Record<SettingsCategory, Record<AppLocale, string>> = {
-      compte: {
-        fr: 'Langue, identifiants & session',
-        ar: 'اللغة، المعرفات والحساب',
-        en: 'Language, login & session',
-      },
-      profil: {
-        fr: 'Nom, cycles, matière & académie',
-        ar: 'الاسم، الأسلاك، المادة والأكاديمية',
-        en: 'Name, cycles, subject & academy',
-      },
-      apparence: {
-        fr: 'Couleurs, polices & styles visuels',
-        ar: 'الألوان، الخطوط والتأثيرات البصرية',
-        en: 'Colors, typography & visual theme',
-      },
-      emploi: {
-        fr: 'Créneaux horaires & répartition',
-        ar: 'الحصص وتوزيع الساعات الأسبوعية',
-        en: 'Weekly slots & schedule balance',
-      },
-      notifications: {
-        fr: 'Alertes intelligentes & rappels',
-        ar: 'التنبيهات الذكية والإشعارات',
-        en: 'Smart alerts & reminders',
-      },
-      donnees: {
-        fr: 'Sauvegardes, export & reset',
-        ar: 'النسخ الاحتياطي والاستيراد',
-        en: 'Backups, export & reset',
-      },
-      archives: {
-        fr: 'Années scolaires & historique',
-        ar: 'السنوات السابقة والدفاتر المؤرشفة',
-        en: 'School years & archived notebooks',
-      },
-      assistance: {
-        fr: 'Guide d’utilisation & support',
-        ar: 'دليل الاستعمال والدعم الفني',
-        en: 'User guide & support',
-      },
-    };
-    return map[id]?.[userLocale] ?? map[id]?.fr ?? '';
-  };
-
   const mainMenuItems = SETTING_ITEMS.filter(i => i.group === 'main');
   const supportMenuItems = SETTING_ITEMS.filter(i => i.group === 'support');
-
   const isEffectiveCollapsed = isSidebarCollapsed;
 
-  // Master sidebar / list view
+  // Master sidebar
   const menuListContent = (
-    <div className="space-y-3 transition-all duration-300 h-full flex flex-col">
+    <div className="space-y-2.5 transition-all duration-300 h-full flex flex-col">
       {/* Sidebar Toggle Button (Desktop Only) */}
-      <div className={cn("hidden lg:flex items-center justify-between pb-1", isEffectiveCollapsed ? "justify-center" : "")}>
+      <div className={cn('hidden lg:flex items-center justify-between pb-1', isEffectiveCollapsed ? 'justify-center' : '')}>
         {!isEffectiveCollapsed && (
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
             {locale === 'ar' ? 'الأقسام' : 'Sections'}
           </span>
         )}
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="touch-target flex items-center justify-center rounded-xl bg-muted/50 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/40"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/40"
           title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
-          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
+          <ChevronRight className={cn('h-3.5 w-3.5 transition-transform duration-200', (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && 'rotate-180')} />
         </button>
       </div>
 
-      {/* Mobile Header (When on Phone) */}
-      <div className="block lg:hidden mb-2 px-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-          {locale === 'ar' ? 'أقسام الإعدادات' : 'Sections des paramètres'}
-        </span>
-      </div>
-
       {/* Paramètres principaux */}
-      <div className="flex-1">
-        <div className="space-y-2">
-          {mainMenuItems.map(item => {
-            const isActive = activeCategory === item.id;
-            const Icon = item.icon;
-            const desc = getCategoryDescription(item.id, locale);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelectCategory(item.id)}
-                onPointerDown={() => preloadTabComponent(item.id)}
-                onPointerEnter={() => preloadTabComponent(item.id)}
-                onFocus={() => preloadTabComponent(item.id)}
-                title={t(item.titleKey)}
-                className={cn(
-                  'group relative flex w-full items-center transition-all duration-200 cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'justify-between gap-3 px-3.5 py-3 text-start',
-                  isActive
-                    ? 'border border-primary/30 bg-primary/10 text-foreground shadow-xs'
-                    : 'border border-border/60 bg-card text-card-foreground hover:border-border hover:bg-accent/60'
-                )}
-              >
-                {/* Left section: Icon + Text */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div
-                    className={cn(
-                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary'
-                    )}
-                  >
-                    <Icon className="h-5 w-5 stroke-[2.2]" />
-                  </div>
-                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                    <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
-                      {t(item.titleKey)}
-                    </span>
-                    {desc && (
-                      <span className="block text-[11px] text-muted-foreground leading-tight truncate mt-0.5">
-                        {desc}
-                      </span>
-                    )}
-                  </div>
+      <div className="flex-1 space-y-1">
+        {mainMenuItems.map(item => {
+          const isActive = activeCategory === item.id;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleSelectCategory(item.id)}
+              aria-pressed={isActive}
+              onPointerDown={() => preloadTabComponent(item.id)}
+              onPointerEnter={() => preloadTabComponent(item.id)}
+              onFocus={() => preloadTabComponent(item.id)}
+              title={t(item.titleKey)}
+              className={cn(
+                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none',
+                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                isActive
+                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 font-bold border border-amber-300/80 dark:border-amber-500/40 shadow-2xs'
+                  : 'bg-transparent text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+              )}
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div
+                  className={cn(
+                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+                    isActive ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground'
+                  )}
+                >
+                  <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
+                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
+                  <span className={cn('block text-xs leading-snug truncate transition-colors', isActive ? 'font-bold' : 'font-medium')}>
+                    {t(item.titleKey)}
+                  </span>
+                </div>
+              </div>
 
-                {/* Right section: Vertically Centered Chevron Arrow */}
-                {!isEffectiveCollapsed && (
-                  <div className="shrink-0 self-center flex items-center justify-center ps-1">
-                    <ChevronRight
-                      className={cn(
-                        'h-4 w-4 text-muted-foreground/60 transition-transform duration-200 group-hover:translate-x-0.5',
-                        isRtl && 'rotate-180 group-hover:-translate-x-0.5',
-                        isActive && 'text-primary'
-                      )}
-                    />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+              {!isEffectiveCollapsed && (
+                <div className="shrink-0 self-center flex items-center justify-center ps-1">
+                  <ChevronRight
+                    className={cn(
+                      'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
+                      isRtl && 'rotate-180',
+                      isActive && 'text-[#202124] dark:text-amber-200'
+                    )}
+                  />
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Assistance & Aide */}
-      <div className="pt-2">
-        <div className="space-y-2">
-          {supportMenuItems.map(item => {
-            const isActive = activeCategory === item.id;
-            const Icon = item.icon;
-            const desc = getCategoryDescription(item.id, locale);
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelectCategory(item.id)}
-                onPointerDown={() => preloadTabComponent(item.id)}
-                onPointerEnter={() => preloadTabComponent(item.id)}
-                onFocus={() => preloadTabComponent(item.id)}
-                title={t(item.titleKey)}
-                className={cn(
-                  'group relative flex w-full items-center transition-all duration-200 cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-                  isEffectiveCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'justify-between gap-3 px-3.5 py-3 text-start',
-                  isActive
-                    ? 'border border-primary/30 bg-primary/10 text-foreground shadow-xs'
-                    : 'border border-border/60 bg-card text-card-foreground hover:border-border hover:bg-accent/60'
-                )}
-              >
-                {/* Left section: Icon + Text */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div
-                    className={cn(
-                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary'
-                    )}
-                  >
-                    <Icon className="h-5 w-5 stroke-[2.2]" />
-                  </div>
-                  <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                    <span className={cn('block text-sm leading-snug truncate transition-colors duration-200', isActive ? 'font-bold text-primary' : 'font-semibold text-foreground')}>
-                      {t(item.titleKey)}
-                    </span>
-                    {desc && (
-                      <span className="block text-[11px] text-muted-foreground leading-tight truncate mt-0.5">
-                        {desc}
-                      </span>
-                    )}
-                  </div>
+      {/* Assistance & Archives */}
+      <div className="pt-1 space-y-1">
+        {supportMenuItems.map(item => {
+          const isActive = activeCategory === item.id;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleSelectCategory(item.id)}
+              aria-pressed={isActive}
+              onPointerDown={() => preloadTabComponent(item.id)}
+              onPointerEnter={() => preloadTabComponent(item.id)}
+              onFocus={() => preloadTabComponent(item.id)}
+              title={t(item.titleKey)}
+              className={cn(
+                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none',
+                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                isActive
+                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 font-bold border border-amber-300/80 dark:border-amber-500/40 shadow-2xs'
+                  : 'bg-transparent text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+              )}
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div
+                  className={cn(
+                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+                    isActive ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground'
+                  )}
+                >
+                  <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
+                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
+                  <span className={cn('block text-xs leading-snug truncate transition-colors', isActive ? 'font-bold' : 'font-medium')}>
+                    {t(item.titleKey)}
+                  </span>
+                </div>
+              </div>
 
-                {/* Right section: Vertically Centered Chevron Arrow */}
-                {!isEffectiveCollapsed && (
-                  <div className="shrink-0 self-center flex items-center justify-center ps-1">
-                    <ChevronRight
-                      className={cn(
-                        'h-4 w-4 text-muted-foreground/60 transition-transform duration-200 group-hover:translate-x-0.5',
-                        isRtl && 'rotate-180 group-hover:-translate-x-0.5',
-                        isActive && 'text-primary'
-                      )}
-                    />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+              {!isEffectiveCollapsed && (
+                <div className="shrink-0 self-center flex items-center justify-center ps-1">
+                  <ChevronRight
+                    className={cn(
+                      'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
+                      isRtl && 'rotate-180',
+                      isActive && 'text-[#202124] dark:text-amber-200'
+                    )}
+                  />
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title={
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary">
-            <Settings className="h-4.5 w-4.5 sm:h-5 sm:w-5 stroke-[2.2]" />
-          </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
-            {t('settings.title')}
-          </span>
-        </div>
-      }
-      description={t('settings.description')}
+      onClose={() => requestExit()}
+      title={t('settings.title')}
       maxWidth="5xl"
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.92}
-      className="settings-modal-sheet overflow-hidden border border-border/80 bg-card sm:max-w-5xl sm:rounded-2xl"
-      headerClassName="border-b border-border/55 bg-card px-5 py-4 sm:px-7 sm:py-4.5"
-      bodyClassName="p-4 sm:p-6"
+      className="settings-modal-sheet overflow-hidden border border-[#e0e0e0] dark:border-[#5f6368] bg-card text-card-foreground sm:max-w-5xl sm:rounded-[12px] shadow-2xl"
+      headerClassName="border-b border-[#e0e0e0] dark:border-[#5f6368] bg-muted/20 px-4 py-2.5 sm:px-6 sm:py-3"
+      bodyClassName="p-3.5 sm:p-4.5"
     >
-      <div data-settings-ui className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 min-h-[480px]">
-        <div
-          className={cn(
-            'lg:col-span-4 flex flex-col',
-            isRtl ? 'border-l border-border/60 pl-0 lg:pl-5' : 'border-r border-border/60 pr-0 lg:pr-5',
-            mobileSubViewOpen ? 'hidden lg:flex' : 'flex'
-          )}
-        >
+      {/* Mobile Horizontal Tabs Selector (Direct access, NO back button) */}
+      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 -mx-1 px-1 no-scrollbar">
+        {SETTING_ITEMS.map(item => {
+          const isActive = activeCategory === item.id;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleSelectCategory(item.id)}
+              aria-pressed={isActive}
+              className={cn(
+                'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2',
+                isActive
+                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 border border-amber-300 dark:border-amber-500/40 shadow-xs'
+                  : 'border border-border/60 bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span>{t(item.titleKey)}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div data-settings-ui className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[440px]">
+        {/* Desktop Sidebar */}
+        <div className={cn('hidden lg:flex flex-col', isEffectiveCollapsed ? 'lg:col-span-1' : 'lg:col-span-4')}>
           {menuListContent}
         </div>
 
-        <div
-          className={cn(
-            'settings-content-zone lg:col-span-8 flex flex-col',
-            isRtl ? 'pr-0 lg:pr-1' : 'pl-0 lg:pl-1',
-            !mobileSubViewOpen ? 'hidden lg:flex' : 'flex'
-          )}
-        >
-          <div className="mb-4 flex items-center gap-3 border-b border-border/50 pb-3 lg:hidden">
-            <button
-              type="button"
-              onClick={handleBackToCategories}
-              className="touch-target flex shrink-0 items-center justify-center rounded-xl border border-border/70 bg-card text-foreground shadow-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              aria-label={locale === 'ar' ? 'العودة إلى أقسام الإعدادات' : 'Retour aux sections des paramètres'}
-            >
-              <ChevronRight className={cn('h-5 w-5', !isRtl && 'rotate-180')} />
-            </button>
-            <div className="min-w-0">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {locale === 'ar' ? 'الإعدادات' : 'Paramètres'}
-              </span>
-              <span className="block truncate text-sm font-bold text-foreground">
-                {t(SETTING_ITEMS.find(item => item.id === activeCategory)?.titleKey ?? 'settings.title')}
-              </span>
-            </div>
-          </div>
+        {/* Content Zone */}
+        <div className={cn('settings-content-zone flex flex-col', isEffectiveCollapsed ? 'lg:col-span-11' : 'lg:col-span-8 col-span-1')}>
           <div className="flex-1">
-            <div key={activeCategory} className="settings-page-content animate-in fade-in duration-100">
+            <section key={activeCategory} aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)} className="settings-page-content">
               {renderCategoryContent()}
-            </div>
+            </section>
           </div>
-          
-          <div className="mt-6 pt-3 border-t border-border/50">
+
+          <div className="mt-4 pt-1">
             {footer}
           </div>
         </div>
       </div>
     </Modal>
+    <ConfirmDialog
+      open={pendingExit !== null}
+      onOpenChange={open => { if (!open) setPendingExit(null); }}
+      title={t('settings.discardProfileTitle')}
+      description={t('settings.discardProfileDescription')}
+      confirmLabel={t('settings.discardProfile')}
+      cancelLabel={t('settings.keepEditing')}
+      onConfirm={() => { if (pendingExit) finishExit(pendingExit); }}
+      variant="default"
+    />
+    </>
   );
 };

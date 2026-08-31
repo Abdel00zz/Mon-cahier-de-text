@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { ClassInfo, Cycle } from '@/types';
 import type { ModalLang, OnboardingCopy } from '../types';
-import type { OnboardingClassDraftController } from '../useOnboardingClassDraft';
 
 interface ClassesStepProps {
     classes: ClassInfo[];
@@ -18,10 +17,8 @@ interface ClassesStepProps {
     lang: ModalLang;
     copy: OnboardingCopy;
     selectedSubjects?: string[];
-    controller?: OnboardingClassDraftController;
     onCreateClass?: (details: { name: string; subject: string; cycle?: Cycle }) => ClassInfo;
     onRemove: (classInfo: ClassInfo) => void;
-    onConfigChange?: (patch: Partial<any>) => void;
     onCycleChange?: (cycle: Cycle) => void;
 }
 
@@ -320,11 +317,9 @@ export const ClassesStep = memo<ClassesStepProps>(({
                     return (
                         <div
                             key={level}
+                            data-selected={isAnyGroupSelected}
                             className={cn(
-                                'relative rounded-2xl border p-3.5 transition-all duration-200 sm:p-4',
-                                isAnyGroupSelected
-                                    ? 'border-primary/35 bg-primary/[0.045] shadow-xs'
-                                    : 'border-border bg-card hover:border-primary/25 hover:bg-muted/25 hover:shadow-2xs'
+                                'keep-surface keep-interactive keep-choice relative p-3.5 sm:p-4'
                             )}
                         >
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

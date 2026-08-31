@@ -9,6 +9,7 @@ interface HeaderProps {
   classInfo: ClassInfo;
   establishmentName?: string;
   onClassInfoChange: (newInfo: Partial<ClassInfo>) => void;
+  onBack?: () => void;
 }
 
 const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
@@ -60,7 +61,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
 
   return (
     <div className="rtl-flow group relative mb-1.5 mt-0.5 px-0 pb-1.5 pt-1 sm:mt-1 sm:pb-2.5 sm:pt-2">
-      <div className="flex items-start gap-2 sm:gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
         <header className="min-w-0 flex-1 text-start">
           <h1 className="flex min-w-0 items-center justify-start overflow-visible text-start font-bold tracking-tight text-base sm:text-lg lg:text-xl leading-[1.3] text-foreground">
             <EditableHeader
@@ -71,14 +72,14 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
             />
           </h1>
 
-          <div className="mt-1 flex flex-col items-start gap-1 text-[10px] sm:text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
+          <div className="mt-0.5 flex flex-col items-start gap-1 text-[10px] sm:text-[11px] text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">
             <span className="inline-flex min-w-0 items-center gap-1.5">
               <User className="h-3 w-3 shrink-0 text-primary/70 stroke-[2.2]" aria-hidden />
               <span className="truncate">
                 <span className="font-semibold text-foreground/65">{t('editor.teacher')}</span> ·{' '}
                 <span className={`text-primary font-bold ${
                   isArabicText(classInfo.teacherName)
-                    ? 'font-lateef text-sm sm:text-base'
+                    ? 'font-sans text-sm sm:text-base'
                     : 'font-itim text-xs sm:text-sm'
                 }`}>
                   {classInfo.teacherName || t('editor.notProvided')}

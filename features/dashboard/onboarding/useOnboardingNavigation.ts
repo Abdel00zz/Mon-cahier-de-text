@@ -10,7 +10,7 @@ interface UseOnboardingNavigationOptions {
 export interface OnboardingNavigation {
     step: OnboardingStep;
     canContinue: boolean;
-    goToProfile: () => void;
+    goToTheme: () => void;
     next: () => void;
     back: () => void;
 }
@@ -24,21 +24,25 @@ export const useOnboardingNavigation = ({
     const [step, setStep] = useState<OnboardingStep>(1);
 
     const canContinue = useMemo(() => {
-        if (step === 1) return true;
-        if (step === 2) return isProfileValid;
-        if (step === 3) return isSubjectValid;
-        if (step === 4) return isClassesValid;
+        if (step === 1) return true; // Language
+        if (step === 2) return true; // Theme
+        if (step === 3) return isProfileValid; // Profile
+        if (step === 4) return isSubjectValid; // Subjects
+        if (step === 5) return isClassesValid; // Classes
+        if (step === 6) return true; // Schedule
         return false;
     }, [isClassesValid, isProfileValid, isSubjectValid, step]);
 
-    const goToProfile = useCallback(() => setStep(2), []);
+    const goToTheme = useCallback(() => setStep(2), []);
+
     const next = useCallback(() => {
         if (!canContinue || step >= ONBOARDING_TOTAL_STEPS) return;
-        setStep(current => (current + 1) as OnboardingStep);
+        setStep(current => Math.min(ONBOARDING_TOTAL_STEPS, current + 1) as OnboardingStep);
     }, [canContinue, step]);
+
     const back = useCallback(() => {
         setStep(current => Math.max(1, current - 1) as OnboardingStep);
     }, []);
 
-    return { step, canContinue, goToProfile, next, back };
+    return { step, canContinue, goToTheme, next, back };
 };

@@ -1,6 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { notifyConfigChanged } from '../utils/syncBus';
-import { clearLocalWorkspace } from '../utils/workspace';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { notifyClassesChanged, notifyConfigChanged, reloadSyncState } from '../utils/syncBus';
+import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../utils/accountWorkspace';
 
 interface AuthUser {
   phone: string;
@@ -29,13 +29,15 @@ interface AuthContextValue {
 }
 
 const AUTH_CACHE_KEY = 'authUser_v1';
+const SIGNED_OUT_KEY = 'authSignedOut_v1';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const readCachedUser = (): AuthUser | null => {
   try {
     const raw = localStorage.getItem(AUTH_CACHE_KEY);
-    return raw ? (JSON.parse(raw) as AuthUser) : null;
+    const value = raw ? JSON.parse(raw) : null;
+    return isAuthUser(value) ? value : null;
   } catch {
     return null;
   }
@@ -51,6 +53,22 @@ const cacheUser = (user: AuthUser | null): void => {
   } catch {
     // stockage indisponible : le mode hors ligne sera simplement moins persistant
   }
+};
+
+const isAuthUser = (value: unknown): value is AuthUser => {
+  if (!value || typeof value !== 'object') return false;
+  const user = value as Partial<AuthUser>;
+  return typeof user.phone === 'string' && /^\d{8,15}$/.test(user.phone) && typeof user.nom === 'string' && typeof user.prenom === 'string';
+};
+
+const activateUserWorkspace = (user: AuthUser): void => {
+  switchAccountWorkspace(user.phone, { legacyOwner: readCachedUser()?.phone });
+  reloadSyncState();
+  applyProfileToConfig(user);
+  cacheUser(user);
+  localStorage.removeItem(SIGNED_OUT_KEY);
+  notifyClassesChanged();
+  notifyConfigChanged();
 };
 
 /**
@@ -98,35 +116,53 @@ const postAuth = async (payload: Record<string, unknown>): Promise<AuthUser> => 
   if (!response.ok) {
     throw new Error(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.');
   }
-  return data.user as AuthUser;
+  if (!isAuthUser(data.user)) throw new Error('Réponse de connexion invalide. Réessayez.');
+  return data.user;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>('loading');
+  const requestVersion = useRef(0);
+  const initialRequest = useRef<AbortController | null>(null);
+  const logoutRequest = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
+    initialRequest.current = controller;
+    const version = ++requestVersion.current;
+    const current = () => !cancelled && version === requestVersion.current;
     (async () => {
+      // Persist the legacy owner before a 401 removes the cached session.
+      const cached = readCachedUser();
       try {
-        const response = await fetch('/api/auth?action=me', { credentials: 'same-origin' });
-        if (cancelled) return;
+        if (localStorage.getItem(SIGNED_OUT_KEY) === 'true') {
+          setStatus('anonymous');
+          return;
+        }
+        if (!readWorkspaceScope() && cached) switchAccountWorkspace(cached.phone, { legacyOwner: cached.phone });
+        const response = await fetch('/api/auth?action=me', { credentials: 'same-origin', signal: controller.signal });
+        if (!current()) return;
         if (response.ok) {
           const data = await response.json();
-          setUser(data.user as AuthUser);
+          if (!current()) return;
+          if (!isAuthUser(data.user)) throw new Error('Invalid session response');
+          activateUserWorkspace(data.user);
+          setUser(data.user);
           setStatus('authenticated');
-          cacheUser(data.user as AuthUser);
-          applyProfileToConfig(data.user as AuthUser);
         } else {
+          if (response.status >= 500) throw new TypeError('Session service unavailable');
           setUser(null);
           setStatus('anonymous');
           cacheUser(null);
         }
-      } catch {
+      } catch (error) {
         // Erreur réseau (pas un 401) : on laisse travailler hors ligne si une session a déjà existé.
-        if (cancelled) return;
-        const cached = readCachedUser();
-        if (cached) {
+        if (!current()) return;
+        // Never reinterpret a failed account switch as an offline login.
+        if (error instanceof TypeError && cached && readWorkspaceScope()?.owner === cached.phone) {
+          reloadSyncState();
           setUser(cached);
           setStatus('offline');
         } else {
@@ -136,32 +172,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })();
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 
   const login = useCallback(async (phone: string, password: string) => {
+    const version = ++requestVersion.current;
+    initialRequest.current?.abort();
+    await logoutRequest.current;
     const loggedUser = await postAuth({ action: 'login', phone, password });
+    if (version !== requestVersion.current) return;
+    activateUserWorkspace(loggedUser);
     setUser(loggedUser);
     setStatus('authenticated');
-    cacheUser(loggedUser);
-    applyProfileToConfig(loggedUser);
   }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
+    const version = ++requestVersion.current;
+    initialRequest.current?.abort();
+    await logoutRequest.current;
     const createdUser = await postAuth({ action: 'register', ...input });
-    // Un nouveau compte ne doit jamais hériter des classes, paramètres ou
-    // marqueurs de synchronisation du précédent utilisateur de cet appareil.
-    // Le reset émet les événements nécessaires pour rafraîchir les hooks déjà
-    // montés, puis le profil ci-dessous initialise son espace vierge.
-    clearLocalWorkspace();
+    if (version !== requestVersion.current) return;
+    activateUserWorkspace(createdUser);
     setUser(createdUser);
     setStatus('authenticated');
-    cacheUser(createdUser);
-    applyProfileToConfig(createdUser);
   }, []);
 
   const completeWelcome = useCallback(async () => {
+    const scope = readWorkspaceScope();
+    const version = requestVersion.current;
     const completedUser = await postAuth({ action: 'completeWelcome' });
+    if (version !== requestVersion.current || !workspaceIsCurrent(scope) || completedUser.phone !== scope?.owner) return;
     setUser(completedUser);
     setStatus('authenticated');
     cacheUser(completedUser);
@@ -169,28 +210,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logout = useCallback(async () => {
+    ++requestVersion.current;
+    initialRequest.current?.abort();
+    // Keep unsynced work for the next login of its owner, even when offline.
+    const previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
+    localStorage.setItem(SIGNED_OUT_KEY, 'true');
     try {
-      await fetch('/api/auth', {
+      switchAccountWorkspace(null, { legacyOwner: readCachedUser()?.phone });
+    } catch (error) {
+      if (previousSignedOut === null) localStorage.removeItem(SIGNED_OUT_KEY);
+      else localStorage.setItem(SIGNED_OUT_KEY, previousSignedOut);
+      throw error;
+    }
+    cacheUser(null);
+    reloadSyncState();
+    notifyClassesChanged();
+    notifyConfigChanged();
+    setUser(null);
+    setStatus('anonymous');
+    logoutRequest.current = fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({ action: 'logout' }),
-      });
-    } catch {
-      // même hors ligne, on déconnecte localement
-    }
-    setUser(null);
-    setStatus('anonymous');
-    cacheUser(null);
-    clearLocalWorkspace();
+        signal: AbortSignal.timeout(8000),
+      }).then(() => undefined, () => undefined);
+    // A following login waits for this cookie-clearing response (bounded offline).
+    await logoutRequest.current;
   }, []);
+
+  useEffect(() => {
+    const revision = readWorkspaceScope()?.revision;
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== WORKSPACE_SCOPE_KEY && event.key !== SIGNED_OUT_KEY && event.key !== null) return;
+      // Another tab switched the active workspace. Drop stale component state
+      // before accepting further input; the next boot verifies the current session.
+      if (readWorkspaceScope()?.revision !== revision || (user && readWorkspaceScope()?.owner !== user.phone)) {
+        initialRequest.current?.abort();
+        document.getElementById('root')?.setAttribute('inert', '');
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [user]);
 
   const value = useMemo(
     () => ({ user, status, login, register, completeWelcome, logout }),
     [user, status, login, register, completeWelcome, logout]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const workspaceKey = `${user?.phone ?? 'anonymous'}:${readWorkspaceScope()?.revision ?? 'legacy'}`;
+  return <AuthContext.Provider value={value}><React.Fragment key={workspaceKey}>{children}</React.Fragment></AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextValue => {

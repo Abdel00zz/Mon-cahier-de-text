@@ -69,7 +69,7 @@ const PushActivationCard: React.FC<{
                         <Check className="h-5 w-5 stroke-[2.5]" />
                     </span>
                     <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                        <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.remindersActive')}</p>
                     </div>
                 </div>
@@ -78,7 +78,7 @@ const PushActivationCard: React.FC<{
                         type="button"
                         onClick={onTest}
                         disabled={busy}
-                        className="h-9.5 flex-1 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-xs"
+                        className="h-9.5 flex-1 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-xs"
                     >
                         {t('notifications.sendTest')}
                     </button>
@@ -86,7 +86,7 @@ const PushActivationCard: React.FC<{
                         type="button"
                         onClick={onDeactivate}
                         disabled={busy}
-                        className="h-9.5 rounded-xl px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
+                        className="h-9.5 rounded-md px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
                     >
                         {t('notifications.turnOff')}
                     </button>
@@ -100,11 +100,11 @@ const PushActivationCard: React.FC<{
     return (
         <div className="settings-surface p-4 sm:p-5">
             <div className="flex items-start gap-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-xs">
                     <Bell className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-foreground">{t('notifications.remindersTitle')}</p>
+                    <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.pushHint')}</p>
                 </div>
             </div>
@@ -112,7 +112,7 @@ const PushActivationCard: React.FC<{
                 type="button"
                 onClick={onActivate}
                 disabled={busy}
-                className="mt-3.5 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
+                className="mt-3.5 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
                 <Bell className="h-4 w-4" />
                 {label}
@@ -151,7 +151,7 @@ const NotificationKind: React.FC<{
     label: string;
     detail: string;
 }> = ({ icon: Icon, label, detail }) => (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-xl bg-zinc-100 p-2.5 shadow-none dark:bg-zinc-800/80">
+    <div className="flex min-w-0 items-center gap-2.5 rounded-md bg-zinc-100 p-2.5 shadow-none dark:bg-zinc-800/80">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
             <Icon className="h-4 w-4" />
         </span>
@@ -231,7 +231,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 t={t}
             />
 
-            <div className="settings-section-block p-4 sm:p-5">
+            <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
                 <h4 className="text-xs font-bold text-foreground">{t('notifications.nativeTitle')}</h4>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     {t('notifications.nativeDescription')}
@@ -269,7 +269,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
                     >
                         {[1, 2, 3].map(count => (
                             <option key={count} value={count}>
@@ -283,7 +283,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
                     >
                         {[3, 5, 10].map(count => <option key={count} value={count}>{t('notifications.inactiveDays', { count })}</option>)}
                     </select>
@@ -332,7 +332,7 @@ const AbsencesSection: React.FC<{
     };
 
     return (
-        <div className="settings-section-block p-4 sm:p-5">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
             <h4 className="text-xs font-bold text-foreground">{t('notifications.absences')}</h4>
             <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground font-sans">
                 {t('notifications.absencesHint')}
@@ -368,7 +368,7 @@ const AbsencesSection: React.FC<{
                     type="date"
                     value={debut}
                     onChange={e => setDebut(e.target.value)}
-                    className="h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    className="h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     aria-label={t('notifications.absenceStart')}
                 />
                 <input
@@ -376,7 +376,7 @@ const AbsencesSection: React.FC<{
                     value={fin}
                     min={debut || undefined}
                     onChange={e => setFin(e.target.value)}
-                    className="h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    className="h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                     aria-label={t('notifications.absenceEnd')}
                 />
                 <input
@@ -384,13 +384,13 @@ const AbsencesSection: React.FC<{
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     placeholder={t('notifications.reasonOptional')}
-                    className="col-span-2 h-10 rounded-xl border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+                    className="col-span-2 h-10 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 px-3 text-xs text-foreground sm:col-span-1 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
                 />
                 <button
                     type="button"
                     onClick={addAbsence}
                     disabled={!debut}
-                    className="col-span-2 h-10 cursor-pointer rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40 sm:col-span-1"
+                    className="col-span-2 h-10 cursor-pointer rounded-md bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:scale-95 disabled:opacity-40 sm:col-span-1"
                 >
                     {t('notifications.add')}
                 </button>

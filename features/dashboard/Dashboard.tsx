@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useClassManager } from '@/hooks/useClassManager';
-import { defaultNotificationSettings, useConfigManager } from '@/hooks/useConfigManager';
+import { useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/cahier/Button';
+import { AlertBanner } from '@/components/cahier/AlertBanner';
+import { SectionHeader } from '@/components/cahier/SectionHeader';
 import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
@@ -20,9 +22,8 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
-import { Radio, Clock, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Radio, Clock, ArrowRight, ArrowLeft } from 'lucide-react';
 import { computeClassHoursInsight } from '@/utils/scheduleInsights';
-import { isArabicText } from '@/utils/textFormat';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -145,24 +146,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             // sera envoyé via la synchronisation dès le retour du réseau.
         }
     }, [completeWelcome, updateConfig, welcomeCompleted]);
-
-    const completeOnboarding = useCallback(async () => {
-        const current = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
-        updateConfig({
-            hasCompletedWelcome: true,
-            notificationSettings: {
-                ...current,
-                enabled: true,
-                sessionVibration: true,
-            },
-        });
-        setOnboardingOpen(false);
-        try {
-            await completeWelcome();
-        } catch {
-            // La fermeture reste persistée localement puis synchronisée.
-        }
-    }, [completeWelcome, config.notificationSettings, updateConfig]);
 
     const createClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => {
         const created = addClass({
@@ -479,8 +462,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1 max-w-xl mx-auto'
-        : 'grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] sm:grid-cols-[repeat(auto-fit,minmax(min(100%,340px),1fr))]';
+        ? 'grid-cols-1 max-w-[430px] mx-auto'
+        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,320px)] lg:grid-cols-[repeat(auto-fill,345px)] justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -493,7 +476,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
-    const displayTeacherName = teacherName?.trim() || t('settings.defaultTeacherName');
 
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
@@ -504,7 +486,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 classes={classes}
                 onCreateClass={createOnboardingClass}
                 onDeleteClass={handleDeleteClass}
-                onComplete={completeOnboarding}
+                onComplete={closeOnboarding}
                 onSkip={closeOnboarding}
             />
         );
@@ -512,177 +494,138 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-background text-foreground antialiased pb-20 sm:pb-8"
+            className="min-h-screen bg-white dark:bg-[#202124] text-[#202124] dark:text-[#e8eaed] font-sans antialiased pb-20 sm:pb-8"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                {/* En-tête unifié : nom et information restent sur le même fond neutre. */}
-                <header
-                    id="dashboard-header"
-                    aria-live="polite"
-                    className="w-full border-b border-border bg-card"
-                >
-                    <div className="mx-auto max-w-5xl px-3.5 py-4 sm:px-6 sm:py-5 lg:px-8 pl-safe pr-safe">
-                        {/* 1. Zone supérieure – Bienvenue + Nom d'utilisateur harmonisé */}
-                        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                            <h1
-                                className={`font-semibold text-foreground leading-tight tracking-tight ${
-                                    isRtl ? 'font-lateef text-3xl sm:text-4xl' : 'font-sans text-xl sm:text-2xl'
-                                }`}
-                                dir="auto"
-                            >
-                                {isRtl ? 'مرحباً :' : locale === 'en' ? 'Welcome :' : 'Bienvenue :'}
-                            </h1>
-
-                            <span
-                                className={`inline-flex max-w-full items-center justify-center rounded-md border border-border bg-muted px-3 py-1 text-foreground transition-colors ${
-                                    isArabicText(displayTeacherName)
-                                        ? 'font-lateef text-3xl sm:text-4xl font-bold leading-tight'
-                                        : 'font-itim text-2xl sm:text-3xl font-bold leading-tight'
-                                }`}
-                                dir="auto"
-                            >
-                                {displayTeacherName}
-                            </span>
+                {/* Bandeau d'alerte / message important */}
+                {(welcome.title || welcome.detail || scheduleIncompleteCount > 0) && (
+                    <header
+                        id="dashboard-header"
+                        aria-live="polite"
+                        className="w-full border-b border-[#e0e0e0] dark:border-[#5f6368] bg-white dark:bg-[#202124]"
+                    >
+                        <div className="mx-auto max-w-5xl px-3.5 py-3 sm:px-6 sm:py-4 lg:px-8 pl-safe pr-safe space-y-2.5">
+                            <AlertBanner
+                                title={welcome.title || (isRtl ? 'مهم : قسم واحد يحتاج إلى انتباهكم' : 'Important : 1 classe nécessite votre attention')}
+                                detail={welcome.detail}
+                                type="critique"
+                                isRtl={isRtl}
+                                action={welcome.action ? {
+                                    label: welcome.action.label,
+                                    onClick: welcome.action.onClick,
+                                } : undefined}
+                            />
                         </div>
+                    </header>
+                )}
 
-                        {/* 2. Zone inférieure – Message important */}
-                        {(welcome.title || welcome.detail || scheduleIncompleteCount > 0) && (
-                            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-warning/30 bg-warning/[0.08] px-3.5 py-2.5 text-xs text-foreground sm:text-sm">
-                                <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                                    <AlertCircle className="h-4 w-4 shrink-0 text-warning-strong" strokeWidth={2.2} />
-                                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-                                        <span className="font-bold text-foreground">
-                                            {welcome.title || (isRtl ? 'مهم : قسم واحد يحتاج إلى انتباهكم' : 'Important : 1 classe nécessite votre attention')}
-                                        </span>
-                                        {welcome.detail && (
-                                            <span className="text-muted-foreground text-xs">
-                                                {welcome.detail}
-                                            </span>
+                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
+                    {classes.length > 0 && (
+                        <div className="mb-4">
+                            <SectionHeader
+                                title={t('dashboard.classes')}
+                                count={filteredClasses.length}
+                                isArabic={isRtl}
+                                actions={
+                                    <div className="flex items-center gap-2">
+                                        {shouldShowSubjectBadge ? (
+                                            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('dashboard.filterAll')}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSubjectFilter('all')}
+                                                    className={`h-8 shrink-0 rounded-[10px] px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
+                                                        subjectFilter === 'all'
+                                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-blue-700 dark:text-blue-300 shadow-xs'
+                                                            : 'border border-[#e0e0e0] dark:border-[#5f6368] bg-white text-[#202124] dark:text-[#e8eaed] hover:bg-slate-100 dark:bg-[#3c4043]'
+                                                    }`}
+                                                >
+                                                    {t('dashboard.filterAll')}
+                                                </button>
+                                                {teacherSubjects.map(subject => {
+                                                    const isActive = subjectFilter === subject;
+                                                    return (
+                                                        <button
+                                                            key={subject}
+                                                            type="button"
+                                                            onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
+                                                            className={`h-8 shrink-0 rounded-[10px] px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
+                                                                isActive
+                                                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-blue-700 dark:text-blue-300 shadow-xs'
+                                                                    : 'border border-[#e0e0e0] dark:border-[#5f6368] bg-white text-[#202124] dark:text-[#e8eaed] hover:bg-slate-100 dark:bg-[#3c4043]'
+                                                            }`}
+                                                        >
+                                                            {formatLocalizedSubjectDisplayName(subject, locale)}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : null}
+
+                                        <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => setCreateModalOpen(true)}
+                                            aria-label={t('dashboard.addClass')}
+                                            title={t('dashboard.addClass')}
+                                        >
+                                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                            <span>{t('dashboard.classShort')}</span>
+                                        </Button>
+
+                                        {isLandscape && (
+                                            <div ref={displayMenuRef} className="relative hidden shrink-0 sm:block">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setDisplayMenuOpen(open => !open)}
+                                                    aria-haspopup="menu"
+                                                    aria-expanded={isDisplayMenuOpen}
+                                                    className="flex h-8 items-center gap-1.5 rounded-[10px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white px-2.5 text-xs font-medium text-[#202124] dark:text-[#e8eaed] shadow-2xs hover:bg-slate-100 dark:bg-[#3c4043] cursor-pointer"
+                                                >
+                                                    <span>{displayCopy(currentDisplay).label}</span>
+                                                    <ChevronDown className={`h-3.5 w-3.5 text-[#5f6368] dark:text-[#9aa0a6] transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                {isDisplayMenuOpen && (
+                                                    <div
+                                                        role="menu"
+                                                        className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-[12px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white p-1 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] ${isRtl ? 'left-0' : 'right-0'}`}
+                                                    >
+                                                        {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                            const isActive = option === currentDisplay;
+                                                            return (
+                                                                <button
+                                                                    key={option}
+                                                                    type="button"
+                                                                    role="menuitemradio"
+                                                                    aria-checked={isActive}
+                                                                    onClick={() => {
+                                                                        setClassDisplayMode(option);
+                                                                        setDisplayMenuOpen(false);
+                                                                    }}
+                                                                    className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-slate-100 dark:bg-[#3c4043] text-[#202124] dark:text-[#e8eaed] font-bold' : 'text-[#5f6368] dark:text-[#9aa0a6] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-[#202124] dark:text-[#e8eaed]'}`}
+                                                                >
+                                                                    <span>{displayCopy(option).label}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-
-                                {welcome.action && (
-                                    <button
-                                        type="button"
-                                        onClick={welcome.action.onClick}
-                                        className="group inline-flex shrink-0 cursor-pointer items-center gap-1.5 font-bold text-primary hover:text-primary/80 transition-colors"
-                                    >
-                                        <span>{welcome.action.label}</span>
-                                        <ArrowIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </header>
-
-                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 sm:pt-5 lg:px-8 pl-safe pr-safe">
-                    {classes.length > 0 && (
-                        <div className="mb-3 flex min-h-8 flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
-                            <h2 id="classes-heading" className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100 sm:text-sm">
-                                <span>{t('dashboard.classes')}</span>
-                                {filteredClasses.length > 0 && (
-                                    <span className="inline-flex h-4.5 min-w-[20px] items-center justify-center rounded-full border border-blue-200/60 bg-blue-50 px-1.5 text-[10px] font-bold text-blue-700 dark:border-blue-800/40 dark:bg-blue-950/60 dark:text-blue-300">
-                                        {filteredClasses.length}
-                                    </span>
-                                )}
-                            </h2>
-                            {shouldShowSubjectBadge ? (
-                                <div className="order-3 flex w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar sm:order-none sm:w-auto sm:flex-1" aria-label={t('dashboard.filterAll')}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setSubjectFilter('all')}
-                                        className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-semibold transition-all cursor-pointer active:scale-95 ${
-                                            subjectFilter === 'all'
-                                                ? 'bg-slate-900 text-white shadow-xs dark:bg-white dark:text-slate-900'
-                                                : 'border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:text-white'
-                                        }`}
-                                    >
-                                        {t('dashboard.filterAll')}
-                                    </button>
-                                    {teacherSubjects.map(subject => {
-                                        const isActive = subjectFilter === subject;
-                                        return (
-                                            <button
-                                                key={subject}
-                                                type="button"
-                                                onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-semibold transition-all cursor-pointer active:scale-95 ${
-                                                    isActive
-                                                        ? 'bg-blue-600 text-white shadow-xs'
-                                                        : 'border border-slate-200 bg-white/80 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:text-white'
-                                                }`}
-                                            >
-                                                {formatLocalizedSubjectDisplayName(subject, locale)}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : null}
-                            <div className="ms-auto flex shrink-0 items-center gap-1.5">
-                            <button
-                                type="button"
-                                onClick={() => setCreateModalOpen(true)}
-                                className="inline-flex h-7 shrink-0 items-center gap-1 rounded-lg bg-blue-600 px-2.5 text-[11px] font-semibold text-white shadow-xs transition-all hover:bg-blue-700 active:scale-95 cursor-pointer"
-                                aria-label={t('dashboard.addClass')}
-                                title={t('dashboard.addClass')}
-                            >
-                                <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                                <span>{t('dashboard.classShort')}</span>
-                            </button>
-                            {isLandscape && (
-                                <div ref={displayMenuRef} className="relative hidden shrink-0 sm:block">
-                                    <button
-                                        type="button"
-                                        onClick={() => setDisplayMenuOpen(open => !open)}
-                                        aria-haspopup="menu"
-                                        aria-expanded={isDisplayMenuOpen}
-                                        className="flex h-7 items-center gap-1 rounded-lg border border-slate-200/90 bg-white px-2.5 text-[11px] font-medium text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 cursor-pointer"
-                                    >
-                                        <span>{displayCopy(currentDisplay).label}</span>
-                                        <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    {isDisplayMenuOpen && (
-                                        <div
-                                            role="menu"
-                                            className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 ${isRtl ? 'left-0' : 'right-0'}`}
-                                        >
-                                            {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                const isActive = option === currentDisplay;
-                                                return (
-                                                    <button
-                                                        key={option}
-                                                        type="button"
-                                                        role="menuitemradio"
-                                                        aria-checked={isActive}
-                                                        onClick={() => {
-                                                            setClassDisplayMode(option);
-                                                            setDisplayMenuOpen(false);
-                                                        }}
-                                                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs transition-colors cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold dark:bg-blue-950/60 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'}`}
-                                                    >
-                                                        <span>{displayCopy(option).label}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            </div>
+                                }
+                            />
                         </div>
                     )}
                     {/* Spotlight Intelligent: Séance active ou prochaine du jour */}
                     {spotlightInfo && (
                         <div
                             onClick={() => onSelectClass(spotlightInfo.classInfo)}
-                            className="mb-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-3.5 sm:p-4 shadow-xs backdrop-blur-md cursor-pointer transition-all hover:border-blue-500/40 hover:shadow-md active:scale-[0.99] group"
+                            className="mb-5 rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white p-3.5 sm:p-4 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] cursor-pointer transition-all hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] active:scale-[0.99] group"
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3.5 min-w-0">
-                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${spotlightInfo.isActiveNow ? 'bg-emerald-600 text-white shadow-emerald-600/25' : 'bg-blue-600 text-white shadow-blue-600/25'} shadow-sm`}>
+                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${spotlightInfo.isActiveNow ? 'bg-[#2F7A5C] text-white shadow-xs' : 'bg-[#3D6FB4] text-white shadow-xs'}`}>
                                         {spotlightInfo.isActiveNow ? (
                                             <Radio className="h-5 w-5 animate-pulse stroke-[2.2]" />
                                         ) : (
@@ -690,24 +633,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )}
                                         {spotlightInfo.isActiveNow && (
                                             <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2F7A5C] opacity-75" />
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2F7A5C]" />
                                             </span>
                                         )}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40' : 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40'}`}>
+                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-[#E5F1EA] text-[#2F7A5C] border border-[#2F7A5C]/30' : 'bg-[#E7EEF8] text-[#3D6FB4] border border-[#3D6FB4]/30'}`}>
                                                 {spotlightInfo.isActiveNow ? (locale === 'ar' ? 'الآن · حصة جارية' : 'En ce moment · En direct') : (locale === 'ar' ? 'اليوم · الحصة القادمة' : 'Aujourd’hui · Séance à venir')}
                                             </span>
-                                            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+                                            <span className="text-xs text-[#5f6368] dark:text-[#9aa0a6] hidden sm:inline">
                                                 {spotlightInfo.info.label}
                                             </span>
                                         </div>
-                                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate mt-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                        <h3 className="text-sm sm:text-base font-bold text-[#202124] dark:text-[#e8eaed] truncate mt-0.5 font-sans font-medium text-xl group-hover:text-[#3D6FB4] transition-colors">
                                             {spotlightInfo.classInfo.name}
                                             {spotlightInfo.classInfo.subject && (
-                                                <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1.5">
+                                                <span className="text-xs font-normal text-[#5f6368] dark:text-[#9aa0a6] font-sans ml-1.5">
                                                     ({formatLocalizedSubjectDisplayName(spotlightInfo.classInfo.subject, locale)})
                                                 </span>
                                             )}
@@ -716,10 +659,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 hidden md:inline group-hover:underline">
+                                    <span className="text-xs font-semibold text-[#3D6FB4] hidden md:inline group-hover:underline">
                                         {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
                                     </span>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/70 dark:border-slate-800/70 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 group-hover:border-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#e0e0e0] dark:border-[#5f6368] bg-slate-100 dark:bg-[#3c4043] text-[#202124] dark:text-[#e8eaed] group-hover:bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 group-hover:text-blue-700 dark:text-blue-300 transition-all">
                                         <ArrowIcon className="h-4 w-4 stroke-[2.2]" />
                                     </div>
                                 </div>
@@ -730,31 +673,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
-                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 p-2 sm:mb-6 sm:p-2.5">
+                                    <div className="flex flex-col items-center justify-center rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white px-4 py-10 text-center shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] sm:px-8 sm:py-14 md:py-16">
+                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-slate-50 dark:bg-[#3c4043] p-2 sm:mb-6 sm:p-2.5">
                                             <img
                                                 src="/dashboard.png"
                                                 alt="Illustration tableau de bord"
-                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-xl sm:rounded-2xl select-none pointer-events-none"
+                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-[12px] select-none pointer-events-none"
                                                 referrerPolicy="no-referrer"
                                                 loading="eager"
                                             />
                                         </div>
 
-                                        {/* Middle: Proportionally Refined Typography (Title & Subtitle) */}
-                                        <div className="max-w-md space-y-1 px-2 sm:space-y-1.5">
-                                            <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg md:text-xl">
+                                        <div className="max-w-md space-y-1.5 px-2">
+                                            <h3 className="font-sans font-medium text-2xl sm:text-3xl font-bold text-[#202124] dark:text-[#e8eaed]">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
-                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-[#5f6368] dark:text-[#9aa0a6] font-sans sm:text-sm">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                         </div>
 
-                                        {/* Bottom: Centered Button */}
                                         <div className="mt-5 sm:mt-6">
                                             <Button
-                                                variant="accent"
+                                                variant="primary"
                                                 onClick={() => {
                                                     if (welcomeCompleted) {
                                                         setCreateModalOpen(true);
@@ -762,7 +703,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                         setOnboardingOpen(true);
                                                     }
                                                 }}
-                                                className="h-10 px-6 text-xs font-semibold shadow-sm sm:text-sm"
+                                                className="h-10 px-6 text-sm font-semibold"
                                             >
                                                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                                 <span>{t('dashboard.addClass')}</span>
@@ -787,11 +728,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-3 sm:gap-4 lg:gap-5`}>
+                                    <div className={`grid ${classGridClass} w-full gap-x-4 gap-y-7 sm:gap-x-5 sm:gap-y-8 lg:gap-x-6 lg:gap-y-8 pt-4`}>
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
-                                                className="h-full w-full max-w-[430px] sm:max-w-none mx-auto animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                className="h-full w-full animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard
@@ -800,11 +741,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     showSubjectBadge={shouldShowSubjectBadge}
                                                     allClasses={classes}
+                                                    index={index}
                                                 />
                                             </div>
                                         ))}
-                                    </div>
-                                )}
+                                </div>
+                            )}
                         </section>
                     </main>
                 </div>
@@ -817,10 +759,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     setEditingClass(null);
                 }}
                 onCreate={handleCreateClass}
-                defaultTeacherName={teacherName}
                 defaultCycle={selectedCycle}
                 teacherSubjects={config.selectedSubjects}
-                teacherCycles={config.selectedCycles?.length ? (config.selectedCycles as Cycle[]) : undefined}
+                teacherCycles={config.selectedCycles}
                 existingClasses={classes}
                 editingClass={editingClass}
                 onUpdate={(classId, updates) => {

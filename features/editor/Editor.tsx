@@ -43,13 +43,16 @@ import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { captureWorkspaceLease, registerWorkspaceWriter } from '@/utils/accountWorkspace';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
-interface EditorProps {
+export interface EditorProps {
     classInfo: ClassInfo;
     /** ouvre la page Paramètres (utilisé pour renseigner l'emploi du temps) */
     onOpenSettings?: () => void;
+    /** retour aux classes */
+    onBack?: () => void;
 }
 
 type ActiveModal =
@@ -93,7 +96,8 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
   return !!item && !indices.isSeparator;
 };
 
-export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings }) => {
+export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
+  const [workspaceIsActive] = useState(() => captureWorkspaceLease());
   useForceLandscape();
   const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
@@ -205,6 +209,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (!predefinedOffer) return;
       try {
           const prepared = await loadPredefinedContent(predefinedOffer);
+          if (!workspaceIsActive()) return;
           setState(
             () => withStarterDiagnostic(
               prepared.lessonsData,
@@ -218,9 +223,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           });
           toast.success(t('editorNotice.predefinedLoaded'));
       } catch {
-          toast.error(t('editorNotice.predefinedLoadError'));
+          if (workspaceIsActive()) toast.error(t('editorNotice.predefinedLoadError'));
       }
-  }, [predefinedOffer, setState, setEditorState, t]);
+  }, [predefinedOffer, setState, setEditorState, t, workspaceIsActive]);
 
   /*
    * Journal des actions : chaque opération d'édition (operationType du
@@ -228,6 +233,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * « Dernière modification » et le centre global d’activité.
    */
   useEffect(() => {
+    if (!workspaceIsActive()) return;
     const journalOp = historyAction === 'undo'
       ? 'undo'
       : historyAction === 'redo'
@@ -294,10 +300,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
    * l'accueil (mêmes identifiants), il y devient réactivable.
    */
   const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
+    if (!workspaceIsActive()) return;
     const ids = readIgnoredActionIds(classInfo.id);
     ids.add(dateActionId(classInfo.id, date, warnings));
     writeIgnoredActionIds(classInfo.id, ids);
-  }, [classInfo.id]);
+  }, [classInfo.id, workspaceIsActive]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -328,6 +335,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [resetState, getStorageKey, showNotification, setEditorState, t, locale]);
 
   const persistCurrentData = useCallback((withVisualStatus: boolean): boolean => {
+    if (!workspaceIsActive()) return false;
     if (saveStatusRef.current === 'saved') return true;
     if (withVisualStatus) setEditorState(draft => { draft.saveStatus = 'saving'; });
     try {
@@ -353,7 +361,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       return false;
     }
-  }, [getStorageKey, classInfo.id, showNotification, setEditorState, t]);
+  }, [getStorageKey, classInfo.id, showNotification, setEditorState, t, workspaceIsActive]);
+
+  useEffect(() => registerWorkspaceWriter(() => (
+    workspaceIsActive() ? persistCurrentData(false) : true
+  )), [persistCurrentData, workspaceIsActive]);
 
   const saveData = useCallback(() => {
     persistCurrentData(true);
@@ -376,6 +388,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [persistCurrentData]);
 
   const handleExportData = useCallback(() => {
+    if (!workspaceIsActive()) return;
     try {
         const dataToExport = { classInfo, lessonsData, contentDirection };
         const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -394,13 +407,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         logger.error("Failed to export data", error);
         showNotification(t('editorNotice.exportError'), "error");
     }
-  }, [classInfo, lessonsData, contentDirection, showNotification, t]);
+  }, [classInfo, lessonsData, contentDirection, showNotification, t, workspaceIsActive]);
 
   const handleClassInfoChange = useCallback((newInfo: Partial<ClassInfo>) => {
+    if (!workspaceIsActive()) return;
     const normalizedInfo = newInfo.name !== undefined
       ? { ...newInfo, name: normalizeOfficialClassName(newInfo.name) }
       : newInfo;
     setEditorState(draft => {
+        if (!workspaceIsActive()) return;
         Object.assign(draft.classInfo, normalizedInfo);
         try {
             const allClasses: ClassInfo[] = JSON.parse(localStorage.getItem('classManager_v1') || '[]');
@@ -414,7 +429,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             showNotification(t('editorNotice.classUpdateError'), "error");
         }
     });
-  }, [setEditorState, showNotification, t]);
+  }, [setEditorState, showNotification, t, workspaceIsActive]);
 
   useEffect(() => {
     if (isClassLoading || isConfigLoading || saveStatus === 'saved') return;
@@ -689,7 +704,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [dismissTimetableNudge, handleOpenTimetable]);
 
   const handleExecutePrint = useCallback((mode: PrintMode, options: PrintOptions, selectedDates?: string[]) => {
-      if (isPrintingRef.current) return;
+      if (isPrintingRef.current || !workspaceIsActive()) return;
 
       const classId = classInfo.id;
       if (lessonsData.length === 0) {
@@ -751,9 +766,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               // Garantir que les formules sont compilées avant le dialogue.
               // En cas de timeout, le texte source reste imprimable.
               const typeset = await typesetBeforePrint();
+              if (!workspaceIsActive()) return;
               if (!typeset) logger.warn('MathJax indisponible ou trop lent : impression avec le contenu source.');
 
               const started = await printDocument('cahier-de-textes');
+              if (!workspaceIsActive()) return;
               if (!started) {
                   showNotification(t('editorNotice.printUnavailable'), 'error');
                   return;
@@ -767,6 +784,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   showNotification(t('editorNotice.printHistoryError'), 'warning');
               }
           } catch (error) {
+              if (!workspaceIsActive()) return;
               logger.error('Échec inattendu du circuit d’impression.', error);
               showNotification(t('editorNotice.printPrepareError'), 'error');
           } finally {
@@ -787,7 +805,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           printLaunchTimerRef.current = null;
           void launchPrint();
       }, selection ? 120 : 60);
-  }, [classInfo.id, lessonsData, setEditorState, showNotification, t]);
+  }, [classInfo.id, lessonsData, setEditorState, showNotification, t, workspaceIsActive]);
 
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
       if (selectedIndices.length !== 1) return;
@@ -1053,6 +1071,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             classInfo={classInfo}
             establishmentName={config.establishmentName}
             onClassInfoChange={handleClassInfoChange}
+            onBack={onBack}
           />
           {/* Barre d'outils COLLANTE : rendue en enfant direct de la colonne
               flex (pas de wrapper à sa taille, sinon le sticky serait confiné à

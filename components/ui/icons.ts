@@ -1,6 +1,9 @@
 import React from 'react';
 import type { LucideProps } from 'lucide-react';
 import {
+  Cloud as LucideCloud,
+  PenLine as LucidePenLine,
+  LockKeyhole as LucideLockKeyhole,
   Plus as LucidePlus,
   X as LucideX,
   Check as LucideCheck,
@@ -150,6 +153,9 @@ export const Bell = createIcon(LucideBell);
 export const BookOpen = createIcon(LucideBookOpen);
 export const Book = createIcon(LucideBook);
 export const Pencil = createIcon(LucidePencil);
+export const Cloud = createIcon(LucideCloud);
+export const PenLine = createIcon(LucidePenLine);
+export const LockKeyhole = createIcon(LucideLockKeyhole);
 export const School = createIcon(LucideSchool);
 export const GraduationCap = createIcon(LucideGraduationCap);
 export const FlaskConical = createIcon(LucideFlaskConical);

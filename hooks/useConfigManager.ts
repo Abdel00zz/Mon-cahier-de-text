@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import { effectiveSchedules } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
+import { captureWorkspaceLease } from '../utils/accountWorkspace';
 
 const CONFIG_STORAGE_KEY = 'appConfig_v1';
 
@@ -118,6 +119,7 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
 };
 
 export const useConfigManager = () => {
+    const [workspaceIsActive] = useState(() => captureWorkspaceLease());
     const [config, setConfig] = useImmer<AppConfig>(() => {
         if (typeof window !== 'undefined') {
             return parseStoredConfig(localStorage.getItem(CONFIG_STORAGE_KEY));
@@ -136,7 +138,9 @@ export const useConfigManager = () => {
         try {
             const storedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
             if (storedConfig) {
-                setConfig(parseStoredConfig(storedConfig));
+                const loaded = parseStoredConfig(storedConfig);
+                configRef.current = loaded;
+                setConfig(loaded);
             }
         } catch (error) {
             logger.error("Failed to load config from localStorage", error);
@@ -151,35 +155,11 @@ export const useConfigManager = () => {
             if (source === configSourceRef.current) return;
             try {
                 const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
-                if (stored) {
-                    const loaded = JSON.parse(stored);
-                    setConfig(draft => {
-                        Object.assign(draft, loaded);
-                        draft.schedules = effectiveSchedules(loaded);
-                        draft.applicationLocale = normalizeApplicationLocale(loaded.applicationLocale);
-                    });
-                } else {
-                    // Après une déconnexion ou une inscription, aucun réglage
-                    // de l'ancien compte ne doit rester vivant en mémoire.
-                    setConfig(() => ({
-                        ...defaultConfig,
-                        selectedCycles: [],
-                        selectedSubjects: [],
-                        showAllCycles: false,
-                        showAllSubjects: true,
-                        schedules: [],
-                        timetable: [],
-                        notificationSettings: { ...defaultNotificationSettings },
-                        notificationDismissals: {},
-                        absences: [],
-                        assessmentDates: {},
-                        assessmentAbsences: {},
-                        pedagogicalEvents: {},
-                        manualAssessments: {},
-                        removedAssessments: {},
-                        assessmentOrder: {},
-                    }));
-                }
+                const loaded = parseStoredConfig(stored);
+                // Une autre vue peut écrire avant le prochain rendu React.
+                // Sa modification doit déjà être présente dans notre prochaine fusion.
+                configRef.current = loaded;
+                setConfig(() => loaded);
             } catch (error) {
                 logger.error('Failed to reload config after cloud pull', error);
             }
@@ -193,6 +173,8 @@ export const useConfigManager = () => {
     }, [setConfig]);
 
     const updateConfig = useCallback((newConfig: Partial<AppConfig>) => {
+        if (!workspaceIsActive()) return;
+        if ((Object.keys(newConfig) as Array<keyof AppConfig>).every(key => Object.is(configRef.current[key], newConfig[key]))) return;
         // La persistance doit précéder l'événement `config-changed` : plusieurs
         // vues possèdent leur propre instance du hook et relisent le stockage
         // dès cet événement. Une écriture différée par React les faisait donc
@@ -219,7 +201,7 @@ export const useConfigManager = () => {
             markClassesListDirty();
         }
         notifyConfigChanged(configSourceRef.current);
-    }, [setConfig]);
+    }, [setConfig, workspaceIsActive]);
 
     return { config, updateConfig, isLoading };
 };

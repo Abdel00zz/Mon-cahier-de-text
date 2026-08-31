@@ -276,7 +276,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
                     <strong className={`print-field-value text-[#0056D2] font-bold ${
                         isArabicText(classInfo.teacherName || config.defaultTeacherName)
-                            ? 'font-lateef text-[1.15em]'
+                            ? 'font-sans text-[1.15em]'
                             : 'font-itim'
                     }`}>
                         {classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}

@@ -10,6 +10,7 @@ const ImportPlatformModal = lazy(() => import('./ImportPlatformModal').then(m =>
 
 interface SettingsPageProps {
     onBack: () => void;
+    onOpenGuide: () => void;
     config: AppConfig;
     onConfigChange: (config: Partial<AppConfig>) => void;
     classes: ClassInfo[];
@@ -19,6 +20,7 @@ interface SettingsPageProps {
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */
 export const SettingsPage: React.FC<SettingsPageProps> = ({
     onBack,
+    onOpenGuide,
     config,
     onConfigChange: updateConfig,
     classes,
@@ -29,10 +31,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     const [isSheetOpen, setSheetOpen] = useState(true);
     const closeTimerRef = useRef<number | null>(null);
 
-    const requestClose = useCallback(() => {
+    const requestClose = useCallback((afterClose?: () => void) => {
         if (!isSheetOpen) return;
         setSheetOpen(false);
-        closeTimerRef.current = window.setTimeout(onBack, 300);
+        closeTimerRef.current = window.setTimeout(() => {
+            onBack();
+            afterClose?.();
+        }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300);
     }, [isSheetOpen, onBack]);
 
     useEffect(() => () => {
@@ -58,6 +63,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <ConfigModal
                 isOpen={isSheetOpen}
                 onClose={requestClose}
+                onOpenGuide={() => requestClose(onOpenGuide)}
                 config={config}
                 onConfigChange={updateConfig}
                 onExportPlatform={() => {

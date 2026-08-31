@@ -161,9 +161,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="lg"
       className="sm:max-w-xl sm:rounded-2xl"
-      headerClassName="border-b border-border/55 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
+      headerClassName="border-b-0 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t border-border/55 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
+      footerClassName="border-t-0 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">

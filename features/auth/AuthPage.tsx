@@ -1,171 +1,81 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
-import { BookOpen, CircleCheck, Eye, EyeOff, Loader2, TriangleAlert, ShieldCheck } from '@/components/ui/icons';
-import { AppLocale } from '@/types';
+import { CircleCheck, Eye, EyeOff, Loader2, TriangleAlert, LockKeyhole } from '@/components/ui/icons';
+import { CountryFlag } from '@/components/ui/CountryFlags';
+import type { AppLocale } from '@/types';
+import { AuthShowcase } from './AuthShowcase';
+import { formatMoroccanPhone, isCompleteMoroccanPhone, passwordScore } from './authForm';
+import { WorkspaceSwitchError } from '@/utils/accountWorkspace';
 
 type Mode = 'login' | 'register';
 type AuthLocale = Extract<AppLocale, 'ar' | 'fr'>;
-
 const AUTH_COPY = {
   fr: {
-    brand: 'Cahier de Textes Numérique', online: 'Plateforme Officielle', teacherAccess: 'Espace Enseignant',
-    promise: 'Une expérience de saisie rapide et agréable',
-    promiseDetail: 'Une application intelligente qui vous alerte, gère votre emploi du temps et évite les erreurs.',
-    heroGreeting: 'Bienvenue sur',
-    heroTagline: 'Skip les tâches manuelles et gagnez un temps précieux ! Remplissez votre cahier de textes en quelques clics.',
-    techBadge: 'Système Pédagogique',
-    featureHighlights: [
-      { text: 'Notifications intelligentes', desc: 'L\'application vous notifie à chaque séance et vous alerte si vous êtes en retard.' },
-      { text: 'Calendrier scolaire intégré', desc: 'Prend en compte les vacances, jours fériés et examens.' },
-      { text: 'Génération instantanée', desc: 'Remplissez vos cahiers en quelques secondes.' },
-      { text: 'Sécurité & Synchronisation', desc: 'Moteur chiffré et conforme aux normes pédagogiques.' },
-    ],
-    welcomeTitle: 'Bon retour parmi nous !',
-    createTitle: 'Créer votre compte',
-    welcomeSubtitle: 'Vous n’avez pas de compte ?',
-    createSubtitle: 'Vous avez déjà un compte ?',
-    welcomeDetail: 'Accédez à votre plateforme de gestion pédagogique et au suivi de vos classes.',
-    createDetail: 'Configurez votre établissement, vos cycles et vos classes en quelques secondes.',
-    login: 'Connexion', createAccount: 'S’inscrire', name: 'Nom', firstName: 'Prénom',
-    phone: 'Numéro de téléphone', password: 'Mot de passe', confirmPassword: 'Confirmer le mot de passe',
+    brand: 'Mon cahier de textes', teacherAccess: 'Espace enseignant',
+    workspaceError: 'Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.',
+    welcomeTitle: 'Retrouvez votre cahier.', createTitle: 'Votre espace commence ici.',
+    welcomeDetail: 'Connectez-vous pour préparer et suivre vos séances.',
+    createDetail: 'Créez votre compte, puis configurez vos classes à votre rythme.',
+    login: 'Se connecter', createAccount: 'S’inscrire', modeLabel: 'Accès au compte',
+    name: 'Nom', firstName: 'Prénom', phone: 'Numéro de téléphone', phoneComplete: 'Format du numéro valide',
+    password: 'Mot de passe', confirmPassword: 'Confirmer le mot de passe',
     showPassword: 'Afficher le mot de passe', hidePassword: 'Masquer le mot de passe', capsLock: 'Verr. maj. activée',
-    passwordMin: '8 car. min.', samePassword: 'Identiques',
-    wait: 'Traitement en cours…', signIn: 'Se connecter', createMyAccount: 'Créer mon compte',
-    secure: 'Connexion sécurisée · Moteur de synchronisation chiffré', languageLabel: 'Choisir la langue',
-    copyright: '© 2026 Cahier de Textes Numérique. Tous droits réservés.',
+    passwordMin: '8 caractères minimum', samePassword: 'Mots de passe identiques',
+    wait: 'Traitement en cours…', createMyAccount: 'Créer mon compte',
+    secure: 'Vos identifiants restent personnels.', languageLabel: 'Choisir la langue',
     nameRequired: 'Renseignez votre nom et votre prénom.', passwordRequired: 'Le mot de passe doit contenir au moins 8 caractères.',
-    passwordMismatch: 'Les deux mots de passe ne correspondent pas.', unknownError: 'Une erreur est survenue.',
-    strength: ['Très faible', 'Faible', 'Moyen', 'Bon', 'Excellent'],
+    passwordMismatch: 'Les deux mots de passe ne correspondent pas.', unknownError: 'Connexion impossible. Vérifiez vos identifiants et votre connexion Internet.',
+    strengthLabel: 'Robustesse indicative', strength: ['Faible', 'Moyenne', 'Bonne', 'Forte'],
   },
   ar: {
-    brand: 'دفتر النصوص الرقمي', online: 'المنظومة التربوية', teacherAccess: 'فضاء الأستاذ',
-    promise: 'تعبئة دفتر النصوص أصبحت تجربة ممتعة وسريعة',
-    promiseDetail: 'تطبيق ذكي يرافقك في إنجاز أعمالك وتتبع حصصك التربوية بدون أخطاء.',
-    heroGreeting: 'مرحباً بك في',
-    heroTagline: 'تجنب المهام اليدوية المكررة ووفر وقتك الثمين ! قم بتعبئة دفتر النصوص في ثوانٍ معدودة.',
-    techBadge: 'منظومة تربوية',
-    featureHighlights: [
-      { text: 'إشعارات وتنبيهات ذكية', desc: 'التطبيق يشعرك في كل حصة، وينبهك إذا تأخرت عن تعبئة دفترك.' },
-      { text: 'تقويم مدرسي مدمج', desc: 'يأخذ بعين الاعتبار العطل الرسمية والامتحانات مع تفادي الأخطاء.' },
-      { text: 'توليد بضغطة زر', desc: 'تعبئة دفتر النصوص الخاص بك في ثوانٍ قليلة وبتكنولوجيا متقدمة.' },
-      { text: 'أمان ومزامنة تلقائية', desc: 'نظام مشفر ومطابق للمعايير التربوية.' },
-    ],
-    welcomeTitle: 'أهلاً بك مجدداً !',
-    createTitle: 'إنشاء حساب جديد',
-    welcomeSubtitle: 'ليس لديك حساب بعد؟',
-    createSubtitle: 'لديك حساب بالفعل؟',
-    welcomeDetail: 'ولوج إلى فضاء التدبير البيداغوجي وتتبع التدرج الدراسي للأقسام.',
-    createDetail: 'قم بتهيئة مادتك، السلك والأقسام في ثوانٍ معدودة.',
-    login: 'تسجيل الدخول', createAccount: 'إنشاء حساب', name: 'الاسم العائلي', firstName: 'الاسم الشخصي',
-    phone: 'رقم الهاتف', password: 'كلمة المرور', confirmPassword: 'تأكيد كلمة المرور',
+    brand: 'دفتر نصوصي', teacherAccess: 'فضاء الأستاذ',
+    workspaceError: 'أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.',
+    welcomeTitle: 'دفترك في انتظارك.', createTitle: 'فضاؤك يبدأ من هنا.',
+    welcomeDetail: 'سجّل الدخول لتحضير حصصك وتتبعها.', createDetail: 'أنشئ حسابك، ثم أضف أقسامك حسب حاجتك.',
+    login: 'تسجيل الدخول', createAccount: 'إنشاء حساب', modeLabel: 'الولوج إلى الحساب',
+    name: 'الاسم العائلي', firstName: 'الاسم الشخصي', phone: 'رقم الهاتف', phoneComplete: 'صيغة الرقم صحيحة',
+    password: 'كلمة المرور', confirmPassword: 'تأكيد كلمة المرور',
     showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور', capsLock: 'مفتاح الأحرف الكبيرة مفعّل',
-    passwordMin: '8 أحرف على الأقل', samePassword: 'متطابقتان',
-    wait: 'جاري المعالجة…', signIn: 'الدخول إلى حسابي', createMyAccount: 'إنشاء حسابي',
-    secure: 'اتصال آمن · نظام مزامنة مشفر ورقيم', languageLabel: 'اختيار اللغة',
-    copyright: 'جميع الحقوق محفوظة © 2026 دفتر النصوص الرقمي.',
-    nameRequired: 'أدخل الاسم الشخصي والنسب.', passwordRequired: 'يجب أن تتضمن كلمة المرور 8 أحرف على الأقل.',
-    passwordMismatch: 'كلمتا المرور غير متطابقتين.', unknownError: 'حدث خطأ غير متوقع.',
-    strength: ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'جيدة', 'ممتازة'],
+    passwordMin: '8 أحرف على الأقل', samePassword: 'كلمتا المرور متطابقتان',
+    wait: 'جارٍ المعالجة…', createMyAccount: 'إنشاء حسابي',
+    secure: 'بيانات الدخول خاصة بك، لا تشاركها.', languageLabel: 'اختيار اللغة',
+    nameRequired: 'أدخل الاسم الشخصي والعائلي.', passwordRequired: 'يجب أن تتضمن كلمة المرور 8 أحرف على الأقل.',
+    passwordMismatch: 'كلمتا المرور غير متطابقتين.', unknownError: 'تعذّر الاتصال. تحقق من بيانات الدخول ومن اتصالك بالإنترنت.',
+    strengthLabel: 'مؤشر قوة كلمة المرور', strength: ['ضعيفة', 'متوسطة', 'جيدة', 'قوية'],
   },
 } as const;
+const FIELD_CLASS = 'h-12 rounded-[8px] border border-stone-300 bg-white px-3 text-base font-normal text-stone-900 shadow-none placeholder:text-stone-400 focus-visible:border-stone-600 focus-visible:ring-2 focus-visible:ring-stone-500/20 dark:border-[#5f6368] dark:bg-[#202124] dark:text-stone-100';
+const LABEL_CLASS = 'mb-2 block text-sm font-medium';
 
-/** Force du mot de passe, indicative (le serveur n'exige que 8 caractères). */
-const passwordStrength = (pw: string, labels: readonly string[]): { score: number; label: string; barClass: string; textClass: string } => {
-  if (!pw) return { score: 0, label: '', barClass: '', textClass: '' };
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (pw.length >= 12) score++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
-  if (/\d/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const level = Math.min(score, 4);
-  const map = [
-    { label: labels[0], barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-400' },
-    { label: labels[1], barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-400' },
-    { label: labels[2], barClass: 'bg-amber-500', textClass: 'text-amber-600 dark:text-amber-400' },
-    { label: labels[3], barClass: 'bg-emerald-500', textClass: 'text-emerald-600 dark:text-emerald-400' },
-    { label: labels[4], barClass: 'bg-emerald-500', textClass: 'text-emerald-600 dark:text-emerald-400' },
-  ];
-  return { score: level, ...map[level] };
-};
-
-/** Formatage téléphone marocain : « 06 12 34 56 78 » (le backend ne garde que les chiffres). */
-const formatMoroccanPhone = (raw: string): string =>
-  raw.replace(/[^\d]/g, '').slice(0, 10).replace(/(\d{2})(?=\d)/g, '$1 ').trim();
-
-/** Champ mot de passe : bascule de visibilité + alerte Verr. Maj. */
-const PasswordInput: React.FC<{
-  value: string;
-  onChange: (value: string) => void;
-  autoComplete: string;
-  placeholder?: string;
-  minLength?: number;
-  required?: boolean;
-  showLabel: string;
-  hideLabel: string;
-  capsLockLabel: string;
-}> = ({ value, onChange, autoComplete, placeholder = '••••••••', minLength, required, showLabel, hideLabel, capsLockLabel }) => {
+const PasswordInput = ({ id, value, onChange, autoComplete, required, minLength, copy }: {
+  id: string; value: string; onChange: (value: string) => void;
+  autoComplete: string; required?: boolean; minLength?: number; copy: typeof AUTH_COPY[AuthLocale];
+}) => {
   const [visible, setVisible] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
-  const detectCaps = (e: React.KeyboardEvent<HTMLInputElement>) => setCapsLock(e.getModifierState?.('CapsLock') ?? false);
-
-  return (
-    <div>
-      <div className="relative">
-        <Input
-          type={visible ? 'text' : 'password'}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyUp={detectCaps}
-          onKeyDown={detectCaps}
-          onBlur={() => setCapsLock(false)}
-          autoComplete={autoComplete}
-          placeholder={placeholder}
-          required={required}
-          minLength={minLength}
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          className="h-12 rounded-xl border border-slate-300/90 bg-white dark:border-slate-700/80 dark:bg-slate-900/90 pr-11 pl-4 text-left text-xs font-semibold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600/20 dark:text-white dark:hover:border-blue-500 sm:text-[13px]"
-          dir="ltr"
-        />
-        <button
-          type="button"
-          onClick={() => setVisible(v => !v)}
-          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 focus-visible:outline-none cursor-pointer"
-          aria-label={visible ? hideLabel : showLabel}
-          aria-pressed={visible}
-        >
-          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-      </div>
-      {capsLock && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 animate-in fade-in duration-200">
-          <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-600" /> {capsLockLabel}
-        </p>
-      )}
+  const detectCaps = (event: React.KeyboardEvent<HTMLInputElement>) => setCapsLock(event.getModifierState('CapsLock'));
+  return <div>
+    <div className="relative">
+      <Input id={id} name={id} type={visible ? 'text' : 'password'} value={value} onChange={event => onChange(event.target.value)}
+        onKeyDown={detectCaps} onKeyUp={detectCaps} onBlur={() => setCapsLock(false)} autoComplete={autoComplete}
+        required={required} minLength={minLength} autoCapitalize="none" autoCorrect="off" spellCheck={false}
+        aria-describedby={capsLock ? id + '-caps' : undefined} className={FIELD_CLASS + ' pe-12'} />
+      <button type="button" onClick={() => setVisible(value => !value)} aria-label={visible ? copy.hidePassword : copy.showPassword}
+        aria-pressed={visible} aria-controls={id} className="absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-[8px] text-stone-500 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-stone-400 dark:hover:text-white">
+        {visible ? <EyeOff className="h-4.5 w-4.5" aria-hidden="true" /> : <Eye className="h-4.5 w-4.5" aria-hidden="true" />}
+      </button>
     </div>
-  );
+    {capsLock && <p id={id + '-caps'} role="status" className="mt-2 flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300"><TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />{copy.capsLock}</p>}
+  </div>;
 };
 
-const LiveCheck: React.FC<{ ok: boolean; label: string }> = ({ ok, label }) => (
-  <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold transition-colors ${ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
-    <CircleCheck className={`h-3.5 w-3.5 ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} /> {label}
-  </span>
-);
-
-interface AuthPageProps {
-  locale: AppLocale;
-  onLocaleChange: (locale: AuthLocale) => void;
-}
-
-export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) => {
+export const AuthPage: React.FC<{ locale: AppLocale; onLocaleChange: (locale: AuthLocale) => void }> = ({ locale, onLocaleChange }) => {
   const { login, register } = useAuth();
-  const displayLocale: AuthLocale = locale === 'fr' ? 'fr' : 'ar';
+  const displayLocale: AuthLocale = locale === 'ar' ? 'ar' : 'fr';
   const copy = AUTH_COPY[displayLocale];
-  const isRtl = displayLocale === 'ar';
+  const reducedMotion = useReducedMotion();
   const [mode, setMode] = useState<Mode>('login');
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
@@ -174,295 +84,105 @@ export const AuthPage: React.FC<AuthPageProps> = ({ locale, onLocaleChange }) =>
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
-  const errorId = useId();
-
-  const passwordLongEnough = password.length >= 8;
-  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
-  const phoneValid = phone.replace(/[^\d]/g, '').length >= 8;
-  const strength = passwordStrength(password, copy.strength);
+  const id = useId();
   const isRegister = mode === 'register';
+  const score = passwordScore(password);
+  const phoneValid = isCompleteMoroccanPhone(phone);
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error]);
 
-  useEffect(() => {
-    if (error) errorRef.current?.focus();
-  }, [error]);
-
-  const switchMode = (next: Mode) => { setMode(next); setError(null); };
-
+  const switchMode = (next: Mode) => {
+    if (submittingRef.current) return;
+    setMode(next);
+    setError(null);
+  };
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (submittingRef.current) return;
     setError(null);
     if (isRegister) {
       if (!nom.trim() || !prenom.trim()) return setError(copy.nameRequired);
-      if (!passwordLongEnough) return setError(copy.passwordRequired);
+      if (password.length < 8) return setError(copy.passwordRequired);
       if (password !== confirmPassword) return setError(copy.passwordMismatch);
     }
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
+      // Preserve the backend contract, including legacy accounts with shorter local numbers.
       if (mode === 'login') await login(phone, password);
       else await register({ nom: nom.trim(), prenom: prenom.trim(), phone, password });
     } catch (err) {
-      setError(err instanceof Error ? err.message : copy.unknownError);
+      setError(err instanceof WorkspaceSwitchError ? copy.workspaceError : displayLocale === 'fr' && err instanceof Error ? err.message : copy.unknownError);
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
-  const renderLanguageSwitch = () => (
-    <div dir="ltr" className="flex items-center rounded-xl border border-slate-300/80 bg-white/90 p-1 shadow-xs dark:border-slate-700 dark:bg-slate-800/90" role="group" aria-label={copy.languageLabel}>
-      <button
-        type="button"
-        onClick={() => onLocaleChange('ar')}
-        aria-pressed={displayLocale === 'ar'}
-        className={`min-h-[36px] rounded-lg px-3.5 text-xs font-black transition-all cursor-pointer font-ibm-arabic ${displayLocale === 'ar' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'}`}
-      >
-        العربية
-      </button>
-      <button
-        type="button"
-        onClick={() => onLocaleChange('fr')}
-        aria-pressed={displayLocale === 'fr'}
-        className={`min-h-[36px] rounded-lg px-3.5 text-xs font-black transition-all cursor-pointer ${displayLocale === 'fr' ? 'bg-[#1b3a8a] text-white shadow-sm' : 'text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'}`}
-      >
-        FR
-      </button>
-    </div>
-  );
-
-  return (
-    <div
-      dir={isRtl ? 'rtl' : 'ltr'}
-      lang={displayLocale}
-      className={`auth-page-shell min-h-screen w-full flex flex-col lg:flex-row bg-[#F8FAFC] dark:bg-slate-950 text-slate-950 dark:text-slate-50 overflow-x-hidden selection:bg-[#2563eb] selection:text-white ${isRtl ? 'font-ibm-arabic' : "font-['Roboto_Slab',serif]"}`}
-    >
-      {/* ================= HERO / BANNER IMAGE PANEL (DESKTOP ONLY) ================= */}
-      <aside className="relative hidden lg:flex lg:w-1/2 xl:w-[52%] items-center justify-center p-6 lg:p-10 bg-slate-100/90 dark:bg-slate-950 overflow-hidden shrink-0 min-h-screen">
-        <div className="relative w-full h-full max-w-2xl flex items-center justify-center overflow-hidden rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6">
-          <img
-            key={displayLocale}
-            src={displayLocale === 'ar' ? '/login_ar.png' : '/login_fr.png'}
-            alt={copy.brand}
-            className="w-full h-full max-h-[88vh] object-contain rounded-2xl transition-all duration-300 animate-in fade-in zoom-in-95"
-          />
-        </div>
-      </aside>
-
-      {/* ================= FORM PANEL ================= */}
-      <main className="w-full lg:w-1/2 xl:w-[48%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-14 bg-[#FAFCFF] lg:bg-white dark:bg-slate-950 lg:dark:bg-slate-900 shrink-0">
-        
-        {/* Top Navigation Row */}
-        <header className="w-full flex items-center justify-between pb-4 sm:pb-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/30">
-              <BookOpen className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <div className="flex flex-col text-start">
-              <span className={`font-black text-slate-950 dark:text-white text-base sm:text-lg leading-tight ${isRtl ? 'font-ibm-arabic' : ''}`}>
-                {copy.brand}
-              </span>
-              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                {copy.teacherAccess}
-              </span>
-            </div>
+  return <div dir={displayLocale === 'ar' ? 'rtl' : 'ltr'} lang={displayLocale} className="auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e0e0e0] px-4 py-3 dark:border-[#5f6368] sm:px-8 lg:px-10">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <img src="/icone.png" width="40" height="40" alt="" className="h-10 w-10 shrink-0 rounded-[8px] object-contain" />
+        <div className="min-w-0"><p className="text-sm font-semibold sm:text-base">{copy.brand}</p><p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">{copy.teacherAccess}</p></div>
+      </div>
+      <div dir="ltr" role="group" aria-label={copy.languageLabel} className="flex shrink-0 gap-1 rounded-[12px] border border-[#e0e0e0] p-1 dark:border-[#5f6368]">
+        {(['ar', 'fr'] as const).map(value => <button key={value} type="button" lang={value} disabled={isSubmitting} onClick={() => { setError(null); onLocaleChange(value); }} aria-pressed={displayLocale === value}
+          className={'flex min-h-11 items-center justify-center gap-1.5 rounded-[8px] px-2.5 text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 ' + (displayLocale === value ? 'bg-stone-100 text-stone-950 dark:bg-[#3c4043] dark:text-white' : 'text-stone-500 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-white/5')}>
+          <CountryFlag code={value} className="h-3 w-4.5" /><span>{value === 'ar' ? 'العربية' : 'FR'}</span>
+        </button>)}
+      </div>
+    </header>
+    <div className="grid flex-1 lg:grid-cols-2">
+      <AuthShowcase locale={displayLocale} />
+      <main className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
+        <div className="mx-auto w-full max-w-[400px]">
+          <h1 id={id + '-title'} className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{isRegister ? copy.createTitle : copy.welcomeTitle}</h1>
+          <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{isRegister ? copy.createDetail : copy.welcomeDetail}</p>
+          <div role="group" aria-label={copy.modeLabel} className="my-6 grid grid-cols-2 gap-1 rounded-[12px] bg-stone-100 p-1 dark:bg-[#303134]">
+            {(['login', 'register'] as const).map(value => <button key={value} type="button" disabled={isSubmitting} aria-pressed={mode === value} aria-controls={id + '-form'} onClick={() => switchMode(value)}
+              className="relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+              {mode === value && <motion.span layoutId={id + '-active-mode'} aria-hidden="true" className="absolute inset-0 rounded-[8px] border border-[#e0e0e0] bg-white shadow-sm dark:border-[#5f6368] dark:bg-[#202124]" transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 450, damping: 36 }} />}
+              <span className="relative">{value === 'login' ? copy.login : copy.createAccount}</span>
+            </button>)}
           </div>
-
-          {renderLanguageSwitch()}
-        </header>
-
-        {/* Center Form Card */}
-        <div className="w-full max-w-md mx-auto my-auto py-2 sm:py-6">
-          <div className="w-full rounded-2xl sm:rounded-3xl bg-white sm:bg-transparent dark:bg-slate-900 sm:dark:bg-transparent p-6 sm:p-0 shadow-lg sm:shadow-none border border-slate-200/90 sm:border-none dark:border-slate-800">
-          
-          <motion.div
-            key={mode}
-            initial={{ opacity: 0, x: isRtl ? -15 : 15 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
-            {/* Main Welcome Header */}
-            <div className="text-start mb-6">
-              <h2 className={`text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tight ${isRtl ? 'font-ibm-arabic leading-snug' : ''}`}>
-                {isRegister ? copy.createTitle : copy.welcomeTitle}
-              </h2>
-              
-              <div className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 flex flex-wrap items-center gap-1.5 font-medium">
-                <span>{isRegister ? copy.createSubtitle : copy.welcomeSubtitle}</span>
-                <button
-                  type="button"
-                  onClick={() => switchMode(isRegister ? 'login' : 'register')}
-                  className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer focus:outline-none"
-                >
-                  {isRegister ? copy.login : copy.createAccount}
-                </button>
-              </div>
-            </div>
-
-            {/* Segmented Mode Control */}
-            <div className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl bg-slate-100/90 p-1.5 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60">
-              {(['login', 'register'] as const).map(value => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => switchMode(value)}
-                  className={`relative min-h-[42px] sm:min-h-[44px] rounded-xl px-3 py-2 text-xs font-black transition-colors focus:outline-none cursor-pointer ${mode === value ? 'text-slate-950 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-                >
-                  {mode === value && (
-                    <motion.span
-                      layoutId="auth-tab-split"
-                      className="absolute inset-0 rounded-xl bg-white shadow-sm dark:bg-slate-700 border border-slate-200/90 dark:border-slate-600/70"
-                      transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                    />
-                  )}
-                  <span className={`relative z-10 ${isRtl ? 'font-ibm-arabic' : ''}`}>{value === 'login' ? copy.login : copy.createAccount}</span>
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4" aria-busy={isSubmitting}>
-              
-              {/* Nom + Prénom (inscription) */}
-              <AnimatePresence initial={false}>
-                {isRegister && (
-                  <motion.div
-                    key="names"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="grid grid-cols-1 gap-3 overflow-hidden min-[390px]:grid-cols-2"
-                  >
-                    <label className="block text-start">
-                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.name}</span>
-                      <Input
-                        value={nom}
-                        onChange={e => setNom(e.target.value)}
-                        autoComplete="family-name"
-                        placeholder={isRtl ? 'العلمي' : 'Benali'}
-                        className={`h-12 rounded-xl border border-slate-300/90 bg-white text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px] ${isRtl ? 'font-ibm-arabic' : ''}`}
-                      />
-                    </label>
-                    <label className="block text-start">
-                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.firstName}</span>
-                      <Input
-                        value={prenom}
-                        onChange={e => setPrenom(e.target.value)}
-                        autoComplete="given-name"
-                        placeholder={isRtl ? 'سلمى' : 'Malek'}
-                        className={`h-12 rounded-xl border border-slate-300/90 bg-white text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px] ${isRtl ? 'font-ibm-arabic' : ''}`}
-                      />
-                    </label>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Phone Input */}
-              <label className="block text-start">
-                <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.phone}</span>
-                <div className="relative">
-                  <Input
-                    type="tel"
-                    inputMode="tel"
-                    value={phone}
-                    onChange={e => setPhone(formatMoroccanPhone(e.target.value))}
-                    autoComplete="tel"
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    placeholder="06 12 34 56 78"
-                    required
-                    aria-describedby={error ? errorId : undefined}
-                    className="h-12 rounded-xl border border-slate-300/90 bg-white pr-11 pl-4 text-left text-xs font-bold text-slate-950 shadow-xs transition-all placeholder:text-slate-400 hover:border-blue-400 focus:border-blue-600 focus:bg-white focus:shadow-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white sm:text-[13px]"
-                    dir="ltr"
-                  />
-                  {phoneValid && <CircleCheck className="pointer-events-none absolute right-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-200" />}
+          <form id={id + '-form'} onSubmit={handleSubmit} aria-labelledby={id + '-title'} aria-busy={isSubmitting}>
+            <fieldset disabled={isSubmitting} className="min-w-0 space-y-4">
+              {isRegister && <div className="grid grid-cols-1 gap-4 min-[390px]:grid-cols-2">
+                <div><label htmlFor={id + '-name'} className={LABEL_CLASS}>{copy.name}</label><Input id={id + '-name'} name="family-name" value={nom} onChange={event => setNom(event.target.value)} autoComplete="family-name" required className={FIELD_CLASS} /></div>
+                <div><label htmlFor={id + '-first-name'} className={LABEL_CLASS}>{copy.firstName}</label><Input id={id + '-first-name'} name="given-name" value={prenom} onChange={event => setPrenom(event.target.value)} autoComplete="given-name" required className={FIELD_CLASS} /></div>
+              </div>}
+              <div>
+                <label htmlFor={id + '-phone'} className={LABEL_CLASS}>{copy.phone}</label>
+                <div className="relative" dir="ltr">
+                  <Input id={id + '-phone'} name="phone" type="tel" inputMode="tel" dir="ltr" value={phone} onChange={event => setPhone(formatMoroccanPhone(event.target.value))} autoComplete="tel" placeholder="06 12 34 56 78" required
+                    aria-describedby={phoneValid ? id + '-phone-valid' : undefined} className={FIELD_CLASS + ' pr-11 text-left tabular-nums'} />
+                  {phoneValid && <span id={id + '-phone-valid'} role="status" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300"><CircleCheck className="h-5 w-5" aria-hidden="true" /><span className="sr-only">{copy.phoneComplete}</span></span>}
                 </div>
-              </label>
-
-              {/* Password Input */}
-              <label className="block text-start">
-                <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.password}</span>
-                <PasswordInput
-                  value={password}
-                  onChange={setPassword}
-                  autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  required
-                  minLength={isRegister ? 8 : undefined}
-                  showLabel={copy.showPassword}
-                  hideLabel={copy.hidePassword}
-                  capsLockLabel={copy.capsLock}
-                />
-              </label>
-
-              {/* Register Extra Confirmation */}
-              <AnimatePresence initial={false}>
-                {isRegister && (
-                  <motion.div
-                    key="register-extra"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-3.5 overflow-hidden text-start"
-                  >
-                    <label className="block text-start">
-                      <span className={`mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300 ${isRtl ? 'font-ibm-arabic' : 'uppercase tracking-wider text-[11px]'}`}>{copy.confirmPassword}</span>
-                      <PasswordInput value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" showLabel={copy.showPassword} hideLabel={copy.hidePassword} capsLockLabel={copy.capsLock} />
-                    </label>
-
-                    {/* Jauge de force */}
-                    {password.length > 0 && (
-                      <div className="flex items-center gap-2.5 animate-in fade-in duration-200 bg-white dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200/90 dark:border-slate-700/70 shadow-xs">
-                        <div className="flex flex-1 gap-1.5" aria-hidden>
-                          {[0, 1, 2, 3].map(i => (
-                            <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? strength.barClass : 'bg-slate-200 dark:bg-slate-700'}`} />
-                          ))}
-                        </div>
-                        <span className={`shrink-0 text-[11px] font-black uppercase tracking-wider ${strength.textClass}`}>{strength.label}</span>
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-x-3.5 gap-y-1.5">
-                      <LiveCheck ok={passwordLongEnough} label={copy.passwordMin} />
-                      <LiveCheck ok={passwordsMatch} label={copy.samePassword} />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Error Message */}
-              {error && (
-                <p ref={errorRef} id={errorId} tabIndex={-1} className="rounded-xl border border-red-300 bg-red-50 p-3.5 text-xs font-bold text-red-700 outline-none animate-in fade-in duration-200 text-start dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-300 shadow-xs" role="alert">
-                  {error}
-                </p>
-              )}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`group relative mt-2 flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-black text-white shadow-md shadow-blue-600/30 transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer ${isRtl ? 'font-ibm-arabic text-base' : ''}`}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> {copy.wait}</span>
-                ) : (
-                  <span className="tracking-wide">{isRegister ? copy.createMyAccount : copy.signIn}</span>
-                )}
+              </div>
+              <div>
+                <label htmlFor={id + '-password'} className={LABEL_CLASS}>{copy.password}</label>
+                <PasswordInput id={id + '-password'} value={password} onChange={setPassword} autoComplete={isRegister ? 'new-password' : 'current-password'} required minLength={isRegister ? 8 : undefined} copy={copy} />
+                {isRegister && <div className="mt-3" role="meter" aria-label={copy.strengthLabel} aria-valuemin={0} aria-valuemax={4} aria-valuenow={score} aria-valuetext={score ? copy.strength[score - 1] : copy.passwordMin}>
+                  <div className="flex gap-1.5" aria-hidden="true">{[1, 2, 3, 4].map(level => <span key={level} className={'h-1 flex-1 rounded-full transition-colors motion-reduce:transition-none ' + (level > score ? 'bg-stone-200 dark:bg-stone-700' : score === 1 ? 'bg-red-600' : score === 2 ? 'bg-amber-600' : 'bg-emerald-600')} />)}</div>
+                  <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">{score ? copy.strengthLabel + ' : ' + copy.strength[score - 1] : copy.passwordMin}</p>
+                </div>}
+              </div>
+              {isRegister && <div>
+                <label htmlFor={id + '-confirm'} className={LABEL_CLASS}>{copy.confirmPassword}</label>
+                <PasswordInput id={id + '-confirm'} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" required copy={copy} />
+                {passwordsMatch && <p role="status" className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-300"><CircleCheck className="h-4 w-4" aria-hidden="true" />{copy.samePassword}</p>}
+              </div>}
+              {error && <p ref={errorRef} tabIndex={-1} role="alert" className="rounded-[8px] border border-red-200 bg-red-50 p-3 text-sm text-red-800 focus-visible:outline-2 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">{error}</p>}
+              <button type="submit" disabled={isSubmitting} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-stone-700 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white">
+                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}{isSubmitting ? copy.wait : isRegister ? copy.createMyAccount : copy.login}
               </button>
-            </form>
-          </motion.div>
-          </div>
+            </fieldset>
+          </form>
+          <p className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-500 dark:text-stone-400"><LockKeyhole className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />{copy.secure}</p>
         </div>
-
-        {/* Footer Security Badge */}
-        <footer className="w-full pt-6 text-center">
-          <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className={isRtl ? 'font-ibm-arabic' : ''}>{copy.secure}</span>
-          </p>
-        </footer>
-
       </main>
     </div>
-  );
+  </div>;
 };

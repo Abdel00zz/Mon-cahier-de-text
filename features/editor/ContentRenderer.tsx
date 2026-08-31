@@ -41,6 +41,39 @@ const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, que
   return <>{parts}</>;
 };
 
+const renderChapterTitleStyled = (text: string, isAr: boolean) => {
+  if (isAr) {
+    return <span className="font-sans text-2xl sm:text-3xl font-bold leading-tight text-[#202124] dark:text-[#e8eaed] dark:text-foreground">{text}</span>;
+  }
+  const parts = text.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème)?)/gi);
+  return parts.map((part, idx) => {
+    if (!part) return null;
+    const matchOrdinal = part.match(/^([0-9\u0660-\u0669]+)(er|ere|eme|ère|ème)$/i);
+    if (matchOrdinal) {
+      const num = matchOrdinal[1];
+      const suf = matchOrdinal[2];
+      return (
+        <span key={idx} className="inline-block text-primary font-bold font-sans">
+          <span>{num}</span>
+          <sup className="relative -top-[0.45em] text-[0.6em] font-semibold">{suf}</sup>
+        </span>
+      );
+    }
+    if (/^[0-9\u0660-\u0669]+$/.test(part)) {
+      return (
+        <span key={idx} className="text-primary font-bold font-sans px-[1.5px]">
+          {part}
+        </span>
+      );
+    }
+    return (
+      <span key={idx} className="font-bold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
+        {part}
+      </span>
+    );
+  });
+};
+
 export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
   const { t } = useLocale();
   
@@ -125,22 +158,18 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     }
 
     if (item.type === 'chapter') {
-      // Un chapitre reste optiquement centré quel que soit son titre : les
-      // retours manuels, les formules LaTeX et les longues formulations ont
-      // une hauteur souple, mais une base commune qui évite les sauts visuels.
       const chapterTitle = item.title || config.name;
-      const titleLines = Math.max(1, chapterTitle.split(/\r?\n/).length);
-      const titleDensity = chapterTitle.replace(/\$[^$]*\$/g, 'x').trim().length + (titleLines - 1) * 32;
-      const titleSize = titleDensity > 130
-        ? 'text-[13px] max-sm:portrait:text-[10.4px] sm:text-sm'
-        : titleDensity > 82
-          ? 'text-sm max-sm:portrait:text-[11.2px] sm:text-[15px]'
-          : 'text-[15px] max-sm:portrait:text-[12px] sm:text-base';
+      const isAr = /[\u0600-\u06FF]/.test(chapterTitle);
+
       return (
         <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className={`flex min-h-[3.75rem] w-full items-center justify-center px-2 py-2.5 text-center font-bold ${titleSize} font-extrabold leading-snug tracking-tight text-foreground sm:min-h-[4.25rem] sm:px-4`}>
-            <span className="block max-w-[min(100%,46rem)] break-words text-balance">
-              <HighlightedText text={chapterTitle} query={highlight} />
+          <div className="my-3 flex w-full items-center justify-center text-center font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug select-none text-primary">
+            <span className="max-w-[min(100%,44rem)] break-words text-balance">
+              {highlight ? (
+                <HighlightedText text={chapterTitle} query={highlight} />
+              ) : (
+                renderChapterTitleStyled(chapterTitle, isAr)
+              )}
             </span>
           </div>
         </MaybeMathJax>

@@ -41,9 +41,9 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       }) : undefined}
       maxWidth="md"
       className="sm:max-w-lg sm:rounded-2xl"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/70 bg-card/85 backdrop-blur-md"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/85 backdrop-blur-md"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/70 bg-card/85 backdrop-blur-md"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/85 backdrop-blur-md"
       footer={
         <div className="flex w-full items-center justify-end gap-2.5">
           <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">

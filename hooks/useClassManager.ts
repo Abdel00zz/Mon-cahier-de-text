@@ -4,6 +4,7 @@ import { ClassInfo } from '../types';
 import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
 import { normalizeOfficialClassName } from '../constants';
+import { captureWorkspaceLease } from '../utils/accountWorkspace';
 
 const STORAGE_KEY  = 'classManager_v1';
 const DATA_PREFIX  = 'classData_v1_';
@@ -27,6 +28,7 @@ const parseStoredClasses = (storedRaw: string | null): ClassInfo[] => {
 };
 
 export const useClassManager = () => {
+    const [workspaceIsActive] = useState(() => captureWorkspaceLease());
     const [classes, setClasses] = useImmer<ClassInfo[]>(() => {
         if (typeof window !== 'undefined') {
             return parseStoredClasses(localStorage.getItem(STORAGE_KEY));
@@ -51,6 +53,7 @@ export const useClassManager = () => {
      * encore la liste précédente.
      */
     const persistClassesNow = useCallback((nextClasses: ClassInfo[], markDirty = true) => {
+        if (!workspaceIsActive()) return;
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(nextClasses));
             if (markDirty) markClassesListDirty();
@@ -58,13 +61,14 @@ export const useClassManager = () => {
         } catch (err) {
             logger.error('Failed to persist classes', err);
         }
-    }, []);
+    }, [workspaceIsActive]);
 
     // ── Initial load ────────────────────────────────────────────────────────
     useEffect(() => {
         let cancelled = false;
 
         (() => {
+            if (!workspaceIsActive()) return;
             const storedRaw   = localStorage.getItem(STORAGE_KEY);
             const hadLaunched = !!localStorage.getItem(LAUNCH_FLAG);
 
@@ -151,6 +155,7 @@ export const useClassManager = () => {
     // ── Mutations ───────────────────────────────────────────────────────────
     const addClass = useCallback(
         (details: Omit<ClassInfo, 'id' | 'createdAt' | 'color'>) => {
+            if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
             const newClass: ClassInfo = {
                 ...details,
                 cycle:     details.cycle ?? 'college',
@@ -170,11 +175,12 @@ export const useClassManager = () => {
             markClassDirty(newClass.id);
             return newClass;
         },
-        [persistClassesNow, setClasses],
+        [persistClassesNow, setClasses, workspaceIsActive],
     );
 
     const deleteClass = useCallback(
         (classId: string) => {
+            if (!workspaceIsActive()) return;
             // La confirmation est portée par la couche UI (ConfirmDialog de la
             // carte), pas de `window.confirm` ici, sinon double confirmation.
             const target = classes.find(c => c.id === classId);
@@ -190,11 +196,12 @@ export const useClassManager = () => {
             localStorage.removeItem(`editor_actions_ignored_v1_${classId}`);
             markClassDeleted(classId);
         },
-        [classes, persistClassesNow, setClasses],
+        [classes, persistClassesNow, setClasses, workspaceIsActive],
     );
 
     const updateClass = useCallback(
         (classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {
+            if (!workspaceIsActive()) return;
             const nextClasses = classes.map(classInfo =>
                 classInfo.id === classId ? { ...classInfo, ...updates } : classInfo
             );
@@ -204,7 +211,7 @@ export const useClassManager = () => {
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
         },
-        [classes, persistClassesNow, setClasses],
+        [classes, persistClassesNow, setClasses, workspaceIsActive],
     );
 
     return { classes, addClass, deleteClass, updateClass, isLoading };

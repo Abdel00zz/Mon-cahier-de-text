@@ -158,10 +158,10 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* ── Section 1 : Thème Global (Clair / Sombre / Système) ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="theme-mode-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="theme-mode-section">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Sun className="h-4.5 w-4.5 dark:hidden" />
               <Moon className="h-4.5 w-4.5 hidden dark:block" />
             </div>
@@ -192,7 +192,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           <button
             type="button"
             onClick={() => handleSelectTheme('light')}
-            className={`group relative flex items-center gap-3.5 rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+            className={`group relative flex items-center gap-3.5 rounded-md border-2 p-3.5 text-start transition-all cursor-pointer ${
               currentTheme === 'light'
                 ? 'border-primary bg-primary/5 shadow-xs'
                 : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -222,7 +222,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           <button
             type="button"
             onClick={() => handleSelectTheme('dark')}
-            className={`group relative flex items-center gap-3.5 rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+            className={`group relative flex items-center gap-3.5 rounded-md border-2 p-3.5 text-start transition-all cursor-pointer ${
               currentTheme === 'dark'
                 ? 'border-primary bg-primary/5 shadow-xs'
                 : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -252,7 +252,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
           <button
             type="button"
             onClick={() => handleSelectTheme('system')}
-            className={`group relative flex items-center gap-3.5 rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+            className={`group relative flex items-center gap-3.5 rounded-md border-2 p-3.5 text-start transition-all cursor-pointer ${
               currentTheme === 'system'
                 ? 'border-primary bg-primary/5 shadow-xs'
                 : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -281,9 +281,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 2 : Palette d'Accent & Couleur Principale ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="accent-color-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="accent-color-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Palette className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -304,7 +304,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 key={palette.id}
                 type="button"
                 onClick={() => updateCustomization({ accentColor: palette.id })}
-                className={`flex flex-col items-center gap-2.5 rounded-xl border-2 p-3 text-center transition-all cursor-pointer ${
+                className={`flex flex-col items-center gap-2.5 rounded-md border-2 p-3 text-center transition-all cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
                     : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -330,7 +330,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
           {/* Option Sur-Mesure / Custom Hex Picker */}
           <div
-            className={`flex flex-col items-center justify-between gap-2 rounded-xl border-2 p-3 text-center transition-all ${
+            className={`flex flex-col items-center justify-between gap-2 rounded-md border-2 p-3 text-center transition-all ${
               currentAccent === 'custom'
                 ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
                 : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -380,9 +380,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 3 : Rayon de Courbure & Arrondi des Composants ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="border-radius-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="border-radius-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Layout className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -404,7 +404,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 key={radiusKey}
                 type="button"
                 onClick={() => updateCustomization({ borderRadius: radiusKey })}
-                className={`flex flex-col items-center gap-3 rounded-xl border-2 p-3.5 text-center transition-all cursor-pointer ${
+                className={`flex flex-col items-center gap-3 rounded-md border-2 p-3.5 text-center transition-all cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
                     : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -430,9 +430,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 4 : Style des Cartes & Surfaces ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="card-style-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="card-style-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Sparkles className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -453,7 +453,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 key={style.id}
                 type="button"
                 onClick={() => updateCustomization({ cardStyle: style.id })}
-                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+                className={`flex flex-col justify-between rounded-md border-2 p-3.5 text-start transition-all cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
                     : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -483,9 +483,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 5 : Style du Tableau du Cahier de Textes ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="table-style-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="table-style-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <TableIcon className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -506,7 +506,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                 key={style.id}
                 type="button"
                 onClick={() => updateCustomization({ tableStyle: style.id })}
-                className={`flex flex-col justify-between rounded-xl border-2 p-3.5 text-start transition-all cursor-pointer ${
+                className={`flex flex-col justify-between rounded-md border-2 p-3.5 text-start transition-all cursor-pointer ${
                   isSelected
                     ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
                     : 'border-border/70 hover:border-border hover:bg-muted/40'
@@ -530,9 +530,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 6 : Typographie unifiée ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="typography-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="typography-section">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Type className="h-4.5 w-4.5" />
           </div>
           <div>
@@ -629,7 +629,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 7 : Aperçu Typographique & Pédagogique ── */}
-      <section className="settings-section-block p-4 sm:p-5" id="font-preview-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="font-preview-section">
         <div className="mb-3 flex items-center gap-2">
           <Eye className="h-4 w-4 text-primary" />
           <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -683,10 +683,10 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 8 : Personnalisation Directe & Avancée des Couleurs ── */}
-      <section className="settings-section-block p-4 sm:p-6" id="advanced-colors-section">
+      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="advanced-colors-section">
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Sliders className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -710,7 +710,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </div>
 
         {showAdvancedColors && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-border/70">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3">
             {/* Fond Global */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground block">

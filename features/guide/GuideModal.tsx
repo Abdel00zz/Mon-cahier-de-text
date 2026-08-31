@@ -91,9 +91,21 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
     contentRef.current?.scrollTo({ top: 0 });
   };
 
+  // Synchronise automatiquement la langue du guide lorsque la langue de l'application change ou à l'ouverture
   useEffect(() => {
-    if (isOpen) setActiveSection('sec-0');
-  }, [isOpen]);
+    const targetLang: ModalLang = locale === 'ar' ? 'ar' : 'fr';
+    persistLang(targetLang);
+    setActiveSection('sec-0');
+    contentRef.current?.scrollTo({ top: 0 });
+  }, [locale]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const targetLang: ModalLang = locale === 'ar' ? 'ar' : 'fr';
+      persistLang(targetLang);
+      setActiveSection('sec-0');
+    }
+  }, [isOpen, locale]);
 
   const isAr = lang === 'ar';
   const html = useMemo(() => toHtml(isAr ? GUIDE_AR : GUIDE_FR, lang), [lang, isAr]);
@@ -118,7 +130,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       title={
         <div className={`flex w-full select-none flex-col justify-between gap-3 sm:items-center ${isAr ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}>
           <div dir={isAr ? 'rtl' : 'ltr'} className={`flex items-center gap-3 ${isAr ? 'text-right' : 'text-left'}`}>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 shadow-xs border border-amber-200/60 dark:border-amber-500/30">
               <BookOpen className="h-5 w-5 stroke-[2.2]" />
             </span>
             <div>
@@ -142,12 +154,12 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       maxWidth="5xl"
       hideClose={false}
       className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-[32px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/80 backdrop-blur-md"
       bodyClassName="flex flex-col overflow-hidden bg-card p-0 sm:p-0"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/60"
+      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/80 backdrop-blur-md"
       footer={
         <div className={`flex w-full ${isAr ? 'justify-start' : 'justify-end'}`}>
-          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="rounded-xl h-10 px-6 font-bold bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto text-xs sm:text-sm shadow-sm">
+          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="rounded-xl h-10 px-6 font-bold bg-[#feefc3] text-[#202124] hover:bg-amber-200 dark:bg-[#41331c] dark:text-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-500/40 w-full sm:w-auto text-xs sm:text-sm shadow-xs cursor-pointer">
             {isAr ? 'إغلاق' : 'Fermer le guide'}
           </Button>
         </div>

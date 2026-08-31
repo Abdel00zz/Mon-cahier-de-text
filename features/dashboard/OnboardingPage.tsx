@@ -1,28 +1,33 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import type { ClassInfo, Cycle } from '@/types';
+import { normalizeTeacherCycles } from '@/utils/teacherCycles';
 import { OnboardingShell } from './onboarding/OnboardingShell';
 import { copyFor, subjectOptionsFor } from './onboarding/content';
-import { useOnboardingClassDraft } from './onboarding/useOnboardingClassDraft';
 import { useOnboardingNavigation } from './onboarding/useOnboardingNavigation';
 import { ClassesStep } from './onboarding/steps/ClassesStep';
 import { LanguageStep } from './onboarding/steps/LanguageStep';
 import { ProfileStep } from './onboarding/steps/ProfileStep';
 import { SubjectsStep } from './onboarding/steps/SubjectsStep';
+import { ThemeStep } from './onboarding/steps/ThemeStep';
 import type { ModalLang, OnboardingCopy, OnboardingPageProps, OnboardingStep } from './onboarding/types';
 
 // La grille hebdomadaire est la partie la plus lourde du parcours : elle ne
 // charge qu'à la dernière étape, après la création des classes.
 const ScheduleStep = lazy(() => import('./onboarding/steps/ScheduleStep').then(module => ({ default: module.ScheduleStep })));
 
-const titleForStep = (copy: OnboardingCopy, step: OnboardingStep): string => ({
-    1: copy.title,
-    2: copy.sectionProfile,
-    3: copy.sectionSubjects,
-    4: copy.sectionClasses,
-    5: copy.sectionSchedule,
-}[step]);
+const titleForStep = (copy: OnboardingCopy, step: OnboardingStep, lang: string): string => {
+    switch (step) {
+        case 1: return copy.title;
+        case 2: return lang === 'ar' ? 'المظهر البصري' : 'Apparence visuelle';
+        case 3: return copy.sectionProfile;
+        case 4: return copy.sectionSubjects;
+        case 5: return copy.sectionClasses;
+        case 6: return copy.sectionSchedule;
+        default: return '';
+    }
+};
 
 /**
  * Orchestrateur mince de la première connexion.
@@ -43,8 +48,9 @@ export const OnboardingPage = ({
     const lang: ModalLang = config.applicationLocale === 'ar' ? 'ar' : 'fr';
     const copy = useMemo(() => copyFor(lang), [lang]);
     const [finishing, setFinishing] = useState(false);
+    const finishingRef = useRef(false);
 
-    const selectedCycles = (config.selectedCycles ?? []) as Cycle[];
+    const selectedCycles = useMemo(() => normalizeTeacherCycles(config.selectedCycles), [config.selectedCycles]);
     const [classCycle, setClassCycle] = useState<Cycle>(() => selectedCycles[0] ?? 'lycee');
     const cycle = classCycle;
     const selectedSubjects = config.selectedSubjects ?? [];
@@ -57,16 +63,6 @@ export const OnboardingPage = ({
         if (!selectedCycles.includes(classCycle)) setClassCycle(selectedCycles[0] ?? 'lycee');
     }, [classCycle, selectedCycles]);
 
-    const classDraft = useOnboardingClassDraft({
-        cycle,
-        selectedCycles,
-        subject: selectedSubjects[0] ?? '',
-        selectedSubjects,
-        classes,
-        copy,
-        onConfigChange,
-        onCreateClass,
-    });
     const navigation = useOnboardingNavigation({
         isProfileValid,
         isSubjectValid: selectedSubjects.length > 0,
@@ -75,8 +71,8 @@ export const OnboardingPage = ({
 
     const handleLanguageSelect = useCallback((nextLang: ModalLang) => {
         onConfigChange({ applicationLocale: nextLang });
-        navigation.goToProfile();
-    }, [navigation.goToProfile, onConfigChange]);
+        navigation.goToTheme();
+    }, [navigation.goToTheme, onConfigChange]);
 
     const handleTeacherNameChange = useCallback((defaultTeacherName: string) => {
         onConfigChange({ defaultTeacherName });
@@ -105,27 +101,40 @@ export const OnboardingPage = ({
         toast.success(copy.classRemoved(formatLocalizedClassDisplayName(classInfo.name, lang)));
     }, [copy, lang, onDeleteClass]);
 
-    const handleComplete = useCallback(async () => {
-        if (finishing) return;
+    const finish = useCallback(async (action: () => Promise<void> | void) => {
+        if (finishingRef.current) return;
+        finishingRef.current = true;
         setFinishing(true);
         try {
-            await onComplete();
+            await action();
             toast.success(copy.configurationCompleted);
         } catch {
             toast.error(copy.configurationError);
         } finally {
+            finishingRef.current = false;
             setFinishing(false);
         }
-    }, [copy, finishing, onComplete]);
+    }, [copy]);
+    const handleComplete = useCallback(() => finish(onComplete), [finish, onComplete]);
+    const handleSkip = useCallback(() => finish(onSkip), [finish, onSkip]);
 
     // Sans classe, l'emploi du temps ne peut pas être rempli : « Ignorer »
-    // termine directement la configuration au lieu de passer à l'étape 5.
-    const showIgnoreClass = navigation.step === 4 && classes.length === 0;
+    // termine directement la configuration au lieu de passer à l'étape suivante.
+    const showIgnoreClass = navigation.step === 5 && classes.length === 0;
 
     let content: ReactNode;
     if (navigation.step === 1) {
         content = <LanguageStep lang={lang} copy={copy} onSelect={handleLanguageSelect} />;
     } else if (navigation.step === 2) {
+        content = (
+            <ThemeStep
+                theme={config.theme || 'light'}
+                onThemeChange={(theme) => onConfigChange({ theme })}
+                copy={copy}
+                isRtl={lang === 'ar'}
+            />
+        );
+    } else if (navigation.step === 3) {
         content = (
             <ProfileStep
                 teacherName={config.defaultTeacherName ?? ''}
@@ -137,7 +146,7 @@ export const OnboardingPage = ({
                 onCyclesChange={handleCyclesChange}
             />
         );
-    } else if (navigation.step === 3) {
+    } else if (navigation.step === 4) {
         content = (
             <SubjectsStep
                 subjects={subjectOptions}
@@ -148,7 +157,7 @@ export const OnboardingPage = ({
                 onToggle={handleSubjectToggle}
             />
         );
-    } else if (navigation.step === 4) {
+    } else if (navigation.step === 5) {
         content = (
             <ClassesStep
                 classes={classes}
@@ -158,9 +167,7 @@ export const OnboardingPage = ({
                 copy={copy}
                 selectedSubjects={selectedSubjects}
                 onCreateClass={onCreateClass}
-                controller={classDraft}
                 onRemove={handleRemoveClass}
-                onConfigChange={onConfigChange}
                 onCycleChange={setClassCycle}
             />
         );
@@ -176,7 +183,7 @@ export const OnboardingPage = ({
         <OnboardingShell
             lang={lang}
             step={navigation.step}
-            title={titleForStep(copy, navigation.step)}
+            title={titleForStep(copy, navigation.step, lang)}
             subtitle={navigation.step === 1 ? copy.subtitle : undefined}
             canContinue={navigation.canContinue}
             finishing={finishing}
@@ -185,9 +192,9 @@ export const OnboardingPage = ({
             onBack={navigation.back}
             onNext={navigation.next}
             onComplete={handleComplete}
-            onSkip={onSkip}
+            onSkip={handleSkip}
             showIgnore={showIgnoreClass}
-            onIgnore={handleComplete}
+            onIgnore={handleSkip}
         >
             {content}
         </OnboardingShell>

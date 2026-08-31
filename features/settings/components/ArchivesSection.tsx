@@ -58,10 +58,10 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
     );
 
     return (
-        <div className="settings-section-block p-4 sm:p-5">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
                 <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-foreground">{t('archives.title')}</h4>
+                    <h4 className="text-sm font-medium text-foreground">{t('archives.title')}</h4>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                         {t('archives.description')}
                     </p>
@@ -70,7 +70,7 @@ export const ArchivesSection: React.FC<Pick<AppConfig, 'schoolYearStart'>> = ({ 
                     type="button"
                     variant="outline"
                     onClick={handleCreate}
-                    className="h-9.5 shrink-0 rounded-xl border-primary/30 bg-primary/10 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-2xs"
+                    className="h-9.5 shrink-0 rounded-md border-primary/30 bg-primary/10 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer shadow-2xs"
                 >
                     <CalendarCheck className="h-4 w-4" /> {t('archives.action', { year: yearLabel })}
                 </Button>

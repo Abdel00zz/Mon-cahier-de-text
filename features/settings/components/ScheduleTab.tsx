@@ -360,7 +360,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     return (
         <div className="space-y-5">
-            <section className="space-y-3.5" aria-label={t('schedule.gridTitle')}>
+            <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs space-y-4" aria-label={t('schedule.gridTitle')}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
                         <label className="text-xs font-bold text-foreground/80">{t('schedule.startYear')}</label>
@@ -371,7 +371,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                 onChange={e => setSchoolYearStart(e.target.value)}
                                 lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
                                 dir="ltr"
-                                className={`h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-xs font-semibold shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
+                                className={`h-9 rounded-md border border-border/70 bg-background/80 px-3 text-xs font-semibold shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
                             />
                             {locale === 'ar' && (
                                 <span
@@ -384,14 +384,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             )}
                         </div>
                     </div>
-                    <div className="inline-flex w-full rounded-xl border border-zinc-200 bg-zinc-100/90 p-1 shadow-none dark:border-zinc-800 dark:bg-zinc-900/80 sm:w-auto" role="group" aria-label={t('schedule.viewLabel')}>
+                    <div className="inline-flex w-full rounded-md border border-zinc-200 bg-zinc-100/90 p-1 shadow-none dark:border-zinc-800 dark:bg-zinc-900/80 sm:w-auto" role="group" aria-label={t('schedule.viewLabel')}>
                         {periodOptions.map(option => (
                             <button
                                 key={option.value}
                                 type="button"
                                 onClick={() => setVisiblePeriod(option.value)}
                                 aria-pressed={visiblePeriod === option.value}
-                                className={`min-w-0 flex-1 rounded-xl px-3 py-1.5 text-xs font-bold transition-all sm:flex-none sm:px-3.5 cursor-pointer ${
+                                className={`min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs font-bold transition-all sm:flex-none sm:px-3.5 cursor-pointer ${
                                     visiblePeriod === option.value
                                         ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
                                         : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
@@ -406,6 +406,38 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {noClassesYet && (
                     <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
                 )}
+
+                {/* Alertes et informations sur les créneaux au-dessus de la grille */}
+                {classesWithoutSlots.length > 0 && (
+                    <aside className="flex flex-col gap-3 rounded-xl border border-amber-300/60 bg-amber-50/90 p-3.5 shadow-xs dark:border-amber-400/25 dark:bg-amber-500/[0.09] sm:flex-row sm:items-center" role="status">
+                        <div className="flex shrink-0 items-center gap-2 text-amber-800 dark:text-amber-200">
+                            <span className="grid h-7 w-7 place-items-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                                <TriangleAlert className="h-4 w-4 stroke-[2.2]" />
+                            </span>
+                            <span className="text-xs font-bold">
+                                {t('schedule.classesToPlan', { count: classesWithoutSlots.length, plural: classesWithoutSlots.length > 1 && locale !== 'ar' ? 's' : '' })}
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {classesWithoutSlots.map(classInfo => {
+                                const official = getOfficialWeeklyHours(classInfo.cycle, classInfo.name, classInfo.subject);
+                                return (
+                                    <span key={classInfo.id} className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200/80 bg-white/90 px-2.5 py-1.5 text-xs shadow-2xs dark:border-amber-400/20 dark:bg-background/50">
+                                        <span className={`h-2 w-2 rounded-full ${colorFor(classInfo.id).dot}`} />
+                                        <span className="max-w-36 truncate font-bold text-foreground">{classLabel(classInfo.name)}</span>
+                                        <span className="text-muted-foreground text-[11px]">· {t('schedule.noSlotsPlanned')}</span>
+                                        {official && (
+                                            <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-200">
+                                                {t('schedule.hoursToAdd', { count: official.hours })}
+                                            </span>
+                                        )}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </aside>
+                )}
+                {showHoursAdvisory && <HoursAdvisory classes={classes} timetable={timetable} showUnplanned={false} />}
 
                 {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
                 <div className="settings-surface overflow-hidden">
@@ -509,7 +541,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {classesWithoutSlots.length > 0 && (
                     <aside className="flex flex-col gap-3 rounded-[1.25rem] border border-amber-300/55 bg-[#fff9eb]/90 p-3.5 shadow-[0_8px_22px_-20px_rgba(120,83,12,0.55)] dark:border-amber-400/20 dark:bg-amber-500/[0.08] sm:flex-row sm:items-center" role="status">
                         <div className="flex shrink-0 items-center gap-2 text-amber-800 dark:text-amber-200">
-                            <span className="grid h-7 w-7 place-items-center rounded-xl bg-amber-500/15">
+                            <span className="grid h-7 w-7 place-items-center rounded-md bg-amber-500/15">
                                 <TriangleAlert className="h-3.5 w-3.5" />
                             </span>
                             <span className="text-xs font-bold">
@@ -520,7 +552,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             {classesWithoutSlots.map(classInfo => {
                                 const official = getOfficialWeeklyHours(classInfo.cycle, classInfo.name, classInfo.subject);
                                 return (
-                                    <span key={classInfo.id} className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200/70 bg-white/75 px-2.5 py-1.5 text-xs shadow-2xs dark:border-amber-400/15 dark:bg-background/35">
+                                    <span key={classInfo.id} className="inline-flex items-center gap-1.5 rounded-md border border-amber-200/70 bg-white/75 px-2.5 py-1.5 text-xs shadow-2xs dark:border-amber-400/15 dark:bg-background/35">
                                         <span className={`h-2 w-2 rounded-full ${colorFor(classInfo.id).dot}`} />
                                         <span className="max-w-32 truncate font-bold text-foreground">{classLabel(classInfo.name)}</span>
                                         <span className="text-muted-foreground">· {t('schedule.noSlotsPlanned')}</span>
@@ -585,9 +617,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                         else assign(pendingCreate.day, pendingCreate.slot, created.id);
                         setPendingCreate(null);
                     }}
-                    defaultCycle={(config.selectedCycles?.[0] as Cycle) ?? 'lycee'}
+                    defaultCycle={config.selectedCycles?.[0] ?? 'lycee'}
                     teacherSubjects={config.selectedSubjects}
-                    teacherCycles={config.selectedCycles?.length ? (config.selectedCycles as Cycle[]) : undefined}
+                    teacherCycles={config.selectedCycles}
                     existingClasses={classes}
                 />
             )}
@@ -631,7 +663,7 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
                     {visibleUnplanned.map(i => (
-                        <span key={i.classId} className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-card/90 px-2.5 py-1 text-xs shadow-2xs">
+                        <span key={i.classId} className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card/90 px-2.5 py-1 text-xs shadow-2xs">
                             <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
                             <span className="text-muted-foreground">· {t('schedule.noSlotsPlanned')}</span>
                             {i.officialHours !== null && (
@@ -661,7 +693,7 @@ const HoursAdvisory: React.FC<{ classes: ClassInfo[]; timetable: TimetableEntry[
                         return (
                             <span
                                 key={i.classId}
-                                className="inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-card/90 px-2.5 py-1 text-xs shadow-2xs"
+                                className="inline-flex flex-wrap items-center gap-1.5 rounded-md border border-border/60 bg-card/90 px-2.5 py-1 text-xs shadow-2xs"
                                 title={t('schedule.hoursPlanned', { scheduled: i.scheduledHours, expected: i.officialHours ?? 0 })}
                             >
                                 <span className="max-w-28 truncate font-bold text-foreground">{formatLocalizedClassDisplayName(i.className, locale)}</span>
