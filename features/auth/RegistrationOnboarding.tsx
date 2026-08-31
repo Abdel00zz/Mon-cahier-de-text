@@ -56,7 +56,7 @@ const Chip = ({
     onClick={onClick}
     aria-pressed={active}
     className={cn(
-      "auth-choice min-h-11 max-w-full rounded-md border px-3 py-2 text-sm font-bold focus-visible:outline-2",
+      "auth-choice inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3 py-2 text-center text-sm font-bold focus-visible:outline-2",
       active
         ? "bg-[#fbbc04] border-[#fbbc04] text-black shadow-sm"
         : "bg-transparent border-border text-foreground hover:bg-black/5 dark:hover:bg-white/10",
@@ -126,11 +126,8 @@ export function RegistrationOnboarding({
         aria-valuemin={0}
         aria-valuemax={2}
         aria-valuenow={1}
-        className="mb-6 flex gap-2"
-      >
-        <span className="h-1 flex-1 rounded-full bg-stone-700 dark:bg-stone-300" />
-        <span className="h-1 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
-      </div>
+        className="sr-only"
+      />
       <form
         className="keep-surface overflow-hidden rounded-[12px] p-4 shadow-lg sm:p-5"
         onSubmit={(event) => {
@@ -146,7 +143,7 @@ export function RegistrationOnboarding({
             >
               {ar ? "1. السلك التعليمي" : "1. Cycle"}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {CYCLES.map((value) => (
                 <Chip
                   key={value}
@@ -179,7 +176,7 @@ export function RegistrationOnboarding({
               >
                 {ar ? "2. الشعبة أو المسلك" : "2. Branche"}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 {activeLevelGroups.map((item) => (
                   <Chip
                     key={item.key}
@@ -214,7 +211,7 @@ export function RegistrationOnboarding({
                     ? "3. Classe"
                     : "2. Classe"}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
                 {activeLevels.map((value) => (
                   <Chip
                     key={value}
@@ -295,7 +292,7 @@ export function RegistrationOnboarding({
             </div>
           )}
         </div>
-        <div className="mt-5 flex justify-end border-t border-border pt-4">
+        <div className="mt-6 flex justify-end">
           <button
             type="submit"
             disabled={!prepared}
