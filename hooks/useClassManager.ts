@@ -214,17 +214,5 @@ export const useClassManager = () => {
         [classes, persistClassesNow, setClasses, workspaceIsActive],
     );
 
-    const recordClassOpened = useCallback((classId: string) => {
-        if (!workspaceIsActive()) return;
-        const current = classesRef.current;
-        if (!current.some(item => item.id === classId)) return;
-        const lastOpenedAt = new Date().toISOString();
-        const next = current.map(item => item.id === classId ? { ...item, lastOpenedAt } : item);
-        classesRef.current = next;
-        persistClassesNow(next);
-        skipNextPersistRef.current = true;
-        setClasses(() => next);
-    }, [persistClassesNow, setClasses, workspaceIsActive]);
-
-    return { classes, addClass, deleteClass, updateClass, recordClassOpened, isLoading };
+    return { classes, addClass, deleteClass, updateClass, isLoading };
 };

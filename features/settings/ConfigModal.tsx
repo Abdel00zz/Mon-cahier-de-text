@@ -671,12 +671,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const footer = (
     <div className="space-y-3">
     <p className="text-xs leading-relaxed text-muted-foreground">{t('settings.liveChangesHint')}</p>
-    <div className="flex w-full flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+    <div className={cn(
+      'flex w-full flex-col gap-3 sm:flex-row sm:items-center',
+      hasProfileChanges ? 'items-stretch justify-between' : 'items-end justify-end',
+    )}>
       <Button
         type="button"
         variant="secondary"
         onClick={() => requestExit()}
-        className="text-xs font-medium cursor-pointer rounded-lg min-h-11 px-4 border border-border/60"
+        className="min-h-11 rounded-lg border border-border/60 px-4 text-xs font-medium cursor-pointer"
       >
         {t(hasProfileChanges ? 'settings.discardProfile' : 'common.close')}
       </Button>

@@ -3,30 +3,6 @@
 /* The application theme controller owns .dark (including system mode). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Lateef has a smaller optical body: preserve readability without scaling
-   the editor's document geometry or its explicitly selected content font. */
-.auth-page-shell[lang="ar"] :is(.text-xs, .text-sm) { font-size: 1.125rem; line-height: 1.5; }
-.auth-page-shell[lang="ar"] .text-base { font-size: 1.25rem; line-height: 1.5; }
-.auth-page-shell[lang="ar"] .text-lg { font-size: 1.5rem; line-height: 1.4; }
-.auth-page-shell[lang="ar"] h1 { font-size: clamp(2.25rem, 1.75rem + 2vw, 3.5rem); line-height: 1.25; }
-html[lang="ar"] .class-summary .text-sm { font-size: 1.125rem; line-height: 1.5; }
-html[lang="ar"] .class-summary h3 { font-size: 1.5rem; line-height: 1.3; }
-
-/* Capability-based: includes large iPads and landscape phones without UA sniffing. */
-@media (max-width: 767px), (pointer: coarse) {
-  .class-settings-trigger { display: none; }
-  .class-hold-hint {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 0;
-    margin: 0.75rem 0 0;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
-}
-
 /* ── shadcn/ui · Modern Clean Academic Theme ────────────────────────────── */
 
 @theme inline {
@@ -280,7 +256,7 @@ html[lang="ar"] .class-summary h3 { font-size: 1.5rem; line-height: 1.3; }
     --chart-5: 262 83% 58%;
 
     --content-font-latin: 'Fira Sans', sans-serif;
-    --content-font-arabic: 'Lateef', serif;
+    --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
   }
 
   .dark {
@@ -342,14 +318,14 @@ html[lang="ar"] .class-summary h3 { font-size: 1.5rem; line-height: 1.3; }
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Lateef par défaut pour l'interface arabe. Le contenu conserve sa police
-     explicitement choisie via --content-font-arabic. */
+  /* Interface arabe : IBM Plex garde les contrôles compacts très lisibles.
+     Lateef est réservé aux titres d'interface, jamais au contenu pédagogique. */
   html[lang="ar"] body,
   html[lang="ar"] button,
   html[lang="ar"] input,
   html[lang="ar"] textarea,
   html[lang="ar"] select {
-    font-family: 'Lateef', 'IBM Plex Sans Arabic', serif;
+    font-family: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: normal;
   }
 
@@ -424,7 +400,7 @@ html[lang="ar"] .class-summary h3 { font-size: 1.5rem; line-height: 1.3; }
   }
 
   .auth-page-shell[lang="ar"] {
-    --font-sans: 'Lateef', 'IBM Plex Sans Arabic', serif;
+    --font-sans: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   }
 
   [data-dashboard-root] {
@@ -522,7 +498,7 @@ html[lang="ar"] .class-summary h3 { font-size: 1.5rem; line-height: 1.3; }
   [data-content-direction="rtl"] .content-cell-font,
   [data-content-direction="rtl"] [data-row-content="true"],
   .content-font-arabic {
-    font-family: var(--content-font-arabic, 'Lateef', serif);
+    font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif);
   }
 
   .font-lemonde {

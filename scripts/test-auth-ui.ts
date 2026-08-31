@@ -60,3 +60,40 @@ test('les cinq pastels conservent un contraste AA pour les libellés secondaires
   }
   assert.ok(css.includes('@custom-variant dark (&:where(.dark, .dark *));'));
 });
+
+test('emploi du temps : une seule zone d’avis reste avant la grille', () => {
+  const source = readFileSync(
+    new URL('../features/settings/components/ScheduleTab.tsx', import.meta.url),
+    'utf8',
+  );
+  const advisoryCalls = source.match(/<HoursAdvisory\s/g) ?? [];
+  assert.equal(advisoryCalls.length, 1);
+  assert.ok(source.indexOf('<HoursAdvisory ') < source.indexOf('<table'));
+  assert.equal(source.includes('classesWithoutSlots'), false);
+  const neutralSummary = source.slice(source.indexOf('Récapitulatif neutre'));
+  assert.equal(neutralSummary.includes('officialReferenceTitle'), false);
+  assert.equal(neutralSummary.includes('<HoursAdvisory '), false);
+});
+
+test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de ligne', () => {
+  const card = readFileSync(
+    new URL('../features/dashboard/ClassCard.tsx', import.meta.url),
+    'utf8',
+  );
+  const list = readFileSync(
+    new URL('../features/dashboard/ClassListItem.tsx', import.meta.url),
+    'utf8',
+  );
+  const settings = readFileSync(
+    new URL('../features/settings/ConfigModal.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(card, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
+  assert.match(list, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
+  assert.equal((card.match(/text-\[11\.9px\]/g) ?? []).length, 1);
+  assert.equal((list.match(/text-\[11\.9px\]/g) ?? []).length, 1);
+  assert.match(
+    settings,
+    /hasProfileChanges \? 'items-stretch justify-between' : 'items-end justify-end'/,
+  );
+});

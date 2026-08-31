@@ -1,7 +1,6 @@
 import React from 'react';
 import type { LucideProps } from 'lucide-react';
 import {
-  Play as LucidePlay,
   Cloud as LucideCloud,
   PenLine as LucidePenLine,
   LockKeyhole as LucideLockKeyhole,
@@ -114,7 +113,6 @@ const createIcon = (LucideComponent: React.ComponentType<LucideProps>): React.FC
 };
 
 export const Plus = createIcon(LucidePlus);
-export const Play = createIcon(LucidePlay);
 export const X = createIcon(LucideX);
 export const Check = createIcon(LucideCheck);
 export const CheckCheck = createIcon(LucideCheckCheck);
