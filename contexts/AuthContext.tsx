@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { notifyClassesChanged, notifyConfigChanged, reloadSyncState } from '../utils/syncBus';
+import { markClassDirty, markClassesListDirty, notifyClassesChanged, notifyConfigChanged, reloadSyncState, touchClassSyncMeta, touchSettingsSyncMeta } from '../utils/syncBus';
+import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth/registrationSetup';
+import { toast } from 'sonner';
 import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../utils/accountWorkspace';
 
 interface AuthUser {
@@ -17,6 +19,7 @@ interface RegisterInput {
   prenom: string;
   phone: string;
   password: string;
+  setup?: RegistrationSetup;
 }
 
 interface AuthContextValue {
@@ -191,9 +194,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const version = ++requestVersion.current;
     initialRequest.current?.abort();
     await logoutRequest.current;
-    const createdUser = await postAuth({ action: 'register', ...input });
+    const {setup, ...credentials} = input;
+    const createdUser = await postAuth({ action: 'register', ...credentials });
     if (version !== requestVersion.current) return;
     activateUserWorkspace(createdUser);
+    if (setup) {
+      try {
+        const classId = applyRegistrationSetup(setup, createdUser.phone);
+        if (classId) {
+          touchClassSyncMeta(classId); touchSettingsSyncMeta();
+          markClassDirty(classId); markClassesListDirty();
+          notifyClassesChanged(); notifyConfigChanged();
+        }
+      } catch {
+        toast.error(setup.applicationLocale === 'ar' ? 'أُنشئ حسابك، لكن تعذّر حفظ القسم محلياً. وفّر مساحة تخزين ثم أضفه من لوحة التحكم.' : 'Compte créé, mais la classe n’a pas pu être conservée localement. Libérez de l’espace puis ajoutez-la depuis le tableau de bord.');
+      }
+    }
     setUser(createdUser);
     setStatus('authenticated');
   }, []);

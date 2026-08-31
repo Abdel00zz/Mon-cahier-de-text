@@ -333,7 +333,9 @@ const App: React.FC = () => {
             {renderContent()}
           </Suspense>
         </div>
-        {isLatexBooting && <AppBootSkeleton stage="latex" overlay />}
+        {/* L'onboarding ne compose aucune formule : il reste utilisable
+            pendant le chargement du moteur destiné aux cahiers. */}
+        {isLatexBooting && !isCurrentlyOnboarding && <AppBootSkeleton stage="latex" overlay />}
       </div>
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>

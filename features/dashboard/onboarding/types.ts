@@ -2,9 +2,9 @@ import type { ComponentType } from 'react';
 import type { AppConfig, ClassInfo, Cycle } from '@/types';
 import type { ModalLang } from '@/components/ui/lang-toggle';
 
-export const ONBOARDING_TOTAL_STEPS = 6 as const;
+export const ONBOARDING_TOTAL_STEPS = 4 as const;
 
-export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
+export type OnboardingStep = 1 | 2 | 3 | 4;
 type ClassCreationMode = 'catalog' | 'manual';
 type ClassDraftIssue = 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass';
 
@@ -53,6 +53,11 @@ export interface OnboardingCopy {
     addingClass: string;
     classCreationError: string;
     sectionLanguage: string;
+    optional: string;
+    scheduleOptional: string;
+    personalDetails: string;
+    removeClassTitle: string;
+    removeClassDescription: string;
     sectionProfile: string;
     sectionSubjects: string;
     sectionClasses: string;

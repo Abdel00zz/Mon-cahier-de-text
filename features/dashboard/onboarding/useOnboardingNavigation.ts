@@ -1,16 +1,16 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ONBOARDING_TOTAL_STEPS, type OnboardingStep } from './types';
+import { canAdvanceOnboarding } from './navigation';
 
 interface UseOnboardingNavigationOptions {
     isProfileValid: boolean;
     isSubjectValid: boolean;
-    isClassesValid: boolean;
+    initialStep: OnboardingStep;
 }
 
 export interface OnboardingNavigation {
     step: OnboardingStep;
     canContinue: boolean;
-    goToTheme: () => void;
     next: () => void;
     back: () => void;
 }
@@ -19,30 +19,23 @@ export interface OnboardingNavigation {
 export const useOnboardingNavigation = ({
     isProfileValid,
     isSubjectValid,
-    isClassesValid,
+    initialStep,
 }: UseOnboardingNavigationOptions): OnboardingNavigation => {
-    const [step, setStep] = useState<OnboardingStep>(1);
+    const [step, setStep] = useState<OnboardingStep>(initialStep);
 
     const canContinue = useMemo(() => {
-        if (step === 1) return true; // Language
-        if (step === 2) return true; // Theme
-        if (step === 3) return isProfileValid; // Profile
-        if (step === 4) return isSubjectValid; // Subjects
-        if (step === 5) return isClassesValid; // Classes
-        if (step === 6) return true; // Schedule
-        return false;
-    }, [isClassesValid, isProfileValid, isSubjectValid, step]);
-
-    const goToTheme = useCallback(() => setStep(2), []);
+        return canAdvanceOnboarding(step, isProfileValid, isSubjectValid);
+    }, [isProfileValid, isSubjectValid, step]);
 
     const next = useCallback(() => {
         if (!canContinue || step >= ONBOARDING_TOTAL_STEPS) return;
-        setStep(current => Math.min(ONBOARDING_TOTAL_STEPS, current + 1) as OnboardingStep);
+        // Two clicks before React commits must not skip an unvalidated step.
+        setStep(Math.min(ONBOARDING_TOTAL_STEPS, step + 1) as OnboardingStep);
     }, [canContinue, step]);
 
     const back = useCallback(() => {
         setStep(current => Math.max(1, current - 1) as OnboardingStep);
     }, []);
 
-    return { step, canContinue, goToTheme, next, back };
+    return { step, canContinue, next, back };
 };

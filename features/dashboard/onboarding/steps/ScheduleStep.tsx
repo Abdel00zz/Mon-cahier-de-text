@@ -9,7 +9,7 @@ interface ScheduleStepProps {
 }
 
 export const ScheduleStep = memo<ScheduleStepProps>(({ classes, config, onConfigChange }) => (
-    <div className="space-y-4 animate-fade-in duration-500">
+    <div className="space-y-4">
         <ScheduleTab classes={classes} config={config} onChange={onConfigChange} showHoursAdvisory={false} />
     </div>
 ));

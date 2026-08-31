@@ -1,21 +1,21 @@
 import { memo } from 'react';
 import { Input } from '@/components/ui/input';
 import { ONBOARDING_CYCLES } from '../content';
-import { cn } from '@/lib/utils';
 import type { Cycle } from '@/types';
 import type { OnboardingCopy } from '../types';
 
 interface ProfileStepProps {
-    teacherName: string;
-    establishmentName: string;
-    cycles: Cycle[];
-    copy: OnboardingCopy;
-    onTeacherNameChange: (name: string) => void;
-    onEstablishmentChange: (name: string) => void;
-    onCyclesChange: (cycles: Cycle[]) => void;
+  teacherName: string;
+  establishmentName: string;
+  cycles: Cycle[];
+  copy: OnboardingCopy;
+  onTeacherNameChange: (name: string) => void;
+  onEstablishmentChange: (name: string) => void;
+  onCyclesChange: (cycles: Cycle[]) => void;
 }
 
-export const ProfileStep = memo<ProfileStepProps>(({
+export const ProfileStep = memo<ProfileStepProps>(
+  ({
     teacherName,
     establishmentName,
     cycles,
@@ -23,80 +23,87 @@ export const ProfileStep = memo<ProfileStepProps>(({
     onTeacherNameChange,
     onEstablishmentChange,
     onCyclesChange,
-}) => (
-    <div className="max-w-2xl space-y-6 animate-fade-in duration-500">
-        <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-6">
-            <div className="space-y-1.5">
-                <label htmlFor="onboarding-teacher-name" className="block text-start text-xs font-bold uppercase tracking-wide text-slate-700">{copy.fullName}</label>
-                <Input
-                    id="onboarding-teacher-name"
-                    type="text"
-                    value={teacherName}
-                    onChange={event => onTeacherNameChange(event.target.value)}
-                    placeholder={copy.fullNamePlaceholder}
-                    className="h-12 rounded-[12px] border-slate-200 bg-white px-4 text-start text-lg font-itim font-bold text-[#0056D2] shadow-2xs transition-all placeholder:text-slate-400 placeholder:font-sans placeholder:font-normal placeholder:text-base hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
-                    autoFocus
-                />
-            </div>
-            <div className="space-y-1.5">
-                <label htmlFor="onboarding-establishment" className="block text-start text-xs font-bold uppercase tracking-wide text-slate-700">{copy.establishment}</label>
-                <Input
-                    id="onboarding-establishment"
-                    type="text"
-                    value={establishmentName}
-                    onChange={event => onEstablishmentChange(event.target.value)}
-                    placeholder={copy.establishmentPlaceholder}
-                    className="h-12 rounded-[12px] border-slate-200 bg-white px-4 text-start text-base shadow-2xs transition-all placeholder:text-slate-400 hover:border-indigo-300 focus-visible:border-indigo-600 focus-visible:ring-indigo-500/20"
-                />
-            </div>
+  }) => (
+    <div className="space-y-5">
+      <p className="text-sm leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+        {copy.cycleSelectionHint}
+      </p>
+      <div
+        className="grid gap-3 sm:grid-cols-3"
+        role="group"
+        aria-label={copy.teachingCycle}
+      >
+        {ONBOARDING_CYCLES.map(({ key, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={cycles.includes(key)}
+            onClick={() =>
+              onCyclesChange(
+                cycles.includes(key)
+                  ? cycles.filter((c) => c !== key)
+                  : [...cycles, key],
+              )
+            }
+            className="keep-surface keep-interactive keep-choice flex min-h-24 items-center gap-3 p-4 text-start sm:min-h-36 sm:flex-col sm:items-start"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+              <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold">
+                {copy.cycleLabels[key]}
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+                {copy.cycleDescriptions[key]}
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+      <details className="keep-surface p-4">
+        <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
+          {copy.personalDetails}{' '}
+          <span className="text-xs font-normal text-[#5f6368] dark:text-[#bdc1c6]">
+            · {copy.optional}
+          </span>
+        </summary>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="onboarding-teacher-name"
+              className="mb-2 block text-sm"
+            >
+              {copy.fullName}
+            </label>
+            <Input
+              id="onboarding-teacher-name"
+              value={teacherName}
+              onChange={(e) => onTeacherNameChange(e.target.value)}
+              placeholder={copy.fullNamePlaceholder}
+              autoComplete="name"
+              className="h-11 rounded-lg bg-transparent text-base"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="onboarding-establishment"
+              className="mb-2 block text-sm"
+            >
+              {copy.establishment}
+            </label>
+            <Input
+              id="onboarding-establishment"
+              value={establishmentName}
+              onChange={(e) => onEstablishmentChange(e.target.value)}
+              placeholder={copy.establishmentPlaceholder}
+              autoComplete="organization"
+              className="h-11 rounded-lg bg-transparent text-base"
+            />
+          </div>
         </div>
-
-        <div className="space-y-3 pt-1">
-            <div className="flex flex-wrap items-baseline justify-between gap-1.5">
-                <p className="text-start text-sm font-bold text-slate-800">{copy.teachingCycle}</p>
-                {cycles.length === 0 && (
-                    <p className="text-start text-xs font-semibold text-blue-700" role="status">{copy.cycleSelectionHint}</p>
-                )}
-            </div>
-            <div className="mx-auto grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-                {ONBOARDING_CYCLES.map(option => {
-                    const active = cycles.includes(option.key);
-                    const Icon = option.icon;
-                    return (
-                        <button
-                            key={option.key}
-                            type="button"
-                            onClick={() => {
-                                onCyclesChange(
-                                    active
-                                        ? cycles.filter(cycle => cycle !== option.key)
-                                        : [...cycles, option.key],
-                                );
-                            }}
-                            aria-pressed={active}
-                            className={cn(
-                                'keep-surface keep-interactive keep-choice group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center gap-3 p-4 text-center',
-                            )}
-                        >
-                            <div className={cn(
-                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] bg-black/5 dark:bg-white/10',
-                            )}>
-                                <Icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <span className="block text-sm font-semibold sm:text-base">
-                                    {copy.cycleLabels[option.key]}
-                                </span>
-                                <span className="mt-0.5 block text-xs text-[#5f6368] dark:text-[#bdc1c6]">
-                                    {copy.cycleDescriptions[option.key]}
-                                </span>
-                            </div>
-                        </button>
-                    );
-                })}
-            </div>
-        </div>
+      </details>
     </div>
-));
-
+  ),
+);
 ProfileStep.displayName = 'ProfileStep';

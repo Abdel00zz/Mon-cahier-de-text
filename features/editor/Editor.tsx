@@ -679,19 +679,19 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [onOpenSettings]);
 
   /*
-   * Invitation modale FLUIDE (une fois par session et par classe) : proposée
-   * après un court délai à l'ouverture d'un cahier sans emploi du temps.
-   * « Passer pour l'instant » la mémorise pour la session, jamais bloquant.
+   * Ancien rappel conservé pour les comptes sans checklist de démarrage.
+   * Le nouveau parcours guide les horaires depuis le dashboard : ouvrir le
+   * premier cahier ou masquer sa checklist ne doit pas déclencher de modale.
    */
   const [showTimetableNudge, setShowTimetableNudge] = useState(false);
   const timetableNudgeKey = `timetableNudge_v1_${classInfo.id}`;
   useEffect(() => {
       if (isClassLoading || isConfigLoading) return;
-      if (classHasTimetable) { setShowTimetableNudge(false); return; }
+      if (classHasTimetable || config.showGettingStarted !== undefined) { setShowTimetableNudge(false); return; }
       try { if (sessionStorage.getItem(timetableNudgeKey)) return; } catch { /* stockage indisponible */ }
       const timer = window.setTimeout(() => setShowTimetableNudge(true), 700);
       return () => window.clearTimeout(timer);
-  }, [isClassLoading, isConfigLoading, classHasTimetable, timetableNudgeKey]);
+  }, [isClassLoading, isConfigLoading, classHasTimetable, config.showGettingStarted, timetableNudgeKey]);
 
   const dismissTimetableNudge = useCallback(() => {
       try { sessionStorage.setItem(timetableNudgeKey, '1'); } catch { /* stockage indisponible */ }

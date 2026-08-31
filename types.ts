@@ -69,6 +69,8 @@ export interface AppConfig {
     showAllSubjects?: boolean;
     // Welcome flow control
     hasCompletedWelcome?: boolean;
+    showGettingStarted?: boolean;
+    firstNotebookOpened?: boolean;
     // Emploi du temps hebdomadaire et alertes de retard
     schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
     timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant

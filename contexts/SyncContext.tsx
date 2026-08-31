@@ -460,9 +460,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const deletedIds = new Set([...remoteDeletedIds, ...pendingDeletedIds]);
                 const localVisibleClasses = localClasses.filter(classInfo => !deletedIds.has(classInfo.id));
 
-                if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && localVisibleClasses.length > 0) {
+                const queuedClassIds = new Set(getPendingWork().dirtyClassIds);
+                const needsAssociation = localVisibleClasses.some(classInfo => !queuedClassIds.has(classInfo.id) && !syncMeta[classInfo.id]?.lastSyncedAt);
+                if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && needsAssociation) {
                     // Première association : des cahiers locaux existent mais le
-                    // cloud est vide. Proposition NON bloquante (toast avec action)
+                    // cloud est vide. Les créations explicitement mises en file
+                    // (dont l'essai conservé à l'inscription) sont déjà autorisées.
+                    // Proposition NON bloquante pour les autres cahiers locaux.
                     // L'application conseille, le professeur décide et rien n'est interrompu.
                     setSyncStatus('synced');
                     toast.info(

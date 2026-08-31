@@ -11,6 +11,7 @@ import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
+import { GettingStarted } from './GettingStarted';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
@@ -137,15 +138,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const closeOnboarding = useCallback(async () => {
         // Le stockage local ferme la page immédiatement ; le compte et la
         // synchronisation conservent ensuite ce choix sur les autres appareils.
-        if (!welcomeCompleted) updateConfig({ hasCompletedWelcome: true });
+        if (!welcomeCompleted) updateConfig({ hasCompletedWelcome: true, showGettingStarted: true });
         setOnboardingOpen(false);
-        try {
-            await completeWelcome();
-        } catch {
+        void completeWelcome().catch(() => {
             // Hors ligne : hasCompletedWelcome est déjà stocké localement et
             // sera envoyé via la synchronisation dès le retour du réseau.
-        }
+        });
     }, [completeWelcome, updateConfig, welcomeCompleted]);
+
+    const openNotebook = useCallback((classInfo: ClassInfo) => {
+        if (config.showGettingStarted && !config.firstNotebookOpened) updateConfig({ firstNotebookOpened: true });
+        onSelectClass(classInfo);
+    }, [config.showGettingStarted, config.firstNotebookOpened, updateConfig, onSelectClass]);
 
     const createClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => {
         const created = addClass({
@@ -521,6 +525,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 )}
 
                 <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
+                    {classes.length > 0 && <GettingStarted config={config} classes={classes} onCreate={()=>setCreateModalOpen(true)} onOpen={openNotebook} onSchedule={()=>onOpenSchedule?.()} onDismiss={()=>updateConfig({showGettingStarted:false})}/>}
                     {classes.length > 0 && (
                         <div className="mb-4">
                             <SectionHeader
@@ -620,7 +625,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {/* Spotlight Intelligent: Séance active ou prochaine du jour */}
                     {spotlightInfo && (
                         <div
-                            onClick={() => onSelectClass(spotlightInfo.classInfo)}
+                            onClick={() => openNotebook(spotlightInfo.classInfo)}
                             className="mb-5 rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white p-3.5 sm:p-4 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] cursor-pointer transition-all hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] active:scale-[0.99] group"
                         >
                             <div className="flex items-center justify-between gap-3">
@@ -721,7 +726,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             >
                                                 <ClassListItem
                                                     classInfo={classInfo}
-                                                    onSelect={() => onSelectClass(classInfo)}
+                                                    onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                 />
                                             </div>
@@ -737,7 +742,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             >
                                                 <ClassCard
                                                     classInfo={classInfo}
-                                                    onSelect={() => onSelectClass(classInfo)}
+                                                    onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     showSubjectBadge={shouldShowSubjectBadge}
                                                     allClasses={classes}

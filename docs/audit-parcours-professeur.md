@@ -6,7 +6,8 @@
 | --- | --- | --- |
 | Connexion / inscription | `AuthPage` → `AuthContext` → `/api/auth` → `App` | Identité et état de session ; aucun cycle imposé par la connexion |
 | Première connexion | `Dashboard` vérifie `hasCompletedWelcome` → `OnboardingPage` | Configuration locale et marqueur du compte |
-| Onboarding | Langue → thème → profil/cycles → matières → classes → emploi du temps | `useConfigManager` pour les préférences ; `useClassManager` pour les classes |
+| Onboarding | Cycles → matières → classes → emploi du temps facultatif ; langue et thème dans l’en-tête | `useConfigManager` pour les préférences ; `useClassManager` et modale partagée pour les classes |
+| Essai sans compte | Préparer une classe et un titre → inscription explicite → nouvel espace vérifié | Brouillon React en mémoire, repris uniquement à l’inscription ; aucun import lors d’une connexion existante |
 | Bouton Paramètres | `App.handleOpenSettings` → `SettingsPage` → `ConfigModal` | Même configuration que le tableau de bord ; retour à la vue d’origine |
 | Créer une classe sur le tableau de bord | `CreateClassModal` → `Dashboard` → `useClassManager.addClass` | Cycles et matières du profil ; groupe vérifié contre les classes existantes |
 | Configurer une classe depuis sa carte | Même modale avec `editingClass` → `updateClass` | Métadonnées de cette classe, sans remplacer sa matière par celle du profil |
@@ -21,7 +22,7 @@
 - Modale fermée non montée ; détection des groupes occupés calculée une fois par liste/niveau et recherche du premier groupe libre bornée à 99.
 - Sauvegarde protégée contre les doubles soumissions ; le bouton indique le traitement et les erreurs conservent le formulaire.
 - Modification : matière existante conservée, même si elle ne figure plus dans la sélection du professeur.
-- Onboarding : le clic sur la langue ouvre le thème ; terminer sans classe fonctionne ; dernière étape reliée directement à la fin réelle. L’écran artificiel de 3,8 secondes n’est plus monté.
+- Onboarding : langue et thème immédiats dans l’en-tête ; quatre étapes utiles avec reprise selon les données déjà présentes. Terminer sans classe reste possible ; dernière étape reliée directement à la fin réelle. L’écran artificiel de 3,8 secondes n’est plus monté. Voir [la validation Keep](validation-onboarding-keep.md) pour la nouvelle version.
 - Terminer le parcours ne force plus l’activation de la vibration et des notifications.
 - Inscription : langue de l’écran de connexion conservée après la remise à zéro du nouvel espace.
 - Authentification : requête initiale annulée au démontage et retour tardif ignoré ; soumission du formulaire protégée.

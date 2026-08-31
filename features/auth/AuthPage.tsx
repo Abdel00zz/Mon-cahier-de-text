@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,19 @@ import { CountryFlag } from '@/components/ui/CountryFlags';
 import type { AppLocale } from '@/types';
 import { AuthShowcase } from './AuthShowcase';
 import { formatMoroccanPhone, isCompleteMoroccanPhone, passwordScore } from './authForm';
-import { WorkspaceSwitchError } from '@/utils/accountWorkspace';
+import { readWorkspaceScope, WorkspaceSwitchError } from '@/utils/accountWorkspace';
+import type { RegistrationSetup } from './registrationSetup';
+
+const GuestPreview = lazy(()=>import('./GuestPreview').then(module=>({default:module.GuestPreview})));
 
 type Mode = 'login' | 'register';
 type AuthLocale = Extract<AppLocale, 'ar' | 'fr'>;
 const AUTH_COPY = {
   fr: {
     brand: 'Mon cahier de textes', teacherAccess: 'Espace enseignant',
+    tryFirst: 'Essayer sans compte', returnToPreview: 'Revenir à mon essai', savePreparation: 'Conservez votre premier cahier.',
+    savePreparationDetail: 'Votre classe et votre titre seront repris après la création du compte.',
+    existingAccountHint: 'La connexion ouvre votre compte existant, sans y importer cet essai.',
     workspaceError: 'Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.',
     welcomeTitle: 'Retrouvez votre cahier.', createTitle: 'Votre espace commence ici.',
     welcomeDetail: 'Connectez-vous pour préparer et suivre vos séances.',
@@ -31,6 +37,9 @@ const AUTH_COPY = {
   },
   ar: {
     brand: 'دفتر نصوصي', teacherAccess: 'فضاء الأستاذ',
+    tryFirst: 'تجربة بدون حساب', returnToPreview: 'العودة إلى تجربتي', savePreparation: 'احفظ دفترك الأول.',
+    savePreparationDetail: 'سيُحتفظ بقسمك وعنوانك بعد إنشاء الحساب.',
+    existingAccountHint: 'يفتح تسجيل الدخول حسابك الحالي دون استيراد هذه التجربة إليه.',
     workspaceError: 'أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.',
     welcomeTitle: 'دفترك في انتظارك.', createTitle: 'فضاؤك يبدأ من هنا.',
     welcomeDetail: 'سجّل الدخول لتحضير حصصك وتتبعها.', createDetail: 'أنشئ حسابك، ثم أضف أقسامك حسب حاجتك.',
@@ -77,6 +86,11 @@ export const AuthPage: React.FC<{ locale: AppLocale; onLocaleChange: (locale: Au
   const copy = AUTH_COPY[displayLocale];
   const reducedMotion = useReducedMotion();
   const [mode, setMode] = useState<Mode>('login');
+  const [setup, setSetup] = useState<RegistrationSetup|null>(null);
+  const [showPreview, setShowPreview] = useState(()=>{
+    try { return !readWorkspaceScope()?.owner && localStorage.getItem('authSignedOut_v1') !== 'true'; }
+    catch { return false; }
+  });
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [phone, setPhone] = useState('');
@@ -112,7 +126,7 @@ export const AuthPage: React.FC<{ locale: AppLocale; onLocaleChange: (locale: Au
     try {
       // Preserve the backend contract, including legacy accounts with shorter local numbers.
       if (mode === 'login') await login(phone, password);
-      else await register({ nom: nom.trim(), prenom: prenom.trim(), phone, password });
+      else await register({ nom: nom.trim(), prenom: prenom.trim(), phone, password, ...(setup ? {setup:{...setup,applicationLocale:displayLocale}} : {}) });
     } catch (err) {
       setError(err instanceof WorkspaceSwitchError ? copy.workspaceError : displayLocale === 'fr' && err instanceof Error ? err.message : copy.unknownError);
     } finally {
@@ -134,12 +148,13 @@ export const AuthPage: React.FC<{ locale: AppLocale; onLocaleChange: (locale: Au
         </button>)}
       </div>
     </header>
-    <div className="grid flex-1 lg:grid-cols-2">
+    {showPreview ? <Suspense fallback={<main className="mx-auto w-full max-w-3xl p-6" aria-busy="true"><div className="mb-6 h-8 w-2/3 rounded-lg skeleton-shimmer"/><div className="keep-surface h-64 skeleton-shimmer"/></main>}><GuestPreview locale={displayLocale} setup={setup} onChange={setSetup} onRegister={()=>{setMode('register');setError(null);setShowPreview(false)}} onLogin={()=>{setMode('login');setError(null);setShowPreview(false)}}/></Suspense> : <div className="grid flex-1 lg:grid-cols-2">
       <AuthShowcase locale={displayLocale} />
       <main className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
         <div className="mx-auto w-full max-w-[400px]">
-          <h1 id={id + '-title'} className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{isRegister ? copy.createTitle : copy.welcomeTitle}</h1>
-          <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{isRegister ? copy.createDetail : copy.welcomeDetail}</p>
+          <h1 id={id + '-title'} className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{isRegister ? setup ? copy.savePreparation : copy.createTitle : copy.welcomeTitle}</h1>
+          <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{isRegister ? setup ? copy.savePreparationDetail : copy.createDetail : setup ? copy.existingAccountHint : copy.welcomeDetail}</p>
+          <button type="button" disabled={isSubmitting} onClick={()=>{setError(null);setShowPreview(true)}} className="mt-2 min-h-11 rounded-lg text-sm font-medium underline underline-offset-4 focus-visible:outline-2">{setup?copy.returnToPreview:copy.tryFirst}</button>
           <div role="group" aria-label={copy.modeLabel} className="my-6 grid grid-cols-2 gap-1 rounded-[12px] bg-stone-100 p-1 dark:bg-[#303134]">
             {(['login', 'register'] as const).map(value => <button key={value} type="button" disabled={isSubmitting} aria-pressed={mode === value} aria-controls={id + '-form'} onClick={() => switchMode(value)}
               className="relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
@@ -183,6 +198,6 @@ export const AuthPage: React.FC<{ locale: AppLocale; onLocaleChange: (locale: Au
           <p className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-500 dark:text-stone-400"><LockKeyhole className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />{copy.secure}</p>
         </div>
       </main>
-    </div>
+    </div>}
   </div>;
 };
