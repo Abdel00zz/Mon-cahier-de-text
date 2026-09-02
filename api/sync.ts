@@ -1,6 +1,6 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
-import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTimetable } from './_lib/validate.js';
+import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
@@ -190,8 +190,14 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         pipeline.del(KEYS.lessons(phone, id));
     }
     if (body.snapshot && typeof body.snapshot === 'object') {
-        // le téléphone du snapshot est imposé côté serveur : impossible d'écrire celui d'un autre
-        pipeline.hset(KEYS.adminSnapshots, { [phone]: { ...body.snapshot, phone, lastSyncAt: now } });
+        // Le snapshot est une projection consultée par le cron : on valide la
+        // totalité de sa structure avant de la stocker. Le téléphone et
+        // l'horodatage restent imposés par la session serveur.
+        const snapshot = assertValidTeacherSnapshot(body.snapshot, phone, {
+            syncedAt: now,
+            validClassIds,
+        });
+        pipeline.hset(KEYS.adminSnapshots, { [phone]: snapshot });
     }
     await pipeline.exec();
 

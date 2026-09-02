@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AbsencePeriod, AppConfig, NotificationSettings } from '@/types';
 import { defaultNotificationSettings } from '@/hooks/useConfigManager';
-import { activateNativeNotifications, isStandalone, pushSupported, sendTestNotification, unsubscribeFromPush } from '@/utils/push';
+import {
+    activateNativeNotifications,
+    getPushNotificationState,
+    isIOSDevice,
+    isStandalone,
+    pushSupported,
+    sendTestNotification,
+    unsubscribeFromPush,
+    type PushNotificationState,
+} from '@/utils/push';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { Bell, CalendarCheck, Check, Clock, Download, TriangleAlert, X } from '@/components/ui/icons';
 import { Switch } from '@/components/ui/switch';
@@ -17,16 +26,51 @@ type Translate = ReturnType<typeof useLocale>['t'];
  * à activer. Tout en tokens du design system (aucune couleur en dur).
  */
 const PushActivationCard: React.FC<{
-    active: boolean;
+    state: PushNotificationState;
+    checking: boolean;
     busy: boolean;
     onActivate: () => void;
     onDeactivate: () => void;
     onTest: () => void;
     t: Translate;
-}> = ({ active, busy, onActivate, onDeactivate, onTest, t }) => {
+}> = ({ state, checking, busy, onActivate, onDeactivate, onTest, t }) => {
     const supported = pushSupported();
-    const iosNeedsInstall = /iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone();
-    const permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    const iosNeedsInstall = isIOSDevice() && !isStandalone();
+    const active = state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
+    const permission = state.permission;
+
+    const stateDetails = (
+        <dl className="mt-3 grid grid-cols-3 gap-1.5" aria-label={t('notifications.state.title')}>
+            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
+                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.permission')}</dt>
+                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
+                    {permission === 'granted'
+                        ? t('notifications.state.allowed')
+                        : permission === 'denied'
+                            ? t('notifications.state.blocked')
+                            : permission === 'unsupported'
+                                ? t('notifications.state.unavailable')
+                                : t('notifications.state.notAllowed')}
+                </dd>
+            </div>
+            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
+                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.browser')}</dt>
+                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
+                    {checking ? t('notifications.state.checking') : state.subscribed ? t('notifications.state.active') : t('notifications.state.inactive')}
+                </dd>
+            </div>
+            <div className="min-w-0 rounded-lg bg-muted/55 px-2 py-1.5">
+                <dt className="truncate text-[9px] font-semibold text-muted-foreground">{t('notifications.state.server')}</dt>
+                <dd className="mt-0.5 truncate text-[10px] font-bold text-foreground">
+                    {checking || state.serverRegistered === null
+                        ? t('notifications.state.checking')
+                        : state.serverRegistered
+                            ? t('notifications.state.registered')
+                            : t('notifications.state.notRegistered')}
+                </dd>
+            </div>
+        </dl>
+    );
 
     // Cas informatifs (aucune action possible)
     if (!supported || iosNeedsInstall) {
@@ -40,6 +84,7 @@ const PushActivationCard: React.FC<{
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                         {iosNeedsInstall ? t('notifications.pushIosInstall') : t('notifications.pushUnsupported')}
                     </p>
+                    {stateDetails}
                 </div>
             </div>
         );
@@ -52,9 +97,20 @@ const PushActivationCard: React.FC<{
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
                     <TriangleAlert className="h-5 w-5" />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.permissionDenied')}</p>
+                    {stateDetails}
+                    {(state.subscribed || state.serverRegistered === true) && (
+                        <button
+                            type="button"
+                            onClick={onDeactivate}
+                            disabled={busy || checking}
+                            className="mt-3 h-9 rounded-md px-3 text-xs font-bold text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                        >
+                            {t('notifications.turnOff')}
+                        </button>
+                    )}
                 </div>
             </div>
         );
@@ -71,13 +127,14 @@ const PushActivationCard: React.FC<{
                     <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.remindersActive')}</p>
+                        {stateDetails}
                     </div>
                 </div>
                 <div className="mt-3.5 flex items-center gap-2 pt-2">
                     <button
                         type="button"
                         onClick={onTest}
-                        disabled={busy}
+                        disabled={busy || checking}
                         className="h-9.5 flex-1 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-xs"
                     >
                         {t('notifications.sendTest')}
@@ -85,7 +142,7 @@ const PushActivationCard: React.FC<{
                     <button
                         type="button"
                         onClick={onDeactivate}
-                        disabled={busy}
+                        disabled={busy || checking}
                         className="h-9.5 rounded-md px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 cursor-pointer"
                     >
                         {t('notifications.turnOff')}
@@ -106,12 +163,13 @@ const PushActivationCard: React.FC<{
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.pushHint')}</p>
+                    {stateDetails}
                 </div>
             </div>
             <button
                 type="button"
                 onClick={onActivate}
-                disabled={busy}
+                disabled={busy || checking}
                 className="mt-3.5 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
                 <Bell className="h-4 w-4" />
@@ -166,15 +224,51 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const { t } = useLocale();
     const settings = config.notificationSettings ?? { ...defaultNotificationSettings };
     const [busy, setBusy] = useState(false);
+    const [checking, setChecking] = useState(true);
     const [message, setMessage] = useState<string | null>(null);
+    const [pushState, setPushState] = useState<PushNotificationState>(() => ({
+        permission: pushSupported() && typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+        subscribed: false,
+        serverRegistered: null,
+    }));
+    const settingsRef = useRef(settings);
+    settingsRef.current = settings;
 
-    const patch = (updates: Partial<NotificationSettings>) =>
-        onChange({ notificationSettings: { ...settings, ...updates } });
+    const patch = useCallback((updates: Partial<NotificationSettings>) => {
+        onChange({ notificationSettings: { ...settingsRef.current, ...updates } });
+    }, [onChange]);
 
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
-    const pushActive = settings.pushEnabled
-        && typeof Notification !== 'undefined'
-        && Notification.permission === 'granted';
+    const stateIsActive = (state: PushNotificationState) =>
+        state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
+
+    // Réconcilie le réglage local avec les trois couches réelles, sans afficher
+    // de demande d'autorisation et sans attendre indéfiniment un SW absent.
+    useEffect(() => {
+        let cancelled = false;
+        setChecking(true);
+        void getPushNotificationState()
+            .then(state => {
+                if (cancelled) return;
+                setPushState(state);
+                if (state.serverRegistered !== null) {
+                    const active = stateIsActive(state);
+                    if (settingsRef.current.pushEnabled !== active) patch({ pushEnabled: active });
+                }
+                if (state.reason === 'serverStatusUnavailable' || state.reason === 'nativeUnavailable') {
+                    setMessage(t('notifications.statusCheckFailed'));
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setMessage(t('notifications.statusCheckFailed'));
+            })
+            .finally(() => {
+                if (!cancelled) setChecking(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [patch, t]);
 
     // Un seul geste : autorisation système + abonnement serveur.
     const handleActivate = async () => {
@@ -182,8 +276,10 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         setMessage(null);
         try {
             const result = await activateNativeNotifications();
-            if (result.subscribed) {
-                patch({ pushEnabled: true });
+            setPushState(result);
+            const active = stateIsActive(result);
+            patch({ pushEnabled: active });
+            if (active) {
                 setMessage(t('notifications.pushEnabled'));
             } else {
                 const reason = result.reason
@@ -191,6 +287,8 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     : t('notifications.unknownReason');
                 setMessage(t('notifications.activationFailed', { reason }));
             }
+        } catch {
+            setMessage(t('notifications.activationUnexpectedError'));
         } finally {
             setBusy(false);
         }
@@ -200,9 +298,19 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         setBusy(true);
         setMessage(null);
         try {
-            await unsubscribeFromPush();
-            patch({ pushEnabled: false });
-            setMessage(t('notifications.pushDisabled'));
+            const result = await unsubscribeFromPush();
+            const state = await getPushNotificationState();
+            setPushState(state);
+            if (state.serverRegistered !== null) patch({ pushEnabled: stateIsActive(state) });
+            if (result.ok) {
+                setMessage(t('notifications.pushDisabled'));
+            } else if (result.localUnsubscribed && !result.serverUnregistered) {
+                setMessage(t('notifications.pushDisabledCleanupPending'));
+            } else {
+                setMessage(t('notifications.deactivationFailed'));
+            }
+        } catch {
+            setMessage(t('notifications.deactivationFailed'));
         } finally {
             setBusy(false);
         }
@@ -210,9 +318,19 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
     const handleTest = async () => {
         setBusy(true);
-        const ok = await sendTestNotification();
-        setMessage(ok ? t('notifications.testSuccess') : t('notifications.testFailure'));
-        setBusy(false);
+        setMessage(null);
+        try {
+            const result = await sendTestNotification();
+            setMessage(result.ok
+                ? t('notifications.testSuccess')
+                : result.sent === 0
+                    ? t('notifications.testNoDelivery')
+                    : t('notifications.testFailure'));
+        } catch {
+            setMessage(t('notifications.testFailure'));
+        } finally {
+            setBusy(false);
+        }
     };
 
     return (
@@ -223,7 +341,8 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             {/* Activation explicite des rappels push */}
             <PushActivationCard
-                active={pushActive}
+                state={pushState}
+                checking={checking}
                 busy={busy}
                 onActivate={handleActivate}
                 onDeactivate={handleDeactivate}
@@ -297,7 +416,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                 onChange={v => patch({ quietDuringVacations: v })}
             />
 
-            {message && <p className="settings-surface px-3.5 py-2.5 text-xs font-bold text-foreground">{message}</p>}
+            {message && <p role="status" aria-live="polite" className="settings-surface px-3.5 py-2.5 text-xs font-bold text-foreground">{message}</p>}
 
             <AbsencesSection
                 absences={config.absences ?? []}

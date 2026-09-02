@@ -2,7 +2,7 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages } from './_lib/adminMessages.js';
 import { getRedis, KEYS } from './_lib/redis.js';
-import { PushEntry, configureVapid, sendToEntry } from './_lib/webpush.js';
+import { PushEntry, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
 import {
     ADMIN_COOKIE,
     ADMIN_MAX_AGE,
@@ -572,7 +572,10 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
 const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const redis = await getRedis();
-    const classesBlob = await redis.get<ClassesBlob>(KEYS.classes(phone));
+    const [classesBlob, pushEntry] = await Promise.all([
+        redis.get<ClassesBlob>(KEYS.classes(phone)),
+        redis.hget<PushEntry>(KEYS.pushSubs, phone),
+    ]);
 
     const pipeline = redis.pipeline();
     pipeline.del(KEYS.user(phone));
@@ -583,6 +586,18 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     pipeline.hdel(KEYS.adminSnapshots, phone);
     pipeline.hdel(KEYS.pushSubs, phone);
     pipeline.del(KEYS.adminMessages(phone));
+    // L'index global ne doit pas conserver de propriétaire fantôme après une
+    // suppression de compte. La vérification d'ownership évite d'effacer une
+    // nouvelle réservation concurrente appartenant déjà à un autre compte.
+    const pushSubs = Array.isArray(pushEntry?.subs) ? pushEntry.subs : [];
+    const ownedFields = await Promise.all(pushSubs
+        .filter(sub => typeof sub?.endpoint === 'string' && sub.endpoint.length > 0)
+        .map(async sub => {
+        const field = pushEndpointField(sub.endpoint);
+        const owner = await redis.hget<string>(KEYS.pushEndpointOwners, field);
+        return owner === phone ? field : null;
+    }));
+    for (const field of ownedFields) if (field) pipeline.hdel(KEYS.pushEndpointOwners, field);
     await pipeline.exec();
     res.status(200).json({ ok: true, deletedClasses: classesBlob?.classes.length ?? 0 });
 };
@@ -614,21 +629,36 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         .slice(0, MAX_ADMIN_MESSAGES_PER_TEACHER);
     await redis.set(KEYS.adminMessages(phone), messages);
 
+    const entrySubs = Array.isArray(entry?.subs) ? entry.subs : [];
     // Le message reste disponible dans l'application même sans abonnement push.
-    if (!entry || entry.subs.length === 0 || !configureVapid()) {
+    if (!entry || entrySubs.length === 0 || !configureVapid()) {
         return res.status(200).json({ ok: true, sent: 0, message });
     }
 
-    const { survivingSubs, sent } = await sendToEntry(entry, {
-        title: 'Direction administrative',
-        body: title,
-        url: '/',
+    const { survivingSubs, sent } = await sendToEntry({ ...entry, subs: entrySubs }, {
+        title,
+        body: content,
+        url: '/#/notifications',
         kind: 'admin',
         tag: `cdt-admin-${message.id}`,
         timestamp: Date.now(),
         messageId: message.id,
     });
-    await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
+    if (survivingSubs.length === 0) await redis.hdel(KEYS.pushSubs, phone);
+    else await redis.hset(KEYS.pushSubs, { [phone]: { ...entry, subs: survivingSubs } });
+    const removedEndpoints = entrySubs
+        .filter(sub => !survivingSubs.some(next => next.endpoint === sub.endpoint))
+        .map(sub => sub.endpoint);
+    const ownedFields = await Promise.all(removedEndpoints.map(async endpoint => {
+        const field = pushEndpointField(endpoint);
+        const owner = await redis.hget<string>(KEYS.pushEndpointOwners, field);
+        return owner === phone ? field : null;
+    }));
+    if (ownedFields.some(Boolean)) {
+        const cleanup = redis.pipeline();
+        for (const field of ownedFields) if (field) cleanup.hdel(KEYS.pushEndpointOwners, field);
+        await cleanup.exec();
+    }
     res.status(200).json({ ok: true, sent, message });
 };
 

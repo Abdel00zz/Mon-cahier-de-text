@@ -131,6 +131,25 @@ Les vacances, contenus et événements officiels vivent dans `public`. Les charg
 
 Le référentiel administratif marocain utilisé par le profil et l’impression est centralisé dans `utils/moroccoEducation.ts` : 12 AREF, puis leurs provinces et préfectures. Les identifiants sont stables, afin que les sauvegardes et la synchronisation ne dépendent pas du libellé affiché.
 
+### Notifications et cycle de vie mobile (choix d’ingénierie)
+
+Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
+
+1. **Notifications Web Push serveur (`api/notify.ts`, `pwa/sw.ts`)** :
+   - Déclenchées par le cron Vercel quotidien ou par un message de la direction.
+   - Délivrées par le système d'exploitation via le push service du navigateur (FCM, Apple Push Service, etc.).
+   - Fonctionnent **même lorsque l'application ou l'onglet est complètement fermé**.
+
+2. **Rappels locaux de fin de séance (`hooks/useSessionAlerts.ts`, `utils/push.ts`)** :
+   - Déclenchés par les timers JavaScript de la page active (1 minute avant la fin et 5 minutes après si le cahier n'est pas daté).
+   - Affichent un toast, émettent une vibration et affichent une notification système via `ServiceWorkerRegistration.showNotification()` si l'autorisation est accordée.
+   - **Limitation assumée** : lorsque l'application est **complètement fermée** (processus tué ou déchargé par le système d'exploitation mobile), les timers JavaScript ne tournent plus. L'interface documente honnêtement cette limitation au lieu de faire croire à une fiabilité impossible en pur Web/PWA standard.
+
+**Évolutions possibles pour réveiller le téléphone application fermée :**
+- **Option A (Web Push serveur planifié)** : Un worker Upstash QStash ou un cron serveur qui planifie les envois Push aux heures de fin de séance déduites de l'emploi du temps synchronisé.
+- **Option B (Notifications locales natives Capacitor)** : Utilisation du plugin natif `@capacitor/local-notifications` qui enregistre les réveils directement dans le système d'exploitation (`AlarmManager` sur Android, `UNUserNotificationCenter` sur iOS), garantissant la sonnerie même processus arrêté.
+
+
 ## Performance
 
 - Les pages principales sont chargées avec `React.lazy`.

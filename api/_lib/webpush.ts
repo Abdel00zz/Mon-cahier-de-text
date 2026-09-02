@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import webpush from 'web-push';
 import type { PushNotificationPayload } from '../../utils/notificationTypes.js';
 
@@ -13,6 +14,10 @@ export interface PushEntry {
     lastNotifiedAt?: string;
     lastSeverity?: string;
 }
+
+/** Champ Redis stable pour l'index global endpoint → propriétaire. */
+export const pushEndpointField = (endpoint: string): string =>
+    createHash('sha256').update(endpoint, 'utf8').digest('hex');
 
 export const configureVapid = (): boolean => {
     const publicKey = process.env.VAPID_PUBLIC_KEY;
@@ -31,24 +36,37 @@ export const sendToEntry = async (
     entry: PushEntry,
     payload: PushNotificationPayload
 ): Promise<{ survivingSubs: PushEntry['subs']; sent: number }> => {
-    const survivingSubs: PushEntry['subs'] = [];
-    let sent = 0;
-    await Promise.all(
+    const results = await Promise.all(
         entry.subs.map(async sub => {
             try {
                 await webpush.sendNotification(
                     { endpoint: sub.endpoint, keys: sub.keys },
-                    JSON.stringify(payload)
+                    JSON.stringify(payload),
+                    {
+                        // Une alerte de retard perd son utilité après un jour;
+                        // un test ne doit pas arriver plusieurs heures plus
+                        // tard après une réinstallation ou un mode avion.
+                        TTL: payload.kind === 'test' ? 3_600 : 86_400,
+                        urgency: payload.kind === 'admin' ? 'high' : 'normal',
+                    }
                 );
-                survivingSubs.push(sub);
-                sent += 1;
+                return { sub, keep: true, sent: true };
             } catch (error) {
                 const statusCode = (error as { statusCode?: number }).statusCode;
                 if (statusCode !== 404 && statusCode !== 410) {
-                    survivingSubs.push(sub); // erreur transitoire : on conserve l'abonnement
+                    // Erreur transitoire : on conserve l'abonnement pour le
+                    // prochain passage, mais elle ne compte pas comme livré.
+                    return { sub, keep: true, sent: false };
                 }
+                // 404/410 = abonnement révoqué côté fournisseur : purge.
+                return { sub, keep: false, sent: false };
             }
         })
     );
-    return { survivingSubs, sent };
+    return {
+        // Conserve l'ordre d'inscription, indépendant de l'ordre de résolution
+        // des requêtes réseau concurrentes.
+        survivingSubs: results.filter(result => result.keep).map(result => result.sub),
+        sent: results.filter(result => result.sent).length,
+    };
 };

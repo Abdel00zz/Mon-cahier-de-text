@@ -17,13 +17,14 @@ import { translateLocaleMessage } from '../i18n/LocaleProvider';
  * Deux déclencheurs par bloc de séance du jour (blocs fusionnés : une séance
  * de 2 h = un seul rappel, cohérent avec le moteur de retard) :
  *   1. une minute avant la fin réelle de la séance → vibration de rappel ;
- *   2. à la fin de la séance, si aucune date n'a été affectée aujourd'hui
- *      dans le cahier de la classe → vibration d'alerte.
+ *   2. cinq minutes après la séance, si aucune date n'a été affectée
+ *      aujourd'hui dans le cahier de la classe → vibration d'alerte.
  *
- * Signal unique vibration + toast (pas de double signal), alertes simultanées
- * regroupées en un seul message. Silence total les jours fériés, vacances et
- * absences justifiées. Mécanisme désactivable (Configuration ▸ Notifications),
- * spécifique à l'appareil, jamais synchronisé (comme `pushEnabled`).
+ * Les alertes simultanées sont regroupées en un seul message et réclamées par
+ * un seul onglet. Les absences justifiées restent silencieuses ; les vacances
+ * suivent la préférence du professeur. Mécanisme désactivable (Configuration
+ * ▸ Notifications), spécifique à l'appareil, jamais synchronisé (comme
+ * `pushEnabled`).
  *
  * Le hook lit la configuration directement depuis le localStorage et se
  * re-planifie sur les événements du syncBus : il reste ainsi à jour quel que
@@ -36,6 +37,33 @@ const vibrate = (pattern: number | number[]): void => {
         navigator.vibrate?.(pattern);
     } catch {
         // API indisponible (desktop, iOS hors PWA) : le toast reste le signal
+    }
+};
+
+const ALERT_CLAIMS_KEY = 'session_alert_claims_v1';
+const ALERT_CLAIM_TTL_MS = 20 * 60_000;
+const MISSING_DATE_GRACE_MINUTES = 5;
+
+/**
+ * Evite qu'un même rappel fasse vibrer et toaster plusieurs fois lorsque
+ * plusieurs onglets de l'application sont ouverts. La notification système
+ * est déjà dédupliquée par son `tag`, mais pas les deux signaux de page.
+ */
+const claimAlert = (tag: string): boolean => {
+    try {
+        const now = Date.now();
+        const stored = JSON.parse(localStorage.getItem(ALERT_CLAIMS_KEY) || '{}') as Record<string, unknown>;
+        const claims = Object.fromEntries(
+            Object.entries(stored).filter(([, value]) => typeof value === 'number' && now - value < ALERT_CLAIM_TTL_MS)
+        ) as Record<string, number>;
+        if (claims[tag]) return false;
+        claims[tag] = now;
+        localStorage.setItem(ALERT_CLAIMS_KEY, JSON.stringify(claims));
+        return true;
+    } catch {
+        // Le stockage peut être indisponible en navigation privée. Mieux vaut
+        // conserver le rappel dans l'onglet courant que le perdre totalement.
+        return true;
     }
 };
 
@@ -92,9 +120,14 @@ export const useSessionAlerts = (): void => {
         const bump = () => setTick(t => t + 1);
         const unsubDirty = subscribe('dirty', bump);
         const unsubPull = subscribe('pull-applied', bump);
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') bump();
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
         return () => {
             unsubDirty();
             unsubPull();
+            document.removeEventListener('visibilitychange', onVisibilityChange);
         };
     }, []);
 
@@ -111,13 +144,17 @@ export const useSessionAlerts = (): void => {
         const timers: number[] = [];
 
         (async () => {
-            const calendar = withAbsences(await loadHolidayCalendar(), config.absences);
+            const schoolCalendar = await loadHolidayCalendar();
+            const calendar = withAbsences(schoolCalendar, config.absences);
             if (cancelled) return;
 
             const now = new Date();
             const todayISO = todayInMorocco(now, calendar);
-            // jour sans classe (férié, vacances, absence justifiée) : silence total
-            if (isHoliday(todayISO, calendar) || isVacation(todayISO, calendar)) return;
+            const isTeacherAbsent = config.absences?.some(period => todayISO >= period.debut && todayISO <= period.fin) ?? false;
+            // Une absence justifiée reste toujours silencieuse. Pour les congés
+            // scolaires, le choix explicite de l'enseignant est enfin respecté.
+            if (isTeacherAbsent) return;
+            if (notify.quietDuringVacations && (isHoliday(todayISO, schoolCalendar) || isVacation(todayISO, schoolCalendar))) return;
 
             const blocks = getDaySessionBlocks(timetable, weekdayFromISO(todayISO));
             if (blocks.length === 0) return;
@@ -125,6 +162,12 @@ export const useSessionAlerts = (): void => {
             const classNames = new Map(readClasses().map(c => [c.id, c.name]));
             const nameOf = (classId: string): string => classNames.get(classId) ?? t('sessionAlert.classFallback');
             const nowMin = clockMinutesInZone(now, calendar.fuseau);
+            const isFresh = (targetMinute: number, lateToleranceMinutes: number): boolean => {
+                const firedAt = new Date();
+                if (todayInMorocco(firedAt, calendar) !== todayISO) return false;
+                const firedMinute = clockMinutesInZone(firedAt, calendar.fuseau);
+                return firedMinute >= targetMinute - 0.25 && firedMinute <= targetMinute + lateToleranceMinutes;
+            };
 
             // blocs partageant la même fin → un seul signal groupé (règle §Q)
             const byEnd = new Map<number, SessionBlock[]>();
@@ -142,18 +185,26 @@ export const useSessionAlerts = (): void => {
                 const reminderDelay = (endMin - 1 - nowMin) * 60_000;
                 if (reminderDelay > 0) {
                     timers.push(window.setTimeout(() => {
+                        const tag = `cdt-session-end-${todayISO}-${endMin}`;
+                        // Un onglet gelé peut reprendre plusieurs heures plus
+                        // tard : ne jamais émettre alors un rappel périmé.
+                        if (!isFresh(endMin - 1, 2) || !claimAlert(tag)) return;
                         const message = t('sessionAlert.endSoonBody', { classes: names });
                         const url = group.length === 1 ? `/#/classe/${encodeURIComponent(group[0].classId)}` : '/';
                         vibrate([200, 100, 200]);
                         toast.info(message);
-                        void showLocalNotification(t('sessionAlert.endSoonTitle'), message, `cdt-session-end-${todayISO}-${endMin}`, url);
+                        void showLocalNotification(t('sessionAlert.endSoonTitle'), message, tag, url);
                     }, reminderDelay));
                 }
 
-                // 2) fin de séance : alerte si aucune date affectée aujourd'hui
-                const endDelay = (endMin - nowMin) * 60_000;
+                // 2) cinq minutes après la séance : l'enseignant dispose d'un
+                // court délai pour dater le contenu avant l'alerte.
+                const missingTargetMin = endMin + MISSING_DATE_GRACE_MINUTES;
+                const endDelay = (missingTargetMin - nowMin) * 60_000;
                 if (endDelay > 0) {
                     timers.push(window.setTimeout(() => {
+                        const tag = `cdt-session-missing-${todayISO}-${endMin}`;
+                        if (!isFresh(missingTargetMin, 10) || !claimAlert(tag)) return;
                         const missingBlocks = group.filter(g => !hasDateToday(g.classId, todayISO));
                         const missing = missingBlocks.map(g => nameOf(g.classId));
                         if (missing.length === 0) return;
@@ -163,7 +214,7 @@ export const useSessionAlerts = (): void => {
                             : t('sessionAlert.missingDateMany', { count: missing.length, classes: missing.join(', ') });
                         vibrate([300, 120, 300, 120, 300]);
                         toast.warning(message);
-                        void showLocalNotification(t('sessionAlert.missingDateTitle'), message, `cdt-session-missing-${todayISO}-${endMin}`, url);
+                        void showLocalNotification(t('sessionAlert.missingDateTitle'), message, tag, url);
                     }, endDelay));
                 }
             }

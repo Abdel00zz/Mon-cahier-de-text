@@ -83,14 +83,24 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
     event.notification.close();
     if (event.action === 'dismiss') return;
-    const targetUrl = (event.notification.data?.url as string) || '/';
+    const requestedUrl = (event.notification.data?.url as string) || '/';
+    let targetUrl = new URL('/', self.location.origin).href;
+    try {
+        const candidate = new URL(requestedUrl, self.location.origin);
+        // Une charge Push ne doit jamais pouvoir transformer le clic en
+        // redirection vers un domaine externe.
+        if (candidate.origin === self.location.origin) targetUrl = candidate.href;
+    } catch {
+        // URL malformée : retour sûr à l'accueil.
+    }
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
             for (const client of clients) {
                 if ('focus' in client) {
-                    client.focus();
-                    if ('navigate' in client) (client as WindowClient).navigate(targetUrl);
-                    return;
+                    const windowClient = client as WindowClient;
+                    // Retourner la chaîne garantit que waitUntil garde le
+                    // service worker vivant jusqu'au focus ET à la navigation.
+                    return windowClient.focus().then(focused => focused.navigate(targetUrl));
                 }
             }
             return self.clients.openWindow(targetUrl);

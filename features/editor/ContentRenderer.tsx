@@ -60,7 +60,7 @@ const renderChapterLabel = (label: string) => {
   });
 };
 
-const renderChapterTitleStyled = (text: string, isAr: boolean) => {
+const renderChapterTitleStyled = (text: string) => {
   const trimmed = text.trim();
   const match = trimmed.match(
     /^(Chapitre\s+[^:\-–—\n]+|Chapter\s+[^:\-–—\n]+|الفصل\s+[^:\-–—\n]+|الباب\s+[^:\-–—\n]+|الوحدة\s+[^:\-–—\n]+|الدرس\s+[^:\-–—\n]+|المحور\s+[^:\-–—\n]+)(?:\s*([:\-–—])\s*(.*))?$/i
@@ -178,8 +178,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
     if (item.type === 'chapter') {
       const chapterTitle = item.title || config.name;
-      const isAr = /[\u0600-\u06FF]/.test(chapterTitle);
-
       return (
         <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className="my-3 flex w-full items-center justify-center text-center font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug select-none">
@@ -187,7 +185,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               {highlight ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
               ) : (
-                renderChapterTitleStyled(chapterTitle, isAr)
+                renderChapterTitleStyled(chapterTitle)
               )}
             </span>
           </div>
@@ -242,7 +240,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
-      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-secondary text-secondary-foreground border-border';
+      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-[#f1f3f4] text-[#3c4043] dark:bg-[#3c4043] dark:text-[#e8eaed]';
 
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
@@ -263,25 +261,25 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const content = (
-        <div className="max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-muted-foreground">
+        <div className="editor-table-content font-editor-system max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-[#3c4043] dark:text-[#bdc1c6]">
           {/* Titre */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
-            className="min-w-0 truncate whitespace-nowrap p-0 text-[13px] font-semibold leading-5 text-foreground max-sm:portrait:text-[12px] sm:text-[14.5px]"
+            className="min-w-0 truncate whitespace-nowrap p-0 text-[11.7px] font-semibold leading-[18px] text-[#202124] dark:text-[#e8eaed] max-sm:portrait:text-[10.8px] sm:text-[13px] lg:text-[14.5px] lg:leading-5"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
           {/* Description : encadré sobre sous le titre avec branchement */}
           {allowDescription && (
-            <div className="mt-1.5 ms-[18px] sm:ms-[22px] border-l-[2px] border-border/70 bg-muted/10 pl-2.5 sm:pl-3 py-1 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
+            <div className="mt-1.5 ms-3 sm:ms-4 lg:ms-[18px] border-l-[2px] border-border/70 bg-muted/10 pl-2 sm:pl-2.5 lg:pl-3 py-1 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
 
           {/* Info page */}
           {item.page && (
-            <div className="flex items-center gap-1 text-[10px] max-sm:portrait:text-[8px] sm:text-xs text-muted-foreground italic">
+            <div className="flex items-center gap-1 text-[10px] max-sm:portrait:text-[8px] sm:text-xs text-[#3c4043]/80 dark:text-[#bdc1c6] italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>
@@ -298,15 +296,15 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       return (
-        <div className="flex min-w-0 items-center gap-1.5 py-1 sm:gap-2.5 sm:ps-8">
+        <div className="editor-table-content font-editor-system flex min-w-0 items-center gap-1.5 py-1 transition-colors duration-150 hover:bg-[#f8f9fa] dark:hover:bg-white/[0.04] sm:gap-2 sm:ps-2 lg:gap-2.5 lg:ps-4">
           <Badge
             variant="outline"
-            className={`inline-flex min-w-[42px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-none border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight tracking-wider transition-colors duration-150 hover:shadow-xs cursor-default max-sm:portrait:min-w-[34px] max-sm:portrait:px-1 max-sm:portrait:py-0.5 max-sm:portrait:text-[8.5px] sm:min-w-[50px] sm:px-2 sm:text-[11px] ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`inline-flex min-w-[27px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[3px] border-0 px-0.5 py-0 text-[8px] font-bold uppercase leading-tight tracking-normal transition-colors duration-150 cursor-default max-sm:portrait:min-w-[22px] max-sm:portrait:px-px max-sm:portrait:text-[7px] sm:min-w-[32px] sm:px-1 sm:text-[8.5px] lg:min-w-[35px] lg:px-1 lg:py-px lg:text-[9px] lg:tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >
             <span>{badgeText}</span>
-            {item.number ? <span className="ms-1 font-bold max-sm:portrait:ms-0.5">{item.number}</span> : null}
+            {item.number ? <span className="ms-px font-bold lg:ms-0.5">{item.number}</span> : null}
           </Badge>
           <div className="min-w-0 flex-1">
             <MaybeMathJax mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>

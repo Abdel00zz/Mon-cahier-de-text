@@ -15,7 +15,8 @@
     "check": "npm run check:data && npm run lint && npm run check:architecture && npm run check:unused && npm run build",
     "check:architecture": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
     "check:data": "node scripts/validate-assessment-data.mjs",
-    "check:i18n": "node scripts/audit-i18n.mjs"
+    "check:i18n": "node scripts/audit-i18n.mjs",
+    "test:notifications": "tsx scripts/test-notification-mechanisms.ts"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.3",

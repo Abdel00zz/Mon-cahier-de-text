@@ -208,7 +208,7 @@ const ClassChapters: React.FC<{ phone: string; classId: string }> = ({ phone, cl
 // mêmes paramètres que la liste : absences justifiées + seuils du prof
 const latenessBadge = (snapshot: ClassSnapshot, teacher?: TeacherSnapshot | null) =>
     computeLateness({
-        slots: snapshot.weekdays.map(weekday => ({ weekday })),
+        slots: snapshot.scheduleSlots ?? snapshot.weekdays.map(weekday => ({ weekday })),
         calendar,
         sessionsCount: snapshot.sessionsCount,
         lastDate: snapshot.lastDate,

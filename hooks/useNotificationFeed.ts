@@ -51,8 +51,9 @@ export const useNotificationFeed = (
     const unsubDirty = subscribe('dirty', refresh);
     const unsubPull = subscribe('pull-applied', refresh);
     const unsubNotifications = subscribe('notifications-changed', refresh);
+    const unsubConfig = subscribe('config-changed', refresh);
     const onStorage = (event: StorageEvent) => {
-      if (!event.key || event.key.startsWith('classData_v1_') || event.key.startsWith('editor_actions_ignored_v1_') || event.key.startsWith('editJournal_v1_') || event.key.startsWith('printMeta_v1_')) refresh();
+      if (!event.key || event.key === 'appConfig_v1' || event.key.startsWith('classData_v1_') || event.key.startsWith('editor_actions_ignored_v1_') || event.key.startsWith('editJournal_v1_') || event.key.startsWith('printMeta_v1_')) refresh();
     };
     /*
      * Le retour au premier plan ne modifie rien par lui-même : les écritures
@@ -75,6 +76,7 @@ export const useNotificationFeed = (
       unsubDirty();
       unsubPull();
       unsubNotifications();
+      unsubConfig();
       window.removeEventListener('storage', onStorage);
       document.removeEventListener('visibilitychange', onVisible);
     };
@@ -84,12 +86,18 @@ export const useNotificationFeed = (
     const t = (key: string, values?: Record<string, string | number>) => translateLocaleMessage(locale, key, values);
     const classNameById = new Map(classes.map(c => [c.id, formatLocalizedClassDisplayName(c.name, locale)]));
     const today = todayInMorocco(new Date(), getBundledCalendar());
+    const inAppEnabled = config.notificationSettings?.enabled ?? true;
     const assessmentLabel = (item: Pick<UpcomingAssessment, 'type' | 'num'>): string => t(
       item.type === 'controle' ? 'notifications.assessment.control' : 'notifications.assessment.homework',
       { number: item.num },
     );
-    const classSignals: ClassSignal[] = classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale));
-    const globalSignals = collectCrossClassSignals(classes, locale);
+    // Le réglage « Alertes dans l'application » coupe réellement les signaux
+    // et leur badge d'attention. Le calendrier et les échéances restent
+    // consultables : ce sont des données, pas des interruptions.
+    const classSignals: ClassSignal[] = inAppEnabled
+      ? classes.flatMap(classInfo => collectClassSignals(classInfo, config, locale))
+      : [];
+    const globalSignals = inAppEnabled ? collectCrossClassSignals(classes, locale) : [];
 
     // Un seul Set par classe : plusieurs devoirs d'une même classe partageaient
     // la même mémoire « ignoré », reconstruite à chaque itération.
@@ -103,7 +111,7 @@ export const useNotificationFeed = (
       return set;
     };
 
-    for (const item of pastAssessments.filter(a => a.type === 'controle')) {
+    for (const item of (inAppEnabled ? pastAssessments : []).filter(a => a.type === 'controle')) {
       const saisi = config.assessmentAbsences?.[item.classId]?.[item.id]
         ?? (item.legacyId ? config.assessmentAbsences?.[item.classId]?.[item.legacyId] : undefined);
       if (saisi) continue;
@@ -156,7 +164,7 @@ export const useNotificationFeed = (
       assessments,
       pedagogicalEvents,
       officialEvents,
-      attentionCount: insights.length + urgentOfficial,
+      attentionCount: inAppEnabled ? insights.length + urgentOfficial : 0,
     };
   }, [classes, config, assessments, pastAssessments, officialEvents, locale, storageVersion]);
 };

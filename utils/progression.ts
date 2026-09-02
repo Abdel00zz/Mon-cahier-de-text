@@ -98,6 +98,10 @@ const computeClassSnapshot = (
         sessionsCount: stats.sessionsCount,
         lastDate: stats.lastDate,
         weekdays: slots.map(slot => slot.weekday),
+        scheduleSlots: slots.map(slot => ({
+            weekday: slot.weekday,
+            sessions: Math.max(1, Math.trunc(slot.sessions ?? 1)),
+        })),
         sessionsPerWeek: slots.reduce((sum, slot) => sum + (slot.sessions ?? 1), 0),
         updatedAt: new Date().toISOString(),
     };
@@ -122,6 +126,7 @@ export const computeTeacherSnapshot = (
     schoolYearStart,
     notifyPrefs: notificationSettings
         ? {
+              enabled: notificationSettings.enabled,
               gapThreshold: notificationSettings.gapThreshold,
               inactivityThresholdDays: notificationSettings.inactivityThresholdDays,
               quietDuringVacations: notificationSettings.quietDuringVacations,

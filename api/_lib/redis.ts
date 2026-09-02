@@ -1,6 +1,6 @@
 import { HttpError } from './http.js';
 
-type RedisClient = import('@upstash/redis').Redis;
+export type RedisClient = import('@upstash/redis').Redis;
 
 let client: RedisClient | null = null;
 let redisCtor: Promise<typeof import('@upstash/redis').Redis> | null = null;
@@ -43,6 +43,8 @@ export const KEYS = {
   lessons: (phone: string, classId: string) => `lessons:${phone}:${classId}`,
   adminSnapshots: 'admin:snapshots',
   pushSubs: 'push:subs',
+  /** endpoint Web Push -> téléphone propriétaire (unicité globale). */
+  pushEndpointOwners: 'push:endpoint-owners',
   adminCalendar: 'admin:calendar',
   adminOfficialEvents: 'admin:official-events',
   adminMessages: (phone: string) => `admin:messages:${phone}`,

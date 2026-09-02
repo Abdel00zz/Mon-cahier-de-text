@@ -199,6 +199,12 @@ export interface ClassSnapshot {
     sessionsCount: number;
     lastDate: string | null;
     weekdays: number[];
+    /**
+     * Projection fidèle de l'emploi du temps. `weekdays` reste présent pour
+     * lire les anciens snapshots, mais ne permettait pas de distinguer une
+     * séance simple d'une séance double le même jour.
+     */
+    scheduleSlots?: ScheduleSlot[];
     sessionsPerWeek: number;
     updatedAt: string;
 }
@@ -210,7 +216,11 @@ export interface TeacherSnapshot {
     /** Langue de l'interface utilisée aussi pour les notifications système. */
     applicationLocale?: AppLocale;
     lastSyncAt: string | null;
-    notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & { pushEnabled?: boolean };
+    notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & {
+        /** Absent sur les anciens snapshots : traité comme activé pour rétro-compatibilité. */
+        enabled?: boolean;
+        pushEnabled?: boolean;
+    };
     /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */
     absences?: AbsencePeriod[];
     /** rentrée choisie par l'enseignant, référence commune des calculs annuels */

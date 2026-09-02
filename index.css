@@ -546,6 +546,30 @@
     font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif);
   }
 
+  /* Éditeur tableau : pile native rapide et familière sur téléphone,
+     tablette et desktop. Le lissage est limité à cette surface afin de ne
+     pas modifier les choix typographiques des documents imprimés. */
+  .font-editor-system {
+    font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .editor-table-content {
+    color: #202124;
+  }
+
+  .dark .editor-table-content {
+    color: #e8eaed;
+  }
+
+  /* MathJax conserve sa mise en page, mais reprend la sérif douce demandée
+     pour distinguer immédiatement une formule du texte courant. */
+  .editor-table-content mjx-container {
+    font-family: Georgia, 'Times New Roman', serif !important;
+    font-style: italic;
+  }
+
   .font-lemonde {
     font-family: 'Le Monde', 'Le Monde Serif', 'Newsreader', 'Playfair Display', 'Roboto Slab', serif;
   }

@@ -3,6 +3,7 @@ import { markClassDirty, markClassesListDirty, notifyClassesChanged, notifyConfi
 import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth/registrationSetup';
 import { toast } from 'sonner';
 import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../utils/accountWorkspace';
+import { unsubscribeFromPush } from '../utils/push';
 
 interface AuthUser {
   phone: string;
@@ -235,6 +236,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async () => {
     ++requestVersion.current;
     initialRequest.current?.abort();
+    // Le cookie courant est encore présent : profite de cette fenêtre pour
+    // retirer l'appareil du serveur avant de basculer vers l'espace anonyme.
+    // Le nettoyage local reste effectué même si le réseau est hors ligne ; un
+    // délai borne la déconnexion pour ne jamais bloquer l'utilisateur.
+    await Promise.race([
+      unsubscribeFromPush().catch(() => undefined),
+      new Promise<void>(resolve => setTimeout(resolve, 5_000)),
+    ]);
     // Keep unsynced work for the next login of its owner, even when offline.
     const previousSignedOut = localStorage.getItem(SIGNED_OUT_KEY);
     localStorage.setItem(SIGNED_OUT_KEY, 'true');
