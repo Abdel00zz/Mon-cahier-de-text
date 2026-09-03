@@ -35,8 +35,6 @@ interface MainTableProps {
   /** programme officiel proposé lorsque le cahier est encore vide */
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
-  /** Surface de chapitre déduite du niveau de la classe ouverte. */
-  chapterSurfaceClass?: string;
 }
 
 interface FlatDataItem {
@@ -67,13 +65,13 @@ const TableHeader: React.FC = React.memo(() => {
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-slate-300/75 px-1 py-1.5 text-center dark:border-slate-700/80 sm:px-2.5 sm:py-2">
-        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.date')}</span>
+        <span className="editor-type-table-side font-sans font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-slate-300/75 px-2 py-1.5 text-center dark:border-slate-700/80 sm:px-3 sm:py-2">
-        <span className="font-sans text-[10px] max-sm:portrait:text-[8px] sm:text-[11px] font-black uppercase tracking-[0.08em] text-slate-800 dark:text-slate-100">{t('editor.content')}</span>
+        <span className="editor-type-table-main font-sans font-black uppercase tracking-[0.08em] text-slate-800 dark:text-slate-100">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="font-sans text-[9px] max-sm:portrait:text-[7.2px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.remark')}</span>
+        <span className="editor-type-table-side font-sans font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -252,7 +250,6 @@ interface SessionGroupRowProps {
     descriptionTypes?: string[];
     searchQuery?: string;
     getDateWarnings?: (date: string) => { type: string; message: string }[];
-    chapterSurfaceClass?: string;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
@@ -265,7 +262,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     descriptionTypes = [],
     searchQuery,
     getDateWarnings,
-    chapterSurfaceClass,
 }) => {
     const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
     const uniqueDates = Array.from(new Set(allDates));
@@ -321,7 +317,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             descriptionTypes={descriptionTypes}
                             searchQuery={searchQuery}
                             getDateWarnings={getDateWarnings}
-                            chapterSurfaceClass={chapterSurfaceClass}
                         />
                     );
                 })}
@@ -330,13 +325,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             <div className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
                 {sameRemark ? (
                     <div className="flex min-h-full w-full flex-col justify-center">
-                        <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{sharedRemark}</div>
+                        <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
                     </div>
                 ) : (
                     <div className="flex w-full flex-col">
                         {items.map(item => (
                             <div key={item.key} className="min-h-[40px] p-0.5 sm:p-1">
-                                <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:p-1 sm:text-[11px]">{getMergeableRemark(item)}</div>
+                                <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
                             </div>
                         ))}
                     </div>
@@ -414,7 +409,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   focusKey,
   predefinedProgramTitle,
   onLoadPredefined,
-  chapterSurfaceClass,
 }) => {
   const flatData = useMemo(() => {
     const result: FlatDataItem[] = [];
@@ -601,7 +595,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
                                   getDateWarnings={getDateWarnings}
-                                  chapterSurfaceClass={chapterSurfaceClass}
                               />
                           </VirtualListRow>
                       );
@@ -643,7 +636,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               descriptionTypes={descriptionTypes}
                               searchQuery={searchQuery}
                               getDateWarnings={getDateWarnings}
-                              chapterSurfaceClass={chapterSurfaceClass}
                           />
                       </VirtualListRow>
                   );

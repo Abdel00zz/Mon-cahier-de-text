@@ -109,6 +109,58 @@ test('éditeur : chapitre X en bleu (-5%) et reste du titre (-15%)', () => {
   assert.match(content, /renderChapterLabel/);
 });
 
+test('éditeur : une échelle mobile unique reste stable après rotation', () => {
+  const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+  const content = readFileSync(
+    new URL('../features/editor/ContentRenderer.tsx', import.meta.url),
+    'utf8',
+  );
+
+  for (const role of [
+    'chapter',
+    'top',
+    'section',
+    'subsection',
+    'subsubsection',
+    'item-title',
+    'description',
+    'page',
+    'badge',
+  ]) {
+    assert.match(content, new RegExp(`editor-type-${role}`));
+  }
+
+  assert.match(css, /--editor-fs-chapter: 18px/);
+  assert.match(css, /--editor-fs-item-title: 10px/);
+  assert.match(css, /--editor-fs-badge: 7px/);
+  assert.match(css, /editor-type-badge[\s\S]*font-size: var\(--editor-fs-badge\) !important/);
+  assert.match(css, /padding-inline: var\(--editor-badge-padding-inline\) !important/);
+  assert.match(css, /pointer: coarse\) and \(max-width: 960px\) and \(max-height: 540px\) and \(orientation: landscape/);
+  assert.match(css, /editor-type-separator-date:focus[\s\S]*font-size: 16px/);
+});
+
+test('éditeur : le coach paysage est visible, temporisé et non bloquant', () => {
+  const nudge = readFileSync(
+    new URL('../features/editor/OrientationNudge.tsx', import.meta.url),
+    'utf8',
+  );
+  const editor = readFileSync(
+    new URL('../features/editor/Editor.tsx', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(nudge, /orientation: portrait\) and \(pointer: coarse/);
+  assert.match(nudge, /sessionStorage/);
+  assert.match(nudge, /useReducedMotion/);
+  assert.match(nudge, /if \(!matches\) setIsVisible\(false\)/);
+  assert.match(nudge, /wasPortraitPhone\.current && !matches/);
+  assert.match(nudge, /MutationObserver/);
+  assert.match(nudge, /h-11 w-11/);
+  assert.match(editor, /<OrientationNudge/);
+  assert.match(editor, /selectedCount > 0/);
+  assert.equal(editor.includes('useForceLandscape'), false);
+});
+
 test('modales & sidebar arabe : augmentation de taille (+15%)', () => {
   const css = readFileSync(
     new URL('../index.css', import.meta.url),

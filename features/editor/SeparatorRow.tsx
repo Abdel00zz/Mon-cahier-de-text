@@ -44,18 +44,18 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
     return (
         <div className={rowClasses}>
             {/* Colonne Date */}
-            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-r border-border/80 px-1 py-1.5 select-none">
+            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-e border-border/80 px-1 py-1.5 select-none">
                 <input
                     type="date"
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="bg-transparent text-muted-foreground text-[11px] max-sm:portrait:text-[8.8px] font-semibold rounded-md border border-dashed border-border px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-300 hover:border-zinc-400 cursor-pointer text-center w-full max-w-[100px] font-mono"
+                    className="editor-type-separator-date bg-transparent text-muted-foreground font-semibold rounded-md border border-dashed border-border px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-300 hover:border-zinc-400 cursor-pointer text-center w-full max-w-[100px] font-mono"
                     title={t('separator.editDate')}
                 />
             </div>
 
             {/* Colonne Contenu, le "signature moment" : un jalon net entre deux périodes */}
-            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-r border-border/80 px-4 py-2.5">
+            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-e border-border/80 px-4 py-2.5">
                 <div className="flex-grow border-t border-dashed border-border" />
 
                 <div
@@ -64,7 +64,7 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="relative text-center text-[10px] max-sm:portrait:text-[8px] font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted/50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
+                    className="editor-type-separator-label relative text-center font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted/50 border border-border text-muted-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-300 min-w-[120px] max-w-[80%] shadow-xs font-sans"
                     dangerouslySetInnerHTML={{ __html: data.content || '' }}
                 />
 

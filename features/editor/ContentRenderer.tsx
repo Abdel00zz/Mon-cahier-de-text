@@ -180,7 +180,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = item.title || config.name;
       return (
         <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="my-3 flex w-full items-center justify-center text-center font-sans text-xl sm:text-2xl font-bold tracking-tight leading-snug select-none">
+          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
             <span className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
@@ -197,7 +197,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`text-[14.5px] max-sm:portrait:text-[11.6px] sm:text-base font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div className={`editor-type-top font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <HighlightedText text={item.title} query={highlight} />
         </div>
       </MaybeMathJax>
@@ -209,7 +209,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[13.5px] max-sm:portrait:text-[10.8px] sm:text-base font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-section font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -218,7 +218,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[12px] max-sm:portrait:text-[9.6px] sm:text-sm font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsection font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -228,7 +228,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
-            <div className="text-[11px] max-sm:portrait:text-[8.8px] sm:text-sm italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsubsection italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -261,25 +261,25 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const content = (
-        <div className="editor-table-content font-editor-system max-w-none space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-[#3c4043] dark:text-[#bdc1c6]">
+        <div className="editor-table-content max-w-none space-y-0.5 sm:space-y-1 text-[#3c4043] dark:text-[#bdc1c6]">
           {/* Titre */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
-            className="min-w-0 truncate whitespace-nowrap p-0 text-[11.7px] font-semibold leading-[18px] text-[#202124] dark:text-[#e8eaed] max-sm:portrait:text-[10.8px] sm:text-[13px] lg:text-[14.5px] lg:leading-5"
+            className="editor-type-item-title min-w-0 truncate whitespace-nowrap p-0 font-semibold text-[#202124] dark:text-[#e8eaed]"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
           {/* Description : encadré sobre sous le titre avec branchement */}
           {allowDescription && (
-            <div className="mt-1.5 ms-3 sm:ms-4 lg:ms-[18px] border-l-[2px] border-border/70 bg-muted/10 pl-2 sm:pl-2.5 lg:pl-3 py-1 sm:py-1.5 text-[11.5px] max-sm:portrait:text-[9.2px] sm:text-[13px] leading-snug text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
+            <div className="editor-item-description editor-type-description mt-1.5 border-s-[2px] border-border/70 bg-muted/10 py-1 sm:py-1.5 text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
 
           {/* Info page */}
           {item.page && (
-            <div className="flex items-center gap-1 text-[10px] max-sm:portrait:text-[8px] sm:text-xs text-[#3c4043]/80 dark:text-[#bdc1c6] italic">
+            <div className="editor-type-page flex items-center gap-1 text-[#3c4043]/80 dark:text-[#bdc1c6] italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>
@@ -296,10 +296,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       return (
-        <div className="editor-table-content font-editor-system flex min-w-0 items-center gap-1.5 py-1 transition-colors duration-150 hover:bg-[#f8f9fa] dark:hover:bg-white/[0.04] sm:gap-2 sm:ps-2 lg:gap-2.5 lg:ps-4">
+        <div className="editor-lesson-row editor-table-content font-editor-system flex min-w-0 items-center py-1 transition-colors duration-150 hover:bg-[#f8f9fa] dark:hover:bg-white/[0.04]">
           <Badge
             variant="outline"
-            className={`inline-flex min-w-[27px] shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[3px] border-0 px-0.5 py-0 text-[8px] font-bold uppercase leading-tight tracking-normal transition-colors duration-150 cursor-default max-sm:portrait:min-w-[22px] max-sm:portrait:px-px max-sm:portrait:text-[7px] sm:min-w-[32px] sm:px-1 sm:text-[8.5px] lg:min-w-[35px] lg:px-1 lg:py-px lg:text-[9px] lg:tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[3px] border-0 py-0 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default lg:py-px lg:tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >

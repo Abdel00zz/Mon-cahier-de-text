@@ -555,6 +555,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  [data-content-direction="rtl"] .font-editor-system {
+    font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif) !important;
+  }
+
   .editor-table-content {
     color: #202124;
   }
@@ -627,6 +631,157 @@
 
   button, a, input, select, textarea, [role="button"] {
     touch-action: manipulation;
+  }
+}
+
+/* ── Échelle typographique du tableau de l’éditeur ───────────────────────
+   Les composants utilisent des rôles sémantiques plutôt que des tailles
+   dispersées. Les mêmes valeurs téléphone sont conservées à la rotation :
+   le paysage gagne en largeur sans faire regrossir brutalement le texte. */
+@layer components {
+  [data-editor-table] {
+    --editor-fs-chapter: 20px;
+    --editor-fs-top: 14.5px;
+    --editor-fs-section: 13.5px;
+    --editor-fs-subsection: 12px;
+    --editor-fs-subsubsection: 11px;
+    --editor-fs-item-title: 11.7px;
+    --editor-fs-description: 11.5px;
+    --editor-fs-page: 10px;
+    --editor-fs-badge: 8px;
+    --editor-fs-date-day: 16px;
+    --editor-fs-date-meta: 8px;
+    --editor-fs-date-pair: 12px;
+    --editor-fs-date-ampersand: 11px;
+    --editor-fs-table-side: 9px;
+    --editor-fs-table-main: 10px;
+    --editor-fs-remark: 10px;
+    --editor-fs-separator-date: 11px;
+    --editor-fs-separator-label: 10px;
+    --editor-badge-min-width: 27px;
+    --editor-badge-padding-inline: 2px;
+    --editor-lesson-gap: 6px;
+    --editor-lesson-indent: 0px;
+    --editor-description-indent: 12px;
+    --editor-description-padding: 8px;
+  }
+
+  .editor-type-chapter { font-size: var(--editor-fs-chapter); line-height: 1.25; }
+  .editor-type-top { font-size: var(--editor-fs-top); line-height: 1.3; }
+  .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
+  .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
+  .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); line-height: 1.35; }
+  .editor-type-item-title { font-size: var(--editor-fs-item-title); line-height: 1.35; }
+  .editor-type-description { font-size: var(--editor-fs-description); line-height: 1.45; }
+  .editor-type-page { font-size: var(--editor-fs-page); line-height: 1.25; }
+  .editor-type-badge {
+    font-size: var(--editor-fs-badge) !important;
+    line-height: 1.1 !important;
+  }
+  .editor-type-date-day { font-size: var(--editor-fs-date-day); line-height: 1; }
+  .editor-type-date-meta { font-size: var(--editor-fs-date-meta); line-height: 1.15; }
+  .editor-type-date-pair { font-size: var(--editor-fs-date-pair); line-height: 1.15; }
+  .editor-type-date-ampersand { font-size: var(--editor-fs-date-ampersand); line-height: 1; }
+  .editor-type-table-side { font-size: var(--editor-fs-table-side); line-height: 1.2; }
+  .editor-type-table-main { font-size: var(--editor-fs-table-main); line-height: 1.2; }
+  .editor-type-remark { font-size: var(--editor-fs-remark); line-height: 1.35; }
+  .editor-type-separator-date { font-size: var(--editor-fs-separator-date); line-height: 1.2; }
+  .editor-type-separator-label { font-size: var(--editor-fs-separator-label); line-height: 1.2; }
+
+  .editor-kind-badge {
+    min-width: var(--editor-badge-min-width) !important;
+    padding-inline: var(--editor-badge-padding-inline) !important;
+  }
+
+  .editor-lesson-row {
+    gap: var(--editor-lesson-gap);
+    padding-inline-start: var(--editor-lesson-indent);
+  }
+
+  .editor-item-description {
+    margin-inline-start: var(--editor-description-indent);
+    padding-inline-start: var(--editor-description-padding);
+  }
+
+  [data-editor-table][dir="rtl"] .editor-type-item-title,
+  [data-editor-table][dir="rtl"] .editor-type-description {
+    line-height: 1.5;
+  }
+
+  @media (min-width: 640px) {
+    [data-editor-table] {
+      --editor-fs-chapter: 24px;
+      --editor-fs-top: 16px;
+      --editor-fs-section: 16px;
+      --editor-fs-subsection: 14px;
+      --editor-fs-subsubsection: 14px;
+      --editor-fs-item-title: 13px;
+      --editor-fs-description: 13px;
+      --editor-fs-page: 12px;
+      --editor-fs-badge: 8.5px;
+      --editor-fs-date-day: 18px;
+      --editor-fs-date-meta: 9px;
+      --editor-fs-date-pair: 14px;
+      --editor-fs-date-ampersand: 12px;
+      --editor-fs-table-side: 10px;
+      --editor-fs-table-main: 11px;
+      --editor-fs-remark: 11px;
+      --editor-badge-min-width: 30px;
+      --editor-badge-padding-inline: 4px;
+      --editor-lesson-gap: 8px;
+      --editor-lesson-indent: 8px;
+      --editor-description-indent: 14px;
+      --editor-description-padding: 10px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    [data-editor-table] {
+      --editor-fs-item-title: 14.5px;
+      --editor-fs-badge: 9px;
+      --editor-badge-min-width: 32px;
+      --editor-lesson-gap: 10px;
+      --editor-lesson-indent: 12px;
+      --editor-description-indent: 16px;
+      --editor-description-padding: 12px;
+    }
+  }
+
+  @media (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
+         (pointer: coarse) and (max-width: 960px) and (max-height: 540px) and (orientation: landscape) {
+    [data-editor-table] {
+      --editor-fs-chapter: 18px;
+      --editor-fs-top: 11.75px;
+      --editor-fs-section: 11px;
+      --editor-fs-subsection: 9.75px;
+      --editor-fs-subsubsection: 9px;
+      --editor-fs-item-title: 10px;
+      --editor-fs-description: 9.25px;
+      --editor-fs-page: 8px;
+      --editor-fs-badge: 7px;
+      --editor-fs-date-day: 13px;
+      --editor-fs-date-meta: 7px;
+      --editor-fs-date-pair: 10px;
+      --editor-fs-date-ampersand: 9px;
+      --editor-fs-table-side: 7.5px;
+      --editor-fs-table-main: 8.25px;
+      --editor-fs-remark: 8px;
+      --editor-fs-separator-date: 10px;
+      --editor-fs-separator-label: 8.5px;
+      --editor-badge-min-width: 22px;
+      --editor-badge-padding-inline: 1px;
+      --editor-lesson-gap: 5px;
+      --editor-lesson-indent: 0px;
+      --editor-description-indent: 8px;
+      --editor-description-padding: 6px;
+    }
+
+    /* Empêche le zoom automatique d’iOS pendant l’édition, sans agrandir
+       l’affichage passif du tableau. */
+    .editor-type-separator-date:focus,
+    .editor-type-separator-label:focus {
+      font-size: 16px;
+    }
   }
 }
 

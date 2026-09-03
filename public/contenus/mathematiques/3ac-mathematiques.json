@@ -1,17 +1,20 @@
 {
-  "_commentaire": "Squelette MINIMAL du programme officiel, 3AC Mathématiques (Maroc).",
+  "_commentaire": "Programme officiel conforme aux orientations pédagogiques et à la répartition annuelle 2026-2027, 3AC Mathématiques (Maroc / APIC).",
   "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Développement et factorisation, identités remarquables", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 2 : Les racines carrées", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 3 : Théorème de Thalès", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 4 : Trigonométrie du triangle rectangle", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 5 : Équations et inéquations du premier degré", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 6 : Systèmes de deux équations à deux inconnues", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 7 : Fonctions linéaires et fonctions affines", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 8 : Repère dans le plan", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 9 : Équation d'une droite", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 10 : Vecteurs et translation", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 11 : Statistiques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 12 : Géométrie dans l'espace", "sections": [] }
+    { "type": "chapter", "title": "Chapitre 1 : Les racines carrées", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 2 : Identités remarquables, développement et puissances", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 3 : Ordre et opérations", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 4 : Théorème de Thalès", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 5 : Théorème de Pythagore", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 6 : Trigonométrie et angles au centre et inscrits", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 7 : Triangles isométriques et triangles semblables", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 8 : Équations et inéquations du premier degré à une inconnue", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 9 : Vecteurs et translation", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 10 : Le repère dans le plan", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 11 : Équation d'une droite", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 12 : Systèmes de deux équations à deux inconnues", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 13 : Fonctions linéaires et fonctions affines", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 14 : Statistiques", "sections": [] },
+    { "type": "chapter", "title": "Chapitre 15 : Géométrie dans l'espace", "sections": [] }
   ]
 }

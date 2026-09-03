@@ -21,8 +21,6 @@ interface TableRowProps {
   /** terme de recherche actif, surligné dans les titres/remarques */
   searchQuery?: string;
   getDateWarnings?: (date: string) => { type: string; message: string }[];
-  /** Identité de surface du niveau de la classe, réservée aux chapitres. */
-  chapterSurfaceClass?: string;
 }
 
 export interface DateMergeMeta {
@@ -108,13 +106,13 @@ export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-150 py-0.5">
       <span
-        className={`font-mono text-base max-sm:portrait:text-[12.8px] sm:text-lg font-black tracking-tight tabular-nums transition-colors ${
+        className={`editor-type-date-day font-mono font-black tracking-tight tabular-nums transition-colors ${
           hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
         }`}
       >
         {parsed.day}
       </span>
-      <span className={`mt-0.5 font-mono text-[8px] max-sm:portrait:text-[6.4px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
+      <span className={`editor-type-date-meta mt-0.5 font-mono font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
         {parsed.month} {parsed.year.slice(2)}
       </span>
       {!hasWarning && parsed.isToday && <span className="mt-0.5 h-1 w-1 rounded-full bg-primary" aria-hidden />}
@@ -136,13 +134,13 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none leading-tight animate-in fade-in duration-150 py-0.5">
-      <div className="flex items-center gap-1 font-mono text-[12px] max-sm:portrait:text-[9.6px] sm:text-sm font-black tracking-tight tabular-nums text-foreground">
+      <div className="editor-type-date-pair flex items-center gap-1 font-mono font-black tracking-tight tabular-nums text-foreground">
         <span className={hasWarning ? 'text-destructive' : first.isToday ? 'text-primary' : 'text-foreground'}>{first.day}</span>
-        <span className={`text-[11px] max-sm:portrait:text-[8.8px] sm:text-xs font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
+        <span className={`editor-type-date-ampersand font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
         <span className={hasWarning ? 'text-destructive' : last.isToday ? 'text-primary' : 'text-foreground'}>{last.day}</span>
       </div>
       <div className="mt-0.5 flex items-center">
-        <span className={`font-mono text-[7.5px] max-sm:portrait:text-[6px] sm:text-[9px] font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
+        <span className={`editor-type-date-meta font-mono font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
           {sameMonthYear ? `${first.month} ${first.year.slice(2)}` : `${first.month}/${last.month}`}
         </span>
       </div>
@@ -211,7 +209,7 @@ const RemarkCell: FC<{
       <div className={`relative flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
         {isMiddle && (
           <div className="relative z-10 h-full flex flex-col justify-center w-full">
-            <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
+            <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
           </div>
         )}
       </div>
@@ -220,7 +218,7 @@ const RemarkCell: FC<{
 
   return (
     <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div className="h-full w-full whitespace-pre-wrap break-words p-0.5 text-[10px] max-sm:portrait:text-[8px] font-semibold text-muted-foreground sm:text-[11px]">{value}</div>
+      <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
     </div>
   );
 });
@@ -240,7 +238,6 @@ const TableRowComponent: FC<TableRowProps> = ({
   descriptionTypes = [],
   searchQuery,
   getDateWarnings,
-  chapterSurfaceClass,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
 
@@ -348,7 +345,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${elementType === 'chapter' ? `m-1 rounded-[14px] border shadow-[0_6px_16px_rgba(15,23,42,0.035)] ${chapterSurfaceClass ?? 'border-border bg-card'}` : ''} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -361,9 +358,9 @@ const TableRowComponent: FC<TableRowProps> = ({
         }}
       >
         <div className="min-w-0 w-full">
-          <div className={`flex w-full items-center justify-center ${elementType === 'chapter' ? 'min-h-[4rem]' : 'py-1'}`}>
+          <div className="flex w-full items-center justify-center py-1">
             <MathText source={item.title} cacheKey={`row-title-${item.type}-${item.title}`} inline>
-              <span className={`break-words text-[14.5px] max-sm:portrait:text-[11.6px] font-extrabold tracking-tight sm:text-base ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
+              <span className={`editor-type-top break-words font-extrabold tracking-tight ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
             </MathText>
           </div>
         </div>
@@ -476,8 +473,6 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
   if (prev.searchQuery !== next.searchQuery) return false;
   if (prev.layout !== next.layout) return false;
   if (prev.lineClassOverride !== next.lineClassOverride) return false;
-  if (prev.chapterSurfaceClass !== next.chapterSurfaceClass) return false;
-
   const pIdx = prev.indices;
   const nIdx = next.indices;
   if (

@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
-import { useForceLandscape } from '@/hooks/useForceLandscape';
+import { OrientationNudge } from './OrientationNudge';
 import { EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Plus } from '@/components/ui/icons';
@@ -38,7 +38,6 @@ import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
-import { getClassVisual } from '@/utils/classVisuals';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
@@ -98,7 +97,6 @@ const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
   const [workspaceIsActive] = useState(() => captureWorkspaceLease());
-  useForceLandscape();
   const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
@@ -159,8 +157,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     printTextSize,
     printLineSpacing,
   } = editorState;
-  const chapterSurfaceClass = useMemo(() => getClassVisual(classInfo.name).chapterSurfaceClass, [classInfo.name]);
-
   // Les événements pagehide/démontage doivent toujours voir le dernier rendu,
   // sans dépendre du délai d'autosauvegarde de 1,5 seconde.
   lessonsDataRef.current = lessonsData;
@@ -1113,7 +1109,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
               onLoadPredefined={predefinedOffer ? handleLoadPredefined : undefined}
-              chapterSurfaceClass={chapterSurfaceClass}
             />
           </main>
         </div>
@@ -1122,6 +1117,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} contentDirection={contentDirection} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
         )}
       </div>
+
+      <OrientationNudge
+        suppressed={Boolean(
+          activeModal
+          || pendingDateCommit
+          || showTimetableNudge
+          || confirmBulkDelete
+          || selectedCount > 0
+          || isPrinting
+          || lessonsData.length === 0
+        )}
+      />
 
       {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}
       {!activeModal && selectedCount === 0 && (
