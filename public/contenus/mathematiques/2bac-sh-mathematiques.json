@@ -1,0 +1,597 @@
+[
+  {
+    "chapter": "Suites numériques récurrentes",
+    "sections": [
+      {
+        "name": "Rappels sur les suites arithmétiques et géométriques",
+        "subsections": [
+          {
+            "name": "Suites arithmétiques",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité d'étude de la suite arithmétique $u_n=5n-2$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition d'une suite arithmétique de raison $r$: $u_{n+1}=u_n+r$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Terme général d'une suite arithmétique $u_n=u_p+(n-p)r$"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Somme de termes consécutifs $u_p+\\cdots+u_n=\\frac{n-p+1}{2}(u_p+u_n)$"
+              }
+            ]
+          },
+          {
+            "name": "Suites géométriques",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité d'étude de la suite géométrique $v_n=3\\times 2^n$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition d'une suite géométrique de raison $q$: $u_{n+1}=q\\cdot u_n$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Terme général d'une suite géométrique $u_n=u_p\\cdot q^{n-p}$"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Somme de termes consécutifs géométriques $u_p\\frac{1-q^{n-p+1}}{1-q}$ ($q\\neq 1$)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Suites récurrentes affines",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une suite récurrente linéaire $u_{n+1}=a u_n + b$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul des premiers termes d'une suite récurrente affine"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Étude du comportement d'une suite récurrente selon $u_0$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Utilisation d'une suite géométrique auxiliaire $v_n=u_n+1$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Détermination du terme général $u_n$ par suite auxiliaire"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Calcul de la somme des termes d'une suite récurrente"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Limites des suites numériques",
+    "sections": [
+      {
+        "name": "Limites des suites de référence",
+        "subsections": [
+          {
+            "name": "Limites infinies des suites usuelles",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité sur le comportement asymptotique de $n^2$ et $\\frac{1}{n}$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Limites infinies fondamentales $\\lim n^p=+\\infty$ et $\\lim \\sqrt{n}=+\\infty$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Limite du produit d'une suite infinie par une constante"
+              },
+              {
+                "type": "application",
+                "number": 4,
+                "title": "Calculer la limite de suites multipliées par un scalaire"
+              }
+            ]
+          },
+          {
+            "name": "Limites finies des suites usuelles",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Limites finies fondamentales $\\lim \\frac{1}{n^p}=0$ et $\\lim \\frac{1}{\\sqrt{n}}=0$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Caractérisation d'une limite finie $\\lim u_n=l \\iff \\lim(u_n-l)=0$"
+              },
+              {
+                "type": "application",
+                "number": 3,
+                "title": "Calculer la limite finie de sommes et quotients usuels"
+              }
+            ]
+          },
+          {
+            "name": "Convergence et divergence d'une suite",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une suite convergente et d'une suite divergente"
+              },
+              {
+                "type": "application",
+                "number": 2,
+                "title": "Étudier la convergence ou divergence de suites usuelles"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Limites des suites polynomiales et rationnelles",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Règle du monôme de plus haut degré pour les suites"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calculs de limites de suites polynomiales et fractions rationnelles"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer les limites en l'infini de suites rationnelles"
+          }
+        ]
+      },
+      {
+        "name": "Limite de la suite géométrique $q^n$",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Théorème des limites de la suite géométrique $q^n$ selon $q$"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Calculer la limite de suites géométriques selon la raison"
+          }
+        ]
+      },
+      {
+        "name": "Opérations sur les limites de suites",
+        "items": [
+          {
+            "type": "rule",
+            "number": 1,
+            "title": "Tableaux des opérations sur sommes, produits et quotients de suites"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Calculer la limite de suites combinées avec formes indéterminées"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Dénombrement et probabilités",
+    "sections": [
+      {
+        "name": "Outils fondamentaux du dénombrement",
+        "subsections": [
+          {
+            "name": "Cardinal d'un ensemble fini et principe multiplicatif",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition du cardinal d'un ensemble fini $\\text{Card}(E)$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Principe multiplicatif du dénombrement $n_1\\times n_2\\times\\cdots\\times n_p$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calcul du nombre de codes et numéros par produit"
+              }
+            ]
+          },
+          {
+            "name": "Arrangements avec et sans répétition",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition des arrangements avec répétition $n^p$ et sans répétition"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Formule des arrangements sans répétition $A_n^p=\\frac{n!}{(n-p)!}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calcul du nombre de tiercés et de mots ordonnés"
+              }
+            ]
+          },
+          {
+            "name": "Permutations d'un ensemble fini",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une permutation d'un ensemble à $n$ éléments"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Formule du nombre de permutations par factorielle $n!$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calcul du nombre d'ordonnancements et rangements distincts"
+              }
+            ]
+          },
+          {
+            "name": "Combinaisons et typologie des tirages",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une combinaison de $p$ éléments parmi $n$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Formule du nombre de combinaisons $C_n^p=\\frac{n!}{p!(n-p)!}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calculs de combinaisons pour comités, loto et cartes"
+              },
+              {
+                "type": "rule",
+                "number": 4,
+                "title": "Tableau comparatif des tirages simultané $C_n^p$, sans remise $A_n^p$, avec $n^p$"
+              },
+              {
+                "type": "example",
+                "number": 5,
+                "title": "Calculs combinatoires de tirages de boules dans une urne"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Calcul des probabilités",
+        "subsections": [
+          {
+            "name": "Vocabulaire des événements et probabilité",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité sur le lancer d'un dé et stabilisation des fréquences"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Expérience aléatoire, univers $\\Omega$ et éventualités"
+              },
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Événements élémentaire, certain $\\Omega$, impossible $\\emptyset$, contraire $\\overline{A}$ et incompatibles"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Exemples d'identification des événements sur dés, pièces et urnes"
+              },
+              {
+                "type": "definition",
+                "number": 5,
+                "title": "Définition axiomatique de la probabilité $p(A)=\\sum p(\\omega_i)$"
+              },
+              {
+                "type": "property",
+                "number": 6,
+                "title": "Propriétés $p(\\overline{A})=1-p(A)$ et $p(A\\cup B)=p(A)+p(B)-p(A\\cap B)$"
+              }
+            ]
+          },
+          {
+            "name": "Hypothèse d'équiprobabilité",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition de l'équiprobabilité sur un univers fini $\\Omega$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Formule fondamentale d'équiprobabilité $p(A)=\\frac{\\text{Card}(A)}{\\text{Card}(\\Omega)}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calcul de probabilités de tirages simultanés dans une urne"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Calcul de probabilités de tirages successifs sans remise"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Dérivation et étude de fonctions",
+    "sections": [
+      {
+        "name": "Dérivabilité en un point et tangente",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition du nombre dérivé $f'(a)=\\lim_{x\\to a}\\frac{f(x)-f(a)}{x-a}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Équation cartésienne de la tangente $(T): y=f'(a)(x-a)+f(a)$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Démontrer la dérivabilité en $1$ et déterminer la tangente"
+          }
+        ]
+      },
+      {
+        "name": "Dérivées des fonctions usuelles et opérations",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Tableau des dérivées des fonctions élémentaires usuelles"
+          },
+          {
+            "type": "rule",
+            "number": 2,
+            "title": "Règles de dérivation pour $u+v, ku, uv, u^n, \\frac{u}{v}, \\frac{1}{v}$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer la fonction dérivée de polynômes et fractions rationnelles"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Calculer la dérivée de produits et quotients de fonctions"
+          }
+        ]
+      },
+      {
+        "name": "Sens de variations et extremums d'une fonction",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de lecture graphique des variations et extremums"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Théorème liant le signe de $f'(x)$ et la monotonie"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Condition d'extremum local par annulation avec changement de signe"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Dresser le tableau de variations complet de fonctions dérivables"
+          }
+        ]
+      },
+      {
+        "name": "Limites de fonctions et asymptotes",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Limites des fonctions polynômes et rationnelles en $\\pm\\infty$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calculs de limites de fonctions en l'infini et en un point"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer les limites de fonctions polynômes et rationnelles"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Définition de l'asymptote verticale $x=a$ et horizontale $y=b$"
+          }
+        ]
+      },
+      {
+        "name": "Résolution graphique d'équations et inéquations",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Interprétation graphique des solutions de $f(x)=k$ et $f(x)\\le k$"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Résoudre graphiquement des équations et inéquations sur courbe"
+          }
+        ]
+      },
+      {
+        "name": "Étude et représentation de la fonction $x \\mapsto \\sqrt{ax+b}$",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Étude du domaine, dérivée $f'(x)=\\frac{a}{2\\sqrt{ax+b}}$ et variations"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Allure de la courbe représentative selon le signe de $a$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Fonction logarithme népérien et logarithme décimal",
+    "sections": [
+      {
+        "name": "Définition et propriétés algébriques du logarithme népérien",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la fonction $\\ln$ par $\\ln(1)=0$ et $(\\ln x)'=\\frac{1}{x}$"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Calcul de valeurs approchées de logarithmes à la calculatrice"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Propriétés algébriques fondamentales $\\ln(xy), \\ln\\left(\\frac{1}{x}\\right), \\ln\\left(\\frac{x}{y}\\right), \\ln(x^n)$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Exprimer des logarithmes en fonction de $\\ln 2$ et $\\ln 3$"
+          },
+          {
+            "type": "definition",
+            "number": 5,
+            "title": "Nombre $e$ vérifiant $\\ln(e)=1$ et relation $\\ln(e^n)=n$"
+          }
+        ]
+      },
+      {
+        "name": "Étude de la fonction logarithme népérien",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Limites fondamentales $\\lim_{x\\to 0^+} \\ln x=-\\infty$ et $\\lim_{x\\to+\\infty} \\ln x=+\\infty$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Tableau de variations et stricte croissance de $\\ln$ sur $\\mathbb{R}_+^*$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Courbe représentative, propriétés d'ordre et signe de $\\ln x$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Résoudre des équations et inéquations comportant la fonction $\\ln$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Résolution d'équations logarithmiques avec recherche du domaine d'existence"
+          }
+        ]
+      },
+      {
+        "name": "Fonction logarithme décimal",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition du logarithme décimal $\\log(x)=\\frac{\\ln x}{\\ln 10}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés algébriques et valeurs remarquables $\\log(10^n)=n$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Simplifier des expressions numériques avec le logarithme décimal"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -39,10 +39,22 @@
       "fichier": "1bac-sm-mathematiques.json"
     },
     {
-      "niveau": "2ème Bac Sciences Mathématiques",
+      "niveau": "2ème Bac Sciences Mathématiques A",
       "matiere": "Mathématiques",
-      "titre": "Programme officiel, 2ème Bac Sciences Mathématiques Mathématiques",
+      "titre": "Programme officiel, 2ème Bac Sciences Mathématiques A · Mathématiques",
       "fichier": "2bac-sm-mathematiques.json"
+    },
+    {
+      "niveau": "2ème Bac Sciences Mathématiques B",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel, 2ème Bac Sciences Mathématiques B · Mathématiques",
+      "fichier": "2bac-sm-mathematiques.json"
+    },
+    {
+      "niveau": "2ème Bac Sciences Humaines",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel, 2ème Bac Sciences Humaines · Mathématiques",
+      "fichier": "2bac-sh-mathematiques.json"
     },
     {
       "niveau": "2ème Bac Sciences Physiques",

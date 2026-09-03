@@ -1,16 +1,2247 @@
-{
-  "_commentaire": "Squelette MINIMAL du programme officiel, 1BAC Sciences Expérimentales · Mathématiques (Maroc).",
-  "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Notions de logique", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 2 : Généralités sur les fonctions", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 3 : Le barycentre dans le plan", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 4 : Étude analytique du produit scalaire et applications", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 5 : Trigonométrie", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 6 : La rotation dans le plan", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 7 : Limites d'une fonction", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 8 : La dérivation", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 9 : Étude et représentation graphique des fonctions", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 10 : Les suites numériques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 11 : Dénombrement", "sections": [] }
-  ]
-}
+[
+  {
+    "chapter": "Notions de logique",
+    "sections": [
+      {
+        "name": "Proposition, fonction propositionnelle et quantificateurs",
+        "subsections": [
+          {
+            "name": "Propositions et valeurs de vérité",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Définition d'une proposition et fonction propositionnelle $P(x)$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Valeurs de vérité Vraie ou Fausse et table de vérité"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Détermination de la valeur de vérité de propositions usuelles"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Identification d'énoncés mathématiques et fonctions propositionnelles"
+              }
+            ]
+          },
+          {
+            "name": "Quantificateurs logique universel et existentiel",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité de quantification sur l'inéquation $x^2-x-6<0$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Quantificateur universel $\\forall$, existentiel $\\exists$ et d'unicité $\\exists!$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Lecture et vérité de propositions quantifiées"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Écriture formelle de propositions avec quantificateurs logiques"
+              },
+              {
+                "type": "remark",
+                "number": 5,
+                "title": "Règles de permutation des quantificateurs de même nature"
+              },
+              {
+                "type": "example",
+                "number": 6,
+                "title": "Étude de la valeur de vérité de propositions à deux quantificateurs"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Négation d'une proposition",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Négation logique $\\overline{P}$ d'une proposition $P$"
+          },
+          {
+            "type": "rule",
+            "number": 2,
+            "title": "Négation des symboles mathématiques et des quantificateurs"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Négation de $(\\forall x \\in E) P(x)$ et $(\\exists x \\in E) P(x)$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Détermination de la négation de propositions quantifiées"
+          }
+        ]
+      },
+      {
+        "name": "Opérations logiques sur les propositions",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Conjonction $P \\wedge Q$ et disjonction $P \\vee Q$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Implication logique $P \\implies Q$ et condition suffisante"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Équivalence logique $P \\iff Q$ et condition nécessaire"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Valeur de vérité d'implications et d'équivalences logiques"
+          },
+          {
+            "type": "remark",
+            "number": 5,
+            "title": "Implication réciproque $Q \\implies P$ et non-commutativité"
+          }
+        ]
+      },
+      {
+        "name": "Lois logiques fondamentales",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Vérification par table de la tautologie $P \\implies (Q \\implies P)$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition d'une loi logique ou tautologie"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Démonstration par table de vérité d'une distributivité"
+          },
+          {
+            "type": "rule",
+            "number": 4,
+            "title": "Lois de Morgan $\\overline{P \\wedge Q} \\iff \\overline{P} \\vee \\overline{Q}$"
+          },
+          {
+            "type": "rule",
+            "number": 5,
+            "title": "Négation de l'implication $\\overline{P \\implies Q} \\iff P \\wedge \\overline{Q}$"
+          },
+          {
+            "type": "rule",
+            "number": 6,
+            "title": "Négation de l'équivalence $\\overline{P \\iff Q} \\iff \\overline{P} \\iff Q$"
+          },
+          {
+            "type": "example",
+            "number": 7,
+            "title": "Négation d'énoncés complexes avec connecteurs logiques"
+          },
+          {
+            "type": "property",
+            "number": 8,
+            "title": "Propriétés de commutativité, associativité et distributivité logiques"
+          }
+        ]
+      },
+      {
+        "name": "Modes de raisonnements mathématiques",
+        "subsections": [
+          {
+            "name": "Raisonnement par contre-exemple",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Réfutation d'une proposition universelle par contre-exemple"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Application du contre-exemple sur des assertions universelles"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement direct ou déductif",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Démonstration d'une implication par déductions successives"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Preuve directe de $|x| \\le 2 \\implies |3x+1| \\le 7$"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement par contraposée",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Principe de la contraposée $(P \\implies Q) \\iff (\\overline{Q} \\implies \\overline{P})$"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Démontrer que $n^2$ pair implique $n$ pair"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement par équivalences successives",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Démonstration par chaîne d'équivalences logiques"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Preuve par équivalences de l'inégalité $\\frac{x}{y}+\\frac{y}{x} \\ge 2$"
+              },
+              {
+                "type": "method",
+                "number": 3,
+                "title": "Raisonnement par double implication pour l'équivalence"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Preuve par double implication de $x^2+y^2=0 \\iff x=0 \\text{ et } y=0$"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement par disjonction des cas",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Démonstration par disjonction selon les cas de la variable"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Preuve de $x^2-x+1 \\ge |x-1|$ par disjonction"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement par l'absurde",
+            "items": [
+              {
+                "type": "method",
+                "number": 1,
+                "title": "Principe de la démonstration par l'absurde"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Démonstration de l'irrationalité de $\\sqrt{2} \\notin \\mathbb{Q}$"
+              }
+            ]
+          },
+          {
+            "name": "Raisonnement par récurrence",
+            "items": [
+              {
+                "type": "theorem",
+                "number": 1,
+                "title": "Principe de récurrence par initialisation et hérédité"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Preuve par récurrence de $\\sum_{k=1}^n k = \\frac{n(n+1)}{2}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Preuve par récurrence de l'inégalité de Bernoulli $(1+a)^n \\ge 1+na$"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Fonctions numériques",
+    "sections": [
+      {
+        "name": "Ensemble de définition d'une fonction numérique",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Ensemble de définition $D_f$ d'une fonction numérique"
+          },
+          {
+            "type": "rule",
+            "number": 2,
+            "title": "Conditions d'existence des fonctions rationnelles et irrationnelles"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Détermination de domaines de définition de fonctions usuelles"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Condition d'égalité de deux fonctions $D_f=D_g$ et $f(x)=g(x)$"
+          },
+          {
+            "type": "definition",
+            "number": 5,
+            "title": "Courbe représentative $(C_f)$ et intersections avec les axes"
+          }
+        ]
+      },
+      {
+        "name": "Parité et éléments de symétrie",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Domaine symétrique et définition d'une fonction paire"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Vérification de la symétrie par rapport à zéro d'ensembles"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Définition d'une fonction impaire et interprétation géométrique"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Étude algébrique de la parité de fonctions numériques"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Symétrie axiale par rapport à $(Oy)$ et centrale par rapport à $O$"
+          }
+        ]
+      },
+      {
+        "name": "Variations et monotonie d'une fonction",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la croissance, décroissance et constance"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Taux de variation $T(x;y)=\\frac{f(x)-f(y)}{x-y}$ et sens de variation"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Variations des fonctions paires et impaires sur domaines symétriques"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Étude complète des variations par le taux de variation"
+          }
+        ]
+      },
+      {
+        "name": "Fonction majorée, minorée, bornée et extremums",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur la majoration et minoration d'une fonction"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Fonction majorée par $M$, minorée par $m$ et bornée"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Démontrer la majoration et minoration d'une fonction"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Maximum et minimum absolus ou locaux d'une fonction"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Caractérisation d'un extremum $M=f(a)$ atteint sur $I$"
+          }
+        ]
+      },
+      {
+        "name": "Étude de la fonction trinôme $x \\mapsto ax^2+bx+c$",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité d'étude de la fonction $f(x)=-x^2+2x+3$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Parabole de sommet $\\Omega\\left(-\\frac{b}{2a};f\\left(-\\frac{b}{2a}\\right)\\right)$ et axe $x=-\\frac{b}{2a}$"
+          }
+        ]
+      },
+      {
+        "name": "Étude de la fonction homographique $x \\mapsto \\frac{ax+b}{cx+d}$",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité d'étude de la fonction $g(x)=\\frac{x+7}{x+1}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Hyperbole de centre $\\Omega\\left(-\\frac{d}{c};\\frac{a}{c}\\right)$ et d'asymptotes $x=-\\frac{d}{c}, y=\\frac{a}{c}$"
+          }
+        ]
+      },
+      {
+        "name": "Résolution graphique et algébrique des équations et inéquations",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de résolution graphique de $f(x)=g(x)$ et $f(x)>g(x)$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Interprétation graphique de $f(x)=m$, $f(x)\\ge m$ et $f(x)=g(x)$"
+          },
+          {
+            "type": "example",
+                "number": 3,
+                "title": "Résolution conjointe algébrique et graphique d'inéquations"
+          }
+        ]
+      },
+      {
+        "name": "Étude des fonctions associées",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur les variations de $\\sqrt{x+3}$ et $-2x^3$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Fonction racine $x \\mapsto \\sqrt{x+a}$ et stricte croissance"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Fonction cube $x \\mapsto ax^3$, parité impaire et variations"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Résolution graphique de l'inéquation $\\sqrt{x+2}+x^3<0$"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Variations des fonctions transformées $f+c$ et $c \\times f$"
+          },
+          {
+            "type": "example",
+            "number": 6,
+            "title": "Dresser les variations de fonctions composées avec scalaires"
+          }
+        ]
+      },
+      {
+        "name": "Image d'un intervalle par une fonction numérique",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de l'image d'un intervalle $f(I)=\\{f(x) \\mid x \\in I\\}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Image d'un intervalle par une fonction continue monotone $f([a;b])=[m;M]$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Détermination graphique et algébrique de l'image d'intervalles"
+          }
+        ]
+      },
+      {
+        "name": "Composition de deux fonctions numériques",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de calcul de valeurs de la composée $g(f(x))$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition de la fonction composée $(g \\circ f)(x)=g(f(x))$"
+          },
+          {
+            "type": "rule",
+            "number": 3,
+            "title": "Ensemble de définition $D_{g \\circ f}=\\{x \\in D_f \\mid f(x) \\in D_g\\}$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Décomposition d'une fonction sous forme de composée"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Sens de variations de la composée $g \\circ f$ de deux fonctions"
+          },
+          {
+            "type": "example",
+            "number": 6,
+            "title": "Étude des variations d'une fonction composée sur des intervalles"
+          }
+        ]
+      },
+      {
+        "name": "Fonction périodique",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de lecture graphique d'une fonction périodique"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition d'une fonction périodique de période $T>0$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Périodes fondamentales des fonctions $\\cos$ ($2\\pi$), $\\sin$ ($2\\pi$) et $\\tan$ ($\\pi$)"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Réduction de l'intervalle d'étude à une période de longueur $T$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Barycentre dans le plan",
+    "sections": [
+      {
+        "name": "Barycentre de deux points pondérés",
+        "subsections": [
+          {
+            "name": "Définition et construction géométrique",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité mécanique du levier d'Archimède et barycentre"
+              },
+              {
+                "type": "activity",
+                "number": 2,
+                "title": "Activité d'existence vectorielle pour $a\\overrightarrow{GA}+b\\overrightarrow{GB}=\\vec{0}$"
+              },
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Définition du barycentre $G=\\text{bar}\\{(A;a);(B;b)\\}$ pour $a+b\\neq 0$"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Relation de construction $\\overrightarrow{AG}=\\frac{b}{a+b}\\overrightarrow{AB}$"
+              },
+              {
+                "type": "example",
+                "number": 5,
+                "title": "Détermination des coefficients $a,b$ associés à un barycentre"
+              },
+              {
+                "type": "application",
+                "number": 6,
+                "title": "Construire géométriquement le barycentre de deux points pondérés"
+              }
+            ]
+          },
+          {
+            "name": "Homogénéité, coordonnées et propriété caractéristique",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Homogénéité $\\text{bar}\\{(A;ka);(B;kb)\\} = \\text{bar}\\{(A;a);(B;b)\\}$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Propriété caractéristique $a\\overrightarrow{MA}+b\\overrightarrow{MB}=(a+b)\\overrightarrow{MG}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Réduction d'une somme vectorielle par propriété caractéristique"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Coordonnées du barycentre $x_G=\\frac{ax_A+bx_B}{a+b}, y_G=\\frac{ay_A+by_B}{a+b}$"
+              },
+              {
+                "type": "application",
+                "number": 5,
+                "title": "Déterminer un ensemble de points $\\|2\\overrightarrow{MA}+3\\overrightarrow{MB}\\|=20$"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Barycentre de trois points pondérés",
+        "subsections": [
+          {
+            "name": "Définition et propriétés fondamentales",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité sur la relation $a\\overrightarrow{GA}+b\\overrightarrow{GB}+c\\overrightarrow{GC}=\\vec{0}$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Barycentre de trois points $G=\\text{bar}\\{(A;a);(B;b);(C;c)\\}$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Formule de construction $\\overrightarrow{AG}=\\frac{b}{a+b+c}\\overrightarrow{AB}+\\frac{c}{a+b+c}\\overrightarrow{AC}$"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Propriété caractéristique $a\\overrightarrow{MA}+b\\overrightarrow{MB}+c\\overrightarrow{MC}=(a+b+c)\\overrightarrow{MG}$"
+              },
+              {
+                "type": "property",
+                "number": 5,
+                "title": "Coordonnées cartésiennes du barycentre de trois points"
+              },
+              {
+                "type": "example",
+                "number": 6,
+                "title": "Calcul vectoriel et analytique du barycentre de trois points"
+              }
+            ]
+          },
+          {
+            "name": "Théorème d'associativité du barycentre",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité d'associativité et concours de droites"
+              },
+              {
+                "type": "theorem",
+                "number": 2,
+                "title": "Associativité $\\text{bar}\\{(A;a);(B;b);(C;c)\\}=\\text{bar}\\{(H;a+b);(C;c)\\}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Preuve de concours de trois droites par associativité"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Barycentre de quatre points pondérés",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition vectorielle du barycentre de quatre points pondérés"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Théorème d'associativité généralisé pour quatre points"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Analytique du produit scalaire dans le plan",
+    "sections": [
+      {
+        "name": "Formule analytique du produit scalaire et norme",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité d'expression analytique du produit scalaire"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Formule analytique $\\vec{u}\\cdot\\vec{v}=xx'+yy'$ et norme $\\|\\vec{u}\\|=\\sqrt{x^2+y^2}$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Distance entre deux points $AB=\\sqrt{(x_B-x_A)^2+(y_B-y_A)^2}$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Formules trigonométriques $\\cos(\\vec{u},\\vec{v})=\\frac{\\vec{u}\\cdot\\vec{v}}{\\|\\vec{u}\\|\\|\\vec{v}\\|}$ et $\\sin(\\vec{u},\\vec{v})=\\frac{\\det(\\vec{u},\\vec{v})}{\\|\\vec{u}\\|\\|\\vec{v}\\|}$"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Aire d'un triangle $S=\\frac{1}{2}|\\det(\\overrightarrow{AB},\\overrightarrow{AC})|$"
+          },
+          {
+            "type": "example",
+            "number": 6,
+            "title": "Calculs de produits scalaires, normes et angles de vecteurs"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Calcul de distance, cosinus, sinus et aire d'un triangle"
+          }
+        ]
+      },
+      {
+        "name": "Vecteur normal et équation cartésienne d'une droite",
+        "items": [
+          {
+            "type": "activity",
+                "number": 1,
+                "title": "Activité sur le vecteur normal et orthogonalité"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Vecteur normal $\\vec{n}(a;b)$ à une droite $ax+by+c=0$"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Équation cartésienne de la droite passant par $A$ de vecteur $\\vec{n}$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Déterminer l'équation d'une droite par son vecteur normal"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Condition de perpendicularité de deux droites $aa'+bb'=0$"
+          },
+          {
+            "type": "example",
+            "number": 6,
+            "title": "Étude de l'orthogonalité de droites par leurs équations"
+          }
+        ]
+      },
+      {
+        "name": "Distance d'un point à une droite",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Démonstration de la distance d'un point à une droite"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Formule de la distance $d(A;(D))=\\frac{|ax_A+by_A+c|}{\\sqrt{a^2+b^2}}$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Calcul direct de la distance d'un point à une droite"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Calculer la distance d'un point à une droite donnée"
+          }
+        ]
+      },
+      {
+        "name": "Équation cartésienne d'un cercle",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur les caractérisations cartésiennes du cercle"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Équation cartésienne canonique $(x-a)^2+(y-b)^2=R^2$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Forme développée $x^2+y^2-2ax-2by+c=0$ avec $c=a^2+b^2-R^2$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Cercle de diamètre $[AB]$ défini par $\\overrightarrow{AM}\\cdot\\overrightarrow{BM}=0$"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Détermination de l'équation d'un cercle sous diverses conditions"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Établir l'équation cartésienne d'un cercle défini géométriquement"
+          }
+        ]
+      },
+      {
+        "name": "Ensemble des points vérifiant $x^2+y^2+ax+by+c=0$",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Mise sous forme canonique de l'équation $x^2+y^2+ax+by+c=0$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Nature de l'ensemble selon le signe de $a^2+b^2-4c$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Détermination de la nature de l'ensemble cercle, point ou vide"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Identifier le centre et rayon de cercles sous forme développée"
+          }
+        ]
+      },
+      {
+        "name": "Intérieur et extérieur d'un cercle",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Position d'un point par rapport au cercle $\\Omega M \\gtrless R$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Caractérisation algébrique de l'intérieur $x^2+y^2+ax+by+c<0$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Résolution graphique d'un système mêlant cercle et demi-plan"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Déterminer la position d'un point et résoudre graphiquement des inéquations"
+          }
+        ]
+      },
+      {
+        "name": "Représentation paramétrique d'un cercle",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité d'établissement des équations paramétriques du cercle"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Système paramétrique $\\begin{cases} x=a+R\\cos\\theta \\\\ y=b+R\\sin\\theta \\end{cases}$ avec $\\theta \\in \\mathbb{R}$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Passage entre représentations paramétrique et cartésienne du cercle"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Déterminer l'équation paramétrique et cartésienne de cercles"
+          }
+        ]
+      },
+      {
+        "name": "Positions relatives d'une droite et d'un cercle",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Intersection droite-cercle selon la comparaison de $d(\\Omega;(D))$ à $R$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul des points d'intersection d'une droite et d'un cercle"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Étudier l'intersection d'une droite avec un cercle"
+          }
+        ]
+      },
+      {
+        "name": "Équation cartésienne de la tangente à un cercle",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur la tangente au point $A$ et orthogonalité $\\overrightarrow{A\\Omega}\\cdot\\overrightarrow{AM}=0$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Équation de la tangente au point $A$ du cercle $(T): \\overrightarrow{A\\Omega}\\cdot\\overrightarrow{AM}=0$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Calcul de l'équation cartésienne d'une tangente à un cercle"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Déterminer l'équation de la tangente en un point du cercle"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Suites numériques",
+    "sections": [
+      {
+        "name": "Généralités, majoration et minoration d'une suite",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de calcul des premiers termes d'une suite"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition d'une suite numérique $u_n$ sur $\\mathbb{N}$"
+          },
+          {
+            "type": "remark",
+            "number": 3,
+            "title": "Suites définies de manière explicite $u_n=f(n)$ ou récurrente"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Calcul des termes et preuve de majoration par récurrence"
+          },
+          {
+            "type": "definition",
+            "number": 5,
+            "title": "Suite majorée par $M$, minorée par $m$ et suite bornée"
+          },
+          {
+            "type": "example",
+            "number": 6,
+            "title": "Justification de suites majorées et minorées"
+          }
+        ]
+      },
+      {
+        "name": "Monotonie d'une suite numérique",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une suite croissante, décroissante et constante"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Critère de croissance par le signe de $u_{n+1}-u_n$"
+          },
+          {
+            "type": "method",
+            "number": 3,
+            "title": "Méthode de comparaison du quotient $\\frac{u_{n+1}}{u_n}$ à $1$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Étude de la monotonie de suites explicites et récurrentes"
+          }
+        ]
+      },
+      {
+        "name": "Suites arithmétiques",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une suite arithmétique de raison $r$: $u_{n+1}-u_n=r$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Preuve qu'une suite affine $u_n=-5n+4$ est arithmétique"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Terme général d'une suite arithmétique $u_n=u_p+(n-p)r$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Somme de termes consécutifs $S=\\frac{n-p+1}{2}(u_p+u_n)$"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Calcul de la somme de termes d'une suite arithmétique"
+          },
+          {
+            "type": "property",
+            "number": 6,
+            "title": "Propriété caractéristique $a+c=2b$ de trois termes consécutifs"
+          },
+          {
+            "type": "example",
+            "number": 7,
+            "title": "Calcul de termes par la propriété caractéristique arithmétique"
+          }
+        ]
+      },
+      {
+        "name": "Suites géométriques",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une suite géométrique de raison $q$: $u_{n+1}=q u_n$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Preuve qu'une suite exponentielle $u_n=2^n$ est géométrique"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Terme général d'une suite géométrique $u_n=u_p \\times q^{n-p}$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Somme de termes consécutifs $S=u_p \\frac{1-q^{n-p+1}}{1-q}$ ($q\\neq 1$)"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Étude d'une suite auxiliaire géométrique et calcul de sommes"
+          },
+          {
+            "type": "property",
+            "number": 6,
+            "title": "Propriété caractéristique $ac=b^2$ de trois termes consécutifs"
+          },
+          {
+            "type": "example",
+            "number": 7,
+            "title": "Détermination de trois termes consécutifs géométriques"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Trigonométrie",
+    "sections": [
+      {
+        "name": "Rappels trigonométriques fondamentaux",
+        "items": [
+          {
+            "type": "rule",
+            "number": 1,
+            "title": "Parité, signes et relations fondamentales $\\cos^2(x)+\\sin^2(x)=1$"
+          },
+          {
+            "type": "rule",
+            "number": 2,
+            "title": "Formules des angles associés $-x, \\pi-x, \\pi+x, \\frac{\\pi}{2}\\pm x$"
+          }
+        ]
+      },
+      {
+        "name": "Formules d'addition et de duplication pour cosinus et sinus",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Démonstration géométrique de $\\cos(a-b)=\\cos a \\cos b + \\sin a \\sin b$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Formules d'addition $\\cos(a\\pm b)=\\cos a \\cos b \\mp \\sin a \\sin b$"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Formules d'addition $\\sin(a\\pm b)=\\sin a \\cos b \\pm \\cos a \\sin b$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Formules de duplication $\\cos(2a)=2\\cos^2 a - 1$ et $\\sin(2a)=2\\sin a \\cos a$"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Calculs exacts de $\\cos\\left(\\frac{5\\pi}{12}\\right)$ et $\\sin\\left(\\frac{\\pi}{8}\\right)$"
+          }
+        ]
+      },
+      {
+        "name": "Formules de transformation de la tangente et linéarisation",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Établissement des formules pour $\\tan(a\\pm b)$ et $\\tan(2a)$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Formules d'addition $\\tan(a\\pm b)=\\frac{\\tan a \\pm \\tan b}{1 \\mp \\tan a \\tan b}$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Formule de duplication $\\tan(2a)=\\frac{2\\tan a}{1-\\tan^2 a}$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Formules de linéarisation $\\cos^2(a)=\\frac{1+\\cos(2a)}{2}$ et $\\sin^2(a)=\\frac{1-\\cos(2a)}{2}$"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Calcul de $\\tan\\left(\\frac{5\\pi}{12}\\right)$ et simplification d'expressions"
+          }
+        ]
+      },
+      {
+        "name": "Transformation des produits en sommes et inversement",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Démonstration des formules de transformation produit-somme"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Formules de transformation de produits en sommes"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Formules de factorisation de sommes en produits $\\cos p \\pm \\cos q$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Transformation de produits en sommes et factorisations algébriques"
+          }
+        ]
+      },
+      {
+        "name": "Transformation de l'expression $a\\cos(x)+b\\sin(x)$",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Mise sous forme factorisée de $a\\cos(x)+b\\sin(x)$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Transformation $a\\cos(x)+b\\sin(x)=r\\cos(x-\\alpha)$ avec $r=\\sqrt{a^2+b^2}$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Mise sous forme $r\\cos(x-\\alpha)$ et résolution d'équations"
+          }
+        ]
+      },
+      {
+        "name": "Équations et inéquations trigonométriques",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Formules générales de résolution de $\\cos(x)=a, \\sin(x)=a, \\tan(x)=a$"
+          },
+          {
+            "type": "method",
+            "number": 2,
+            "title": "Méthode de résolution des inéquations trigonométriques sur cercle"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Résolution d'équations et inéquations trigonométriques fondamentales"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Limite d'une fonction",
+    "sections": [
+      {
+        "name": "Limites usuelles et opérations sur les limites",
+        "subsections": [
+          {
+            "name": "Limites usuelles et limites à gauche et à droite",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité sur le comportement asymptotique des fonctions de référence"
+              },
+              {
+                "type": "activity",
+                "number": 2,
+                "title": "Activité sur la limite à droite et à gauche en zéro de $\\frac{1}{x}$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Limites usuelles en $\\pm\\infty$ et en $0$ des puissances et racines"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Critère d'existence de la limite $\\lim_{x\\to a^+} f(x)=\\lim_{x\\to a^-} f(x)=l$"
+              },
+              {
+                "type": "example",
+                "number": 5,
+                "title": "Étude de la limite à gauche et à droite d'une fonction définie par morceaux"
+              }
+            ]
+          },
+          {
+            "name": "Opérations algébriques sur les limites et formes indéterminées",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Opérations algébriques sur les limites finies et infinies"
+              },
+              {
+                "type": "rule",
+                "number": 2,
+                "title": "Les quatre formes indéterminées $+\\infty-\\infty, \\pm\\infty\\times 0, \\frac{\\pm\\infty}{\\pm\\infty}, \\frac{0}{0}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Calculs de limites directes et identification de formes indéterminées"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Levée d'indéterminations par factorisation et division euclidienne"
+              },
+              {
+                "type": "example",
+                "number": 5,
+                "title": "Levée d'indéterminations par utilisation de l'expression conjuguée"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Limites des polynômes et des fonctions rationnelles",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Limite d'un polynôme et fonction rationnelle en l'infini par monômes dominants"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul de limites de polynômes et fractions rationnelles en l'infini"
+          },
+          {
+            "type": "method",
+            "number": 3,
+            "title": "Techniques du conjugué et de factorisation pour $\\lim_{x\\to\\pm\\infty}\\sqrt{ax^2+bx+c}\\pm(\\alpha x+\\beta)$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Calcul de limites de fonctions irrationnelles avec indétermination"
+          }
+        ]
+      },
+      {
+        "name": "Limites des fonctions trigonométriques",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Limites trigonométriques remarquables $\\lim_{x\\to 0}\\frac{\\sin x}{x}=1, \\frac{\\tan x}{x}=1, \\frac{1-\\cos x}{x^2}=\\frac{1}{2}$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul de limites trigonométriques à l'aide des limites usuelles"
+          }
+        ]
+      },
+      {
+        "name": "Limite et ordre",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Théorème des gendarmes et théorèmes de comparaison à l'infini"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul de limites par encadrement trigonométrique"
+          },
+          {
+            "type": "remark",
+            "number": 3,
+            "title": "Non-existence des limites des fonctions circulaires en l'infini"
+          }
+        ]
+      },
+      {
+        "name": "Détermination des limites graphiquement",
+        "items": [
+          {
+            "type": "example",
+            "number": 1,
+            "title": "Lecture graphique des limites aux bornes et asymptotes"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Rotation dans le plan",
+    "sections": [
+      {
+        "name": "Définition d'une rotation et rotation réciproque",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité de construction géométrique d'images par rotation"
+          },
+          {
+            "type": "activity",
+            "number": 2,
+            "title": "Activité d'isométrie de triangles par rotation"
+          },
+          {
+            "type": "activity",
+            "number": 3,
+            "title": "Activité sur la mesure d'angles orientés d'images"
+          },
+          {
+            "type": "activity",
+            "number": 4,
+            "title": "Activité sur la conservation du barycentre par rotation"
+          },
+          {
+            "type": "activity",
+            "number": 5,
+            "title": "Activité sur l'image d'un cercle par rotation"
+          },
+          {
+            "type": "definition",
+            "number": 6,
+            "title": "Définition de la rotation $r(O;\\alpha)$ de centre $O$ et d'angle $\\alpha$"
+          },
+          {
+            "type": "remark",
+            "number": 7,
+            "title": "Rotation réciproque $r^{-1}(O;-\\alpha)$ de centre $O$ et d'angle $-\\alpha$"
+          },
+          {
+            "type": "example",
+                "number": 8,
+                "title": "Vérification d'images de points par une rotation"
+          },
+          {
+            "type": "property",
+            "number": 9,
+            "title": "Point invariant unique $O$ et cas de symétrie centrale $\\alpha\\equiv\\pi[2\\pi]$"
+          }
+        ]
+      },
+      {
+        "name": "Image des figures usuelles par une rotation",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Image d'une droite, demi-droite, segment et cercle de rayon $R$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Construction de l'image d'un rectangle par rotation"
+          }
+        ]
+      },
+      {
+        "name": "Propriétés de conservation d'une rotation",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Conservation de distance $MN=r(M)r(N)$, angle orienté et barycentre"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Conservation de l'alignement, du milieu, du parallélisme et de l'orthogonalité"
+          },
+          {
+            "type": "remark",
+            "number": 3,
+            "title": "Détermination du centre d'une rotation par intersection des médiatrices"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Démonstration de parallélisme et orthogonalité par rotation"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Démonstration d'égalités de longueurs dans des carrés par rotation"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Dérivation",
+    "sections": [
+      {
+        "name": "Dérivabilité en un point et tangente",
+        "subsections": [
+          {
+            "name": "Nombre dérivé et interprétation géométrique",
+            "items": [
+              {
+                "type": "activity",
+                "number": 1,
+                "title": "Activité sur la limite du taux d'accroissement en un point"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Définition du nombre dérivé $f'(a)=\\lim_{x\\to a}\\frac{f(x)-f(a)}{x-a}$"
+              },
+              {
+                "type": "application",
+                "number": 3,
+                "title": "Étudier la dérivabilité d'une fonction en un point donné"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Équation de la tangente $(T): y=f'(a)(x-a)+f(a)$"
+              },
+              {
+                "type": "application",
+                "number": 5,
+                "title": "Déterminer l'équation de la tangente à une courbe en un point"
+              }
+            ]
+          },
+          {
+            "name": "Dérivabilité à droite et à gauche et demi-tangentes",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Nombres dérivés à droite $f'_d(a)$ et à gauche $f'_g(a)$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Condition de dérivabilité globale $f'_d(a)=f'_g(a)$"
+              },
+              {
+                "type": "application",
+                "number": 3,
+                "title": "Étudier la dérivabilité à gauche et à droite en un point"
+              },
+              {
+                "type": "property",
+                "number": 4,
+                "title": "Demi-tangentes horizontales, obliques et verticales au point anguleux"
+              },
+              {
+                "type": "example",
+                "number": 5,
+                "title": "Interprétation graphique de demi-tangentes d'un point anguleux"
+              },
+              {
+                "type": "property",
+                "number": 6,
+                "title": "Demi-tangentes verticales lorsque la limite du taux est infinie"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Approximation affine d'une fonction",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Approximation affine $g(x)=f'(a)(x-a)+f(a)$ au voisinage de $a$"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Calcul de valeurs approchées à l'aide de l'approximation affine"
+          }
+        ]
+      },
+      {
+        "name": "Dérivabilité sur un intervalle et fonction dérivée",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur la dérivabilité sur un intervalle pour $\\sqrt{x}$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition de la fonction dérivée $f'$ sur un intervalle"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Calcul de la fonction dérivée de $f(x)=x^3$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Dérivées des fonctions usuelles constantes, puissances, rationnelles et trigonométriques"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Déterminer la fonction dérivée de fonctions usuelles simples"
+          }
+        ]
+      },
+      {
+        "name": "Opérations sur les fonctions dérivées",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Règles de dérivation de $u+v, uv, \\alpha u, \\frac{1}{u}, \\frac{u}{v}, \\sqrt{u}, u^n$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calculs de dérivées de sommes et produits de fonctions"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer la fonction dérivée d'expressions algébriques complexes"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Dérivabilité des polynômes sur $\\mathbb{R}$ et des rationnelles sur leur domaine"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Calculer des limites indéterminées par définition du nombre dérivé"
+          }
+        ]
+      },
+      {
+        "name": "Dérivées successives",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la dérivée seconde $f''$ et dérivée $n$-ième $f^{(n)}$"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul des dérivées successives d'un polynôme de degré $3$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer la dérivée d'ordre $3$ de $\\frac{1}{x}$ et $\\sin(x)$"
+          }
+        ]
+      },
+      {
+        "name": "Dérivée et sens de variations",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité reliant signe de la dérivée et variations d'une fonction"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Théorème de monotonie selon le signe de la dérivée $f'(x) \\gtrless 0$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Dresser le tableau de variations complet d'un polynôme du troisième degré"
+          }
+        ]
+      },
+      {
+        "name": "Dérivée et extremums d'une fonction",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Activité sur la recherche d'extremum d'un trinôme par dérivation"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Condition d'extremum local $f'(a)=0$ avec changement de signe"
+          },
+          {
+            "type": "remark",
+            "number": 3,
+            "title": "Condition $f'(a)=0$ non suffisante sans changement de signe"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Déterminer un extremum global par étude de variations dérivées"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Recherche d'extremums locaux d'un polynôme cubique"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Démontrer une inégalité fonctionnelle par étude du sens de variations"
+          }
+        ]
+      },
+      {
+        "name": "Équation différentielle linéaire $y''+\\omega^2 y = 0$",
+        "items": [
+          {
+            "type": "activity",
+            "number": 1,
+            "title": "Vérification de solution pour $f(x)=\\cos(3x)$ de $y''+9y=0$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition de l'équation différentielle $y''+\\omega^2 y = 0$"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Solution générale $y(x)=a\\cos(\\omega x)+b\\sin(\\omega x)$ avec $a,b\\in\\mathbb{R}$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Résoudre des équations différentielles avec conditions initiales"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Vecteurs de l'espace",
+    "sections": [
+      {
+        "name": "Le vecteur dans l'espace",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Extension de la notion de vecteur $\\overrightarrow{AB}$ à l'espace"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Égalité vectorielle $\\overrightarrow{AB}=\\overrightarrow{DC}$ et parallélogramme dans l'espace"
+          },
+          {
+            "type": "rule",
+            "number": 3,
+            "title": "Relation de Chasles et règles opératoires d'addition et multiplication scalaire"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Simplification de sommes vectorielles sur les arêtes d'un cube"
+          }
+        ]
+      },
+      {
+        "name": "Vecteurs colinéaires et points alignés",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de deux vecteurs colinéaires $\\vec{u}=\\alpha\\vec{v}$ dans l'espace"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Condition d'alignement de trois points $\\overrightarrow{AC}=\\alpha\\overrightarrow{AB}$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Démontrer le parallélisme de deux droites de l'espace"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Condition d'inclusion d'une droite dans un plan"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Parallélisme d'une droite à un plan $(D')\\parallel (D) \\subset (P)$"
+          },
+          {
+            "type": "property",
+            "number": 6,
+            "title": "Définition vectorielle d'une droite $\\mathcal{D}(A;\\vec{u})$ par $\\overrightarrow{AM}=t\\vec{u}$"
+          }
+        ]
+      },
+      {
+        "name": "Vecteurs coplanaires et points coplanaires",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Vecteurs coplanaires appartenant à la direction d'un même plan"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Condition de coplanarité par combinaison $\\vec{w}=\\alpha\\vec{u}+\\beta\\vec{v}$"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Points coplanaires $A,B,C,D$ et relation $\\overrightarrow{AD}=\\alpha\\overrightarrow{AB}+\\beta\\overrightarrow{AC}$"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Démontrer que trois vecteurs d'un cube sont coplanaires"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Démontrer la coplanarité de quatre points de l'espace"
+          },
+          {
+            "type": "property",
+            "number": 6,
+            "title": "Définition vectorielle d'un plan $\\mathcal{P}(A;\\vec{u};\\vec{v})$ par $\\overrightarrow{AM}=\\alpha\\vec{u}+\\beta\\vec{v}$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Étude de fonctions",
+    "sections": [
+      {
+        "name": "Branches infinies d'une courbe",
+        "subsections": [
+          {
+            "name": "Asymptote horizontale et asymptote verticale",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Asymptote verticale $x=a$ lorsque $\\lim_{x\\to a^\\pm} f(x)=\\pm\\infty$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Asymptote horizontale $y=b$ lorsque $\\lim_{x\\to\\pm\\infty} f(x)=b$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Identification d'asymptotes horizontale et verticale"
+              },
+              {
+                "type": "application",
+                "number": 4,
+                "title": "Calculer les limites aux bornes et interpréter graphiquement les asymptotes"
+              }
+            ]
+          },
+          {
+            "name": "Asymptote oblique",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Asymptote oblique $y=ax+b$ par $\\lim_{x\\to\\pm\\infty}[f(x)-(ax+b)]=0$"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Démontrer qu'une droite donnée est asymptote oblique"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Détermination des coefficients $a=\\lim\\frac{f(x)}{x}$ et $b=\\lim[f(x)-ax]$"
+              },
+              {
+                "type": "application",
+                "number": 4,
+                "title": "Déterminer l'asymptote oblique et étudier les positions relatives"
+              },
+              {
+                "type": "rule",
+                "number": 5,
+                "title": "Position relative de $(C_f)$ et $(D)$ par l'étude de signe de $f(x)-(ax+b)$"
+              }
+            ]
+          },
+          {
+            "name": "Branches paraboliques",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Branche parabolique de direction $(Oy)$ si $\\lim\\frac{f(x)}{x}=\\pm\\infty$"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Branche parabolique de direction $(Ox)$ si $\\lim\\frac{f(x)}{x}=0$"
+              },
+              {
+                "type": "definition",
+                "number": 3,
+                "title": "Branche parabolique de direction $y=ax$ si $\\lim[f(x)-ax]=\\pm\\infty$"
+              },
+              {
+                "type": "application",
+                "number": 4,
+                "title": "Étudier les branches paraboliques d'une fonction en l'infini"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Concavité d'une courbe et points d'inflexion",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la convexité, concavité et point d'inflexion"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Convexité pour $f''(x) \\ge 0$ et concavité pour $f''(x) \\le 0$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Point d'inflexion $A(a;f(a))$ lorsque $f''(a)=0$ avec changement de signe"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Étude complète de la concavité d'une fonction polynôme"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Déterminer la concavité et les points d'inflexion d'une courbe"
+          }
+        ]
+      },
+      {
+        "name": "Éléments de symétrie d'une courbe",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Centre de symétrie $\\Omega(a;b) \\iff f(2a-x)=2b-f(x)$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Axe de symétrie $x=a \\iff f(2a-x)=f(x)$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Preuve de centre de symétrie pour une fonction homographique"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Preuve d'axe de symétrie pour une fonction polynôme du second degré"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Démontrer centre et axe de symétrie pour des fonctions données"
+          }
+        ]
+      },
+      {
+        "name": "Construction d'une courbe",
+        "items": [
+          {
+            "type": "method",
+            "number": 1,
+            "title": "Protocole de construction complète d'une courbe représentative"
+          },
+          {
+            "type": "application",
+            "number": 2,
+            "title": "Tracer des courbes représentatives à partir de tableaux de variations"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Analytique de l'espace",
+    "sections": [
+      {
+        "name": "Repère et coordonnées dans l'espace",
+        "subsections": [
+          {
+            "name": "Repère cartésien et coordonnées d'un point",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Base $(\\vec{i};\\vec{j};\\vec{k})$ et repère cartésien $(O;\\vec{i};\\vec{j};\\vec{k})$ de l'espace"
+              },
+              {
+                "type": "definition",
+                "number": 2,
+                "title": "Coordonnées d'un point $M(x;y;z)$ définies par $\\overrightarrow{OM}=x\\vec{i}+y\\vec{j}+z\\vec{k}$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Placement de points dans un repère orthonormé de l'espace"
+              }
+            ]
+          },
+          {
+            "name": "Coordonnées d'un vecteur et opérations",
+            "items": [
+              {
+                "type": "definition",
+                "number": 1,
+                "title": "Coordonnées d'un vecteur $\\vec{u}(x;y;z)=x\\vec{i}+y\\vec{j}+z\\vec{k}$"
+              },
+              {
+                "type": "property",
+                "number": 2,
+                "title": "Coordonnées de la somme $\\vec{u}+\\vec{v}$ et du produit $\\alpha\\vec{u}$"
+              },
+              {
+                "type": "property",
+                "number": 3,
+                "title": "Coordonnées du vecteur $\\overrightarrow{AB}(x_B-x_A;y_B-y_A;z_B-z_A)$ et du milieu"
+              },
+              {
+                "type": "example",
+                "number": 4,
+                "title": "Calculs de coordonnées de vecteurs et de milieux de segments"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Condition de colinéarité de deux vecteurs dans l'espace",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Critère de colinéarité par nullité des trois déterminants extraits"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Proportionnalité des coordonnées $\\frac{x}{x'}=\\frac{y}{y'}=\\frac{z}{z'}$"
+          },
+          {
+            "type": "example",
+            "number": 3,
+            "title": "Étude de la colinéarité de vecteurs et de l'alignement de points"
+          }
+        ]
+      },
+      {
+        "name": "Condition de coplanarité de trois vecteurs de l'espace",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Déterminant $\\det(\\vec{u};\\vec{v};\\vec{w})$ de trois vecteurs dans l'espace"
+          },
+          {
+            "type": "example",
+            "number": 2,
+            "title": "Calcul du déterminant d'ordre $3$ par développement"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Critère de coplanarité $\\det(\\vec{u};\\vec{v};\\vec{w})=0$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Condition de coplanarité de quatre points $\\det(\\overrightarrow{AB};\\overrightarrow{AC};\\overrightarrow{AD})=0$"
+          },
+          {
+            "type": "example",
+            "number": 5,
+            "title": "Étude de la coplanarité de vecteurs et points de l'espace"
+          }
+        ]
+      },
+      {
+        "name": "Étude analytique d'une droite dans l'espace",
+        "subsections": [
+          {
+            "name": "Représentation paramétrique d'une droite",
+            "items": [
+              {
+                "type": "theorem",
+                "number": 1,
+                "title": "Représentation paramétrique $\\begin{cases} x=x_A+at \\\\ y=y_A+bt \\\\ z=z_A+ct \\end{cases}$ ($t\\in\\mathbb{R}$)"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Déterminer la représentation paramétrique d'une droite de l'espace"
+              }
+            ]
+          },
+          {
+            "name": "Équations cartésiennes d'une droite",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Système de deux équations cartésiennes $\\frac{x-x_A}{a}=\\frac{y-y_A}{b}=\\frac{z-z_A}{c}$"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Formulation des équations cartésiennes d'une droite"
+              }
+            ]
+          },
+          {
+            "name": "Positions relatives de deux droites de l'espace",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Positions relatives coplanaires (parallèles, sécantes) ou non coplanaires"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Étude analytique de l'intersection de deux droites de l'espace"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Étude analytique d'un plan dans l'espace",
+        "subsections": [
+          {
+            "name": "Représentation paramétrique et équation cartésienne d'un plan",
+            "items": [
+              {
+                "type": "theorem",
+                "number": 1,
+                "title": "Représentation paramétrique d'un plan $\\mathcal{P}(A;\\vec{u};\\vec{v})$ à deux paramètres"
+              },
+              {
+                "type": "theorem",
+                "number": 2,
+                "title": "Équation cartésienne du plan $ax+by+cz+d=0$"
+              },
+              {
+                "type": "example",
+                "number": 3,
+                "title": "Détermination des équations paramétrique et cartésienne d'un plan"
+              }
+            ]
+          },
+          {
+            "name": "Positions relatives d'une droite et d'un plan dans l'espace",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Positions relatives droite-plan par déterminant $\\det(\\vec{u};\\vec{v};\\vec{w})$"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Calcul des coordonnées du point d'intersection d'une droite et d'un plan"
+              }
+            ]
+          },
+          {
+            "name": "Positions relatives de deux plans dans l'espace",
+            "items": [
+              {
+                "type": "property",
+                "number": 1,
+                "title": "Positions relatives de deux plans parallèles ou sécants selon les vecteurs"
+              },
+              {
+                "type": "example",
+                "number": 2,
+                "title": "Détermination de la droite d'intersection de deux plans sécants"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,18 +1,1627 @@
-{
-  "_commentaire": "Squelette MINIMAL du programme officiel, 2BAC Sciences Maths (A et B) · Mathématiques (Maroc).",
-  "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Limites et continuité", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 2 : Dérivation et étude des fonctions", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 3 : Les suites numériques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 4 : Fonctions logarithmiques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 5 : Fonctions exponentielles", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 6 : Les nombres complexes", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 7 : Équations différentielles", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 8 : Fonctions primitives et calcul intégral", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 9 : Arithmétique dans Z", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 10 : Structures algébriques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 11 : Espaces vectoriels", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 12 : Calcul des probabilités", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 13 : Géométrie dans l'espace", "sections": [] }
-  ]
-}
+[
+  {
+    "chapter": "Généralités sur les limites et la continuité",
+    "sections": [
+      {
+        "name": "Limite d'une fonction en un point",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition formelle de la limite $\\displaystyle \\lim_{x\\to x_0} f(x) = l$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve par l'absurde de l'unicité de la limite $\\displaystyle \\lim_{x\\to x_0} f(x) = l$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Limites des fonctions usuelles et opérations algébriques dans $\\mathbb{R}$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Calcul de limites par la définition avec $(\\varepsilon,\\alpha)$"
+          }
+        ]
+      },
+      {
+        "name": "Continuité en un point et prolongement par continuité",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Continuité en un point par $\\displaystyle \\lim_{x\\to x_0}f(x)=f(x_0)$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Continuité à droite et à gauche en $x_0$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Équivalence $\\displaystyle \\lim_{x\\to x_0^+} f(x)=\\lim_{x\\to x_0^-} f(x)=f(x_0)$ pour la continuité globale"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Prolongement par continuité d'une fonction en un point $x_0$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Déterminer le prolongement par continuité $\\tilde{f}$ en un point $x_0$"
+          }
+        ]
+      },
+      {
+        "name": "Continuité sur un intervalle et opérations",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Continuité d'une fonction sur un intervalle $I$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Continuité des polynômes, fonctions rationnelles et fonctions trigonométriques"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Opérations sur les fonctions continues somme, produit et quotient $\\displaystyle \\frac{f}{g}$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Continuité de la fonction composée $g \\circ f$ sur un intervalle"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Étudier la continuité d'une fonction composée sur un intervalle"
+          }
+        ]
+      },
+      {
+        "name": "Image d'un intervalle et théorème des valeurs intermédiaires",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Image d'un segment par une fonction continue $\\displaystyle f([a;b])=[m;M]$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Image d'un intervalle par fonction continue et strictement monotone"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Théorème des valeurs intermédiaires $f(a)f(b)<0 \\implies \\exists c, f(c)=0$"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de l'existence d'une solution par le théorème des valeurs intermédiaires"
+          },
+          {
+            "type": "method",
+            "number": 5,
+            "title": "Méthode de dichotomie par le centre $\\displaystyle m=\\frac{a+b}{2}$ pour encadrer une racine"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Démontrer l'existence d'une solution unique par le TVI"
+          }
+        ]
+      },
+      {
+        "name": "Théorème de la fonction réciproque et fonctions usuelles",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Théorème de la bijection continue et strictement monotone sur $I$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve de la bijectivité et continuité de la fonction réciproque $f^{-1}$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Propriétés et courbe symétrique de la fonction réciproque $f^{-1}$"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Fonction $\\text{Arctan}$ comme réciproque de $\\tan$ sur $\\displaystyle \\left]-\\frac{\\pi}{2};\\frac{\\pi}{2}\\right[$"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Propriétés fondamentales $\\displaystyle \\lim_{x\\to+\\infty}\\text{Arctan}(x)=\\frac{\\pi}{2}$ et $\\text{Arctan}(-x)=-\\text{Arctan}(x)$"
+          },
+          {
+            "type": "definition",
+            "number": 6,
+            "title": "Fonction racine $n$-ième $\\displaystyle x \\mapsto \\sqrt[n]{x}$ et puissances rationnelles $x^{\\frac{p}{q}}$"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Résoudre des équations comportant $\\text{Arctan}$ et des racines $n$-ièmes"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les suites numériques",
+    "sections": [
+      {
+        "name": "Généralités sur les suites et monotonie",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Suite majorée $(\\forall n, u_n \\le M)$, minorée et suite bornée"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Monotonie d'une suite par le signe de $u_{n+1}-u_n$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Terme général arithmétique $u_n=u_p+(n-p)r$ et géométrique $u_n=u_p q^{n-p}$"
+          }
+        ]
+      },
+      {
+        "name": "Limite et critères de convergence d'une suite",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition formelle de la convergence $(\\forall \\varepsilon>0)(\\exists N)(\\forall n\\ge N) |u_n-l|<\\varepsilon$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve qu'une suite convergente est nécessairement bornée"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de l'unicité de la limite d'une suite convergente"
+          },
+          {
+            "type": "theorem",
+            "number": 4,
+            "title": "Théorème de la convergence monotone pour toute suite croissante majorée"
+          },
+          {
+            "type": "theorem",
+            "number": 5,
+            "title": "Théorème d'encadrement des gendarmes $v_n \\le u_n \\le w_n$"
+          },
+          {
+            "type": "proof",
+            "number": 6,
+            "title": "Preuve du théorème des gendarmes pour les suites numériques"
+          },
+          {
+            "type": "property",
+            "number": 7,
+            "title": "Limite de la suite géométrique $\\displaystyle \\lim_{n\\to+\\infty} q^n$ selon $q$"
+          },
+          {
+            "type": "application",
+            "number": 8,
+            "title": "Calculer la limite de suites par encadrement et comparaison"
+          }
+        ]
+      },
+      {
+        "name": "Suites récurrentes de la forme $u_{n+1}=f(u_n)$",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Théorème du point fixe $\\displaystyle f(l)=l$ pour $u_{n+1}=f(u_n)$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve de la convergence vers le point fixe $f(l)=l$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Limite de la suite composée $\\displaystyle v_n=f(u_n)$ par continuité de $f$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Étude complète de la convergence d'une suite récurrente $u_{n+1}=f(u_n)$"
+          }
+        ]
+      },
+      {
+        "name": "Suites adjacentes",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de deux suites adjacentes avec $\\displaystyle \\lim_{n\\to+\\infty}(v_n-u_n)=0$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Théorème fondamental de convergence commune des suites adjacentes"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de la convergence vers une même limite de suites adjacentes"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Démontrer que deux suites sont adjacentes et déterminer leur limite"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "La dérivation et étude de fonctions",
+    "sections": [
+      {
+        "name": "Dérivabilité en un point et sur un intervalle",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Nombre dérivé $\\displaystyle f'(x_0)=\\lim_{x\\to x_0}\\frac{f(x)-f(x_0)}{x-x_0}$ et équation de tangente"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve que toute fonction dérivable en $x_0$ est continue en $x_0$"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Dérivabilité à droite $\\displaystyle f'_d(x_0)$, à gauche $f'_g(x_0)$ et demi-tangentes"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Tableau des dérivées des fonctions puissances, rationnelles et trigonométriques"
+          },
+          {
+            "type": "rule",
+            "number": 5,
+            "title": "Opérations sur les dérivées $\\displaystyle (uv)'=u'v+uv'$ et $\\displaystyle \\left(\\frac{u}{v}\\right)'=\\frac{u'v-uv'}{v^2}$"
+          },
+          {
+            "type": "property",
+            "number": 6,
+            "title": "Dérivée de la composée $\\displaystyle (g \\circ f)'(x_0) = f'(x_0) \\cdot g'(f(x_0))$"
+          },
+          {
+            "type": "proof",
+            "number": 7,
+            "title": "Preuve de la formule de dérivation de la composée $(g\\circ f)'$"
+          },
+          {
+            "type": "property",
+            "number": 8,
+            "title": "Dérivée de la bijection réciproque $\\displaystyle (f^{-1})'(y_0) = \\frac{1}{f'(x_0)}$"
+          },
+          {
+            "type": "proof",
+            "number": 9,
+            "title": "Preuve de la formule de la dérivée de la fonction réciproque"
+          },
+          {
+            "type": "property",
+            "number": 10,
+            "title": "Dérivée $\\displaystyle (\\text{Arctan}(u))'=\\frac{u'}{1+u^2}$ et $\\displaystyle (\\sqrt[n]{u})'=\\frac{u'}{n\\sqrt[n]{u^{n-1}}}$"
+          },
+          {
+            "type": "proof",
+            "number": 11,
+            "title": "Preuve de la formule de dérivée $\\displaystyle (\\text{Arctan})'(x)=\\frac{1}{1+x^2}$"
+          },
+          {
+            "type": "application",
+            "number": 12,
+            "title": "Calculer la fonction dérivée de fonctions irrationnelles composées"
+          }
+        ]
+      },
+      {
+        "name": "Sens de variation et extremums",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Signe de la dérivée $f'(x) \\gtrless 0$ et sens de variation strict"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Condition d'extremum local par annulation avec changement de signe de $f'$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Dresser le tableau de variations complet de fonctions dérivables"
+          }
+        ]
+      },
+      {
+        "name": "Branches infinies et éléments de symétrie",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Asymptotes verticales $x=a$, horizontales $y=b$ et obliques $y=ax+b$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Branches paraboliques de directions $(Ox)$, $(Oy)$ et asymptotique $y=ax$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Centre de symétrie $\\Omega(a;b)$ et axe de symétrie vertical $x=a$"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Périodicité d'une fonction $f(x+T)=f(x)$ et réduction du domaine"
+          }
+        ]
+      },
+      {
+        "name": "Concavité d'une courbe et points d'inflexion",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition géométrique de la convexité, concavité et point d'inflexion"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Caractérisation de la convexité par le signe de $f''(x) \\ge 0$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Point d'inflexion par annulation et changement de signe de $f''$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Étudier la concavité et déterminer les points d'inflexion"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Théorème de Rolle et des Accroissements Finis",
+    "sections": [
+      {
+        "name": "Théorème de Rolle",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Théorème de Rolle : $f(a)=f(b) \\implies \\exists c \\in ]a;b[, f'(c)=0$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve du théorème de Rolle par l'existence d'extremums sur $[a;b]$"
+          },
+          {
+            "type": "remark",
+            "number": 3,
+            "title": "Interprétation géométrique d'une tangente horizontale et cinématique"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Application du théorème de Rolle à l'annulation de dérivées polynomiales"
+          }
+        ]
+      },
+      {
+        "name": "Théorème et inégalité des accroissements finis",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Théorème des accroissements finis $\\displaystyle \\frac{f(b)-f(a)}{b-a}=f'(c)$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve du TAF par la fonction auxiliaire de Rolle"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Inégalité des accroissements finis $\\displaystyle m(b-a)\\le f(b)-f(a)\\le M(b-a)$"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de l'inégalité des accroissements finis à partir du TAF"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Inégalité lipschitzienne $\\displaystyle |f(x)-f(y)| \\le k|x-y|$ sur un intervalle"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Encadrement d'expressions trigonométriques et rationnelles par le TAF"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Étude de la convergence de suites récurrentes via le TAF"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les fonctions logarithmes",
+    "sections": [
+      {
+        "name": "Fonction logarithme népérien",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de $\\ln$ comme primitive de $\\displaystyle \\frac{1}{x}$ sur $\\mathbb{R}_+^*$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriété fondamentale $\\displaystyle \\ln(xy)=\\ln x+\\ln y$ et relation $\\displaystyle \\ln(x^r)=r\\ln x$"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de la relation fondamentale $\\displaystyle \\ln(xy)=\\ln x+\\ln y$ par dérivation"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Le nombre réel $e$ solution unique de $\\ln(x)=1$"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Limites fondamentales $\\displaystyle \\lim_{x\\to 0^+}x\\ln x=0$ et $\\displaystyle \\lim_{x\\to+\\infty}\\frac{\\ln x}{x^n}=0$"
+          },
+          {
+            "type": "proof",
+            "number": 6,
+            "title": "Preuve de la croissance comparée $\\displaystyle \\lim_{x\\to+\\infty}\\frac{\\ln x}{x}=0$"
+          },
+          {
+            "type": "property",
+            "number": 7,
+            "title": "Dérivée logarithmique $\\displaystyle (\\ln|u|)'=\\frac{u'}{u}$ et recherche de primitives"
+          },
+          {
+            "type": "application",
+            "number": 8,
+            "title": "Résoudre des équations, inéquations et systèmes logarithmiques"
+          }
+        ]
+      },
+      {
+        "name": "Fonction logarithme de base $a$",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de $\\displaystyle \\log_a(x)=\\frac{\\ln x}{\\ln a}$ et logarithme décimal $\\log$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés algébriques, dérivée $\\displaystyle (\\log_a)'(x)=\\frac{1}{x\\ln a}$ et variations"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Résoudre des équations et simplifier des expressions avec $\\log$"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les fonctions exponentielles",
+    "sections": [
+      {
+        "name": "Fonction exponentielle népérienne",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de $\\exp$ comme bijection réciproque de $\\ln$ sur $\\mathbb{R}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés algébriques fondamentales $\\displaystyle e^{x+y}=e^x e^y$ et $\\displaystyle e^{-x}=\\frac{1}{e^x}$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Dérivée $\\displaystyle (e^x)'=e^x$ et dérivée de la composée $\\displaystyle (e^{u(x)})'=u'(x)e^{u(x)}$"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de la formule de dérivation $(e^x)'=e^x$ par fonction réciproque"
+          },
+          {
+            "type": "property",
+            "number": 5,
+            "title": "Limites usuelles $\\displaystyle \\lim_{x\\to 0}\\frac{e^x-1}{x}=1$ et croissances comparées $\\displaystyle \\lim_{x\\to+\\infty}\\frac{e^x}{x^n}=+\\infty$"
+          },
+          {
+            "type": "proof",
+            "number": 6,
+            "title": "Preuve de la limite de croissance comparée $\\displaystyle \\lim_{x\\to+\\infty}\\frac{e^x}{x^n}=+\\infty$"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Résoudre des équations, inéquations et systèmes exponentiels"
+          }
+        ]
+      },
+      {
+        "name": "Fonction exponentielle de base $a$ et puissances réelles",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la puissance réelle $\\displaystyle a^x=e^{x\\ln a}$ pour $a>0$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Dérivée $\\displaystyle (a^x)'=(\\ln a)a^x$ et étude des variations selon $a$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Étudier les fonctions exponentielles de base $a$ et puissances"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les nombres complexes (1ère partie)",
+    "sections": [
+      {
+        "name": "Forme algébrique et opérations dans $\\mathbb{C}$",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de l'ensemble $\\mathbb{C}$ et de l'élément imaginaire $i^2=-1$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Forme algébrique $z=x+iy$, partie réelle $\\text{Re}(z)$ et imaginaire $\\text{Im}(z)$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Égalité de deux nombres complexes et opérations fondamentales"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Inverse et quotient sous forme algébrique $\\displaystyle \\frac{1}{z}=\\frac{x-iy}{x^2+y^2}$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Calculer la forme algébrique d'expressions complexes développées"
+          }
+        ]
+      },
+      {
+        "name": "Conjugué d'un nombre complexe",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition du conjugué $\\bar{z}=x-iy$ et symétrie par rapport à $(Ox)$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés $\\displaystyle z+\\bar{z}=2\\text{Re}(z)$, $\\displaystyle z-\\bar{z}=2i\\text{Im}(z)$ et $\\displaystyle z\\bar{z}=x^2+y^2$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Utiliser le conjugué pour résoudre des équations complexes"
+          }
+        ]
+      },
+      {
+        "name": "Module d'un nombre complexe et géométrie",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition du module $\\displaystyle |z|=\\sqrt{z\\bar{z}}=\\sqrt{x^2+y^2}$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés algébriques du module et inégalité triangulaire $\\displaystyle |z+z'|\\le|z|+|z'|$"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de l'inégalité triangulaire $\\displaystyle |z+z'| \\le |z|+|z'|$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Interprétation géométrique du module comme distance $AB=|z_B-z_A|$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Déterminer des ensembles de points du plan par module"
+          }
+        ]
+      },
+      {
+        "name": "Équations du second degré dans $\\mathbb{C}$",
+        "items": [
+          {
+            "type": "method",
+            "number": 1,
+            "title": "Détermination algébrique des racines carrées $\\delta^2=\\Delta$ d'un complexe"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Résolution générale de $az^2+bz+c=0$ par le discriminant complexe $\\Delta$"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de la résolution du second degré par discriminant complexe"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Relations de Viète pour la somme $\\displaystyle z_1+z_2=-\\frac{b}{a}$ et produit $\\displaystyle z_1 z_2=\\frac{c}{a}$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Résoudre des équations du second degré et équations polynomiales"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les fonctions primitives",
+    "sections": [
+      {
+        "name": "Notion de primitive et propriétés",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une primitive $F'(x)=f(x)$ sur un intervalle $I$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Théorème d'existence d'une primitive pour toute fonction continue"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de l'existence d'une primitive à partir de l'intégrale"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Ensemble des primitives $F(x)+c$ et unicité sous condition initiale"
+          },
+          {
+            "type": "rule",
+            "number": 5,
+            "title": "Tableau des primitives usuelles et primitives de fonctions composées"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Déterminer la primitive d'une fonction vérifiant une condition initiale"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Le calcul intégral",
+    "sections": [
+      {
+        "name": "Définition et propriétés de l'intégrale",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de l'intégrale $\\displaystyle \\int_a^b f(t)dt = F(b)-F(a)$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Linéarité de l'intégrale et relation de Chasles pour l'intégration"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de la linéarité et de la relation de Chasles"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Positivité et conservation de l'ordre $\\displaystyle f\\le g \\implies \\int_a^b f \\le \\int_a^b g$"
+          },
+          {
+            "type": "definition",
+            "number": 5,
+            "title": "Valeur moyenne d'une fonction continue $\\displaystyle \\mu = \\frac{1}{b-a}\\int_a^b f(x)dx$"
+          },
+          {
+            "type": "theorem",
+            "number": 6,
+            "title": "Théorème de la moyenne pour une fonction continue sur $[a;b]$"
+          },
+          {
+            "type": "property",
+            "number": 7,
+            "title": "Dérivabilité de la fonction intégrale $\\displaystyle x \\mapsto \\int_a^x f(t)dt$"
+          }
+        ]
+      },
+      {
+        "name": "Techniques de calcul d'intégrales",
+        "items": [
+          {
+            "type": "method",
+            "number": 1,
+            "title": "Formule d'intégration par parties $\\displaystyle \\int_a^b u'v = [uv]_a^b - \\int_a^b uv'$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve de la formule d'intégration par parties par dérivation"
+          },
+          {
+            "type": "method",
+            "number": 3,
+            "title": "Formule d'intégration par changement de variable $\\displaystyle x=\\varphi(t)$"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de la formule du changement de variable par dérivation"
+          },
+          {
+            "type": "theorem",
+            "number": 5,
+            "title": "Convergence des sommes de Riemann $\\displaystyle \\lim_{n\\to+\\infty}\\frac{b-a}{n}\\sum_{k=0}^{n-1} f\\left(a+k\\frac{b-a}{n}\\right)=\\int_a^b f$"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Calculer des intégrales par intégration par parties et changement de variable"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Calculer la limite de suites définies par des sommes de Riemann"
+          }
+        ]
+      },
+      {
+        "name": "Calcul d'aires et de volumes",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Calcul d'aire du domaine plan $\\displaystyle \\mathcal{A}=\\int_a^b |f(x)-g(x)|dx$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Calcul du volume d'un solide de révolution $\\displaystyle V=\\pi\\int_a^b (f(x))^2 dx$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Déterminer l'aire d'une surface plane et le volume engendré"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les équations différentielles",
+    "sections": [
+      {
+        "name": "Équations différentielles linéaires du premier ordre",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Résolution de l'équation $y'=ay$ par $\\displaystyle y(x)=\\lambda e^{ax}$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve de la solution générale de $y'=ay$ par $y(x)e^{-ax}$"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Résolution de $y'=ay+b$ par $\\displaystyle y(x)=\\lambda e^{ax}-\\frac{b}{a}$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Résoudre une équation différentielle du premier ordre avec condition initiale"
+          }
+        ]
+      },
+      {
+        "name": "Équations différentielles linéaires du second ordre",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Équation caractéristique $r^2+ar+b=0$ associée à $y''+ay'+by=0$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Solutions générales du second ordre selon le signe de $\\Delta$"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve des solutions du second ordre selon l'équation caractéristique"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Cas particulier de l'équation harmonique $y''+\\omega^2 y = 0$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Résoudre des équations différentielles du second ordre avec conditions initiales"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "L'arithmétique",
+    "sections": [
+      {
+        "name": "Divisibilité et division euclidienne dans $\\mathbb{Z}$",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Relation de divisibilité dans $\\mathbb{Z}$ et propriétés fondamentales"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Théorème de la division euclidienne $a=bq+r$ avec $0\\le r<|b|$"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Déterminer quotient et reste de divisions euclidiennes algébriques"
+          }
+        ]
+      },
+      {
+        "name": "Congruences modulo $n$",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Relation de congruence modulo $n$ : $a \\equiv b [n]$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Compatibilité de la congruence avec addition, multiplication et puissances"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Calculer le reste de puissances entières à l'aide des congruences"
+          }
+        ]
+      },
+      {
+        "name": "PGCD, PPCM et algorithme d'Euclide",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition du $\\text{pgcd}(a;b)=a\\wedge b$ et $\\text{ppcm}(a;b)=a\\vee b$"
+          },
+          {
+            "type": "method",
+            "number": 2,
+            "title": "Calcul pratique du $\\text{pgcd}$ par l'algorithme d'Euclide"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Relation fondamentale $(a\\wedge b)(a\\vee b)=|ab|$"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Caractérisation des entiers premiers entre eux $a\\wedge b=1$"
+          }
+        ]
+      },
+      {
+        "name": "Théorèmes de Bézout et de Gauss et équations diophantiennes",
+        "items": [
+          {
+            "type": "theorem",
+            "number": 1,
+            "title": "Théorème de Bézout $a\\wedge b=1 \\iff au+bv=1$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve du théorème de Bézout par le plus petit élément strictement positif"
+          },
+          {
+            "type": "method",
+            "number": 3,
+            "title": "Détermination des coefficients de Bézout par remontée d'Euclide"
+          },
+          {
+            "type": "theorem",
+            "number": 4,
+            "title": "Théorème de Gauss $a\\mid bc \\text{ et } a\\wedge b=1 \\implies a\\mid c$"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve du théorème de Gauss par l'identité de Bézout"
+          },
+          {
+            "type": "method",
+            "number": 6,
+            "title": "Résolution complète de l'équation diophantienne $ax+by=c$ dans $\\mathbb{Z}^2$"
+          },
+          {
+            "type": "application",
+            "number": 7,
+            "title": "Résoudre des équations diophantiennes et systèmes linéaires dans $\\mathbb{Z}$"
+          }
+        ]
+      },
+      {
+        "name": "Nombres premiers et petit théorème de Fermat",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition des nombres premiers et infinité de l'ensemble $\\mathbb{P}$"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve par l'absurde d'Euclide de l'infinité des nombres premiers"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Théorème fondamental de décomposition en facteurs premiers dans $\\mathbb{Z}$"
+          },
+          {
+            "type": "theorem",
+            "number": 4,
+            "title": "Petit théorème de Fermat $a^p \\equiv a [p]$ et $a^{p-1} \\equiv 1 [p]$"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve du petit théorème de Fermat par décomposition combinatoire"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Application du petit théorème de Fermat aux calculs modulaires et cryptographie"
+          }
+        ]
+      },
+      {
+        "name": "L'ensemble $\\mathbb{Z}/n\\mathbb{Z}$ et systèmes de numération",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Classes d'équivalence modulo $n$ et structure d'anneau $\\mathbb{Z}/n\\mathbb{Z}$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Structure de corps de $\\mathbb{Z}/p\\mathbb{Z}$ pour $p$ premier"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Représentation d'un entier dans un système de numération de base $b\\ge 2$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Résoudre des équations dans $\\mathbb{Z}/n\\mathbb{Z}$ et convertir entre bases"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les nombres complexes (2ème partie)",
+    "sections": [
+      {
+        "name": "Forme trigonométrique et argument",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de l'argument $\\arg(z) \\equiv \\theta [2\\pi]$ d'un complexe"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Forme trigonométrique $z=r(\\cos\\theta+i\\sin\\theta)$ et coordonnées polaires"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Propriétés algébriques des arguments pour produits, quotients et puissances"
+          },
+          {
+            "type": "theorem",
+            "number": 4,
+            "title": "Formule de Moivre $(\\cos\\theta+i\\sin\\theta)^n = \\cos(n\\theta)+i\\sin(n\\theta)$"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve de la formule de Moivre par récurrence sur $\\mathbb{N}$"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Déterminer la forme trigonométrique et calculer des puissances complexes"
+          }
+        ]
+      },
+      {
+        "name": "Notation exponentielle et formules d'Euler",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Notation exponentielle $e^{i\\theta}=\\cos\\theta+i\\sin\\theta$ et écriture $z=re^{i\\theta}$"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Formules d'Euler pour $\\displaystyle \\cos\\theta=\\frac{e^{i\\theta}+e^{-i\\theta}}{2}$ et $\\displaystyle \\sin\\theta=\\frac{e^{i\\theta}-e^{-i\\theta}}{2i}$"
+          },
+          {
+            "type": "method",
+            "number": 3,
+            "title": "Linéarisation de puissances trigonométriques par les formules d'Euler"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Linéariser des expressions trigonométriques et calculer des sommes complexes"
+          }
+        ]
+      },
+      {
+        "name": "Racines $n$-ièmes d'un nombre complexe",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Racines $n$-ièmes de l'unité $\\displaystyle \\omega_k = e^{i\\frac{2k\\pi}{n}}$ et somme nulle"
+          },
+          {
+            "type": "proof",
+            "number": 2,
+            "title": "Preuve de la somme nulle des racines $n$-ièmes de l'unité"
+          },
+          {
+            "type": "theorem",
+            "number": 3,
+            "title": "Racines $n$-ièmes d'un nombre complexe non nul $Z=Re^{i\\varphi}$"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Calculer les racines $n$-ièmes d'un complexe et résoudre $z^n=Z$"
+          }
+        ]
+      },
+      {
+        "name": "Nombres complexes et géométrie plane",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Interprétation complexe de l'angle $\\displaystyle (\\overrightarrow{AB};\\overrightarrow{CD}) \\equiv \\arg\\left(\\frac{z_D-z_C}{z_B-z_A}\\right)[2\\pi]$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Caractérisation de l'alignement, de l'orthogonalité et de la cocyclicité"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Écritures complexes des transformations usuelles translation, homothétie, rotation"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Nature et éléments caractéristiques de la similitude $z'=az+b$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Identifier la nature géométrique de transformations complexes composées"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les espaces vectoriels",
+    "sections": [
+      {
+        "name": "Structure d'espace vectoriel réel",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Loi de composition externe sur un ensemble à coefficients réels"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition axiomatique d'un espace vectoriel réel $(E,+,\\cdot)$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Règles fondamentales de calcul algébrique dans un espace vectoriel"
+          },
+          {
+            "type": "example",
+            "number": 4,
+            "title": "Espaces vectoriels usuels $\\mathbb{R}^n, \\mathcal{M}_n(\\mathbb{R}), \\mathbb{R}[X]$ et fonctions"
+          }
+        ]
+      },
+      {
+        "name": "Sous-espaces vectoriels",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'un sous-espace vectoriel d'un espace réel"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Caractérisation d'un sous-espace vectoriel par combinaison linéaire"
+          },
+          {
+            "type": "proof",
+            "number": 3,
+            "title": "Preuve de la caractérisation d'un sous-espace par combinaison linéaire"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Démontrer qu'un sous-ensemble est un sous-espace vectoriel réel"
+          }
+        ]
+      },
+      {
+        "name": "Familles libres, familles génératrices et bases",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Combinaisons linéaires et sous-espace vectoriel engendré par une famille"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Définition d'une famille libre et d'une famille liée"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Définition d'une famille génératrice d'un espace vectoriel"
+          },
+          {
+            "type": "definition",
+            "number": 4,
+            "title": "Définition d'une base et décomposition unique en coordonnées"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve de l'unicité de l'écriture en coordonnées dans une base"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Étudier la liberté d'une famille et déterminer une base"
+          }
+        ]
+      },
+      {
+        "name": "Dimension d'un espace vectoriel",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition de la dimension finie $\\dim(E)=n$ d'un espace vectoriel"
+          },
+          {
+            "type": "theorem",
+            "number": 2,
+            "title": "Propriétés des bases et familles libres dans un espace de dimension $n$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Caractérisation d'une base par le déterminant non nul"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Calculer la dimension et trouver une base d'un sous-espace"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Les structures algébriques",
+    "sections": [
+      {
+        "name": "Lois de composition interne et propriétés",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une loi de composition interne sur un ensemble"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Partie stable pour une loi interne et loi induite"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Propriétés d'associativité, de commutativité, d'élément neutre et symétrique"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de l'unicité de l'élément neutre et du symétrique"
+          },
+          {
+            "type": "definition",
+            "number": 5,
+            "title": "Élément régulier simplifiable pour une loi de composition interne"
+          },
+          {
+            "type": "application",
+            "number": 6,
+            "title": "Étudier les propriétés algébriques d'une loi de composition interne"
+          }
+        ]
+      },
+      {
+        "name": "Morphismes de structures",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'un homomorphisme de structures $(E,*)$ vers $(F,\\top)$"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Isomorphisme, endomorphisme et automorphisme de structures"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Transfert des propriétés algébriques par un isomorphisme de structures"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de la conservation des propriétés par isomorphisme"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Démontrer qu'une application est un isomorphisme et transférer la structure"
+          }
+        ]
+      },
+      {
+        "name": "Structure de groupe et sous-groupes",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition axiomatique d'un groupe $(G,*)$ et groupe abélien"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Propriétés fondamentales de l'élément neutre, symétrique et régularité"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Définition et caractérisation fondamentale d'un sous-groupe $xy^{-1}\\in H$"
+          },
+          {
+            "type": "proof",
+            "number": 4,
+            "title": "Preuve de la caractérisation d'un sous-groupe $xy^{-1}\\in H$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Démontrer qu'un ensemble muni d'une loi est un sous-groupe"
+          }
+        ]
+      },
+      {
+        "name": "Structure d'anneau et d'anneau intègre",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition axiomatique d'un anneau $(A,+,\\times)$ unitaire et commutatif"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Règles de calcul dans un anneau et éléments inversibles"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Diviseurs de zéro et définition d'un anneau intègre"
+          },
+          {
+            "type": "application",
+            "number": 4,
+            "title": "Vérifier la structure d'anneau et déterminer les diviseurs de zéro"
+          }
+        ]
+      },
+      {
+        "name": "Structure de corps",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition axiomatique d'un corps commutatif $(K,+,\\times)$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Caractérisation d'un corps et intégrité de sa structure"
+          },
+          {
+            "type": "application",
+            "number": 3,
+            "title": "Démontrer qu'un ensemble muni de deux lois forme un corps"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Le calcul des probabilités",
+    "sections": [
+      {
+        "name": "Dénombrement et combinatoire",
+        "items": [
+          {
+            "type": "property",
+            "number": 1,
+            "title": "Cardinal d'un ensemble fini et principe fondamental multiplicatif"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Arrangements avec répétition $n^p$ et sans répétition $\\displaystyle A_n^p=\\frac{n!}{(n-p)!}$"
+          },
+          {
+            "type": "property",
+            "number": 3,
+            "title": "Permutations $n!$ et combinaisons de sous-ensembles $\\displaystyle C_n^p=\\frac{n!}{p!(n-p)!}$"
+          },
+          {
+            "type": "rule",
+            "number": 4,
+            "title": "Typologie des tirages simultané $C_n^p$, sans remise $A_n^p$, avec remise $n^p$"
+          },
+          {
+            "type": "application",
+            "number": 5,
+            "title": "Dénombrer des tirages complexes de boules et de cartes"
+          }
+        ]
+      },
+      {
+        "name": "Espaces probabilisés et probabilité conditionnelle",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Vocabulaire des événements et probabilité sur un univers fini $\\Omega$"
+          },
+          {
+            "type": "property",
+            "number": 2,
+            "title": "Formule d'équiprobabilité $\\displaystyle p(A)=\\frac{\\text{Card}(A)}{\\text{Card}(\\Omega)}$"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Probabilité conditionnelle $\\displaystyle p_A(B)=\\frac{p(A\\cap B)}{p(A)}$ et probabilités composées"
+          },
+          {
+            "type": "theorem",
+            "number": 4,
+            "title": "Formule des probabilités totales sur un système complet d'événements"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve de la formule des probabilités totales par partition de $\\Omega$"
+          },
+          {
+            "type": "theorem",
+            "number": 6,
+            "title": "Formule de Bayes pour la probabilité des causes $\\displaystyle P_B(A_i)=\\frac{P(A_i)P_{A_i}(B)}{\\sum P(A_k)P_{A_k}(B)}$"
+          },
+          {
+            "type": "definition",
+            "number": 7,
+            "title": "Indépendance de deux événements $p(A\\cap B)=p(A)p(B)$"
+          },
+          {
+            "type": "application",
+            "number": 8,
+            "title": "Calculer des probabilités à l'aide d'arbres pondérés et de Bayes"
+          }
+        ]
+      },
+      {
+        "name": "Variables aléatoires et lois de probabilité",
+        "items": [
+          {
+            "type": "definition",
+            "number": 1,
+            "title": "Définition d'une variable aléatoire réelle $X$ et loi de probabilité"
+          },
+          {
+            "type": "definition",
+            "number": 2,
+            "title": "Fonction de répartition $F_X(x)=P(X\\le x)$ et propriétés en escalier"
+          },
+          {
+            "type": "definition",
+            "number": 3,
+            "title": "Espérance mathématique $\\displaystyle E(X)=\\sum x_i p_i$, variance $V(X)$ et écart-type $\\sigma(X)$"
+          },
+          {
+            "type": "property",
+            "number": 4,
+            "title": "Formule de Koenig-Huygens $\\displaystyle V(X)=E(X^2)-(E(X))^2$"
+          },
+          {
+            "type": "proof",
+            "number": 5,
+            "title": "Preuve de la formule de Koenig-Huygens par linéarité de l'espérance"
+          },
+          {
+            "type": "definition",
+            "number": 6,
+            "title": "Loi binomiale $\\mathcal{B}(n,p)$ par répétition d'épreuves indépendantes"
+          },
+          {
+            "type": "property",
+            "number": 7,
+            "title": "Espérance $E(X)=np$ et variance $V(X)=np(1-p)$ d'une loi binomiale"
+          },
+          {
+            "type": "application",
+            "number": 8,
+            "title": "Déterminer la loi de probabilité, espérance et variance d'une variable aléatoire"
+          }
+        ]
+      }
+    ]
+  }
+]
