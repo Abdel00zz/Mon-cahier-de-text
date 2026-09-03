@@ -29,37 +29,39 @@ export const ProfileStep = memo<ProfileStepProps>(
         {copy.cycleSelectionHint}
       </p>
       <div
-        className="grid gap-3 sm:grid-cols-3"
+        className="grid gap-3.5 sm:grid-cols-3"
         role="group"
         aria-label={copy.teachingCycle}
       >
-        {ONBOARDING_CYCLES.map(({ key, icon: Icon }) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={cycles.includes(key)}
-            onClick={() =>
-              onCyclesChange(
-                cycles.includes(key)
-                  ? cycles.filter((c) => c !== key)
-                  : [...cycles, key],
-              )
-            }
-            className="keep-surface keep-interactive keep-choice flex min-h-24 items-center gap-3 p-4 text-start sm:min-h-36 sm:flex-col sm:items-start"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
-              <Icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span>
-              <span className="block text-sm font-semibold">
+        {ONBOARDING_CYCLES.map(({ key }) => {
+          const isSelected = cycles.includes(key);
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() =>
+                onCyclesChange(
+                  isSelected
+                    ? cycles.filter((c) => c !== key)
+                    : [...cycles, key],
+                )
+              }
+              className={`group relative flex min-h-[136px] flex-col items-center justify-center rounded-2xl border p-5 text-center transition-all duration-200 cursor-pointer sm:min-h-[150px] sm:p-6 ${
+                isSelected
+                  ? 'border-2 border-amber-400 bg-amber-400/10 shadow-xs dark:border-amber-400 dark:bg-amber-400/20'
+                  : 'border-[#eaeaea] bg-white text-[#202124] hover:border-neutral-400 hover:bg-[#fafafa] dark:border-[#27272a] dark:bg-[#18181b] dark:text-[#e8eaed] dark:hover:border-neutral-600'
+              }`}
+            >
+              <span className="block text-base font-bold text-[#202124] dark:text-[#e8eaed] sm:text-lg leading-snug">
                 {copy.cycleLabels[key]}
               </span>
-              <span className="mt-1 block text-xs leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+              <span className="mt-2 block text-xs leading-relaxed text-[#5f6368] dark:text-[#bdc1c6] sm:text-[13px] max-w-[230px]">
                 {copy.cycleDescriptions[key]}
               </span>
-            </span>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
       <details className="keep-surface p-4">
         <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">

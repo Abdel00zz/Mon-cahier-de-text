@@ -73,12 +73,12 @@ const renderChapterTitleStyled = (text: string) => {
 
     return (
       <span className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
-        <span className="text-[0.95em] font-bold text-blue-600 dark:text-blue-400 font-sans tracking-tight">
+        <span className="text-[0.95em] font-bold text-primary font-sans tracking-tight">
           {renderChapterLabel(chapterPrefix)}
-          {separator ? <span className="ms-1 text-blue-600/80 dark:text-blue-400/80">{separator}</span> : null}
+          {separator ? <span className="ms-1 text-primary/80">{separator}</span> : null}
         </span>
         {restTitle ? (
-          <span className="text-[0.85em] font-semibold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
+          <span className="text-[0.85em] font-semibold text-[#202124] dark:text-[#e8eaed]">
             {restTitle}
           </span>
         ) : null}
@@ -87,7 +87,7 @@ const renderChapterTitleStyled = (text: string) => {
   }
 
   return (
-    <span className="text-[0.85em] font-bold text-[#202124] dark:text-[#e8eaed] dark:text-foreground">
+    <span className="text-[0.85em] font-bold text-[#202124] dark:text-[#e8eaed]">
       {text}
     </span>
   );
@@ -262,17 +262,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
       const content = (
         <div className="editor-table-content max-w-none space-y-0.5 sm:space-y-1 text-[#3c4043] dark:text-[#bdc1c6]">
-          {/* Titre */}
+          {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
-            className="editor-type-item-title min-w-0 truncate whitespace-nowrap p-0 font-semibold text-[#202124] dark:text-[#e8eaed]"
+            className="editor-type-item-title min-w-0 break-words leading-[1.35] p-0 font-semibold text-[#202124] dark:text-[#e8eaed]"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
-          {/* Description : encadré sobre sous le titre avec branchement */}
+          {/* Description : encadré sobre sous le titre façon Google Keep */}
           {allowDescription && (
-            <div className="editor-item-description editor-type-description mt-1.5 border-s-[2px] border-border/70 bg-muted/10 py-1 sm:py-1.5 text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
+            <div className="editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-neutral-50/70 dark:bg-white/[0.03] px-2 py-1 text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
@@ -296,10 +296,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       return (
-        <div className="editor-lesson-row editor-table-content font-editor-system flex min-w-0 items-center py-1 transition-colors duration-150 hover:bg-[#f8f9fa] dark:hover:bg-white/[0.04]">
+        <div className="editor-lesson-row editor-table-content font-editor-system flex min-w-0 items-start py-0.5 sm:py-1 transition-colors duration-150">
           <Badge
             variant="outline"
-            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[3px] border-0 py-0 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default lg:py-px lg:tracking-wide ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-start mt-[1.5px] sm:mt-[2px] lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >

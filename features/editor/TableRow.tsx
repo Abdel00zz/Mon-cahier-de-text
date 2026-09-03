@@ -297,31 +297,29 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-warning/[0.07]'
     : hasAssignedDate
-      ? 'bg-card/[0.28] dark:bg-slate-950/[0.2]'
-      : 'bg-card/[0.18] dark:bg-slate-950/[0.12]';
-  const rowWash = isSelected ? 'bg-primary/[0.085]' : datedWash;
+      ? 'bg-[#fffdfa]/70 dark:bg-[#28292c]/50'
+      : 'bg-transparent';
+  const rowWash = isSelected ? 'bg-[#e8f0fe]/70 dark:bg-[#1967d2]/20' : datedWash;
   const hoverWash = isSelected
     ? ''
     : hasWarning
       ? 'hover:bg-warning/[0.11]'
       : hasAssignedDate
-        ? 'hover:bg-primary/[0.07]'
-        : 'hover:bg-muted/60';
+        ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]'
+        : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]';
   // §G tableau serré : AUCUN padding de cadre, les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
   const frameClasses = `group relative ${rowWash} ${hoverWash} transition-colors duration-150`;
   
-  // Séparateurs verticaux Date|Contenu|Remarque, filets AFFIRMÉS (2 px) mais
-  // harmonieux : ton neutre doux au repos, chaud sur les rangées datées,
-  // primaire sur la sélection. Une seule épaisseur partout = rythme régulier.
+  // Séparateurs verticaux Date|Contenu|Remarque, filets nets et discrets style Keep
   const dividerClass = isSelected
     ? 'border-e border-primary/30'
     : hasAssignedDate
       ? hasWarning
         ? 'border-e border-warning/40'
-        : 'border-e border-border/80'
-      : 'border-e border-border/80';
+        : 'border-e border-[#e0e0e0] dark:border-[#3c4043]'
+      : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
@@ -329,8 +327,8 @@ const TableRowComponent: FC<TableRowProps> = ({
       : hasAssignedDate
         ? hasWarning
           ? 'border-e border-warning/40'
-          : 'border-e border-border/80'
-        : 'border-e border-border/80';
+          : 'border-e border-[#e0e0e0] dark:border-[#3c4043]'
+        : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;
@@ -345,7 +343,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]' : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -403,7 +401,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-primary/[0.055]' : 'hover:bg-muted/60'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]' : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;

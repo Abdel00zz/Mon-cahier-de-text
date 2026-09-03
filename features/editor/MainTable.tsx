@@ -58,20 +58,18 @@ const TableHeader: React.FC = React.memo(() => {
   const { t } = useLocale();
   return (
   /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
-     avec celles des rangées (elles aussi sans padding de cadre). En-tête
-     de colonnes NON collant : il défile avec le tableau (seule la barre
-     d'outils reste épinglée en haut). */
-  <div className="border-b border-slate-300/80 bg-slate-100/95 shadow-[inset_0_-1px_0_rgba(148,163,184,0.16)] dark:border-slate-700/80 dark:bg-slate-800/90 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.04)]">
+     avec celles des rangées. Style épuré inspiré de Google Keep. */
+  <div className="border-b border-[#e0e0e0] bg-[#f8f9fa]/95 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)] dark:border-[#3c4043] dark:bg-[#28292c]/95 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.03)]">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-e border-slate-300/75 px-1 py-1.5 text-center dark:border-slate-700/80 sm:px-2.5 sm:py-2">
-        <span className="editor-type-table-side font-sans font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.date')}</span>
+      <div className="flex items-center justify-center border-e border-[#e0e0e0] px-1 py-1.5 text-center dark:border-[#3c4043] sm:px-2.5 sm:py-2">
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-neutral-600 dark:text-neutral-300">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-e border-slate-300/75 px-2 py-1.5 text-center dark:border-slate-700/80 sm:px-3 sm:py-2">
-        <span className="editor-type-table-main font-sans font-black uppercase tracking-[0.08em] text-slate-800 dark:text-slate-100">{t('editor.content')}</span>
+      <div className="flex items-center justify-center border-e border-[#e0e0e0] px-2 py-1.5 text-center dark:border-[#3c4043] sm:px-3 sm:py-2">
+        <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-neutral-800 dark:text-neutral-100">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="editor-type-table-side font-sans font-extrabold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-300">{t('editor.remark')}</span>
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-neutral-600 dark:text-neutral-300">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -275,19 +273,19 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         ? 'border-e border-primary/45'
         : hasWarning
             ? 'border-e border-warning/45'
-            : 'border-e border-border/90';
+            : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
 
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y-2 border-border/80 transition-colors duration-200`,
+                `group relative grid ${TABLE_GRID_CLASS} border-y border-[#dadce0] dark:border-[#3c4043] transition-colors duration-200`,
                 hasWarning
                     ? 'border-warning/[0.6] bg-warning/[0.07]'
-                    : 'bg-card/[0.18] dark:bg-slate-950/[0.14]',
-                groupIsSelected ? 'bg-primary/[0.085]' : '',
+                    : 'bg-white dark:bg-[#202124]',
+                groupIsSelected ? 'bg-[#e8f0fe]/70 dark:bg-[#1967d2]/20' : '',
             ].filter(Boolean).join(' ')}
         >
-            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-card/[0.32] dark:bg-slate-950/[0.25]'}`}>
+            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-[#fafafa]/80 dark:bg-[#252629]/60'}`}>
                 {uniqueDates.length > 1 ? (
                     <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
                 ) : (
@@ -564,12 +562,12 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }
 
   return (
-    /* Cadre complet : le tableau reste lisible comme un seul objet sur ses quatre côtés. */
+    /* Cadre complet inspiré de Google Keep : carte épurée, bords arrondis réguliers, ombre douce */
     <Card
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-[22px] border border-border/80 bg-card/[0.58] shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:bg-slate-950/[0.52] sm:rounded-[24px]"
+      className="rtl-table mx-0 overflow-hidden rounded-2xl border border-[#dadce0] bg-white shadow-[0_1px_3px_0_rgba(60,64,67,0.12),0_1px_2px_0_rgba(60,64,67,0.08)] dark:border-[#5f6368]/60 dark:bg-[#202124] transition-shadow duration-200"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

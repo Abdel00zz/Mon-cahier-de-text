@@ -80,12 +80,12 @@ export const SubjectsStep = memo<SubjectsStepProps>(
                   className={cn(
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                     selected
-                      ? 'border-transparent bg-stone-800 dark:bg-stone-600'
-                      : 'border-[#e0e0e0] bg-transparent dark:border-[#5f6368]',
+                      ? 'border-amber-400 bg-[#facc15]'
+                      : 'border-[#dadce0] bg-transparent dark:border-[#5f6368]',
                   )}
                 >
                   {selected && (
-                    <Check className="h-3 w-3 text-white" aria-hidden="true" />
+                    <Check className="h-3.5 w-3.5 text-neutral-950 stroke-[3]" aria-hidden="true" />
                   )}
                 </span>
                 <span className="min-w-0 flex-1">

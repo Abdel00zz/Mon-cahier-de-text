@@ -78,13 +78,9 @@ const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> =
   <button
     type="button"
     onClick={onClick}
-    className="keep-surface keep-interactive group flex min-h-14 w-full cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary/40"
+    className="keep-surface keep-interactive group flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-2xl border border-[#dadce0] dark:border-[#5f6368]/60 bg-white dark:bg-[#202124] px-5 py-3.5 text-center text-sm font-semibold text-[#202124] dark:text-[#e8eaed] transition-all duration-200 hover:border-[#bdc1c6] dark:hover:border-[#70757a] hover:bg-[#f8f9fa] dark:hover:bg-[#28292c] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]"
   >
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-muted text-muted-foreground">
-      <GraduationCap className="h-[18px] w-[18px]" />
-    </span>
-    <span className="min-w-0 flex-1 leading-snug">{children}</span>
-    <ChevronRight className="h-4 w-4 shrink-0 text-[#5f6368] dark:text-[#9aa0a6] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#202124] dark:text-[#e8eaed] rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+    <span className="min-w-0 flex-1 leading-snug text-center">{children}</span>
   </button>
 );
 

@@ -648,7 +648,7 @@
     --editor-fs-item-title: 11.7px;
     --editor-fs-description: 11.5px;
     --editor-fs-page: 10px;
-    --editor-fs-badge: 8px;
+    --editor-fs-badge: 7.2px;
     --editor-fs-date-day: 16px;
     --editor-fs-date-meta: 8px;
     --editor-fs-date-pair: 12px;
@@ -658,7 +658,7 @@
     --editor-fs-remark: 10px;
     --editor-fs-separator-date: 11px;
     --editor-fs-separator-label: 10px;
-    --editor-badge-min-width: 27px;
+    --editor-badge-min-width: 24px;
     --editor-badge-padding-inline: 2px;
     --editor-lesson-gap: 6px;
     --editor-lesson-indent: 0px;
@@ -718,7 +718,7 @@
       --editor-fs-item-title: 13px;
       --editor-fs-description: 13px;
       --editor-fs-page: 12px;
-      --editor-fs-badge: 8.5px;
+      --editor-fs-badge: 7.65px;
       --editor-fs-date-day: 18px;
       --editor-fs-date-meta: 9px;
       --editor-fs-date-pair: 14px;
@@ -726,7 +726,7 @@
       --editor-fs-table-side: 10px;
       --editor-fs-table-main: 11px;
       --editor-fs-remark: 11px;
-      --editor-badge-min-width: 30px;
+      --editor-badge-min-width: 27px;
       --editor-badge-padding-inline: 4px;
       --editor-lesson-gap: 8px;
       --editor-lesson-indent: 8px;
@@ -738,8 +738,8 @@
   @media (min-width: 1024px) {
     [data-editor-table] {
       --editor-fs-item-title: 14.5px;
-      --editor-fs-badge: 9px;
-      --editor-badge-min-width: 32px;
+      --editor-fs-badge: 8.1px;
+      --editor-badge-min-width: 29px;
       --editor-lesson-gap: 10px;
       --editor-lesson-indent: 12px;
       --editor-description-indent: 16px;
@@ -758,7 +758,7 @@
       --editor-fs-item-title: 10px;
       --editor-fs-description: 9.25px;
       --editor-fs-page: 8px;
-      --editor-fs-badge: 7px;
+      --editor-fs-badge: 6.3px;
       --editor-fs-date-day: 13px;
       --editor-fs-date-meta: 7px;
       --editor-fs-date-pair: 10px;
@@ -768,7 +768,7 @@
       --editor-fs-remark: 8px;
       --editor-fs-separator-date: 10px;
       --editor-fs-separator-label: 8.5px;
-      --editor-badge-min-width: 22px;
+      --editor-badge-min-width: 20px;
       --editor-badge-padding-inline: 1px;
       --editor-lesson-gap: 5px;
       --editor-lesson-indent: 0px;

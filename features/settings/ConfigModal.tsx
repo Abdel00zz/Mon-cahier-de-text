@@ -278,7 +278,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         <p className="text-[11px] text-muted-foreground mt-0.5">{t('language.settings.description')}</p>
       </header>
 
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-2.5">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5">
         {SETTINGS_INTERFACE_LOCALES.map(option => {
           const active = currentLocale === option.value;
           return (
@@ -294,9 +294,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   : 'border-border/70 bg-card/80 text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed] hover:border-amber-300/60'
               )}
             >
-              {active && (
-                <span className="absolute top-1.5 right-1.5 flex h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#41331c]" />
-              )}
               <div className="flex h-8 items-center justify-center">
                 <CountryFlag code={option.value as 'fr' | 'ar' | 'en'} className="w-8 h-5 rounded-xs shadow-xs" />
               </div>

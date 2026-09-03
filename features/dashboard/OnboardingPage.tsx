@@ -10,7 +10,6 @@ import { useOnboardingNavigation } from './onboarding/useOnboardingNavigation';
 import { ClassesStep } from './onboarding/steps/ClassesStep';
 import { ProfileStep } from './onboarding/steps/ProfileStep';
 import { SubjectsStep } from './onboarding/steps/SubjectsStep';
-import { CreateClassModal } from './modals/CreateClassModal';
 import type { ModalLang, OnboardingPageProps } from './onboarding/types';
 
 const ScheduleStep = lazy(() =>
@@ -40,7 +39,6 @@ export const OnboardingPage = ({
     () => subjectOptionsFor(config.selectedSubjects),
     [config.selectedSubjects],
   );
-  const [createOpen, setCreateOpen] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const finishingRef = useRef(false);
   const [initialStep] = useState(() => initialOnboardingStep(config, classes));
@@ -97,101 +95,94 @@ export const OnboardingPage = ({
     copy.sectionClasses,
     copy.sectionSchedule,
   ];
-  const firstClassAction = step === 3 && classes.length === 0;
   const next = () => {
-    if (firstClassAction) setCreateOpen(true);
-    else if (step === 4) void finish(onComplete);
+    if (step === 4) void finish(onComplete);
     else navigation.next();
   };
 
   return (
-    <>
-      <OnboardingShell
-        lang={lang}
-        step={step}
-        title={titles[step - 1]}
-        copy={copy}
-        theme={config.theme ?? 'light'}
-        onThemeChange={(theme) => onConfigChange({ theme })}
-        onLanguageChange={(applicationLocale) =>
-          onConfigChange({ applicationLocale })
-        }
-        canContinue={navigation.canContinue}
-        finishing={finishing}
-        primaryLabel={
-          firstClassAction ? copy.addClass : step === 4 ? copy.start : copy.next
-        }
-        onBack={navigation.back}
-        onNext={next}
-        onSkip={() => void finish(onSkip)}
-      >
-        {step === 1 && (
-          <ProfileStep
-            teacherName={config.defaultTeacherName ?? ''}
-            establishmentName={config.establishmentName ?? ''}
-            cycles={selectedCycles}
-            copy={copy}
-            onTeacherNameChange={(defaultTeacherName) =>
-              onConfigChange({ defaultTeacherName })
-            }
-            onEstablishmentChange={(establishmentName) =>
-              onConfigChange({ establishmentName })
-            }
-            onCyclesChange={handleCyclesChange}
-          />
-        )}
-        {step === 2 && (
-          <SubjectsStep
-            subjects={subjectOptions}
-            selectedSubjects={selectedSubjects}
-            teacherName={config.defaultTeacherName ?? ''}
-            lang={lang}
-            copy={copy}
-            onToggle={handleSubjectToggle}
-          />
-        )}
-        {step === 3 && (
-          <ClassesStep
+    <OnboardingShell
+      lang={lang}
+      step={step}
+      title={titles[step - 1]}
+      copy={copy}
+      theme={config.theme ?? 'light'}
+      onThemeChange={(theme) => onConfigChange({ theme })}
+      onLanguageChange={(applicationLocale) =>
+        onConfigChange({ applicationLocale })
+      }
+      canContinue={navigation.canContinue}
+      finishing={finishing}
+      primaryLabel={
+        step === 3 && classes.length === 0
+          ? copy.ignoreClass
+          : step === 4
+          ? copy.start
+          : copy.next
+      }
+      onBack={navigation.back}
+      onNext={next}
+      onSkip={() => void finish(onSkip)}
+    >
+      {step === 1 && (
+        <ProfileStep
+          teacherName={config.defaultTeacherName ?? ''}
+          establishmentName={config.establishmentName ?? ''}
+          cycles={selectedCycles}
+          copy={copy}
+          onTeacherNameChange={(defaultTeacherName) =>
+            onConfigChange({ defaultTeacherName })
+          }
+          onEstablishmentChange={(establishmentName) =>
+            onConfigChange({ establishmentName })
+          }
+          onCyclesChange={handleCyclesChange}
+        />
+      )}
+      {step === 2 && (
+        <SubjectsStep
+          subjects={subjectOptions}
+          selectedSubjects={selectedSubjects}
+          teacherName={config.defaultTeacherName ?? ''}
+          lang={lang}
+          copy={copy}
+          onToggle={handleSubjectToggle}
+        />
+      )}
+      {step === 3 && (
+        <ClassesStep
+          classes={classes}
+          lang={lang}
+          copy={copy}
+          teacherCycles={selectedCycles}
+          teacherSubjects={selectedSubjects}
+          onCreateClass={onCreateClass}
+          onRemove={handleRemove}
+          onAdvance={navigation.next}
+          onBack={navigation.back}
+          onSkip={navigation.next}
+        />
+      )}
+      {step === 4 && (
+        <Suspense
+          fallback={
+            <div
+              role="status"
+              aria-label={copy.sectionSchedule}
+              className="keep-surface min-h-64 p-4"
+            >
+              <div className="mb-4 h-6 w-1/3 rounded-lg skeleton-shimmer" />
+              <div className="h-44 rounded-lg skeleton-shimmer" />
+            </div>
+          }
+        >
+          <ScheduleStep
             classes={classes}
-            lang={lang}
-            copy={copy}
-            onAdd={() => setCreateOpen(true)}
-            onRemove={handleRemove}
+            config={config}
+            onConfigChange={onConfigChange}
           />
-        )}
-        {step === 4 && (
-          <Suspense
-            fallback={
-              <div
-                role="status"
-                aria-label={copy.sectionSchedule}
-                className="keep-surface min-h-64 p-4"
-              >
-                <div className="mb-4 h-6 w-1/3 rounded-lg skeleton-shimmer" />
-                <div className="h-44 rounded-lg skeleton-shimmer" />
-              </div>
-            }
-          >
-            <ScheduleStep
-              classes={classes}
-              config={config}
-              onConfigChange={onConfigChange}
-            />
-          </Suspense>
-        )}
-      </OnboardingShell>
-      <CreateClassModal
-        isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        defaultCycle={selectedCycles[0] ?? 'college'}
-        teacherCycles={selectedCycles}
-        teacherSubjects={selectedSubjects}
-        existingClasses={classes}
-        onCreate={(details) => {
-          onCreateClass(details);
-          toast.success(copy.classAdded);
-        }}
-      />
-    </>
+        </Suspense>
+      )}
+    </OnboardingShell>
   );
 };

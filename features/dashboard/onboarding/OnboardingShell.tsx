@@ -48,21 +48,21 @@ export function OnboardingShell({
   return (
     <div
       dir={rtl ? 'rtl' : 'ltr'}
-      className="onboarding-keep flex min-h-dvh flex-col bg-white text-[#202124] dark:bg-[#202124] dark:text-[#e8eaed]"
+      className="onboarding-keep flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#121212] dark:text-[#ededed]"
     >
-      <header className="border-b border-[#e0e0e0] dark:border-[#5f6368]">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2.5">
+      <header className="bg-[#fcfcfc] dark:bg-[#121212]">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <img
               src="/icone.png"
               width="36"
               height="36"
               alt=""
-              className="h-9 w-9 rounded-lg object-contain"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain"
             />
-            <span className="text-sm font-semibold">{copy.brand}</span>
+            <span className="text-sm font-semibold truncate">{copy.brand}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <div
               className="flex gap-1"
               role="group"
@@ -76,7 +76,7 @@ export function OnboardingShell({
                   disabled={finishing}
                   aria-pressed={value === lang}
                   onClick={() => onLanguageChange(value)}
-                  className="keep-surface keep-choice min-h-11 px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="keep-surface keep-choice min-h-10 sm:min-h-11 px-2.5 sm:px-3 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   {value === 'fr' ? 'FR' : 'العربية'}
                 </button>
@@ -90,7 +90,7 @@ export function OnboardingShell({
               value={theme}
               disabled={finishing}
               onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-              className="keep-surface min-h-11 max-w-32 px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="keep-surface min-h-10 sm:min-h-11 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <option value="light">{rtl ? 'فاتح' : 'Clair'}</option>
               <option value="dark">{rtl ? 'داكن' : 'Sombre'}</option>
@@ -101,17 +101,17 @@ export function OnboardingShell({
       </header>
       <main
         className={
-          'mx-auto flex w-full flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8 ' +
+          'mx-auto flex w-full flex-1 flex-col px-3 py-3.5 sm:px-6 sm:py-8 ' +
           (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
         }
       >
-        <div className="mb-5 flex items-center justify-between gap-3 text-sm text-[#5f6368] dark:text-[#bdc1c6]">
+        <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[#5f6368] dark:text-[#bdc1c6] sm:mb-5">
           <span>{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
             type="button"
             disabled={finishing}
             onClick={onSkip}
-            className="min-h-11 rounded-lg px-2 underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5"
+            className="min-h-9 rounded-lg px-2 text-xs sm:min-h-11 sm:text-sm underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5"
           >
             {rtl ? 'الإعداد لاحقاً' : 'Configurer plus tard'}
           </button>
@@ -122,16 +122,16 @@ export function OnboardingShell({
           aria-valuemin={1}
           aria-valuemax={ONBOARDING_TOTAL_STEPS}
           aria-valuenow={step}
-          className="mb-6 flex gap-1.5"
+          className="mb-3.5 flex gap-1.5 sm:mb-6"
         >
           {Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, index) => (
             <span
               key={index}
               className={
-                'h-1 flex-1 rounded-full ' +
+                'h-1 flex-1 rounded-full transition-all duration-300 ' +
                 (index < step
-                  ? 'bg-stone-700 dark:bg-stone-300'
-                  : 'bg-stone-200 dark:bg-stone-700')
+                  ? 'bg-[#facc15]'
+                  : 'bg-neutral-200 dark:bg-[#27272a]')
               }
             />
           ))}
@@ -139,7 +139,7 @@ export function OnboardingShell({
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="mb-3 text-2xl font-semibold leading-snug tracking-tight outline-none sm:text-3xl"
+          className="mb-2.5 text-lg font-semibold leading-snug tracking-tight outline-none sm:mb-3 sm:text-3xl"
         >
           {title}
         </h1>
@@ -151,42 +151,44 @@ export function OnboardingShell({
         <fieldset
           disabled={finishing}
           aria-busy={finishing}
-          className="min-w-0 flex-1"
+          className="min-w-0 w-full"
         >
           {children}
         </fieldset>
-        <footer className="sticky bottom-0 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#e0e0e0] bg-white py-4 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-[#5f6368] dark:bg-[#202124]">
-          <button
-            type="button"
-            disabled={step === 1 || finishing}
-            onClick={onBack}
-            className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-sm font-medium hover:bg-black/5 focus-visible:outline-2 disabled:invisible dark:hover:bg-white/5"
-          >
-            <ChevronLeft
-              className="h-4 w-4 rtl:rotate-180"
-              aria-hidden="true"
-            />
-            {copy.back}
-          </button>
-          <button
-            type="button"
-            disabled={!canContinue || finishing}
-            onClick={onNext}
-            className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white"
-          >
-            {finishing && (
-              <Loader2
-                className="h-4 w-4 animate-spin motion-reduce:animate-none"
+        {step !== 3 && (
+          <footer className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 pb-6">
+            <button
+              type="button"
+              disabled={step === 1 || finishing}
+              onClick={onBack}
+              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-[#eaeaea] bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 focus-visible:outline-2 disabled:invisible dark:border-[#27272a] dark:bg-[#18181b] dark:text-neutral-300 dark:hover:bg-[#222]"
+            >
+              <ChevronLeft
+                className="h-4 w-4 rtl:rotate-180"
                 aria-hidden="true"
               />
-            )}
-            <span>{finishing ? copy.finishing : primaryLabel}</span>
-            <ChevronRight
-              className="h-4 w-4 shrink-0 rtl:rotate-180"
-              aria-hidden="true"
-            />
-          </button>
-        </footer>
+              {copy.back}
+            </button>
+            <button
+              type="button"
+              disabled={!canContinue || finishing}
+              onClick={onNext}
+              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[#facc15] hover:bg-[#eab308] px-6 sm:px-8 py-2.5 text-sm font-bold text-neutral-950 shadow-xs hover:shadow transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#facc15] dark:text-neutral-950 dark:hover:bg-[#eab308]"
+            >
+              {finishing && (
+                <Loader2
+                  className="h-4 w-4 animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+              )}
+              <span>{finishing ? copy.finishing : primaryLabel}</span>
+              <ChevronRight
+                className="h-4 w-4 shrink-0 rtl:rotate-180"
+                aria-hidden="true"
+              />
+            </button>
+          </footer>
+        )}
       </main>
     </div>
   );

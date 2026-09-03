@@ -88,7 +88,13 @@ const App: React.FC = () => {
   );
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
-  const [isSidebarExpanded, setSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('cdt_sidebar_expanded_v1');
+      if (stored !== null) return stored === 'true';
+    } catch {}
+    return false; // Réduite par défaut sur PC
+  });
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
   // Le moteur MathJax est une dépendance réelle du rendu des cahiers. L'état
   // évite de révéler une formule brute avant que ses notations soient prêtes.
@@ -360,7 +366,13 @@ const App: React.FC = () => {
           onTabChange={handleTabChange}
           notificationsCount={notificationFeed.attentionCount}
           isExpanded={isSidebarExpanded}
-          onToggleExpanded={() => setSidebarExpanded(expanded => !expanded)}
+          onToggleExpanded={() => setSidebarExpanded(expanded => {
+            const next = !expanded;
+            try {
+              localStorage.setItem('cdt_sidebar_expanded_v1', String(next));
+            } catch {}
+            return next;
+          })}
           isRtl={isRtl}
           teacherName={config.defaultTeacherName || (authUser ? `${authUser.prenom || ''} ${authUser.nom || ''}`.trim() : '')}
         />

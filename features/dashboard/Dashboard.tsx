@@ -11,7 +11,6 @@ import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
-import { GettingStarted } from './GettingStarted';
 import { ClassInfo, Cycle } from '@/types';
 import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
@@ -138,7 +137,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const closeOnboarding = useCallback(async () => {
         // Le stockage local ferme la page immédiatement ; le compte et la
         // synchronisation conservent ensuite ce choix sur les autres appareils.
-        if (!welcomeCompleted) updateConfig({ hasCompletedWelcome: true, showGettingStarted: true });
+        if (!welcomeCompleted) updateConfig({ hasCompletedWelcome: true });
         setOnboardingOpen(false);
         void completeWelcome().catch(() => {
             // Hors ligne : hasCompletedWelcome est déjà stocké localement et
@@ -147,9 +146,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }, [completeWelcome, updateConfig, welcomeCompleted]);
 
     const openNotebook = useCallback((classInfo: ClassInfo) => {
-        if (config.showGettingStarted && !config.firstNotebookOpened) updateConfig({ firstNotebookOpened: true });
         onSelectClass(classInfo);
-    }, [config.showGettingStarted, config.firstNotebookOpened, updateConfig, onSelectClass]);
+    }, [onSelectClass]);
 
     const createClass = useCallback((details: { name: string; subject: string; cycle?: Cycle }): ClassInfo => {
         const created = addClass({
@@ -525,7 +523,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 )}
 
                 <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
-                    {classes.length > 0 && <GettingStarted config={config} classes={classes} onCreate={()=>setCreateModalOpen(true)} onOpen={openNotebook} onSchedule={()=>onOpenSchedule?.()} onDismiss={()=>updateConfig({showGettingStarted:false})}/>}
                     {classes.length > 0 && (
                         <div className="mb-4">
                             <SectionHeader

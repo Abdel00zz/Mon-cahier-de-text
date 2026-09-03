@@ -5,7 +5,6 @@ import {
   Laptop,
   Type,
   Check,
-  Eye,
   RotateCcw,
   Palette,
   Layout,
@@ -28,8 +27,6 @@ import {
   UIFontOption,
 } from '@/constants/themePresets';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { MathText } from '@/components/ui/math-text';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -628,61 +625,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
         </DropdownMenu>
       </section>
 
-      {/* ── Section 7 : Aperçu Typographique & Pédagogique ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="font-preview-section">
-        <div className="mb-3 flex items-center gap-2">
-          <Eye className="h-4 w-4 text-primary" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-            {t('settings.appearance.previewTitle')}
-          </h4>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div className="settings-surface space-y-2 p-3.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">Français / Latin : {selectedLatinObj.name}</span>
-              <Badge variant="outline" className="text-[10px] uppercase">{selectedLatinObj.category}</Badge>
-            </div>
-            <div style={{ fontFamily: selectedLatinObj.family }} className="space-y-1.5 text-foreground" dir="ltr">
-              <div className="flex items-center justify-between text-[14px] font-semibold">
-                <span>Activité 2 : Étude de fonction</span>
-                <span className="text-xs font-normal text-muted-foreground">(p. 42)</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {"Soit la fonction $f(x) = \\frac{x^2 - 1}{x + 2}$. Calculer $f'(x)$ et dresser le tableau de variations."}
-              </p>
-              <div className="pt-1">
-                <MathText source="f'(x) = \frac{x^2 + 4x + 1}{(x+2)^2}" cacheKey="preview-latin" inline>
-                  {"f'(x) = \\frac{x^2 + 4x + 1}{(x+2)^2}"}
-                </MathText>
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-surface space-y-2 p-3.5" dir="rtl">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">العربية : {selectedArabicObj.name}</span>
-              <Badge variant="outline" className="text-[10px]">{selectedArabicObj.category}</Badge>
-            </div>
-            <div style={{ fontFamily: selectedArabicObj.family }} className="space-y-1.5 text-foreground">
-              <div className="flex items-center justify-between text-[14px] font-semibold">
-                <span>نشاط 2: دراسة الدوال وتطبيقات الاشتقاق</span>
-                <span className="text-xs font-normal text-muted-foreground">(ص. 42)</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {"لتكن الدالة $f(x) = \\frac{x^2 - 1}{x + 2}$. احسب المشتقة $f'(x)$ ثم أنشئ جدول التغيرات."}
-              </p>
-              <div className="pt-1">
-                <MathText source="f'(x) = \frac{x^2 + 4x + 1}{(x+2)^2}" cacheKey="preview-arabic" inline>
-                  {"f'(x) = \\frac{x^2 + 4x + 1}{(x+2)^2}"}
-                </MathText>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 8 : Personnalisation Directe & Avancée des Couleurs ── */}
+      {/* ── Section 7 : Personnalisation Directe & Avancée des Couleurs ── */}
       <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="advanced-colors-section">
         <div className="flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-2.5">
