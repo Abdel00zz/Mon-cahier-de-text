@@ -81,6 +81,11 @@ const App: React.FC = () => {
       ? { view: 'dashboard', activeClass: null }
       : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
   );
+  const [notificationsOrigin, setNotificationsOrigin] = useState<RouteSnapshot>(() =>
+    initialRouteRef.current?.view === 'notifications'
+      ? { view: 'dashboard', activeClass: null }
+      : initialRouteRef.current ?? { view: 'dashboard', activeClass: null }
+  );
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState(true);
@@ -129,14 +134,19 @@ const App: React.FC = () => {
     setOnboardingVisible(false);
     setActiveClass(null);
     setSettingsOrigin({ view: 'dashboard', activeClass: null });
+    setNotificationsOrigin({ view: 'dashboard', activeClass: null });
     setView('dashboard');
     window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
   }, [authStatus]);
 
   const saveCurrentScroll = useCallback(() => {
-    const visibleRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
+    const visibleRoute = view === 'settings'
+      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
+      : view === 'notifications'
+        ? notificationsOrigin
+        : { view, activeClass };
     scrollPositionsRef.current[getScrollKey(visibleRoute.view, visibleRoute.activeClass)] = window.scrollY;
-  }, [activeClass, settingsOrigin, view]);
+  }, [activeClass, notificationsOrigin, settingsOrigin, view]);
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -145,7 +155,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const visibleRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
+    const visibleRoute = view === 'settings'
+      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
+      : view === 'notifications'
+        ? notificationsOrigin
+        : { view, activeClass };
     const key = getScrollKey(visibleRoute.view, visibleRoute.activeClass);
     const top = scrollPositionsRef.current[key] ?? 0;
     const animationFrame = window.requestAnimationFrame(() => window.scrollTo(0, top));
@@ -155,7 +169,7 @@ const App: React.FC = () => {
       window.cancelAnimationFrame(animationFrame);
       window.clearTimeout(settleTimer);
     };
-  }, [activeClass, settingsOrigin, view]);
+  }, [activeClass, notificationsOrigin, settingsOrigin, view]);
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
     saveCurrentScroll();
@@ -185,10 +199,30 @@ const App: React.FC = () => {
   }, [handleOpenSettings]);
 
   const handleOpenNotifications = useCallback(() => {
+    if (view === 'notifications') return;
     saveCurrentScroll();
+    const origin = view === 'settings'
+      ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
+      : { view, activeClass };
+    setNotificationsOrigin(
+      origin.view === 'settings' || origin.view === 'notifications'
+        ? { view: 'dashboard', activeClass: null }
+        : origin,
+    );
     setView('notifications');
     window.history.pushState({ route: 'notifications' }, '', NOTIFICATIONS_HASH);
-  }, [saveCurrentScroll]);
+  }, [activeClass, notificationsOrigin, saveCurrentScroll, settingsOrigin, view]);
+
+  const handleBackFromNotifications = useCallback(() => {
+    if (window.history.state?.route === 'notifications') {
+      window.history.back();
+    } else {
+      // Chargement direct de #/notifications : aucun écran précédent fiable.
+      setActiveClass(null);
+      setView('dashboard');
+      window.history.replaceState({ route: 'dashboard' }, '', DASHBOARD_HASH);
+    }
+  }, []);
 
   // « Retour » des Paramètres : revient à la vue d'ORIGINE (éditeur ou tableau
   // de bord) via l'historique, et non systématiquement au tableau de bord.
@@ -216,6 +250,16 @@ const App: React.FC = () => {
       if (snapshot.view === 'settings' && view !== 'settings') {
         setSettingsOrigin({ view, activeClass });
       }
+      if (snapshot.view === 'notifications' && view !== 'notifications') {
+        const origin = view === 'settings'
+          ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
+          : { view, activeClass };
+        setNotificationsOrigin(
+          origin.view === 'settings' || origin.view === 'notifications'
+            ? { view: 'dashboard', activeClass: null }
+            : origin,
+        );
+      }
       setActiveClass(snapshot.activeClass);
       setView(snapshot.view);
     };
@@ -225,11 +269,18 @@ const App: React.FC = () => {
       window.removeEventListener('popstate', syncRouteFromLocation);
       window.removeEventListener('hashchange', syncRouteFromLocation);
     };
-  }, [activeClass, saveCurrentScroll, view]);
+  }, [activeClass, notificationsOrigin, saveCurrentScroll, settingsOrigin, view]);
 
-  const backgroundRoute = view === 'settings' ? settingsOrigin : { view, activeClass };
-  const backgroundView = backgroundRoute.view === 'settings' ? 'dashboard' : backgroundRoute.view;
-  const backgroundClass = backgroundRoute.view === 'settings' ? null : backgroundRoute.activeClass;
+  const requestedBackgroundRoute = view === 'settings'
+    ? (settingsOrigin.view === 'notifications' ? notificationsOrigin : settingsOrigin)
+    : view === 'notifications'
+      ? notificationsOrigin
+      : { view, activeClass };
+  const backgroundRoute = requestedBackgroundRoute.view === 'settings' || requestedBackgroundRoute.view === 'notifications'
+    ? { view: 'dashboard' as const, activeClass: null }
+    : requestedBackgroundRoute;
+  const backgroundView = backgroundRoute.view;
+  const backgroundClass = backgroundRoute.activeClass;
 
   const renderContent = () => {
     // En attente du chargement (auth ignorée si AUTH_REQUIRED est désactivé).
@@ -239,17 +290,6 @@ const App: React.FC = () => {
     // Page d'authentification (uniquement si l'auth est activée).
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
       return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} />;
-    }
-    if (backgroundView === 'notifications') {
-      return (
-        <NotificationsPage
-          classes={classes}
-          config={config}
-          feed={notificationFeed}
-          onSelectClass={handleSelectClass}
-          onOpenSettings={handleOpenSettings}
-        />
-      );
     }
     if (backgroundView === 'editor' && backgroundClass) {
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} />;
@@ -326,7 +366,7 @@ const App: React.FC = () => {
         />
       )}
       <div
-        data-settings-sheet-open={view === 'settings' ? 'true' : 'false'}
+        data-settings-sheet-open={view === 'settings' || view === 'notifications' ? 'true' : 'false'}
         className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
       >
         <div key={routeKey} className="relative z-10 min-h-screen">
@@ -338,6 +378,18 @@ const App: React.FC = () => {
             pendant le chargement du moteur destiné aux cahiers. */}
         {isLatexBooting && !isCurrentlyOnboarding && <AppBootSkeleton stage="latex" overlay />}
       </div>
+      {view === 'notifications' && !isAuthView && !isBooting && (
+        <Suspense fallback={null}>
+          <NotificationsPage
+            classes={classes}
+            config={config}
+            feed={notificationFeed}
+            onSelectClass={handleSelectClass}
+            onOpenSettings={handleOpenSettings}
+            onBack={handleBackFromNotifications}
+          />
+        </Suspense>
+      )}
       {view === 'settings' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>
           <SettingsPage

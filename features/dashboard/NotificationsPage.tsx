@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,7 @@ import {
 import { consumeNotificationsAxis, type NotificationsAxisId } from '@/utils/notificationNavigation';
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
+import { Modal } from '@/components/ui/modal';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -121,6 +122,15 @@ const EmptyState: React.FC<{ title: string; description: string }> = ({ title, d
 );
 
 type AxisId = NotificationsAxisId;
+
+const AXIS_MODAL_WIDTH: Record<AxisId, string> = {
+  priorites: 'sm:max-w-4xl',
+  echeances: 'sm:max-w-4xl',
+  calendrier: 'sm:max-w-6xl',
+  classes: 'sm:max-w-5xl',
+  activite: 'sm:max-w-5xl',
+  ignores: 'sm:max-w-4xl',
+};
 
 interface AxisMenuItem {
   id: AxisId;
@@ -218,6 +228,7 @@ interface NotificationsPageProps {
   feed: NotificationFeed;
   onSelectClass: (classInfo: ClassInfo) => void;
   onOpenSettings: () => void;
+  onBack: () => void;
 }
 
 export const NotificationsPage: React.FC<NotificationsPageProps> = ({
@@ -226,14 +237,29 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   feed,
   onSelectClass,
   onOpenSettings,
+  onBack,
 }) => {
   const { locale, t, isRtl } = useLocale();
   const titleFontClass = isRtl ? 'font-bold tracking-normal text-xl leading-tight' : 'font-bold tracking-tight';
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
-  const [mobileSubViewOpen, setMobileSubViewOpen] = useState(requestedAxis !== null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(true);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const requestClose = useCallback(() => {
+    if (!isModalOpen) return;
+    setModalOpen(false);
+    closeTimerRef.current = window.setTimeout(
+      onBack,
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300,
+    );
+  }, [isModalOpen, onBack]);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+  }, []);
 
   // Le centre global ne consomme que les insights transversaux. Les alertes
   // opérationnelles de classe restent visibles sur les cartes et le bandeau.
@@ -288,23 +314,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
 
   const handleSelectAxis = useCallback((axis: AxisId) => {
     setActiveAxis(axis);
-    if (!mobileSubViewOpen) {
-      window.history.pushState({ route: 'notifications', subView: axis }, '', '');
-      setMobileSubViewOpen(true);
-    } else {
-      window.history.replaceState({ route: 'notifications', subView: axis }, '', '');
-    }
-  }, [mobileSubViewOpen]);
-
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      if (!state || state.route !== 'notifications' || !state.subView) {
-        setMobileSubViewOpen(false);
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
   const filteredActivity = activityFilter === 'all'
     ? activitySource
@@ -458,7 +467,9 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         <button
           type="button"
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="p-1.5 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-primary transition-colors cursor-pointer focus:outline-none flex shrink-0 items-center justify-center"
+          aria-expanded={!isSidebarCollapsed}
+          aria-label={t(isSidebarCollapsed ? 'notifications.expandMenu' : 'notifications.collapseMenu')}
+          className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted/50 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
           title={isSidebarCollapsed ? t('notifications.expandMenu') : t('notifications.collapseMenu')}
         >
           <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
@@ -693,49 +704,95 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     </div>
   );
 
+  const modalTitle = (
+    <div className="flex min-w-0 items-center gap-2.5 pe-1">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <PieChart className="h-4 w-4" />
+      </span>
+      <span className="min-w-0">
+        <span className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
+          <span>{t('notifications.centerTitle')}</span>
+          {filteredAttention > 0 && (
+            <span className="rounded-full border border-red-200/80 bg-red-50/80 px-2 py-0.5 text-[10px] font-extrabold leading-4 text-red-600 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-400">
+              {t('notifications.attentionCount', { count: filteredAttention })}
+            </span>
+          )}
+        </span>
+        <span className="mt-0.5 block text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
+          {t('notifications.allTeachingClasses')}
+        </span>
+      </span>
+    </div>
+  );
+
   return (
-    <div data-pilotage-root className={cn('min-h-screen bg-[#e7f2f5] text-foreground dark:bg-slate-950', isRtl ? 'font-sans' : 'font-sans')}>
-      <main className="mx-auto max-w-7xl px-3 py-4 pb-24 sm:px-6 sm:py-5">
-        <div className="mb-4 flex items-end justify-between gap-3 rounded-[24px] border border-white/90 bg-white/75 px-4 py-3 shadow-[0_8px_22px_rgba(45,74,82,0.04)] backdrop-blur-md dark:border-white/[0.08] dark:bg-slate-900/65 sm:mb-5 sm:px-5 sm:py-4">
-          <div className="flex items-center gap-3">
-            <PieChart className="h-5 w-5 shrink-0 text-primary" />
-            <div>
-              <h1 className={cn('flex items-center gap-2 font-extrabold text-foreground', titleFontClass)}>
-                {t('notifications.centerTitle')}
-                {filteredAttention > 0 && (
-                  <span className="rounded-full border border-red-200/80 bg-red-50/80 px-2 py-0.5 text-[10px] font-extrabold text-red-600 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-400">
-                    {t('notifications.attentionCount', { count: filteredAttention })}
+    <Modal
+      isOpen={isModalOpen}
+      onClose={requestClose}
+      title={modalTitle}
+      maxWidth="5xl"
+      mobilePresentation="dialog"
+      dragHandle={false}
+      swipeToDismiss={false}
+      className={cn(
+        'pilotage-modal-sheet overflow-hidden border border-[#e0e0e0] bg-card text-card-foreground shadow-2xl transition-[width,max-width,transform,opacity] duration-300 dark:border-[#5f6368] sm:rounded-[12px]',
+        AXIS_MODAL_WIDTH[activeAxis],
+      )}
+      headerClassName="border-b border-[#e0e0e0] bg-muted/20 px-4 py-2.5 dark:border-[#5f6368] sm:px-6 sm:py-3"
+      bodyClassName="p-3.5 sm:p-4.5"
+    >
+      <div data-pilotage-root className="min-w-0 text-foreground">
+        {/* Même accès direct que dans Paramètres sur mobile et tablette. */}
+        <nav
+          aria-label={t('notifications.sidebarLabel')}
+          className="-mx-1 mb-3 flex items-center gap-1.5 overflow-x-auto px-1 pb-2.5 lg:hidden no-scrollbar"
+        >
+          {menuItems.map(item => {
+            const isActive = activeAxis === item.id;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => handleSelectAxis(item.id)}
+                className={cn(
+                  'flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
+                  isActive
+                    ? 'border-primary/25 bg-primary/10 text-primary shadow-xs'
+                    : 'border-border/60 bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground',
+                )}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{item.label}</span>
+                {item.count > 0 && (
+                  <span className={cn(
+                    'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
+                    item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
+                  )}>
+                    {item.count}
                   </span>
                 )}
-              </h1>
-              <p className="text-xs text-muted-foreground">{t('notifications.allTeachingClasses')}</p>
-            </div>
-          </div>
-        </div>
+              </button>
+            );
+          })}
+        </nav>
 
-        {/* Main Content Layout (Master - Detail pattern with 3s auto-collapse) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-start">
-          {/* Master Sidebar */}
-          <div
+        <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-12 lg:gap-5">
+          {/* Navigation master/detail conservée sur grand écran. */}
+          <aside
             className={cn(
-              'border border-white/90 bg-white/70 rounded-[22px] p-3 shadow-[0_10px_26px_rgba(45,74,82,0.04)] backdrop-blur-sm transition-all duration-300 overflow-hidden flex flex-col dark:border-white/[0.08] dark:bg-slate-900/70',
-              isEffectiveCollapsed
-                ? 'md:col-span-1 lg:col-span-1 xl:col-span-1'
-                : 'md:col-span-4 lg:col-span-3 xl:col-span-3',
-              mobileSubViewOpen ? 'hidden md:block' : 'block'
+              'hidden overflow-hidden rounded-[16px] border border-border/70 bg-muted/20 p-3 transition-all duration-300 lg:flex lg:flex-col',
+              isEffectiveCollapsed ? 'lg:col-span-1' : 'lg:col-span-3',
             )}
           >
             {renderSidebar}
-          </div>
+          </aside>
 
-          {/* Detail Content */}
-          <div
+          <section
             className={cn(
-              'border border-white/90 bg-white/78 rounded-[22px] p-4 sm:p-5 shadow-[0_10px_26px_rgba(45,74,82,0.04)] backdrop-blur-sm min-h-[500px] transition-all duration-300 dark:border-white/[0.08] dark:bg-slate-900/75',
-              isEffectiveCollapsed
-                ? 'md:col-span-11 lg:col-span-11 xl:col-span-11'
-                : 'md:col-span-8 lg:col-span-9 xl:col-span-9',
-              !mobileSubViewOpen ? 'hidden md:block' : 'block'
+              'min-w-0 rounded-[16px] border border-border/70 bg-card/80 p-3.5 shadow-xs transition-all duration-300 sm:p-4',
+              isEffectiveCollapsed ? 'lg:col-span-11' : 'lg:col-span-9',
             )}
           >
             <AnimatePresence mode="wait">
@@ -1062,9 +1119,9 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 )}
               </motion.div>
             </AnimatePresence>
-          </div>
+          </section>
         </div>
-      </main>
-    </div>
+      </div>
+    </Modal>
   );
 };

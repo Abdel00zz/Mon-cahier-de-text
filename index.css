@@ -813,6 +813,21 @@ html[data-keyboard='open'] .mobile-tab-bar {
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
   }
+
+  /* Pilotage reste centré et dimensionné par son onglet, tout en respectant
+     les encoches et les zones système sur téléphone. */
+  .pilotage-modal-sheet {
+    top: max(0.5rem, env(safe-area-inset-top, 0px)) !important;
+    right: max(0.5rem, env(safe-area-inset-right, 0px)) !important;
+    bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+    left: max(0.5rem, env(safe-area-inset-left, 0px)) !important;
+    width: auto !important;
+    max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
+    margin: auto !important;
+    border-radius: 12px !important;
+    padding-bottom: 0 !important;
+    box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
