@@ -723,7 +723,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         'pilotage-modal-sheet overflow-hidden transition-[width,max-width,transform,opacity] duration-300 sm:rounded-2xl',
         AXIS_MODAL_WIDTH[activeAxis],
       )}
-      headerClassName="border-b border-border/70 bg-muted/20"
+      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       <div data-pilotage-root className="min-w-0 text-foreground">

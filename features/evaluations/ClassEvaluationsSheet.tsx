@@ -33,7 +33,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             onClose={() => onOpenChange(false)}
             maxWidth="5xl"
             className="sm:max-w-5xl sm:rounded-2xl"
-            headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
+            headerClassName="border-b border-border/60 bg-card/85 backdrop-blur-md"
             bodyClassName="px-4 py-4 sm:px-7 sm:py-6 max-h-[82vh] overflow-y-auto"
             title={(
                 <div className="flex items-center gap-3.5 min-w-0">

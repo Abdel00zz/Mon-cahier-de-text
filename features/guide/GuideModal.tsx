@@ -154,9 +154,9 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       maxWidth="5xl"
       hideClose={false}
       className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-2xl"
-      headerClassName="border-b border-border/70 bg-background/80 backdrop-blur-md"
+      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
       bodyClassName="flex flex-col overflow-hidden bg-background p-0 sm:p-0"
-      footerClassName="border-t border-border/70 bg-background/80 backdrop-blur-md"
+      footerClassName="border-t border-border/60 bg-card/60 backdrop-blur-xs"
       footer={
         <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full justify-end">
           <Button type="button" variant="default" onClick={onClose} className="h-10 px-6 w-full sm:w-auto text-xs sm:text-sm">

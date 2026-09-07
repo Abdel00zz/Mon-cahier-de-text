@@ -38,10 +38,10 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
         date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(new Date(`${date}T12:00:00Z`)),
       }) : undefined}
       maxWidth="sm"
-      className="sm:max-w-md sm:rounded-xl"
-      headerClassName="border-b-0 bg-background px-5 py-4 sm:px-6"
-      bodyClassName="px-5 py-4 sm:px-6 sm:py-5"
-      footerClassName="border-t-0 bg-background px-5 py-3 sm:px-6"
+      className="sm:max-w-md sm:rounded-2xl"
+      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs px-5 py-3.5 sm:px-6 sm:py-4"
+      bodyClassName="px-5 py-5 sm:px-6 sm:py-5"
+      footerClassName="border-t border-border/60 bg-card/60 px-5 py-3 sm:px-6"
       footer={
         <div className="flex w-full items-center justify-between gap-2.5">
           <Button type="button" variant="outline" onClick={onConfirm} className="order-1 min-h-10 rounded-xl px-4 text-xs font-semibold shadow-sm sm:text-sm" aria-label={t('dateReview.confirmAria')}>

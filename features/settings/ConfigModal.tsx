@@ -823,7 +823,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.92}
       className="settings-modal-sheet overflow-hidden sm:max-w-5xl sm:rounded-2xl"
-      headerClassName="border-b border-border/70 bg-muted/20"
+      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       {/* Mobile Horizontal Tabs Selector (Direct access, NO back button) */}

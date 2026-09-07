@@ -269,9 +269,9 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
         </div>
       } maxWidth="xl" mobileDetents={CLASS_MODAL_DETENTS}
         className="sm:max-w-2xl sm:rounded-2xl"
-        headerClassName="border-b border-border/70 bg-background"
+        headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
         bodyClassName="bg-muted/20 px-5 py-5 sm:px-7 sm:py-6"
-        footerClassName="border-t border-border/70 bg-background"
+        footerClassName="border-t border-border/60 bg-card/60"
         footer={<fieldset disabled={submitting} className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-11 items-center gap-2">
             {editingClass && onDelete && <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)} className="h-11 w-full rounded-[12px] px-4 text-xs font-semibold sm:w-auto sm:text-sm"><Trash2 className="h-4 w-4" />{t('dashboard.delete')}</Button>}

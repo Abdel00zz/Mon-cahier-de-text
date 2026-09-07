@@ -66,9 +66,9 @@ export function GettingStarted({
                 : 'Masquer la checklist'
           }
           onClick={onDismiss}
-          className="-me-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/50 bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground shadow-2xs hover:shadow-xs transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer active:scale-95"
         >
-          <X className="h-4 w-4" aria-hidden="true" />
+          <X className="h-4 w-4" aria-hidden="true" strokeWidth={2.2} />
         </button>
       </div>
       <ol className="grid gap-3 sm:grid-cols-3">

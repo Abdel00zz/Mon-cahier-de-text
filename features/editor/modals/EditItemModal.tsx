@@ -411,9 +411,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       title={titleNode}
       maxWidth={stage === 'select' ? "3xl" : "xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-2xl sm:rounded-2xl"}
-      headerClassName="border-b-0 bg-background/85 backdrop-blur-md"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t-0 bg-background/85 backdrop-blur-md"
+      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+      bodyClassName="px-5 py-5 sm:px-7 sm:py-6"
+      footerClassName="border-t border-border/60 bg-card/60"
       footer={
         stage === 'form' ? (
           <div className="flex w-full items-center justify-end gap-2.5">
