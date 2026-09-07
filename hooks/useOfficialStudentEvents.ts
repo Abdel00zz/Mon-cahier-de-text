@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ClassInfo } from '../types';
-import { getBundledCalendar, todayInMorocco } from '../utils/calendar';
+import { useMoroccoToday } from './useMoroccoToday';
 import { daysBetweenISO } from '../utils/assessments';
 import {
     getOfficialEventEffectiveEnd,
@@ -24,6 +24,7 @@ export const useUpcomingOfficialStudentEvents = (
     horizonDays = 30,
 ): UpcomingOfficialStudentEvent[] => {
     const [file, setFile] = useState<OfficialStudentEventsFile>(() => getOfficialStudentEventsFile());
+    const today = useMoroccoToday();
 
     useEffect(() => {
         let active = true;
@@ -32,7 +33,6 @@ export const useUpcomingOfficialStudentEvents = (
     }, []);
 
     return useMemo(() => {
-        const today = todayInMorocco(new Date(), getBundledCalendar());
         const grouped = new Map<string, { event: OfficialStudentEvent; classIds: Set<string>; classNames: Set<string> }>();
         for (const classInfo of classes) {
             for (const event of getOfficialStudentEventsForClass(classInfo, undefined, file)) {
@@ -53,5 +53,5 @@ export const useUpcomingOfficialStudentEvents = (
                 inDays: Math.max(0, daysBetweenISO(today, item.event.start)),
             }))
             .sort((a, b) => a.inDays - b.inDays || a.event.title.localeCompare(b.event.title));
-    }, [classes, file, horizonDays]);
+    }, [today, classes, file, horizonDays]);
 };

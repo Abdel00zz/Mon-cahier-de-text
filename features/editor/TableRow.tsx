@@ -1,7 +1,7 @@
+import type { DateMergeMeta } from '@/utils/tableRows';
 import React, { useCallback, FC, memo } from 'react';
-import { Indices, ElementType, TopLevelItem } from '@/types';
+import { Indices, ElementType } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
-import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 
@@ -23,18 +23,7 @@ interface TableRowProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
 
-export interface DateMergeMeta {
-  isMerged: boolean;
-  mergeType?: 'date' | 'content';
-  isStart: boolean;
-  isContinuation: boolean;
-  isEnd: boolean;
-  count: number;
-  indexInGroup: number;
-  shouldMergeRemark?: boolean;
-  isDatedSequenceStart?: boolean;
-  isDatedSequenceEnd?: boolean;
-}
+
 
 const DATE_LOCALES: Record<AppLocale, string> = { fr: 'fr-MA', en: 'en-GB', ar: 'ar-MA' };
 
@@ -70,80 +59,40 @@ const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
     
     if (isNaN(dateObj.getTime())) return null;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const local = new Date(dateObj);
-    local.setHours(0, 0, 0, 0);
-    
     const dateLocale = DATE_LOCALES[locale];
     const numberFormatter = new Intl.NumberFormat(dateLocale, { minimumIntegerDigits: 2, useGrouping: false });
     return {
-      isToday: local.getTime() === today.getTime(),
-      day: numberFormatter.format(local.getDate()),
-      month: local.toLocaleDateString(dateLocale, { month: 'short' }).replace('.', ''),
-      year: new Intl.NumberFormat(dateLocale, { useGrouping: false }).format(local.getFullYear()),
+      day: numberFormatter.format(dateObj.getDate()),
+      numericMonth: numberFormatter.format(dateObj.getMonth() + 1),
     };
   } catch {
     return null;
   }
 };
 
-/*
- * Date « super affichée » : typographie pure, sans badge ni encadré.
- * Grand jour, mois en petites capitales, année discrète. Le jour courant
- * est signalé par la couleur primaire et un point, rien d'autre.
- */
-export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => {
-  const { locale } = useLocale();
-  const parsed = parseDate(dateStr, locale);
-
-  if (!parsed) {
-    return (
-      <div className="flex min-h-[18px] w-full items-center justify-center py-1 select-none" aria-hidden />
-    );
-  }
-
-  return (
-    <div className="relative flex flex-col items-center justify-center select-none leading-none animate-in fade-in duration-150 py-0.5">
-      <span
-        className={`editor-type-date-day font-mono font-black tracking-tight tabular-nums transition-colors ${
-          hasWarning ? 'text-destructive' : parsed.isToday ? 'text-primary' : 'text-foreground'
-        }`}
-      >
-        {parsed.day}
-      </span>
-      <span className={`editor-type-date-meta mt-0.5 font-mono font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
-        {parsed.month} {parsed.year.slice(2)}
-      </span>
-      {!hasWarning && parsed.isToday && <span className="mt-0.5 h-1 w-1 rounded-full bg-primary" aria-hidden />}
-    </div>
-  );
-});
+/** Les dates simples et fusionnées partagent exactement la même typographie. */
+export const DateCard: FC<{ dateStr?: string; hasWarning?: boolean }> = memo(({ dateStr, hasWarning }) => (
+  <MultiDateCard dates={dateStr ? [dateStr] : []} hasWarning={hasWarning} />
+));
 
 DateCard.displayName = 'DateCard';
 
 export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo(({ dates, hasWarning }) => {
   const { locale } = useLocale();
-  const parsedDates = dates.map(d => parseDate(d, locale)).filter(Boolean);
+  const parsedDates = [...new Set(dates)].flatMap(date => {
+    const parsed = parseDate(date, locale);
+    return parsed ? [{ ...parsed, source: date }] : [];
+  });
   if (parsedDates.length === 0) return null;
-  if (parsedDates.length === 1) return <DateCard dateStr={dates[0]} hasWarning={hasWarning} />;
-
-  const first = parsedDates[0]!;
-  const last = parsedDates[parsedDates.length - 1]!;
-  const sameMonthYear = first.month === last.month && first.year === last.year;
-
+  const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div className="relative flex flex-col items-center justify-center select-none leading-tight animate-in fade-in duration-150 py-0.5">
-      <div className="editor-type-date-pair flex items-center gap-1 font-mono font-black tracking-tight tabular-nums text-foreground">
-        <span className={hasWarning ? 'text-destructive' : first.isToday ? 'text-primary' : 'text-foreground'}>{first.day}</span>
-        <span className={`editor-type-date-ampersand font-black ${hasWarning ? 'text-destructive' : 'text-foreground'}`}>&</span>
-        <span className={hasWarning ? 'text-destructive' : last.isToday ? 'text-primary' : 'text-foreground'}>{last.day}</span>
-      </div>
-      <div className="mt-0.5 flex items-center">
-        <span className={`editor-type-date-meta font-mono font-bold uppercase tracking-wider ${hasWarning ? 'text-destructive' : 'text-muted-foreground/75'}`}>
-          {sameMonthYear ? `${first.month} ${first.year.slice(2)}` : `${first.month}/${last.month}`}
-        </span>
-      </div>
+    <div className={`min-w-0 max-w-full py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-destructive' : 'text-primary'}`}>
+      {parsedDates.map((date, index) => (
+        <React.Fragment key={date.source}>
+          {index > 0 ? <>{' '}<span className="font-normal text-foreground">{conjunction}</span>{' '}</> : null}
+          <bdi dir="ltr" className="whitespace-nowrap">{date.day}/{date.numericMonth}</bdi>
+        </React.Fragment>
+      ))}
     </div>
   );
 });
@@ -153,7 +102,7 @@ MultiDateCard.displayName = 'MultiDateCard';
 const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boolean; isSelected?: boolean; hasAssignedDate?: boolean }> = memo(({ dateStr, merge, hasWarning, isSelected, hasAssignedDate }) => {
   const isMerged = !!merge?.isMerged;
   const bgClass = isSelected 
-    ? 'bg-primary/[0.12]'
+    ? 'bg-muted dark:bg-muted/80'
     : hasWarning
       ? 'bg-warning/[0.12]'
     : hasAssignedDate
@@ -193,7 +142,7 @@ const RemarkCell: FC<{
   const shouldMerge = !!merge?.isMerged && !!merge.shouldMergeRemark;
   
   const bgClass = isSelected 
-    ? 'bg-primary/[0.065]'
+    ? 'bg-muted dark:bg-muted/80'
     : hasWarning
       ? 'bg-warning/[0.055]'
     : hasAssignedDate
@@ -297,16 +246,16 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-warning/[0.07]'
     : hasAssignedDate
-      ? 'bg-[#fffdfa]/70 dark:bg-[#28292c]/50'
+      ? 'bg-card/70'
       : 'bg-transparent';
-  const rowWash = isSelected ? 'bg-[#e8f0fe]/70 dark:bg-[#1967d2]/20' : datedWash;
+  const rowWash = isSelected ? 'bg-muted dark:bg-muted/80' : datedWash;
   const hoverWash = isSelected
     ? ''
     : hasWarning
       ? 'hover:bg-warning/[0.11]'
       : hasAssignedDate
-        ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]'
-        : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]';
+        ? 'hover:bg-muted/40'
+        : 'hover:bg-muted/50';
   // §G tableau serré : AUCUN padding de cadre, les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.
@@ -314,21 +263,21 @@ const TableRowComponent: FC<TableRowProps> = ({
   
   // Séparateurs verticaux Date|Contenu|Remarque, filets nets et discrets style Keep
   const dividerClass = isSelected
-    ? 'border-e border-primary/30'
+    ? 'border-e border-border'
     : hasAssignedDate
       ? hasWarning
         ? 'border-e border-warning/40'
-        : 'border-e border-[#e0e0e0] dark:border-[#3c4043]'
-      : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
+        : 'border-e border-border'
+      : 'border-e border-border';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
-      ? 'border-e border-primary/30'
+      ? 'border-e border-border'
       : hasAssignedDate
         ? hasWarning
           ? 'border-e border-warning/40'
-          : 'border-e border-[#e0e0e0] dark:border-[#3c4043]'
-        : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
+          : 'border-e border-border'
+        : 'border-e border-border';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;
@@ -339,11 +288,11 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isTopLevelBlock = (elementType in TOP_LEVEL_TYPE_CONFIG && elementType !== 'chapter') || isCorrection;
 
   if (isTopLevelBlock) {
-    const item = data as TopLevelItem;
-    const cfg = TOP_LEVEL_TYPE_CONFIG[item.type];
+
+
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]' : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -357,9 +306,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
-            <MathText source={item.title} cacheKey={`row-title-${item.type}-${item.title}`} inline>
-              <span className={`editor-type-top break-words font-extrabold tracking-tight ${cfg?.color ?? 'text-foreground'}`}>{item.title}</span>
-            </MathText>
+            <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} />
           </div>
         </div>
       </div>
@@ -401,7 +348,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-[#fef9f0] dark:hover:bg-[#2d2e31]' : 'hover:bg-[#f8f9fa] dark:hover:bg-[#28292c]'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;
@@ -463,6 +410,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.getDateWarnings !== next.getDateWarnings) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;
@@ -490,6 +438,9 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
     if (!pMerge || !nMerge) return false;
     if (
       pMerge.isMerged !== nMerge.isMerged ||
+      pMerge.mergeType !== nMerge.mergeType ||
+      pMerge.isDatedSequenceStart !== nMerge.isDatedSequenceStart ||
+      pMerge.isDatedSequenceEnd !== nMerge.isDatedSequenceEnd ||
       pMerge.isStart !== nMerge.isStart ||
       pMerge.isContinuation !== nMerge.isContinuation ||
       pMerge.isEnd !== nMerge.isEnd ||

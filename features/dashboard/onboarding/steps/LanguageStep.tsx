@@ -27,7 +27,7 @@ export const LanguageStep = memo<LanguageStepProps>(({ lang, copy, onSelect }) =
                         <span lang={language} className="text-lg font-semibold tracking-tight sm:text-xl">
                             {language === 'fr' ? 'Français' : 'العربية'}
                         </span>
-                        <span lang={language} className="text-xs text-[#5f6368] dark:text-[#bdc1c6]">
+                        <span lang={language} className="text-xs text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
                             {language === 'fr' ? 'Interface en langue française' : 'واجهة باللغة العربية'}
                         </span>
                     </button>

@@ -1,5 +1,5 @@
 /** Local, international and Arabic-digit input, normalized to a local number. */
-export const phoneDigits = (raw: string): string => {
+const phoneDigits = (raw: string): string => {
   let digits = raw.replace(/[٠-٩۰-۹]/g, char => String(char.charCodeAt(0) - (char <= '٩' ? 0x660 : 0x6f0))).replace(/\D/g, '');
   if (digits.startsWith('00212')) digits = `0${digits.slice(5)}`;
   else if (digits.startsWith('212')) digits = `0${digits.slice(3)}`;

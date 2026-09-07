@@ -6,11 +6,29 @@
   "sourcesFile": "/official-sources.json",
   "plans": [
     {
+      "id": "math-college-1ac-2ac",
       "matiere": "Mathématiques",
       "cycle": "college",
+      "classe": "1AC / 2AC",
+      "classeCode": "1AC_2AC",
+      "branche": "Enseignement Général (Parcours International)",
+      "brancheCode": "GENERAL",
+      "filiereAr": "التعليم العام / المسار الدولي",
+      "volumeHoraire": "4h / semaine",
+      "coefficient": 3,
       "niveaux": [
         "1AC",
-        "2AC"
+        "2AC",
+        "1APIC",
+        "2APIC",
+        "1 ASC",
+        "2 ASC",
+        "1ère Année Collégiale",
+        "2ème Année Collégiale",
+        "1ère AC",
+        "2ème AC",
+        "الأولى إعدادي",
+        "الثانية إعدادي"
       ],
       "libelle": "1re/2e année du secondaire collégial",
       "sourceRef": "ma-men-note-192",
@@ -37,7 +55,9 @@
               "duree": "1h",
               "fenetre": "du 4 au 9 janvier 2027"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -61,15 +81,31 @@
               "duree": "1h",
               "fenetre": "du 14 au 19 juin 2027"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
         }
-      ]
+      ],
+      "examens": []
     },
     {
+      "id": "math-college-3ac",
       "matiere": "Mathématiques",
       "cycle": "college",
+      "classe": "3AC",
+      "classeCode": "3AC",
+      "branche": "Enseignement Général (Parcours International)",
+      "brancheCode": "GENERAL",
+      "filiereAr": "الثالثة إعدادي / مسار دولي",
+      "volumeHoraire": "4h à 5h / semaine",
+      "coefficient": 3,
       "niveaux": [
-        "3AC"
+        "3AC",
+        "3APIC",
+        "3 ASC",
+        "3ème Année Collégiale",
+        "3ème AC",
+        "الثالثة إعدادي"
       ],
       "libelle": "3e année du secondaire collégial (+ examen unifié local fin S1)",
       "sourceRef": "ma-men-note-192",
@@ -96,7 +132,9 @@
               "duree": "2h",
               "fenetre": "du 4 au 9 janvier 2027"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -120,20 +158,53 @@
               "duree": "2h",
               "fenetre": "du 14 au 19 juin 2027"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "local",
+          "libelle": "Examen unifié local - 3AC",
+          "dateDebut": "2027-01-18",
+          "dateFin": "2027-01-19",
+          "coefficient": 3,
+          "description": "Épreuve unifiée au niveau de l établissement portant sur le programme du 1er semestre."
+        },
+        {
+          "type": "regional",
+          "libelle": "Examen unifié régional - 3AC",
+          "dateDebut": "2027-06-23",
+          "dateFin": "2027-06-24",
+          "coefficient": 3,
+          "description": "Épreuve certificative régionale de fin de cursus collégial."
         }
       ]
     },
     {
+      "id": "math-lycee-tc-sci-tech",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "Tronc Commun",
+      "classeCode": "TC",
+      "branche": "Tronc Commun Scientifique & Technologique",
+      "brancheCode": "TCS",
+      "filiereAr": "الجذع المشترك العلمي والتكنولوجي",
+      "volumeHoraire": "5h / semaine (Scientifique) - 4h / semaine (Technologique)",
+      "coefficient": 4,
       "niveaux": [
         "Tronc Commun Scientifique",
         "Tronc Commun Technologique",
         "Tronc commun scientifique",
         "Tronc commun technologique",
         "TC Sciences",
-        "TC Technologique"
+        "TC Technologique",
+        "TCS",
+        "TCS BIOF",
+        "TCT",
+        "الجذع المشترك العلمي",
+        "الجذع المشترك التكنولوجي"
       ],
       "libelle": "Tronc commun scientifique et technologique",
       "sourceRef": "ma-men-note-142-08",
@@ -174,7 +245,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -212,17 +285,30 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
         }
-      ]
+      ],
+      "examens": []
     },
     {
+      "id": "math-lycee-tc-lettres",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "Tronc Commun",
+      "classeCode": "TC",
+      "branche": "Tronc Commun Lettres et Sciences Humaines",
+      "brancheCode": "TCL",
+      "filiereAr": "الجذع المشترك للآداب والعلوم الإنسانية",
+      "volumeHoraire": "2h / semaine",
+      "coefficient": 2,
       "niveaux": [
         "Tronc Commun Lettres et Sciences Humaines",
         "Tronc commun lettres",
-        "TC Lettres"
+        "TC Lettres",
+        "TCL",
+        "الجذع المشترك للآداب والعلوم الإنسانية"
       ],
       "libelle": "Tronc commun lettres / enseignement originel",
       "sourceRef": "ma-men-note-142-08",
@@ -252,7 +338,9 @@
               "semaine": 15,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -279,17 +367,31 @@
               "semaine": 15,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
         }
-      ]
+      ],
+      "examens": []
     },
     {
+      "id": "math-lycee-1bac-lettres",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "1er Bac",
+      "classeCode": "1BAC",
+      "branche": "Lettres et Sciences Humaines",
+      "brancheCode": "1BAC-LSH",
+      "filiereAr": "الأولى بكالوريا آداب وعلوم إنسانية",
+      "volumeHoraire": "2h / semaine",
+      "coefficient": 1,
       "niveaux": [
         "1er Bac Lettres et Sciences Humaines",
         "1er Bac Lettres",
-        "1BAC Lettres"
+        "1BAC Lettres",
+        "1BAC L",
+        "1BAC LSH",
+        "الأولى بكالوريا آداب وعلوم إنسانية"
       ],
       "libelle": "1re Bac lettres et sciences humaines",
       "sourceRef": "ma-men-note-142-08",
@@ -319,7 +421,9 @@
               "semaine": 15,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -346,16 +450,41 @@
               "semaine": 15,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "regional",
+          "libelle": "Examen régional unifié - 1er Bac",
+          "dateDebut": "2027-05-28",
+          "dateFin": "2027-05-29",
+          "sessionRattrapage": "2027-06-28",
+          "description": "Épreuve certificative du baccalauréat régional (matières d examen régional)."
         }
       ]
     },
     {
+      "id": "math-lycee-1bac-exp",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "1er Bac",
+      "classeCode": "1BAC",
+      "branche": "Sciences Expérimentales (BIOF)",
+      "brancheCode": "1BAC-SE",
+      "filiereAr": "الأولى بكالوريا علوم تجريبية",
+      "volumeHoraire": "5h / semaine",
+      "coefficient": 5,
       "niveaux": [
         "1er Bac Sciences Expérimentales",
-        "1BAC Sc. Expérimentales"
+        "1BAC Sc. Expérimentales",
+        "1BAC SE",
+        "1BAC SEF",
+        "1BAC BIOF",
+        "1ère Bac Sciences Expérimentales",
+        "الأولى بكالوريا علوم تجريبية"
       ],
       "libelle": "1re Bac sciences expérimentales et technologies",
       "sourceRef": "ma-men-note-142-08",
@@ -396,7 +525,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -434,16 +565,40 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "regional",
+          "libelle": "Examen régional unifié - 1er Bac",
+          "dateDebut": "2027-05-28",
+          "dateFin": "2027-05-29",
+          "sessionRattrapage": "2027-06-28",
+          "description": "Examen régional unifié du baccalauréat."
         }
       ]
     },
     {
+      "id": "math-lycee-1bac-sm",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "1er Bac",
+      "classeCode": "1BAC",
+      "branche": "Sciences Mathématiques (BIOF)",
+      "brancheCode": "1BAC-SM",
+      "filiereAr": "الأولى بكالوريا علوم رياضية",
+      "volumeHoraire": "7h / semaine",
+      "coefficient": 7,
       "niveaux": [
         "1er Bac Sciences Mathématiques",
-        "1BAC Sc. Mathématiques"
+        "1BAC Sc. Mathématiques",
+        "1BAC SM",
+        "1BAC SMF",
+        "1ère Bac Sciences Mathématiques",
+        "الأولى بكالوريا علوم رياضية"
       ],
       "libelle": "1re Bac sciences mathématiques",
       "sourceRef": "ma-men-note-142-08",
@@ -495,7 +650,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -544,18 +701,46 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "regional",
+          "libelle": "Examen régional unifié - 1er Bac",
+          "dateDebut": "2027-05-28",
+          "dateFin": "2027-05-29",
+          "sessionRattrapage": "2027-06-28",
+          "description": "Examen régional unifié du baccalauréat."
         }
       ]
     },
     {
+      "id": "math-lycee-2bac-pc-svt",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "2ème Bac",
+      "classeCode": "2BAC",
+      "branche": "Sciences Physiques & Sciences de la Vie et de la Terre",
+      "brancheCode": "2BAC-PC-SVT",
+      "filiereAr": "الثانية بكالوريا علوم فيزيائية وعلوم الحياة والأرض",
+      "volumeHoraire": "7h / semaine (PC) - 5h / semaine (SVT)",
+      "coefficient": 7,
       "niveaux": [
         "2ème Bac Sciences Physiques",
         "2ème Bac Sciences de la Vie et de la Terre",
         "2BAC PC",
-        "2BAC SVT"
+        "2BAC SVT",
+        "2BAC PC BIOF",
+        "2BAC SVT BIOF",
+        "2ème Bac PC",
+        "2ème Bac SVT",
+        "2BAC Sc. Physiques",
+        "2BAC Sc. Vie et Terre",
+        "الثانية بكالوريا علوم فيزيائية",
+        "الثانية بكالوريا علوم الحياة والأرض"
       ],
       "libelle": "2e Bac sciences expérimentales, branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
       "sourceRef": "ma-men-note-142-08",
@@ -596,7 +781,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -634,17 +821,45 @@
               "semaine": 14,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "national",
+          "libelle": "Examen national unifié du Baccalauréat - 2ème Bac",
+          "dateDebut": "2027-06-01",
+          "dateFin": "2027-06-03",
+          "sessionRattrapage": "2027-07-02",
+          "description": "Épreuve nationale de Mathématiques au Baccalauréat (session normale du 1 au 3 juin 2027)."
         }
       ]
     },
     {
+      "id": "math-lycee-2bac-sm-ab",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "2ème Bac",
+      "classeCode": "2BAC",
+      "branche": "Sciences Mathématiques A & B",
+      "brancheCode": "2BAC-SM",
+      "filiereAr": "الثانية بكالوريا علوم رياضية أ و ب",
+      "volumeHoraire": "9h / semaine",
+      "coefficient": 9,
       "niveaux": [
         "2ème Bac Sciences Mathématiques A",
         "2ème Bac Sciences Mathématiques B",
-        "2BAC Sc. Maths"
+        "2BAC Sc. Maths",
+        "2BAC Sc. Maths A",
+        "2BAC Sc. Maths B",
+        "2BAC SM",
+        "2BAC SM-A",
+        "2BAC SM-B",
+        "2ème Bac SM",
+        "الثانية بكالوريا علوم رياضية أ",
+        "الثانية بكالوريا علوم رياضية ب"
       ],
       "libelle": "2e Bac sciences mathématiques (A et B)",
       "sourceRef": "ma-men-note-142-08",
@@ -696,7 +911,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -745,18 +962,42 @@
               "semaine": 14,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "national",
+          "libelle": "Examen national unifié du Baccalauréat - 2ème Bac",
+          "dateDebut": "2027-06-01",
+          "dateFin": "2027-06-03",
+          "sessionRattrapage": "2027-07-02",
+          "description": "Épreuve nationale de Mathématiques au Baccalauréat Sciences Maths (coefficient 9)."
         }
       ]
     },
     {
+      "id": "math-lycee-2bac-eco-sgc",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "2ème Bac",
+      "classeCode": "2BAC",
+      "branche": "Sciences Économiques et Gestion (Éco & SGC)",
+      "brancheCode": "2BAC-ECO",
+      "filiereAr": "الثانية بكالوريا علوم اقتصادية وتدبير محاسباتي",
+      "volumeHoraire": "4h / semaine",
+      "coefficient": 4,
       "niveaux": [
         "2ème Bac Sciences Économiques",
         "2ème Bac Sciences de Gestion Comptable",
         "2BAC Sc. Économiques",
-        "2BAC Sc. Gestion Comptable"
+        "2BAC Sc. Gestion Comptable",
+        "2BAC Eco",
+        "2BAC SGC",
+        "الثانية بكالوريا علوم اقتصادية",
+        "الثانية بكالوريا علوم التدبير المحاسباتي"
       ],
       "libelle": "2e Bac sciences économiques et gestion",
       "sourceRef": "ma-men-note-142-08",
@@ -797,7 +1038,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -835,18 +1078,42 @@
               "semaine": 14,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "national",
+          "libelle": "Examen national unifié du Baccalauréat - 2ème Bac",
+          "dateDebut": "2027-06-01",
+          "dateFin": "2027-06-03",
+          "sessionRattrapage": "2027-07-02",
+          "description": "Épreuve nationale de Mathématiques au Baccalauréat Sciences Économiques et Gestion."
         }
       ]
     },
     {
+      "id": "math-lycee-2bac-lettres-sh",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "2ème Bac",
+      "classeCode": "2BAC",
+      "branche": "Lettres et Sciences Humaines",
+      "brancheCode": "2BAC-LSH",
+      "filiereAr": "الثانية بكالوريا آداب وعلوم إنسانية",
+      "volumeHoraire": "2h / semaine",
+      "coefficient": 1,
       "niveaux": [
         "2ème Bac Lettres",
         "2ème Bac Sciences Humaines",
         "2BAC Lettres",
-        "2BAC Sc. Humaines"
+        "2BAC Sc. Humaines",
+        "2BAC L",
+        "2BAC SH",
+        "الثانية بكالوريا آداب",
+        "الثانية بكالوريا علوم إنسانية"
       ],
       "libelle": "2e Bac lettres et sciences humaines",
       "sourceRef": "ma-men-note-142-08",
@@ -876,7 +1143,9 @@
               "semaine": 15,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -903,17 +1172,40 @@
               "semaine": 14,
               "duree": "1h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "national",
+          "libelle": "Examen national unifié du Baccalauréat - 2ème Bac",
+          "dateDebut": "2027-06-01",
+          "dateFin": "2027-06-03",
+          "sessionRattrapage": "2027-07-02",
+          "description": "Épreuve nationale du Baccalauréat Lettres et Sciences Humaines."
         }
       ]
     },
     {
+      "id": "math-lycee-1bac-eco",
       "matiere": "Mathématiques",
       "cycle": "lycee",
+      "classe": "1er Bac",
+      "classeCode": "1BAC",
+      "branche": "Sciences Économiques et Gestion",
+      "brancheCode": "1BAC-ECO",
+      "filiereAr": "الأولى بكالوريا علوم اقتصادية وتدبير",
+      "volumeHoraire": "4h / semaine",
+      "coefficient": 4,
       "niveaux": [
         "1er Bac Sciences Économiques et Gestion",
         "1er Bac Sciences Économiques",
-        "1BAC Sc. Économiques"
+        "1BAC Sc. Économiques",
+        "1BAC Eco",
+        "1BAC SEG",
+        "الأولى بكالوريا علوم اقتصادية وتدبير"
       ],
       "libelle": "1re Bac sciences économiques et gestion",
       "sourceRef": "ma-men-note-142-08",
@@ -954,7 +1246,9 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 11 au 16 janvier 2027",
+          "remiseBulletins": "23 janvier 2027"
         },
         {
           "n": 2,
@@ -992,7 +1286,19 @@
               "semaine": 15,
               "duree": "2h"
             }
-          ]
+          ],
+          "massarCloture": "du 21 au 26 juin 2027",
+          "remiseBulletins": "03 juillet 2027"
+        }
+      ],
+      "examens": [
+        {
+          "type": "regional",
+          "libelle": "Examen régional unifié - 1er Bac",
+          "dateDebut": "2027-05-28",
+          "dateFin": "2027-05-29",
+          "sessionRattrapage": "2027-06-28",
+          "description": "Examen régional unifié du baccalauréat."
         }
       ]
     }

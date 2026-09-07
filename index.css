@@ -38,12 +38,12 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
-  --radius-3xl: 1.5rem;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
 
   --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -94,6 +94,23 @@
   }
 }
 
+/* ── 3. Color States & Accessibility Tokens (Kole Jain Rules) ─────────── */
+@utility state-interactive {
+  transition: filter 160ms ease, transform 160ms var(--ease-spring), background-color 160ms ease;
+  &:hover:not(:disabled) {
+    filter: brightness(1.10);
+  }
+  &:active:not(:disabled) {
+    filter: brightness(0.90);
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.5;
+    filter: grayscale(40%);
+    pointer-events: none;
+  }
+}
+
 @utility touch-target {
   min-height: 44px;
   min-width: 44px;
@@ -116,7 +133,7 @@
   position: relative;
   overflow: hidden;
   background-color: hsl(var(--muted) / 0.6);
-  border-radius: var(--radius-lg);
+  border-radius: 0px;
 }
 
 .skeleton-shimmer::after {
@@ -223,32 +240,37 @@
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    --background: 0 0% 100%;
-    --foreground: 222 28% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 28% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 28% 12%;
-    --primary: 221 83% 53%;
+    /* Mode Clair Beige Crème (Sharp UI · Lighter Cream Beige) */
+    --background: 38 33% 97.5%; /* #faf8f5 (Fond de page: Crème très claire et lumineuse) */
+    --foreground: 33 9% 23%; /* #3f3a34 (Texte principal: Brun-gris foncé) */
+    --card: 38 27% 94%; /* #f5f1ea (Fond du Dock / Cartes: Beige clair) */
+    --card-foreground: 33 9% 23%; /* #3f3a34 */
+    --popover: 38 27% 94%; /* #f5f1ea */
+    --popover-foreground: 33 9% 23%;
+    --primary: 217 91% 60%; /* #3b82f6 (Accent principal: Bleu moderne) */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 93%;
-    --secondary-foreground: 222 28% 12%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 218 13% 43%;
-    --accent: 221 80% 96%;
-    --accent-foreground: 221 83% 45%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 36 24% 89.5%; /* #ebe5dc (Hover: Beige doux) */
+    --secondary-foreground: 33 9% 23%;
+    --muted: 36 24% 89.5%; /* #ebe5dc */
+    --muted-foreground: 35 8% 52%; /* #8c857b (Texte secondaire: Gris-beige) */
+    --accent: 36 24% 89.5%; /* #ebe5dc */
+    --accent-foreground: 33 9% 23%;
+    --border: 38 20% 85.5%; /* #e2dcd2 (Bordure du Dock / Séparateurs: Beige grisé) */
+    --input: 38 27% 94%; /* #f5f1ea */
+    --ring: 217 91% 60%;
+    --destructive: 0 84.2% 60.2%; /* #ef4444 (Danger: Rouge doux) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
-    --scheduled: 220 14% 94%;
-    --scheduled-foreground: 222 28% 12%;
-    --border: 220 13% 87%;
-    --input: 0 0% 100%;
-    --ring: 221 83% 53%;
+    --scheduled: 216 88% 95%; /* #e8f1fe (Ligne active sélectionnée: Bleu très clair) */
+    --scheduled-foreground: 33 9% 23%;
+    --badge-bg: 216 88% 95%; /* #e8f1fe (Badge date fond) */
+    --badge-border: 214 95% 87%; /* #bfdbfe (Badge date bordure) */
+    --badge-text: 221 83% 53%; /* #2563eb (Badge date texte) */
+    --dock-shadow: 0 8px 30px rgba(63, 58, 52, 0.08);
     --chart-1: 221 83% 53%;
     --chart-2: 142.1 76.2% 36.3%;
     --chart-3: 38 92% 50%;
@@ -261,32 +283,37 @@
 
   .dark {
     color-scheme: only dark;
-    --background: 222 47% 8%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 8%;
-    --secondary: 220 30% 16%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 220 30% 16%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 91% 18%;
-    --accent-foreground: 217 91% 75%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    /* Mode Sombre (Sharp UI · Figma & Notion Dark) */
+    --background: 0 0% 5.9%; /* #0f0f0f (Fond de page: Noir profond) */
+    --foreground: 0 0% 89.8%; /* #e5e5e5 (Texte principal: Blanc cassé) */
+    --card: 0 0% 10.2%; /* #1a1a1a (Fond du Dock / Cartes: Gris très foncé) */
+    --card-foreground: 0 0% 89.8%; /* #e5e5e5 */
+    --popover: 0 0% 10.2%; /* #1a1a1a */
+    --popover-foreground: 0 0% 89.8%;
+    --primary: 217 91% 60%; /* #3b82f6 (Accent principal: Bleu vif) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 14.5%; /* #252525 (Hover: Gris foncé) */
+    --secondary-foreground: 0 0% 89.8%;
+    --muted: 0 0% 14.5%; /* #252525 */
+    --muted-foreground: 0 0% 53.3%; /* #888888 (Texte secondaire: Gris moyen) */
+    --accent: 0 0% 14.5%; /* #252525 */
+    --accent-foreground: 0 0% 89.8%;
+    --border: 0 0% 16.5%; /* #2a2a2a (Bordure du Dock / Séparateurs: Gris anthracite) */
+    --input: 0 0% 10.2%; /* #1a1a1a */
+    --ring: 217 91% 60%;
+    --destructive: 0 84.2% 60.2%; /* #ef4444 (Danger: Rouge vif) */
+    --destructive-foreground: 0 0% 98%;
     --success: 142.1 70.6% 45.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 84.2% 60%;
-    --scheduled: 220 30% 16%;
-    --scheduled-foreground: 210 40% 98%;
-    --border: 220 30% 18%;
-    --input: 222 47% 11%;
-    --ring: 217 91% 60%;
+    --scheduled: 217 33% 17%; /* #1e293b (Ligne active sélectionnée: Bleu très sombre) */
+    --scheduled-foreground: 213 96% 78%; /* #93c5fd */
+    --badge-bg: 217 33% 17%; /* #1e293b (Badge date fond) */
+    --badge-border: 215 25% 27%; /* #334155 (Badge date bordure) */
+    --badge-text: 213 96% 78%; /* #93c5fd (Badge date texte) */
+    --dock-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     --chart-1: 217 91% 60%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -410,7 +437,7 @@
   *::-webkit-scrollbar-thumb {
     min-height: 2.5rem;
     border: 2px solid transparent;
-    border-radius: 999px;
+    border-radius: 0px;
     background: hsl(var(--muted-foreground) / 0.36);
     background-clip: padding-box;
   }
@@ -550,13 +577,13 @@
      tablette et desktop. Le lissage est limité à cette surface afin de ne
      pas modifier les choix typographiques des documents imprimés. */
   .font-editor-system {
-    font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', sans-serif !important;
+    font-family: var(--content-font-latin, 'Fira Sans'), 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   [data-content-direction="rtl"] .font-editor-system {
-    font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif) !important;
+    font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic', sans-serif);
   }
 
   .editor-table-content {
@@ -567,11 +594,14 @@
     color: #e8eaed;
   }
 
-  /* MathJax conserve sa mise en page, mais reprend la sérif douce demandée
-     pour distinguer immédiatement une formule du texte courant. */
-  .editor-table-content mjx-container {
-    font-family: Georgia, 'Times New Roman', serif !important;
-    font-style: italic;
+  /* Preserve MathJax's own font metrics: no forced serif or global italic. */
+  .math-text { min-width: 0; }
+  .math-text mjx-container { color: inherit; }
+  .math-text mjx-container[display="true"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25em;
   }
 
   .font-lemonde {
@@ -619,7 +649,7 @@
   :focus-visible {
     outline: 2px solid hsl(var(--ring) / 0.5);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 0px;
   }
 
   /* L’arabe ne se compose pas avec l’espacement latin des capitales. */
@@ -641,24 +671,20 @@
 @layer components {
   [data-editor-table] {
     --editor-fs-chapter: 20px;
-    --editor-fs-top: 14.5px;
-    --editor-fs-section: 13.5px;
-    --editor-fs-subsection: 12px;
-    --editor-fs-subsubsection: 11px;
-    --editor-fs-item-title: 11.7px;
-    --editor-fs-description: 11.5px;
+    --editor-fs-top: 16px;
+    --editor-fs-section: 15px;
+    --editor-fs-subsection: 14px;
+    --editor-fs-subsubsection: 13px;
+    --editor-fs-item-title: 14px;
+    --editor-fs-description: 14px;
     --editor-fs-page: 10px;
-    --editor-fs-badge: 7.2px;
-    --editor-fs-date-day: 16px;
-    --editor-fs-date-meta: 8px;
-    --editor-fs-date-pair: 12px;
-    --editor-fs-date-ampersand: 11px;
-    --editor-fs-table-side: 9px;
-    --editor-fs-table-main: 10px;
-    --editor-fs-remark: 10px;
+    --editor-fs-badge: 10px;
+    --editor-fs-table-side: 11px;
+    --editor-fs-table-main: 12px;
+    --editor-fs-remark: 12px;
     --editor-fs-separator-date: 11px;
     --editor-fs-separator-label: 10px;
-    --editor-badge-min-width: 24px;
+    --editor-badge-min-width: 32px;
     --editor-badge-padding-inline: 2px;
     --editor-lesson-gap: 6px;
     --editor-lesson-indent: 0px;
@@ -671,17 +697,13 @@
   .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
   .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
   .editor-type-subsubsection { font-size: var(--editor-fs-subsubsection); line-height: 1.35; }
-  .editor-type-item-title { font-size: var(--editor-fs-item-title); line-height: 1.35; }
-  .editor-type-description { font-size: var(--editor-fs-description); line-height: 1.45; }
+  .editor-type-item-title { font-size: var(--editor-fs-item-title); line-height: 1.5; }
+  .editor-type-description { font-size: var(--editor-fs-description); line-height: 1.6; }
   .editor-type-page { font-size: var(--editor-fs-page); line-height: 1.25; }
   .editor-type-badge {
     font-size: var(--editor-fs-badge) !important;
     line-height: 1.1 !important;
   }
-  .editor-type-date-day { font-size: var(--editor-fs-date-day); line-height: 1; }
-  .editor-type-date-meta { font-size: var(--editor-fs-date-meta); line-height: 1.15; }
-  .editor-type-date-pair { font-size: var(--editor-fs-date-pair); line-height: 1.15; }
-  .editor-type-date-ampersand { font-size: var(--editor-fs-date-ampersand); line-height: 1; }
   .editor-type-table-side { font-size: var(--editor-fs-table-side); line-height: 1.2; }
   .editor-type-table-main { font-size: var(--editor-fs-table-main); line-height: 1.2; }
   .editor-type-remark { font-size: var(--editor-fs-remark); line-height: 1.35; }
@@ -715,17 +737,13 @@
       --editor-fs-section: 16px;
       --editor-fs-subsection: 14px;
       --editor-fs-subsubsection: 14px;
-      --editor-fs-item-title: 13px;
+      --editor-fs-item-title: 15px;
       --editor-fs-description: 13px;
       --editor-fs-page: 12px;
-      --editor-fs-badge: 7.65px;
-      --editor-fs-date-day: 18px;
-      --editor-fs-date-meta: 9px;
-      --editor-fs-date-pair: 14px;
-      --editor-fs-date-ampersand: 12px;
+      --editor-fs-badge: 11px;
       --editor-fs-table-side: 10px;
       --editor-fs-table-main: 11px;
-      --editor-fs-remark: 11px;
+      --editor-fs-remark: 13px;
       --editor-badge-min-width: 27px;
       --editor-badge-padding-inline: 4px;
       --editor-lesson-gap: 8px;
@@ -737,8 +755,8 @@
 
   @media (min-width: 1024px) {
     [data-editor-table] {
-      --editor-fs-item-title: 14.5px;
-      --editor-fs-badge: 8.1px;
+      --editor-fs-item-title: 16px;
+      --editor-fs-badge: 11px;
       --editor-badge-min-width: 29px;
       --editor-lesson-gap: 10px;
       --editor-lesson-indent: 12px;
@@ -749,32 +767,6 @@
 
   @media (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
          (pointer: coarse) and (max-width: 960px) and (max-height: 540px) and (orientation: landscape) {
-    [data-editor-table] {
-      --editor-fs-chapter: 18px;
-      --editor-fs-top: 11.75px;
-      --editor-fs-section: 11px;
-      --editor-fs-subsection: 9.75px;
-      --editor-fs-subsubsection: 9px;
-      --editor-fs-item-title: 10px;
-      --editor-fs-description: 9.25px;
-      --editor-fs-page: 8px;
-      --editor-fs-badge: 6.3px;
-      --editor-fs-date-day: 13px;
-      --editor-fs-date-meta: 7px;
-      --editor-fs-date-pair: 10px;
-      --editor-fs-date-ampersand: 9px;
-      --editor-fs-table-side: 7.5px;
-      --editor-fs-table-main: 8.25px;
-      --editor-fs-remark: 8px;
-      --editor-fs-separator-date: 10px;
-      --editor-fs-separator-label: 8.5px;
-      --editor-badge-min-width: 20px;
-      --editor-badge-padding-inline: 1px;
-      --editor-lesson-gap: 5px;
-      --editor-lesson-indent: 0px;
-      --editor-description-indent: 8px;
-      --editor-description-padding: 6px;
-    }
 
     /* Empêche le zoom automatique d’iOS pendant l’édition, sans agrandir
        l’affichage passif du tableau. */
@@ -812,7 +804,7 @@
 }
 .settings-surface {
   border: 1px solid #e0e0e0 !important;
-  border-radius: 12px !important;
+  border-radius: 0px !important;
   background: hsl(var(--card)) !important;
   box-shadow: none !important;
 }
@@ -828,7 +820,7 @@
 /* Les modales et les réglages respirent */
 .modal-header,
 .modal-footer {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--background)) !important;
   background-image: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
@@ -947,14 +939,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .app-settings-parent[data-settings-sheet-open='true'] {
   min-height: 100dvh;
   overflow: hidden;
-  border-radius: 1.75rem;
+  border-radius: 0px;
   transform: translate3d(0, 0.65rem, 0) scale(0.975);
   box-shadow: 0 20px 65px rgb(2 8 23 / 0.2);
 }
 
 @media (max-width: 639px) {
   .app-settings-parent[data-settings-sheet-open='true'] {
-    border-radius: 1.5rem;
+    border-radius: 0px;
     transform: translate3d(0, max(0.55rem, env(safe-area-inset-top)), 0) scale(0.955);
   }
 
@@ -963,7 +955,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
     width: auto !important;
     max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
-    border-radius: 12px !important;
+    border-radius: 0px !important;
     border-width: 1px !important;
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
@@ -979,7 +971,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     width: auto !important;
     max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
     margin: auto !important;
-    border-radius: 12px !important;
+    border-radius: 0px !important;
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
   }
@@ -1008,7 +1000,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .keep-surface {
     --keep-border: #e0e0e0;
     border: 1px solid var(--keep-border);
-    border-radius: 12px;
+    border-radius: 0px;
     background-color: var(--keep-light, #fff);
     color: #202124;
   }
@@ -1017,11 +1009,12 @@ html[data-keyboard='open'] .mobile-tab-bar {
     background-color: var(--keep-dark, #202124);
     color: #e8eaed;
   }
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #fff8b8; --keep-dark: #4b443a; }
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #e2f6d3; --keep-dark: #345039; }
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #d4e4ed; --keep-dark: #2d4855; }
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #e9e3f4; --keep-dark: #443e50; }
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #f8e2dd; --keep-dark: #594340; }
+  /* Palette Keep conservée, éclaircie pour des cartes plus douces et respirantes. */
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #fffbe1; --keep-dark: #4b443a; }
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #edf8e5; --keep-dark: #345039; }
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #e7f1f5; --keep-dark: #2d4855; }
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #f1edf8; --keep-dark: #443e50; }
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #fbece8; --keep-dark: #594340; }
   .keep-interactive {
     transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
   }

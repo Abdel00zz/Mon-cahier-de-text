@@ -464,8 +464,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1 max-w-[430px] mx-auto'
-        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,320px)] lg:grid-cols-[repeat(auto-fill,345px)] justify-start';
+        ? 'grid-cols-1 max-w-[430px] mx-auto auto-rows-fr items-stretch'
+        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(310px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(330px,1fr))] auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -536,10 +536,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => setSubjectFilter('all')}
-                                                    className={`h-8 shrink-0 rounded-[10px] px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
+                                                    className={`h-8 shrink-0 rounded-lg px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
                                                         subjectFilter === 'all'
-                                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-blue-700 dark:text-blue-300 shadow-xs'
-                                                            : 'border border-[#e0e0e0] dark:border-[#5f6368] bg-white text-[#202124] dark:text-[#e8eaed] hover:bg-slate-100 dark:bg-[#3c4043]'
+                                                            ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                                                            : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
                                                     }`}
                                                 >
                                                     {t('dashboard.filterAll')}
@@ -551,10 +551,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                             key={subject}
                                                             type="button"
                                                             onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                            className={`h-8 shrink-0 rounded-[10px] px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
+                                                            className={`h-8 shrink-0 rounded-lg px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
                                                                 isActive
-                                                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-blue-700 dark:text-blue-300 shadow-xs'
-                                                                    : 'border border-[#e0e0e0] dark:border-[#5f6368] bg-white text-[#202124] dark:text-[#e8eaed] hover:bg-slate-100 dark:bg-[#3c4043]'
+                                                                    ? 'bg-primary/10 text-primary font-bold shadow-xs'
+                                                                    : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
                                                             }`}
                                                         >
                                                             {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -582,15 +582,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onClick={() => setDisplayMenuOpen(open => !open)}
                                                     aria-haspopup="menu"
                                                     aria-expanded={isDisplayMenuOpen}
-                                                    className="flex h-8 items-center gap-1.5 rounded-[10px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white px-2.5 text-xs font-medium text-[#202124] dark:text-[#e8eaed] shadow-2xs hover:bg-slate-100 dark:bg-[#3c4043] cursor-pointer"
+                                                    className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground shadow-2xs hover:bg-muted cursor-pointer"
                                                 >
                                                     <span>{displayCopy(currentDisplay).label}</span>
-                                                    <ChevronDown className={`h-3.5 w-3.5 text-[#5f6368] dark:text-[#9aa0a6] transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                                 </button>
                                                 {isDisplayMenuOpen && (
                                                     <div
                                                         role="menu"
-                                                        className={`absolute top-[calc(100%+0.35rem)] z-30 w-40 overflow-hidden rounded-[12px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white p-1 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] ${isRtl ? 'left-0' : 'right-0'}`}
+                                                        className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-lg"
                                                     >
                                                         {CLASS_DISPLAY_OPTIONS.map(option => {
                                                             const isActive = option === currentDisplay;
@@ -604,7 +604,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                         setClassDisplayMode(option);
                                                                         setDisplayMenuOpen(false);
                                                                     }}
-                                                                    className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-slate-100 dark:bg-[#3c4043] text-[#202124] dark:text-[#e8eaed] font-bold' : 'text-[#5f6368] dark:text-[#9aa0a6] hover:bg-slate-100 dark:bg-[#3c4043] hover:text-[#202124] dark:text-[#e8eaed]'}`}
+                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-muted text-foreground font-bold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                                                                 >
                                                                     <span>{displayCopy(option).label}</span>
                                                                 </button>
@@ -623,36 +623,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     {spotlightInfo && (
                         <div
                             onClick={() => openNotebook(spotlightInfo.classInfo)}
-                            className="mb-5 rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white p-3.5 sm:p-4 shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] cursor-pointer transition-all hover:shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] active:scale-[0.99] group"
+                            className="mb-5 rounded-2xl border border-border bg-card p-3.5 sm:p-4 shadow-sm cursor-pointer transition-all hover:shadow-md active:scale-[0.99] group"
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3.5 min-w-0">
-                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${spotlightInfo.isActiveNow ? 'bg-[#2F7A5C] text-white shadow-xs' : 'bg-[#3D6FB4] text-white shadow-xs'}`}>
+                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs ${spotlightInfo.isActiveNow ? 'bg-emerald-600 dark:bg-emerald-700' : 'bg-primary'}`}>
                                         {spotlightInfo.isActiveNow ? (
                                             <Radio className="h-5 w-5 animate-pulse stroke-[2.2]" />
                                         ) : (
                                             <Clock className="h-5 w-5 stroke-[2.2]" />
                                         )}
                                         {spotlightInfo.isActiveNow && (
-                                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2F7A5C] opacity-75" />
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2F7A5C]" />
+                                            <span className="absolute -top-1 -end-1 flex h-2.5 w-2.5">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                                             </span>
                                         )}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-[#E5F1EA] text-[#2F7A5C] border border-[#2F7A5C]/30' : 'bg-[#E7EEF8] text-[#3D6FB4] border border-[#3D6FB4]/30'}`}>
+                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>
                                                 {spotlightInfo.isActiveNow ? (locale === 'ar' ? 'الآن · حصة جارية' : 'En ce moment · En direct') : (locale === 'ar' ? 'اليوم · الحصة القادمة' : 'Aujourd’hui · Séance à venir')}
                                             </span>
-                                            <span className="text-xs text-[#5f6368] dark:text-[#9aa0a6] hidden sm:inline">
+                                            <span className="text-xs text-muted-foreground hidden sm:inline">
                                                 {spotlightInfo.info.label}
                                             </span>
                                         </div>
-                                        <h3 className="text-sm sm:text-base font-bold text-[#202124] dark:text-[#e8eaed] truncate mt-0.5 font-sans font-medium text-xl group-hover:text-[#3D6FB4] transition-colors">
+                                        <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5 font-sans group-hover:text-primary transition-colors">
                                             {spotlightInfo.classInfo.name}
                                             {spotlightInfo.classInfo.subject && (
-                                                <span className="text-xs font-normal text-[#5f6368] dark:text-[#9aa0a6] font-sans ml-1.5">
+                                                <span className="text-xs font-normal text-muted-foreground font-sans ms-1.5">
                                                     ({formatLocalizedSubjectDisplayName(spotlightInfo.classInfo.subject, locale)})
                                                 </span>
                                             )}
@@ -661,10 +661,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-xs font-semibold text-[#3D6FB4] hidden md:inline group-hover:underline">
+                                    <span className="text-xs font-semibold text-primary hidden md:inline group-hover:underline">
                                         {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
                                     </span>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#e0e0e0] dark:border-[#5f6368] bg-slate-100 dark:bg-[#3c4043] text-[#202124] dark:text-[#e8eaed] group-hover:bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 group-hover:text-blue-700 dark:text-blue-300 transition-all">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
                                         <ArrowIcon className="h-4 w-4 stroke-[2.2]" />
                                     </div>
                                 </div>
@@ -675,22 +675,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-white px-4 py-10 text-center shadow-[0_1px_2px_0_rgba(60,64,67,0.3),0_1px_3px_1px_rgba(60,64,67,0.15)] dark:shadow-[0_1px_3px_1px_rgba(255,255,255,0.15)] sm:px-8 sm:py-14 md:py-16">
-                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-[16px] border border-[#e0e0e0] dark:border-[#5f6368] bg-slate-50 dark:bg-[#3c4043] p-2 sm:mb-6 sm:p-2.5">
+                                    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
+                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/40 p-2 sm:mb-6 sm:p-2.5">
                                             <img
                                                 src="/dashboard.png"
                                                 alt="Illustration tableau de bord"
-                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-[12px] select-none pointer-events-none"
+                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-lg select-none pointer-events-none"
                                                 referrerPolicy="no-referrer"
                                                 loading="eager"
                                             />
                                         </div>
 
                                         <div className="max-w-md space-y-1.5 px-2">
-                                            <h3 className="font-sans font-medium text-2xl sm:text-3xl font-bold text-[#202124] dark:text-[#e8eaed]">
+                                            <h3 className="font-sans font-bold text-xl sm:text-2xl text-foreground text-balance">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
-                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-[#5f6368] dark:text-[#9aa0a6] font-sans sm:text-sm">
+                                            <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">
                                                 {t('dashboard.emptyDescription')}
                                             </p>
                                         </div>
@@ -734,7 +734,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {filteredClasses.map((classInfo, index) => (
                                             <div
                                                 key={classInfo.id}
-                                                className="h-full w-full animate-in slide-in-from-bottom-4 fade-in duration-200"
+                                                className="h-full w-full flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard

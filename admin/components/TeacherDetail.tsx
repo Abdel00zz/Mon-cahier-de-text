@@ -707,10 +707,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         title="Message à l’enseignant"
                         description="Le professeur le recevra sous la signature « Direction administrative » et devra confirmer sa lecture."
                         maxWidth="lg"
+                        className="sm:rounded-2xl"
                         footer={(
                             <div className="flex w-full justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setMessageModalOpen(false)} disabled={busy}>Annuler</Button>
-                                <Button type="button" onClick={() => void handleSendMessage()} disabled={busy || !messageBody.trim()}>
+                                <Button type="button" variant="outline" onClick={() => setMessageModalOpen(false)} disabled={busy} className="rounded-xl">Annuler</Button>
+                                <Button type="button" onClick={() => void handleSendMessage()} disabled={busy || !messageBody.trim()} className="rounded-xl">
                                     {busy ? 'Envoi…' : 'Envoyer'}
                                 </Button>
                             </div>
@@ -723,7 +724,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                     value={messageTitle}
                                     onChange={event => setMessageTitle(event.target.value)}
                                     maxLength={80}
-                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
                                     placeholder="Message de la direction"
                                 />
                             </label>
@@ -734,7 +735,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                     onChange={event => setMessageBody(event.target.value)}
                                     maxLength={1200}
                                     rows={7}
-                                    className="w-full resize-y rounded-lg border bg-background px-3 py-2 text-sm font-normal"
+                                    className="w-full resize-y rounded-xl border border-border/80 bg-background px-3 py-2 text-sm font-normal"
                                     placeholder="Rédigez le message destiné à cet enseignant…"
                                     autoFocus
                                 />
@@ -748,10 +749,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         title={editingClass ? 'Modifier la classe' : 'Ajouter une classe'}
                         description="La classe est affectée au professeur sélectionné. Les informations administratives sont protégées contre les anciennes copies hors ligne."
                         maxWidth="lg"
+                        className="sm:rounded-2xl"
                         footer={(
                             <div className="flex w-full justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setClassModalOpen(false)} disabled={busy}>Annuler</Button>
-                                <Button type="button" onClick={() => void handleSaveClass()} disabled={busy || !className.trim() || !classSubject.trim()}>
+                                <Button type="button" variant="outline" onClick={() => setClassModalOpen(false)} disabled={busy} className="rounded-xl">Annuler</Button>
+                                <Button type="button" onClick={() => void handleSaveClass()} disabled={busy || !className.trim() || !classSubject.trim()} className="rounded-xl">
                                     {busy ? 'Enregistrement…' : editingClass ? 'Enregistrer' : 'Ajouter la classe'}
                                 </Button>
                             </div>
@@ -764,7 +766,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                     value={className}
                                     onChange={event => setClassName(event.target.value)}
                                     maxLength={120}
-                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
                                     placeholder="Ex. 1ère année collège"
                                     autoFocus
                                 />
@@ -775,7 +777,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                     value={classSubject}
                                     onChange={event => setClassSubject(event.target.value)}
                                     maxLength={120}
-                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
                                     placeholder="Ex. Mathématiques"
                                 />
                             </label>
@@ -784,7 +786,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                                 <select
                                     value={classCycle}
                                     onChange={event => setClassCycle(event.target.value as Cycle)}
-                                    className="h-10 w-full rounded-lg border bg-background px-3 text-sm font-normal"
+                                    className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 text-sm font-normal"
                                 >
                                     <option value="college">Collège</option>
                                     <option value="lycee">Lycée qualifiant</option>

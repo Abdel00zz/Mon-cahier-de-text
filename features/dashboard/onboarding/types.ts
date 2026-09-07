@@ -5,8 +5,6 @@ import type { ModalLang } from '@/components/ui/lang-toggle';
 export const ONBOARDING_TOTAL_STEPS = 4 as const;
 
 export type OnboardingStep = 1 | 2 | 3 | 4;
-type ClassCreationMode = 'catalog' | 'manual';
-type ClassDraftIssue = 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass';
 
 export interface OnboardingPageProps {
     config: AppConfig;
@@ -23,13 +21,8 @@ export interface CycleOption {
     icon: ComponentType<{ className?: string }>;
 }
 
-export interface ClassLevelGroup {
-    key: string;
-    levels: string[];
-}
-
 export interface ClassDraft {
-    mode: ClassCreationMode;
+    mode: 'catalog' | 'manual';
     level: string;
     group: string;
     label: string;
@@ -38,7 +31,7 @@ export interface ClassDraft {
 
 export interface ClassDraftValidation {
     name: string | null;
-    issue: ClassDraftIssue | null;
+    issue: 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass' | null;
 }
 
 export interface OnboardingCopy {

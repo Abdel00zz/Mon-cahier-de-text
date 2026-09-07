@@ -154,11 +154,11 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 
 - Les pages principales sont chargées avec `React.lazy`.
 - Les modales lourdes de l’éditeur sont chargées à la demande.
-- MathJax n’est initialisé qu’à l’ouverture d’un cahier, afin de garder l’accueil léger sur mobile.
+- MathProvider partage la promesse de démarrage MathJax entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
 - Les analytics sont chargées après le rendu de la surface principale, sans bloquer l’interface.
 - Administration et application enseignant sont deux entrées séparées.
 - Workbox précache uniquement les ressources nécessaires.
-- Le budget avertit au-delà de 220 kB par chunk non compressé.
+- Le budget avertit au-delà de 320 kB par chunk non compressé.
 - Les dépendances directes correspondent aux imports réels ; Workbox est déclaré explicitement.
 
 ## Qualité
@@ -180,3 +180,15 @@ Le contrôle `check:unused` connaît explicitement les entrées serverless et ad
 - Supprimer les anciens exports au lieu de maintenir une API interne fantôme.
 - Ne pas conserver une primitive UI « au cas où ».
 - Après un déplacement, utiliser `@/` pour les dépendances transversales et valider immédiatement TypeScript.
+
+## Circuit de rendu de l’éditeur
+
+`buildLessonRows` aplatit le cahier en conservant les indices source. La recherche filtre ces lignes avec leurs ancêtres ; elle ne reconstruit pas un arbre aux indices différents. `groupLessonRows` regroupe les dates et les contenus consécutifs identiques, sans traverser les séparateurs ni les trous de recherche. Une cellule de contenu fusionnée sélectionne toutes ses entrées, dont les données restent distinctes. Les descriptions différentes empêchent leur fusion.
+
+Le virtualiseur utilise l’intersection réelle avec la fenêtre, des mesures indexées par identité et des positions arrondies au pixel. Les groupes sont bornés à 24 entrées. Les corrections de hauteur au-dessus de la fenêtre préservent la position de lecture.
+
+`splitMathText` protège les délimiteurs avant la mise en forme des listes ou le surlignage. MathJax ne scanne pas globalement le DOM React : chaque MathText possède son rendu. Les badges occupent une colonne de grille centrée sur la ligne du titre ; les descriptions occupent les lignes suivantes.
+
+Les écarts horaires et les classes sans créneau passent par le flux de notifications vers les repères du Centre de pilotage. Le panneau d’avertissements redondant des paramètres a été retiré.
+
+Vérification des indices, fusions, dates multiples, virtualisation et délimiteurs : `npm run test:editor`.

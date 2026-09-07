@@ -96,7 +96,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
             {panel === 'export' ? <FileDown className="h-5 w-5 stroke-[2.2]" /> : <FileUp className="h-5 w-5 stroke-[2.2]" />}
           </span>
           <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
@@ -104,12 +104,11 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
           </span>
         </div>
       }
-      description={t('transfer.description')}
       maxWidth="xl"
       className="sm:max-w-2xl sm:rounded-2xl"
-      headerClassName="border-b-0 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
+      headerClassName="border-b-0 bg-background"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t-0 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
+      footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -140,8 +139,8 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
         />
 
         {panel === 'export' ? (
-          <section className="flex flex-col items-start gap-4 p-5 rounded-2xl border border-border/70 bg-card shadow-xs sm:flex-row sm:items-center">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-muted/60 text-primary shadow-2xs">
+          <section className="flex flex-col items-start gap-4 p-5 rounded-xl border border-border/70 bg-background shadow-xs sm:flex-row sm:items-center">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-muted/60 text-primary shadow-2xs">
               <FileDown className="h-6 w-6 stroke-[2.2]" aria-hidden />
             </span>
             <div className="min-w-0">
@@ -154,7 +153,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
         ) : (
           <section className="space-y-4">
             {message && (
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.08] px-4 py-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200" role="status">
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-4 py-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200" role="status">
                 <p className="font-bold">{t('transfer.checkFile')}</p>
                 <p className="mt-0.5 text-amber-800/90 dark:text-amber-300">{message}</p>
               </div>
@@ -163,9 +162,9 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
             <div>
               <label
                 htmlFor="data-transfer-json-file"
-                className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
+                className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border/80 shadow-2xs mb-2 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border/80 shadow-2xs mb-2 text-primary">
                   <FileUp className="h-5 w-5 stroke-[2.2]" aria-hidden />
                 </div>
                 <span className="text-xs sm:text-sm font-bold text-foreground">{fileName || t('transfer.chooseFile')}</span>
@@ -174,7 +173,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
               <input type="file" id="data-transfer-json-file" accept=".json,application/json" onChange={handleFileChange} className="sr-only" />
             </div>
 
-            <details className="group rounded-2xl bg-card border border-border/70 px-4 py-3 shadow-xs">
+            <details className="group rounded-xl bg-background border border-border/70 px-4 py-3 shadow-xs">
               <summary className="cursor-pointer text-xs font-bold text-muted-foreground transition-colors hover:text-foreground list-none flex items-center justify-between">
                 <span>{t('transfer.pasteJson')}</span>
                 <span className="text-[10px] uppercase font-bold text-primary font-mono">{jsonText ? 'JSON ✓' : '+'}</span>
@@ -198,7 +197,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 type="button"
                 onClick={() => setImportMode('replace')}
                 aria-pressed={importMode === 'replace'}
-                className={`min-h-16 rounded-2xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'replace' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-card border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
+                className={`min-h-16 rounded-xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'replace' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-background border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
               >
                 <span className="block text-xs font-bold text-foreground">{t('transfer.replace')}</span>
                 <span className="mt-0.5 block text-[11px] font-medium leading-normal text-muted-foreground">{t('transfer.replaceHint')}</span>
@@ -207,7 +206,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
                 type="button"
                 onClick={() => setImportMode('append')}
                 aria-pressed={importMode === 'append'}
-                className={`min-h-16 rounded-2xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'append' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-card border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
+                className={`min-h-16 rounded-xl px-4 py-3 text-start transition-all duration-150 ${importMode === 'append' ? 'bg-primary/[0.08] text-foreground border-2 border-primary/50 shadow-xs' : 'bg-background border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/40'}`}
               >
                 <span className="block text-xs font-bold text-foreground">{t('transfer.append')}</span>
                 <span className="mt-0.5 block text-[11px] font-medium leading-normal text-muted-foreground">{t('transfer.appendHint')}</span>

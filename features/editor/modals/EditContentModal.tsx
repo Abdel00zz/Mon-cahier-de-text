@@ -3,10 +3,8 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MathText } from '@/components/ui/math-text';
 import { ContentDirection, LessonItem, TopLevelItem, Section, SubSection, SubSubSection } from '@/types';
 import { TYPE_MAP, getContentTypesForSubject } from '@/constants';
-import { renderDescriptionWithBold } from '@/utils/textFormat';
 import { translateLocaleMessage, useLocale } from '@/i18n/LocaleProvider';
 import { ContextualDescriptionEditor } from './ContextualDescriptionEditor';
 
@@ -72,8 +70,8 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
     if (!item || !isDirty) return;
     onSave(formData);
   };
-  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]';
-  const fieldClass = 'h-11 rounded-xl border-transparent bg-white dark:bg-[#202124] shadow-none focus-visible:ring-2 focus-visible:ring-transparent focus-visible:border-transparent';
+  const labelClass = 'mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground';
+  const fieldClass = 'h-11 rounded-xl border border-border bg-background text-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary';
   const description = String(formData.description ?? '');
   const editedTitleField: 'title' | 'name' = titleOnly ? titleField : 'title';
   const editedTitle = String(formData[editedTitleField] ?? '');
@@ -83,27 +81,26 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t(titleOnly ? 'editContent.titleOnlyTitle' : 'editContent.title')}
-      description={t(titleOnly ? 'editContent.titleOnlyDescription' : 'editContent.description')}
       maxWidth={titleOnly ? 'lg' : '2xl'}
       className={titleOnly ? 'sm:max-w-2xl sm:rounded-2xl' : 'sm:max-w-4xl sm:rounded-2xl'}
-      headerClassName="border-b-0 bg-white dark:bg-[#202124] px-5 pb-3.5 pt-5 sm:px-7"
+      headerClassName="border-b border-border/70 bg-background"
       bodyClassName="px-5 py-5 sm:px-7"
-      footerClassName="border-t-0 bg-white dark:bg-[#202124] px-5 py-3.5 sm:px-7"
+      footerClassName="border-t border-border/70 bg-background"
       footer={(
         <div className="flex w-full items-center justify-between gap-3">
-          <Button type="button" variant="ghost" onClick={reset} disabled={!isDirty} className="h-9 rounded-xl px-3 text-xs text-[#5f6368] dark:text-[#9aa0a6]">
+          <Button type="button" variant="ghost" onClick={reset} disabled={!isDirty} className="h-9 rounded-xl px-3 text-xs text-muted-foreground hover:text-foreground">
             {t('editContent.reset')}
           </Button>
           <div className="flex items-center gap-2">
             <Button type="button" variant="secondary" onClick={onClose} className="h-9 rounded-xl px-4 text-xs">{t('common.cancel')}</Button>
-            <Button type="submit" form="edit-content-form" disabled={!isDirty} className="h-9 rounded-xl px-5 text-xs font-bold">{t('common.save')}</Button>
+            <Button type="submit" variant="default" form="edit-content-form" disabled={!isDirty} className="h-9 rounded-xl px-5 text-xs font-bold">{t('common.save')}</Button>
           </div>
         </div>
       )}
     >
       <form id="edit-content-form" onSubmit={submit} className="space-y-4" dir={contentDirection}>
         {titleOnly ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1.08fr_.92fr]">
+          <div className="grid grid-cols-1 gap-4">
             <section className="min-w-0">
               <label className={labelClass}>{t('editor.title')}</label>
               <Input
@@ -113,16 +110,6 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 className={`${fieldClass} font-semibold`}
               />
             </section>
-            <aside className="min-w-0 rounded-2xl border border-transparent bg-transparent border-none p-4">
-              <div className="border-b border-[#e0e0e0] dark:border-[#5f6368] pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]">
-                {t('editContent.preview')}
-              </div>
-              <MathText source={editedTitle}>
-                <h3 className="mt-4 min-h-11 break-words text-start text-sm sm:text-base font-bold leading-snug text-[#202124] dark:text-[#e8eaed]">
-                  {editedTitle || t('editContent.untitled')}
-                </h3>
-              </MathText>
-            </aside>
           </div>
         ) : (
           <>
@@ -148,36 +135,15 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
               </div>
             </section>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.12fr_.88fr]">
+            <div className="grid grid-cols-1 gap-4">
               <section className="min-w-0">
                 <label className={labelClass}>{t('editor.description')}</label>
                 <ContextualDescriptionEditor
                   value={description}
                   onChange={value => update('description', value)}
-                  placeholder={t('editContent.descriptionPlaceholder')}
+                  placeholder={t('descriptionModal.placeholder')}
                 />
               </section>
-
-              <aside className="min-w-0 rounded-2xl border border-transparent bg-transparent border-none p-4 lg:sticky lg:top-0 lg:min-h-[260px]">
-                <div className="border-b border-[#e0e0e0] dark:border-[#5f6368] pb-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#5f6368] dark:text-[#9aa0a6]">
-                  {t('editContent.preview')}
-                </div>
-                <MathText source={`${editedTitle}\n${description}`}>
-                  <article className="mt-3 min-w-0 break-words text-start">
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-blue-500">
-                      <span>{tc(`contentType.${String(formData.type ?? '')}`)}</span>
-                      {formData.number ? <span>· {String(formData.number)}</span> : null}
-                      {formData.page ? <span className="text-[#5f6368] dark:text-[#9aa0a6]">p. {String(formData.page)}</span> : null}
-                    </div>
-                    <h3 className="mt-2 text-sm sm:text-base font-bold leading-snug text-[#202124] dark:text-[#e8eaed]">
-                      {editedTitle || t('editContent.untitled')}
-                    </h3>
-                    <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#5f6368] dark:text-[#9aa0a6]">
-                      {description ? renderDescriptionWithBold(description) : <span className="italic text-[#5f6368] dark:text-[#9aa0a6]/50">{t('editContent.previewEmpty')}</span>}
-                    </div>
-                  </article>
-                </MathText>
-              </aside>
             </div>
           </>
         )}

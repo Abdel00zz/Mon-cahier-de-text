@@ -9,7 +9,8 @@
     "api/notify.ts",
     "api/official-events.ts",
     "api/send-email.ts",
-    "api/sync.ts"
+    "api/sync.ts",
+    "scripts/test-*.ts"
   ],
   "ignoreDependencies": [
     "@capacitor/android",

@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
-import { MathJax, MathJaxBaseContext } from 'better-react-mathjax';
+import { MathJax } from 'better-react-mathjax';
+import { MathRuntimeContext } from '@/contexts/MathRuntimeContext';
+import { hasMathSyntax } from '@/utils/math';
 
 interface MathTextProps {
     children: React.ReactNode;
@@ -8,13 +10,14 @@ interface MathTextProps {
     inline?: boolean;
 }
 
-export const MathText: React.FC<MathTextProps> = ({ children, source }) => {
-    const mathJaxContext = useContext(MathJaxBaseContext);
+export const MathText: React.FC<MathTextProps> = React.memo(({ children, source, cacheKey, inline = false }) => {
+    const ready = useContext(MathRuntimeContext);
     const text = typeof source === 'string' ? source : '';
-    const hasMath = text.includes('$') || text.includes('\\(') || text.includes('\\[') || text.includes('\\begin{');
+    const hasMath = React.useMemo(() => hasMathSyntax(text), [text]);
 
-    if (hasMath && mathJaxContext) {
-        return <MathJax className="inline-block max-w-full">{children}</MathJax>;
+    if (hasMath && ready) {
+        // React must not reconcile new source text against MathJax's mutated DOM.
+        return <MathJax key={`${cacheKey ?? ''}:${text}`} dynamic inline={inline} className="math-text max-w-full">{children}</MathJax>;
     }
     return <>{children}</>;
-};
+});

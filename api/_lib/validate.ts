@@ -252,6 +252,25 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
     const id = assertStringField(item.id, 'Identifiant de classe', 120);
     if (seen.has(id)) throw new HttpError(400, 'Identifiants de classes dupliqués.');
     seen.add(id);
+    let curriculumChapterMatches: ClassInfo['curriculumChapterMatches'];
+    const matchedIndices = new Set<number>();
+    if (item.curriculumChapterMatches !== undefined) {
+      if (!isPlainObject(item.curriculumChapterMatches) || Object.keys(item.curriculumChapterMatches).length > 300) throw new HttpError(400, 'Correspondances de chapitres invalides.');
+      const entries = Object.entries(item.curriculumChapterMatches).map(([key, matches]) => {
+        if (!/^[a-z0-9][a-z0-9-]{0,119}$/.test(key) || !Array.isArray(matches) || matches.length > 300) throw new HttpError(400, 'Correspondance de chapitre invalide.');
+        return [key, matches.map(match => {
+          if (!isPlainObject(match) || !Number.isInteger(match.index) || Number(match.index) < 0 || Number(match.index) > 10000) throw new HttpError(400, 'Index de chapitre invalide.');
+          if (matchedIndices.has(Number(match.index))) throw new HttpError(400, 'Un chapitre ne peut pas être associé deux fois.');
+          matchedIndices.add(Number(match.index));
+          assertStringField(match.title, 'Titre du chapitre associé', 5000);
+          // The title is an identity guard: preserve its exact original whitespace.
+          return { index: Number(match.index), title: match.title as string };
+        })];
+      });
+      curriculumChapterMatches = Object.fromEntries(entries);
+    }
+    if (item.courseStartDate !== undefined && (!ISO_DATE.test(item.courseStartDate) || !Number.isFinite(Date.parse(item.courseStartDate)) || new Date(item.courseStartDate).toISOString().slice(0, 10) !== item.courseStartDate)) throw new HttpError(400, 'Début de cours invalide.');
+    if (item.curriculumSourceId !== undefined && (typeof item.curriculumSourceId !== 'string' || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(item.curriculumSourceId))) throw new HttpError(400, 'Référence de programme invalide.');
     return {
       id,
       name: assertStringField(item.name, 'Nom de classe', 120),
@@ -260,6 +279,12 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
       createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
       color: typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color) ? item.color : '#3b82f6',
       cycle: VALID_CYCLES.has(item.cycle as string) ? item.cycle : undefined,
+      level: item.level === undefined ? undefined : assertStringField(item.level, 'Niveau', 120),
+      branch: item.branch ? assertStringField(item.branch, 'Filière', 120) : undefined,
+      group: item.group ? assertStringField(item.group, 'Groupe', 30) : undefined,
+      courseStartDate: item.courseStartDate,
+      curriculumSourceId: item.curriculumSourceId,
+      curriculumChapterMatches,
     };
   });
 };

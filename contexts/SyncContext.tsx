@@ -25,6 +25,7 @@ import { effectiveSchedules } from '../utils/timetable';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { isContentDirection } from '../utils/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../utils/accountWorkspace';
+import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -173,6 +174,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const debounceRef = useRef<number | null>(null);
     const scheduledPushAtRef = useRef<number | null>(null);
     const pushingRef = useRef(false);
+    const immediatePushRequestedRef = useRef(false);
     const pushAbortRef = useRef<AbortController | null>(null);
     const authStatusRef = useRef(authStatus);
     authStatusRef.current = authStatus;
@@ -214,6 +216,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pushingRef.current = true;
         setSyncStatus('syncing');
         const work = getPendingWork();
+        let succeeded = false;
 
         try {
             const classes = readLocalClasses();
@@ -350,6 +353,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 lastErrorKeyRef.current = null;
                 setLastSyncAt(serverTime ?? new Date().toISOString());
                 setSyncStatus(hasPendingWork() ? 'pending' : 'synced');
+                succeeded = true;
                 return;
             }
 
@@ -391,6 +395,19 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (pushAbortRef.current === controller) {
                 pushingRef.current = false;
                 pushAbortRef.current = null;
+                const repeatImmediately = immediatePushRequestedRef.current;
+                immediatePushRequestedRef.current = false;
+                // A second association made during an in-flight push must not wait for
+                // the ordinary 20-second debounce. Do not create an error retry loop.
+                if (repeatImmediately && succeeded && isCurrent() && hasPendingWork()) {
+                    if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+                    scheduledPushAtRef.current = Date.now();
+                    debounceRef.current = window.setTimeout(() => {
+                        debounceRef.current = null;
+                        scheduledPushAtRef.current = null;
+                        void push();
+                    }, 0);
+                }
             }
         }
     }, []);
@@ -398,6 +415,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => () => {
         pushAbortRef.current?.abort();
         pushingRef.current = false;
+        immediatePushRequestedRef.current = false;
         if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
     }, [authStatus, user?.phone]);
 
@@ -425,6 +443,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             window.clearTimeout(debounceRef.current);
             debounceRef.current = null;
             scheduledPushAtRef.current = null;
+        }
+        if (pushingRef.current) {
+            immediatePushRequestedRef.current = true;
+            return Promise.resolve();
         }
         return push();
     }, [push]);
@@ -580,7 +602,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         if (localIndex === -1) {
                             mergedClasses.push(serverClass);
                         } else {
-                            mergedClasses[localIndex] = { ...mergedClasses[localIndex], ...serverClass };
+                            const localClass = mergedClasses[localIndex];
+                            mergedClasses[localIndex] = withCurriculumSettings(
+                                { ...localClass, ...serverClass },
+                                serverIsNewer ? serverClass : localClass,
+                            );
                         }
                         if (hasAdminOverride || localIndex !== -1) localChanged = true;
                     } else if (action === 'requeue') {

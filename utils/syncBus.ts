@@ -205,20 +205,6 @@ export const notifyNotificationsChanged = (): void => {
     emit('notifications-changed');
 };
 
-/** Purge la file mémoire avant qu'un autre compte ne soit connecté. */
-export const resetSyncState = (): void => {
-    dirtyClassVersions.clear();
-    deletedClasses.clear();
-    dirtySeq = 0;
-    classesListVersion = 0;
-    classesListSyncedVersion = 0;
-    try {
-        localStorage.removeItem(SYNC_PENDING_KEY);
-    } catch {
-        // L'état mémoire est déjà purgé.
-    }
-};
-
 /** Restore the queue belonging to the newly activated account, without deleting it. */
 export const reloadSyncState = (): void => {
     const state = readPendingState();
@@ -230,6 +216,20 @@ export const reloadSyncState = (): void => {
     dirtySeq = state?.dirtySeq ?? 0;
     classesListVersion = state?.classesListVersion ?? 0;
     classesListSyncedVersion = state?.classesListSyncedVersion ?? 0;
+};
+
+/** Réinitialise l'état du bus en mémoire et dans le stockage local lors d'une déconnexion. */
+export const resetSyncState = (): void => {
+    dirtyClassVersions.clear();
+    deletedClasses.clear();
+    dirtySeq = 0;
+    classesListVersion = 0;
+    classesListSyncedVersion = 0;
+    try {
+        localStorage.removeItem(SYNC_PENDING_KEY);
+    } catch {
+        // Ignorer en environnement restreint
+    }
 };
 
 export interface PendingWork {

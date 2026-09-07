@@ -53,13 +53,15 @@ export const useClassManager = () => {
      * encore la liste précédente.
      */
     const persistClassesNow = useCallback((nextClasses: ClassInfo[], markDirty = true) => {
-        if (!workspaceIsActive()) return;
+        if (!workspaceIsActive()) return false;
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(nextClasses));
             if (markDirty) markClassesListDirty();
             notifyClassesChanged();
+            return true;
         } catch (err) {
             logger.error('Failed to persist classes', err);
+            return false;
         }
     }, [workspaceIsActive]);
 
@@ -201,15 +203,19 @@ export const useClassManager = () => {
 
     const updateClass = useCallback(
         (classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {
-            if (!workspaceIsActive()) return;
-            const nextClasses = classes.map(classInfo =>
+            if (!workspaceIsActive()) return false;
+            // Other mounted managers may have updated another field since this render.
+            let latest: ClassInfo[];
+            try { latest = parseStoredClasses(localStorage.getItem(STORAGE_KEY)); } catch { return false; }
+            if (!latest.some(classInfo => classInfo.id === classId)) return false;
+            const nextClasses = latest.map(classInfo =>
                 classInfo.id === classId ? { ...classInfo, ...updates } : classInfo
             );
-            if (nextClasses.every((classInfo, index) => classInfo === classes[index])) return;
+            if (!persistClassesNow(nextClasses)) return false;
             classesRef.current = nextClasses;
-            persistClassesNow(nextClasses);
             skipNextPersistRef.current = true;
             setClasses(() => nextClasses);
+            return true;
         },
         [classes, persistClassesNow, setClasses, workspaceIsActive],
     );

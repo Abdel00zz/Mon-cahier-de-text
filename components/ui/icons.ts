@@ -15,7 +15,6 @@ import {
   CalendarRange as LucideCalendarRange,
   CalendarCheck as LucideCalendarCheck,
   CalendarPlus as LucideCalendarPlus,
-  CalendarMinus as LucideCalendarMinus,
   CalendarX as LucideCalendarX,
   Clock as LucideClock,
   ArrowLeft as LucideArrowLeft,
@@ -73,7 +72,6 @@ import {
   RefreshCw as LucideRefreshCw,
   LogOut as LucideLogOut,
   Award,
-  Layers as LucideLayers,
   Palette as LucidePalette,
   Bold as LucideBold,
   Braces as LucideBraces,
@@ -123,7 +121,6 @@ export const CalendarDays = createIcon(LucideCalendarDays);
 export const CalendarRange = createIcon(LucideCalendarRange);
 export const CalendarCheck = createIcon(LucideCalendarCheck);
 export const CalendarPlus = createIcon(LucideCalendarPlus);
-export const CalendarMinus = createIcon(LucideCalendarMinus);
 export const CalendarX = createIcon(LucideCalendarX);
 export const Clock = createIcon(LucideClock);
 export const ArrowLeft = createIcon(LucideArrowLeft);
@@ -184,7 +181,6 @@ export const ShieldCheck = createIcon(LucideShieldCheck);
 export const RefreshCw = createIcon(LucideRefreshCw);
 export const LogOut = createIcon(LucideLogOut);
 export const AwardIcon = createIcon(Award);
-export const Layers = createIcon(LucideLayers);
 export const Palette = createIcon(LucidePalette);
 export const Bold = createIcon(LucideBold);
 export const Braces = createIcon(LucideBraces);

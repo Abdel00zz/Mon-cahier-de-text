@@ -1,4 +1,5 @@
 import React from 'react';
+import { hasMathSyntax, splitMathText } from '@/utils/math';
 import { MathText } from '@/components/ui/math-text';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
 import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
@@ -23,7 +24,7 @@ const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; c
   <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
 );
 
-const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, query }) => {
+const HighlightedPlainText: React.FC<{ text: string; query?: string }> = ({ text, query }) => {
   const needle = query?.trim();
   if (!needle) return <>{text}</>;
   const parts: React.ReactNode[] = [];
@@ -40,6 +41,10 @@ const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, que
   if (cursor < text.length) parts.push(text.slice(cursor));
   return <>{parts}</>;
 };
+
+const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, query }) => (
+  <>{splitMathText(text).map((part, index) => part.math ? part.text : <HighlightedPlainText key={index} text={part.text} query={query} />)}</>
+);
 
 const renderChapterLabel = (label: string) => {
   const parts = label.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème|st|nd|rd|th)?)/gi);
@@ -78,7 +83,7 @@ const renderChapterTitleStyled = (text: string) => {
           {separator ? <span className="ms-1 text-primary/80">{separator}</span> : null}
         </span>
         {restTitle ? (
-          <span className="text-[0.85em] font-semibold text-[#202124] dark:text-[#e8eaed]">
+          <span className="text-[0.85em] font-semibold text-primary">
             {restTitle}
           </span>
         ) : null}
@@ -87,7 +92,7 @@ const renderChapterTitleStyled = (text: string) => {
   }
 
   return (
-    <span className="text-[0.85em] font-bold text-[#202124] dark:text-[#e8eaed]">
+    <span className="text-[0.85em] font-bold text-primary">
       {text}
     </span>
   );
@@ -113,48 +118,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     const isCorrection = item.type.startsWith('correction_');
 
     if (isPrint) {
-      // Afficher les chapitres et évaluations de la même manière
-      if (item.type === 'chapter' || TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
-        const printIndent = isCorrection ? 'ps-4' : '';
-        // Nettoyer le titre pour enlever le préfixe de type si présent
-        let titleToDisplay = item.title || config.name;
-        const typePrefix = item.type.toUpperCase();
-        if (titleToDisplay.startsWith(typePrefix)) {
-          titleToDisplay = titleToDisplay.substring(typePrefix.length).trim();
-          if (!titleToDisplay) {
-            titleToDisplay = config.name;
-          }
-        }
-
-        if (item.type === 'chapter') {
-          return (
-            <div className="flex w-full items-center justify-center text-center font-bold text-base font-extrabold tracking-tight text-red-700">
-              <span>{titleToDisplay}</span>
-            </div>
-          );
-        }
-
-        return (
-          <div className={`font-extrabold tracking-tight text-base flex items-center justify-center ${config.color} ${printIndent}`} style={{ textAlign: 'center', width: '100%' }}>
-            <span>{titleToDisplay}</span>
-          </div>
-        );
-      }
-
-      // Pour les autres types d'éléments
-      let titleToDisplay = item.title || config.name;
-      const typePrefix = item.type.toUpperCase();
-      if (titleToDisplay.startsWith(typePrefix)) {
-        titleToDisplay = titleToDisplay.substring(typePrefix.length).trim();
-        if (!titleToDisplay) {
-          titleToDisplay = config.name;
-        }
-      }
-      
+      const prefix = item.type.toUpperCase();
+      const title = (item.title || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
       return (
-        <div className="font-bold text-base">
-          {titleToDisplay}
-        </div>
+        <MathText source={title}>
+          <div className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
+            {title}
+          </div>
+        </MathText>
       );
     }
 
@@ -179,10 +150,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       const chapterTitle = item.title || config.name;
       return (
-        <MaybeMathJax mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
+        <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
+          <div className="editor-type-chapter text-primary my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
             <span className="max-w-[min(100%,44rem)] break-words text-balance">
-              {highlight ? (
+              {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
               ) : (
                 renderChapterTitleStyled(chapterTitle)
@@ -196,7 +167,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     return (
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
-      <MaybeMathJax mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
+      <MaybeMathJax key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div className={`editor-type-top font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <HighlightedText text={item.title} query={highlight} />
         </div>
@@ -208,7 +179,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'section':
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
-        <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
+        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-section font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <HighlightedText text={data.name} query={highlight} />
@@ -217,7 +188,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     case 'subsection':
       return (
-        <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
+        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsection font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <HighlightedText text={data.name} query={highlight} />
@@ -227,7 +198,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsubsection':
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
-        <MaybeMathJax mathSource={data.name} cacheKey={data.name}>
+        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsubsection italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <HighlightedText text={data.name} query={highlight} />
@@ -240,12 +211,12 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
-      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-[#f1f3f4] text-[#3c4043] dark:bg-[#3c4043] dark:text-[#e8eaed]';
+      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-muted text-muted-foreground';
 
       if (isPrint) {
-        const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
+        const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
         return (
-          <MaybeMathJax mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
+          <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div className="print-lesson-item">
               <span className="print-item-kind">{badgeText}{item.number ? ` ${item.number}` : ''}</span>
               <span className="print-item-title">{item.title || ''}</span>
@@ -260,26 +231,39 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         );
       }
 
+      const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
+        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
+        : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
+
       const content = (
-        <div className="editor-table-content max-w-none space-y-0.5 sm:space-y-1 text-[#3c4043] dark:text-[#bdc1c6]">
+        <div className="editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center py-0.5 sm:py-1 text-muted-foreground">
+          <Badge
+            variant="outline"
+            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-center lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            data-tippy-content={fullTooltip}
+            title={fullTooltip}
+          >
+            <span>{badgeText}</span>
+            {item.number ? <span className="ms-px font-bold lg:ms-0.5">{item.number}</span> : null}
+          </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
-            className="editor-type-item-title min-w-0 break-words leading-[1.35] p-0 font-semibold text-[#202124] dark:text-[#e8eaed]"
+            className="editor-type-item-title min-w-0 break-words leading-[1.35] p-0 font-semibold text-foreground"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>
 
           {/* Description : encadré sobre sous le titre façon Google Keep */}
           {allowDescription && (
-            <div className="editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-neutral-50/70 dark:bg-white/[0.03] px-2 py-1 text-[#3c4043] dark:text-[#bdc1c6] whitespace-pre-wrap break-words">
+            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words">
               {renderDescriptionWithBold(item.description)}
             </div>
           )}
 
           {/* Info page */}
           {item.page && (
-            <div className="editor-type-page flex items-center gap-1 text-[#3c4043]/80 dark:text-[#bdc1c6] italic">
+            <div className="col-start-2 editor-type-page flex items-center gap-1 text-muted-foreground italic">
               <span>(p.</span>
               <span>{String(item.page)}</span>
               <span>)</span>
@@ -288,29 +272,13 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         </div>
       );
       
-      const contentKey = `${item.type || ''}-${item.number || ''}-${item.title || ''}-${item.description || ''}-${item.page || ''}`;
+      const contentKey = `${item.type || ''}-${item.number || ''}-${item.title || ''}-${allowDescription ? item.description || '' : ''}-${item.page || ''}`;
 
-      const mathSource = `${item.title || ''}\n${item.description || ''}\n${item.page || ''}`;
-      const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
-        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
-        : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
+      const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
 
-      return (
-        <div className="editor-lesson-row editor-table-content font-editor-system flex min-w-0 items-start py-0.5 sm:py-1 transition-colors duration-150">
-          <Badge
-            variant="outline"
-            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-start mt-[1.5px] sm:mt-[2px] lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
-            data-tippy-content={fullTooltip}
-            title={fullTooltip}
-          >
-            <span>{badgeText}</span>
-            {item.number ? <span className="ms-px font-bold lg:ms-0.5">{item.number}</span> : null}
-          </Badge>
-          <div className="min-w-0 flex-1">
-            <MaybeMathJax mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>
-          </div>
-        </div>
-      );
+
+      return <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>;
+
     default:
       return null;
   }

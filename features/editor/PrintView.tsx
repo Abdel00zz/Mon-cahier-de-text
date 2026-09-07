@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MathJax } from 'better-react-mathjax';
+import { buildLessonRows } from '@/utils/lessonRows';
 import { ContentRenderer } from './ContentRenderer';
 import { 
     LessonsData, 
@@ -15,7 +15,6 @@ import {
     AppConfig,
     ContentDirection
 } from '@/types';
-import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { schoolYearLabelFromDate } from '@/utils/calendar';
 import { getAcademyById } from '@/utils/moroccoEducation';
@@ -76,81 +75,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     const sizes = TEXT_SIZES[textSize];
     const spacing = LINE_SPACINGS[lineSpacing];
     
-    const flatData = useMemo(() => {
-        const result: FlatDataItem[] = [];
-        
-        const processElement = (
-            element: any,
-            indices: Indices,
-            elementType: ElementType
-        ): void => {
-            // Add the current element to results (skip separators)
-            if (elementType !== 'separator') {
-                result.push({ data: element, indices, elementType });
-            }
-
-            // Les items directement sous un nœud passent AVANT les sous-niveaux
-            // (ordre pédagogique : activity → introduction → section → contenu).
-            if (element.items?.length > 0) {
-                element.items.forEach((item: any, i: number) => {
-                // Traiter les chapitres et évaluations de la même manière
-                if (item.type === 'chapter' || TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
-                    processElement(
-                        item,
-                        { ...indices, itemIndex: i },
-                        item.type as ElementType
-                    );
-                } else {
-                    // Traiter les éléments standards
-                    processElement(
-                        item,
-                        { ...indices, itemIndex: i },
-                        'item'
-                    );
-                }
-            });
-            }
-
-            // Process all child collections independently
-            if (element.sections?.length > 0) {
-                element.sections.forEach((sec: Section, i: number) =>
-                    processElement(sec, { ...indices, sectionIndex: i }, 'section')
-                );
-            }
-
-            if (element.subsections?.length > 0) {
-                element.subsections.forEach((sub: SubSection, i: number) =>
-                    processElement(sub, { ...indices, subsectionIndex: i }, 'subsection')
-                );
-            }
-
-            if (element.subsubsections?.length > 0) {
-                element.subsubsections.forEach((ssub: SubSubSection, i: number) =>
-                    processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection')
-                );
-            }
-
-            // Process separator if it exists
-            if (element.separatorAfter) {
-                result.push({ 
-                    data: element.separatorAfter, 
-                    indices: { ...indices, isSeparator: true }, 
-                    elementType: 'separator' 
-                });
-            }
-        };
-
-        // Process all top-level items
-        lessonsData.forEach((topLevelItem, index) => {
-            processElement(
-                topLevelItem,
-                { chapterIndex: index },
-                topLevelItem.type
-            );
-        });
-
-        return result;
-    }, [lessonsData]);
+    const flatData = useMemo(() => buildLessonRows(lessonsData), [lessonsData]);
 
     const printRows = useMemo<PrintRow[]>(() => {
         const rows: PrintRow[] = [];
@@ -224,11 +149,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         !!(item.data._tempId && newlyAddedIds.includes(item.data._tempId));
 
     const renderPrintContent = (item: FlatDataItem) => (
-        // Pas de hideUntilTypeset ici : la vue n'est jamais visible à l'écran
-        // (display:none hors @media print), et si MathJax ne charge pas
-        // (hors ligne), le texte source doit rester imprimable au lieu de
-        // sortir des cellules vides (visibility:hidden).
-        <MathJax>
+
             <ContentRenderer
                 data={item.data} 
                 indices={item.indices} 
@@ -237,7 +158,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 showDescriptions={config.printDescriptionMode === 'all' ? true : config.printDescriptionMode === 'none' ? false : undefined}
                 descriptionTypes={config.printDescriptionTypes}
             />
-        </MathJax>
+
     );
 
     const collectSessionRemarks = (items: FlatDataItem[]): string[] => {
@@ -392,7 +313,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         text-align: start;
                         font-size: ${sizes.cell};
                         line-height: ${spacing.line};
-                        border-inline-end: 1px solid #e0e0e0 !important;
+                        border-inline-end: 1px solid hsl(var(--border)) !important;
                     }
                     .print-table th:last-child, 
                     .print-table td:last-child {

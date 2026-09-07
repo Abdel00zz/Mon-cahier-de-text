@@ -68,7 +68,7 @@ export function useTheme(
 
     // Update theme-color meta tag for PWA and mobile status bar
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
-      meta.setAttribute('content', isDark ? '#0b1120' : '#ffffff');
+      meta.setAttribute('content', isDark ? '#0f0f0f' : '#faf8f5');
     });
 
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');

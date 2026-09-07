@@ -29,7 +29,7 @@ const FEATURE_ICONS = [PenLine, CalendarDays, Cloud];
 export const AuthShowcase = memo(({ locale }: { locale: 'fr' | 'ar' }) => {
   const copy = COPY[locale];
   return (
-    <aside className="hidden min-w-0 flex-col justify-center border-e border-[#e0e0e0] bg-[#f6f4ed] p-8 dark:border-[#5f6368] dark:bg-[#242622] lg:flex xl:p-12">
+    <aside className="hidden min-w-0 flex-col justify-center border-e border-border bg-muted/40 p-8 lg:flex xl:p-12">
       <div className="mx-auto w-full max-w-xl space-y-7">
         <span className="inline-flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-300">
           <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />{copy.badge}
@@ -38,8 +38,8 @@ export const AuthShowcase = memo(({ locale }: { locale: 'fr' | 'ar' }) => {
           <h2 className="whitespace-pre-line text-3xl font-semibold leading-tight tracking-tight xl:text-[2.5rem]">{copy.title}</h2>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-600 dark:text-stone-300">{copy.description}</p>
         </div>
-        <figure className="overflow-hidden rounded-[12px] border border-[#e0e0e0] bg-white shadow-sm dark:border-[#5f6368] dark:bg-[#202124]">
-          <figcaption className="flex items-center justify-between gap-3 border-b border-[#e0e0e0] px-4 py-3 text-xs dark:border-[#5f6368]">
+        <figure className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <figcaption className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 text-xs">
             <span className="flex items-center gap-2 font-medium"><BookOpen className="h-4 w-4" aria-hidden="true" />{copy.notebook}</span>
             <span className="text-stone-500 dark:text-stone-400">{copy.preview}</span>
           </figcaption>
@@ -65,7 +65,7 @@ export const AuthShowcase = memo(({ locale }: { locale: 'fr' | 'ar' }) => {
         <div className="flex flex-wrap gap-2">
           {copy.features.map((feature, index) => {
             const Icon = FEATURE_ICONS[index];
-            return <span key={feature} className="flex items-center gap-2 rounded-[8px] border border-stone-300/70 px-3 py-2 text-xs font-medium dark:border-[#5f6368]"><Icon className="h-4 w-4 shrink-0" aria-hidden="true" />{feature}</span>;
+            return <span key={feature} className="flex items-center gap-2 rounded-[8px] border border-stone-300/70 px-3 py-2 text-xs font-medium dark:border-[hsl(var(--border))]"><Icon className="h-4 w-4 shrink-0" aria-hidden="true" />{feature}</span>;
           })}
         </div>
         <p className="text-xs leading-relaxed text-stone-600 dark:text-stone-400">{copy.offline}</p>

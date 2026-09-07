@@ -1,0 +1,2059 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-09-06",
+  "documents": [
+    {
+      "id": "tcs-yahya",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.26 (1).jpeg",
+      "level": "Tronc Commun Scientifique",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Prof Yahya",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "2ab0da532dc5cb8403df411941e4bf1a7efc2d05c63072f116a29c73cbe773f3"
+    },
+    {
+      "id": "se-yahya",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.26.jpeg",
+      "level": "1er Bac Sciences Expérimentales",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Prof Yahya",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "f5faec9b2553af7d06d4b50ceb95d1792f8a21aec8aa9934f3430d22e468cb8c"
+    },
+    {
+      "id": "1ac-mouzoun",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.27 (1).jpeg",
+      "level": "1AC",
+      "cycle": "college",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "ed969fbf4f7e84c6b0f0ba5685b694687cff77d4ffa0c785fd47e1512eb80197"
+    },
+    {
+      "id": "pc-aghrod",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.27.jpeg",
+      "level": "2ème Bac Sciences Physiques",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Aghrod Soufiane",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "04b9c220ef93605d36dcb7994a0884383b6b9313eb8b7c17913cece0aefcab85"
+    },
+    {
+      "id": "2ac-mouzoun",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.28 (1).jpeg",
+      "level": "2AC",
+      "cycle": "college",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "f2375ba8335e8b0288c9c87406dda038891a21e617f03ee6f1f87ec1e374c05d"
+    },
+    {
+      "id": "tcs-mouzoun",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.28 (2).jpeg",
+      "level": "Tronc Commun Scientifique",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "d80c6517f1d7e6aba84a2518835229775e7453227fd13722a626e6fab7dd92b9"
+    },
+    {
+      "id": "3ac-mouzoun",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.28.jpeg",
+      "level": "3AC",
+      "cycle": "college",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "9083a3d4c6efb927128812e8429698df16bce070806cb6fd1e27b9877e7ae510"
+    },
+    {
+      "id": "3ac-copy",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.29 (1).jpeg",
+      "level": "3AC",
+      "cycle": "college",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "duplicateOf": "3ac-mouzoun",
+      "sha256": "9083a3d4c6efb927128812e8429698df16bce070806cb6fd1e27b9877e7ae510"
+    },
+    {
+      "id": "pc-daoud",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.29 (2).jpeg",
+      "level": "2ème Bac Sciences Physiques",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Daoud Oussama",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "1ecf73a6e7e4303e1b8ce85ab7addedbcbf2b1fc1ec8f6b1993de3735727aa3c"
+    },
+    {
+      "id": "1ac-copy",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.29 (3).jpeg",
+      "level": "1AC",
+      "cycle": "college",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "duplicateOf": "1ac-mouzoun",
+      "sha256": "ed969fbf4f7e84c6b0f0ba5685b694687cff77d4ffa0c785fd47e1512eb80197"
+    },
+    {
+      "id": "se-mouzoun",
+      "file": "WhatsApp Image 2026-09-06 at 09.31.29.jpeg",
+      "level": "1er Bac Sciences Expérimentales",
+      "cycle": "lycee",
+      "subject": "Mathématiques",
+      "author": "Mouzoun Mohamed",
+      "kind": "teacher-plan",
+      "reviewed": true,
+      "sha256": "3f3cf6d6fd5d7c1d1db4dad18e09f2877c355ec2035c3592f84ee43904bb0829"
+    }
+  ],
+  "plans": [
+    {
+      "id": "tcs-yahya",
+      "cycle": "lycee",
+      "level": "Tronc Commun Scientifique",
+      "levels": [
+        "Tronc Commun Scientifique"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Prof Yahya",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.26 (1).jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "La cellule Calcul vectoriel porte 3+5 : ne pas interpréter ces heures sans confirmation.",
+        "Coquilles : 28/12 au lieu de 28/11 ; mars 2026 au lieu de 2027.",
+        "Régional et national : repères de calendrier, pas des examens du tronc commun."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "tcs-yahya-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Arithmétique dans $\\mathbb{N}$",
+          "allocatedHours": 7,
+          "aliases": [
+            "Arithmétique dans N"
+          ]
+        },
+        {
+          "id": "tcs-yahya-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Calcul vectoriel",
+          "allocatedHours": null
+        },
+        {
+          "id": "tcs-yahya-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Projection",
+          "allocatedHours": 4
+        },
+        {
+          "id": "tcs-yahya-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Les ensembles",
+          "allocatedHours": 7
+        },
+        {
+          "id": "tcs-yahya-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "L'ordre dans $\\mathbb{R}$",
+          "allocatedHours": 8,
+          "aliases": [
+            "L'ordre dans R"
+          ]
+        },
+        {
+          "id": "tcs-yahya-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Droite dans le plan",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-yahya-c7",
+          "order": 7,
+          "semester": 1,
+          "title": "Polynômes",
+          "allocatedHours": 4
+        },
+        {
+          "id": "tcs-yahya-c8",
+          "order": 8,
+          "semester": 1,
+          "title": "Équations et inéquations",
+          "allocatedHours": 9
+        },
+        {
+          "id": "tcs-yahya-c9",
+          "order": 9,
+          "semester": 1,
+          "title": "Trigonométrie I",
+          "allocatedHours": 11
+        },
+        {
+          "id": "tcs-yahya-c10",
+          "order": 10,
+          "semester": 1,
+          "title": "Statistiques",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-yahya-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Trigonométrie II",
+          "allocatedHours": 10
+        },
+        {
+          "id": "tcs-yahya-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Fonctions numériques",
+          "allocatedHours": 21
+        },
+        {
+          "id": "tcs-yahya-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Les transformations",
+          "allocatedHours": 10
+        },
+        {
+          "id": "tcs-yahya-c14",
+          "order": 14,
+          "semester": 2,
+          "title": "Produit scalaire",
+          "allocatedHours": 11
+        },
+        {
+          "id": "tcs-yahya-c15",
+          "order": 15,
+          "semester": 2,
+          "title": "Géométrie dans l'espace",
+          "allocatedHours": 14
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-09-28",
+          "end": "2026-10-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-09",
+          "end": "2026-11-14",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-26",
+          "end": "2026-10-31",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-04",
+          "end": "2027-01-09",
+          "hours": 2
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-08",
+          "end": "2027-02-13",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-03-29",
+          "end": "2027-04-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-17",
+          "end": "2027-05-22",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-19",
+          "end": "2027-04-24",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 2
+        }
+      ],
+      "preferredForMatching": false
+    },
+    {
+      "id": "se-yahya",
+      "cycle": "lycee",
+      "level": "1er Bac Sciences Expérimentales",
+      "levels": [
+        "1er Bac Sciences Expérimentales"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Prof Yahya",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.26.jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "L'ordre rotation/limites diffère de la répartition Mouzoun.",
+        "Étude des fonctions : cellule 3+2 ambiguë avec correction DM.",
+        "Coquilles d'année et de mois visibles ; dates normalisées uniquement lorsque la semaine est certaine."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "se-yahya-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Notions de logique",
+          "allocatedHours": 8
+        },
+        {
+          "id": "se-yahya-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Fonctions numériques",
+          "allocatedHours": 8
+        },
+        {
+          "id": "se-yahya-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Barycentre",
+          "allocatedHours": 5
+        },
+        {
+          "id": "se-yahya-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Produit scalaire",
+          "allocatedHours": 14
+        },
+        {
+          "id": "se-yahya-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Suites numériques",
+          "allocatedHours": 13
+        },
+        {
+          "id": "se-yahya-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Calcul trigonométrique",
+          "allocatedHours": 18
+        },
+        {
+          "id": "se-yahya-c7",
+          "order": 7,
+          "semester": 2,
+          "title": "Limite d'une fonction",
+          "allocatedHours": 10
+        },
+        {
+          "id": "se-yahya-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "Rotation",
+          "allocatedHours": 8
+        },
+        {
+          "id": "se-yahya-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "Dérivation",
+          "allocatedHours": 7
+        },
+        {
+          "id": "se-yahya-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Vecteurs de l'espace",
+          "allocatedHours": 5
+        },
+        {
+          "id": "se-yahya-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Étude des fonctions",
+          "allocatedHours": null
+        },
+        {
+          "id": "se-yahya-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Analytique de l'espace",
+          "allocatedHours": 19
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-09-28",
+          "end": "2026-10-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-09",
+          "end": "2026-11-14",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-26",
+          "end": "2026-10-31",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-04",
+          "end": "2027-01-09",
+          "hours": 2
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-08",
+          "end": "2027-02-13",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-03-29",
+          "end": "2027-04-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-17",
+          "end": "2027-05-22",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-19",
+          "end": "2027-04-24",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 2
+        }
+      ],
+      "preferredForMatching": false
+    },
+    {
+      "id": "1ac-mouzoun",
+      "cycle": "college",
+      "level": "1AC",
+      "levels": [
+        "1AC"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Mouzoun Mohamed",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.27 (1).jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "Les examens local et régional imprimés sont des repères 3AC : ne pas les attribuer à 1AC.",
+        "DS3 S1 indiqué fin décembre : conflit avec la fenêtre de derniers contrôles du bulletin (4–9 janvier).",
+        "Statistiques et soutien partagent des heures non ventilées."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "1ac-mouzoun-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Opérations sur les entiers et les décimaux",
+          "allocatedHours": 10
+        },
+        {
+          "id": "1ac-mouzoun-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Les fractions : opérations",
+          "allocatedHours": 8
+        },
+        {
+          "id": "1ac-mouzoun-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Les nombres décimaux relatifs",
+          "allocatedHours": 17
+        },
+        {
+          "id": "1ac-mouzoun-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Notions de géométrie",
+          "allocatedHours": 11
+        },
+        {
+          "id": "1ac-mouzoun-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Le triangle",
+          "allocatedHours": 20
+        },
+        {
+          "id": "1ac-mouzoun-c6",
+          "order": 6,
+          "semester": 2,
+          "title": "Développement et factorisation",
+          "allocatedHours": 8
+        },
+        {
+          "id": "1ac-mouzoun-c7",
+          "order": 7,
+          "semester": 2,
+          "title": "Les équations",
+          "allocatedHours": 7
+        },
+        {
+          "id": "1ac-mouzoun-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "La symétrie centrale",
+          "allocatedHours": 6
+        },
+        {
+          "id": "1ac-mouzoun-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "Le parallélogramme",
+          "allocatedHours": 5
+        },
+        {
+          "id": "1ac-mouzoun-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Quadrilatères particuliers",
+          "allocatedHours": 7
+        },
+        {
+          "id": "1ac-mouzoun-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Deux droites parallèles et une sécante",
+          "allocatedHours": 6
+        },
+        {
+          "id": "1ac-mouzoun-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Le cercle",
+          "allocatedHours": 4
+        },
+        {
+          "id": "1ac-mouzoun-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Prisme droit et cylindre",
+          "allocatedHours": 8
+        },
+        {
+          "id": "1ac-mouzoun-c14",
+          "order": 14,
+          "semester": 2,
+          "title": "Droite graduée et repère dans le plan",
+          "allocatedHours": 5
+        },
+        {
+          "id": "1ac-mouzoun-c15",
+          "order": 15,
+          "semester": 2,
+          "title": "La proportionnalité",
+          "allocatedHours": 4
+        },
+        {
+          "id": "1ac-mouzoun-c16",
+          "order": 16,
+          "semester": 2,
+          "title": "Les statistiques",
+          "allocatedHours": null
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-05",
+          "end": "2026-10-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-16",
+          "end": "2026-11-21",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-23",
+          "end": "2026-11-28",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-28",
+          "end": "2027-01-02",
+          "hours": 1
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-22",
+          "end": "2027-02-27",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-05",
+          "end": "2027-04-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-24",
+          "end": "2027-05-29",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-12",
+          "end": "2027-04-17",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 1
+        }
+      ],
+      "preferredForMatching": true
+    },
+    {
+      "id": "pc-aghrod",
+      "cycle": "lycee",
+      "level": "2ème Bac Sciences Physiques",
+      "levels": [
+        "2ème Bac Sciences Physiques",
+        "2ème Bac Sciences de la Vie et de la Terre"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Aghrod Soufiane",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.27.jpeg",
+      "weeklyHours": 5,
+      "coverage": "semester1",
+      "notes": [
+        "Semestre 1 seulement ; aucune donnée inventée pour le semestre 2.",
+        "DS3, sa correction et leurs volumes sont décalés entre les colonnes : durée laissée inconnue.",
+        "La ligne 30/12–05/12 est une coquille pour 30/11–05/12."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-12",
+        "weeks": "1",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "pc-aghrod-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Continuité",
+          "allocatedHours": 15
+        },
+        {
+          "id": "pc-aghrod-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Dérivation",
+          "allocatedHours": 6
+        },
+        {
+          "id": "pc-aghrod-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Étude de fonctions",
+          "allocatedHours": 8
+        },
+        {
+          "id": "pc-aghrod-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Suites numériques",
+          "allocatedHours": 12
+        },
+        {
+          "id": "pc-aghrod-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Fonctions primitives",
+          "allocatedHours": 4
+        },
+        {
+          "id": "pc-aghrod-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Fonctions logarithmes",
+          "allocatedHours": 10
+        },
+        {
+          "id": "pc-aghrod-c7",
+          "order": 7,
+          "semester": 1,
+          "title": "Nombres complexes",
+          "allocatedHours": null
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-09-28",
+          "end": "2026-10-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-02",
+          "end": "2026-11-07",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-04",
+          "end": "2027-01-09",
+          "hours": null
+        }
+      ],
+      "preferredForMatching": false
+    },
+    {
+      "id": "2ac-mouzoun",
+      "cycle": "college",
+      "level": "2AC",
+      "levels": [
+        "2AC"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Mouzoun Mohamed",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.28 (1).jpeg",
+      "weeklyHours": 4,
+      "coverage": "annual",
+      "notes": [
+        "Les examens local et régional imprimés concernent 3AC, pas 2AC.",
+        "DS3 S1 indiqué 11–16 janvier : conflit avec la fenêtre du bulletin (4–9 janvier).",
+        "Statistique et soutien partagent des heures non ventilées."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "2ac-mouzoun-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Les nombres rationnels : Introduction et comparaison",
+          "allocatedHours": 9
+        },
+        {
+          "id": "2ac-mouzoun-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Les nombres rationnels : Somme et différence",
+          "allocatedHours": 9
+        },
+        {
+          "id": "2ac-mouzoun-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Les nombres rationnels : Produit et quotient",
+          "allocatedHours": 5
+        },
+        {
+          "id": "2ac-mouzoun-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "La symétrie axiale",
+          "allocatedHours": 8
+        },
+        {
+          "id": "2ac-mouzoun-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Les puissances",
+          "allocatedHours": 7
+        },
+        {
+          "id": "2ac-mouzoun-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Les droites remarquables dans un triangle",
+          "allocatedHours": 5
+        },
+        {
+          "id": "2ac-mouzoun-c7",
+          "order": 7,
+          "semester": 1,
+          "title": "Milieux et parallèles dans un triangle",
+          "allocatedHours": 8
+        },
+        {
+          "id": "2ac-mouzoun-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "Calcul littéral",
+          "allocatedHours": 6
+        },
+        {
+          "id": "2ac-mouzoun-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "Équations",
+          "allocatedHours": 6
+        },
+        {
+          "id": "2ac-mouzoun-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Ordre et opérations",
+          "allocatedHours": 6
+        },
+        {
+          "id": "2ac-mouzoun-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Triangle rectangle et cercle",
+          "allocatedHours": 7
+        },
+        {
+          "id": "2ac-mouzoun-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Translation et vecteurs",
+          "allocatedHours": 8
+        },
+        {
+          "id": "2ac-mouzoun-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Pyramide et cône de révolution",
+          "allocatedHours": 10
+        },
+        {
+          "id": "2ac-mouzoun-c14",
+          "order": 14,
+          "semester": 2,
+          "title": "Proportionnalité",
+          "allocatedHours": 4
+        },
+        {
+          "id": "2ac-mouzoun-c15",
+          "order": 15,
+          "semester": 2,
+          "title": "Statistique",
+          "allocatedHours": null
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-05",
+          "end": "2026-10-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-16",
+          "end": "2026-11-21",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-28",
+          "end": "2027-01-02",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-26",
+          "end": "2026-10-31",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-11",
+          "end": "2027-01-16",
+          "hours": 1
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-22",
+          "end": "2027-02-27",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-05",
+          "end": "2027-04-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-31",
+          "end": "2027-06-05",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-12",
+          "end": "2027-04-17",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 1
+        }
+      ],
+      "preferredForMatching": true
+    },
+    {
+      "id": "tcs-mouzoun",
+      "cycle": "lycee",
+      "level": "Tronc Commun Scientifique",
+      "levels": [
+        "Tronc Commun Scientifique"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Mouzoun Mohamed",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.28 (2).jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "Répartition d'enseignant : dates indicatives, à distinguer des échéances ministérielles."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-12",
+        "weeks": "1",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "tcs-mouzoun-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "L'arithmétique dans $\\mathbb{N}$",
+          "allocatedHours": 7,
+          "aliases": [
+            "L'arithmétique dans N"
+          ]
+        },
+        {
+          "id": "tcs-mouzoun-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Le calcul vectoriel",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-mouzoun-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "La projection",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-mouzoun-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Les ensembles de nombres",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-mouzoun-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "L'ordre dans $\\mathbb{R}$",
+          "allocatedHours": 6,
+          "aliases": [
+            "L'ordre dans R"
+          ]
+        },
+        {
+          "id": "tcs-mouzoun-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "La droite dans le plan",
+          "allocatedHours": 5
+        },
+        {
+          "id": "tcs-mouzoun-c7",
+          "order": 7,
+          "semester": 1,
+          "title": "Les polynômes",
+          "allocatedHours": 4
+        },
+        {
+          "id": "tcs-mouzoun-c8",
+          "order": 8,
+          "semester": 1,
+          "title": "Équations, inéquations et systèmes",
+          "allocatedHours": 8
+        },
+        {
+          "id": "tcs-mouzoun-c9",
+          "order": 9,
+          "semester": 1,
+          "title": "Le calcul trigonométrique (partie 1)",
+          "allocatedHours": 14
+        },
+        {
+          "id": "tcs-mouzoun-c10",
+          "order": 10,
+          "semester": 1,
+          "title": "Les statistiques",
+          "allocatedHours": 6
+        },
+        {
+          "id": "tcs-mouzoun-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Le calcul trigonométrique (partie 2)",
+          "allocatedHours": 12
+        },
+        {
+          "id": "tcs-mouzoun-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Les fonctions numériques",
+          "allocatedHours": 24
+        },
+        {
+          "id": "tcs-mouzoun-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Les transformations du plan",
+          "allocatedHours": 7
+        },
+        {
+          "id": "tcs-mouzoun-c14",
+          "order": 14,
+          "semester": 2,
+          "title": "Le produit scalaire",
+          "allocatedHours": 9
+        },
+        {
+          "id": "tcs-mouzoun-c15",
+          "order": 15,
+          "semester": 2,
+          "title": "La géométrie dans l'espace",
+          "allocatedHours": 18
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-09-28",
+          "end": "2026-10-03",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-02",
+          "end": "2026-11-07",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-16",
+          "end": "2026-11-21",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-04",
+          "end": "2027-01-09",
+          "hours": 2
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-08",
+          "end": "2027-02-13",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-03-15",
+          "end": "2027-03-20",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-03",
+          "end": "2027-05-08",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-12",
+          "end": "2027-04-17",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 2
+        }
+      ],
+      "preferredForMatching": true
+    },
+    {
+      "id": "3ac-mouzoun",
+      "cycle": "college",
+      "level": "3AC",
+      "levels": [
+        "3AC"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Mouzoun Mohamed",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.28.jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "DS3 S1 indiqué 28 décembre–2 janvier : conflit avec la fenêtre du bulletin (4–9 janvier)."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "3ac-mouzoun-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Les racines carrées",
+          "allocatedHours": 10
+        },
+        {
+          "id": "3ac-mouzoun-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Identités remarquables et puissances",
+          "allocatedHours": 8
+        },
+        {
+          "id": "3ac-mouzoun-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Ordre et opérations",
+          "allocatedHours": 12
+        },
+        {
+          "id": "3ac-mouzoun-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Théorème de Thalès",
+          "allocatedHours": 10
+        },
+        {
+          "id": "3ac-mouzoun-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Pythagore, trigonométrie, angles au centre et inscrits",
+          "allocatedHours": 9
+        },
+        {
+          "id": "3ac-mouzoun-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Triangles isométriques et triangles semblables",
+          "allocatedHours": 17
+        },
+        {
+          "id": "3ac-mouzoun-c7",
+          "order": 7,
+          "semester": 2,
+          "title": "Équations et inéquations du premier degré à une inconnue",
+          "allocatedHours": 13
+        },
+        {
+          "id": "3ac-mouzoun-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "Vecteurs et translation",
+          "allocatedHours": 14
+        },
+        {
+          "id": "3ac-mouzoun-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "Le repère dans le plan",
+          "allocatedHours": 8
+        },
+        {
+          "id": "3ac-mouzoun-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Équation d'une droite",
+          "allocatedHours": 10
+        },
+        {
+          "id": "3ac-mouzoun-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Systèmes de deux équations à deux inconnues",
+          "allocatedHours": 9
+        },
+        {
+          "id": "3ac-mouzoun-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Fonction linéaire et fonction affine",
+          "allocatedHours": 11
+        },
+        {
+          "id": "3ac-mouzoun-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Statistiques",
+          "allocatedHours": 7
+        },
+        {
+          "id": "3ac-mouzoun-c14",
+          "order": 14,
+          "semester": 2,
+          "title": "Géométrie dans l'espace",
+          "allocatedHours": 8
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-05",
+          "end": "2026-10-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-16",
+          "end": "2026-11-21",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-23",
+          "end": "2026-11-28",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-28",
+          "end": "2027-01-02",
+          "hours": 1
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-22",
+          "end": "2027-02-27",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-05",
+          "end": "2027-04-10",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-24",
+          "end": "2027-05-29",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-12",
+          "end": "2027-04-17",
+          "hours": 1
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 1
+        }
+      ],
+      "preferredForMatching": true
+    },
+    {
+      "id": "pc-daoud",
+      "cycle": "lycee",
+      "level": "2ème Bac Sciences Physiques",
+      "levels": [
+        "2ème Bac Sciences Physiques",
+        "2ème Bac Sciences de la Vie et de la Terre"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Daoud Oussama",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.29 (2).jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "Début 21/09/2024 imprimé : année incompatible avec le document 2026–2027.",
+        "Semaines absentes et heures partagées : volumes non ventilables laissés inconnus.",
+        "Une seconde mention DM3 en mai est un doublon apparent ; DS3 S2 n'est pas clairement identifié."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-19",
+        "weeks": "2",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "pc-daoud-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Continuité d'une fonction numérique",
+          "allocatedHours": 15
+        },
+        {
+          "id": "pc-daoud-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Dérivabilité d'une fonction numérique",
+          "allocatedHours": 9
+        },
+        {
+          "id": "pc-daoud-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Étude de fonction numérique",
+          "allocatedHours": 4
+        },
+        {
+          "id": "pc-daoud-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Suites numériques",
+          "allocatedHours": 10
+        },
+        {
+          "id": "pc-daoud-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Fonctions primitives",
+          "allocatedHours": 2
+        },
+        {
+          "id": "pc-daoud-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Fonction logarithme",
+          "allocatedHours": 11
+        },
+        {
+          "id": "pc-daoud-c7",
+          "order": 7,
+          "semester": 1,
+          "title": "Nombres complexes",
+          "allocatedHours": null
+        },
+        {
+          "id": "pc-daoud-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "Nombres complexes (suite)",
+          "allocatedHours": 5
+        },
+        {
+          "id": "pc-daoud-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "Fonction exponentielle",
+          "allocatedHours": 7
+        },
+        {
+          "id": "pc-daoud-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Équations différentielles",
+          "allocatedHours": 3
+        },
+        {
+          "id": "pc-daoud-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Calcul d'intégrale",
+          "allocatedHours": null
+        },
+        {
+          "id": "pc-daoud-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Géométrie de l'espace",
+          "allocatedHours": null
+        },
+        {
+          "id": "pc-daoud-c13",
+          "order": 13,
+          "semester": 2,
+          "title": "Probabilités",
+          "allocatedHours": null
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-16",
+          "end": "2026-11-21",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-14",
+          "end": "2026-12-19",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-11-02",
+          "end": "2026-11-07",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-30",
+          "end": "2026-12-05",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-28",
+          "end": "2027-01-02",
+          "hours": 2
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-08",
+          "end": "2027-02-13",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-03-15",
+          "end": "2027-03-20",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-04-19",
+          "end": "2027-04-24",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-05",
+          "end": "2027-04-10",
+          "hours": null
+        }
+      ],
+      "preferredForMatching": true
+    },
+    {
+      "id": "se-mouzoun",
+      "cycle": "lycee",
+      "level": "1er Bac Sciences Expérimentales",
+      "levels": [
+        "1er Bac Sciences Expérimentales"
+      ],
+      "subject": "Mathématiques",
+      "schoolYear": "2026-2027",
+      "authority": "teacher-plan",
+      "sourceDoc": "Répartition pédagogique 2026–2027 — Mouzoun Mohamed",
+      "sourceFile": "WhatsApp Image 2026-09-06 at 09.31.29.jpeg",
+      "weeklyHours": 5,
+      "coverage": "annual",
+      "notes": [
+        "Répartition d'enseignant : dates indicatives, à distinguer des échéances ministérielles."
+      ],
+      "diagnosticEvaluation": {
+        "period": "2026-09-07 / 2026-09-12",
+        "weeks": "1",
+        "label": "Évaluation diagnostique et soutien préalable",
+        "labelAr": "التقويم التشخيصي والدعم القبلي"
+      },
+      "chapters": [
+        {
+          "id": "se-mouzoun-c1",
+          "order": 1,
+          "semester": 1,
+          "title": "Notions de logique",
+          "allocatedHours": 8
+        },
+        {
+          "id": "se-mouzoun-c2",
+          "order": 2,
+          "semester": 1,
+          "title": "Généralités sur les fonctions",
+          "allocatedHours": 9
+        },
+        {
+          "id": "se-mouzoun-c3",
+          "order": 3,
+          "semester": 1,
+          "title": "Le barycentre dans le plan",
+          "allocatedHours": 5
+        },
+        {
+          "id": "se-mouzoun-c4",
+          "order": 4,
+          "semester": 1,
+          "title": "Le produit scalaire",
+          "allocatedHours": 14
+        },
+        {
+          "id": "se-mouzoun-c5",
+          "order": 5,
+          "semester": 1,
+          "title": "Les suites numériques",
+          "allocatedHours": 13
+        },
+        {
+          "id": "se-mouzoun-c6",
+          "order": 6,
+          "semester": 1,
+          "title": "Le calcul trigonométrique",
+          "allocatedHours": 16
+        },
+        {
+          "id": "se-mouzoun-c7",
+          "order": 7,
+          "semester": 2,
+          "title": "La rotation dans le plan",
+          "allocatedHours": 5
+        },
+        {
+          "id": "se-mouzoun-c8",
+          "order": 8,
+          "semester": 2,
+          "title": "Les limites d'une fonction numérique",
+          "allocatedHours": 15
+        },
+        {
+          "id": "se-mouzoun-c9",
+          "order": 9,
+          "semester": 2,
+          "title": "La dérivation",
+          "allocatedHours": 15
+        },
+        {
+          "id": "se-mouzoun-c10",
+          "order": 10,
+          "semester": 2,
+          "title": "Les vecteurs de l'espace",
+          "allocatedHours": 7
+        },
+        {
+          "id": "se-mouzoun-c11",
+          "order": 11,
+          "semester": 2,
+          "title": "Étude des fonctions numériques",
+          "allocatedHours": 17
+        },
+        {
+          "id": "se-mouzoun-c12",
+          "order": 12,
+          "semester": 2,
+          "title": "Géométrie analytique dans l'espace",
+          "allocatedHours": 11
+        }
+      ],
+      "assessmentWindows": [
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-09-21",
+          "end": "2026-09-26",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-02",
+          "end": "2026-11-07",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 1,
+          "num": 3,
+          "start": "2026-12-21",
+          "end": "2026-12-26",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 1,
+          "start": "2026-10-12",
+          "end": "2026-10-17",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 2,
+          "start": "2026-11-23",
+          "end": "2026-11-28",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 1,
+          "num": 3,
+          "start": "2027-01-04",
+          "end": "2027-01-09",
+          "hours": 2
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-02-08",
+          "end": "2027-02-13",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-03-15",
+          "end": "2027-03-20",
+          "hours": null
+        },
+        {
+          "type": "DM",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-05-03",
+          "end": "2027-05-08",
+          "hours": null
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 1,
+          "start": "2027-03-01",
+          "end": "2027-03-06",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 2,
+          "start": "2027-04-12",
+          "end": "2027-04-17",
+          "hours": 2
+        },
+        {
+          "type": "DS",
+          "semester": 2,
+          "num": 3,
+          "start": "2027-06-14",
+          "end": "2027-06-19",
+          "hours": 2
+        }
+      ],
+      "preferredForMatching": true
+    }
+  ]
+}

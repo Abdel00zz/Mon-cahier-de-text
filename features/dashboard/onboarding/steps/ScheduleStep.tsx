@@ -10,7 +10,7 @@ interface ScheduleStepProps {
 
 export const ScheduleStep = memo<ScheduleStepProps>(({ classes, config, onConfigChange }) => (
     <div className="space-y-4">
-        <ScheduleTab classes={classes} config={config} onChange={onConfigChange} showHoursAdvisory={false} />
+        <ScheduleTab classes={classes} config={config} onChange={onConfigChange} />
     </div>
 ));
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="140" viewBox="0 0 720 140" role="img" aria-labelledby="title desc">
+  <title id="title">Barre unique à deux couleurs</title>
+  <desc id="desc">Maquette illustrative : avancement de 40 %, repère du programme à 70 %. Seul le titre personnel accompagne la barre. Couleurs du thème bleu existant.</desc>
+  <style>
+    :root { --background: 38 33% 97.5%; --foreground: 33 9% 23%; --primary: 217 91% 60%; }
+    .surface { fill: hsl(var(--background)); }
+    .text { fill: hsl(var(--foreground)); font: 600 18px 'Segoe UI', sans-serif; }
+    .progress { fill: hsl(var(--primary)); }
+    .target { fill: hsl(var(--foreground)); opacity: .6; }
+  </style>
+  <rect class="surface" width="720" height="140" rx="16" />
+  <text class="text" x="32" y="57">Titre de votre chapitre</text>
+  <rect class="progress" x="32" y="81" width="656" height="8" rx="4" opacity=".1" />
+  <rect class="progress" x="32" y="81" width="262.4" height="8" rx="4" />
+  <rect class="target" x="491.2" y="81" width="1" height="8" />
+</svg>

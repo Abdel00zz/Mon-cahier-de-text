@@ -115,7 +115,7 @@ export const AccountTab: React.FC = () => {
             type="button"
             onClick={handleSync}
             disabled={isSyncing || syncStatus === 'syncing'}
-            className="min-h-11 px-3 gap-1.5 rounded-lg bg-[#feefc3] text-[#202124] hover:bg-amber-200 dark:bg-[#41331c] dark:text-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-500/40 text-xs font-bold shadow-xs transition-colors active:scale-95 cursor-pointer sm:shrink-0"
+            className="min-h-11 px-3 gap-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary border border-primary/30 text-xs font-bold shadow-xs transition-colors active:scale-95 cursor-pointer sm:shrink-0"
           >
             <RefreshCw className={cn('h-3 w-3', (isSyncing || syncStatus === 'syncing') && 'animate-spin')} />
             <span>{t('account.syncNow')}</span>

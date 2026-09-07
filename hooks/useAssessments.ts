@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppConfig, ClassInfo } from '../types';
-import { HolidayCalendar, loadHolidayCalendar, todayInMorocco } from '../utils/calendar';
+import { HolidayCalendar, loadHolidayCalendar } from '../utils/calendar';
+import { useMoroccoToday } from './useMoroccoToday';
 import {
     PastAssessment,
     PlannedAssessment,
@@ -9,7 +10,9 @@ import {
     getUpcomingAssessments,
     loadPlanning,
     resolveClassAssessments,
+    getAssessmentPlanDetailsForClass,
     type PlanningFile,
+    type ClassAssessmentPlanDetails,
 } from '../utils/assessments';
 
 /** Charge le planning officiel + le calendrier (une fois), puis les expose. */
@@ -37,12 +40,12 @@ export const useUpcomingAssessments = (
     horizonDays = 14
 ): UpcomingAssessment[] => {
     const { calendar, planning } = useCalendarAndPlanning();
+    const today = useMoroccoToday();
 
     return useMemo(() => {
         if (!calendar || !planning) return [];
-        const today = todayInMorocco(new Date(), calendar);
         return getUpcomingAssessments(classes, planning, config, calendar, today, horizonDays);
-    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, horizonDays]);
+    }, [today, calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, horizonDays]);
 };
 
 /** Devoirs récemment passés (≤ lookback jours), rappel « absents à consigner » du centre de notifications. */
@@ -52,26 +55,27 @@ export const useRecentPastAssessments = (
     lookbackDays = 10
 ): PastAssessment[] => {
     const { calendar, planning } = useCalendarAndPlanning();
+    const today = useMoroccoToday();
 
     return useMemo(() => {
         if (!calendar || !planning) return [];
-        const today = todayInMorocco(new Date(), calendar);
         return getRecentPastAssessments(classes, planning, config, calendar, today, lookbackDays);
-    }, [calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, lookbackDays]);
+    }, [today, calendar, planning, classes, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder, lookbackDays]);
 };
 
 /** Planning complet d'UNE classe (dates officielles + surcharges + devoirs manuels), pour l'onglet Évaluations. */
 export const useClassAssessments = (
     classInfo: ClassInfo | null,
     config: AppConfig
-): { assessments: PlannedAssessment[]; hasPlan: boolean } => {
+): { assessments: PlannedAssessment[]; hasPlan: boolean; planDetails: ClassAssessmentPlanDetails | null; planning: PlanningFile | null } => {
     const { calendar, planning } = useCalendarAndPlanning();
+    const today = useMoroccoToday();
 
     return useMemo(() => {
-        if (!calendar || !planning || !classInfo) return { assessments: [], hasPlan: false };
-        const today = todayInMorocco(new Date(), calendar);
+        if (!calendar || !planning || !classInfo) return { assessments: [], hasPlan: false, planDetails: null, planning: null };
 
         const assessments = resolveClassAssessments(classInfo, planning, config, calendar, today);
-        return { assessments, hasPlan: assessments.length > 0 };
-    }, [calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder]);
+        const planDetails = getAssessmentPlanDetailsForClass(classInfo, planning);
+        return { assessments, hasPlan: assessments.length > 0, planDetails, planning };
+    }, [today, calendar, planning, classInfo, config.assessmentDates, config.schoolYearStart, config.manualAssessments, config.removedAssessments, config.assessmentOrder]);
 };

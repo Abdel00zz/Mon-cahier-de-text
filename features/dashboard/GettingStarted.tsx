@@ -88,7 +88,7 @@ export function GettingStarted({
               </span>
               <span
                 className={
-                  done[index] ? 'text-[#5f6368] dark:text-[#bdc1c6]' : ''
+                  done[index] ? 'text-muted-foreground' : ''
                 }
               >
                 {label}
@@ -109,7 +109,7 @@ export function GettingStarted({
       <button
         type="button"
         onClick={action}
-        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-4 dark:bg-stone-100 dark:text-stone-950"
+        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 cursor-pointer"
       >
         {labels[next]}
         <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />

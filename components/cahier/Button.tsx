@@ -14,7 +14,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 cursor-pointer select-none rounded-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none';
+  const baseClasses = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 cursor-pointer select-none rounded-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50 disabled:pointer-events-none';
 
   const sizeClasses = {
     sm: 'h-8 px-3 text-xs gap-1.5',
@@ -23,10 +23,10 @@ export const Button: React.FC<ButtonProps> = ({
   }[size];
 
   const variantClasses = {
-    primary: 'bg-[#1a73e8] text-white hover:bg-[#1557b0] hover:shadow-md',
-    ghost: 'bg-transparent text-[#5f6368] dark:text-[#e8eaed] hover:bg-slate-100 dark:hover:bg-[#3c4043]',
-    secondary: 'bg-transparent border border-[#e0e0e0] dark:border-[#5f6368] text-[#5f6368] dark:text-[#e8eaed] hover:bg-slate-50 dark:hover:bg-[#3c4043]',
-    danger: 'bg-red-600 text-white hover:bg-red-700 hover:shadow-md',
+    primary: 'bg-primary text-primary-foreground hover:brightness-110 active:brightness-90 shadow-sm',
+    ghost: 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted active:brightness-95',
+    secondary: 'bg-card border border-border text-foreground hover:bg-muted active:brightness-95 shadow-2xs',
+    danger: 'bg-destructive text-destructive-foreground hover:brightness-110 active:brightness-90 shadow-sm',
   }[variant];
 
   return (

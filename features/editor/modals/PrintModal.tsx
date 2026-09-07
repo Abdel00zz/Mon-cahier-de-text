@@ -160,12 +160,11 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           </span>
         </div>
       }
-      description={t('print.description')}
       maxWidth="2xl"
       className="sm:max-w-3xl sm:rounded-2xl"
-      headerClassName="border-b-0 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
+      headerClassName="border-b-0 bg-background"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="border-t-0 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
+      footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -188,7 +187,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     >
       <div className="space-y-4">
         {/* État de l'impression */}
-        <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-xs">
           <div className="grid grid-cols-3 divide-x divide-border/70 text-center">
             <div className="flex flex-col items-center justify-center p-3 sm:py-4">
               <span className="text-xl sm:text-2xl font-black text-foreground">{number.format(totalDates)}</span>
@@ -211,7 +210,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         </div>
 
         {/* Choix du mode */}
-        <div className="rounded-2xl border border-border/70 bg-card p-3 sm:p-4 shadow-xs space-y-3">
+        <div className="rounded-2xl border border-border/70 bg-background p-3 sm:p-4 shadow-xs space-y-3">
           <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-muted/60 p-1.5" role="tablist" aria-label={t('print.typeAria')}>
             {printModes.map(item => {
               const Icon = item.icon;
@@ -225,7 +224,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
                   aria-selected={selected}
                   onClick={() => setMode(item.value)}
                   className={`flex min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2 text-xs font-bold transition-all ${
-                    selected ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:bg-card hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35'
+                    selected ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:bg-background hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35'
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0 stroke-[2.2]" />
@@ -245,7 +244,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Aperçu des nouvelles dates */}
         {mode === 'new' && newDates.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1.5 rounded-2xl border border-border/70 bg-card p-3 shadow-xs">
+          <div className="flex flex-wrap justify-center gap-1.5 rounded-2xl border border-border/70 bg-background p-3 shadow-xs">
             {newDates.slice(0, 12).map(date => (
               <span key={date} className="rounded-xl bg-muted/60 border border-border/70 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs">
                 {formatDateDDMMYYYY(date)}
@@ -261,7 +260,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
 
         {/* Sélection à la séance : liste cochable de toutes les dates */}
         {mode === 'custom' && allDates.length > 0 && (
-          <div className="space-y-2.5 rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+          <div className="space-y-2.5 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs sm:text-sm font-bold text-foreground">
                 {t('print.sessionsToPrint', { selected: number.format(selectedDates.size), total: number.format(allDates.length) })}
@@ -311,7 +310,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
         )}
 
         {/* Mise en page : taille du texte et aération des lignes */}
-        <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+        <div className="space-y-3 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold text-foreground">{t('print.textSize')}</span>
             <Segmented<PrintTextSize>
@@ -346,12 +345,12 @@ export const PrintModal: React.FC<PrintModalProps> = ({
           mode={config.printDescriptionMode ?? 'all'}
           types={config.printDescriptionTypes ?? []}
           onChange={next => onConfigChange({ printDescriptionMode: next.mode, printDescriptionTypes: next.types })}
-          className="rounded-2xl border border-border/70 bg-card p-4 shadow-xs"
+          className="rounded-2xl border border-border/70 bg-background p-4 shadow-xs"
         />
 
         {/* Options d'impression regroupées pour éviter l'empilement de grandes cartes. */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
             <div>
               <span className="block text-xs font-bold text-foreground">{t('print.pageNumbers')}</span>
               <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
@@ -365,7 +364,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             />
           </label>
 
-          <div className="space-y-2 rounded-2xl border border-border/70 bg-card p-4 shadow-xs">
+          <div className="space-y-2 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
             <span className="block text-xs font-bold text-foreground">{t('print.header')}</span>
             <Segmented<PrintHeaderMode>
               value={headerMode}

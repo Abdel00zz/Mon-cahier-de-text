@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { MathJax } from 'better-react-mathjax';
+import { MathText } from '@/components/ui/math-text';
+import { renderDescriptionWithBold } from '@/utils/textFormat';
 import { ContentDirection, Indices, LessonsData, TopLevelItem } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, BADGE_COLOR_MAP, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
@@ -69,7 +70,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       className={`group relative flex min-h-[56px] select-none items-center gap-3.5 rounded-2xl border p-3.5 text-start transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] ${
         disabled
           ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
-          : 'bg-card hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
+          : 'bg-background hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
       }`}
       title={tooltip}
     >
@@ -101,7 +102,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   subject,
   contentDirection,
 }) => {
-  const { t, isRtl } = useLocale();
+  const { t } = useLocale();
   // Les éléments ajoutés restent cohérents avec la langue du cahier (FR si le
   // contenu est en écriture latine, AR sinon), pas avec celle de l'interface.
   const tc = (key: string, values?: Record<string, string | number>): string =>
@@ -211,7 +212,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   // Math detected on currently edited form
   const hasMath = useMemo(() => {
-    return hasMathSyntax(formData.title || formData.name || formData.content || formData.description);
+    return [formData.title, formData.name, formData.content, formData.description].some(hasMathSyntax);
   }, [formData]);
 
   const renderForm = () => {
@@ -378,7 +379,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   const canAddItem = useMemo(() => {
     if (!selectedItem) return false;
     // Section / sous-section / sous-sous-section possèdent déjà `items`.
-    if ('items' in selectedItem) return true;
+    if ('items' in selectedItem || 'name' in selectedItem) return true;
     // Un chapitre peut aussi recevoir des items directement, sans section.
     return selectedElementType === 'chapter';
   }, [selectedItem, selectedElementType]);
@@ -396,10 +397,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
           className="h-8 w-8 p-0 flex items-center justify-center rounded-full hover:bg-muted flex-shrink-0 cursor-pointer"
           aria-label={t('addContent.back')}
         >
-          <ArrowLeft className={`h-3.5 w-3.5 stroke-[2.2] text-muted-foreground ${isRtl ? 'rotate-180' : ''}`} />
+          <ArrowLeft className="h-4 w-4 stroke-[2.2] text-muted-foreground rtl:rotate-180" />
         </Button>
       )}
-      <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">{modalTitle}</span>
+      <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate" title={modalTitle}>{modalTitle}</span>
     </div>
   );
 
@@ -408,16 +409,11 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={titleNode}
-      description={
-        stage === 'select' 
-          ? t('addContent.selectHint')
-          : t('addContent.formHint')
-      }
       maxWidth={stage === 'select' ? "3xl" : "xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-2xl sm:rounded-2xl"}
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/85 backdrop-blur-md"
+      headerClassName="border-b-0 bg-background/85 backdrop-blur-md"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/85 backdrop-blur-md"
+      footerClassName="border-t-0 bg-background/85 backdrop-blur-md"
       footer={
         stage === 'form' ? (
           <div className="flex w-full items-center justify-end gap-2.5">
@@ -443,7 +439,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     >
       {/* Context Target Banner */}
       <div className="mb-4 p-3 bg-muted/60 border border-border/70 rounded-2xl text-xs text-muted-foreground flex items-center gap-3 shrink-0">
-        <div className="flex h-8 w-8 items-center justify-center bg-card border border-border text-foreground rounded-xl shrink-0 shadow-2xs">
+        <div className="flex h-8 w-8 items-center justify-center bg-background border border-border text-foreground rounded-xl shrink-0 shadow-2xs">
           <MapPin className="h-4 w-4 stroke-[2.2]" />
         </div>
         <div className="min-w-0 flex-1">
@@ -463,14 +459,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={Book}
                 label={tc('manageLessons.type.chapter')}
-                description={t('addContent.chapterHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
                 label={t('addContent.section')}
-                description={t('addContent.sectionHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
@@ -479,7 +475,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={Network}
                 label={t('addContent.subsection')}
-                description={t('addContent.subsectionHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
@@ -488,7 +484,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={Network}
                 label={t('addContent.subsubsection')}
-                description={t('addContent.subsubsectionHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
@@ -497,7 +493,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={ListTree}
                 label={t('addContent.item')}
-                description={t('addContent.itemHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
@@ -506,7 +502,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={GripHorizontal}
                 label={t('addContent.separator')}
-                description={t('addContent.separatorHint')}
+
                 colorClass="text-muted-foreground"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
@@ -524,21 +520,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={TestTube}
                 label={tc('manageLessons.type.evaluation_diagnostic')}
-                description={t('addContent.diagnosticHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
                 label={tc('manageLessons.type.devoir_maison')}
-                description={t('addContent.homeworkHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
                 label={tc('manageLessons.type.controle_continu')}
-                description={t('addContent.assessmentHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('controle_continu')}
               />
@@ -554,14 +550,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               <CategoryCard
                 icon={CheckCheck}
                 label={tc('manageLessons.type.correction_devoir_maison')}
-                description={t('addContent.homeworkCorrectionHint')}
+
                 colorClass="text-emerald-700 dark:text-emerald-400"
                 onClick={() => handleSelectType('correction_devoir_maison')}
               />
               <CategoryCard
                 icon={CheckSquare}
                 label={tc('manageLessons.type.correction_controle_continu')}
-                description={t('addContent.assessmentCorrectionHint')}
+
                 colorClass="text-foreground"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
@@ -584,8 +580,8 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 </span>
                 <span className="text-[9px] text-muted-foreground font-medium">{t('descriptionModal.generated')}</span>
               </div>
-              <div className="bg-card p-3 rounded-lg border border-border shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
-                <MathJax hideUntilTypeset="first">
+              <div className="bg-background p-3 rounded-lg border border-border shadow-inner text-xs text-foreground leading-relaxed overflow-x-auto min-h-[50px] flex flex-col justify-center">
+                <MathText source={[formData.title, formData.name, formData.content, formData.description].filter(Boolean).join("\n")}>
                   {formData.title || formData.name || formData.content ? (
                     <div className="font-semibold text-foreground break-words">
                       {formData.title || formData.name || formData.content}
@@ -593,10 +589,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   ) : null}
                   {formData.description ? (
                     <div className="text-muted-foreground mt-1.5 whitespace-pre-wrap break-words">
-                      {formData.description}
+                      {renderDescriptionWithBold(formData.description)}
                     </div>
                   ) : null}
-                </MathJax>
+                </MathText>
               </div>
             </div>
           )}

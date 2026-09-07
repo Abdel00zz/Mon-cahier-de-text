@@ -4,6 +4,7 @@ import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertVa
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
+import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];
@@ -122,7 +123,12 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const classIds = new Set([...existingById.keys(), ...requestedById.keys()]);
     const classes = Array.from(classIds)
         .filter(classId => !deletedClassIds.has(classId))
-        .map(classId => adminClassOverrides[classId] ?? requestedById.get(classId) ?? existingById.get(classId)!)
+        .map(classId => {
+            const teacherClass = requestedById.get(classId) ?? existingById.get(classId);
+            const adminClass = adminClassOverrides[classId];
+            // The direction owns class identity, not the teacher's course start or links.
+            return adminClass ? withCurriculumSettings(adminClass, teacherClass ?? adminClass) : teacherClass!;
+        })
         .filter(Boolean);
 
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };

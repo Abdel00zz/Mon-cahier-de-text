@@ -1,4 +1,5 @@
 import React from 'react';
+import { splitMathText } from './math';
 
 /*
  * Moteur de mise en page des descriptions, hors segments mathématiques :
@@ -11,35 +12,26 @@ import React from 'react';
  * \frac, \array, \begin{cases}, matrices, etc., voir README).
  */
 
-// Split into math vs normal segments, then apply text formatting on normal parts only.
+// Protect formulas before line layout, so math remains inside its list item.
 export function renderDescriptionWithBold(text: string): React.ReactNode[] {
   if (!text) return [];
-  const nodes: React.ReactNode[] = [];
-  // Match $$...$$ (multiline) or $...$ (single line)
-  const regex = /(\$\$[\s\S]*?\$\$|\$[^$]*\$)/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(text)) !== null) {
-    const [seg] = match;
-    const start = match.index;
-    const end = start + seg.length;
-
-    // Non-math segment before
-    if (start > lastIndex) {
-      nodes.push(...applyTextLayout(text.slice(lastIndex, start), start));
+  let prefix = '\uE000';
+  while (text.includes(prefix)) prefix += '\uE000';
+  const formulas: string[] = [];
+  const protectedText = splitMathText(text).map(part => {
+    if (!part.math) return part.text;
+    const index = formulas.push(part.text) - 1;
+    return prefix + index + '\uE001';
+  }).join('');
+  const token = new RegExp(prefix + '(\\d+)\uE001', 'g');
+  const restore = (node: React.ReactNode): React.ReactNode => {
+    if (typeof node === 'string') return node.replace(token, (_, index) => formulas[Number(index)]);
+    if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
+      return React.cloneElement(node, {}, React.Children.map(node.props.children, restore));
     }
-    // Math segment as-is
-    nodes.push(seg);
-    lastIndex = end;
-  }
-
-  // Trailing non-math
-  if (lastIndex < text.length) {
-    nodes.push(...applyTextLayout(text.slice(lastIndex), lastIndex));
-  }
-
-  return nodes;
+    return node;
+  };
+  return applyTextLayout(protectedText, 0).map(restore);
 }
 
 /**

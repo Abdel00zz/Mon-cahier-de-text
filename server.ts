@@ -540,7 +540,7 @@ export function setupMockApi(app: express.Express) {
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 5173;
+  const PORT = 3000;
 
   setupMockApi(app);
 

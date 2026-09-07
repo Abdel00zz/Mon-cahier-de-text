@@ -12,12 +12,13 @@ import { Plus } from '@/components/ui/icons';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
+import { indicesKey } from '@/utils/lessonRows';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useSelectionData } from '@/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
-import { markClassDirty, markClassesListDirty, touchClassSyncMeta } from '@/utils/syncBus';
+import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
 import { appendJournal } from '@/utils/journal';
@@ -27,9 +28,6 @@ import {
   EditorModalPayload,
   SESSION_FOCUS_KEY,
   SessionFocusPayload,
-  dateActionId,
-  readIgnoredActionIds,
-  writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
 import { printDocument, typesetBeforePrint } from '@/utils/printUtils';
@@ -66,8 +64,6 @@ type ActiveModal =
   | 'print'
   | null;
 
-const indicesKey = (idx: Indices): string =>
-    `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}|${idx.isSeparator ? 1 : 0}`;
 
 interface SelectionState {
   keys: Set<string>;
@@ -290,18 +286,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     commit();
   }, [getDateWarnings, setEditorState]);
 
-  /*
-   * Exception de date : « Ignorer » dans la vérification de date enregistre
-   * le point dans la même mémoire que le centre de notifications de
-   * l'accueil (mêmes identifiants), il y devient réactivable.
-   */
-  const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
-    if (!workspaceIsActive()) return;
-    const ids = readIgnoredActionIds(classInfo.id);
-    ids.add(dateActionId(classInfo.id, date, warnings));
-    writeIgnoredActionIds(classInfo.id, ids);
-  }, [classInfo.id, workspaceIsActive]);
-
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
     setTimeout(() => {
@@ -416,10 +400,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         try {
             const allClasses: ClassInfo[] = JSON.parse(localStorage.getItem('classManager_v1') || '[]');
             const updatedClasses = allClasses.map(c =>
-                c.id === draft.classInfo.id ? { ...draft.classInfo } : c
+                c.id === draft.classInfo.id ? { ...c, ...normalizedInfo } : c
             );
             localStorage.setItem('classManager_v1', JSON.stringify(updatedClasses));
             markClassesListDirty();
+            notifyClassesChanged();
         } catch (e) {
             logger.error("Failed to update class info in storage", e);
             showNotification(t('editorNotice.classUpdateError'), "error");
@@ -438,6 +423,24 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // A newer cloud notebook must also refresh derived chapter boundaries on screen.
+  // Do not reset undo history for metadata-only pulls or overwrite an in-flight local edit.
+  useEffect(() => subscribe('pull-applied', () => {
+    if (!workspaceIsActive() || saveStatusRef.current !== 'saved') return;
+    try {
+      const raw = localStorage.getItem(getStorageKey());
+      if (!raw) return;
+      const stored = JSON.parse(raw);
+      const incoming = migrateLessonsData(Array.isArray(stored) ? stored : (stored.lessonsData ?? []));
+      const incomingDirection = readStoredContentDirection(stored);
+      if (JSON.stringify(incoming) === JSON.stringify(lessonsDataRef.current)
+        && (!incomingDirection || incomingDirection === contentDirectionRef.current)) return;
+      loadData();
+      setSelectionState(createSelectionState());
+      setEditorState(draft => { draft.editingIndices = null; });
+    } catch (error) { logger.error('Failed to refresh the cloud notebook', error); }
+  }), [getStorageKey, loadData, setEditorState, workspaceIsActive]);
 
   useEffect(() => {
     if (isClassLoading) return;
@@ -509,6 +512,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setEditorState(draft => { draft.classInfo = initialClassInfo; });
   }, [initialClassInfo, setEditorState]);
 
+  useEffect(() => {
+    const reloadMetadata = () => {
+      if (!workspaceIsActive()) return;
+      try {
+        const latest = (JSON.parse(localStorage.getItem('classManager_v1') ?? '[]') as ClassInfo[]).find(item => item.id === initialClassInfo.id);
+        if (latest) setEditorState(draft => { draft.classInfo = latest; });
+      } catch { /* Preserve the current notebook if storage is temporarily unavailable. */ }
+    };
+    const unsubscribers = [subscribe('classes-changed', reloadMetadata), subscribe('pull-applied', reloadMetadata)];
+    return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+  }, [initialClassInfo.id, setEditorState, workspaceIsActive]);
+
   const handleCellUpdate = useCallback((indices: Indices, field: string, value: any) => {
     const commit = () => {
       setState(draft => {
@@ -524,12 +539,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleUndo = useCallback(() => {
     if (!canUndo) return;
     undo();
+    setSelectionState(createSelectionState());
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [canUndo, undo, setEditorState]);
 
   const handleRedo = useCallback(() => {
     if (!canRedo) return;
     redo();
+    setSelectionState(createSelectionState());
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [canRedo, redo, setEditorState]);
 
@@ -539,6 +556,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         draft.activeModal = 'addContent';
       });
   }, [setEditorState]);
+
+  const handleClearSearch = useCallback(() => setEditorState(draft => { draft.searchQuery = ""; }), [setEditorState]);
 
   const handleModalClose = useCallback(() => {
     setEditorState(draft => {
@@ -614,19 +633,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           notificationMessage = t('editorNotice.itemAdded');
           addNewItemHighlight(newId);
       } else if (type === 'separator' && anchor) {
-          setState(draft => {
-              const { item } = findItem(draft, anchor);
-              if (item) {
-                  if (item.separatorAfter) {
-                      showNotification(t('editorNotice.separatorExists'), "info");
-                      return;
-                  }
-                  const newSeparator: Separator = { content: data.content || '---', date: data.date || item.date || '', manual: true, _tempId: newId };
-                  item.separatorAfter = newSeparator;
-                  notificationMessage = t('editorNotice.separatorAdded');
-                  addNewItemHighlight(newId);
-              }
-          }, 'add-separator');
+          const { item } = findItem(lessonsData, anchor);
+          if (item?.separatorAfter) {
+              showNotification(t('editorNotice.separatorExists'), 'info');
+          } else if (item) {
+              const separator: Separator = { content: data.content || '---', date: data.date || item.date || '', manual: true, _tempId: newId };
+              setState(draft => {
+                  const { item: target } = findItem(draft, anchor);
+                  if (target) target.separatorAfter = separator;
+              }, 'add-separator');
+              notificationMessage = t('editorNotice.separatorAdded');
+              addNewItemHighlight(newId);
+          }
       }
 
       if (notificationMessage) {
@@ -635,7 +653,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
       setSelectionState(createSelectionState());
       handleModalClose();
-  }, [selectedIndices, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t]);
+  }, [selectedIndices, lessonsData, contentDirection, setState, showNotification, handleModalClose, addNewItemHighlight, setEditorState, t]);
 
   /*
    * Impression intelligente : la modale PrintModal montre ce qui a déjà été
@@ -806,15 +824,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
       if (selectedIndices.length !== 1) return;
       const target = selectedIndices[0];
-      let movedTo: Indices | null = null;
-      setState(draft => {
-          movedTo = moveWithinParent(draft, target, direction);
-      }, 'reorder');
-      if (movedTo) {
-          setSelectionState(createSelectionState(movedTo));
-          setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-      }
-  }, [selectedIndices, setState, setEditorState]);
+      if (!canMoveWithinParent(lessonsData, target, direction)) return;
+      const key = (['itemIndex', 'subsubsectionIndex', 'subsectionIndex', 'sectionIndex', 'chapterIndex'] as const).find(key => target[key] !== undefined)!;
+      const movedTo = { ...target, [key]: target[key]! + (direction === 'up' ? -1 : 1) };
+      setState(draft => { moveWithinParent(draft, target, direction); }, 'reorder');
+      setSelectionState(createSelectionState(movedTo));
+      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
+  }, [selectedIndices, lessonsData, setState, setEditorState]);
 
   const handleOpenContentEditor = useCallback((indices: Indices) => {
     setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
@@ -965,6 +981,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           return false;
         }
 
+        setSelectionState(createSelectionState());
         setState(currentData => {
             const combined = mode === 'replace' ? preparedLessons : [...currentData, ...preparedLessons];
             // L'évaluation diagnostique ouvre chaque cahier, y compris importé :
@@ -999,6 +1016,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length, t]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
+      setSelectionState(createSelectionState());
       setState(() => newLessons, 'manage-lessons');
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
@@ -1011,7 +1029,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [setState, showNotification, setEditorState, t]);
 
-  const filteredData = useLessonSearch(lessonsData, searchQuery);
+  const { rows: visibleRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
 
   const editingItem = useMemo(() => {
     if (!editingIndices) return null;
@@ -1092,7 +1110,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable
-              lessonsData={filteredData}
+              lessonsData={lessonsData}
+              visibleRows={visibleRows}
+              onClearSearch={handleClearSearch}
               contentDirection={contentDirection}
 
               onCellUpdate={handleCellUpdate}
@@ -1105,7 +1125,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onOpenContentEditor={handleOpenContentEditor}
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDateWarnings}
-              searchQuery={searchQuery}
+              searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
               onLoadPredefined={predefinedOffer ? handleLoadPredefined : undefined}
@@ -1222,14 +1242,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const pending = pendingDateCommit;
           setPendingDateCommit(null);
           pending?.commit();
-        }}
-        onIgnore={() => {
-          const pending = pendingDateCommit;
-          if (!pending) return;
-          ignoreDateException(pending.date, pending.warnings);
-          setPendingDateCommit(null);
-          pending.commit();
-          toast.info(t('editorNotice.exceptionKept'));
         }}
       />
 

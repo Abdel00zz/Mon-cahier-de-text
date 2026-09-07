@@ -39,7 +39,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
     const ar = lang === 'ar';
     return (
       <div className="space-y-5">
-        <p className="text-start text-sm leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+        <p className="text-start text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
           {copy.subjectSelectionHint(teacherName)}
         </p>
         <div>
@@ -81,7 +81,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                     selected
                       ? 'border-amber-400 bg-[#facc15]'
-                      : 'border-[#dadce0] bg-transparent dark:border-[#5f6368]',
+                      : 'border-[hsl(var(--border))] bg-transparent dark:border-[hsl(var(--muted-foreground))]',
                   )}
                 >
                   {selected && (
@@ -98,7 +98,7 @@ export const SubjectsStep = memo<SubjectsStepProps>(
         {visibleSubjects.length === 0 && (
           <p
             role="status"
-            className="text-sm text-[#5f6368] dark:text-[#bdc1c6]"
+            className="text-sm text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]"
           >
             {ar
               ? 'لم نجد مادة بهذا الاسم. جرّب كلمة أخرى.'

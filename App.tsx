@@ -5,13 +5,14 @@ import { AppBootSkeleton } from './components/ui/PageSkeleton';
 import { AppLocale, ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
+import { SessionAlertBell } from './components/SessionAlertBell';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
 import { LocaleProvider, translateLocaleMessage } from '@/i18n/LocaleProvider';
 import { useNotificationFeed } from './hooks/useNotificationFeed';
 import { useAdminMessages } from './hooks/useAdminMessages';
-import { MATHJAX_V4_SRC, mathJaxConfig } from './config/mathJax';
+import { MathProvider } from './components/ui/math-provider';
 
 import { useClassManager } from './hooks/useClassManager';
 import { useTheme } from './hooks/useTheme';
@@ -26,7 +27,6 @@ const NotificationsPage = lazy(() => import('./features/dashboard/NotificationsP
 const AuthPage = lazy(() => import('./features/auth/AuthPage').then(module => ({ default: module.AuthPage })));
 const GuideModal = lazy(() => import('./features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const AdminMessageModal = lazy(() => import('./features/messages/AdminMessageModal').then(module => ({ default: module.AdminMessageModal })));
-const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 const DevoirsView = lazy(() => import('./features/evaluations/DevoirsView').then(module => ({ default: module.DevoirsView })));
 
 type View = 'dashboard' | 'editor' | 'settings' | 'notifications';
@@ -96,9 +96,7 @@ const App: React.FC = () => {
     return false; // Réduite par défaut sur PC
   });
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
-  // Le moteur MathJax est une dépendance réelle du rendu des cahiers. L'état
-  // évite de révéler une formule brute avant que ses notations soient prêtes.
-  const [mathJaxState, setMathJaxState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
+
   const { classes, addClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(
@@ -112,7 +110,7 @@ const App: React.FC = () => {
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);
   // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
-  useSessionAlerts();
+  const sessionAlerts = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
@@ -344,7 +342,6 @@ const App: React.FC = () => {
 
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
-  const isLatexBooting = !isBooting && !isAuthView && mathJaxState === 'loading';
 
   // L'accueil masque la navigation dès le premier rendu puis pendant tout le
   // parcours déclaré par Dashboard. Une classe créée en cours d'onboarding ne
@@ -360,6 +357,9 @@ const App: React.FC = () => {
 
   const appSurface = (
     <div className="relative min-h-screen overflow-x-clip text-foreground">
+      {view === 'dashboard' && showNavigation && !isEvaluationsOpen && !isGuideOpen && (
+        <SessionAlertBell {...sessionAlerts} classes={classes} autoOpen={config.notificationSettings?.autoOpenCurrentClass ?? false} onSelectClass={handleSelectClass} />
+      )}
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -388,7 +388,6 @@ const App: React.FC = () => {
         </div>
         {/* L'onboarding ne compose aucune formule : il reste utilisable
             pendant le chargement du moteur destiné aux cahiers. */}
-        {isLatexBooting && !isCurrentlyOnboarding && <AppBootSkeleton stage="latex" overlay />}
       </div>
       {view === 'notifications' && !isAuthView && !isBooting && (
         <Suspense fallback={null}>
@@ -426,17 +425,7 @@ const App: React.FC = () => {
           l'application, et pas uniquement la vue de l'éditeur.
         */}
         <Suspense fallback={<AppBootSkeleton />}>
-          <MathJaxContext
-            version={3}
-            src={MATHJAX_V4_SRC}
-            config={mathJaxConfig}
-            onLoad={() => setMathJaxState('ready')}
-            // Une coupure réseau ne doit jamais bloquer l'accès aux cahiers :
-            // MathText laisse alors la syntaxe source visible et utilisable.
-            onError={() => setMathJaxState('unavailable')}
-          >
-            {appSurface}
-          </MathJaxContext>
+          <MathProvider>{appSurface}</MathProvider>
         </Suspense>
 
         {/* Évaluations globales — socle commun Modal */}
@@ -444,6 +433,7 @@ const App: React.FC = () => {
           isOpen={isEvaluationsOpen}
           onClose={() => setIsEvaluationsOpen(false)}
           maxWidth="4xl"
+          className="sm:rounded-2xl"
           title={translateLocaleMessage(config.applicationLocale ?? 'ar', 'dashboard.evaluations')}
           bodyClassName="px-4 py-4 sm:px-6 sm:py-5"
         >

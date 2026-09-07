@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { Skeleton } from './skeleton';
 
-export type AppBootStage = 'workspace' | 'latex';
+type AppBootStage = 'workspace' | 'latex';
 
 interface AppBootSkeletonProps {
   stage?: AppBootStage;

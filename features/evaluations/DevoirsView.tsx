@@ -33,6 +33,7 @@ import {
   BookOpen,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { ClassOfficialPlanBanner } from './ClassOfficialPlanBanner';
 
 interface DevoirsViewProps {
   classes: ClassInfo[];
@@ -100,7 +101,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
   const classVisual = selectedClass ? getClassVisual(selectedClass.name) : null;
-  const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
+  const { assessments, hasPlan, planDetails, planning } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
@@ -387,6 +388,15 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Main Content Area */}
       <div className="space-y-5">
+        {/* Official Plan & Pedagogical Hierarchy Context Banner */}
+        {selectedClass && (
+          <ClassOfficialPlanBanner
+            classInfo={selectedClass}
+            planDetails={planDetails}
+            planning={planning}
+          />
+        )}
+
         {/* Pedagogical Events Section (shown when on 'all' or 'events' tab) */}
         {(activeTab === 'all' || activeTab === 'events') && pedagogicalEvents.length > 0 && (
           <PedagogicalEventsSection
@@ -567,11 +577,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={eventEditorOpen}
         onClose={() => setEventEditorOpen(false)}
         maxWidth="md"
-        className="sm:rounded-3xl border border-border/80 shadow-2xl"
-        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        className="sm:rounded-2xl"
+        headerClassName="border-b border-border/70"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
               <AwardIcon className="h-5 w-5" />
             </span>
             <div>
@@ -597,13 +607,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={manualEditorOpen}
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
-        className="border border-border/80 shadow-2xl sm:rounded-3xl"
-        headerClassName="border-b border-border/60 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5"
+        className="sm:rounded-2xl"
+        headerClassName="border-b border-border/70"
         bodyClassName="px-4 py-3.5 sm:px-7 sm:py-5"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 sm:h-10 sm:w-10 sm:rounded-2xl">
-              <CalendarCheck className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              <CalendarCheck className="h-5 w-5" />
             </span>
             <div className="min-w-0">
               <span className="block text-sm font-bold leading-tight tracking-tight text-foreground sm:text-base">
@@ -630,11 +640,11 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         isOpen={absencesFor !== null}
         onClose={() => setAbsencesFor(null)}
         maxWidth="md"
-        className="sm:rounded-3xl border border-border/80 shadow-2xl"
-        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+        className="sm:rounded-2xl"
+        headerClassName="border-b border-border/70"
         title={
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">
               <Users className="h-5 w-5" />
             </span>
             <div>

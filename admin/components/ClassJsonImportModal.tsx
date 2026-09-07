@@ -164,13 +164,13 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
             onClose={safeClose}
             blockDismiss={isImporting}
             maxWidth="3xl"
-            className="sm:max-w-3xl sm:rounded-[32px]"
-            headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b border-border/50 bg-card/60"
+            className="sm:max-w-3xl sm:rounded-2xl"
+            headerClassName="border-b border-border/50 bg-card/60"
             bodyClassName="px-5 py-5 sm:px-7 sm:py-6"
-            footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t border-border/50 bg-card/60"
+            footerClassName="border-t border-border/50 bg-card/60"
             title={
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
                         <FileInput className="h-5 w-5 stroke-[2.2]" />
                     </span>
                     <span className="text-base sm:text-lg font-bold text-foreground">
@@ -203,7 +203,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
             )}
         >
             <div className="space-y-5">
-                <div className="rounded-2xl border border-primary/20 bg-primary/[0.06] p-4 sm:p-5 shadow-xs">
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 sm:p-5 shadow-xs">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary">Classe de destination</p>
                     <p className="mt-1 text-base sm:text-lg font-bold text-foreground">{classInfo?.name}</p>
                     <p className="text-xs text-muted-foreground font-medium mt-0.5">
@@ -221,7 +221,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                             type="button"
                             onClick={() => setMode(value)}
                             aria-pressed={mode === value}
-                            className={`min-h-16 rounded-2xl border p-4 text-left transition-all cursor-pointer ${
+                            className={`min-h-16 rounded-xl border p-4 text-left transition-all cursor-pointer ${
                                 mode === value
                                     ? 'border-primary/50 bg-primary/10 text-foreground ring-2 ring-primary/20 shadow-xs'
                                     : 'border-border/80 bg-card text-muted-foreground hover:bg-muted/40'
@@ -234,7 +234,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                 </div>
 
                 {mode === 'replace' && (
-                    <p className="rounded-2xl border border-warning/30 bg-warning/10 p-3.5 text-xs font-semibold text-warning leading-relaxed">
+                    <p className="rounded-xl border border-warning/30 bg-warning/10 p-3.5 text-xs font-semibold text-warning leading-relaxed">
                         Le remplacement est destructif. Une vérification du contenu et de la version cloud est faite avant l’écriture.
                     </p>
                 )}
@@ -260,19 +260,19 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
                         rows={8}
                         spellCheck={false}
                         placeholder={'{\n  "lessonsData": [\n    { "type": "chapter", "title": "Chapitre 1", "sections": [] }\n  ]\n}'}
-                        className="min-h-48 resize-y font-mono text-xs leading-relaxed rounded-2xl border-border/80 bg-muted/20 focus-visible:bg-card"
+                        className="min-h-48 resize-y font-mono text-xs leading-relaxed rounded-xl border-border/80 bg-muted/20 focus-visible:bg-card"
                     />
                     <p className="text-[11px] text-muted-foreground font-medium">Taille maximale : {formatBytes(MAX_IMPORT_BYTES)} en UTF-8.</p>
                 </div>
 
                 {message && (
-                    <div role="alert" className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs font-semibold text-destructive">
+                    <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs font-semibold text-destructive">
                         {message}
                     </div>
                 )}
 
                 {preview && (
-                    <div role="status" aria-live="polite" className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300">
+                    <div role="status" aria-live="polite" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300">
                         <p className="text-xs sm:text-sm font-bold">JSON valide — prêt à importer</p>
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold">
                             <span>{preview.report.topLevelCount} bloc(s)</span>

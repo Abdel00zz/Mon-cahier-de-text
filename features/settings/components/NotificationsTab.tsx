@@ -162,7 +162,6 @@ const PushActivationCard: React.FC<{
                 </span>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">{t('notifications.remindersTitle')}</p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t('notifications.pushHint')}</p>
                     {stateDetails}
                 </div>
             </div>
@@ -193,7 +192,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
 }) => (
     <div className={`settings-surface flex items-start justify-between gap-3 p-4 ${disabled ? 'opacity-60' : ''}`}>
         <div className="flex flex-col text-start">
-            <Label className="text-xs font-bold text-foreground font-sans leading-none">{label}</Label>
+            <Label className="text-xs font-bold text-foreground font-sans leading-snug">{label}</Label>
             {hint && <span className="mt-1.5 block text-xs text-muted-foreground font-sans leading-normal">{hint}</span>}
         </div>
         <Switch
@@ -221,7 +220,8 @@ const NotificationKind: React.FC<{
 );
 
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onChange }) => {
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
+    const l = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
     const settings = config.notificationSettings ?? { ...defaultNotificationSettings };
     const [busy, setBusy] = useState(false);
     const [checking, setChecking] = useState(true);
@@ -365,22 +365,37 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             <Toggle
                 label={t('notifications.inApp')}
-                hint={t('notifications.inAppHint')}
                 checked={settings.enabled}
                 onChange={v => patch({ enabled: v })}
             />
 
             <Toggle
                 label={t('notifications.vibration')}
-                hint={
-                    vibrationSupported
-                        ? t('notifications.vibrationHint')
-                        : t('notifications.vibrationUnsupported')
-                }
+                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : undefined}
                 checked={settings.sessionVibration ?? false}
                 onChange={v => patch({ sessionVibration: v })}
                 disabled={!settings.enabled}
             />
+
+            <Toggle label={l('Rappel avant la fin de séance', 'تذكير قبل نهاية الحصة', 'Session end reminder')}
+                checked={settings.sessionEndReminderEnabled ?? settings.sessionVibration ?? false}
+                onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} />
+            <label className="settings-surface block p-4 text-xs">
+                <span>{l('Prévenir avant la fin (minutes)', 'التنبيه قبل النهاية (دقائق)', 'Minutes before the end')}</span>
+                <select className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3" value={settings.sessionReminderMinutes ?? 1} disabled={!settings.enabled} onChange={event => patch({ sessionReminderMinutes: Number(event.target.value) })}>{[1, 2, 5, 10].map(value => <option key={value} value={value}>{value}</option>)}</select>
+            </label>
+            <Toggle label={l('Rappel si aucune date saisie ce jour-là', 'تذكير إذا لم يسجل أي تاريخ لهذا اليوم', 'Reminder if no date is recorded that day')}
+                hint={l('Le cahier ne distingue pas les horaires : une date ne confirme pas chacune des séances d’une même journée.', 'الدفتر لا يميز الساعات: تاريخ واحد لا يؤكد كل حصص اليوم.', 'The notebook has no time-of-day evidence: a date does not confirm every session that day.')}
+                checked={settings.missingDateReminderEnabled ?? settings.sessionVibration ?? false}
+                onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} />
+            <label className="settings-surface block p-4 text-xs">
+                <span>{l('Délai après la séance (minutes)', 'المهلة بعد الحصة (دقائق)', 'Minutes after the session')}</span>
+                <select className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3" value={settings.missingDateReminderMinutes ?? 5} disabled={!settings.enabled} onChange={event => patch({ missingDateReminderMinutes: Number(event.target.value) })}>{[1, 5, 10, 15, 30].map(value => <option key={value} value={value}>{value}</option>)}</select>
+            </label>
+            <Toggle label={l('Ouvrir automatiquement la classe en cours depuis le tableau de bord', 'فتح قسم الحصة الحالية تلقائياً من لوحة القيادة', 'Automatically open the current class from the dashboard')}
+                hint={l('Uniquement si une seule classe est prévue, sans interrompre un modal ouvert.', 'فقط عندما تكون حصة قسم واحد مبرمجة ودون مقاطعة نافذة مفتوحة.', 'Only for one unambiguous class, without interrupting an open dialog.')}
+                checked={settings.autoOpenCurrentClass ?? false} onChange={value => patch({ autoOpenCurrentClass: value })} />
+            <p className="px-1 text-xs leading-relaxed text-muted-foreground">{l('La cloche s’active 3 secondes sur le tableau de bord. La vibration dépend du téléphone et d’une interaction préalable. Une application suspendue ne garantit pas un rappel local à la minute ; les notifications push ont un circuit distinct.', 'ينشط الجرس 3 ثوانٍ في لوحة القيادة. الاهتزاز حسب دعم الهاتف وتفاعل سابق. عند تعليق التطبيق لا يضمن التذكير المحلي في الدقيقة؛ الإشعارات الدفعية لها مسار مستقل.', 'The dashboard bell activates for 3 seconds. Vibration requires device support and prior interaction. A suspended app cannot guarantee minute-precise local reminders; push notifications use a separate path.')}</p>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="settings-surface flex flex-col justify-between p-4">
@@ -388,7 +403,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.gapThreshold}
                         onChange={e => patch({ gapThreshold: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-md border border-border bg-background text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
                     >
                         {[1, 2, 3].map(count => (
                             <option key={count} value={count}>
@@ -402,7 +417,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
                     <select
                         value={settings.inactivityThresholdDays}
                         onChange={e => patch({ inactivityThresholdDays: Number(e.target.value) })}
-                        className="mt-2 h-10 w-full rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
+                        className="mt-2 h-10 w-full rounded-md border border-border bg-background text-foreground px-3 text-xs outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 cursor-pointer"
                     >
                         {[3, 5, 10].map(count => <option key={count} value={count}>{t('notifications.inactiveDays', { count })}</option>)}
                     </select>
@@ -411,7 +426,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             <Toggle
                 label={t('notifications.quiet')}
-                hint={t('notifications.quietHint')}
                 checked={settings.quietDuringVacations}
                 onChange={v => patch({ quietDuringVacations: v })}
             />
@@ -453,9 +467,6 @@ const AbsencesSection: React.FC<{
     return (
         <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs">
             <h4 className="text-xs font-bold text-foreground">{t('notifications.absences')}</h4>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground font-sans">
-                {t('notifications.absencesHint')}
-            </p>
 
             {absences.length > 0 && (
                 <ul className="mt-3 space-y-2">

@@ -69,8 +69,8 @@ export const LangToggle: React.FC<LangToggleProps> = ({ lang, onChange, labels, 
           className={cn(
             'flex min-h-8.5 sm:min-h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-3.5 sm:px-4 text-xs font-bold transition-all duration-200 active:scale-[0.97]',
             active
-              ? 'bg-[#feefc3] dark:bg-[#41331c] text-[#202124] dark:text-amber-100 shadow-sm border border-amber-300 dark:border-amber-500/40 ring-1 ring-amber-400/30'
-              : 'text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary shadow-sm border border-primary/30 ring-1 ring-primary/40'
+              : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
           )}
         >
           <CountryFlag code={l} className="w-5 h-3.5 shadow-2xs rounded-xs shrink-0" />

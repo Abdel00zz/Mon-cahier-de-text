@@ -54,6 +54,17 @@ registerRoute(
 );
 
 // ── Web Push ────────────────────────────────────────────────────────────────
+// Persist the runtime, extensions, character data and web fonts actually used.
+// A first online visit is required; previously unseen extensions still need a network.
+registerRoute(
+    ({ url }) => url.origin === 'https://cdn.jsdelivr.net'
+        && /^\/npm\/(?:mathjax@4\.1\.3\/|@mathjax\/mathjax-[^/]+\/)/.test(url.pathname),
+    new CacheFirst({
+        cacheName: 'mathjax-4.1.3',
+        plugins: [new ExpirationPlugin({ maxEntries: 160, maxAgeSeconds: 365 * 24 * 3600 })],
+    })
+);
+
 self.addEventListener('push', event => {
     let payload: Partial<PushNotificationPayload> = {};
     try {

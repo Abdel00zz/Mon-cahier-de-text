@@ -1,4 +1,5 @@
 import { produce, Draft } from 'immer';
+import { buildLessonRows } from './lessonRows';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, EmbeddableTopLevelItem } from '../types.js';
 import { logger } from './logger.js';
 import { memoize } from './performance.js';
@@ -96,21 +97,22 @@ export const addTopLevelItem = (draft: Draft<LessonsData>, newItem: TopLevelItem
 
 export const addSection = (draft: Draft<LessonsData>, chapterIndices: Indices, newSection: Section, insertAfterIndex?: number): void => {
     const { item: topLevelItem } = findItem(draft, { chapterIndex: chapterIndices.chapterIndex });
-    if (topLevelItem && 'sections' in topLevelItem && 
+    if (topLevelItem && 'type' in topLevelItem && 
         (topLevelItem.type === 'chapter' || 
          topLevelItem.type.startsWith('evaluation_') || 
          topLevelItem.type.startsWith('devoir_') || 
          topLevelItem.type.startsWith('controle_') || 
          topLevelItem.type.startsWith('correction_'))) {
         
-        if (!topLevelItem.sections) {
-            topLevelItem.sections = [];
+        const target = topLevelItem as TopLevelItem;
+        if (!target.sections) {
+            target.sections = [];
         }
         if (!newSection.items) {
             newSection.items = [];
         }
-        const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : topLevelItem.sections.length;
-        topLevelItem.sections.splice(index, 0, newSection);
+        const index = insertAfterIndex !== undefined ? insertAfterIndex + 1 : target.sections.length;
+        target.sections.splice(index, 0, newSection);
     }
 };
 
@@ -147,8 +149,8 @@ export const addItem = (draft: Draft<LessonsData>, parentIndices: Indices, newIt
     const { item: container } = findItem(draft, parentIndices);
     // Un conteneur peut recevoir des items : chapitre (type 'chapter'), section,
     // sous-section ou sous-sous-section. Les items sont initialisés à la volée.
-    const isItemsContainer = !!container && (
-        'items' in container || (container as any).type === 'chapter'
+    const isItemsContainer = !!container && parentIndices.itemIndex === undefined && !parentIndices.isSeparator && (
+        'name' in container || (container as any).type === 'chapter' || 'sections' in container
     );
     if (!isItemsContainer || !container) return;
 
@@ -332,30 +334,10 @@ export const migrateLessonsData = (data: any): LessonsData => {
     }) as LessonsData;
 };
 
-export const flattenLessons = (data: LessonsData) => {
-    const flat: { data: any, indices: Indices, elementType: string }[] = [];
-    
-    const processElement = (element: any, indices: Indices, elementType: string) => {
-        flat.push({ data: element, indices, elementType });
-
-        // Items directement sous un nœud AVANT les sous-niveaux (ordre pédagogique).
-        if (element.items?.length > 0) {
-            element.items.forEach((item: any, i: number) => processElement(item, { ...indices, itemIndex: i }, item.type === 'chapter' ? 'chapter' : 'item'));
-        }
-        if (element.sections?.length > 0) {
-            element.sections.forEach((sec: any, i: number) => processElement(sec, { ...indices, sectionIndex: i }, 'section'));
-        }
-        if (element.subsections?.length > 0) {
-            element.subsections.forEach((sub: any, i: number) => processElement(sub, { ...indices, subsectionIndex: i }, 'subsection'));
-        }
-        if (element.subsubsections?.length > 0) {
-            element.subsubsections.forEach((ssub: any, i: number) => processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection'));
-        }
-    };
-
-    data.forEach((topLevelItem, chapterIndex) => {
-        processElement(topLevelItem, { chapterIndex }, topLevelItem.type || 'chapter');
-    });
-    
-    return flat;
-};
+export const flattenLessons = (data: LessonsData) => buildLessonRows(data)
+    .filter(row => row.elementType !== 'separator')
+    .map(({ data, indices, elementType }) => ({
+        data: data as DataItem, indices,
+        // Progression historically treats embedded assessments as lesson items.
+        elementType: indices.itemIndex !== undefined && elementType !== 'chapter' ? 'item' : elementType,
+    }));

@@ -71,9 +71,11 @@ export const useNotificationFeed = (
       refresh();
     };
     window.addEventListener('storage', onStorage);
+    const dayTimer = window.setInterval(onVisible, 30_000);
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       unsubDirty();
+      window.clearInterval(dayTimer);
       unsubPull();
       unsubNotifications();
       unsubConfig();
@@ -140,8 +142,10 @@ export const useNotificationFeed = (
       });
     }
 
-    const corrections = sortSignals(classSignals.filter(signal => !signal.ignored));
-    const ignoredCorrections = sortSignals(classSignals.filter(signal => signal.ignored));
+    // Les écarts d'emploi du temps appartiennent aux repères du Centre de pilotage.
+    globalSignals.push(...classSignals.filter(signal => signal.kind === 'schedule'));
+    const corrections = sortSignals(classSignals.filter(signal => signal.kind !== 'schedule' && !signal.ignored));
+    const ignoredCorrections = sortSignals(classSignals.filter(signal => signal.kind !== 'schedule' && signal.ignored));
     const insights = sortSignals(globalSignals.filter(signal => !signal.ignored));
     const ignoredInsights = sortSignals(globalSignals.filter(signal => signal.ignored));
     const urgentOfficial = officialEvents.filter(item => item.inDays <= 3).length;

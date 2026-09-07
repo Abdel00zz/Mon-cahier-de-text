@@ -105,7 +105,7 @@ export function OnboardingShell({
           (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
         }
       >
-        <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[#5f6368] dark:text-[#bdc1c6] sm:mb-5">
+        <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))] sm:mb-5">
           <span>{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
             type="button"
@@ -144,7 +144,7 @@ export function OnboardingShell({
           {title}
         </h1>
         {step === 4 && (
-          <p className="mb-5 text-sm leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+          <p className="mb-5 text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
             {copy.scheduleOptional}
           </p>
         )}

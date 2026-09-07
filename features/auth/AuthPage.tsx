@@ -59,8 +59,8 @@ const AUTH_COPY = {
       "La connexion retrouve vos cahiers existants, sans les remplacer par cette préparation.",
     workspaceError:
       "Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.",
-    welcomeTitle: "Retrouvez votre cahier.",
-    welcomeDetail: "Connectez-vous pour préparer et suivre vos séances.",
+    welcomeTitle: "Votre cahier de textes numérique vous attend.",
+    welcomeDetail: "Votre cahier dans votre téléphone. Élégant, pratique et intelligent.",
     login: "Se connecter",
     createAccount: "Créer un compte",
     modeLabel: "Accès au compte",
@@ -99,8 +99,8 @@ const AUTH_COPY = {
       "يفتح تسجيل الدخول دفاترك الحالية دون استبدالها بهذه الإعدادات.",
     workspaceError:
       "أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.",
-    welcomeTitle: "دفترك في انتظارك.",
-    welcomeDetail: "سجّل الدخول لتحضير حصصك وتتبعها.",
+    welcomeTitle: "دفتر نصوصك الرقمي في انتظارك",
+    welcomeDetail: "دفتر نصوصك في هاتفك. أنيق، عملي، وذكي",
     login: "تسجيل الدخول",
     createAccount: "إنشاء حساب جديد",
     modeLabel: "الولوج إلى الحساب",
@@ -128,7 +128,7 @@ const AUTH_COPY = {
   },
 } as const;
 const FIELD_CLASS =
-  "h-12 rounded-[8px] border border-stone-300 bg-white px-3 text-base font-normal text-stone-900 shadow-none placeholder:text-stone-400 focus-visible:border-stone-600 focus-visible:ring-2 focus-visible:ring-stone-500/20 dark:border-[#5f6368] dark:bg-[#202124] dark:text-stone-100";
+  "h-12 rounded-lg border border-border bg-background px-3 text-base font-normal text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary";
 const LABEL_CLASS = "mb-2 block text-sm font-medium";
 
 const PasswordInput = ({
@@ -400,7 +400,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="flex shrink-0 gap-1 rounded-[10px] border border-[#e0e0e0] p-0.5 dark:border-[#5f6368]"
+          className="flex shrink-0 gap-1 rounded-xl border border-border p-0.5"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
@@ -416,8 +416,8 @@ export const AuthPage: React.FC<{
               className={
                 "flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
                 (displayLocale === value
-                  ? "bg-stone-100 text-stone-950 dark:bg-[#3c4043] dark:text-white"
-                  : "text-stone-500 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-white/5")
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted/80")
               }
             >
               <CountryFlag code={value} className="h-3 w-4.5" />
@@ -502,7 +502,7 @@ export const AuthPage: React.FC<{
                       <motion.span
                         layoutId={id + "-active-mode"}
                         aria-hidden="true"
-                        className="absolute inset-0 rounded-[8px] border border-[#e0e0e0] bg-white shadow-sm dark:border-[#5f6368] dark:bg-[#202124]"
+                        className="absolute inset-0 rounded-lg border border-border bg-card shadow-sm"
                         transition={
                           reducedMotion
                             ? { duration: 0 }

@@ -111,7 +111,7 @@ export function RegistrationOnboarding({
       >
         {ar ? "لنبدأ بقسمك الأول." : "Commençons par votre première classe."}
       </h1>
-      <p className="mb-6 mt-3 max-w-xl text-sm leading-relaxed text-[#5f6368] dark:text-[#bdc1c6]">
+      <p className="mb-6 mt-3 max-w-xl text-sm leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
         {ar
           ? "اختر السلك، المستوى والمادة. سيتم تخصيص دفتر نصوصك تلقائياً فور تأكيد حسابك."
           : "Choisissez votre cycle, votre classe et votre matière. Vous créerez ensuite votre compte pour les conserver."}

@@ -44,19 +44,19 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
     return (
         <div className={rowClasses}>
             {/* Colonne Date */}
-            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-e border-[#e0e0e0] dark:border-[#3c4043] px-1 py-1.5 select-none">
+            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-e border-border px-1 py-1.5 select-none">
                 <input
                     type="date"
                     value={data.date || ''}
                     onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="editor-type-separator-date bg-transparent text-muted-foreground font-semibold rounded-md border border-dashed border-[#dadce0] dark:border-[#5f6368]/60 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-primary/40 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
+                    className="editor-type-separator-date bg-transparent text-muted-foreground font-semibold rounded-md border border-dashed border-[hsl(var(--border))] dark:border-[hsl(var(--border))]/60 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-primary/40 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
                     title={t('separator.editDate')}
                 />
             </div>
 
             {/* Colonne Contenu, le "signature moment" : un jalon net entre deux périodes */}
-            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-e border-[#e0e0e0] dark:border-[#3c4043] px-4 py-2.5">
-                <div className="flex-grow border-t border-dashed border-[#dadce0] dark:border-[#5f6368]/60" />
+            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-e border-border px-4 py-2.5">
+                <div className="flex-grow border-t border-dashed border-border" />
 
                 <div
                     ref={contentRef}
@@ -64,15 +64,15 @@ const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onC
                     suppressContentEditableWarning
                     onBlur={handleContentSave}
                     onKeyDown={handleContentKeyDown}
-                    className="editor-type-separator-label relative text-center font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-[#f8f9fa] dark:bg-[#28292c] border border-[#dadce0] dark:border-[#3c4043] text-neutral-600 dark:text-neutral-300 transition-colors focus:outline-none focus:ring-1 focus:ring-primary/40 min-w-[120px] max-w-[80%] shadow-xs font-sans"
+                    className="editor-type-separator-label relative text-center font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted border border-border text-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-primary/40 min-w-[120px] max-w-[80%] shadow-xs font-sans"
                     dangerouslySetInnerHTML={{ __html: data.content || '' }}
                 />
 
-                <div className="flex-grow border-t border-dashed border-[#dadce0] dark:border-[#5f6368]/60" />
+                <div className="flex-grow border-t border-dashed border-border" />
             </div>
 
             {/* Colonne Action */}
-            <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center justify-center p-1 md:static md:translate-y-0 md:self-stretch" onClick={event => event.stopPropagation()}>
+            <div className="absolute end-1 top-1/2 flex -translate-y-1/2 items-center justify-center p-1 md:static md:translate-y-0 md:self-stretch" onClick={event => event.stopPropagation()}>
                 {/* visible en permanence en tactile (< lg) ; hover-reveal sur desktop seulement */}
                 <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <Button

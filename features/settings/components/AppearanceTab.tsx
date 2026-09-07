@@ -147,10 +147,10 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   const selectedArabicObj = ARABIC_FONTS.find(f => f.id === currentArabicFont) || ARABIC_FONTS[0];
   const selectedUIFont = UI_FONTS_MAP[currentUIFont] || UI_FONTS_MAP.jakarta;
   const fontCopy = locale === 'ar'
-    ? { title: 'الخطوط', subtitle: 'خطوط الواجهة ومحتوى الجداول في قائمة واحدة', open: 'فتح قائمة الخطوط', ui: 'واجهة التطبيق', latin: 'المحتوى اللاتيني', arabic: 'المحتوى العربي' }
+    ? { title: 'الخطوط', open: 'فتح قائمة الخطوط', ui: 'واجهة التطبيق', latin: 'المحتوى اللاتيني', arabic: 'المحتوى العربي' }
     : locale === 'en'
-      ? { title: 'Typography', subtitle: 'Interface and table-content fonts in one list', open: 'Open font list', ui: 'App interface', latin: 'Latin content', arabic: 'Arabic content' }
-      : { title: 'Typographie', subtitle: 'Polices de l’interface et du contenu réunies dans une seule liste', open: 'Ouvrir la liste des polices', ui: 'Interface de l’application', latin: 'Contenu français et latin', arabic: 'Contenu arabe' };
+      ? { title: 'Typography', open: 'Open font list', ui: 'App interface', latin: 'Latin content', arabic: 'Arabic content' }
+      : { title: 'Typographie', open: 'Ouvrir la liste des polices', ui: 'Interface de l’application', latin: 'Contenu français et latin', arabic: 'Contenu arabe' };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -166,9 +166,6 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
               <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
                 {t('settings.appearance.themeTitle')}
               </h3>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">
-                {t('settings.appearance.themeSubtitle')}
-              </p>
             </div>
           </div>
 
@@ -536,9 +533,6 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {fontCopy.title}
             </h3>
-            <p className="text-[11px] sm:text-xs text-muted-foreground">
-              {fontCopy.subtitle}
-            </p>
           </div>
         </div>
 

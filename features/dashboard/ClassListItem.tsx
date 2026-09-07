@@ -32,41 +32,47 @@ export const ClassListItem: FC<ClassListItemProps> = ({
 
     return (
         <article
+            dir={isRtl ? 'rtl' : 'ltr'}
             data-keep-tone={keepToneForClass(classInfo.id)}
-            className="keep-surface keep-interactive group relative flex min-h-[56px] overflow-hidden sm:min-h-[62px]"
+            className="keep-surface keep-interactive group relative flex h-[68px] sm:h-[72px] min-h-[68px] items-center overflow-hidden"
         >
             <button
                 type="button"
                 {...pressHandlers}
-                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-slate-50 dark:hover:bg-[#3c4043] focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 cursor-pointer"
+                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
                 aria-label={t('dashboard.openClass', { className: displayName })}
             >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-black/5 text-[#5f6368] dark:bg-white/10 dark:text-[#bdc1c6]" aria-hidden>
-                    <Users className="h-4.5 w-4.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
+                    <Users className="h-4 w-4" />
                 </div>
-                <div className="min-w-0 flex-1">
-                    <h3 className={cn("truncate font-medium text-[#202124] dark:text-[#e8eaed] leading-none", isRtl ? "text-lg font-ibm-arabic" : "text-base")}>{displayName}</h3>
-                    <p
-                        className={cn('mt-1 truncate text-[#5f6368] dark:text-[#bdc1c6]', isRtl ? 'text-sm leading-5' : 'text-[11.9px] leading-[1.35]')}
-                        title={lastOpened}
-                    >
-                        {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{lastOpened}</time> : lastOpened}
-                    </p>
-                    {classInfo.subject && (
-                        <p className="truncate text-xs text-[#5f6368] dark:text-[#bdc1c6] mt-1">
-                            {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
-                        </p>
-                    )}
+                <div className="min-w-0 flex-1 py-0.5">
+                    <h3 className={cn(
+                        'truncate font-medium text-foreground leading-snug tracking-[0.01em]',
+                        isRtl ? 'text-lg font-ibm-arabic' : 'text-base font-outfit'
+                    )}>{displayName}</h3>
+                    <div className="mt-1 flex items-center gap-1.5 truncate text-muted-foreground">
+                        <span
+                            className={cn('truncate', isRtl ? 'text-sm leading-none' : 'text-[11.9px] leading-none')}
+                            title={lastOpened}
+                        >
+                            {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{lastOpened}</time> : lastOpened}
+                        </span>
+                        {classInfo.subject && (
+                            <>
+                                <span className="text-[10px] opacity-60 shrink-0" aria-hidden="true">•</span>
+                                <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>
+                                    {formatLocalizedSubjectDisplayName(classInfo.subject, locale)}
+                                </span>
+                            </>
+                        )}
+                    </div>
                 </div>
-                <ChevronRight className={cn('h-5 w-5 shrink-0 text-[#5f6368] dark:text-[#bdc1c6] transition-transform group-hover:translate-x-0.5', isRtl && 'rotate-180 group-hover:-translate-x-0.5')} aria-hidden />
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
             </button>
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className={cn(
-                    'hidden md:flex shrink-0 items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 border-[#e0e0e0] dark:border-[#5f6368]',
-                    isRtl ? 'border-r' : 'border-l',
-                )}
+                className="hidden md:flex shrink-0 items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 border-inline-start border-border"
             >
                 <button
                     type="button"
@@ -75,11 +81,11 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         impact('light');
                         onConfigure();
                     }}
-                    className="flex h-full w-12 sm:w-14 touch-manipulation items-center justify-center text-[#5f6368] dark:text-[#bdc1c6] hover:bg-slate-50 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed] transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                    className="flex h-full w-12 sm:w-14 touch-manipulation items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                     aria-label={`${t('dashboard.edit')} ${displayName}`}
                     title={t('dashboard.classSettings')}
                 >
-                    <Settings className="h-5 w-5 stroke-[2]" />
+                    <Settings className="h-4 w-4 stroke-[2]" />
                 </button>
             </div>
         </article>

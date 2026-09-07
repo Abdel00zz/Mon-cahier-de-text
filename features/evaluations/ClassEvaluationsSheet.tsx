@@ -32,12 +32,12 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
             isOpen={open}
             onClose={() => onOpenChange(false)}
             maxWidth="5xl"
-            className="sm:max-w-5xl sm:rounded-3xl border border-border/80 shadow-2xl backdrop-blur-md"
-            headerClassName="px-5 pt-5 pb-4 sm:px-7 sm:pt-6 sm:pb-4.5 bg-card/85 border-b border-border/70 backdrop-blur-md"
+            className="sm:max-w-5xl sm:rounded-2xl"
+            headerClassName="border-b border-border/70 bg-card/85 backdrop-blur-md"
             bodyClassName="px-4 py-4 sm:px-7 sm:py-6 max-h-[82vh] overflow-y-auto"
             title={(
                 <div className="flex items-center gap-3.5 min-w-0">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs">
                         <CalendarCheck className="h-5 w-5 stroke-[2.2]" aria-hidden />
                     </span>
                     <div className="min-w-0">
@@ -47,7 +47,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                             </span>
                             {classInfo.subject && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                                    <GraduationCap className="h-3 w-3 stroke-[2.2]" />
+                                    <GraduationCap className="h-3.5 w-3.5 stroke-[2.2]" />
                                     {classInfo.subject}
                                 </span>
                             )}

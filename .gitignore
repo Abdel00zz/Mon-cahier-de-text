@@ -12,6 +12,7 @@ dist
 dist-ssr
 tmp/
 coverage/
+.pilotage-qa/
 .vite/
 .vercel/
 .turbo/
@@ -20,6 +21,7 @@ android/.gradle/
 android/build/
 android/app/build/
 *.local
+*.zip
 .env
 .env.*
 !.env.example

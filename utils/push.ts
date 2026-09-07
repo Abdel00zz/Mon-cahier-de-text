@@ -314,19 +314,21 @@ export const showLocalNotification = async (
     body: string,
     tag: string,
     url = '/',
-    kind: PushNotificationKind = tag.includes('missing') ? 'missing-date' : 'session-reminder'
+    kind: PushNotificationKind = tag.includes('missing') ? 'missing-date' : 'session-reminder',
+    vibration = true,
+    isCurrent: () => boolean = () => true,
 ): Promise<boolean> => {
     try {
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
         if (!('serviceWorker' in navigator)) return false;
         const registration = await currentServiceWorkerRegistration();
-        if (!registration) return false;
+        if (!registration || !isCurrent()) return false;
         const options = {
             body,
             tag, // remplace une notification du même créneau au lieu d'empiler
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
-            vibrate: kind === 'missing-date' ? [280, 120, 280] : [180, 90, 180],
+            vibrate: vibration ? (kind === 'missing-date' ? [280, 120, 280] : [180, 90, 180]) : [],
             data: { url, kind, timestamp: Date.now() },
         } as NotificationOptions & { vibrate: number[] };
         await registration.showNotification(title, options);

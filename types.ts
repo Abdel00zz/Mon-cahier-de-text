@@ -11,7 +11,56 @@ export interface ClassInfo {
   createdAt: string;
   lastOpenedAt?: string;
   color: string;
-    cycle?: Cycle; // optional for backward compatibility
+  cycle?: Cycle; // optional for backward compatibility
+  level?: string;   // classe / niveau pédagogique (ex: "3AC", "Tronc Commun", "1er Bac", "2ème Bac")
+  branch?: string;  // filière / branche (ex: "Sciences Expérimentales", "Sciences Physiques", "Lettres")
+  group?: string;   // numéro ou lettre de groupe (ex: "1", "2")
+  /** @deprecated Legacy metadata preserved for old clients; progression only uses chapter title dates. */
+  courseStartDate?: string;
+  curriculumSourceId?: string;
+  /** Associations confirmées, invalidées si le titre ou l'index du cahier change. */
+  curriculumChapterMatches?: Record<string, { index: number; title: string }[]>;
+}
+
+export interface OfficialChapter {
+  id: string;
+  order: number;
+  semester: 1 | 2;
+  title: string;
+  titleAr?: string;
+  allocatedHours: number | null; // null : volume non lisible ou non ventilé dans la source
+  aliases?: string[];
+  assessmentMilestone?: {
+    type: 'DM' | 'DS' | 'EXAM';
+    num?: number;
+    label: string;
+    labelAr: string;
+    timing: string;
+  };
+}
+
+export interface OfficialCurriculumPlan {
+  id: string;
+  levels?: string[];
+  preferredForMatching?: boolean;
+  cycle: Cycle;
+  level: string;
+  subject: string;
+  sourceDoc: string;
+  weeklyHours: number;
+  diagnosticEvaluation: {
+    period: string;
+    weeks: string;
+    label: string;
+    labelAr: string;
+  };
+  chapters: OfficialChapter[];
+  schoolYear?: string;
+  sourceFile?: string;
+  authority?: 'teacher-plan' | 'ministerial';
+  notes?: string[];
+  coverage?: 'annual' | 'semester1';
+  assessmentWindows?: { type: 'DM' | 'DS'; semester: 1 | 2; num: number; start: string; end: string; hours: number | null }[];
 }
 
 import type { AccentColorKey, BorderRadiusOption, CardStyleOption, TableStyleOption, UIFontOption, BackgroundContrastOption } from '@/constants/themePresets';
@@ -177,6 +226,10 @@ export interface NotificationSettings {
     sessionVibration?: boolean;
     sessionEndReminderEnabled?: boolean;
     sessionEndReminderTime?: string;
+    sessionReminderMinutes?: number;
+    missingDateReminderEnabled?: boolean;
+    missingDateReminderMinutes?: number;
+    autoOpenCurrentClass?: boolean;
 }
 
 /** Période d'absence justifiée (certificat de maladie, congé...) : exclue du calcul de retard. */

@@ -130,12 +130,11 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
             </span>
           </div>
         }
-        description={t('manageLessons.description')}
         maxWidth="2xl"
         className="sm:max-w-3xl sm:rounded-2xl"
-        headerClassName="border-b-0 bg-card px-5 pb-3.5 pt-5 sm:px-7 sm:pb-4 sm:pt-6"
+        headerClassName="border-b-0 bg-background"
         bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-        footerClassName="border-t-0 bg-card px-5 py-3.5 sm:px-7 sm:py-4"
+        footerClassName="border-t-0 bg-background"
         footer={(
           <div className="flex w-full items-center justify-end gap-2.5">
             <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -153,11 +152,11 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
         )}
       >
         <div className="space-y-4">
-          <details open className="group overflow-hidden rounded-xl border border-border/70 bg-card shadow-xs">
+          <details open className="group overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-muted/40 px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
               <span className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-blue-600" />
-                {t('manageLessons.descriptionSettings')}
+                {t('descriptionVisibility.screen.title')}
               </span>
               <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 stroke-[2.2]" aria-hidden />
             </summary>
@@ -170,7 +169,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
             />
           </details>
 
-          <section className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-xs">
+          <section className="overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
             <div className="flex items-center justify-between gap-4 border-b border-border/60 bg-muted/40 px-4 py-3">
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.contents')}</h3>
@@ -197,7 +196,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                           {t('manageLessons.corrupted', { title: item.title })}
                         </span>
                         <Button type="button" variant="destructive" onClick={() => requestDelete(index)} className="h-9 w-9 rounded-xl p-0" title={t('manageLessons.delete')}>
-                          <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
+                          <Trash2 className="h-4 w-4 stroke-[2.2]" />
                         </Button>
                       </li>
                     );
@@ -237,7 +236,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                 })}
               </ul>
             ) : (
-              <div className="m-3 rounded-lg border border-dashed border-border bg-card px-4 py-8 text-center">
+              <div className="m-3 rounded-lg border border-dashed border-border bg-background px-4 py-8 text-center">
                 <FolderOpen className="mx-auto mb-2 h-5 w-5 text-muted-foreground stroke-[2.2]" />
                 <p className="text-xs font-bold text-foreground">{t('manageLessons.emptyTitle')}</p>
                 <p className="mt-1 text-[10px] font-medium text-muted-foreground">{t('manageLessons.emptyHint')}</p>

@@ -76,9 +76,3 @@ export const computeClassHoursInsight = (
         delta,
     };
 };
-
-/** Avis sur toutes les classes (celles ayant un horaire officiel connu d'abord). */
-export const computeScheduleInsights = (
-    classes: ClassInfo[],
-    timetable: TimetableEntry[] | undefined
-): ClassHoursInsight[] => classes.map(c => computeClassHoursInsight(c, timetable));

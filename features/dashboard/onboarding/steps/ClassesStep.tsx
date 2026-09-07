@@ -193,7 +193,7 @@ export const ClassesStep = memo<ClassesStepProps>(
     return (
       <div className="w-full space-y-4">
         {/* Conteneur principal épuré, doux et spacieux Style Vercel avec fond #fcfcfc */}
-        <div className="rounded-2xl border border-[#eaeaea] bg-[#fcfcfc] p-4 shadow-xs transition-all dark:border-[#27272a] dark:bg-[#18181b] sm:p-7 md:p-8">
+        <div className="rounded-2xl border border-[hsl(var(--border))] bg-[#fcfcfc] p-4 shadow-xs transition-all dark:border-[hsl(var(--border))] dark:bg-[#18181b] sm:p-7 md:p-8">
           {/* Barre supérieure : Titre épuré sans bouton 'تسمية حرة' */}
           <div className="mb-4 flex items-center gap-2.5 sm:mb-6">
             <span className="flex h-2.5 w-2.5 rounded-full bg-[#facc15]" />
@@ -210,7 +210,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                 <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 sm:text-sm">
                   {isAr ? 'السلك:' : 'Cycle :'}
                 </span>
-                <div className="flex rounded-xl bg-neutral-100 p-1 dark:bg-[#27272a]">
+                <div className="flex rounded-xl bg-neutral-100 p-1 dark:bg-[hsl(var(--border))]">
                   {availableCyclesList.map((cycle) => (
                     <button
                       key={cycle}
@@ -247,7 +247,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                         className={`group relative flex min-h-[64px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2.5 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:min-h-[82px] sm:p-4 ${
                           isSelected
                             ? 'border-2 border-amber-400 bg-amber-400/10 text-neutral-950 shadow-xs dark:border-amber-400 dark:bg-amber-400/20 dark:text-amber-100'
-                            : 'border-[#eaeaea] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-200 dark:hover:border-neutral-600'
+                            : 'border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
                         }`}
                       >
                         <span className="text-sm font-bold sm:text-base">{level}</span>
@@ -288,7 +288,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                           className={`group relative flex min-h-[64px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:min-h-[82px] sm:p-3.5 ${
                             isSelected
                               ? 'border-2 border-amber-400 bg-amber-400/10 text-neutral-950 shadow-xs dark:border-amber-400 dark:bg-amber-400/20 dark:text-amber-100'
-                              : 'border-[#eaeaea] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-200 dark:hover:border-neutral-600'
+                              : 'border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
                           }`}
                         >
                           <span className="text-[11px] font-semibold tracking-wider text-neutral-500 dark:text-neutral-400 sm:text-xs">
@@ -321,7 +321,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                             className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer sm:px-4 sm:py-2.5 sm:text-sm ${
                               isSelected
                                 ? 'border-2 border-amber-400 bg-amber-400/15 text-neutral-950 font-bold shadow-xs dark:border-amber-400 dark:bg-amber-400/25 dark:text-amber-100'
-                                : 'border border-[#eaeaea] bg-white text-neutral-700 hover:border-neutral-400 hover:text-neutral-950 dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:text-white'
+                                : 'border border-[hsl(var(--border))] bg-white text-neutral-700 hover:border-neutral-400 hover:text-neutral-950 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:text-white'
                             }`}
                           >
                             {getShortBranchLabel(level, isAr)}
@@ -349,7 +349,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                       className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 cursor-pointer ${
                         isSelected
                           ? 'border-2 border-amber-400 bg-[#facc15] text-neutral-950 shadow-xs'
-                          : 'border border-[#eaeaea] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-200 dark:hover:border-neutral-600'
+                          : 'border border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
                       }`}
                     >
                       {num}
@@ -362,7 +362,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                   value={groupInput}
                   onChange={(e) => setGroupInput(sanitizeGroupNumberInput(e.target.value))}
                   aria-label={isAr ? 'رقم مخصص' : 'Numéro libre'}
-                  className="h-11 w-14 touch-manipulation rounded-xl border border-[#eaeaea] bg-white text-center text-sm font-bold text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-100"
+                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-white text-center text-sm font-bold text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-100"
                 />
               </div>
             </div>
@@ -384,7 +384,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                         className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer sm:px-4 sm:text-sm ${
                           isSelected
                             ? 'bg-[#facc15] text-neutral-950 font-bold shadow-xs border border-amber-400'
-                            : 'border border-[#eaeaea] bg-white text-neutral-700 hover:border-neutral-400 dark:border-[#27272a] dark:bg-[#202124] dark:text-neutral-300'
+                            : 'border border-[hsl(var(--border))] bg-white text-neutral-700 hover:border-neutral-400 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-300'
                         }`}
                       >
                         {formatLocalizedSubjectDisplayName(subject, lang)}
@@ -414,7 +414,7 @@ export const ClassesStep = memo<ClassesStepProps>(
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-[#eaeaea] bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 dark:border-[#27272a] dark:bg-[#18181b] dark:text-neutral-300 dark:hover:bg-[#222] transition-colors"
+              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-[hsl(var(--border))] bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 dark:border-[hsl(var(--border))] dark:bg-[#18181b] dark:text-neutral-300 dark:hover:bg-[#222] transition-colors"
             >
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               <span>{copy.back}</span>

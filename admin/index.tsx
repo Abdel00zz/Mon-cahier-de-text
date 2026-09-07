@@ -1,13 +1,12 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { LocaleProvider } from '../i18n/LocaleProvider';
 import { AdminApp } from './AdminApp';
-import { MATHJAX_V4_SRC, mathJaxConfig } from '../config/mathJax';
+import { MathProvider } from '../components/ui/math-provider';
 import '../index.css';
 
 // Même contexte MathJax que l'application : l'impression d'un cahier depuis
 // l'admin réutilise PrintView, qui compose les formules via `better-react-mathjax`.
-const MathJaxContext = lazy(() => import('better-react-mathjax').then(module => ({ default: module.MathJaxContext })));
 
 const rootElement = document.getElementById('admin-root');
 if (!rootElement) {
@@ -18,9 +17,9 @@ ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <LocaleProvider locale="fr" manageDocument={false}>
       <Suspense fallback={null}>
-        <MathJaxContext version={3} src={MATHJAX_V4_SRC} config={mathJaxConfig}>
+        <MathProvider>
           <AdminApp />
-        </MathJaxContext>
+        </MathProvider>
       </Suspense>
     </LocaleProvider>
   </React.StrictMode>

@@ -38,6 +38,7 @@ import { consumeNotificationsAxis, type NotificationsAxisId } from '@/utils/noti
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { Modal } from '@/components/ui/modal';
+import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -135,7 +136,6 @@ const AXIS_MODAL_WIDTH: Record<AxisId, string> = {
 interface AxisMenuItem {
   id: AxisId;
   label: string;
-  subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   count: number;
   group: 'alerts' | 'planning' | 'history';
@@ -261,8 +261,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
   }, []);
 
-  // Le centre global ne consomme que les insights transversaux. Les alertes
-  // opérationnelles de classe restent visibles sur les cartes et le bandeau.
+  // Les repères réunissent les écarts d'emploi du temps et les informations transversales.
   const corrections = feed.insights;
   const ignoredCorrections = feed.ignoredInsights;
   const officialEvents = feed.officialEvents;
@@ -331,12 +330,12 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   }, [filteredActivity, locale, t]);
 
   const filteredAttention = feed.attentionCount;
+  const unplannedCount = corrections.filter(signal => signal.kind === 'schedule' && signal.id.includes(':empty:')).length;
 
   const menuItems: AxisMenuItem[] = [
     {
       id: 'priorites',
       label: t('notifications.priorities'),
-      subtitle: t('notifications.prioritySubtitle'),
       icon: CircleAlert,
       count: filteredCorrections.length,
       group: 'alerts',
@@ -345,7 +344,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'echeances',
       label: t('notifications.deadlines'),
-      subtitle: t('notifications.deadlineSubtitle'),
       icon: CalendarCheck,
       count: filteredOfficial.length,
       group: 'alerts',
@@ -353,7 +351,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'calendrier',
       label: t('notifications.calendar'),
-      subtitle: t('notifications.calendarSubtitle'),
       icon: CalendarDays,
       count: 0,
       group: 'planning',
@@ -361,7 +358,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'classes',
       label: t('notifications.classes'),
-      subtitle: t('notifications.classesSubtitle'),
       icon: GraduationCap,
       count: filteredOverviews.length,
       group: 'planning',
@@ -369,7 +365,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     {
       id: 'activite',
       label: t('notifications.activity'),
-      subtitle: t('notifications.activitySubtitle'),
       icon: History,
       count: filteredActivity.length,
       group: 'history',
@@ -378,7 +373,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       ? [{
           id: 'ignores' as AxisId,
           label: t('notifications.ignored'),
-          subtitle: t('notifications.ignoredSubtitle'),
           icon: Undo2,
           count: filteredIgnored.length,
           group: 'history' as const,
@@ -460,7 +454,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Top Toggle Header */}
       <div className={cn("flex items-center px-1 mb-1", isEffectiveCollapsed ? "justify-center" : "justify-between")}>
         {!isEffectiveCollapsed && (
-          <span className={cn('font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <span className={cn('font-extrabold text-muted-foreground', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarLabel')}
           </span>
         )}
@@ -479,7 +473,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Alerte & Suivi */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarTracking')}
           </h3>
         )}
@@ -549,9 +543,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
-                        {item.subtitle}
-                      </span>
                     </div>
                     <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
@@ -565,7 +556,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Planification */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarPlanning')}
           </h3>
         )}
@@ -619,9 +610,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
-                        {item.subtitle}
-                      </span>
                     </div>
                     <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
@@ -635,7 +623,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       {/* Section Historique */}
       <div>
         {!isEffectiveCollapsed && (
-          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground/80', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
+          <h3 className={cn('mb-1.5 px-2 font-extrabold text-muted-foreground', isRtl ? 'text-xs tracking-normal' : 'font-mono text-[10px] uppercase tracking-wider')}>
             {t('notifications.sidebarHistory')}
           </h3>
         )}
@@ -689,9 +677,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className={cn('block text-[10px] truncate font-normal leading-tight', isActive ? 'text-primary/70' : 'text-muted-foreground')}>
-                        {item.subtitle}
-                      </span>
                     </div>
                     <ChevronRight className={cn('h-3.5 w-3.5 shrink-0 transition-opacity', isRtl && 'rotate-180', isActive ? 'text-primary opacity-100' : 'text-muted-foreground opacity-50 group-hover:opacity-100')} />
                   </>
@@ -735,10 +720,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       dragHandle={false}
       swipeToDismiss={false}
       className={cn(
-        'pilotage-modal-sheet overflow-hidden border border-[#e0e0e0] bg-card text-card-foreground shadow-2xl transition-[width,max-width,transform,opacity] duration-300 dark:border-[#5f6368] sm:rounded-[12px]',
+        'pilotage-modal-sheet overflow-hidden transition-[width,max-width,transform,opacity] duration-300 sm:rounded-2xl',
         AXIS_MODAL_WIDTH[activeAxis],
       )}
-      headerClassName="border-b border-[#e0e0e0] bg-muted/20 px-4 py-2.5 dark:border-[#5f6368] sm:px-6 sm:py-3"
+      headerClassName="border-b border-border/70 bg-muted/20"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       <div data-pilotage-root className="min-w-0 text-foreground">
@@ -757,13 +742,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 aria-pressed={isActive}
                 onClick={() => handleSelectAxis(item.id)}
                 className={cn(
-                  'flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
+                  'flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
                   isActive
                     ? 'border-primary/25 bg-primary/10 text-primary shadow-xs'
                     : 'border-border/60 bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <Icon className="h-4 w-4 shrink-0" />
                 <span>{item.label}</span>
                 {item.count > 0 && (
                   <span className={cn(
@@ -808,13 +793,15 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
                           <PieChart className={cn('h-4 w-4', filteredCorrections.length > 0 ? 'text-amber-600' : 'text-primary')} />
                           {t('notifications.toHandle', { count: filteredCorrections.length })}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.priorityHint')}
-                        </p>
+                        {unplannedCount > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t('schedule.classesToPlan', { count: unplannedCount, plural: unplannedCount > 1 && locale !== 'ar' ? 's' : '' })}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -846,13 +833,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
                           <CalendarCheck className="h-4 w-4 text-blue-600" />
                           {t('notifications.deadlines')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.deadlineHint')}
-                        </p>
                       </div>
                       <span className="text-xs font-bold text-muted-foreground bg-muted dark:bg-zinc-800 px-2.5 py-1 rounded-full">
                         {t('notifications.eventCount', { count: filteredOfficial.length })}
@@ -865,11 +849,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                         description={t('notifications.noAssessmentDescription')}
                       />
                     ) : (
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-2 auto-rows-fr">
                         {filteredOfficial.map(item => (
                           <div
                             key={`official-${item.event.id}`}
-                            className="flex flex-col justify-between rounded-xl border border-border bg-card p-3.5 text-start shadow-xs transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
+                            className="flex h-full min-h-[110px] flex-col justify-between rounded-xl border border-border bg-card p-3.5 text-start shadow-xs transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-sm"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">
@@ -899,13 +883,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-lg font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-lg font-bold text-foreground text-balance', titleFontClass)}>
                           <CalendarDays className="h-5 w-5 text-primary" />
                           {t('notifications.calendar')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.calendarHint')}
-                        </p>
                       </div>
                     </div>
                     <NotificationCalendar classes={classes} config={config} selectedClassId="all" />
@@ -917,13 +898,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3 pb-2">
                       <div className="min-w-0">
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
                           <GraduationCap className="h-4 w-4 text-primary" />
                           {t('notifications.classes')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.classesHint')}
-                        </p>
                       </div>
                       {rankedOverviews.length > 0 && (
                         <span className="shrink-0 pt-0.5 font-mono text-[10px] font-extrabold tabular-nums text-muted-foreground">
@@ -952,6 +930,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                               <h3 className="truncate text-xs font-extrabold text-foreground transition-colors group-hover:text-primary">
                                 {overview.className}
                               </h3>
+                              <CurriculumProgressLabel classInfo={overview.classInfo} config={config} lessonsData={readClassLessons(overview.classInfo.id)} />
 
                               <div className="mt-2 flex items-center gap-2.5">
                                 <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-[3px] bg-muted dark:bg-zinc-800">
@@ -991,13 +970,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
                           <History className="h-4 w-4 text-blue-600" />
                           {t('notifications.activity')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.activityHint')}
-                        </p>
                       </div>
                     </div>
 
@@ -1074,13 +1050,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between pb-3">
                       <div>
-                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground', titleFontClass)}>
+                        <h2 className={cn('flex items-center gap-2 text-base font-bold text-foreground text-balance', titleFontClass)}>
                           <Undo2 className="h-4 w-4 text-blue-600" />
                           {t('notifications.ignored')}
                         </h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('notifications.ignoredHint')}
-                        </p>
                       </div>
                     </div>
 

@@ -50,7 +50,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive shadow-xs">
             <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
           </span>
           <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
@@ -58,12 +58,11 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
           </span>
         </div>
       }
-      description={t('settings.importModal.description')}
       maxWidth="xl"
       className="sm:max-w-2xl sm:rounded-2xl"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/60"
+      headerClassName="border-b-0 bg-background/60"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/60"
+      footerClassName="border-t-0 bg-background/60"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <Button type="button" onClick={onClose} variant="secondary" className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
@@ -82,7 +81,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       }
     >
       <div className="space-y-4">
-        <div className="p-4 bg-destructive/[0.08] dark:bg-destructive/15 text-destructive rounded-2xl border border-destructive/30 shadow-xs">
+        <div className="p-4 bg-destructive/[0.08] dark:bg-destructive/15 text-destructive rounded-xl border border-destructive/30 shadow-xs">
           <div className="flex gap-3">
             <TriangleAlert className="h-5 w-5 shrink-0 text-destructive mt-0.5" />
             <div>
@@ -99,9 +98,9 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         <div>
           <label
             htmlFor="platform-json-file-input"
-            className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
+            className="inline-flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/30 px-5 py-5 text-center text-muted-foreground transition-all hover:border-destructive/60 hover:bg-destructive/5 hover:text-destructive"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border/80 shadow-2xs mb-2 text-destructive">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border border-border/80 shadow-2xs mb-2 text-destructive">
               <FileUp className="h-5 w-5" />
             </div>
             <span className="font-bold text-xs sm:text-sm text-foreground">
@@ -113,7 +112,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
         </div>
 
         {fileContent && (
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
             <label className="flex items-center justify-center gap-3 cursor-pointer text-foreground">
               <Checkbox
                 checked={isConfirmed}

@@ -53,6 +53,120 @@
       "status": "partial",
       "confidence": "high",
       "note": "Les nombres, semaines et durées doivent être lus par filière dans planning-devoirs.json; aucune règle générique ne remplace les tableaux."
+    },
+    {
+      "id": "math-lycee-tc-sci-tech",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["TCS", "TCT"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 3,
+      "officialDurationMinutes": [120, 120, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "schoolWeek", "week": 15 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [3],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-tc-lettres",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["TCL"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 2,
+      "officialDurationMinutes": [60, 60],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 8 },
+        { "kind": "schoolWeek", "week": 15 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [4],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-1bac-exp",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["1BAC-SE"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 3,
+      "officialDurationMinutes": [120, 120, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "schoolWeek", "week": 15 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [5],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-1bac-sm",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["1BAC-SM"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 3,
+      "officialDurationMinutes": [120, 120, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "schoolWeek", "week": 15 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [6],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-2bac-pc-svt",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["2BAC-PC", "2BAC-SVT"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 3,
+      "officialDurationMinutes": [120, 120, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 5 },
+        { "kind": "schoolWeek", "week": 10 },
+        { "kind": "schoolWeek", "week": 15 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [7],
+      "status": "verified",
+      "confidence": "high"
+    },
+    {
+      "id": "math-lycee-2bac-sm-ab",
+      "subjectId": "mathematiques",
+      "cycle": "lycee",
+      "levels": ["2BAC-SM-A", "2BAC-SM-B"],
+      "semesters": [1, 2],
+      "assessmentType": "mixed_home_and_supervised",
+      "officialCount": 4,
+      "officialDurationMinutes": [120, 120, 120, 120],
+      "timingRules": [
+        { "kind": "schoolWeek", "week": 4 },
+        { "kind": "schoolWeek", "week": 8 },
+        { "kind": "schoolWeek", "week": 12 },
+        { "kind": "schoolWeek", "week": 16 }
+      ],
+      "sourceRef": "ma-men-note-142-08",
+      "sourcePages": [8],
+      "status": "verified",
+      "confidence": "high"
     }
   ]
 }

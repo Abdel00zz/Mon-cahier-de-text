@@ -194,7 +194,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
   const wasOpenRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('emploi');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // La navigation reste discrète à l'ouverture ; l'enseignant peut l'élargir à la demande.
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [subjectExpanded, setSubjectExpanded] = useState(false);
 
   useEffect(() => {
@@ -272,7 +273,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-3.5 shadow-2xs">
+    <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-3.5 shadow-2xs">
       <header className="mb-2.5">
         <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">{t('language.settings.description')}</p>
@@ -290,8 +291,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               className={cn(
                 'relative flex min-w-[105px] sm:min-w-[125px] flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 sm:p-3 text-center transition-all duration-200 cursor-pointer active:scale-95',
                 active
-                  ? 'border-amber-400 bg-[#feefc3] text-[#202124] dark:border-amber-500/50 dark:bg-[#41331c] dark:text-amber-100 font-bold shadow-xs ring-1 ring-amber-400/40'
-                  : 'border-border/70 bg-card/80 text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed] hover:border-amber-300/60'
+                  ? 'border-primary/30 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs ring-1 ring-primary/40'
+                  : 'border-border/70 bg-background/80 text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-border'
               )}
             >
               <div className="flex h-8 items-center justify-center">
@@ -300,7 +301,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               <span className={cn('text-xs font-bold leading-tight', option.value === 'ar' && 'font-bold tracking-normal')}>
                 {option.shortName}
               </span>
-              <span className={cn('text-[10px] font-semibold', active ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground')}>
+              <span className={cn('text-[10px] font-semibold', active ? 'text-primary' : 'text-muted-foreground')}>
                 {option.nativeName}
               </span>
             </button>
@@ -324,7 +325,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         return (
           <div className="space-y-3 sm:space-y-3.5">
             {/* 1. Profil & Matière */}
-            <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-4 shadow-2xs">
+            <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-4 shadow-2xs">
               <header className="mb-2.5">
                 <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.profile')}</h3>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{t('settings.subjectsHint')}</p>
@@ -378,8 +379,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                           className={cn(
                             'rounded-xl border px-2.5 py-1 text-xs font-semibold transition-all duration-200 cursor-pointer shadow-2xs',
                             active
-                              ? 'border-amber-400/80 bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 dark:border-amber-500/50 shadow-xs ring-1 ring-amber-400/30'
-                              : 'border-border/60 bg-background/60 text-muted-foreground hover:border-amber-400/40 hover:bg-muted/50 hover:text-foreground'
+                              ? 'border-primary/40 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs ring-1 ring-primary/30'
+                              : 'border-border/60 bg-background/60 text-muted-foreground hover:border-primary/40 hover:bg-muted/50 hover:text-foreground'
                           )}
                         >
                           {formatLocalizedSubjectDisplayName(subject, locale)}
@@ -403,7 +404,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-4 shadow-2xs">
+            <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-4 shadow-2xs">
               <header className="mb-2.5">
                 <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
               </header>
@@ -436,7 +437,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                           </span>
                           <span className={cn(
                             'text-xs font-semibold leading-tight text-center',
-                            active ? 'text-[#202124] dark:text-amber-100 font-bold' : 'text-muted-foreground'
+                            active ? 'text-primary font-bold' : 'text-muted-foreground'
                           )}>
                             {t(`settings.cycle.${c.key}`)}
                           </span>
@@ -456,7 +457,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                     value={localConfig.establishmentName || ''}
                     onChange={e => updateProfileDraft({ establishmentName: e.target.value })}
                     placeholder={t('settings.schoolPlaceholder')}
-                    className="h-11 rounded-lg border-[#e0e0e0] bg-background px-3 text-base text-foreground shadow-none dark:border-[#5f6368]"
+                    className="h-11 rounded-lg border border-border bg-background px-3 text-base text-foreground shadow-none"
                   />
                 </div>
 
@@ -472,7 +473,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                         academyRegion: event.target.value,
                         educationProvince: '',
                       })}
-                      className="h-11 w-full min-w-0 rounded-lg border border-[#e0e0e0] bg-background px-2.5 text-base focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-[#5f6368] cursor-pointer"
+                      className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-2.5 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                     >
                       <option value="">{t('settings.chooseAcademy')}</option>
                       {MOROCCO_EDUCATION_ACADEMIES.map(academy => (
@@ -492,7 +493,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                       value={localConfig.educationProvince ?? ''}
                       disabled={!selectedAcademy || availableProvinces.length === 0}
                       onChange={event => updateProfileDraft({ educationProvince: event.target.value })}
-                      className="h-11 w-full min-w-0 rounded-lg border border-[#e0e0e0] bg-background px-2.5 text-base focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-[#5f6368] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                      className="h-11 w-full min-w-0 rounded-lg border border-border bg-background px-2.5 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                     >
                       <option value="">
                         {selectedAcademy ? t('settings.chooseProvince') : t('settings.chooseAcademyFirst')}
@@ -545,12 +546,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         return (
           <div className="space-y-3 sm:space-y-3.5">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border/80 bg-card/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
+              <div className="rounded-xl border border-border/80 bg-background/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1">{t('settings.exportTitle')}</h3>
-                  <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-                    {t('settings.exportDescription')}
-                  </p>
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-3">{t('settings.exportTitle')}</h3>
                 </div>
                 <Button
                   type="button"
@@ -561,12 +559,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 </Button>
               </div>
 
-              <div className="rounded-xl border border-border/80 bg-card/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
+              <div className="rounded-xl border border-border/80 bg-background/60 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1">{t('settings.importTitle')}</h3>
-                  <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-                    {t('settings.importDescription')}
-                  </p>
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground mb-3">{t('settings.importTitle')}</h3>
                 </div>
                 <Button
                   type="button"
@@ -594,7 +589,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         return (
           <div className="space-y-3 sm:space-y-3.5">
             {/* Plan Info Card */}
-            <div className="rounded-xl border border-border/80 bg-card/60 p-3 sm:p-3.5 shadow-2xs">
+            <div className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-3.5 shadow-2xs">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-amber-300/60 bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30">
                   <CircleCheck className="h-4 w-4" />
@@ -603,33 +598,24 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                   <h3 className="text-xs sm:text-sm font-bold text-foreground">
                     {t('settings.support.planTitle')}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    {t('settings.support.planDescription')}
-                  </p>
                 </div>
               </div>
             </div>
 
             {/* List of actions */}
-            <div className="rounded-xl border border-border/80 bg-card/60 shadow-2xs overflow-hidden divide-y-0 space-y-0.5">
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
+            <div className="rounded-xl border border-border/80 bg-background/60 shadow-2xs overflow-hidden divide-y-0 space-y-0.5">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-background/40">
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.devicesTitle')}</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {t('settings.support.devicesDescription')}
-                  </p>
                 </div>
                 <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 ring-1 ring-emerald-500/20 shrink-0">
                   {t('settings.support.connected')}
                 </span>
               </div>
 
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-background/40">
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.guideTitle')}</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {locale === 'ar' ? 'استكشف شرح جميع الميزات' : 'Explorez le guide complet'}
-                  </p>
                 </div>
                 <Button
                   type="button"
@@ -642,12 +628,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 </Button>
               </div>
 
-              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-card/40">
+              <div className="p-3 sm:p-3.5 flex items-center justify-between gap-3 bg-background/40">
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.support.feedbackTitle')}</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {locale === 'ar' ? 'تواصل مع فريق الدعم والتطوير' : 'Contactez le support'}
-                  </p>
                 </div>
                 <a
                   href="mailto:support@cahier-textes.ma"
@@ -676,7 +659,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         type="button"
         variant="secondary"
         onClick={() => requestExit()}
-        className="min-h-11 rounded-lg border border-border/60 px-4 text-xs font-medium cursor-pointer"
+        className="min-h-10 sm:min-h-11 rounded-xl border border-border/60 px-4 text-xs font-medium cursor-pointer"
       >
         {t(hasProfileChanges ? 'settings.discardProfile' : 'common.close')}
       </Button>
@@ -684,9 +667,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       {hasProfileChanges && <Button
         type="button"
         onClick={handleSave}
-        className="min-h-11 gap-1.5 rounded-lg bg-[#feefc3] text-[#202124] hover:bg-amber-200 dark:bg-[#41331c] dark:text-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-500/40 px-4 text-xs font-semibold cursor-pointer"
+        className="min-h-10 sm:min-h-11 gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/30 border border-primary/30 px-4 text-xs font-semibold cursor-pointer"
       >
-        <Save className="h-3.5 w-3.5" />
+        <Save className="h-4 w-4" />
         <span>{t('settings.saveProfile')}</span>
       </Button>}
     </div>
@@ -733,18 +716,18 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               onFocus={() => preloadTabComponent(item.id)}
               title={t(item.titleKey)}
               className={cn(
-                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none',
+                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
                 isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
                 isActive
-                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 font-bold border border-amber-300/80 dark:border-amber-500/40 shadow-2xs'
-                  : 'bg-transparent text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
+                  : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div
                   className={cn(
                     'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    isActive ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground'
+                    isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -762,7 +745,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                     className={cn(
                       'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
                       isRtl && 'rotate-180',
-                      isActive && 'text-[#202124] dark:text-amber-200'
+                      isActive && 'text-primary'
                     )}
                   />
                 </div>
@@ -788,18 +771,18 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               onFocus={() => preloadTabComponent(item.id)}
               title={t(item.titleKey)}
               className={cn(
-                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none',
+                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
                 isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
                 isActive
-                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 font-bold border border-amber-300/80 dark:border-amber-500/40 shadow-2xs'
-                  : 'bg-transparent text-[#5f6368] dark:text-[#9aa0a6] hover:bg-[#feefc3]/40 dark:hover:bg-[#3c4043] hover:text-[#202124] dark:hover:text-[#e8eaed]'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
+                  : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div
                   className={cn(
                     'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    isActive ? 'text-[#202124] dark:text-amber-200' : 'text-muted-foreground'
+                    isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
@@ -817,7 +800,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                     className={cn(
                       'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
                       isRtl && 'rotate-180',
-                      isActive && 'text-[#202124] dark:text-amber-200'
+                      isActive && 'text-primary'
                     )}
                   />
                 </div>
@@ -839,8 +822,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.92}
-      className="settings-modal-sheet overflow-hidden border border-[#e0e0e0] dark:border-[#5f6368] bg-card text-card-foreground sm:max-w-5xl sm:rounded-[12px] shadow-2xl"
-      headerClassName="border-b border-[#e0e0e0] dark:border-[#5f6368] bg-muted/20 px-4 py-2.5 sm:px-6 sm:py-3"
+      className="settings-modal-sheet overflow-hidden sm:max-w-5xl sm:rounded-2xl"
+      headerClassName="border-b border-border/70 bg-muted/20"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       {/* Mobile Horizontal Tabs Selector (Direct access, NO back button) */}
@@ -855,13 +838,13 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               onClick={() => handleSelectCategory(item.id)}
               aria-pressed={isActive}
               className={cn(
-                'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2',
+                'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                 isActive
-                  ? 'bg-[#feefc3] text-[#202124] dark:bg-[#41331c] dark:text-amber-100 border border-amber-300 dark:border-amber-500/40 shadow-xs'
-                  : 'border border-border/60 bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold border border-primary/30 shadow-xs'
+                  : 'border border-border/60 bg-background/60 text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <Icon className="h-4 w-4 shrink-0" />
               <span>{t(item.titleKey)}</span>
             </button>
           );

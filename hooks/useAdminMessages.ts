@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AdminMessage } from '../types';
+import { captureWorkspaceLease } from '../utils/accountWorkspace';
 
 interface MessagesResponse {
     messages?: AdminMessage[];
@@ -24,9 +25,10 @@ export const useAdminMessages = (enabled: boolean) => {
     const refresh = useCallback(async () => {
         if (!enabled || refreshInFlightRef.current) return;
         refreshInFlightRef.current = true;
+        const isCurrent = captureWorkspaceLease();
         try {
             const next = await loadPendingMessages();
-            setMessages(next);
+            if (isCurrent()) setMessages(next);
         } finally {
             refreshInFlightRef.current = false;
         }
@@ -56,6 +58,7 @@ export const useAdminMessages = (enabled: boolean) => {
     }, [enabled, refresh]);
 
     const acknowledge = useCallback(async (messageId: string): Promise<void> => {
+        const isCurrent = captureWorkspaceLease();
         const response = await fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -66,7 +69,7 @@ export const useAdminMessages = (enabled: boolean) => {
         if (!response.ok) {
             throw new Error(typeof data?.error === 'string' ? data.error : 'Accusé de réception impossible.');
         }
-        setMessages(current => current.filter(message => message.id !== messageId));
+        if (isCurrent()) setMessages(current => current.filter(message => message.id !== messageId));
     }, []);
 
     return { messages, acknowledge };

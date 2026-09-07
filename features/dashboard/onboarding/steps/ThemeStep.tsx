@@ -54,7 +54,7 @@ export const ThemeStep = memo<ThemeStepProps>(({
                                 <span className={cn('block font-semibold', isRtl && 'font-ibm-arabic text-lg')}>
                                     {option.label}
                                 </span>
-                                <span className="mt-1 block text-xs text-[#5f6368] dark:text-[#bdc1c6]">
+                                <span className="mt-1 block text-xs text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))]">
                                     {option.desc}
                                 </span>
                             </div>

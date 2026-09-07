@@ -1,6 +1,7 @@
 import { AppConfig, ClassInfo, Cycle, DevoirType, ManualAssessment } from '../types.js';
 import { HolidayCalendar, getEffectiveSchoolYear, getPedagogicalWeek, schoolYearLabelFromDate } from './calendar.js';
 import { loadAssessmentReference } from './assessmentRules.js';
+import { normalizeOfficialClassName } from '../constants/class-levels.js';
 
 /**
  * Moteur du planning OFFICIEL des devoirs (فروض محروسة/منزلية).
@@ -41,7 +42,7 @@ export interface PlannedAssessment {
     predictionReason: string;
 }
 
-interface PlanDevoir {
+export interface PlanDevoir {
     type: DevoirType;
     num: number;
     semaine: number;
@@ -49,15 +50,41 @@ interface PlanDevoir {
     fenetre?: string;
 }
 
-interface Plan {
+export interface PlanExam {
+    type: 'local' | 'regional' | 'national' | 'blanc';
+    libelle: string;
+    dateDebut: string;
+    dateFin?: string;
+    sessionRattrapage?: string;
+    coefficient?: number;
+    description?: string;
+}
+
+export interface PlanSemester {
+    n: 1 | 2;
+    devoirs: PlanDevoir[];
+    massarCloture?: string;
+    remiseBulletins?: string;
+}
+
+export interface Plan {
+    id?: string;
     /** matière concernée (ex. « Mathématiques », « SVT ») */
     matiere: string;
     /** cycle d'enseignement (college / lycee / prepa) */
     cycle?: Cycle;
+    classe?: string;
+    classeCode?: string;
+    branche?: string;
+    brancheCode?: string;
+    filiereAr?: string;
+    volumeHoraire?: string;
+    coefficient?: number;
     niveaux: string[];
     libelle: string;
     sourceRef?: string;
-    semestres: { n: 1 | 2; devoirs: PlanDevoir[] }[];
+    semestres: PlanSemester[];
+    examens?: PlanExam[];
 }
 
 export interface PlanningFile {
@@ -125,15 +152,42 @@ const validatePlanningFile = (value: unknown): PlanningFile => {
                     ...(item.fenetre ? { fenetre: requiredText(item.fenetre, `${libelle}.${key}.fenetre`, 200) } : {}),
                 };
             });
-            return { n: semester.n, devoirs };
+            return {
+                n: semester.n,
+                devoirs,
+                ...(semester.massarCloture ? { massarCloture: String(semester.massarCloture).trim() } : {}),
+                ...(semester.remiseBulletins ? { remiseBulletins: String(semester.remiseBulletins).trim() } : {}),
+            };
         });
+
+        const examens = Array.isArray(plan.examens)
+            ? plan.examens.map((ex): PlanExam => ({
+                type: ex.type,
+                libelle: requiredText(ex.libelle, `${libelle}.examens.libelle`, 150),
+                dateDebut: requiredText(ex.dateDebut, `${libelle}.examens.dateDebut`, 20),
+                ...(ex.dateFin ? { dateFin: requiredText(ex.dateFin, `${libelle}.examens.dateFin`, 20) } : {}),
+                ...(ex.sessionRattrapage ? { sessionRattrapage: requiredText(ex.sessionRattrapage, `${libelle}.examens.sessionRattrapage`, 30) } : {}),
+                ...(typeof ex.coefficient === 'number' ? { coefficient: ex.coefficient } : {}),
+                ...(ex.description ? { description: requiredText(ex.description, `${libelle}.examens.description`, 500) } : {}),
+            }))
+            : undefined;
+
         return {
+            id: plan.id,
             matiere,
             ...(plan.cycle ? { cycle: plan.cycle } : {}),
+            classe: plan.classe,
+            classeCode: plan.classeCode,
+            branche: plan.branche,
+            brancheCode: plan.brancheCode,
+            filiereAr: plan.filiereAr,
+            volumeHoraire: plan.volumeHoraire,
+            coefficient: plan.coefficient,
             niveaux,
             libelle,
             ...(plan.sourceRef ? { sourceRef: requiredText(plan.sourceRef, `${libelle}.sourceRef`, 100) } : {}),
             semestres,
+            ...(examens ? { examens } : {}),
         };
     });
     const schoolYear = raw.schoolYear === undefined ? undefined : requiredText(raw.schoolYear, 'planning.schoolYear', 9);
@@ -169,22 +223,96 @@ export const loadPlanning = async (): Promise<PlanningFile | null> => {
 const normalize = (value: string): string =>
     value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 
-/** Plan officiel correspondant à la matière, au cycle et au niveau de la classe. */
-const findPlanFor = (
+/** Plan officiel correspondant à la matière, au cycle, à la classe et à la branche. */
+export const findPlanFor = (
     planning: PlanningFile,
-    classInfo: Pick<ClassInfo, 'name' | 'subject' | 'cycle'>,
+    classInfo: Pick<ClassInfo, 'name' | 'subject' | 'cycle'> & Partial<Pick<ClassInfo, 'level' | 'branch'>>,
 ): Plan | null => {
     const subject = normalize(classInfo.subject);
-    const className = normalize(classInfo.name);
+    const rawName = classInfo.name || '';
+    const normalizedName = normalize(normalizeOfficialClassName(rawName));
+    const rawNameNorm = normalize(rawName);
     const cycle = classInfo.cycle;
+
     return (
-        planning.plans.find(plan =>
-            normalize(plan.matiere) === subject &&
+        planning.plans.find(plan => {
+            if (normalize(plan.matiere) !== subject) return false;
             // Le cycle n'est contraint que si le plan ET la classe le précisent.
-            (!plan.cycle || !cycle || plan.cycle === cycle) &&
-            plan.niveaux.some(niveau => className.startsWith(normalize(niveau)))
-        ) ?? null
+            if (plan.cycle && cycle && plan.cycle !== cycle) return false;
+
+            // 1. Si la classe dispose de level ou branch explicites
+            if (classInfo.level && plan.classe && normalize(plan.classe) === normalize(classInfo.level)) {
+                if (!classInfo.branch || !plan.branche || normalize(plan.branche).includes(normalize(classInfo.branch))) {
+                    return true;
+                }
+            }
+
+            // 2. Correspondance par alias dans plan.niveaux
+            return plan.niveaux.some(niveau => {
+                const n = normalize(niveau);
+                return (
+                    normalizedName === n ||
+                    normalizedName.startsWith(`${n} `) ||
+                    rawNameNorm === n ||
+                    rawNameNorm.startsWith(`${n} `) ||
+                    normalizedName.includes(n) ||
+                    rawNameNorm.includes(n)
+                );
+            });
+        }) ?? null
     );
+};
+
+export interface ClassAssessmentPlanDetails {
+    planId?: string;
+    cycle?: Cycle;
+    cycleLabel: string;
+    classe?: string;
+    branche?: string;
+    filiereAr?: string;
+    volumeHoraire?: string;
+    coefficient?: number;
+    libelle: string;
+    sourceRef?: string;
+    examens: PlanExam[];
+    s1MassarCloture?: string;
+    s1RemiseBulletins?: string;
+    s2MassarCloture?: string;
+    s2RemiseBulletins?: string;
+    totalControlesS1: number;
+    totalControlesS2: number;
+}
+
+export const getAssessmentPlanDetailsForClass = (
+    classInfo: ClassInfo,
+    planning: PlanningFile | null
+): ClassAssessmentPlanDetails | null => {
+    if (!planning) return null;
+    const plan = findPlanFor(planning, classInfo);
+    if (!plan) return null;
+
+    const s1 = plan.semestres.find(s => s.n === 1);
+    const s2 = plan.semestres.find(s => s.n === 2);
+
+    return {
+        planId: plan.id,
+        cycle: plan.cycle,
+        cycleLabel: plan.cycle === 'college' ? 'Collège' : plan.cycle === 'lycee' ? 'Lycée' : 'CPGE',
+        classe: plan.classe,
+        branche: plan.branche,
+        filiereAr: plan.filiereAr,
+        volumeHoraire: plan.volumeHoraire,
+        coefficient: plan.coefficient,
+        libelle: plan.libelle,
+        sourceRef: plan.sourceRef,
+        examens: plan.examens ?? [],
+        s1MassarCloture: s1?.massarCloture,
+        s1RemiseBulletins: s1?.remiseBulletins,
+        s2MassarCloture: s2?.massarCloture,
+        s2RemiseBulletins: s2?.remiseBulletins,
+        totalControlesS1: s1?.devoirs.filter(d => d.type === 'controle').length ?? 0,
+        totalControlesS2: s2?.devoirs.filter(d => d.type === 'controle').length ?? 0,
+    };
 };
 
 /* ── Arithmétique de dates FIABLE : tout passe par UTC, zéro décalage DST ── */

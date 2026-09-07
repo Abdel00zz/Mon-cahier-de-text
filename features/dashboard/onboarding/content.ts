@@ -1,7 +1,7 @@
 import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
-import { SUBJECTS, classLevelGroupsForCycle } from '@/constants';
+import { SUBJECTS } from '@/constants';
 import type { Cycle } from '@/types';
-import type { ClassLevelGroup, CycleOption, ModalLang, OnboardingCopy } from './types';
+import type { CycleOption, ModalLang, OnboardingCopy } from './types';
 
 export const ONBOARDING_CYCLES: CycleOption[] = [
     { key: 'college', icon: School },
@@ -9,13 +9,17 @@ export const ONBOARDING_CYCLES: CycleOption[] = [
     { key: 'prepa', icon: FlaskConical },
 ];
 
-export const LEVEL_GROUPS: Record<Cycle, ClassLevelGroup[]> = {
-    college: classLevelGroupsForCycle('college'),
-    lycee: classLevelGroupsForCycle('lycee'),
-    prepa: classLevelGroupsForCycle('prepa'),
+export const defaultLevelForCycle = (cycle: Cycle): string => {
+    switch (cycle) {
+        case 'college':
+            return '1ac';
+        case 'prepa':
+            return 'mpsi';
+        case 'lycee':
+        default:
+            return 'tcs';
+    }
 };
-
-export const defaultLevelForCycle = (cycle: Cycle): string => LEVEL_GROUPS[cycle][0]?.levels[0] ?? '';
 
 export const subjectOptionsFor = (selectedSubjects: string[] | undefined): string[] =>
     Array.from(new Set([...SUBJECTS, ...(selectedSubjects ?? [])]));

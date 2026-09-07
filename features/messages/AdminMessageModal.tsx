@@ -34,13 +34,13 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
             hideClose
             blockDismiss
             maxWidth="lg"
-            className="sm:max-w-xl sm:rounded-[28px]"
-            headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/60"
+            className="sm:max-w-xl sm:rounded-2xl"
+            headerClassName="border-b-0 bg-background/60"
             bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
-            footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/60"
+            footerClassName="border-t-0 bg-background/60"
             title={
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">
                         <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
                     </span>
                     <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
@@ -48,7 +48,6 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
                     </span>
                 </div>
             }
-            description={t('adminMessage.description')}
             footer={(
                 <div className="flex items-center justify-end w-full">
                     <Button
@@ -63,7 +62,7 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
             )}
         >
             <article className="space-y-4">
-                <div className="rounded-2xl border border-primary/20 bg-primary/[0.06] p-5 shadow-xs">
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-5 shadow-xs">
                     <h2 className="text-base font-bold text-foreground sm:text-lg">{message.title}</h2>
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{message.body}</p>
                 </div>

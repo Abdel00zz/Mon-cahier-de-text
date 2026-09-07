@@ -133,7 +133,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
           />
         );
       case 'analyse':
-        return <AnalysisModal isOpen={isOpen} onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDateWarnings} />;
+        return <AnalysisModal isOpen={isOpen} onClose={handleModalClose} lessonsData={lessonsData} classInfo={classInfo} config={config} />;
       case 'evaluations':
         return (
           <ClassEvaluationsSheet

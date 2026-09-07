@@ -17,7 +17,7 @@ interface SegmentedProps<T extends string> {
  */
 export function Segmented<T extends string>({ value, onChange, options, className, ariaLabel }: SegmentedProps<T>) {
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cn('inline-flex items-center rounded-xl border border-slate-200/90 bg-slate-50/80 p-1 dark:border-slate-700/80 dark:bg-slate-900/65', className)}>
+    <div role="tablist" aria-label={ariaLabel} className={cn('inline-flex items-center rounded-xl border border-border/70 bg-muted/60 p-1', className)}>
       {options.map(option => {
         const active = value === option.value;
         return (
@@ -29,10 +29,10 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
             disabled={option.disabled}
             onClick={() => onChange(option.value as T)}
             className={cn(
-              'flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-all duration-150 active:scale-[0.97]',
+              'flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-all duration-150 active:scale-[0.98]',
               active
-                ? 'border border-cyan-500/30 bg-white text-foreground shadow-sm dark:bg-slate-900'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'border border-border/80 bg-card text-foreground shadow-xs font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
               option.disabled && 'cursor-not-allowed opacity-40'
             )}
           >

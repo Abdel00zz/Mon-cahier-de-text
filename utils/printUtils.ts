@@ -43,10 +43,17 @@ export const printDocument = async (fileName: string = 'cahier-de-textes'): Prom
 export const typesetBeforePrint = async (timeoutMs = 4000): Promise<boolean> => {
   let timer: number | undefined;
   try {
-    const typesetPromise = (window as unknown as {
-      MathJax?: { typesetPromise?: () => Promise<void> };
-    }).MathJax?.typesetPromise?.();
-    if (!typesetPromise) return false;
+    const math = (window as unknown as {
+      MathJax?: { startup?: { promise?: Promise<void> }; typesetPromise?: (elements: Element[]) => Promise<void> };
+    }).MathJax;
+    if (!math?.startup?.promise && !math?.typesetPromise) return false;
+    const typesetPromise = (async () => {
+      await math.startup?.promise;
+      const roots = Array.from(document.querySelectorAll('.print-only'));
+      if (!math.typesetPromise || roots.length === 0) throw new Error('Print runtime unavailable');
+      await math.typesetPromise(roots);
+      await document.fonts?.ready;
+    })();
 
     await Promise.race([
       typesetPromise,

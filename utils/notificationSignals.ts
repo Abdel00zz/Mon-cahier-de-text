@@ -8,6 +8,7 @@ import { DateWarning, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
 import { readJournal } from './journal';
+import { collectSessionDates } from './printMeta';
 import {
     markClassesListDirty,
     notifyConfigChanged,
@@ -247,7 +248,7 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
         list.push(entry.indices);
         entriesByDate.set(date, list);
     }
-    const datedSet = new Set(entriesByDate.keys());
+    const datedSet = new Set(collectSessionDates(lessons));
 
     // 1 · Dates saisies en conflit avec le calendrier ou l'emploi du temps
     for (const [date, indicesList] of entriesByDate) {
@@ -292,14 +293,13 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
         });
     }
 
-    const stats = computeProgressionStats(lessons);
     const hours = computeClassHoursInsight(classInfo, config.timetable);
     const hasTimetable = hours.deviation !== 'empty';
     const year = getEffectiveSchoolYear(calendar, config.schoolYearStart, today);
     const yearStartedSince = Math.floor((toUTC(today) - toUTC(year.debut)) / DAY_MS);
 
     // 3 · Cahier jamais démarré alors que l'année a commencé (≥ 7 jours)
-    if (hasTimetable && stats.sessionsCount === 0 && yearStartedSince >= 7 && today <= year.fin) {
+    if (hasTimetable && ![...datedSet].some(date => date >= year.debut && date <= today) && yearStartedSince >= 7 && today <= year.fin) {
         const id = `start:${classInfo.id}:${year.debut}`;
         signals.push({
             id,

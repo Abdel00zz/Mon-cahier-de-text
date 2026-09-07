@@ -2,6 +2,7 @@
 // Vite côté navigateur, voir utils/calendar.ts.
 import officialEventsJson from '../public/official-student-events.json' with { type: 'json' };
 import { ClassInfo } from '../types.js';
+import { normalizeOfficialClassName } from '../constants/class-levels.js';
 
 export type OfficialStudentEventCategory =
     | 'school'
@@ -139,15 +140,17 @@ const normalize = (value: string): string =>
  * les anciennes classes qui ne possèdent que le champ `cycle`.
  */
 const getClassStudentTags = (classInfo: Pick<ClassInfo, 'name' | 'cycle'>): Set<string> => {
-    const name = normalize(classInfo.name);
+    const raw = classInfo.name || '';
+    const normalized = normalizeOfficialClassName(raw);
+    const name = normalize(normalized);
     const tags = new Set<string>(['all-secondary']);
 
-    const is1ac = /(^| )1 ?ac( |$)/.test(name) || name.includes('1ere annee college');
-    const is2ac = /(^| )2 ?ac( |$)/.test(name) || name.includes('2eme annee college');
-    const is3ac = /(^| )3 ?ac( |$)/.test(name) || name.includes('3eme annee college');
-    const isTc = /(^| )tc( |$)/.test(name) || name.includes('tronc commun');
-    const is1bac = /(^| )1 ?bac( |$)/.test(name) || name.includes('premiere bac');
-    const is2bac = /(^| )2 ?bac( |$)/.test(name) || name.includes('deuxieme bac');
+    const is1ac = /(^| )1 ?(ac|apic|asc)( |$)/.test(name) || name.includes('1ere annee college') || name.includes('1ere annee collegiale');
+    const is2ac = /(^| )2 ?(ac|apic|asc)( |$)/.test(name) || name.includes('2eme annee college') || name.includes('2eme annee collegiale');
+    const is3ac = /(^| )3 ?(ac|apic|asc)( |$)/.test(name) || name.includes('3eme annee college') || name.includes('3eme annee collegiale');
+    const isTc = /(^| )tc( |$)/.test(name) || name.includes('tronc commun') || /(^| )tcs( |$)/.test(name) || /(^| )tcl( |$)/.test(name) || /(^| )tct( |$)/.test(name);
+    const is1bac = /(^| )1 ?bac( |$)/.test(name) || name.includes('premiere bac') || name.includes('1er bac') || name.includes('1ere bac');
+    const is2bac = /(^| )2 ?bac( |$)/.test(name) || name.includes('deuxieme bac') || name.includes('2eme bac') || name.includes('2e bac');
     const explicitCollege = is1ac || is2ac || is3ac;
     const explicitLycee = isTc || is1bac || is2bac;
 
@@ -161,7 +164,7 @@ const getClassStudentTags = (classInfo: Pick<ClassInfo, 'name' | 'cycle'>): Set<
     if (is2bac) tags.add('2bac');
     if (explicitLycee || (!explicitCollege && classInfo.cycle === 'lycee')) tags.add('lycee');
 
-    if (isTc && /(science|scientifique|sc math|sm)/.test(name)) tags.add('tc-scientific');
+    if (isTc && /(science|scientifique|sc math|sm|tcs)/.test(name)) tags.add('tc-scientific');
 
     return tags;
 };

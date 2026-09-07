@@ -51,19 +51,19 @@ const toHtml = (markdown: string, prefix: ModalLang): string => {
       const imageMatch = line.match(/^!\[(.+?)\]\((\/guide\/[^\s)]+\.(?:png|jpe?g|webp|gif))\)$/i);
       if (imageMatch) {
         const [, caption, src] = imageMatch;
-        return `<figure class="my-6 overflow-hidden rounded-2xl border border-border/80 bg-muted/20 shadow-xs"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" class="block h-auto w-full object-contain"><figcaption class="px-4 py-3 text-center text-xs font-semibold leading-relaxed text-muted-foreground">${caption}</figcaption></figure>`;
+        return `<figure class="my-6 overflow-hidden rounded-xl border border-border/80 bg-muted/20 shadow-xs"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" class="block h-auto w-full object-contain"><figcaption class="px-4 py-3 text-center text-xs font-semibold leading-relaxed text-muted-foreground">${caption}</figcaption></figure>`;
       }
 
       const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
       if (numListMatch) {
         const [, , title, desc] = numListMatch;
-        return `<section class="mb-5 p-4 rounded-2xl border border-border/60 bg-card/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-5 p-4 rounded-xl border border-border/60 bg-background/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
       if (boldBulletMatch) {
         const [, title, desc] = boldBulletMatch;
-        return `<section class="mb-5 p-4 rounded-2xl border border-border/60 bg-card/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
+        return `<section class="mb-5 p-4 rounded-xl border border-border/60 bg-background/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
       }
 
       if (line.startsWith('- ')) {
@@ -128,9 +128,9 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <div className={`flex w-full select-none flex-col justify-between gap-3 sm:items-center ${isAr ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}>
-          <div dir={isAr ? 'rtl' : 'ltr'} className={`flex items-center gap-3 ${isAr ? 'text-right' : 'text-left'}`}>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 shadow-xs border border-amber-200/60 dark:border-amber-500/30">
+        <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full select-none flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3 text-start">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 shadow-xs border border-amber-200/60 dark:border-amber-500/30">
               <BookOpen className="h-5 w-5 stroke-[2.2]" />
             </span>
             <div>
@@ -153,19 +153,19 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       }
       maxWidth="5xl"
       hideClose={false}
-      className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-[32px]"
-      headerClassName="px-5 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4 border-b-0 bg-card/80 backdrop-blur-md"
-      bodyClassName="flex flex-col overflow-hidden bg-card p-0 sm:p-0"
-      footerClassName="px-5 py-3.5 sm:px-7 sm:py-4 border-t-0 bg-card/80 backdrop-blur-md"
+      className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-2xl"
+      headerClassName="border-b border-border/70 bg-background/80 backdrop-blur-md"
+      bodyClassName="flex flex-col overflow-hidden bg-background p-0 sm:p-0"
+      footerClassName="border-t border-border/70 bg-background/80 backdrop-blur-md"
       footer={
-        <div className={`flex w-full ${isAr ? 'justify-start' : 'justify-end'}`}>
-          <Button type="button" dir={isAr ? 'rtl' : 'ltr'} onClick={onClose} className="rounded-xl h-10 px-6 font-bold bg-[#feefc3] text-[#202124] hover:bg-amber-200 dark:bg-[#41331c] dark:text-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-500/40 w-full sm:w-auto text-xs sm:text-sm shadow-xs cursor-pointer">
+        <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full justify-end">
+          <Button type="button" variant="default" onClick={onClose} className="h-10 px-6 w-full sm:w-auto text-xs sm:text-sm">
             {isAr ? 'إغلاق' : 'Fermer le guide'}
           </Button>
         </div>
       }
     >
-      <div className="flex h-full flex-1 flex-col overflow-hidden bg-card text-card-foreground">
+      <div className="flex h-full flex-1 flex-col overflow-hidden bg-background text-card-foreground">
         <div
           ref={contentRef}
           onScroll={handleScroll}
@@ -175,11 +175,10 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           lang={lang}
         >
           <div className="mx-auto max-w-4xl px-5 py-6 sm:px-10 sm:py-8">
-            <div className="mb-7 overflow-hidden rounded-[22px] border border-amber-100/90 bg-[#f8f1e7] shadow-[0_14px_34px_rgba(71,48,27,0.09)] sm:mb-9 sm:rounded-[26px]">
+            <div className="mb-7 overflow-hidden rounded-2xl border border-border/80 bg-muted/20 shadow-xs sm:mb-9">
               <img
-                src="/login.png"
-                alt=""
-                aria-hidden="true"
+                src={isAr ? '/login_ar.png' : '/login_fr.png'}
+                alt={isAr ? 'واجهة تسجيل الدخول والترحيب' : 'Interface de connexion et accueil'}
                 loading="lazy"
                 decoding="async"
                 className="block aspect-[16/9] h-auto w-full object-cover object-center"

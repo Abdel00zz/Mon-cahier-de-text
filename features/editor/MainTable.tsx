@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
-import { LessonsData, Indices, Section, SubSection, SubSubSection, LessonItem, ElementType, Separator, TopLevelItem, EmbeddableTopLevelItem, ContentDirection } from '@/types';
-import { DateCard, MultiDateCard, DateMergeMeta, TableRow } from './TableRow';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { LessonsData, Indices, Separator, ContentDirection } from '@/types';
+import { type LessonRow } from '@/utils/lessonRows';
+import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen } from '@/components/ui/icons';
-import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
+import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/utils/tableRows';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -15,6 +16,8 @@ const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-
 
 interface MainTableProps {
   lessonsData: LessonsData;
+  visibleRows: LessonRow[];
+  onClearSearch: () => void;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
@@ -37,19 +40,6 @@ interface MainTableProps {
   onLoadPredefined?: () => void;
 }
 
-interface FlatDataItem {
-    data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem | Separator | EmbeddableTopLevelItem;
-    indices: Indices;
-    elementType: ElementType;
-    key: string;
-    dateMerge?: DateMergeMeta;
-}
-
-type RenderRow =
-    | { kind: 'single'; item: FlatDataItem; key: string; flatIndex: number }
-    | { kind: 'session'; items: FlatDataItem[]; key: string; flatIndex: number };
-
-
 const VIRTUALIZATION_THRESHOLD = 140;
 const ESTIMATED_ROW_HEIGHT = 72;
 const VIRTUAL_OVERSCAN = 16;
@@ -59,13 +49,13 @@ const TableHeader: React.FC = React.memo(() => {
   return (
   /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
      avec celles des rangées. Style épuré inspiré de Google Keep. */
-  <div className="border-b border-[#e0e0e0] bg-[#f8f9fa]/95 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)] dark:border-[#3c4043] dark:bg-[#28292c]/95 dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.03)]">
+  <div className="border-b border-border bg-muted/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.03)]">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-e border-[#e0e0e0] px-1 py-1.5 text-center dark:border-[#3c4043] sm:px-2.5 sm:py-2">
+      <div className="flex items-center justify-center border-e border-border px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
         <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-neutral-600 dark:text-neutral-300">{t('editor.date')}</span>
       </div>
-      <div className="flex items-center justify-center border-e border-[#e0e0e0] px-2 py-1.5 text-center dark:border-[#3c4043] sm:px-3 sm:py-2">
+      <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
         <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-neutral-800 dark:text-neutral-100">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
@@ -77,166 +67,6 @@ const TableHeader: React.FC = React.memo(() => {
 });
 TableHeader.displayName = 'TableHeader';
 
-const makeKey = (idx: Indices): string =>
-    `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}|${idx.isSeparator ? 1 : 0}`;
-
-const getMergeableDate = (item: FlatDataItem): string | null => {
-    if (item.elementType === 'separator') return null;
-    const date = (item.data as any).date;
-    return typeof date === 'string' && date.trim() ? date.trim() : null;
-};
-
-const getMergeableRemark = (item: FlatDataItem): string => {
-    const remark = (item.data as any).remark;
-    return typeof remark === 'string' ? remark.trim() : '';
-};
-
-/**
- * Identité pédagogique normalisée pour la fusion intelligente :
- * Type, numéro et titre normalisés (minuscule, sans espaces superflus).
- * Un séparateur, un chapitre, une section ou un contenu différent brise
- * immédiatement la continuité.
- */
-const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
-    if (item.elementType !== 'item' && !TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.elementType)) return null;
-    const data = item.data as any;
-    const normType = (data.type || '').toString().trim().toLowerCase();
-    const normNumber = (data.number || '').toString().trim().toLowerCase();
-    const normTitle = (data.title || '').toString().trim().toLowerCase();
-    if (!normType && !normTitle) return null;
-    return `${normType}:::${normNumber}:::${normTitle}`;
-};
-
-const parseDateTimestamp = (dateStr: string | null): number => {
-    if (!dateStr) return 0;
-    try {
-        if (dateStr.includes('-')) {
-            const parts = dateStr.split('T')[0].split('-');
-            if (parts.length === 3) {
-                return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getTime();
-            }
-        } else if (dateStr.includes('/')) {
-            const parts = dateStr.split('/');
-            if (parts.length === 3) {
-                return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
-            }
-        }
-        const time = new Date(dateStr).getTime();
-        return isNaN(time) ? 0 : time;
-    } catch {
-        return 0;
-    }
-};
-
-/**
- * Fusion intelligente des séances et contenus :
- * 1. Même date : toutes les lignes consécutives ayant la même date de séance
- *    sont fusionnées dans une cellule de date commune.
- * 2. Même contenu multi-dates : les lignes consécutives de même identité pédagogique
- *    (type, numéro, titre) sur des dates successives sont regroupées avec MultiDateCard.
- */
-const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
-    let start = 0;
-    while (start < items.length) {
-        const itemStart = items[start];
-        const dateStart = getMergeableDate(itemStart);
-        const identityStart = getPedagogicalIdentity(itemStart);
-        const isDatedSequenceStart = Boolean(dateStart && (start === 0 || !getMergeableDate(items[start - 1])));
-
-        if (!dateStart || itemStart.elementType === 'separator') {
-            const isDatedSequenceEnd = start === items.length - 1 || !getMergeableDate(items[start + 1]);
-            itemStart.dateMerge = {
-                isMerged: false,
-                mergeType: 'date',
-                isStart: true,
-                isContinuation: false,
-                isEnd: true,
-                count: 1,
-                indexInGroup: 0,
-                isDatedSequenceStart: !!isDatedSequenceStart,
-                isDatedSequenceEnd: !!isDatedSequenceEnd,
-            };
-            start += 1;
-            continue;
-        }
-
-        // 1. Détection des lignes consécutives de MÊME DATE
-        let sameDateEnd = start + 1;
-        while (sameDateEnd < items.length) {
-            const nextItem = items[sameDateEnd];
-            const nextDate = getMergeableDate(nextItem);
-            if (nextItem.elementType === 'separator' || !nextDate || nextDate !== dateStart) {
-                break;
-            }
-            sameDateEnd += 1;
-        }
-
-        // 2. Détection des lignes consécutives de MÊME CONTENU sur dates distinctes (Multi-date)
-        let sameContentEnd = start + 1;
-        if (identityStart) {
-            let lastDate = dateStart;
-            let lastTimestamp = parseDateTimestamp(dateStart);
-            while (sameContentEnd < items.length) {
-                const nextItem = items[sameContentEnd];
-                const nextDate = getMergeableDate(nextItem);
-                const nextIdentity = getPedagogicalIdentity(nextItem);
-
-                if (nextItem.elementType === 'separator' || !nextIdentity || nextIdentity !== identityStart || !nextDate) {
-                    break;
-                }
-                const nextTimestamp = parseDateTimestamp(nextDate);
-                if (nextDate === lastDate || (lastTimestamp > 0 && nextTimestamp < lastTimestamp)) {
-                    break;
-                }
-                lastDate = nextDate;
-                lastTimestamp = nextTimestamp;
-                sameContentEnd += 1;
-            }
-        }
-
-        const sameDateCount = sameDateEnd - start;
-        const sameContentCount = sameContentEnd - start;
-
-        let end = start + 1;
-        let mergeType: 'date' | 'content' = 'date';
-
-        if (sameDateCount > 1) {
-            end = sameDateEnd;
-            mergeType = 'date';
-        } else if (sameContentCount > 1) {
-            end = sameContentEnd;
-            mergeType = 'content';
-        } else {
-            end = start + 1;
-            mergeType = 'date';
-        }
-
-        const count = end - start;
-        const isMerged = count > 1;
-        const group = items.slice(start, end);
-        const firstRemark = getMergeableRemark(group[0]);
-        const shouldMergeRemark = isMerged && group.every(item => getMergeableRemark(item) === firstRemark);
-        const isDatedSequenceEnd = end === items.length || !getMergeableDate(items[end]);
-
-        for (let index = start; index < end; index += 1) {
-            items[index].dateMerge = {
-                isMerged,
-                mergeType,
-                isStart: index === start,
-                isContinuation: index !== start,
-                isEnd: index === end - 1,
-                count,
-                indexInGroup: index - start,
-                shouldMergeRemark,
-                isDatedSequenceStart: !!isDatedSequenceStart && index === start,
-                isDatedSequenceEnd: !!isDatedSequenceEnd && index === end - 1,
-            };
-        }
-
-        start = end;
-    }
-    return items;
-};
 
 interface SessionGroupRowProps {
     items: FlatDataItem[];
@@ -261,6 +91,14 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     searchQuery,
     getDateWarnings,
 }) => {
+    const mergeContent = items[0].dateMerge?.mergeType === 'content';
+    const displayedItems = mergeContent ? items.slice(0, 1) : items;
+    const toggleMerged = () => {
+        const shouldSelect = !items.every(item => selectedKeys.has(item.key));
+        items.forEach(item => {
+            if (selectedKeys.has(item.key) !== shouldSelect) onToggleSelect(item.indices);
+        });
+    };
     const allDates = items.map(it => getMergeableDate(it)).filter(Boolean) as string[];
     const uniqueDates = Array.from(new Set(allDates));
     const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
@@ -273,19 +111,19 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         ? 'border-e border-primary/45'
         : hasWarning
             ? 'border-e border-warning/45'
-            : 'border-e border-[#e0e0e0] dark:border-[#3c4043]';
+            : 'border-e border-border';
 
     return (
         <div
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y border-[#dadce0] dark:border-[#3c4043] transition-colors duration-200`,
+                `group relative grid ${TABLE_GRID_CLASS} border-y border-border transition-colors duration-200`,
                 hasWarning
                     ? 'border-warning/[0.6] bg-warning/[0.07]'
-                    : 'bg-white dark:bg-[#202124]',
-                groupIsSelected ? 'bg-[#e8f0fe]/70 dark:bg-[#1967d2]/20' : '',
+                    : 'bg-card',
+                groupIsSelected ? 'bg-zinc-100 dark:bg-zinc-800/60' : '',
             ].filter(Boolean).join(' ')}
         >
-            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-[#fafafa]/80 dark:bg-[#252629]/60'}`}>
+            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-muted/30'}`}>
                 {uniqueDates.length > 1 ? (
                     <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
                 ) : (
@@ -293,11 +131,11 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 )}
             </div>
 
-            <div className={`min-w-0 self-stretch ${dividerClass}`}>
-                {items.map((item, idx) => {
-                    const isSelected = selectedKeys.has(item.key);
+            <div className={`min-w-0 self-stretch ${dividerClass} ${mergeContent ? 'flex flex-col justify-center [&>div]:w-full [&_.editor-type-item-title]:text-center' : ''}`}>
+                {displayedItems.map((item, idx) => {
+                    const isSelected = mergeContent ? groupIsSelected : selectedKeys.has(item.key);
                     const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
-                    const isLast = idx === items.length - 1;
+                    const isLast = idx === displayedItems.length - 1;
                     return (
                         <TableRow
                             key={item.key}
@@ -307,7 +145,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                             dateMerge={item.dateMerge}
                             lineClassOverride={isLast ? '' : 'border-b border-border/40'}
                             layout="content-only"
-                            onToggleSelect={onToggleSelect}
+                            onToggleSelect={mergeContent ? toggleMerged : onToggleSelect}
                             onDoubleClickEdit={onDoubleClickEdit}
                             isSelected={isSelected}
                             isNew={isNew}
@@ -351,9 +189,9 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="rounded-xl border border-border/80 bg-card px-5 py-12 shadow-xs sm:px-8 sm:py-14">
+        <section className="rounded-none border border-border bg-card px-5 py-12 shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-8 sm:py-14">
             <div className="mx-auto flex max-w-xl flex-col items-center text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                <div className="flex h-14 w-14 items-center justify-center rounded-none border border-primary/20 bg-primary/10 text-primary">
                     <BookOpen className="h-8 w-8 stroke-[2.2]" />
                 </div>
                 <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-primary">{t('emptyNotebook.label')}</p>
@@ -392,6 +230,8 @@ const EmptyState: React.FC<{
 
 export const MainTable: React.FC<MainTableProps> = React.memo(({
   lessonsData,
+  visibleRows,
+  onClearSearch,
   contentDirection,
   onOpenAddContentModal,
   showDescriptions,
@@ -408,97 +248,32 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   predefinedProgramTitle,
   onLoadPredefined,
 }) => {
-  const flatData = useMemo(() => {
-    const result: FlatDataItem[] = [];
+  const { t } = useLocale();
+  const { flatData, renderRows } = useMemo(() => groupLessonRows(visibleRows), [visibleRows]);
 
-    const processElement = (
-        element: any,
-        indices: Indices,
-        elementType: ElementType
-    ): void => {
-        const key = makeKey(indices);
-        result.push({ data: element, indices, elementType, key });
-
-        // Les items directement sous un nœud (activity, introduction…) passent
-        // AVANT les sous-niveaux : activity → introduction → section → contenu.
-        if (element.items?.length > 0) {
-            element.items.forEach((item: LessonItem | EmbeddableTopLevelItem, i: number) => {
-                if (item.type === 'chapter') {
-                    processElement(item, { ...indices, itemIndex: i }, 'chapter');
-                } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(item.type)) {
-                    processElement(item, { ...indices, itemIndex: i }, item.type as ElementType);
-                } else {
-                    processElement(item, { ...indices, itemIndex: i }, 'item');
-                }
-            });
-        }
-        if (element.sections?.length > 0) {
-            element.sections.forEach((sec: Section, i: number) =>
-                processElement(sec, { ...indices, sectionIndex: i }, 'section')
-            );
-        }
-        if (element.subsections?.length > 0) {
-            element.subsections.forEach((sub: SubSection, i: number) =>
-                processElement(sub, { ...indices, subsectionIndex: i }, 'subsection')
-            );
-        }
-        if (element.subsubsections?.length > 0) {
-            element.subsubsections.forEach((ssub: SubSubSection, i: number) =>
-                processElement(ssub, { ...indices, subsubsectionIndex: i }, 'subsubsection')
-            );
-        }
-
-        if (element.separatorAfter) {
-            result.push({
-                data: element.separatorAfter,
-                indices: { ...indices, isSeparator: true },
-                elementType: 'separator',
-                key: `${key}-sep`,
-            });
-        }
-    };
-
-    lessonsData.forEach((topLevelItem, index) => {
-        processElement(topLevelItem, { chapterIndex: index }, topLevelItem.type);
-    });
-
-    return applyDateMerges(result);
-  }, [lessonsData]);
-
-  const renderRows = useMemo<RenderRow[]>(() => {
-    const rows: RenderRow[] = [];
-
-    for (let index = 0; index < flatData.length; index += 1) {
-        const item = flatData[index];
-
-        if (item.dateMerge?.isMerged && item.dateMerge.isStart) {
-            const group = flatData.slice(index, index + item.dateMerge.count);
-            rows.push({
-                kind: 'session',
-                items: group,
-                key: `session-${item.key}`,
-                flatIndex: index,
-            });
-            index += item.dateMerge.count - 1;
-            continue;
-        }
-
-        rows.push({
-            kind: 'single',
-            item,
-            key: item.key,
-            flatIndex: index,
-        });
-    }
-
-    return rows;
-  }, [flatData]);
-
-  const shouldVirtualize = renderRows.length > VIRTUALIZATION_THRESHOLD;
-  const { scrollRef, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
+  const measurementIds = useRef(new WeakMap<object, number>());
+  const nextMeasurementId = useRef(0);
+  const itemKeys = useMemo(() => renderRows.map(row => {
+    const items = row.kind === 'single' ? [row.item] : row.items;
+    return items.map(item => {
+      let id = measurementIds.current.get(item.data);
+      if (id === undefined) {
+        id = ++nextMeasurementId.current;
+        measurementIds.current.set(item.data, id);
+      }
+      return id;
+    }).join(':') + ':' + contentDirection + ':' + showDescriptions + ':' + descriptionTypes.join(',');
+  }), [renderRows, contentDirection, showDescriptions, descriptionTypes]);
+  const shouldVirtualize = flatData.length > VIRTUALIZATION_THRESHOLD;
+  const estimateSizes = useMemo(() => renderRows.map(row =>
+    (row.kind === 'session' ? row.items.length : 1) * ESTIMATED_ROW_HEIGHT
+  ), [renderRows]);
+  const { scrollRef, scrollToIndex, totalSize, virtualItems, measureElement, renderedCount } = useWindowVirtualizer({
     count: renderRows.length,
+    itemKeys,
     enabled: shouldVirtualize,
     estimateSize: ESTIMATED_ROW_HEIGHT,
+    estimateSizes,
     overscan: VIRTUAL_OVERSCAN,
   });
 
@@ -512,13 +287,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     ));
     if (targetIndex < 0) return;
 
-    const scrollNearTarget = () => {
-        const table = scrollRef.current;
-        if (!table) return;
-        const tableTop = table.getBoundingClientRect().top + window.scrollY;
-        const estimatedTop = tableTop + targetIndex * ESTIMATED_ROW_HEIGHT;
-        window.scrollTo({ top: Math.max(0, estimatedTop - 150), behavior: 'smooth' });
-    };
+    const scrollNearTarget = () => scrollToIndex(targetIndex);
 
     const refineToRenderedRow = () => {
         const row = Array.from(document.querySelectorAll<HTMLElement>('[data-focus-key]'))
@@ -532,7 +301,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
         window.cancelAnimationFrame(frame);
         window.clearTimeout(refineTimer);
     };
-  }, [focusKey, renderRows, scrollRef, shouldVirtualize]);
+  }, [focusKey, renderRows, scrollToIndex, shouldVirtualize]);
 
   useEffect(() => {
     logger.debug('MainTable profile', {
@@ -561,18 +330,28 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       );
   }
 
+  if (visibleRows.length === 0 && searchQuery?.trim()) {
+    return (
+      <div className="border border-border bg-card p-8 text-center" dir={contentDirection}>
+        <BookOpen className="mx-auto mb-3 h-6 w-6 text-muted-foreground" aria-hidden />
+        <p className="mb-4 text-muted-foreground">{t('print.noContent')}</p>
+        <Button variant="outline" onClick={onClearSearch}>{t('toolbar.clearSearch')}</Button>
+      </div>
+    );
+  }
+
   return (
-    /* Cadre complet inspiré de Google Keep : carte épurée, bords arrondis réguliers, ombre douce */
+    /* Cadre complet Sharp UI : angles droits, bordure nette et ombre douce */
     <Card
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-2xl border border-[#dadce0] bg-white shadow-[0_1px_3px_0_rgba(60,64,67,0.12),0_1px_2px_0_rgba(60,64,67,0.08)] dark:border-[#5f6368]/60 dark:bg-[#202124] transition-shadow duration-200"
+      className="rtl-table mx-0 overflow-hidden rounded-none border border-border bg-card shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-200"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />
       <CardContent className="!p-0">
-        <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize } : undefined}>
+        <div ref={scrollRef} className="relative" style={shouldVirtualize ? { height: totalSize, overflowAnchor: 'none' } : undefined}>
           {(() => {
               const rows: Array<{ row: RenderRow; virtualItem?: VirtualItem; absoluteIndex: number }> = shouldVirtualize
                 ? virtualItems.map(virtualItem => ({ row: renderRows[virtualItem.index], virtualItem, absoluteIndex: virtualItem.index })).filter(entry => !!entry.row)
@@ -582,7 +361,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   if (row.kind === 'session') {
                       const rowFocusKey = row.items.some(item => item.key === focusKey) ? focusKey : undefined;
                       return (
-                          <VirtualListRow key={row.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={rowFocusKey ?? undefined} className={rowFocusKey ? 'action-source-highlight' : undefined}>
+                          <VirtualListRow key={row.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={rowFocusKey ?? undefined} className={rowFocusKey ? 'action-source-highlight' : undefined}>
                               <SessionGroupRow
                                   items={row.items}
                                   selectedKeys={selectedKeys}
@@ -604,7 +383,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                       const originalItemIndices = item.indices;
                       const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
                       return (
-                          <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                          <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
                           <SeparatorRow
                               data={item.data as Separator}
                               indices={originalItemIndices}
@@ -620,7 +399,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
 
                   return (
-                      <VirtualListRow key={item.key} index={absoluteIndex} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
+                      <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
                           <TableRow
                               data={item.data}
                               indices={item.indices}
