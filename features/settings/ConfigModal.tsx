@@ -717,26 +717,26 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               title={t(item.titleKey)}
               className={cn(
                 'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
-                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                isEffectiveCollapsed ? 'justify-center h-10 px-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
                 isActive
                   ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div
+              <div className={cn('flex items-center gap-2.5 min-w-0', isEffectiveCollapsed ? 'justify-center' : 'flex-1')}>
+                <Icon
                   className={cn(
-                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                    'h-4.5 w-4.5 shrink-0 stroke-[2] transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                   )}
-                >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                </div>
-                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                  <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
-                    {t(item.titleKey)}
-                  </span>
-                </div>
+                />
+                {!isEffectiveCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
+                      {t(item.titleKey)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {!isEffectiveCollapsed && (
@@ -772,26 +772,26 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               title={t(item.titleKey)}
               className={cn(
                 'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
-                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                isEffectiveCollapsed ? 'justify-center h-10 px-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
                 isActive
                   ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div
+              <div className={cn('flex items-center gap-2.5 min-w-0', isEffectiveCollapsed ? 'justify-center' : 'flex-1')}>
+                <Icon
                   className={cn(
-                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                    'h-4.5 w-4.5 shrink-0 stroke-[2] transition-colors',
+                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                   )}
-                >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                </div>
-                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
-                  <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
-                    {t(item.titleKey)}
-                  </span>
-                </div>
+                />
+                {!isEffectiveCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
+                      {t(item.titleKey)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {!isEffectiveCollapsed && (
