@@ -2,7 +2,6 @@ export * from '@/constants/cahierTokens';
 export * from './AppShell';
 export * from './Sidebar';
 export * from './TopWelcome';
-export * from './AlertBanner';
 export * from './IntercalaireCardFrame';
 export * from './ClassTag';
 export * from './DataTable';
