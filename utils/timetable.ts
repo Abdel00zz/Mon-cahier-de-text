@@ -1,4 +1,4 @@
-import { ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../types.js';
+import { ClassSchedule, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../types.js';
 
 /** Créneaux horaires de la grille (sans la colonne « 24 h » du modèle papier). */
 export interface HourSlot {
@@ -29,6 +29,11 @@ export const DEFAULT_TIMETABLE_CLOCK: TimetableClockPolicy = {
     version: 0,
     updatedAt: null,
 };
+export const DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT: TimetableClockAssignment = {
+    offsetMinutes: null,
+    version: 0,
+    updatedAt: null,
+};
 
 export const isValidTimetableClockOffset = (value: unknown): value is number =>
     typeof value === 'number'
@@ -51,6 +56,39 @@ export const normalizeTimetableClock = (value: unknown): TimetableClockPolicy =>
             ? raw.updatedAt
             : null,
     };
+};
+
+export const normalizeTimetableClockAssignment = (value: unknown): TimetableClockAssignment => {
+    if (!value || typeof value !== 'object') return DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT;
+    const raw = value as Partial<TimetableClockAssignment>;
+    const offsetMinutes = raw.offsetMinutes === null || raw.offsetMinutes === undefined
+        ? null
+        : isValidTimetableClockOffset(raw.offsetMinutes) ? raw.offsetMinutes : null;
+    return {
+        offsetMinutes,
+        version: typeof raw.version === 'number' && Number.isInteger(raw.version) && raw.version >= 0
+            ? raw.version
+            : 0,
+        updatedAt: typeof raw.updatedAt === 'string' && Number.isFinite(Date.parse(raw.updatedAt))
+            ? raw.updatedAt
+            : null,
+    };
+};
+
+/** La personnalisation du compte est prioritaire ; sinon le référentiel global s'applique. */
+export const resolveTimetableClock = (
+    globalClock: unknown,
+    assignment: unknown,
+): TimetableClockPolicy => {
+    const globalPolicy = normalizeTimetableClock(globalClock);
+    const userPolicy = normalizeTimetableClockAssignment(assignment);
+    return userPolicy.offsetMinutes === null
+        ? globalPolicy
+        : {
+            offsetMinutes: userPolicy.offsetMinutes,
+            version: userPolicy.version,
+            updatedAt: userPolicy.updatedAt,
+        };
 };
 
 /** Translation pure : mêmes indices, durées, continuités et pause déjeuner. */

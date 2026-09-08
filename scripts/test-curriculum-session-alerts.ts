@@ -4,7 +4,7 @@ import { bundledCurricula, chapterAssociations, computeOfficialProgression, find
 import { assertValidClasses } from '../api/_lib/validate';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
-import { getHourSlots, normalizeTimetableClock } from '../utils/timetable';
+import { getHourSlots, normalizeTimetableClock, resolveTimetableClock } from '../utils/timetable';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
@@ -120,6 +120,13 @@ test('global timetable clock shifts live sessions and reminders together', () =>
   assert.equal(detect('08:45:00', { timetableClock }).current.length, 1);
   assert.equal(detect('10:29:00', { timetableClock }).events[0]?.kind, 'end');
   assert.equal(detect('10:30:00', { timetableClock }).current.length, 0);
+});
+test('a user timetable override wins over global time and can inherit it again', () => {
+  const globalClock = { offsetMinutes: 30, version: 2, updatedAt: '2026-09-08T00:00:00Z' };
+  const personalized = resolveTimetableClock(globalClock, { offsetMinutes: -30, version: 4, updatedAt: '2026-09-08T01:00:00Z' });
+  assert.equal(personalized.offsetMinutes, -30);
+  assert.equal(personalized.version, 4);
+  assert.deepEqual(resolveTimetableClock(globalClock, { offsetMinutes: null, version: 5, updatedAt: '2026-09-08T02:00:00Z' }), globalClock);
 });
 test('simultaneous classes form one event, keeping all navigation targets', () => {
   const other = { ...classInfo, id: 'c2' };

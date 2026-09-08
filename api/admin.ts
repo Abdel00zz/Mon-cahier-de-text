@@ -12,7 +12,7 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../types.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../types.js';
 import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../utils/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -21,7 +21,7 @@ import {
 } from '../utils/officialStudentEvents.js';
 import { prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
 import { assertBodySize } from './_lib/validate.js';
-import { DEFAULT_TIMETABLE_CLOCK, isValidTimetableClockOffset, normalizeTimetableClock } from '../utils/timetable.js';
+import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from '../utils/timetable.js';
 
 interface AdminBody {
     action?: string;
@@ -41,6 +41,7 @@ interface AdminBody {
     expectedUpdatedAt?: string | null;
     timetableClockOffsetMinutes?: number;
     expectedTimetableClockVersion?: number;
+    inheritGlobalTimetableClock?: boolean;
 }
 
 interface ClassesBlob {
@@ -196,39 +197,37 @@ const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
     res.status(200).json({ ok: true, calendar: saved });
 };
 
-const handleGetTimetableClock = async (res: ApiResponse) => {
+const readTimetableClockState = async (phone?: string) => {
     const redis = await getRedis();
-    const stored = await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock);
-    res.status(200).json({ timetableClock: normalizeTimetableClock(stored) });
-};
-
-/**
- * Publie une translation unique de toute la grille. Les cases des professeurs
- * ne sont jamais réécrites : seul le référentiel horaire global est versionné.
- */
-const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
-    if (!isValidTimetableClockOffset(body.timetableClockOffsetMinutes)) {
-        throw new HttpError(400, 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).');
-    }
-    if (typeof body.expectedTimetableClockVersion !== 'number'
-        || !Number.isInteger(body.expectedTimetableClockVersion)
-        || body.expectedTimetableClockVersion < 0) {
-        throw new HttpError(400, 'Version horaire invalide. Rechargez puis réessayez.');
-    }
-
-    const redis = await getRedis();
-    const current = normalizeTimetableClock(
+    const globalTimetableClock = normalizeTimetableClock(
         (await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock)) ?? DEFAULT_TIMETABLE_CLOCK,
     );
-    if (current.version !== body.expectedTimetableClockVersion) {
-        throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
+    if (!phone) {
+        return { timetableClock: globalTimetableClock, globalTimetableClock, assignment: null };
     }
-
-    const timetableClock: TimetableClockPolicy = {
-        offsetMinutes: body.timetableClockOffsetMinutes,
-        version: current.version + 1,
-        updatedAt: new Date().toISOString(),
+    const [user, storedAssignment] = await Promise.all([
+        redis.get<StoredUser>(KEYS.user(phone)),
+        redis.get<TimetableClockAssignment>(KEYS.adminTimetableClockForUser(phone)),
+    ]);
+    if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+    const assignment = normalizeTimetableClockAssignment(storedAssignment);
+    return {
+        timetableClock: resolveTimetableClock(globalTimetableClock, assignment),
+        globalTimetableClock,
+        assignment,
     };
+};
+
+const handleGetTimetableClock = async (req: ApiRequest, res: ApiResponse) => {
+    res.status(200).json(await readTimetableClockState(getQueryParam(req, 'phone')));
+};
+
+const saveVersionedClock = async (
+    key: string,
+    expectedVersion: number,
+    value: TimetableClockPolicy | TimetableClockAssignment,
+): Promise<void> => {
+    const redis = await getRedis();
     // CAS atomique : deux directions ouvertes en parallèle ne peuvent pas
     // publier la même version et écraser silencieusement la plus récente.
     const saved = await redis.eval(
@@ -243,13 +242,68 @@ end
 if version ~= tonumber(ARGV[1]) then return 0 end
 redis.call('SET', KEYS[1], ARGV[2])
 return 1`,
-        [KEYS.adminTimetableClock],
-        [String(body.expectedTimetableClockVersion), JSON.stringify(timetableClock)],
+        [key],
+        [String(expectedVersion), JSON.stringify(value)],
     );
     if (saved !== 1) {
         throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
     }
-    res.status(200).json({ ok: true, timetableClock });
+};
+
+/**
+ * Publie une translation unique de toute la grille. Les cases des professeurs
+ * ne sont jamais réécrites : seul le référentiel horaire global est versionné.
+ */
+const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
+    const isPersonal = typeof body.phone === 'string' && body.phone.length > 0;
+    const inheritsGlobal = isPersonal && body.inheritGlobalTimetableClock === true;
+    if (!inheritsGlobal && !isValidTimetableClockOffset(body.timetableClockOffsetMinutes)) {
+        throw new HttpError(400, 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).');
+    }
+    if (typeof body.expectedTimetableClockVersion !== 'number'
+        || !Number.isInteger(body.expectedTimetableClockVersion)
+        || body.expectedTimetableClockVersion < 0) {
+        throw new HttpError(400, 'Version horaire invalide. Rechargez puis réessayez.');
+    }
+
+    const redis = await getRedis();
+    if (isPersonal) {
+        const user = await redis.get<StoredUser>(KEYS.user(body.phone!));
+        if (!user) throw new HttpError(404, 'Enseignant introuvable.');
+        const current = normalizeTimetableClockAssignment(
+            (await redis.get<TimetableClockAssignment>(KEYS.adminTimetableClockForUser(body.phone!)))
+            ?? DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT,
+        );
+        if (current.version !== body.expectedTimetableClockVersion) {
+            throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
+        }
+        const assignment: TimetableClockAssignment = {
+            offsetMinutes: inheritsGlobal ? null : body.timetableClockOffsetMinutes!,
+            version: current.version + 1,
+            updatedAt: new Date().toISOString(),
+        };
+        await saveVersionedClock(
+            KEYS.adminTimetableClockForUser(body.phone!),
+            body.expectedTimetableClockVersion,
+            assignment,
+        );
+        return res.status(200).json({ ok: true, ...(await readTimetableClockState(body.phone!)) });
+    }
+
+    const current = normalizeTimetableClock(
+        (await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock)) ?? DEFAULT_TIMETABLE_CLOCK,
+    );
+    if (current.version !== body.expectedTimetableClockVersion) {
+        throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
+    }
+
+    const timetableClock: TimetableClockPolicy = {
+        offsetMinutes: body.timetableClockOffsetMinutes,
+        version: current.version + 1,
+        updatedAt: new Date().toISOString(),
+    };
+    await saveVersionedClock(KEYS.adminTimetableClock, body.expectedTimetableClockVersion, timetableClock);
+    res.status(200).json({ ok: true, timetableClock, globalTimetableClock: timetableClock, assignment: null });
 };
 
 const handleGetOfficialEvents = async (res: ApiResponse) => {
@@ -645,6 +699,7 @@ const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     pipeline.hdel(KEYS.adminSnapshots, phone);
     pipeline.hdel(KEYS.pushSubs, phone);
     pipeline.del(KEYS.adminMessages(phone));
+    pipeline.del(KEYS.adminTimetableClockForUser(phone));
     // L'index global ne doit pas conserver de propriétaire fantôme après une
     // suppression de compte. La vérification d'ownership évite d'effacer une
     // nouvelle réservation concurrente appartenant déjà à un autre compte.
@@ -753,7 +808,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (action === 'teacher') return await handleTeacherDetail(req, res);
             if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);
-            if (action === 'timetableClock') return await handleGetTimetableClock(res);
+            if (action === 'timetableClock') return await handleGetTimetableClock(req, res);
             if (action === 'officialEvents') return await handleGetOfficialEvents(res);
             if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');

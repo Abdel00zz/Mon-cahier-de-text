@@ -1,4 +1,4 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot, TimetableClockPolicy } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
@@ -151,17 +151,25 @@ export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>
 export const saveAdminCalendar = (calendar: HolidayCalendar): Promise<{ ok: boolean; calendar: HolidayCalendar }> =>
     postAdmin({ action: 'saveCalendar', calendar });
 
-export const fetchAdminTimetableClock = (): Promise<{ timetableClock: TimetableClockPolicy }> =>
-    request('/api/admin?action=timetableClock');
+export interface AdminTimetableClockState {
+    timetableClock: TimetableClockPolicy;
+    globalTimetableClock: TimetableClockPolicy;
+    assignment: TimetableClockAssignment | null;
+}
+
+export const fetchAdminTimetableClock = (phone?: string): Promise<AdminTimetableClockState> =>
+    request(`/api/admin?action=timetableClock${phone ? `&phone=${encodeURIComponent(phone)}` : ''}`);
 
 export const saveAdminTimetableClock = (
-    offsetMinutes: number,
+    offsetMinutes: number | null,
     expectedVersion: number,
-): Promise<{ ok: boolean; timetableClock: TimetableClockPolicy }> =>
+    phone?: string,
+): Promise<{ ok: boolean } & AdminTimetableClockState> =>
     postAdmin({
         action: 'saveTimetableClock',
-        timetableClockOffsetMinutes: offsetMinutes,
+        ...(offsetMinutes === null ? { inheritGlobalTimetableClock: true } : { timetableClockOffsetMinutes: offsetMinutes }),
         expectedTimetableClockVersion: expectedVersion,
+        ...(phone ? { phone } : {}),
     });
 
 export const fetchAdminOfficialEvents = (): Promise<{ officialEvents: OfficialStudentEventsFile }> =>

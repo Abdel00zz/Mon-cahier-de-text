@@ -13,7 +13,7 @@ type View =
     | { name: 'overview' }
     | { name: 'teacher'; phone: string }
     | { name: 'calendar' }
-    | { name: 'timetableClock' }
+    | { name: 'timetableClock'; phone?: string }
     | { name: 'bulletin' };
 
 export const AdminApp: React.FC = () => {
@@ -67,6 +67,7 @@ export const AdminApp: React.FC = () => {
         return (
             <TeacherDetail
                 phone={view.phone}
+                onManageTimetable={() => setView({ name: 'timetableClock', phone: view.phone })}
                 onBack={() => {
                     setView({ name: 'overview' });
                     void loadOverview();
@@ -75,7 +76,14 @@ export const AdminApp: React.FC = () => {
         );
     }
     if (view.name === 'calendar') return <CalendarManager onBack={() => setView({ name: 'overview' })} />;
-    if (view.name === 'timetableClock') return <TimetableClockManager onBack={() => setView({ name: 'overview' })} />;
+    if (view.name === 'timetableClock') {
+        return (
+            <TimetableClockManager
+                phone={view.phone}
+                onBack={() => setView(view.phone ? { name: 'teacher', phone: view.phone } : { name: 'overview' })}
+            />
+        );
+    }
     if (view.name === 'bulletin') return <OfficialBulletinManager onBack={() => setView({ name: 'overview' })} />;
 
     return (

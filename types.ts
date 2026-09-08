@@ -220,6 +220,13 @@ export interface TimetableClockPolicy {
     updatedAt: string | null;
 }
 
+/** Choix administratif par compte ; `null` signifie suivre l'horaire global. */
+export interface TimetableClockAssignment {
+    offsetMinutes: number | null;
+    version: number;
+    updatedAt: string | null;
+}
+
 export interface NotificationSettings {
     enabled: boolean;
     pushEnabled: boolean;

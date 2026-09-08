@@ -3,9 +3,9 @@ import { getRedis, KEYS } from './_lib/redis.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
-import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockPolicy, TimetableEntry } from '../types.js';
+import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../types.js';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
-import { DEFAULT_TIMETABLE_CLOCK, normalizeTimetableClock } from '../utils/timetable.js';
+import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../utils/timetable.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];
@@ -95,9 +95,11 @@ const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         return res.status(200).json(blob);
     }
 
-    const timetableClock = normalizeTimetableClock(
-        (await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock)) ?? DEFAULT_TIMETABLE_CLOCK,
-    );
+    const [globalClock, assignment] = await Promise.all([
+        redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock),
+        redis.get<TimetableClockAssignment>(KEYS.adminTimetableClockForUser(phone)),
+    ]);
+    const timetableClock = resolveTimetableClock(globalClock ?? DEFAULT_TIMETABLE_CLOCK, assignment);
     if (scope === 'timetableClock') {
         return res.status(200).json({ timetableClock });
     }

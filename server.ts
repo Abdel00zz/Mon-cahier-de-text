@@ -8,8 +8,8 @@ import {
     validateOfficialStudentEventsFile
 } from './utils/officialStudentEvents';
 import { prepareImportedLessons, summarizeImportedLessons } from './utils/importPipeline';
-import { DEFAULT_TIMETABLE_CLOCK, isValidTimetableClockOffset, normalizeTimetableClock } from './utils/timetable';
-import type { TimetableClockPolicy } from './types';
+import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from './utils/timetable';
+import type { TimetableClockAssignment, TimetableClockPolicy } from './types';
 import crypto from 'crypto';
 
 const DEV_PHONE = '0600000000';
@@ -32,6 +32,7 @@ export function setupMockApi(app: express.Express) {
     let devCalendar: any = structuredClone(getBundledCalendar());
     let devOfficialEvents: any = structuredClone(getOfficialStudentEventsFile());
     let devTimetableClock: TimetableClockPolicy = structuredClone(DEFAULT_TIMETABLE_CLOCK);
+    const devTimetableClocksByPhone = new Map<string, TimetableClockAssignment>();
     const lessonsByClass = new Map<string, unknown>();
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
     let devAdminMessages: Array<{ id: string; title: string; body: string; createdAt: string; acknowledgedAt?: string }> = [];
@@ -129,13 +130,18 @@ export function setupMockApi(app: express.Express) {
                             : send(res, 404, { error: 'Aucune donnée cloud pour cette classe.' });
                     }
                     if (scope === 'timetableClock') {
-                        return send(res, 200, { timetableClock: devTimetableClock });
+                        return send(res, 200, {
+                            timetableClock: resolveTimetableClock(devTimetableClock, devTimetableClocksByPhone.get(phone)),
+                        });
                     }
                     const blob = workspace.classesBlob ?? {
                         classes: [], schedules: [], timetable: [], settings: {},
                         settingsUpdatedAt: '', classMeta: {}, deletedClasses: {}, updatedAt: '',
                     };
-                    return send(res, 200, { ...blob, timetableClock: devTimetableClock });
+                    return send(res, 200, {
+                        ...blob,
+                        timetableClock: resolveTimetableClock(devTimetableClock, devTimetableClocksByPhone.get(phone)),
+                    });
                 }
                 if (req.method === 'POST') {
                     let body: Record<string, any> = {};
@@ -276,28 +282,53 @@ export function setupMockApi(app: express.Express) {
                     if (body.action === 'saveTimetableClock') {
                         const offsetMinutes = body.timetableClockOffsetMinutes;
                         const expectedVersion = body.expectedTimetableClockVersion;
-                        if (!isValidTimetableClockOffset(offsetMinutes)) {
+                        const phone = typeof body.phone === 'string' && body.phone ? body.phone : null;
+                        const inheritsGlobal = phone !== null && body.inheritGlobalTimetableClock === true;
+                        if (!inheritsGlobal && !isValidTimetableClockOffset(offsetMinutes)) {
                             return send(res, 400, { error: 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).' });
                         }
                         if (typeof expectedVersion !== 'number' || !Number.isInteger(expectedVersion) || expectedVersion < 0) {
                             return send(res, 400, { error: 'Version horaire invalide. Rechargez puis réessayez.' });
+                        }
+                        if (phone) {
+                            const current = normalizeTimetableClockAssignment(
+                                devTimetableClocksByPhone.get(phone) ?? DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT,
+                            );
+                            if (current.version !== expectedVersion) {
+                                return send(res, 409, { error: 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.' });
+                            }
+                            const assignment: TimetableClockAssignment = {
+                                offsetMinutes: inheritsGlobal ? null : offsetMinutes as number,
+                                version: current.version + 1,
+                                updatedAt: new Date().toISOString(),
+                            };
+                            devTimetableClocksByPhone.set(phone, assignment);
+                            return send(res, 200, {
+                                ok: true,
+                                timetableClock: resolveTimetableClock(devTimetableClock, assignment),
+                                globalTimetableClock: devTimetableClock,
+                                assignment,
+                            });
                         }
                         const current = normalizeTimetableClock(devTimetableClock);
                         if (current.version !== expectedVersion) {
                             return send(res, 409, { error: 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.' });
                         }
                         devTimetableClock = {
-                            offsetMinutes,
+                            offsetMinutes: offsetMinutes as number,
                             version: current.version + 1,
                             updatedAt: new Date().toISOString(),
                         };
-                        return send(res, 200, { ok: true, timetableClock: devTimetableClock });
+                        return send(res, 200, { ok: true, timetableClock: devTimetableClock, globalTimetableClock: devTimetableClock, assignment: null });
                     }
                     if (body.action === 'blockTeacher') {
                         devTeacherBlocked = body.blocked !== false;
                         return send(res, 200, { ok: true, blocked: devTeacherBlocked });
                     }
-                    if (body.action === 'deleteTeacher') return send(res, 200, { ok: true, deletedClasses: lessonsByClass.size });
+                    if (body.action === 'deleteTeacher') {
+                        devTimetableClocksByPhone.delete(String(body.phone ?? DEV_PHONE));
+                        return send(res, 200, { ok: true, deletedClasses: lessonsByClass.size });
+                    }
                     if (body.action === 'upsertTeacherClass') {
                         const input = body.classInfo as Record<string, unknown> | undefined;
                         const name = typeof input?.name === 'string' ? input.name.trim().slice(0, 120) : '';
@@ -529,7 +560,17 @@ export function setupMockApi(app: express.Express) {
                         });
                     }
                     if (action === 'calendar') return send(res, 200, { calendar: devCalendar });
-                    if (action === 'timetableClock') return send(res, 200, { timetableClock: devTimetableClock });
+                    if (action === 'timetableClock') {
+                        const phone = url.searchParams.get('phone');
+                        const assignment = phone
+                            ? normalizeTimetableClockAssignment(devTimetableClocksByPhone.get(phone))
+                            : null;
+                        return send(res, 200, {
+                            timetableClock: resolveTimetableClock(devTimetableClock, assignment),
+                            globalTimetableClock: devTimetableClock,
+                            assignment,
+                        });
+                    }
                     if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
                     if (action === 'messages') return send(res, 200, { adminMessages: devAdminMessages.slice(0, 20) });
                     if (action === 'teacher') {

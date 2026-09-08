@@ -327,7 +327,7 @@ const AdminMessagesHistory: React.FC<{ messages: AdminMessage[] }> = ({ messages
 type TeacherDetailTab = 'classes' | 'assessments' | 'messages';
 const TEACHER_DETAIL_TAB_ORDER: TeacherDetailTab[] = ['classes', 'assessments', 'messages'];
 
-export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({ phone, onBack }) => {
+export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onManageTimetable: () => void }> = ({ phone, onBack, onManageTimetable }) => {
     const [data, setData] = useState<TeacherDetailData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -618,23 +618,30 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void }> = ({
                         {/* Actions d'administration */}
                         <div className="mt-3 flex flex-wrap gap-2">
                             <button
+                                onClick={onManageTimetable}
+                                disabled={busy}
+                                className="min-h-11 rounded-xl border border-primary/25 bg-primary/5 px-3 text-xs font-semibold text-primary hover:bg-primary/10 disabled:opacity-50"
+                            >
+                                🕘 Personnaliser l’horaire
+                            </button>
+                            <button
                                 onClick={() => setMessageModalOpen(true)}
                                 disabled={busy}
-                                className="h-9 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                className="min-h-11 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                             >
                                 📣 Envoyer un message
                             </button>
                             <button
                                 onClick={() => setConfirmAction({ kind: 'block' })}
                                 disabled={busy}
-                                className="h-9 rounded-md border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
+                                className="min-h-11 rounded-xl border border-border bg-card px-3 text-xs font-semibold text-warning hover:bg-warning/10 disabled:opacity-50"
                             >
                                 {isBlocked ? '🔓 Débloquer' : '🔒 Bloquer'}
                             </button>
                             <button
                                 onClick={() => setConfirmAction({ kind: 'deleteAccount' })}
                                 disabled={busy}
-                                className="h-9 rounded-md border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                                className="min-h-11 rounded-xl border border-destructive/25 bg-card px-3 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
                             >
                                 🗑 Supprimer le compte
                             </button>

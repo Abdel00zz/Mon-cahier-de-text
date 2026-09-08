@@ -49,6 +49,8 @@ export const KEYS = {
   adminOfficialEvents: 'admin:official-events',
   /** Translation horaire globale publiée par la direction. */
   adminTimetableClock: 'admin:timetable-clock',
+  /** Surcharge horaire d'un compte ; une valeur nulle hérite du global. */
+  adminTimetableClockForUser: (phone: string) => `admin:timetable-clock:${phone}`,
   adminMessages: (phone: string) => `admin:messages:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;
