@@ -60,10 +60,10 @@ Un seul lien discret « Relier mes chapitres au programme » est placé en bas �
 
 - La zone de date manuelle a été supprimée. La modale explique brièvement la détection automatique ; le garde de conflit ne porte plus que sur la source et les correspondances.
 - Pour les classes administrées, l’identité reste imposée par la direction mais les liens restent des réglages du professeur. Les dates de progression sont dérivées des contenus synchronisés, jamais enregistrées dans un état métier parallèle. La compatibilité des anciens champs ne crée aucun override de détection.
-- Affichage allégé : titre personnel seul et une piste bicolore (`primary` pour l’avancement, `primary/10` pour le restant), avec un fin repère du programme. Pas de date, durée, nom officiel ou avertissement technique affiché sous le titre. Pourcentages au survol et pour les lecteurs d’écran ; transitions de transformation désactivées en mouvement réduit. Voir `PROGRESS_UI_AUDIT.md`.
+- Deux pistes alignées par chapitre associé : accent du thème pour l’avancement estimé des contenus datés, gris ardoise pour le rythme prévu. Textes, pourcentages et rôles accessibles distinguent les deux sans dépendre uniquement de la couleur. Transitions limitées à la largeur et désactivées en mouvement réduit.
 - Le rythme prévu répartit les heures de l’emploi du temps dans l’ordre de la source jusqu’à la veille, excluant congés et absences. Pas de pourcentage attendu inventé sans date/emploi du temps ; une durée inconnue bloque les chapitres suivants. Les dates de fin restent des objectifs, pas des heures effectivement mesurées.
-- La liste secondaire « Voir tout le programme » a été retirée de la modale d’association. Les références restent internes ; les titres officiels sont proposés uniquement dans le sélecteur de correspondance. Les sources disponibles sont des répartitions pédagogiques, sans certification ministérielle prétendue.
-- Les affichages utilisent uniquement les liens explicitement confirmés. Plusieurs titres personnels liés au même chapitre partagent son indicateur. Les sommes du programme ne doublent pas les heures.
+- « Voir tout le programme » révèle tous les titres, les durées et les fins visées. Le rendu mathématique de cette liste ne monte qu’à l’ouverture. Les titres ne sont plus tronqués. Les références disponibles sont des répartitions pédagogiques : aucune certification ministérielle n’est prétendue.
+- Les affichages utilisent uniquement les liens explicitement confirmés. Plusieurs titres personnels liés au même chapitre partagent son indicateur, identifié comme avancement commun. Les sommes du programme ne doublent pas les heures.
 
 ### Détection et nettoyage du moteur
 
@@ -96,13 +96,11 @@ Sources techniques consultées : [MDN Vibration](https://developer.mozilla.org/e
 
 ## Vérification
 
-- npm run test:pilotage : 43 tests moteur/liaison/API et cycle des chapitres, dont invalidation du cache et changements de l’emploi du temps.
-- npm run test:progress-ui : 4 tests du rendu de la barre bicolore (FR/AR, état neutre, bornes et accessibilité).
-- npm run bench:pilotage : benchmark synthétique de 60 chapitres / 12 000 éléments, sans réseau ni données utilisateur. Médiane locale observée du recalcul complet : 27,11 ms avant optimisation, 0,867 ms après (mesures CPU indicatives, non une garantie de rendu mobile). Cache borné à une évaluation par instantané et période ; contrôle des dates en un passage, emploi du temps préparé par jour de semaine.
+- npm run test:pilotage : 40 tests moteur/liaison/API et cycle des chapitres (début, fin, activités, imbrication, dates incohérentes, effacement/réordonnancement/annulation, arrivée cloud).
 - npm run test:editor : 11 tests du parcours, des imports, des dates, de l’ordre écran/impression et de la virtualisation.
 - npm run test:notifications : 11 tests existants.
 - npm run check:data : 128 évaluations, 9 règles, 3 sources + 11 images / 9 répartitions.
 - scripts/test-pilotage-ui.mjs : Edge isolé, FR desktop et AR mobile, aucune date manuelle, lien unique, LaTeX réel, associations sauvegardées sans renommage, deux push successifs (premier envoi retardé, API simulée), détection titre/dernier contenu, exclusions DM/activités, effacement/restauration des dates et synchronisation du cahier sans rechargement ; cloche 3 s, placement, navigation et déduplication.
 - Le même test monte aussi le véritable Editor et vérifie qu’un événement de réception cloud modifiant la date du titre actualise immédiatement l’analyse ouverte. Les écritures de test restent dans un navigateur isolé avec API simulée, sans modification d’un compte réel.
 - npm run build : compilation applicative, serveur et service worker.
-- Le dernier contrôle TypeScript global réussit. La relance de compilation après la dernière simplification UI n’a pas été autorisée (limite d’usage du service d’autorisation) ; la précédente compilation ne valide donc pas cette dernière version visuelle.
+- Le tsc global reste bloqué par les exports préexistants absents ClassDraft, ClassDraftValidation, defaultLevelForCycle et resetSyncState ; aucun de ces anciens fichiers n’est supprimé dans cette tâche.

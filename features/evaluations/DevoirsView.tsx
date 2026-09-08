@@ -578,7 +578,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => setEventEditorOpen(false)}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+        headerClassName="border-b border-border/70"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
@@ -608,7 +608,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => { setManualEditorOpen(false); setEditingAssessment(null); }}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+        headerClassName="border-b border-border/70"
         bodyClassName="px-4 py-3.5 sm:px-7 sm:py-5"
         title={
           <div className="flex items-center gap-3">
@@ -641,7 +641,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         onClose={() => setAbsencesFor(null)}
         maxWidth="md"
         className="sm:rounded-2xl"
-        headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+        headerClassName="border-b border-border/70"
         title={
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20">

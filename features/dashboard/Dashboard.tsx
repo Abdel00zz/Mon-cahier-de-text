@@ -5,31 +5,25 @@ import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/cahier/Button';
-import { AlertBanner } from '@/components/cahier/AlertBanner';
 import { SectionHeader } from '@/components/cahier/SectionHeader';
 import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { ClassInfo, Cycle } from '@/types';
-import { getBundledCalendar, localizeCalendarName, todayInMorocco } from '@/utils/calendar';
+import { getBundledCalendar } from '@/utils/calendar';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
-import { daysBetweenISO } from '@/utils/assessments';
 import { withAbsences } from '@/utils/lateness';
 import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
 import { Radio, Clock, ArrowRight, ArrowLeft } from 'lucide-react';
-import { computeClassHoursInsight } from '@/utils/scheduleInsights';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
-    notificationFeed: NotificationFeed;
     accountTeacherName?: string;
-    onOpenSchedule?: () => void;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
 }
 
@@ -47,9 +41,7 @@ const teacherKey = (value: string) => value.trim().replace(/\s+/g, ' ').toLocale
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
-    notificationFeed,
     accountTeacherName = '',
-    onOpenSchedule,
     onOnboardingVisibilityChange,
 }) => {
     const { locale, t, isRtl } = useLocale();
@@ -80,7 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     useEffect(() => {
         const refreshClock = () => setNow(new Date());
-        const timer = window.setInterval(refreshClock, 60_000);
+        const timer = window.setInterval(refreshClock, 15_000);
         const refreshWhenVisible = () => {
             if (document.visibilityState === 'visible') refreshClock();
         };
@@ -256,183 +248,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             config.schoolYearStart,
         );
 
-    const todayISO = todayInMorocco(now, calendar);
-    const holidayToday = calendar.joursFeries.find(item => item.date === todayISO);
-    const vacationToday = calendar.vacances.find(item => todayISO >= item.debut && todayISO <= item.fin);
-    const assessmentsThisWeek = notificationFeed.assessments.filter(item => {
-        const inDays = daysBetweenISO(todayISO, item.dateISO);
-        return inDays >= 0 && inDays <= 6;
-    }).length;
-    const assessmentsNextWeek = notificationFeed.assessments.filter(item => {
-        const inDays = daysBetweenISO(todayISO, item.dateISO);
-        return inDays >= 7 && inDays <= 13;
-    }).length;
-    const attentionCount = notificationFeed.corrections.length + notificationFeed.attentionCount;
-    const affectedClassCount = new Set(notificationFeed.corrections.map(signal => signal.classId)).size;
-    const upcomingVacation = calendar.vacances
-        .map(vacation => ({ vacation, inDays: daysBetweenISO(todayISO, vacation.debut) }))
-        .filter(({ inDays }) => inDays > 0 && inDays <= 21)
-        .sort((a, b) => a.inDays - b.inDays)[0] ?? null;
-    const scheduleIncompleteCount = classes.filter(cls => {
-        const insight = computeClassHoursInsight(cls, config.timetable);
-        return insight.officialHours !== null && insight.deviation !== 'match';
-    }).length;
-    const sessionStates = classes.map(classInfo => nextSession(classInfo.id)?.kind).filter(Boolean);
-    const hasCurrentSession = sessionStates.includes('now');
-    const hasSessionToday = sessionStates.includes('today');
-    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA';
-    let currentHour = now.getHours();
-    try {
-        currentHour = Number(new Intl.DateTimeFormat('en-GB', {
-            timeZone: calendar.fuseau,
-            hour: '2-digit',
-            hourCycle: 'h23',
-        }).format(now));
-    } catch {
-        // Le fuseau local du navigateur reste un repli sûr.
-    }
-    const vacationResumeISO = vacationToday
-        ? (() => {
-            const nextDay = new Date(`${vacationToday.fin}T12:00:00Z`);
-            nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-            const calendarResume = nextDay.toISOString().slice(0, 10);
-            return config.schoolYearStart && config.schoolYearStart > vacationToday.fin
-                ? config.schoolYearStart
-                : calendarResume;
-        })()
-        : '';
-    const vacationResumeLabel = vacationResumeISO
-        ? new Intl.DateTimeFormat(localeCode, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${vacationResumeISO}T12:00:00Z`))
-        : '';
-    const timeDetailKey = currentHour < 13
-        ? 'dashboard.welcome.morningDetail'
-        : currentHour < 18
-            ? 'dashboard.welcome.afternoonDetail'
-            : 'dashboard.welcome.eveningDetail';
-    const formatClassCount = (count: number) => {
-        if (locale === 'ar') {
-            if (count === 0) return 'لا توجد أقسام';
-            if (count === 1) return 'قسم واحد';
-            if (count === 2) return 'قسمان';
-            if (count >= 3 && count <= 10) return `${count} أقسام`;
-            return `${count} قسماً`;
-        }
-        if (locale === 'en') {
-            return `${count} ${count === 1 ? 'class' : 'classes'}`;
-        }
-        const words = ['Aucune', 'Une', 'Deux', 'Trois', 'Quatre', 'Cinq', 'Six', 'Sept', 'Huit', 'Neuf', 'Dix'];
-        return `${words[count] ?? new Intl.NumberFormat('fr-MA').format(count)} classe${count > 1 ? 's' : ''}`;
-    };
-    const formatVacationDate = (dateISO: string) => new Intl.DateTimeFormat(localeCode, {
-        day: 'numeric',
-        month: 'long',
-        timeZone: 'UTC',
-    }).format(new Date(`${dateISO}T12:00:00Z`));
-    const welcome: {
-        title: React.ReactNode;
-        detail: React.ReactNode;
-        tone: 'neutral' | 'alert' | 'vacation' | 'deadline';
-        action?: { label: string; onClick: () => void };
-    } = (() => {
-        if (classes.length === 0) {
-            return {
-                title: t('dashboard.welcome.startTitle'),
-                detail: t('dashboard.welcome.startDetail'),
-                tone: 'neutral',
-            };
-        }
-        if (scheduleIncompleteCount > 0) {
-            const classLabel = formatClassCount(scheduleIncompleteCount);
-            const arabicScheduleAlert = scheduleIncompleteCount === 1
-                ? 'مهم : قسم واحد يحتاج إلى انتباهكم'
-                : scheduleIncompleteCount === 2
-                    ? 'مهم : قسمان يحتاجان إلى انتباهكم'
-                    : scheduleIncompleteCount <= 10
-                        ? `مهم : ${scheduleIncompleteCount} أقسام تحتاج إلى انتباهكم`
-                        : `مهم : ${scheduleIncompleteCount} قسماً يحتاج إلى انتباهكم`;
-
-            return {
-                title: locale === 'ar'
-                    ? arabicScheduleAlert
-                    : locale === 'en'
-                        ? `Important: ${scheduleIncompleteCount} ${scheduleIncompleteCount === 1 ? 'class needs' : 'classes need'} your attention`
-                        : `Important : ${classLabel} ${scheduleIncompleteCount === 1 ? 'nécessite' : 'nécessitent'} votre attention`,
-                detail: '',
-                tone: 'alert',
-                action: onOpenSchedule ? {
-                    label: locale === 'ar' ? 'تعديل' : locale === 'en' ? 'Adjust' : 'Ajuster',
-                    onClick: onOpenSchedule,
-                } : undefined,
-            };
-        }
-        if (attentionCount > 0) {
-            const scope = affectedClassCount > 0 ? formatClassCount(affectedClassCount) : t('dashboard.classes').toLowerCase();
-            return {
-                title: t(attentionCount === 1 ? 'dashboard.welcome.alertTitleOne' : 'dashboard.welcome.alertTitleMany', { count: attentionCount }),
-                detail: locale === 'fr'
-                    ? <><strong>{scope}</strong> demandent une vérification avant la prochaine séance.</>
-                    : t('dashboard.welcome.alertsDetail'),
-                tone: 'alert',
-            };
-        }
-        if (holidayToday) {
-            return {
-                title: t('dashboard.welcome.holidayTitle'),
-                detail: t('dashboard.welcome.holidayDetail'),
-                tone: 'vacation',
-            };
-        }
-        if (vacationToday) {
-            return {
-                title: '',
-                detail: t('dashboard.welcome.vacationDetail', { date: vacationResumeLabel }),
-                tone: 'vacation',
-            };
-        }
-        if (upcomingVacation) {
-            return {
-                title: localizeCalendarName(upcomingVacation.vacation.nom, locale),
-                detail: t('dashboard.welcome.vacationSoonDetail', {
-                    date: formatVacationDate(upcomingVacation.vacation.debut),
-                    count: upcomingVacation.inDays,
-                }),
-                tone: 'vacation',
-            };
-        }
-        if (assessmentsThisWeek > 0) {
-            return {
-                title: t(assessmentsThisWeek === 1 ? 'dashboard.welcome.assessmentTitleOne' : 'dashboard.welcome.assessmentTitleMany', { count: assessmentsThisWeek }),
-                detail: t('dashboard.welcome.assessmentsDetail'),
-                tone: 'deadline',
-            };
-        }
-        if (assessmentsNextWeek > 0) {
-            return {
-                title: t(assessmentsNextWeek === 1 ? 'dashboard.welcome.nextWeekTitleOne' : 'dashboard.welcome.nextWeekTitleMany', { count: assessmentsNextWeek }),
-                detail: t('dashboard.welcome.nextWeekDetail'),
-                tone: 'deadline',
-            };
-        }
-        if (hasCurrentSession) {
-            return {
-                title: t('dashboard.welcome.nowTitle'),
-                detail: t('dashboard.welcome.nowDetail'),
-                tone: 'neutral',
-            };
-        }
-        if (hasSessionToday) {
-            return {
-                title: t('dashboard.welcome.todayTitle'),
-                detail: t('dashboard.welcome.todayDetail'),
-                tone: 'neutral',
-            };
-        }
-        return {
-            title: '',
-            detail: t(timeDetailKey),
-            tone: 'neutral',
-        };
-    })();
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -500,34 +315,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                {/* Bandeau d'alerte / message important */}
-                {(welcome.title || welcome.detail || scheduleIncompleteCount > 0) && (
-                    <header
-                        id="dashboard-header"
-                        aria-live="polite"
-                        className="w-full border-b border-[#e0e0e0] dark:border-[#5f6368] bg-white dark:bg-[#202124]"
-                    >
-                        <div className="mx-auto max-w-5xl px-3.5 py-3 sm:px-6 sm:py-4 lg:px-8 pl-safe pr-safe space-y-2.5">
-                            <AlertBanner
-                                title={welcome.title || (isRtl ? 'مهم : قسم واحد يحتاج إلى انتباهكم' : 'Important : 1 classe nécessite votre attention')}
-                                detail={welcome.detail}
-                                type="critique"
-                                isRtl={isRtl}
-                                action={welcome.action ? {
-                                    label: welcome.action.label,
-                                    onClick: welcome.action.onClick,
-                                } : undefined}
-                            />
-                        </div>
-                    </header>
-                )}
-
                 <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
                     {classes.length > 0 && (
                         <div className="mb-4">
                             <SectionHeader
                                 title={t('dashboard.classes')}
-                                count={filteredClasses.length}
                                 isArabic={isRtl}
                                 actions={
                                     <div className="flex items-center gap-2">
@@ -621,13 +413,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     )}
                     {/* Spotlight Intelligent: Séance active ou prochaine du jour */}
                     {spotlightInfo && (
-                        <div
+                        <button
+                            type="button"
                             onClick={() => openNotebook(spotlightInfo.classInfo)}
-                            className="mb-5 rounded-2xl border border-border bg-card p-3.5 sm:p-4 shadow-sm cursor-pointer transition-all hover:shadow-md active:scale-[0.99] group"
+                            className="mb-5 flex min-h-16 w-full items-center rounded-2xl border border-border bg-card p-4 text-start shadow-sm outline-none transition-all hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.99] group"
                         >
-                            <div className="flex items-center justify-between gap-3">
+                            <div className="flex w-full items-center justify-between gap-4">
                                 <div className="flex items-center gap-3.5 min-w-0">
-                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs ${spotlightInfo.isActiveNow ? 'bg-emerald-600 dark:bg-emerald-700' : 'bg-primary'}`}>
+                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs ${spotlightInfo.isActiveNow ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-primary'}`}>
                                         {spotlightInfo.isActiveNow ? (
                                             <Radio className="h-5 w-5 animate-pulse stroke-[2.2]" />
                                         ) : (
@@ -636,7 +429,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {spotlightInfo.isActiveNow && (
                                             <span className="absolute -top-1 -end-1 flex h-2.5 w-2.5">
                                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
                                             </span>
                                         )}
                                     </div>
@@ -664,12 +457,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <span className="text-xs font-semibold text-primary hidden md:inline group-hover:underline">
                                         {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
                                     </span>
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
                                         <ArrowIcon className="h-4 w-4 stroke-[2.2]" />
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     )}
 
                     <main>
@@ -714,7 +507,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </div>
                                 ) : currentDisplay === 'list' ? (
                                     <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
-                                        {filteredClasses.map((classInfo, index) => (
+                                        {filteredClasses.map((classInfo, index) => {
+                                            const isActiveSession = spotlightInfo?.isActiveNow && spotlightInfo.classInfo.id === classInfo.id;
+                                            return (
                                             <div
                                                 key={classInfo.id}
                                                 role="listitem"
@@ -725,13 +520,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    isActiveSession={isActiveSession}
                                                 />
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 ) : (
                                     <div className={`grid ${classGridClass} w-full gap-x-4 gap-y-7 sm:gap-x-5 sm:gap-y-8 lg:gap-x-6 lg:gap-y-8 pt-4`}>
-                                        {filteredClasses.map((classInfo, index) => (
+                                        {filteredClasses.map((classInfo, index) => {
+                                            const isActiveSession = spotlightInfo?.isActiveNow && spotlightInfo.classInfo.id === classInfo.id;
+                                            return (
                                             <div
                                                 key={classInfo.id}
                                                 className="h-full w-full flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-200"
@@ -744,9 +542,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     showSubjectBadge={shouldShowSubjectBadge}
                                                     allClasses={classes}
                                                     index={index}
+                                                    isActiveSession={isActiveSession}
                                                 />
                                             </div>
-                                        ))}
+                                        )})}
                                 </div>
                             )}
                         </section>

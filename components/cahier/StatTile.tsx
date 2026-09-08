@@ -53,7 +53,7 @@ export const StatTile: React.FC<StatTileProps> = ({
       >
         <div
           className="h-full rounded-full bg-primary"
-          style={{ width: '40%', ...(accentColor ? { backgroundColor: accentColor } : {}) }}
+          style={{ width: '40%' }}
         />
       </div>
     </div>

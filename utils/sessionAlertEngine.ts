@@ -31,11 +31,11 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
   for (const [end, group] of groups) {
     // 60-second freshness window survives ordinary re-renders but never rings after a finished session.
     const due = end - lead;
-    if ((settings.sessionEndReminderEnabled ?? settings.sessionVibration ?? false) && minute >= due && minute < Math.min(due + 1, end)) {
+    if ((settings?.sessionEndReminderEnabled ?? true) && minute >= due && minute < Math.min(due + 1, end)) {
       const active = group.filter(block => minute >= block.startMin);
       if (active.length) events.push({ id: `cdt-session-end-${today}-${end}`, kind: 'end', classIds: active.map(block => block.classId).sort(), date: today, minute: due });
     }
-    if ((settings.missingDateReminderEnabled ?? settings.sessionVibration ?? false) && minute >= end + grace && minute < end + grace + 1) {
+    if ((settings?.missingDateReminderEnabled ?? true) && minute >= end + grace && minute < end + grace + 1) {
       const missing = group.filter(block => !hasDate(block.classId, today));
       if (missing.length) events.push({ id: `cdt-session-missing-${today}-${end}`, kind: 'missing', classIds: missing.map(block => block.classId).sort(), date: today, minute: end + grace });
     }

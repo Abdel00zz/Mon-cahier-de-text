@@ -37,7 +37,7 @@ const NAV_LABELS: Record<AppLocale, {
   ar: {
     brand: 'دفتر النصوص',
     subBrand: 'فضاء الأستاذ',
-    dashboard: 'الأقسام',
+    dashboard: 'أقسامك',
     evaluations: 'المراقبة',
     notifications: 'القيادة',
     settings: 'الإعدادات',
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 )}
 
-                <Icon aria-hidden="true" className={cn('h-5 w-5 shrink-0 transition-transform group-hover:scale-105', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+                <Icon className={cn('h-5 w-5 shrink-0 transition-transform group-hover:scale-105', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
 
                 {isExpanded && (
                   <span className="truncate flex-1 text-left rtl:text-right">
@@ -166,7 +166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 )}
 
                 {item.badge && item.badge > 0 ? (
-                  <span data-notification-badge="true" className="flex h-3 min-w-[13px] items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] font-bold leading-none text-destructive-foreground">
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
                     {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 ) : null}
@@ -213,7 +213,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 isActive ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <Icon aria-hidden="true" className="h-5 w-5 mb-0.5" />
+              <Icon className="h-5 w-5 mb-0.5" />
               <span>{item.label}</span>
               {isActive && (
                 <span className="absolute -top-1 h-1 w-6 rounded-full bg-primary" />

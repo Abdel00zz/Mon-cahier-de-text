@@ -66,9 +66,9 @@ export function GettingStarted({
                 : 'Masquer la checklist'
           }
           onClick={onDismiss}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/50 bg-background/80 hover:bg-muted text-muted-foreground hover:text-foreground shadow-2xs hover:shadow-xs transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer active:scale-95"
+          className="-me-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5"
         >
-          <X className="h-4 w-4" aria-hidden="true" strokeWidth={2.2} />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
       <ol className="grid gap-3 sm:grid-cols-3">
@@ -109,7 +109,7 @@ export function GettingStarted({
       <button
         type="button"
         onClick={action}
-        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-4 cursor-pointer"
+        className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20 focus-visible:outline-2 focus-visible:outline-offset-4 cursor-pointer"
       >
         {labels[next]}
         <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />

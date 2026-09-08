@@ -37,7 +37,7 @@ const NAV_COPY: Record<AppLocale, {
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
-    dashboard: 'الأقسام', evaluations: 'المراقبة المستمرة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
+    dashboard: 'أقسامك', evaluations: 'المراقبة المستمرة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
     collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
   en: {
@@ -80,15 +80,14 @@ export const TabBar = React.memo<TabBarProps>(({
     if (Math.abs(delta) < 60) return;
     const currentIndex = tabs.findIndex(t => t.id === activeTab);
     if (currentIndex === -1) return;
-    const effectiveDelta = isRtl ? -delta : delta;
-    const nextIndex = effectiveDelta > 0
+    const nextIndex = delta > 0
       ? Math.max(0, currentIndex - 1)
       : Math.min(tabs.length - 1, currentIndex + 1);
     if (nextIndex !== currentIndex) {
       impact('light');
       onTabChange(tabs[nextIndex].id);
     }
-  }, [activeTab, impact, isRtl, onTabChange]);
+  }, [activeTab, impact, onTabChange]);
 
   return (
     <>
@@ -178,8 +177,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon className={cn('h-5 w-5 shrink-0 stroke-[2]', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
                   {count ? (
                     <span
-                      data-notification-badge="true"
-                      className="absolute -top-1.5 -end-2 flex h-3 min-w-[13px] items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
+                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
                     >
                       {countLabel(count)}
                     </span>
@@ -289,8 +287,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon className="h-5 w-5" />
                   {count ? (
                     <span
-                      data-notification-badge="true"
-                      className="absolute -top-1.5 -end-2 flex h-3 min-w-[13px] items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
+                      className="absolute -top-1.5 -end-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
                     >
                       {countLabel(count)}
                     </span>

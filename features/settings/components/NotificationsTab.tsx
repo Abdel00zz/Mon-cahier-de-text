@@ -222,7 +222,7 @@ const NotificationKind: React.FC<{
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onChange }) => {
     const { t, locale } = useLocale();
     const l = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
-    const settings = config.notificationSettings ?? { ...defaultNotificationSettings };
+    const settings = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
     const [busy, setBusy] = useState(false);
     const [checking, setChecking] = useState(true);
     const [message, setMessage] = useState<string | null>(null);
@@ -378,7 +378,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             />
 
             <Toggle label={l('Rappel avant la fin de séance', 'تذكير قبل نهاية الحصة', 'Session end reminder')}
-                checked={settings.sessionEndReminderEnabled ?? settings.sessionVibration ?? false}
+                checked={settings.sessionEndReminderEnabled}
                 onChange={value => patch({ sessionEndReminderEnabled: value })} disabled={!settings.enabled} />
             <label className="settings-surface block p-4 text-xs">
                 <span>{l('Prévenir avant la fin (minutes)', 'التنبيه قبل النهاية (دقائق)', 'Minutes before the end')}</span>
@@ -386,7 +386,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             </label>
             <Toggle label={l('Rappel si aucune date saisie ce jour-là', 'تذكير إذا لم يسجل أي تاريخ لهذا اليوم', 'Reminder if no date is recorded that day')}
                 hint={l('Le cahier ne distingue pas les horaires : une date ne confirme pas chacune des séances d’une même journée.', 'الدفتر لا يميز الساعات: تاريخ واحد لا يؤكد كل حصص اليوم.', 'The notebook has no time-of-day evidence: a date does not confirm every session that day.')}
-                checked={settings.missingDateReminderEnabled ?? settings.sessionVibration ?? false}
+                checked={settings.missingDateReminderEnabled}
                 onChange={value => patch({ missingDateReminderEnabled: value })} disabled={!settings.enabled} />
             <label className="settings-surface block p-4 text-xs">
                 <span>{l('Délai après la séance (minutes)', 'المهلة بعد الحصة (دقائق)', 'Minutes after the session')}</span>
@@ -394,7 +394,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
             </label>
             <Toggle label={l('Ouvrir automatiquement la classe en cours depuis le tableau de bord', 'فتح قسم الحصة الحالية تلقائياً من لوحة القيادة', 'Automatically open the current class from the dashboard')}
                 hint={l('Uniquement si une seule classe est prévue, sans interrompre un modal ouvert.', 'فقط عندما تكون حصة قسم واحد مبرمجة ودون مقاطعة نافذة مفتوحة.', 'Only for one unambiguous class, without interrupting an open dialog.')}
-                checked={settings.autoOpenCurrentClass ?? false} onChange={value => patch({ autoOpenCurrentClass: value })} />
+                checked={settings.autoOpenCurrentClass} onChange={value => patch({ autoOpenCurrentClass: value })} />
             <p className="px-1 text-xs leading-relaxed text-muted-foreground">{l('La cloche s’active 3 secondes sur le tableau de bord. La vibration dépend du téléphone et d’une interaction préalable. Une application suspendue ne garantit pas un rappel local à la minute ; les notifications push ont un circuit distinct.', 'ينشط الجرس 3 ثوانٍ في لوحة القيادة. الاهتزاز حسب دعم الهاتف وتفاعل سابق. عند تعليق التطبيق لا يضمن التذكير المحلي في الدقيقة؛ الإشعارات الدفعية لها مسار مستقل.', 'The dashboard bell activates for 3 seconds. Vibration requires device support and prior interaction. A suspended app cannot guarantee minute-precise local reminders; push notifications use a separate path.')}</p>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

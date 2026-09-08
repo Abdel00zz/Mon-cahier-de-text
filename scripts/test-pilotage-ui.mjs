@@ -51,9 +51,7 @@ try {
     assert.equal(await entry.count(), 1);
     const analysisBox = await analysis.boundingBox();
     const entryBox = await entry.boundingBox();
-    assert.ok(locale === 'ar'
-      ? entryBox.x + entryBox.width > analysisBox.x + analysisBox.width / 2
-      : entryBox.x < analysisBox.x + analysisBox.width / 2);
+    assert.ok(entryBox.x < analysisBox.x + analysisBox.width / 2);
     assert.ok(entryBox.y > analysisBox.y + analysisBox.height - 110);
     await page.screenshot({ path: fileURLToPath(new URL(`${locale}-analysis.png`, screenshots)), fullPage: true });
     await entry.click();
@@ -76,7 +74,15 @@ try {
     await automaticSecondPush;
     assert.equal(payloads.at(-1).classes[0].curriculumChapterMatches['tcs-mouzoun-c1'][0].index, 0);
     assert.equal(payloads.at(-1).classes[0].curriculumChapterMatches['tcs-mouzoun-c2'][0].index, 1);
-    assert.equal(await dialog.locator('summary').count(), 0);
+    await dialog.locator('summary').click();
+    await dialog.locator('[data-curriculum-progress]').first().waitFor();
+    assert.ok(await dialog.locator('[data-curriculum-progress]').count() > 10);
+    const firstProgress = dialog.locator('[data-curriculum-progress]').first();
+    assert.equal(await firstProgress.getByRole('progressbar').count(), 2);
+    assert.equal(await firstProgress.getByRole('progressbar').first().getAttribute('aria-valuenow'), '100');
+    assert.ok(Number(await firstProgress.getByRole('progressbar').last().getAttribute('aria-valuenow')) > 0);
+    await page.screenshot({ path: fileURLToPath(new URL(`${locale}-full-program.png`, screenshots)), fullPage: true });
+    await dialog.locator('summary').click();
     await page.screenshot({ path: fileURLToPath(new URL(`${locale}-association.png`, screenshots)), fullPage: true });
     assert.equal(await dialog.getByRole('button', { name: locale === 'ar' ? 'حفظ' : 'Enregistrer', exact: true }).count(), 0);
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('classManager_v1'))[0]);
@@ -88,11 +94,6 @@ try {
     await page.waitForFunction(() => document.querySelectorAll('[role="dialog"]').length === 1);
     assert.equal(await page.getByRole('dialog').locator('[data-curriculum-progress]').count(), 2);
     const chapterProgress = page.getByRole('dialog').locator('[data-curriculum-progress]').first();
-    assert.equal(await chapterProgress.getByRole('progressbar').count(), 1);
-    assert.equal(await chapterProgress.getByRole('progressbar').getAttribute('aria-label'), 'Chapitre 1 : Mes nombres');
-    assert.equal((await chapterProgress.innerText()).trim(), '');
-    assert.equal(await page.getByRole('dialog').getByText(/arithmétique|calcul vectoriel/).count(), 0);
-    assert.equal(await chapterProgress.locator('[data-progress-target]').count(), 1);
     const setCourseDate = async (target, value) => {
       await page.evaluate(({ target, value }) => {
         const data = JSON.parse(localStorage.getItem('classData_v1_qa-c1'));
@@ -106,10 +107,8 @@ try {
     await setCourseDate('last', '2026-09-14');
     await page.waitForFunction(() => document.querySelector('[data-curriculum-progress] [role="progressbar"]')?.getAttribute('aria-valuenow') === '100');
     await setCourseDate('title', '');
-    await page.waitForFunction(() => !document.querySelector('[data-curriculum-progress] [role="progressbar"]')?.hasAttribute('aria-valuenow'));
+    await chapterProgress.getByText(locale === 'ar' ? 'أضف تاريخًا لعنوان الدرس في الجدول.' : 'Datez le titre du chapitre dans le tableau.', { exact: true }).waitFor();
     assert.equal(await chapterProgress.getByRole('progressbar').first().getAttribute('aria-valuenow'), null);
-    assert.equal((await chapterProgress.innerText()).trim(), '');
-    assert.equal(await chapterProgress.locator('[data-progress-fill]').count(), 0);
     const restoredPush = page.waitForResponse(response => response.url().endsWith('/api/sync') && response.request().method() === 'POST' && response.request().postDataJSON().lessons?.some(item => item.lessonsData[0].date === '2026-09-07'), { timeout: 5000 });
     await setCourseDate('title', '2026-09-07');
     await restoredPush;
@@ -143,13 +142,12 @@ try {
         delete data[0].date;
         window.dispatchEvent(new CustomEvent('qa-cloud-lessons', { detail: data }));
       });
-      await page.waitForFunction(() => !document.querySelector('[data-curriculum-progress] [role="progressbar"]')?.hasAttribute('aria-valuenow'));
+      await actualEditorProgress.getByText('Datez le titre du chapitre dans le tableau.', { exact: true }).waitFor();
       assert.equal(await actualEditorProgress.getByRole('progressbar').first().getAttribute('aria-valuenow'), null);
-      assert.equal((await actualEditorProgress.innerText()).trim(), '');
       console.log('Éditeur réel : réception cloud du cahier et recalcul de l’analyse sans rechargement OK');
     }
     await context.close();
-    console.log(`${locale}: titre personnel seul, barre unique bicolore, état neutre sans message technique, détection et synchronisation conservées, LaTeX et cloche 3 s OK`);
+    console.log(`${locale}: aucune date manuelle, détection titre/dernier contenu, DM/activités exclus, effacement/restauration synchronisés, deux barres réactives, LaTeX et cloche 3 s OK`);
   }
   assert.deepEqual(errors, []);
 } finally { await browser.close(); }

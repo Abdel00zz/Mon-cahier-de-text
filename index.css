@@ -911,8 +911,20 @@ html[data-keyboard='open'] .mobile-tab-bar {
     50% { background-color: rgba(239, 68, 68, 0.05); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
   }
 
+  @keyframes session-breathe {
+    0%, 100% { 
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    50% { 
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.7);
+    }
+  }
+
   --animate-advanced-blink: advanced-blink 1.5s ease-in-out infinite;
   --animate-advanced-alert: advanced-alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-session-breathe: session-breathe 3s ease-in-out infinite;
 }
 
 /* Entrée de la barre de sélection de l'éditeur. Définie hors @theme car
@@ -1005,16 +1017,17 @@ html[data-keyboard='open'] .mobile-tab-bar {
     color: #202124;
   }
   .dark .keep-surface {
-    --keep-border: #5f6368;
+    --keep-border: #3f4348;
     background-color: var(--keep-dark, #202124);
     color: #e8eaed;
   }
-  /* Palette Keep conservée, éclaircie pour des cartes plus douces et respirantes. */
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #fffbe1; --keep-dark: #4b443a; }
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #edf8e5; --keep-dark: #345039; }
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #e7f1f5; --keep-dark: #2d4855; }
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #f1edf8; --keep-dark: #443e50; }
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #fbece8; --keep-dark: #594340; }
+
+  /* Couleurs ultra-douces, modernes et fleurissantes (Florales / Printemps) - Solides, sans dégradé */
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E8; --keep-dark: #2C2925; } /* Jasmin */
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #EDF7F2; --keep-dark: #242A27; } /* Sauge */
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #EEF4FA; --keep-dark: #24282D; } /* Ciel matinal */
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F5F0F8; --keep-dark: #29262C; } /* Lilas */
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #FDF0F2; --keep-dark: #2C2426; } /* Fleur de cerisier */
   .keep-interactive {
     transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
   }
@@ -1036,7 +1049,12 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   @media (hover: hover) {
     .keep-interactive:hover {
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+      box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    .dark .keep-interactive:hover {
+      box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 255, 255, 0.15);
     }
   }
   @media (prefers-reduced-motion: reduce) {

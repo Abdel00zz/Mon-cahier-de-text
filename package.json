@@ -17,7 +17,6 @@
     "check:data": "node scripts/validate-assessment-data.mjs && tsx scripts/validate-official-curriculum.ts",
     "test:pilotage": "tsx scripts/test-curriculum-session-alerts.ts && tsx scripts/test-chapter-lifecycle.ts",
     "bench:pilotage": "tsx scripts/benchmark-pilotage.ts",
-    "test:progress-ui": "tsx scripts/test-dual-progress-bar.ts",
     "check:i18n": "node scripts/audit-i18n.mjs",
     "test:notifications": "tsx scripts/test-notification-mechanisms.ts",
     "test:editor": "node scripts/run-editor-tests.mjs"

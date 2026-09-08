@@ -244,7 +244,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const [requestedAxis] = useState<AxisId | null>(() => consumeNotificationsAxis());
   const [activeAxis, setActiveAxis] = useState<AxisId>(() => requestedAxis ?? 'priorites');
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isModalOpen, setModalOpen] = useState(true);
   const closeTimerRef = useRef<number | null>(null);
 
@@ -463,10 +463,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
           aria-expanded={!isSidebarCollapsed}
           aria-label={t(isSidebarCollapsed ? 'notifications.expandMenu' : 'notifications.collapseMenu')}
-          className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-muted/50 text-muted-foreground border border-border/40 shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted/50 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
           title={isSidebarCollapsed ? t('notifications.expandMenu') : t('notifications.collapseMenu')}
         >
-          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
+          <ChevronRight className={cn("h-4 w-4 transition-transform duration-200", (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && "rotate-180")} />
         </button>
       </div>
 
@@ -492,24 +492,26 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 className={cn(
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
-                    ? 'justify-center h-10 p-2 relative'
+                    ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold shadow-2xs'
-                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
-                <div className="relative flex shrink-0 items-center justify-center">
-                  <Icon
-                    className={cn(
-                      'h-4.5 w-4.5 stroke-[2] transition-colors',
-                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                    )}
-                  />
+                <div
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
+                    isActive
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
+                  )}
+                >
+                  <Icon className="h-4 w-4 stroke-[2]" />
                   {isEffectiveCollapsed && item.count > 0 && (
                     <span
                       className={cn(
-                        'absolute -top-1.5 -end-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-0.5 text-[8px] font-extrabold ring-2 ring-card',
+                        'absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold border border-white dark:border-zinc-900',
                         item.emphasize
                           ? 'bg-red-500 text-white'
                           : 'bg-amber-500 text-zinc-950'
@@ -573,22 +575,24 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 className={cn(
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
-                    ? 'justify-center h-10 p-2 relative'
+                    ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold shadow-2xs'
-                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
-                <div className="relative flex shrink-0 items-center justify-center">
-                  <Icon
-                    className={cn(
-                      'h-4.5 w-4.5 stroke-[2] transition-colors',
-                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                    )}
-                  />
+                <div
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
+                    isActive
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
+                  )}
+                >
+                  <Icon className="h-4 w-4 stroke-[2]" />
                   {isEffectiveCollapsed && item.count > 0 && (
-                    <span className="absolute -top-1.5 -end-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-0.5 text-[8px] font-extrabold ring-2 ring-card">
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-1 text-[8px] font-bold border border-white dark:border-zinc-900">
                       {item.count}
                     </span>
                   )}
@@ -638,22 +642,24 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                 className={cn(
                   'w-full flex items-center transition-all cursor-pointer group rounded-xl',
                   isEffectiveCollapsed
-                    ? 'justify-center h-10 p-2 relative'
+                    ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold shadow-2xs'
-                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:text-primary'
                 )}
               >
-                <div className="relative flex shrink-0 items-center justify-center">
-                  <Icon
-                    className={cn(
-                      'h-4.5 w-4.5 stroke-[2] transition-colors',
-                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                    )}
-                  />
+                <div
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors relative',
+                    isActive
+                      ? 'bg-primary/15 text-primary scale-105'
+                      : 'bg-primary/10 text-primary/75 group-hover:text-primary'
+                  )}
+                >
+                  <Icon className="h-4 w-4 stroke-[2]" />
                   {isEffectiveCollapsed && item.count > 0 && (
-                    <span className="absolute -top-1.5 -end-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-0.5 text-[8px] font-extrabold ring-2 ring-card">
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 text-zinc-950 px-1 text-[8px] font-bold border border-white dark:border-zinc-900">
                       {item.count}
                     </span>
                   )}
@@ -717,7 +723,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         'pilotage-modal-sheet overflow-hidden transition-[width,max-width,transform,opacity] duration-300 sm:rounded-2xl',
         AXIS_MODAL_WIDTH[activeAxis],
       )}
-      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+      headerClassName="border-b border-border/70 bg-muted/20"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       <div data-pilotage-root className="min-w-0 text-foreground">

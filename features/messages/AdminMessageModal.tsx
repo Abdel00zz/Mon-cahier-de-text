@@ -35,9 +35,9 @@ export const AdminMessageModal: React.FC<AdminMessageModalProps> = ({ message, o
             blockDismiss
             maxWidth="lg"
             className="sm:max-w-xl sm:rounded-2xl"
-            headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
-            bodyClassName="px-5 py-5 sm:px-7 sm:py-6"
-            footerClassName="border-t border-border/60 bg-card/60"
+            headerClassName="border-b-0 bg-background/60"
+            bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+            footerClassName="border-t-0 bg-background/60"
             title={
                 <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-xs">

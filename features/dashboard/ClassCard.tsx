@@ -16,9 +16,10 @@ interface ClassCardProps {
     showSubjectBadge?: boolean;
     allClasses?: ClassInfo[];
     index?: number;
+    isActiveSession?: boolean;
 }
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true }) => {
+const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
@@ -34,15 +35,15 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
             data-keep-tone={keepToneForClass(classInfo.id)}
-            className="keep-surface keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden shadow-xs"
+            className={cn(
+                "keep-surface keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",
+                isActiveSession && "animate-session-breathe z-10"
+            )}
         >
             {/* Zone Supérieure : Titre et Métadonnées avec espacement équilibré et hauteur compacte */}
             <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-4 pb-2.5">
                 <div className="flex items-start justify-between gap-2">
-                    <h3 className={cn(
-                        'min-w-0 flex-1 text-sm sm:text-base font-medium leading-snug tracking-[0.01em]',
-                        isRtl ? 'font-ibm-arabic text-base sm:text-lg' : 'font-outfit'
-                    )}>
+                    <h3 className="min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
                         <button
                             type="button"
                             {...pressHandlers}
@@ -85,11 +86,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                 </div>
             </div>
 
-            {/* Zone inférieure : séparation légère et action de lecture */}
-            <div className="w-full border-t border-black/[0.05] dark:border-white/[0.1] bg-card/35 px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-200 group-hover:bg-card/55">
-                <p className="flex items-center justify-between gap-2 text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors" aria-hidden="true">
+            {/* Zone Inférieure : Design minimaliste et aérien, couleur unie */}
+            <div className="w-full bg-black/[0.015] dark:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.04] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.03] dark:group-hover:bg-white/[0.05]">
+                <p className="flex items-center justify-between gap-2 text-[11px] sm:text-xs font-medium text-foreground/40 group-hover:text-foreground/80 transition-colors" aria-hidden="true">
                     <span className="tracking-tight">{locale === 'ar' ? 'فتح دفتر النصوص' : locale === 'en' ? 'Open notebook' : 'Ouvrir le cahier'}</span>
-                    <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
                 </p>
             </div>
         </article>

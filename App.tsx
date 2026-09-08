@@ -197,11 +197,6 @@ const App: React.FC = () => {
     window.history.pushState({ route: 'settings' }, '', SETTINGS_HASH);
   }, [activeClass, saveCurrentScroll, view]);
 
-  const handleOpenSchedule = useCallback(() => {
-    try { sessionStorage.setItem('config_initial_tab_v1', 'emploi'); } catch { /* navigation conservée */ }
-    handleOpenSettings();
-  }, [handleOpenSettings]);
-
   const handleOpenNotifications = useCallback(() => {
     if (view === 'notifications') return;
     saveCurrentScroll();
@@ -301,9 +296,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onSelectClass={handleSelectClass}
-        notificationFeed={notificationFeed}
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
-        onOpenSchedule={handleOpenSchedule}
         onOnboardingVisibilityChange={setOnboardingVisible}
       />
     );
@@ -358,7 +351,7 @@ const App: React.FC = () => {
   const appSurface = (
     <div className="relative min-h-screen overflow-x-clip text-foreground">
       {view === 'dashboard' && showNavigation && !isEvaluationsOpen && !isGuideOpen && (
-        <SessionAlertBell {...sessionAlerts} classes={classes} autoOpen={config.notificationSettings?.autoOpenCurrentClass ?? false} onSelectClass={handleSelectClass} />
+        <SessionAlertBell {...sessionAlerts} classes={classes} autoOpen={config.notificationSettings?.autoOpenCurrentClass ?? true} onSelectClass={handleSelectClass} />
       )}
       {showNavigation && (
         <TabBar

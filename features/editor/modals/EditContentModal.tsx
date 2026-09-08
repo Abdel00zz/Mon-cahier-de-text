@@ -83,9 +83,9 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
       title={t(titleOnly ? 'editContent.titleOnlyTitle' : 'editContent.title')}
       maxWidth={titleOnly ? 'lg' : '2xl'}
       className={titleOnly ? 'sm:max-w-2xl sm:rounded-2xl' : 'sm:max-w-4xl sm:rounded-2xl'}
-      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
+      headerClassName="border-b border-border/70 bg-background"
       bodyClassName="px-5 py-5 sm:px-7"
-      footerClassName="border-t border-border/60 bg-card/60"
+      footerClassName="border-t border-border/70 bg-background"
       footer={(
         <div className="flex w-full items-center justify-between gap-3">
           <Button type="button" variant="ghost" onClick={reset} disabled={!isDirty} className="h-9 rounded-xl px-3 text-xs text-muted-foreground hover:text-foreground">

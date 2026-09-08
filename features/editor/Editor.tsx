@@ -28,6 +28,9 @@ import {
   EditorModalPayload,
   SESSION_FOCUS_KEY,
   SessionFocusPayload,
+  dateActionId,
+  readIgnoredActionIds,
+  writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
 import { printDocument, typesetBeforePrint } from '@/utils/printUtils';
@@ -285,6 +288,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     }
     commit();
   }, [getDateWarnings, setEditorState]);
+
+  /*
+   * Exception de date : « Ignorer » dans la vérification de date enregistre
+   * le point dans la même mémoire que le centre de notifications de
+   * l'accueil (mêmes identifiants), il y devient réactivable.
+   */
+  const ignoreDateException = useCallback((date: string, warnings: DateWarning[]) => {
+    if (!workspaceIsActive()) return;
+    const ids = readIgnoredActionIds(classInfo.id);
+    ids.add(dateActionId(classInfo.id, date, warnings));
+    writeIgnoredActionIds(classInfo.id, ids);
+  }, [classInfo.id, workspaceIsActive]);
 
   const addNewItemHighlight = useCallback((id: string) => {
     setEditorState(draft => { draft.newlyAddedIds.push(id); });
@@ -1242,6 +1257,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const pending = pendingDateCommit;
           setPendingDateCommit(null);
           pending?.commit();
+        }}
+        onIgnore={() => {
+          const pending = pendingDateCommit;
+          if (!pending) return;
+          ignoreDateException(pending.date, pending.warnings);
+          setPendingDateCommit(null);
+          pending.commit();
+          toast.info(t('editorNotice.exceptionKept'));
         }}
       />
 

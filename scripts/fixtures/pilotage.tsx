@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnalysisModal } from '../../features/editor/modals/AnalysisModal';
 import { Editor } from '../../features/editor/Editor';

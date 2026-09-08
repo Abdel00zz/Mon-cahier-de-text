@@ -21,7 +21,6 @@ android/.gradle/
 android/build/
 android/app/build/
 *.local
-*.zip
 .env
 .env.*
 !.env.example

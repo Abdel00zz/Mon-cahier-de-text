@@ -51,7 +51,7 @@ const ActionButton: FC<{
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={`group relative flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-none border border-transparent p-0 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-30 active:scale-95 sm:h-9 sm:w-auto sm:px-3 ${
+    className={`group relative flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-transparent p-0 transition-all duration-150 cursor-pointer disabled:pointer-events-none disabled:opacity-30 active:scale-95 sm:h-9 sm:w-auto sm:px-3 ${
       danger
         ? 'text-destructive hover:bg-destructive/10'
         : accent
@@ -62,7 +62,7 @@ const ActionButton: FC<{
   >
     <Icon aria-hidden className="h-4.5 w-4.5 stroke-[2.2] shrink-0 transition-transform duration-200 group-hover:scale-105 sm:h-4 sm:w-4" />
     {label && <span className="hidden whitespace-nowrap text-xs font-semibold sm:inline font-tajawal">{label}</span>}
-    <span className="pointer-events-none absolute -top-10 left-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-none border border-border bg-popover px-2.5 py-1 text-[11px] font-semibold text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-tajawal">
+    <span className="pointer-events-none absolute -top-10 start-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-none border border-border bg-popover px-2.5 py-1 text-[11px] font-semibold text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-tajawal">
       {title}
     </span>
   </Button>
@@ -130,7 +130,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div
-      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1.5rem)] items-center justify-between gap-1 overflow-hidden rounded-none border border-border bg-card p-1 text-card-foreground shadow-[0_8px_30px_rgba(63,58,52,0.08)] ring-1 ring-black/5 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:bottom-8 sm:left-1/2 sm:right-auto sm:inset-x-auto sm:w-fit sm:max-w-[calc(100vw-3rem)] sm:-translate-x-1/2 sm:p-1.5 sm:gap-1.5 print:hidden"
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-[60] mx-auto flex w-auto max-w-[calc(100vw-1.5rem)] items-center justify-between gap-1 overflow-hidden rounded-2xl border border-border bg-card p-1 text-card-foreground shadow-lg ring-1 ring-black/5 sm:bottom-8 sm:inset-x-0 sm:w-fit sm:max-w-[calc(100vw-3rem)] sm:p-1.5 sm:gap-1.5 print:hidden"
       style={{ animation: 'slide-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) backwards' }}
       onClick={event => event.stopPropagation()}
       role="toolbar"
@@ -138,7 +138,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
     >
       {/* Badge indicateur de nombre */}
       <div
-        className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-none bg-muted px-2.5 text-[13px] font-bold tracking-tight text-foreground font-sans"
+        className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-xl bg-muted px-2.5 text-[13px] font-bold tracking-tight text-foreground font-sans"
         title={t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount })}
       >
         {count > 1 ? `×${formattedCount}` : formattedCount}

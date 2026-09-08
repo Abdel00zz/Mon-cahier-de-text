@@ -76,6 +76,15 @@ test('one reminder at 09:59 for a continuous 08–10 session, independent of vib
   assert.equal(detect('09:59:59').events.length, 1);
   assert.equal(detect('10:00:00').events.length, 0);
 });
+test('legacy profiles enable omitted session alert options by default', () => {
+  const legacySettings = { ...config.notificationSettings };
+  delete legacySettings.sessionEndReminderEnabled;
+  delete legacySettings.missingDateReminderEnabled;
+  delete legacySettings.sessionReminderMinutes;
+  delete legacySettings.missingDateReminderMinutes;
+  assert.equal(detect('09:59:00', { notificationSettings: legacySettings }).events[0]?.kind, 'end');
+  assert.equal(detect('10:05:00', { notificationSettings: legacySettings }).events[0]?.kind, 'missing');
+});
 test('configurable lead and grace, missing dates checked before generating events', () => {
   const notificationSettings = { ...config.notificationSettings!, sessionReminderMinutes: 5, missingDateReminderMinutes: 10 };
   assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.kind, 'end');

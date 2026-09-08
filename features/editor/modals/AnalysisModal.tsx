@@ -2,13 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData } from '@/types';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 import { CurriculumChapterProgress } from '@/components/CurriculumChapterProgress';
-import { DualProgressBar } from '@/components/ui/dual-progress-bar';
 import { useCurriculumProgress } from '@/hooks/useCurriculumProgress';
 import { computeProgressionStats } from '@/utils/progression';
 import { Modal } from '@/components/ui/modal';
 import { MathText } from '@/components/ui/math-text';
+import { MathTitle } from '@/components/ui/math-title';
 import { Button } from '@/components/ui/button';
-import { PieChart } from '@/components/ui/icons';
+import { PieChart, TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const OfficialCurriculumModal = React.lazy(() => import('@/components/OfficialCurriculumModal').then(module => ({ default: module.OfficialCurriculumModal })));
@@ -19,11 +19,35 @@ interface AnalysisModalProps {
   lessonsData: LessonsData;
   classInfo: ClassInfo;
   config: AppConfig;
-  /** @deprecated Calendar warnings are owned by Centre de pilotage. Kept for caller compatibility. */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
 }
 
-export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, lessonsData, classInfo, config }) => {
+const getWarningItems = (lessons: LessonsData, getWarnings: (date: string) => any[], fallbackTitle: string) => {
+  const warningsList: Array<{ title: string; date: string; messages: string[] }> = [];
+  
+  const process = (item: any) => {
+    if (!item) return;
+    if (item.date && typeof item.date === 'string' && item.date.trim()) {
+      const msgs = getWarnings(item.date).map(w => w.message);
+      if (msgs.length > 0) {
+        warningsList.push({
+          title: item.title || item.name || fallbackTitle,
+          date: item.date,
+          messages: msgs
+        });
+      }
+    }
+    if (item.sections) item.sections.forEach(process);
+    if (item.subsections) item.subsections.forEach(process);
+    if (item.subsubsections) item.subsubsections.forEach(process);
+    if (item.items) item.items.forEach(process);
+  };
+  
+  lessons.forEach(process);
+  return warningsList;
+};
+
+export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, lessonsData, getDateWarnings, classInfo, config }) => {
   const { t, locale } = useLocale();
   const [showAssociations, setShowAssociations] = useState(false);
   React.useEffect(() => { if (!isOpen) setShowAssociations(false); }, [isOpen]);
@@ -31,6 +55,11 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
   const curriculumProgress = useCurriculumProgress(classInfo, config, lessonsData);
   const chapterProgress = useMemo(() => new Map(curriculumProgress?.rows.flatMap(row => row.indices.map(index => [index, row] as const)) ?? []), [curriculumProgress]);
   const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
+
+  const warningItems = useMemo(() => {
+    if (!getDateWarnings) return [];
+    return getWarningItems(lessonsData, getDateWarnings, t('analysis.item'));
+  }, [lessonsData, getDateWarnings, t]);
 
   return (
     <Modal
@@ -51,9 +80,9 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
       dragHandle={false}
       swipeToDismiss={false}
       className="sm:max-w-4xl sm:rounded-2xl"
-      headerClassName="border-b border-border/60 bg-card/60 backdrop-blur-xs"
-      bodyClassName="px-5 py-5 sm:px-7 sm:py-6"
-      footerClassName="border-t border-border/60 bg-card/60"
+      headerClassName="border-b-0 bg-background"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      footerClassName="border-t-0 bg-background"
       hideClose={false}
       footer={
         <div className="flex w-full items-center justify-between gap-2.5">
@@ -96,25 +125,64 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
 
         <section className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('analysis.byChapter')}</h3>
+          {chapterProgress.size > 0 && <p className="text-[11px] leading-relaxed text-muted-foreground">{locale === 'ar' ? 'أعلى: التقدم التقديري من المحتويات المؤرخة. أسفل: الوتيرة المتوقعة حتى أمس.' : locale === 'en' ? 'Top: estimated progress from dated content. Bottom: expected pace through yesterday.' : 'En haut : avancement estimé selon les contenus datés. En bas : rythme prévu jusqu’à hier.'}</p>}
           <div className="max-h-[min(35dvh,18rem)] space-y-3 overflow-y-auto rounded-2xl border border-border/70 bg-background p-4 pe-2.5 shadow-xs overscroll-contain">
             {stats.perChapter.map((chapter, i) => {
               const official = chapterProgress.get(i);
-              if (lessonsData[i]?.type !== 'chapter') return null;
               if (chapter.total === 0 && !official) return null;
               return (
                 <div key={i} className="space-y-1.5">
-                  <div className="min-w-0 break-words text-xs font-bold text-foreground" dir="auto">
-                    <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
-                      {chapter.title}
-                    </MathText>
+                  <div className="flex justify-between items-center gap-3">
+                    <div className="min-w-0 break-words text-xs font-bold text-foreground" dir="auto">
+                      <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
+                        {chapter.title}
+                      </MathText>
+                    </div>
+                    {!official && <span className="font-mono text-xs font-bold text-muted-foreground shrink-0">{number.format(chapter.rate)}%</span>}
                   </div>
-                  {official ? <CurriculumChapterProgress row={official} label={chapter.title} /> : <DualProgressBar value={chapter.rate} label={chapter.title} />}
+                  {official && official.officialChapter.title !== chapter.title && <p className="text-[11px] text-muted-foreground" dir="auto"><MathTitle text={official.officialChapter.title} />{official.indices.length > 1 ? ` · ${locale === 'ar' ? 'تقدم مشترك' : locale === 'en' ? 'shared progress' : 'avancement commun'}` : ''}</p>}
+                  {official ? <CurriculumChapterProgress row={official} /> : <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-[width] duration-500 motion-reduce:transition-none"
+                      style={{ width: `${chapter.rate}%` }}
+                    />
+                  </div>}
                 </div>
               );
             })}
           </div>
         </section>
 
+        {warningItems.length > 0 && (
+          <section className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              {t('analysis.calendarWarnings', { count: number.format(warningItems.length) })}
+            </h3>
+            <div className="max-h-[min(30dvh,14rem)] space-y-2.5 overflow-y-auto pe-1.5 overscroll-contain">
+              {warningItems.map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-3.5 text-xs">
+                  <div className="flex justify-between items-center gap-2 font-bold text-foreground">
+                    <span className="truncate">
+                      <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
+                    </span>
+                    <span className="font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-md shrink-0">
+                      {item.date.split('-').reverse().join('/')}
+                    </span>
+                  </div>
+                  <div className="space-y-1 mt-0.5">
+                    {item.messages.map((m, i) => (
+                      <p key={i} className="border-s-2 border-amber-400 ps-2.5 text-[11px] font-medium text-muted-foreground">
+                        <TriangleAlert aria-hidden className="me-1 inline-block h-3.5 w-3.5 align-[-0.2em] text-amber-600 dark:text-amber-400" />
+                        {m}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </Modal>
   );

@@ -18,8 +18,14 @@ export const defaultNotificationSettings = {
     gapThreshold: 2,
     inactivityThresholdDays: 5,
     quietDuringVacations: true,
-    // rappels locaux de fin de séance : opt-in, spécifique à l'appareil
+    // Rappels de séance activés par défaut ; les valeurs explicitement
+    // désactivées dans un profil existant restent respectées.
     sessionVibration: false,
+    sessionEndReminderEnabled: true,
+    sessionReminderMinutes: 1,
+    missingDateReminderEnabled: true,
+    missingDateReminderMinutes: 5,
+    autoOpenCurrentClass: true,
 } as const;
 
 const defaultConfig: AppConfig = {

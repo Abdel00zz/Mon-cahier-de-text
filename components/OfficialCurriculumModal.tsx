@@ -3,6 +3,8 @@ import { Check } from 'lucide-react';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '@/types';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { CurriculumChapterProgress } from './CurriculumChapterProgress';
+import { useCurriculumProgress } from '@/hooks/useCurriculumProgress';
 import { MathTitle } from '@/components/ui/math-title';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -26,7 +28,7 @@ export function OfficialCurriculumModal(props: Props) {
   return <AssociationForm key={plan.id} {...props} plan={plan} onTouch={() => { touched.current = true; }} />;
 }
 
-function AssociationForm({ isOpen, onClose, classInfo, lessonsData, plan, onTouch }: Props & { plan: OfficialCurriculumPlan; onTouch: () => void }) {
+function AssociationForm({ isOpen, onClose, classInfo, lessonsData, config, plan, onTouch }: Props & { plan: OfficialCurriculumPlan; onTouch: () => void }) {
   const { locale, isRtl } = useLocale();
   const l = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
   const { classes, updateClass } = useClassManager();
@@ -34,9 +36,11 @@ function AssociationForm({ isOpen, onClose, classInfo, lessonsData, plan, onTouc
   const current = classes.find(item => item.id === classInfo.id) ?? classInfo;
   const fingerprint = (value: ClassInfo) => JSON.stringify([value.curriculumChapterMatches ?? {}, value.curriculumSourceId]);
   const baseline = useRef(fingerprint(current));
+  const progress = useCurriculumProgress(current, config, lessonsData);
   const [draft, setDraft] = useState(() => chapterAssociations(current, lessonsData, plan));
   const draftRef = useRef(draft);
   const [saved, setSaved] = useState(false);
+  const [showProgram, setShowProgram] = useState(false);
   const [error, setError] = useState('');
   const chapters = lessonsData.flatMap((chapter, index) => chapter.type === 'chapter' ? [{ chapter, index }] : []);
   const save = (nextDraft: Record<number, string>) => {
@@ -69,6 +73,7 @@ function AssociationForm({ isOpen, onClose, classInfo, lessonsData, plan, onTouc
     footer={<div className="flex w-full items-center justify-between gap-3"><span role="status" className="text-xs text-muted-foreground">{saved && !error ? syncLabel : l('Enregistrement automatique', 'حفظ تلقائي', 'Automatic saving')}</span><Button type="button" onClick={onClose} className="min-h-11 rounded-xl px-5">{l('Terminé', 'تم', 'Done')}</Button></div>}>
     <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-4">
       <p className="text-xs leading-relaxed text-muted-foreground">{l('Choisissez le chapitre correspondant. Vos titres et leur ordre restent inchangés.', 'اختر الدرس الموافق من البرنامج. لن تتغير عناوينك أو ترتيبها.', 'Choose the matching curriculum chapter. Your titles and their order stay unchanged.')}</p>
+      <p className="text-[11px] leading-relaxed text-muted-foreground">{l('Début : date du titre. Fin : date du dernier contenu du cours. Devoirs et autres activités exclus.', 'البداية: تاريخ العنوان. النهاية: تاريخ آخر محتوى للدرس. تُستثنى الفروض والأنشطة الأخرى.', 'Start: title date. End: last course-content date. Assessments and other activities are excluded.')}</p>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       <div className="divide-y divide-border/60">{chapters.map(({ chapter, index }) => <div key={index} className="space-y-2 py-3">
         <div className="flex items-start gap-2 text-sm font-medium"><span className="min-w-0 break-words" dir="auto"><MathTitle text={chapter.title} /></span>{draft[index] && <Check size={16} className="ms-auto mt-1 shrink-0 text-primary" aria-hidden />}</div>
@@ -81,6 +86,15 @@ function AssociationForm({ isOpen, onClose, classInfo, lessonsData, plan, onTouc
         </Select>
       </div>)}</div>
       {!chapters.length && <p className="py-6 text-center text-sm text-muted-foreground">{l('Ajoutez un premier chapitre pour l’associer.', 'أضف أول درس لربطه بالبرنامج.', 'Add your first chapter to link it.')}</p>}
+      {progress && <details onToggle={event => setShowProgram(event.currentTarget.open)} className="group border-t border-border/60 pt-1">
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-xs font-medium marker:content-none">{l('Voir tout le programme', 'عرض البرنامج كاملًا', 'View the full curriculum')}<span className="text-muted-foreground">{plan.chapters.length}</span></summary>
+        <p className="pb-3 text-[11px] leading-relaxed text-muted-foreground">{l('Estimation selon les contenus datés. Le rythme prévu tient compte des jours écoulés, de l’emploi du temps et des congés.', 'تقدير حسب المحتويات المؤرخة. تراعي الوتيرة المتوقعة الأيام المنقضية واستعمال الزمن والعطل.', 'Estimated from dated content. Expected pace uses elapsed days, your timetable and holidays.')}</p>
+        {plan.authority !== 'ministerial' && <p className="pb-3 text-[11px] text-muted-foreground">{l('Durées issues de la progression pédagogique disponible, non d’un bulletin ministériel certifié.', 'المدد مأخوذة من التوزيع التربوي المتاح، وليس من نشرة وزارية موثقة.', 'Durations come from the available teaching plan, not a certified ministerial bulletin.')}</p>}
+        <ol className="divide-y divide-border/60">{showProgram && progress.rows.map(row => <li key={row.officialChapter.id} className="space-y-2 py-3">
+          <p className="text-xs font-medium" dir="auto"><span className="me-2 text-muted-foreground">{row.officialChapter.order}.</span><MathTitle text={row.officialChapter.title} /></p>
+          <CurriculumChapterProgress row={row} />
+        </li>)}</ol>
+      </details>}
     </div>
   </Modal>;
 }
