@@ -5,7 +5,7 @@ import { assertValidClasses, assertValidSyncSettings } from '../api/_lib/validat
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
 import { getHourSlots, normalizeTimetableClock, resolveTimetableClock } from '../utils/timetable';
-import { moveVisibleDashboardClass, resolveDashboardClassOrder } from '../utils/classOrder';
+import { resolveDashboardClassOrder } from '../utils/classOrder';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
@@ -137,7 +137,6 @@ test('dashboard class order is stable, filter-safe and strictly validated at syn
     { ...classInfo, id: 'd', createdAt: '2026-09-02' },
   ], ['a', 'ghost', 'a']);
   assert.deepEqual(ordered, ['a', 'b', 'c', 'd']);
-  assert.deepEqual(moveVisibleDashboardClass(ordered, ['a', 'c', 'd'], 'd', 'a'), ['d', 'b', 'a', 'c']);
   assert.deepEqual(assertValidSyncSettings({ dashboardClassOrder: ['a', 'b'] }, new Set(['a', 'b']))?.dashboardClassOrder, ['a', 'b']);
   assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['a', 'a'] }, new Set(['a'])));
   assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['ghost'] }, new Set(['a'])));

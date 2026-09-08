@@ -189,19 +189,33 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
     label,
     hint,
     disabled,
-}) => (
-    <div className={`settings-surface flex items-start justify-between gap-3 p-4 ${disabled ? 'opacity-60' : ''}`}>
-        <div className="flex flex-col text-start">
-            <Label className="text-xs font-bold text-foreground font-sans leading-snug">{label}</Label>
-            {hint && <span className="mt-1.5 block text-xs text-muted-foreground font-sans leading-normal">{hint}</span>}
+}) => {
+    const id = React.useId();
+    const { locale } = useLocale();
+    const state = disabled
+        ? (locale === 'ar' ? 'غير متاح' : locale === 'en' ? 'Unavailable' : 'Indisponible')
+        : checked
+            ? (locale === 'ar' ? 'مفعّل' : locale === 'en' ? 'On' : 'Activé')
+            : (locale === 'ar' ? 'متوقف' : locale === 'en' ? 'Off' : 'Désactivé');
+    return (
+    <div className={`flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors motion-reduce:transition-none ${checked && !disabled ? 'border-primary/20 bg-primary/[0.035]' : 'border-border/70 bg-card/40'} ${disabled ? 'opacity-60' : ''}`}>
+        <div className="min-w-0 flex-1 text-start">
+            <Label htmlFor={id} className={`block py-1 text-sm font-semibold text-foreground leading-snug ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
+            {hint && <span id={`${id}-hint`} className="mt-1 block text-xs text-muted-foreground leading-relaxed">{hint}</span>}
         </div>
+        <div className="flex shrink-0 flex-col items-center gap-0.5">
         <Switch
+            id={id}
+            aria-describedby={hint ? `${id}-hint` : undefined}
             checked={checked}
             onCheckedChange={onChange}
             disabled={disabled}
         />
+        <span aria-hidden="true" className={`text-[10px] font-medium leading-none ${checked && !disabled ? 'text-primary' : 'text-muted-foreground'}`}>{state}</span>
+        </div>
     </div>
-);
+    );
+};
 
 const NotificationKind: React.FC<{
     icon: React.ComponentType<{ className?: string }>;
@@ -236,7 +250,9 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     settingsRef.current = settings;
 
     const patch = useCallback((updates: Partial<NotificationSettings>) => {
-        onChange({ notificationSettings: { ...settingsRef.current, ...updates } });
+        const next = { ...settingsRef.current, ...updates };
+        settingsRef.current = next;
+        onChange({ notificationSettings: next });
     }, [onChange]);
 
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;

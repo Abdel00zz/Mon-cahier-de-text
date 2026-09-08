@@ -1,4 +1,5 @@
-import { CLASS_HOLD_MS, CLASS_MOVE_TOLERANCE } from './classTouchGesture';
+const CLASS_HOLD_MS = 550;
+const CLASS_MOVE_TOLERANCE = 12;
 
 export interface PressPoint {
   pointerId: number;

@@ -8,16 +8,13 @@ import {
 } from "react";
 import { createLongPress } from "@/utils/longPress";
 
-export function useClassPress(onSelect: () => void, onConfigure: () => void, isDragActive = false) {
+export function useClassPress(onSelect: () => void, onConfigure: () => void) {
   const callbacks = useRef({ onSelect, onConfigure });
   callbacks.current = { onSelect, onConfigure };
   const [press] = useState(() =>
     createLongPress(() => callbacks.current.onConfigure()),
   );
   useEffect(() => () => press.dispose(), [press]);
-  useEffect(() => {
-    if (isDragActive) press.cancel();
-  }, [isDragActive, press]);
   return {
     onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
       const compactMouse =
@@ -39,7 +36,6 @@ export function useClassPress(onSelect: () => void, onConfigure: () => void, isD
     onPointerLeave: () => press.cancel(),
     onContextMenu: (event: MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
-      if (isDragActive) return;
       press.context();
     },
     onClick: (event: MouseEvent<HTMLButtonElement>) => {

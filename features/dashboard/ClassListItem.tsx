@@ -15,7 +15,6 @@ interface ClassListItemProps {
     onSelect: () => void;
     onConfigure: () => void;
     isActiveSession?: boolean;
-    isDragActive?: boolean;
 }
 
 export const ClassListItem: FC<ClassListItemProps> = ({
@@ -23,7 +22,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     onSelect,
     onConfigure,
     isActiveSession,
-    isDragActive,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
@@ -33,7 +31,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
         () => { impact('medium'); onConfigure(); },
-        isDragActive,
     );
 
     return (
@@ -89,7 +86,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             >
                 <button
                     type="button"
-                    data-class-drag-ignore
                     onClick={(e) => {
                         e.stopPropagation();
                         impact('light');

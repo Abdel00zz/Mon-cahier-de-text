@@ -17,9 +17,7 @@ import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
-import { useDashboardClassDrag } from '@/hooks/useDashboardClassDrag';
 import { resolveDashboardClassOrder } from '@/utils/classOrder';
-import { motion, useReducedMotion } from 'framer-motion';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -231,25 +229,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         () => resolveDashboardClassOrder(classes, config.dashboardClassOrder),
         [classes, config.dashboardClassOrder],
     );
-    const visibleOrder = useMemo(
-        () => persistedClassOrder.filter(id => subjectFilter === 'all' || classById.get(id)?.subject === subjectFilter),
-        [classById, persistedClassOrder, subjectFilter],
-    );
-    const commitClassOrder = useCallback((order: string[]) => {
-        updateConfig({ dashboardClassOrder: order });
-    }, [updateConfig]);
-    const { previewOrder, draggingId, propsFor: classDragProps } = useDashboardClassDrag({
-        fullOrder: persistedClassOrder,
-        visibleOrder,
-        nativeDrag: deviceType === 'desktop',
-        onCommit: commitClassOrder,
-    });
-    const renderedOrder = previewOrder ?? persistedClassOrder;
-    const filteredClasses = renderedOrder
+    const filteredClasses = persistedClassOrder
         .map(id => classById.get(id))
         .filter((classInfo): classInfo is ClassInfo => Boolean(classInfo))
         .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter);
-    const reduceMotion = useReducedMotion();
 
     const activeSessionIds = useMemo(() => new Set(activeSessionClassIds), [activeSessionClassIds]);
 
@@ -434,13 +417,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
-                                            <motion.div
+                                            <div
                                                 key={classInfo.id}
                                                 role="listitem"
-                                                layout="position"
-                                                transition={{ layout: { duration: reduceMotion ? 0 : 0.18, ease: [0.2, 0.8, 0.2, 1] } }}
-                                                {...classDragProps(classInfo.id)}
-                                                className={`animate-in slide-in-from-bottom-4 fade-in duration-200 ${draggingId === classInfo.id ? 'pointer-events-none z-20 scale-[0.985] opacity-60' : ''}`}
+                                                className="animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 35}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassListItem
@@ -448,9 +428,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     isActiveSession={isActiveSession}
-                                                    isDragActive={draggingId !== null}
                                                 />
-                                            </motion.div>
+                                            </div>
                                         )})}
                                     </div>
                                 ) : (
@@ -458,12 +437,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
-                                            <motion.div
+                                            <div
                                                 key={classInfo.id}
-                                                layout="position"
-                                                transition={{ layout: { duration: reduceMotion ? 0 : 0.18, ease: [0.2, 0.8, 0.2, 1] } }}
-                                                {...classDragProps(classInfo.id)}
-                                                className={`h-full w-full flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-200 ${draggingId === classInfo.id ? 'pointer-events-none z-20 scale-[0.985] opacity-60' : ''}`}
+                                                className="h-full w-full flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-200"
                                                 style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
                                             >
                                                 <ClassCard
@@ -474,9 +450,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     allClasses={classes}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
-                                                    isDragActive={draggingId !== null}
                                                 />
-                                            </motion.div>
+                                            </div>
                                         )})}
                                 </div>
                             )}
