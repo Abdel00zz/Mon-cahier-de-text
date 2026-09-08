@@ -79,6 +79,9 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
             cleaned[key] = records;
         }
     }
+    if (Array.isArray(cleaned.dashboardClassOrder)) {
+        cleaned.dashboardClassOrder = cleaned.dashboardClassOrder.filter(id => typeof id === 'string' && !deletedIds.has(id));
+    }
     return cleaned;
 };
 

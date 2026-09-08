@@ -413,5 +413,14 @@ export const assertValidSyncSettings = (settings: unknown, validClassIds: Set<st
       }
     }
   }
+  const dashboardClassOrder = result.dashboardClassOrder;
+  if (dashboardClassOrder !== undefined) {
+    if (!Array.isArray(dashboardClassOrder)
+      || dashboardClassOrder.length > validClassIds.size
+      || dashboardClassOrder.some(id => typeof id !== 'string' || !validClassIds.has(id))
+      || new Set(dashboardClassOrder).size !== dashboardClassOrder.length) {
+      throw new HttpError(400, 'Ordre des classes du tableau de bord invalide.');
+    }
+  }
   return result;
 };

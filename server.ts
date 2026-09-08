@@ -214,7 +214,13 @@ export function setupMockApi(app: express.Express) {
                         classes,
                         schedules: (body.schedules ?? (existingBlob?.schedules as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
                         timetable: (body.timetable ?? (existingBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
-                        settings: body.settings ?? (existingBlob?.settings as any) ?? {},
+                        settings: (() => {
+                            const settings = { ...(body.settings ?? (existingBlob?.settings as any) ?? {}) };
+                            if (Array.isArray(settings.dashboardClassOrder)) {
+                                settings.dashboardClassOrder = settings.dashboardClassOrder.filter((id: unknown) => typeof id === 'string' && !deletedIds.has(id));
+                            }
+                            return settings;
+                        })(),
                         settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((existingBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
                         adminClassOverrides,
@@ -390,6 +396,9 @@ export function setupMockApi(app: express.Express) {
                                 settings[key] = { ...settings[key] };
                                 delete settings[key][classId];
                             }
+                        }
+                        if (Array.isArray(settings.dashboardClassOrder)) {
+                            settings.dashboardClassOrder = settings.dashboardClassOrder.filter((id: unknown) => id !== classId);
                         }
                         classesBlob = {
                             ...(classesBlob ?? {}),

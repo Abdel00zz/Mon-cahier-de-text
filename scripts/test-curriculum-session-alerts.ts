@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { bundledCurricula, chapterAssociations, computeOfficialProgression, findCurricula, findMatchingCurriculum, validateCurriculumCatalog } from '../utils/officialCurriculum';
-import { assertValidClasses } from '../api/_lib/validate';
+import { assertValidClasses, assertValidSyncSettings } from '../api/_lib/validate';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
 import { getHourSlots, normalizeTimetableClock, resolveTimetableClock } from '../utils/timetable';
+import { moveVisibleDashboardClass, resolveDashboardClassOrder } from '../utils/classOrder';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
@@ -127,6 +128,19 @@ test('a user timetable override wins over global time and can inherit it again',
   assert.equal(personalized.offsetMinutes, -30);
   assert.equal(personalized.version, 4);
   assert.deepEqual(resolveTimetableClock(globalClock, { offsetMinutes: null, version: 5, updatedAt: '2026-09-08T02:00:00Z' }), globalClock);
+});
+test('dashboard class order is stable, filter-safe and strictly validated at sync boundary', () => {
+  const ordered = resolveDashboardClassOrder([
+    { ...classInfo, id: 'a', createdAt: '2026-09-01' },
+    { ...classInfo, id: 'b', createdAt: '2026-09-04' },
+    { ...classInfo, id: 'c', createdAt: '2026-09-03' },
+    { ...classInfo, id: 'd', createdAt: '2026-09-02' },
+  ], ['a', 'ghost', 'a']);
+  assert.deepEqual(ordered, ['a', 'b', 'c', 'd']);
+  assert.deepEqual(moveVisibleDashboardClass(ordered, ['a', 'c', 'd'], 'd', 'a'), ['d', 'b', 'a', 'c']);
+  assert.deepEqual(assertValidSyncSettings({ dashboardClassOrder: ['a', 'b'] }, new Set(['a', 'b']))?.dashboardClassOrder, ['a', 'b']);
+  assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['a', 'a'] }, new Set(['a'])));
+  assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['ghost'] }, new Set(['a'])));
 });
 test('simultaneous classes form one event, keeping all navigation targets', () => {
   const other = { ...classInfo, id: 'c2' };

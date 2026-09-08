@@ -124,6 +124,8 @@ export interface AppConfig {
     // Emploi du temps hebdomadaire et alertes de retard
     schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
     timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant
+    /** Ordre personnalisé des cartes du Dashboard, synchronisé par compte. */
+    dashboardClassOrder?: string[];
     /** Horloge globale publiée par la direction ; absente = grille historique sans décalage. */
     timetableClock?: TimetableClockPolicy;
     notificationSettings?: NotificationSettings;

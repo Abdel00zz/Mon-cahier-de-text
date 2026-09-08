@@ -17,9 +17,10 @@ interface ClassCardProps {
     allClasses?: ClassInfo[];
     index?: number;
     isActiveSession?: boolean;
+    isDragActive?: boolean;
 }
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession }) => {
+const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession, isDragActive }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
     const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
@@ -28,7 +29,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
-        () => { impact('medium'); onConfigure(); }
+        () => { impact('medium'); onConfigure(); },
+        isDragActive,
     );
 
     return (
@@ -64,6 +66,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                     {/* Style Google Keep PC : bouton paramètre discret affiché au survol sur ordinateur */}
                     <button
                         type="button"
+                        data-class-drag-ignore
                         onClick={(e) => {
                             e.stopPropagation();
                             impact('light');

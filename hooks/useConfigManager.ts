@@ -57,6 +57,7 @@ const defaultConfig: AppConfig = {
     hasCompletedWelcome: false,
     schedules: [],
     timetable: [],
+    dashboardClassOrder: [],
     timetableClock: DEFAULT_TIMETABLE_CLOCK,
     notificationSettings: { ...defaultNotificationSettings },
     notificationDismissals: {},
@@ -112,6 +113,9 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             hasCompletedWelcome: loadedConfig.hasCompletedWelcome ?? false,
             schedules: effectiveSchedules(loadedConfig),
             timetable: loadedConfig.timetable ?? [],
+            dashboardClassOrder: Array.isArray(loadedConfig.dashboardClassOrder)
+                ? loadedConfig.dashboardClassOrder.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
+                : [],
             timetableClock: normalizeTimetableClock(loadedConfig.timetableClock),
             notificationSettings: normalizeNotificationSettings(loadedConfig.notificationSettings),
             notificationDismissals: loadedConfig.notificationDismissals ?? {},

@@ -26,6 +26,7 @@ export type SyncableSettings = Pick<
     | 'printDescriptionTypes'
     | 'schedules'
     | 'timetable'
+    | 'dashboardClassOrder'
     | 'absences'
     | 'assessmentDates'
     | 'assessmentAbsences'
@@ -61,6 +62,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'printDescriptionTypes',
     'schedules',
     'timetable',
+    'dashboardClassOrder',
     'absences',
     'assessmentDates',
     'assessmentAbsences',

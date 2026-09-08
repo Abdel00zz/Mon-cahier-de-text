@@ -87,6 +87,7 @@ const cleanClassSettings = (settings: Partial<AppConfig> | undefined, classId: s
     const next = { ...(settings ?? {}) };
     next.schedules = next.schedules?.filter(entry => entry.classId !== classId);
     next.timetable = next.timetable?.filter(entry => entry.classId !== classId);
+    next.dashboardClassOrder = next.dashboardClassOrder?.filter(id => id !== classId);
     for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder'] as const) {
         if (!next[key]) continue;
         const records = { ...next[key] };

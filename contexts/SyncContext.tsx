@@ -102,6 +102,13 @@ const removeDeletedClassReferences = (
     };
     next.timetable = filterByClass(next.timetable);
     next.schedules = filterByClass(next.schedules);
+    if (next.dashboardClassOrder) {
+        const filteredOrder = next.dashboardClassOrder.filter(id => !deletedIds.has(id));
+        if (filteredOrder.length !== next.dashboardClassOrder.length) {
+            next.dashboardClassOrder = filteredOrder;
+            changed = true;
+        }
+    }
 
     for (const key of ['assessmentDates', 'assessmentAbsences', 'pedagogicalEvents', 'manualAssessments', 'removedAssessments', 'assessmentOrder', 'notificationDismissals'] as const) {
         const records = next[key];
