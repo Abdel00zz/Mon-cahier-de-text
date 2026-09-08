@@ -40,7 +40,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "keep-surface keep-interactive group relative flex h-[68px] sm:h-[72px] min-h-[68px] items-center overflow-hidden",
+                "keep-surface dashboard-class-surface keep-interactive group relative flex h-[68px] sm:h-[72px] min-h-[68px] items-center overflow-hidden",
                 isActiveSession && "keep-session-active z-10"
             )}
         >
@@ -50,11 +50,11 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
                 aria-label={`${t('dashboard.openClass', { className: displayName })}${isActiveSession ? ` · ${t('dashboard.session.now')}` : ''}`}
             >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
+                <div className="keep-class-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
                     <Users className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
-                    <h3 className={cn("truncate font-medium text-foreground leading-snug", isRtl ? "text-lg font-ibm-arabic" : "text-base")}>{displayName}</h3>
+                    <h3 className={cn("keep-class-title truncate font-medium text-foreground leading-snug", isRtl ? "text-lg font-ibm-arabic" : "text-base")}>{displayName}</h3>
                     <div className="mt-1 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
                             className={cn('truncate', isRtl ? 'text-sm leading-none' : 'text-[11.9px] leading-none')}

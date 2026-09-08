@@ -39,20 +39,20 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             data-keep-tone={keepToneForClass(classInfo.id)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "keep-surface keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",
+                "keep-surface dashboard-class-surface keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",
                 isActiveSession && "keep-session-active z-10"
             )}
         >
             {/* Zone Supérieure : Titre et Métadonnées avec espacement équilibré et hauteur compacte */}
             <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-4 pb-2.5">
                 <div className="flex items-start justify-between gap-2.5">
-                    <h3 className="min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
+                    <h3 className="keep-class-title min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
                         <button
                             type="button"
                             {...pressHandlers}
                             aria-label={`${t('dashboard.openClass', { className: displayName })}${isActiveSession ? ` · ${t('dashboard.session.now')}` : ''}`}
                             title={displayName}
-                            className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
+                            className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
                             <span className="line-clamp-2 break-words text-balance">{displayName}</span>
                         </button>

@@ -1004,6 +1004,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
     background-color: var(--keep-light, #fff);
     color: #202124;
   }
+  .dashboard-class-surface {
+    border-radius: 14px;
+  }
   .dark .keep-surface {
     --keep-border: #3f4348;
     background-color: var(--keep-dark, #202124);
@@ -1024,10 +1027,18 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   @keyframes keep-session-focus {
     0%, 100% {
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--keep-accent) 22%, transparent), 0 12px 26px -20px var(--keep-accent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--keep-accent) 18%, transparent),
+        0 12px 28px -17px color-mix(in srgb, var(--keep-accent) 76%, transparent),
+        0 7px 18px -14px rgb(15 23 42 / 0.3);
     }
     50% {
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--keep-accent) 13%, transparent), 0 16px 32px -20px var(--keep-accent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 22%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--keep-accent) 9%, transparent),
+        0 17px 36px -18px color-mix(in srgb, var(--keep-accent) 86%, transparent),
+        0 10px 24px -15px rgb(15 23 42 / 0.34);
     }
   }
   @keyframes keep-session-dot {
@@ -1035,29 +1046,25 @@ html[data-keyboard='open'] .mobile-tab-bar {
     50% { box-shadow: 0 0 0 6px transparent; }
   }
   .keep-session-active {
-    border-color: color-mix(in srgb, var(--keep-accent) 52%, var(--keep-border));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--keep-accent) 22%, transparent), 0 12px 26px -20px var(--keep-accent);
-    animation: keep-session-focus 3.6s ease-in-out infinite;
+    border-width: 2px;
+    border-color: color-mix(in srgb, var(--keep-accent) 74%, var(--keep-border));
+    background-color: color-mix(in srgb, var(--keep-light) 96%, var(--keep-accent) 4%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
+      0 0 0 1px color-mix(in srgb, var(--keep-accent) 18%, transparent),
+      0 12px 28px -17px color-mix(in srgb, var(--keep-accent) 76%, transparent),
+      0 7px 18px -14px rgb(15 23 42 / 0.3);
+    animation: keep-session-focus 4.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
-  .keep-session-active::before {
-    position: absolute;
-    z-index: 2;
-    inset-block: 0.65rem;
-    inset-inline-start: 0;
-    width: 3px;
-    border-radius: 0 999px 999px 0;
-    background-color: var(--keep-accent);
-    box-shadow: 0 0 14px var(--keep-accent-soft);
-    content: '';
-    pointer-events: none;
-  }
-  [dir="rtl"] .keep-session-active::before {
-    border-radius: 999px 0 0 999px;
+  .dark .keep-session-active {
+    background-color: color-mix(in srgb, var(--keep-dark) 95%, var(--keep-accent) 5%);
   }
   .keep-session-chip {
     border: 1px solid color-mix(in srgb, var(--keep-accent) 32%, transparent);
+    border-radius: 999px;
     background-color: var(--keep-accent-soft);
     color: var(--keep-accent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 12%, transparent);
   }
   .keep-session-dot {
     background-color: var(--keep-accent);
@@ -1070,8 +1077,20 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .keep-session-active .keep-session-action {
     color: var(--keep-accent);
   }
+  .keep-session-active .keep-class-title {
+    color: color-mix(in srgb, var(--keep-accent) 68%, #202124);
+  }
+  .dark .keep-session-active .keep-class-title {
+    color: color-mix(in srgb, var(--keep-accent) 72%, #e8eaed);
+  }
+  .keep-session-active .keep-class-icon {
+    border: 1px solid color-mix(in srgb, var(--keep-accent) 25%, transparent);
+    background-color: var(--keep-accent-soft);
+    color: var(--keep-accent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 13%, transparent);
+  }
   .keep-interactive {
-    transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+    transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
   }
   .keep-interactive:focus-visible {
     outline: 2px solid currentColor;
@@ -1091,6 +1110,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   @media (hover: hover) {
     .keep-interactive:hover {
+      transform: translateY(-1px);
       box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
       border-color: rgba(0, 0, 0, 0.1);
     }
@@ -1100,8 +1120,24 @@ html[data-keyboard='open'] .mobile-tab-bar {
     }
     .keep-session-active:hover,
     .dark .keep-session-active:hover {
+      transform: translateY(-2px);
       border-color: var(--keep-accent);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--keep-accent) 20%, transparent), 0 18px 34px -20px var(--keep-accent);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 24%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--keep-accent) 12%, transparent),
+        0 20px 42px -20px color-mix(in srgb, var(--keep-accent) 92%, transparent),
+        0 12px 26px -16px rgb(15 23 42 / 0.38);
+      animation-play-state: paused;
+    }
+  }
+  @media (pointer: coarse) {
+    .keep-session-active {
+      animation: none;
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 16%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--keep-accent) 16%, transparent),
+        0 10px 24px -17px color-mix(in srgb, var(--keep-accent) 72%, transparent),
+        0 6px 14px -13px rgb(15 23 42 / 0.28);
     }
   }
   @media (prefers-reduced-motion: reduce) {
