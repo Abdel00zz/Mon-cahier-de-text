@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import { moveVisibleDashboardClass } from '../utils/classOrder';
+import { classifyClassTouch } from '../utils/classTouchGesture';
 
 interface ActiveDrag {
     id: string;
@@ -8,6 +9,7 @@ interface ActiveDrag {
     visibleIds: Set<string>;
     lastTargetId: string | null;
     touch: boolean;
+    pointerId?: number;
 }
 
 interface PendingTouch {
@@ -15,7 +17,9 @@ interface PendingTouch {
     pointerId: number;
     startX: number;
     startY: number;
-    timer: number;
+    startedAt: number;
+    order: string[];
+    visible: string[];
 }
 
 interface UseDashboardClassDragOptions {
@@ -36,12 +40,10 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
     commitRef.current = onCommit;
 
     const clearPendingTouch = useCallback(() => {
-        const pending = pendingTouchRef.current;
-        if (pending) clearTimeout(pending.timer);
         pendingTouchRef.current = null;
     }, []);
 
-    const begin = useCallback((id: string, touch: boolean, order: string[], visible: string[]) => {
+    const begin = useCallback((id: string, touch: boolean, order: string[], visible: string[], pointerId?: number) => {
         activeRef.current = {
             id,
             originalOrder: order,
@@ -49,6 +51,7 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
             visibleIds: new Set(visible),
             lastTargetId: id,
             touch,
+            pointerId,
         };
         if (touch) suppressClickRef.current = true;
         setPreviewOrder(order);
@@ -85,11 +88,18 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
             const pending = pendingTouchRef.current;
             if (pending && !activeRef.current) {
                 if (event.pointerId !== pending.pointerId) return;
-                if (Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY) > 12) clearPendingTouch();
-                return;
+                const gesture = classifyClassTouch(
+                    performance.now() - pending.startedAt,
+                    Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY),
+                );
+                if (gesture === 'wait') return;
+                clearPendingTouch();
+                if (gesture !== 'drag') return;
+                begin(pending.id, true, pending.order, pending.visible, pending.pointerId);
+                try { navigator.vibrate?.(8); } catch { /* Optional haptic. */ }
             }
             const active = activeRef.current;
-            if (!active?.touch) return;
+            if (!active?.touch || event.pointerId !== active.pointerId) return;
             event.preventDefault();
             const target = document.elementFromPoint(event.clientX, event.clientY)
                 ?.closest<HTMLElement>('[data-class-drop-id]');
@@ -99,22 +109,28 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
         const pointerUp = (event: globalThis.PointerEvent) => {
             const pending = pendingTouchRef.current;
             if (pending && event.pointerId === pending.pointerId) clearPendingTouch();
-            if (activeRef.current?.touch) finish(true);
+            if (activeRef.current?.touch && event.pointerId === activeRef.current.pointerId) finish(true);
         };
-        const pointerCancel = () => {
-            if (activeRef.current?.touch) finish(false);
-            else clearPendingTouch();
+        const pointerCancel = (event: globalThis.PointerEvent) => {
+            if (activeRef.current?.touch && event.pointerId === activeRef.current.pointerId) finish(false);
+            else if (event.pointerId === pendingTouchRef.current?.pointerId) clearPendingTouch();
         };
+        // Cancel native scrolling only after the user has actually begun reordering.
+        const touchMove = (event: TouchEvent) => {
+            if (activeRef.current?.touch && event.cancelable) event.preventDefault();
+        };
+        window.addEventListener('touchmove', touchMove, { passive: false });
         window.addEventListener('pointermove', pointerMove, { passive: false });
         window.addEventListener('pointerup', pointerUp);
         window.addEventListener('pointercancel', pointerCancel);
         return () => {
             clearPendingTouch();
+            window.removeEventListener('touchmove', touchMove);
             window.removeEventListener('pointermove', pointerMove);
             window.removeEventListener('pointerup', pointerUp);
             window.removeEventListener('pointercancel', pointerCancel);
         };
-    }, [clearPendingTouch, finish, moveTo]);
+    }, [begin, clearPendingTouch, finish, moveTo]);
 
     const propsFor = useCallback((id: string) => ({
         draggable: nativeDrag,
@@ -144,18 +160,17 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
         onPointerDown: (event: PointerEvent<HTMLElement>) => {
             if ((event.pointerType !== 'touch' && event.pointerType !== 'pen') || !event.isPrimary || event.button !== 0) return;
             if ((event.target as Element).closest('[data-class-drag-ignore]')) return;
+            if (activeRef.current) return;
+            suppressClickRef.current = false;
             clearPendingTouch();
             const pending: PendingTouch = {
                 id,
                 pointerId: event.pointerId,
                 startX: event.clientX,
                 startY: event.clientY,
-                timer: window.setTimeout(() => {
-                    if (pendingTouchRef.current !== pending) return;
-                    pendingTouchRef.current = null;
-                    begin(id, true, fullOrder, visibleOrder);
-                    navigator.vibrate?.(8);
-                }, 260),
+                startedAt: performance.now(),
+                order: fullOrder,
+                visible: visibleOrder,
             };
             pendingTouchRef.current = pending;
         },
@@ -165,6 +180,7 @@ export const useDashboardClassDrag = ({ fullOrder, visibleOrder, nativeDrag, onC
             event.stopPropagation();
         },
         onContextMenu: (event: MouseEvent<HTMLElement>) => {
+            clearPendingTouch();
             if (activeRef.current?.touch) event.preventDefault();
         },
         onKeyDownCapture: (event: KeyboardEvent<HTMLElement>) => {

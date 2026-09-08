@@ -229,6 +229,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               type="text"
               id="title"
               value={formData.title || ''}
+              dir="auto"
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
               placeholder={t('addContent.topLevelPlaceholder', { type: localizedName })}
@@ -257,6 +258,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 type="text"
                 id="name"
                 value={formData.name || ''}
+                dir="auto"
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 placeholder={t('addContent.structurePlaceholder')}
@@ -312,6 +314,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 type="text"
                 id="itemTitle"
                 value={formData.title || ''}
+                dir="auto"
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder={t('addContent.optionalTitlePlaceholder')}
                 className="h-10 rounded-lg border-border"
@@ -323,6 +326,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 id="itemDescription"
                 rows={4}
                 value={formData.description || ''}
+                dir="auto"
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder={t('addContent.descriptionPlaceholder')}
                 className="rounded-xl border-border"
@@ -340,6 +344,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 type="text"
                 id="separatorContent"
                 value={formData.content || ''}
+                dir="auto"
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder={t('addContent.separatorPlaceholder')}
                 className="h-10 rounded-lg border-border"

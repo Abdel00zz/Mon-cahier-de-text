@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CurriculumChapterProgress } from './CurriculumChapterProgress';
 import { useCurriculumProgress } from '@/hooks/useCurriculumProgress';
 import { MathTitle } from '@/components/ui/math-title';
+import { titleDirection } from '@/utils/contentDirection';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useClassManager } from '@/hooks/useClassManager';
@@ -76,7 +77,7 @@ function AssociationForm({ isOpen, onClose, classInfo, lessonsData, config, plan
       <p className="text-[11px] leading-relaxed text-muted-foreground">{l('Début : date du titre. Fin : date du dernier contenu du cours. Devoirs et autres activités exclus.', 'البداية: تاريخ العنوان. النهاية: تاريخ آخر محتوى للدرس. تُستثنى الفروض والأنشطة الأخرى.', 'Start: title date. End: last course-content date. Assessments and other activities are excluded.')}</p>
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       <div className="divide-y divide-border/60">{chapters.map(({ chapter, index }) => <div key={index} className="space-y-2 py-3">
-        <div className="flex items-start gap-2 text-sm font-medium"><span className="min-w-0 break-words" dir="auto"><MathTitle text={chapter.title} /></span>{draft[index] && <Check size={16} className="ms-auto mt-1 shrink-0 text-primary" aria-hidden />}</div>
+        <div dir={titleDirection(chapter.title, isRtl ? 'rtl' : 'ltr')} className="flex items-start gap-2 text-start text-sm font-medium"><span className="min-w-0 break-words"><MathTitle text={chapter.title} /></span>{draft[index] && <Check size={16} className="ms-auto mt-1 shrink-0 text-primary" aria-hidden />}</div>
         <Select value={draft[index] || 'none'} onValueChange={value => { onTouch(); const next = { ...draftRef.current, [index]: value === 'none' ? '' : value }; draftRef.current = next; setDraft(next); save(next); }} dir={isRtl ? 'rtl' : 'ltr'}>
           <SelectTrigger aria-label={`${l('Correspondance pour', 'الدرس الموافق لـ', 'Match for')} ${chapter.title}`} className="h-auto min-h-11 w-full rounded-xl text-start text-xs [&>span]:whitespace-normal [&>span]:break-words [&>span]:line-clamp-none"><SelectValue placeholder={l('Choisir un chapitre du programme', 'اختيار درس من البرنامج', 'Choose a curriculum chapter')} /></SelectTrigger>
           <SelectContent className="max-h-72 max-w-[min(32rem,calc(100vw-2rem))]">

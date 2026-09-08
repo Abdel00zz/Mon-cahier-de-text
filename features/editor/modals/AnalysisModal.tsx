@@ -10,6 +10,7 @@ import { MathTitle } from '@/components/ui/math-title';
 import { Button } from '@/components/ui/button';
 import { PieChart, TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { titleDirection } from '@/utils/contentDirection';
 
 const OfficialCurriculumModal = React.lazy(() => import('@/components/OfficialCurriculumModal').then(module => ({ default: module.OfficialCurriculumModal })));
 
@@ -87,7 +88,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
       footer={
         <div className="flex w-full items-center justify-between gap-2.5">
           <button type="button" onClick={() => setShowAssociations(true)} className="min-h-11 text-start text-xs font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            {locale === 'ar' ? 'ربط دروسي بالبرنامج' : locale === 'en' ? 'Link my chapters to the curriculum' : 'Relier mes chapitres au programme'}
+            {locale === 'ar' ? 'هل تود ربط دروسي بالبرنامج الرسمي؟' : locale === 'en' ? 'Link my chapters to the curriculum' : 'Relier mes chapitres au programme'}
           </button>
           <Button
             type="button"
@@ -131,14 +132,14 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
               const official = chapterProgress.get(i);
               if (chapter.total === 0 && !official) return null;
               return (
-                <div key={i} className="space-y-1.5">
+                <div key={i} className="space-y-1.5 text-start" dir={titleDirection(chapter.title, locale === 'ar' ? 'rtl' : 'ltr')}>
                   <div className="flex justify-between items-center gap-3">
                     <div className="min-w-0 break-words text-xs font-bold text-foreground" dir="auto">
                       <MathText source={chapter.title} cacheKey={`analysis-${chapter.title}`} inline>
                         {chapter.title}
                       </MathText>
                     </div>
-                    {!official && <span className="font-mono text-xs font-bold text-muted-foreground shrink-0">{number.format(chapter.rate)}%</span>}
+                    {!official && <bdi dir="ltr" className="font-mono text-xs font-bold text-muted-foreground shrink-0">{number.format(chapter.rate)}%</bdi>}
                   </div>
                   {official && official.officialChapter.title !== chapter.title && <p className="text-[11px] text-muted-foreground" dir="auto"><MathTitle text={official.officialChapter.title} />{official.indices.length > 1 ? ` · ${locale === 'ar' ? 'تقدم مشترك' : locale === 'en' ? 'shared progress' : 'avancement commun'}` : ''}</p>}
                   {official ? <CurriculumChapterProgress row={official} /> : <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -162,11 +163,11 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
             <div className="max-h-[min(30dvh,14rem)] space-y-2.5 overflow-y-auto pe-1.5 overscroll-contain">
               {warningItems.map((item, idx) => (
                 <div key={idx} className="flex flex-col gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-3.5 text-xs">
-                  <div className="flex justify-between items-center gap-2 font-bold text-foreground">
-                    <span className="truncate">
+                  <div dir={titleDirection(item.title, locale === 'ar' ? 'rtl' : 'ltr')} className="flex justify-between items-center gap-2 font-bold text-foreground text-start">
+                    <span className="min-w-0 truncate">
                       <MathText source={item.title} cacheKey={`warn-${item.title}`} inline>{item.title}</MathText>
                     </span>
-                    <span className="font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-md shrink-0">
+                    <span dir="ltr" className="font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-md shrink-0">
                       {item.date.split('-').reverse().join('/')}
                     </span>
                   </div>

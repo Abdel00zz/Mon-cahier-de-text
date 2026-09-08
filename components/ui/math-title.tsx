@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef } from 'react';
 import { MathJaxBaseContext } from 'better-react-mathjax';
 import { MathRuntimeContext } from '@/contexts/MathRuntimeContext';
 import { splitMathText } from '@/utils/math';
+import { titleDirection } from '@/utils/contentDirection';
 
 /** Short titles inside transient portals: convert off-DOM, then commit only if still mounted. */
 function Formula({ source }: { source: string }) {
@@ -30,5 +31,5 @@ function Formula({ source }: { source: string }) {
 }
 
 export function MathTitle({ text }: { text: string }) {
-  return <>{splitMathText(text).map((part, index) => part.math ? <Formula key={`${index}:${part.text}`} source={part.text} /> : part.text)}</>;
+  return <bdi dir={titleDirection(text)}>{splitMathText(text).map((part, index) => part.math ? <Formula key={`${index}:${part.text}`} source={part.text} /> : part.text)}</bdi>;
 }

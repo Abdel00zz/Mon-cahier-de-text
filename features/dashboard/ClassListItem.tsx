@@ -8,6 +8,7 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
+import { ClassCardTitle } from './ClassCardTitle';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -55,7 +56,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                     <Users className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
-                    <h3 className={cn("keep-class-title truncate font-semibold text-foreground leading-snug", isRtl ? "text-lg" : "text-base")}>{displayName}</h3>
+                    <h3 className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-lg" : "text-base")}><ClassCardTitle name={displayName} compact /></h3>
                     <div className="mt-1 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
                             className={cn('truncate', isRtl ? 'text-sm leading-none' : 'text-[11.9px] leading-none')}

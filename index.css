@@ -1020,6 +1020,44 @@ html[data-keyboard='open'] .mobile-tab-bar {
       inset 0 1px 0 rgb(255 255 255 / 0.58),
       0 5px 14px -12px color-mix(in srgb, var(--keep-accent, #64748b) 42%, transparent);
   }
+  .keep-group-number {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.4rem;
+    padding-inline: 0.45rem;
+    border-radius: 11px;
+    border: 1px solid color-mix(in srgb, var(--keep-accent) 30%, transparent);
+    color: var(--keep-accent);
+    background: linear-gradient(145deg,
+      color-mix(in srgb, var(--keep-light) 82%, white),
+      color-mix(in srgb, var(--keep-light) 86%, var(--keep-accent)));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.65),
+      0 5px 10px -7px color-mix(in srgb, var(--keep-accent) 65%, transparent);
+    font-family: 'Space Grotesk', 'Alexandria', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
+  }
+  .dark .keep-group-number {
+    background: linear-gradient(145deg,
+      color-mix(in srgb, var(--keep-dark) 86%, var(--keep-accent)), var(--keep-dark));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 24%, transparent),
+      0 5px 10px -7px rgb(0 0 0 / 0.45);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  }
+  .keep-group-number-compact {
+    min-width: 1.65rem;
+    height: 1.65rem;
+    padding-inline: 0.3rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+  }
   .dark .keep-surface {
     --keep-border: #3f4348;
     background-color: var(--keep-dark, #202124);

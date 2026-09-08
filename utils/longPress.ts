@@ -1,3 +1,5 @@
+import { CLASS_HOLD_MS, CLASS_MOVE_TOLERANCE } from './classTouchGesture';
+
 export interface PressPoint {
   pointerId: number;
   pointerType: string;
@@ -43,7 +45,7 @@ export function createLongPress(onHold: () => void, timer: PressClock = clock) {
         blocked = true;
         fired = true;
         onHold();
-      }, 550);
+      }, CLASS_HOLD_MS);
     },
     move(point: Pick<PressPoint, 'pointerId' | 'clientX' | 'clientY'>) {
       if (
@@ -52,7 +54,7 @@ export function createLongPress(onHold: () => void, timer: PressClock = clock) {
           Math.hypot(
             point.clientX - origin.clientX,
             point.clientY - origin.clientY,
-          ) > 12)
+          ) > CLASS_MOVE_TOLERANCE)
       ) {
         blocked = true;
         stop();

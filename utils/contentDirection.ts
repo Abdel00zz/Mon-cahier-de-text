@@ -11,6 +11,17 @@ export interface ContentDirectionDetection {
 const ARABIC_CHARACTER = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
 const LATIN_CHARACTER = /[A-Za-zÀ-ÖØ-öø-ÿ]/u;
 
+/** Direction d’un intitulé : ignorer nombres et formules, puis lire la première lettre. */
+export const titleDirection = (text: string, fallback: ContentDirection = 'ltr'): ContentDirection => {
+  const prose = text.replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g, '');
+  for (const character of prose) {
+    if (!/\p{Letter}/u.test(character)) continue;
+    if (/\p{Script=Arabic}/u.test(character)) return 'rtl';
+    if (LATIN_CHARACTER.test(character)) return 'ltr';
+  }
+  return fallback;
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 

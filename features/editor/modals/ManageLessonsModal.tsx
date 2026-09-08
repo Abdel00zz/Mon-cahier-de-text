@@ -211,7 +211,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                         <itemConfig.icon className={`${itemConfig.color} h-4.5 w-4.5 stroke-[2.2]`} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-xs font-bold text-foreground">
+                        <span dir="auto" className="block truncate text-start text-xs font-bold text-foreground">
                           <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
                         </span>
                         <span className="mt-0.5 block truncate text-[11px] font-medium text-muted-foreground">

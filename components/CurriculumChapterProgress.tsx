@@ -13,7 +13,7 @@ export function CurriculumChapterProgress({ row }: { row: Row }) {
   const label = l('Avancement estimé', 'التقدم التقديري', 'Estimated progress');
   const target = l('Rythme prévu', 'الوتيرة المتوقعة', 'Expected pace');
   const date = (value: string) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`));
-  return <div className="space-y-1.5" data-curriculum-progress={row.officialChapter.id}>
+  return <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-1.5 text-start" data-curriculum-progress={row.officialChapter.id}>
     <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
       <span>{row.status === 'completed' ? l('Terminé', 'مكتمل', 'Completed') : label} <span className="font-medium text-foreground">{actual === null ? '—' : `${row.status === 'completed' ? '' : '≈ '}${number.format(actual)}%`}</span></span>
       <span>{target} {expected === null ? '—' : `${number.format(expected)}%`}</span>

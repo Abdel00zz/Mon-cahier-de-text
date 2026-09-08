@@ -8,6 +8,7 @@ import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
+import { ClassCardTitle } from './ClassCardTitle';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -54,7 +55,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                             title={displayName}
                             className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
-                            <span className="line-clamp-2 break-words text-balance">{displayName}</span>
+                            <ClassCardTitle name={displayName} />
                         </button>
                     </h3>
                     {isActiveSession && (
