@@ -13,7 +13,7 @@ export type AccentColorKey =
 export type BorderRadiusOption = 'sharp' | 'default' | 'soft' | 'pill';
 export type CardStyleOption = 'classic' | 'bordered' | 'elevated' | 'glass';
 export type TableStyleOption = 'clean' | 'striped' | 'bordered' | 'compact';
-export type UIFontOption = 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
+export type UIFontOption = 'cyber-clean' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
 export type BackgroundContrastOption = 'normal' | 'soft' | 'vibrant';
 
 export interface AccentColorPreset {
@@ -264,6 +264,12 @@ export const BORDER_RADIUS_MAP: Record<BorderRadiusOption, { sm: string; md: str
 };
 
 export const UI_FONTS_MAP: Record<UIFontOption, { family: string; labelFr: string; labelAr: string; descriptionFr: string }> = {
+  'cyber-clean': {
+    family: "'Space Grotesk', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",
+    labelFr: 'Cyber Tech & Clean',
+    labelAr: 'Cyber Tech & Clean · تقني وواضح',
+    descriptionFr: 'Space Grotesk et Alexandria · interface et cartes',
+  },
   jakarta: {
     family: "'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",
     labelFr: 'Plus Jakarta Sans',

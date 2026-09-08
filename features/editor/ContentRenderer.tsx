@@ -236,10 +236,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
       const content = (
-        <div className="editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center py-0.5 sm:py-1 text-muted-foreground">
+        <div className="editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground">
           <Badge
             variant="outline"
-            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-center lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-baseline lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >
@@ -249,7 +249,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
-            className="editor-type-item-title min-w-0 break-words leading-[1.35] p-0 font-semibold text-foreground"
+            className="editor-type-item-title min-w-0 break-words p-0 font-semibold text-foreground"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
           </div>

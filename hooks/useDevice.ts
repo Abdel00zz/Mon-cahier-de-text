@@ -25,7 +25,13 @@ export const useDevice = (): DeviceInfo => {
         ];
         const update = () => setInfo(readDevice());
         queries.forEach(q => q.addEventListener('change', update));
-        return () => queries.forEach(q => q.removeEventListener('change', update));
+        window.addEventListener('resize', update);
+        window.screen.orientation?.addEventListener('change', update);
+        return () => {
+            queries.forEach(q => q.removeEventListener('change', update));
+            window.removeEventListener('resize', update);
+            window.screen.orientation?.removeEventListener('change', update);
+        };
     }, []);
 
     return info;
@@ -33,9 +39,11 @@ export const useDevice = (): DeviceInfo => {
 
 const readDevice = (): DeviceInfo => {
     if (typeof window === 'undefined') return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false };
-    const w = window.innerWidth;
-    const isTouch = window.matchMedia('(pointer: coarse)').matches;
-    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    const isTouch = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+    const w = isTouch ? Math.min(window.screen.width, window.screen.height) || window.innerWidth : window.innerWidth;
+    const isPortrait = isTouch && window.screen.orientation?.type
+        ? window.screen.orientation.type.startsWith('portrait')
+        : window.matchMedia('(orientation: portrait)').matches;
     let type: DeviceType = 'desktop';
     if (w <= PHONE_MAX) type = 'phone';
     else if (w <= TABLET_MAX && isTouch) type = 'tablet';

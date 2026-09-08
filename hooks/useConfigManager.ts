@@ -38,8 +38,9 @@ const normalizeNotificationSettings = (value: unknown): NotificationSettings => 
 
 const defaultConfig: AppConfig = {
     theme: 'light',
-    contentFontLatin: 'fira',
-    contentFontArabic: 'ibm-plex',
+    contentFontLatin: 'space-grotesk',
+    contentFontArabic: 'alexandria',
+    themeCustomization: { uiFont: 'cyber-clean' },
     applicationLocale: 'ar',
     establishmentName: '',
     defaultTeacherName: '',
@@ -128,8 +129,8 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             assessmentOrder: loadedConfig.assessmentOrder ?? {},
             schoolYearStart: loadedConfig.schoolYearStart,
             theme: loadedConfig.theme ?? 'light',
-            contentFontLatin: loadedConfig.contentFontLatin ?? 'fira',
-            contentFontArabic: loadedConfig.contentFontArabic ?? 'ibm-plex',
+            contentFontLatin: loadedConfig.contentFontLatin ?? 'space-grotesk',
+            contentFontArabic: loadedConfig.contentFontArabic ?? 'alexandria',
             applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
         };
     } catch (error) {

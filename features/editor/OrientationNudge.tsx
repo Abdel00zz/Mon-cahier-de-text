@@ -5,29 +5,25 @@ import { useLocale } from '@/i18n/LocaleProvider';
 
 const PHONE_PORTRAIT_QUERY = '(max-width: 767px) and (orientation: portrait) and (pointer: coarse)';
 const OPEN_DELAY_MS = 900;
-const REMINDER_COOLDOWN_MS = 15 * 60 * 1000;
-const REMINDER_STORAGE_KEY = 'editor-orientation-nudge-until-v2';
 
 interface OrientationNudgeProps {
   /** Le rappel ne concurrence jamais une action ou une surface prioritaire. */
   suppressed?: boolean;
 }
 
-const readReminderDelay = (): number => {
-  try {
-    const storedUntil = Number.parseInt(window.sessionStorage.getItem(REMINDER_STORAGE_KEY) || '', 10);
-    return Number.isFinite(storedUntil) ? Math.max(0, storedUntil - Date.now()) : 0;
-  } catch {
-    return 0;
-  }
-};
+const isPortraitPhoneViewport = (portraitQuery: MediaQueryList): boolean => {
+  if (portraitQuery.matches) return true;
 
-const rememberDismissal = () => {
-  try {
-    window.sessionStorage.setItem(REMINDER_STORAGE_KEY, String(Date.now() + REMINDER_COOLDOWN_MS));
-  } catch {
-    // Le rappel reste fermable même si le stockage privé est indisponible.
-  }
+  const hasTouch = navigator.maxTouchPoints > 0
+    || window.matchMedia('(pointer: coarse)').matches;
+  const orientationType = window.screen.orientation?.type;
+  const isPortrait = orientationType
+    ? orientationType.startsWith('portrait')
+    : window.screen.height >= window.screen.width;
+  const shortestScreenSide = Math.min(window.screen.width, window.screen.height);
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+
+  return hasTouch && isPortrait && shortestScreenSide <= 767 && viewportWidth <= 767;
 };
 
 const OrientationFigure: React.FC<{ reducedMotion: boolean }> = ({ reducedMotion }) => (
@@ -94,14 +90,14 @@ export const OrientationNudge: React.FC<OrientationNudgeProps> = ({ suppressed =
   const [isPortraitPhone, setIsPortraitPhone] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [scheduleVersion, setScheduleVersion] = useState(0);
+  const [dismissedForPortrait, setDismissedForPortrait] = useState(false);
   const wasPortraitPhone = useRef(false);
 
   useEffect(() => {
     const portraitQuery = window.matchMedia(PHONE_PORTRAIT_QUERY);
     const syncOrientation = () => {
-      const matches = portraitQuery.matches;
-      if (wasPortraitPhone.current && !matches) rememberDismissal();
+      const matches = isPortraitPhoneViewport(portraitQuery);
+      if (wasPortraitPhone.current && !matches) setDismissedForPortrait(false);
       wasPortraitPhone.current = matches;
       setIsPortraitPhone(matches);
       if (!matches) setIsVisible(false);
@@ -109,7 +105,15 @@ export const OrientationNudge: React.FC<OrientationNudgeProps> = ({ suppressed =
 
     syncOrientation();
     portraitQuery.addEventListener('change', syncOrientation);
-    return () => portraitQuery.removeEventListener('change', syncOrientation);
+    window.addEventListener('resize', syncOrientation);
+    window.addEventListener('orientationchange', syncOrientation);
+    window.visualViewport?.addEventListener('resize', syncOrientation);
+    return () => {
+      portraitQuery.removeEventListener('change', syncOrientation);
+      window.removeEventListener('resize', syncOrientation);
+      window.removeEventListener('orientationchange', syncOrientation);
+      window.visualViewport?.removeEventListener('resize', syncOrientation);
+    };
   }, []);
 
   useEffect(() => {
@@ -123,27 +127,23 @@ export const OrientationNudge: React.FC<OrientationNudgeProps> = ({ suppressed =
   }, []);
 
   useEffect(() => {
-    if (!isPortraitPhone || isKeyboardOpen || suppressed) {
+    if (!isPortraitPhone || isKeyboardOpen || suppressed || dismissedForPortrait) {
       setIsVisible(false);
       return;
     }
 
-    const timer = window.setTimeout(
-      () => setIsVisible(true),
-      Math.max(OPEN_DELAY_MS, readReminderDelay()),
-    );
+    const timer = window.setTimeout(() => setIsVisible(true), OPEN_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [isKeyboardOpen, isPortraitPhone, scheduleVersion, suppressed]);
+  }, [dismissedForPortrait, isKeyboardOpen, isPortraitPhone, suppressed]);
 
   const dismiss = () => {
-    rememberDismissal();
+    setDismissedForPortrait(true);
     setIsVisible(false);
-    setScheduleVersion(version => version + 1);
   };
 
   return (
     <AnimatePresence>
-      {isVisible && !isKeyboardOpen && !suppressed ? (
+      {isVisible && isPortraitPhone && !isKeyboardOpen && !suppressed ? (
         <motion.aside
           data-orientation-nudge
           className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] z-[65] mx-auto max-w-md print:hidden"

@@ -207,6 +207,21 @@
   font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Cartes de classe · géométrique, technologique et lisible. */
+.font-cyber-clean {
+  font-family: var(--font-sans, 'Space Grotesk'), 'Alexandria', sans-serif;
+  font-feature-settings: 'ss01' 1, 'ss02' 1, 'tnum' 1;
+}
+
+.font-cyber-clean[dir="rtl"] {
+  font-family: var(--font-sans, 'Space Grotesk'), 'Alexandria', sans-serif;
+  font-feature-settings: 'tnum' 1;
+}
+
+.font-cyber-clean[dir="ltr"] .keep-class-title {
+  letter-spacing: -0.025em;
+}
+
 @utility shadow-cahier-rest {
   box-shadow: 0 10px 24px -12px rgba(43, 38, 32, 0.28), 0 2px 6px -2px rgba(43, 38, 32, 0.18);
 }
@@ -352,7 +367,7 @@
   html[lang="ar"] input,
   html[lang="ar"] textarea,
   html[lang="ar"] select {
-    font-family: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans, 'Space Grotesk'), 'Alexandria', ui-sans-serif, system-ui, sans-serif;
     letter-spacing: normal;
   }
 
@@ -730,38 +745,33 @@
     line-height: 1.5;
   }
 
-  @media (min-width: 640px) {
-    [data-editor-table] {
-      --editor-fs-chapter: 24px;
-      --editor-fs-top: 16px;
-      --editor-fs-section: 16px;
-      --editor-fs-subsection: 14px;
-      --editor-fs-subsubsection: 14px;
-      --editor-fs-item-title: 15px;
-      --editor-fs-description: 13px;
-      --editor-fs-page: 12px;
-      --editor-fs-badge: 11px;
-      --editor-fs-table-side: 10px;
-      --editor-fs-table-main: 11px;
-      --editor-fs-remark: 13px;
-      --editor-badge-min-width: 27px;
-      --editor-badge-padding-inline: 4px;
-      --editor-lesson-gap: 8px;
-      --editor-lesson-indent: 8px;
-      --editor-description-indent: 14px;
-      --editor-description-padding: 10px;
-    }
+  /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
+  [data-editor-table] {
+    --editor-scale: clamp(0.8125rem, calc(0.6875rem + 0.52vw), 1rem);
+    --editor-fs-chapter: calc(var(--editor-scale) * 1.5);
+    --editor-fs-top: var(--editor-scale);
+    --editor-fs-section: var(--editor-scale);
+    --editor-fs-subsection: calc(var(--editor-scale) * 0.94);
+    --editor-fs-subsubsection: calc(var(--editor-scale) * 0.88);
+    --editor-fs-item-title: var(--editor-scale);
+    --editor-fs-description: calc(var(--editor-scale) * 0.94);
+    --editor-fs-page: calc(var(--editor-scale) * 0.75);
+    --editor-fs-badge: calc(var(--editor-scale) * 0.75);
+    --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
+    --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
+    --editor-fs-remark: calc(var(--editor-scale) * 0.88);
+    --editor-fs-separator-date: calc(var(--editor-scale) * 0.81);
+    --editor-fs-separator-label: calc(var(--editor-scale) * 0.75);
+    --editor-badge-min-width: calc(var(--editor-scale) * 1.9);
+    --editor-badge-padding-inline: 3px;
+    --editor-lesson-gap: clamp(5px, 1vw, 10px);
+    --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
   }
 
-  @media (min-width: 1024px) {
+  @media (pointer: coarse) {
     [data-editor-table] {
-      --editor-fs-item-title: 16px;
-      --editor-fs-badge: 11px;
-      --editor-badge-min-width: 29px;
-      --editor-lesson-gap: 10px;
-      --editor-lesson-indent: 12px;
-      --editor-description-indent: 16px;
-      --editor-description-padding: 12px;
+      /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
+      --editor-scale: clamp(0.8125rem, calc(0.6875rem + 0.52vmin), 1rem);
     }
   }
 
@@ -1006,6 +1016,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .dashboard-class-surface {
     border-radius: 14px;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.58),
+      0 5px 14px -12px color-mix(in srgb, var(--keep-accent, #64748b) 42%, transparent);
   }
   .dark .keep-surface {
     --keep-border: #3f4348;
@@ -1013,17 +1026,23 @@ html[data-keyboard='open'] .mobile-tab-bar {
     color: #e8eaed;
   }
 
-  /* Couleurs ultra-douces, modernes et fleurissantes (Florales / Printemps) - Solides, sans dégradé */
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E8; --keep-dark: #2C2925; --keep-accent: #A56412; --keep-accent-soft: rgb(165 100 18 / 0.11); } /* Jasmin */
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #EDF7F2; --keep-dark: #242A27; --keep-accent: #147A58; --keep-accent-soft: rgb(20 122 88 / 0.11); } /* Sauge */
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #EEF4FA; --keep-dark: #24282D; --keep-accent: #286F9E; --keep-accent-soft: rgb(40 111 158 / 0.11); } /* Ciel matinal */
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F5F0F8; --keep-dark: #29262C; --keep-accent: #76549C; --keep-accent-soft: rgb(118 84 156 / 0.11); } /* Lilas */
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #FDF0F2; --keep-dark: #2C2426; --keep-accent: #AD4961; --keep-accent-soft: rgb(173 73 97 / 0.11); } /* Fleur de cerisier */
-  .dark .keep-surface[data-keep-tone="sand"] { --keep-accent: #E1B45F; --keep-accent-soft: rgb(225 180 95 / 0.13); }
-  .dark .keep-surface[data-keep-tone="mint"] { --keep-accent: #63C39F; --keep-accent-soft: rgb(99 195 159 / 0.13); }
-  .dark .keep-surface[data-keep-tone="sky"] { --keep-accent: #75B7E1; --keep-accent-soft: rgb(117 183 225 / 0.13); }
-  .dark .keep-surface[data-keep-tone="lavender"] { --keep-accent: #BA9BD5; --keep-accent-soft: rgb(186 155 213 / 0.13); }
-  .dark .keep-surface[data-keep-tone="coral"] { --keep-accent: #DF8FA3; --keep-accent-soft: rgb(223 143 163 / 0.13); }
+  .dark .dashboard-class-surface {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.055),
+      0 7px 18px -13px color-mix(in srgb, var(--keep-accent, #94a3b8) 36%, transparent);
+  }
+
+  /* Palette chromatique des classes : vive mais mate, contrastée et stable dans les deux thèmes. */
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #FFF0C7; --keep-dark: #332A1E; --keep-border: #E8CD91; --keep-accent: #B85C00; --keep-accent-soft: rgb(184 92 0 / 0.13); } /* Ambre solaire */
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #DDF5E9; --keep-dark: #1D3028; --keep-border: #B8DFC9; --keep-accent: #087A55; --keep-accent-soft: rgb(8 122 85 / 0.13); } /* Émeraude fraîche */
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #DDEEFF; --keep-dark: #1D2C3A; --keep-border: #B9D6EF; --keep-accent: #1769AA; --keep-accent-soft: rgb(23 105 170 / 0.13); } /* Azur électrique */
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #EEE4FF; --keep-dark: #2B2538; --keep-border: #D4C0EB; --keep-accent: #7547B8; --keep-accent-soft: rgb(117 71 184 / 0.13); } /* Violet iris */
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #FFE2E8; --keep-dark: #38232A; --keep-border: #ECC0CA; --keep-accent: #B9365A; --keep-accent-soft: rgb(185 54 90 / 0.13); } /* Corail framboise */
+  .dark .keep-surface[data-keep-tone="sand"] { --keep-border: #5B4930; --keep-accent: #F1B95B; --keep-accent-soft: rgb(241 185 91 / 0.15); }
+  .dark .keep-surface[data-keep-tone="mint"] { --keep-border: #315444; --keep-accent: #5ED2A1; --keep-accent-soft: rgb(94 210 161 / 0.15); }
+  .dark .keep-surface[data-keep-tone="sky"] { --keep-border: #304E67; --keep-accent: #69B9F2; --keep-accent-soft: rgb(105 185 242 / 0.15); }
+  .dark .keep-surface[data-keep-tone="lavender"] { --keep-border: #4E3F65; --keep-accent: #BC9AF0; --keep-accent-soft: rgb(188 154 240 / 0.15); }
+  .dark .keep-surface[data-keep-tone="coral"] { --keep-border: #653947; --keep-accent: #F18DAA; --keep-accent-soft: rgb(241 141 170 / 0.15); }
 
   @keyframes keep-session-focus {
     0%, 100% {
@@ -1111,12 +1130,16 @@ html[data-keyboard='open'] .mobile-tab-bar {
   @media (hover: hover) {
     .keep-interactive:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.08);
-      border-color: rgba(0, 0, 0, 0.1);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.7),
+        0 10px 22px -15px color-mix(in srgb, var(--keep-accent) 70%, rgb(15 23 42 / 0.28));
+      border-color: color-mix(in srgb, var(--keep-accent) 36%, var(--keep-border));
     }
     .dark .keep-interactive:hover {
-      box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5);
-      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.08),
+        0 12px 24px -15px color-mix(in srgb, var(--keep-accent) 54%, rgb(0 0 0 / 0.72));
+      border-color: color-mix(in srgb, var(--keep-accent) 42%, var(--keep-border));
     }
     .keep-session-active:hover,
     .dark .keep-session-active:hover {

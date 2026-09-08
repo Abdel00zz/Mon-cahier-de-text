@@ -225,6 +225,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const settings = { ...defaultNotificationSettings, ...(config.notificationSettings ?? {}) };
     const [busy, setBusy] = useState(false);
     const [checking, setChecking] = useState(true);
+    const [permissionRevision, setPermissionRevision] = useState(0);
     const [message, setMessage] = useState<string | null>(null);
     const [pushState, setPushState] = useState<PushNotificationState>(() => ({
         permission: pushSupported() && typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
@@ -241,6 +242,18 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
     const vibrationSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
     const stateIsActive = (state: PushNotificationState) =>
         state.permission === 'granted' && state.subscribed && state.serverRegistered === true;
+
+    useEffect(() => {
+        const refresh = () => {
+            if (document.visibilityState === 'visible') setPermissionRevision(value => value + 1);
+        };
+        document.addEventListener('visibilitychange', refresh);
+        window.addEventListener('online', refresh);
+        return () => {
+            document.removeEventListener('visibilitychange', refresh);
+            window.removeEventListener('online', refresh);
+        };
+    }, []);
 
     // Réconcilie le réglage local avec les trois couches réelles, sans afficher
     // de demande d'autorisation et sans attendre indéfiniment un SW absent.
@@ -268,7 +281,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
         return () => {
             cancelled = true;
         };
-    }, [patch, t]);
+    }, [patch, t, permissionRevision]);
 
     // Un seul geste : autorisation système + abonnement serveur.
     const handleActivate = async () => {
@@ -371,10 +384,14 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ config, onCh
 
             <Toggle
                 label={t('notifications.vibration')}
-                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : undefined}
+                hint={!vibrationSupported ? t('notifications.vibrationUnsupported') : l('Vibration des rappels et notifications sur cet appareil. Les retours tactiles des boutons sont indépendants.', 'اهتزاز التذكيرات والإشعارات على هذا الجهاز. الاستجابة اللمسية للأزرار مستقلة.', 'Reminder and notification vibration on this device. Button haptics are independent.')}
                 checked={settings.sessionVibration ?? false}
-                onChange={v => patch({ sessionVibration: v })}
-                disabled={!settings.enabled}
+                onChange={v => {
+                    patch({ sessionVibration: v });
+                    if (v && vibrationSupported) {
+                        try { navigator.vibrate([160, 80, 160]); } catch { /* Device may reject vibration. */ }
+                    }
+                }}
             />
 
             <Toggle label={l('Rappel avant la fin de séance', 'تذكير قبل نهاية الحصة', 'Session end reminder')}

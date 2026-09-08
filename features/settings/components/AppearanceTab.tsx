@@ -107,9 +107,9 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   const currentRadius: BorderRadiusOption = custom.borderRadius || 'default';
   const currentCardStyle: CardStyleOption = custom.cardStyle || 'classic';
   const currentTableStyle: TableStyleOption = custom.tableStyle || 'clean';
-  const currentUIFont: UIFontOption = custom.uiFont || 'jakarta';
-  const currentLatinFont = config.contentFontLatin || 'fira';
-  const currentArabicFont = config.contentFontArabic || 'ibm-plex';
+  const currentUIFont: UIFontOption = custom.uiFont || 'cyber-clean';
+  const currentLatinFont = config.contentFontLatin || 'space-grotesk';
+  const currentArabicFont = config.contentFontArabic || 'alexandria';
 
   const updateCustomization = (partial: Partial<ThemeCustomization>) => {
     onConfigChange({
@@ -127,15 +127,15 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   const handleResetDefaults = () => {
     onConfigChange({
       theme: 'light',
-      contentFontLatin: 'fira',
-      contentFontArabic: 'ibm-plex',
+      contentFontLatin: 'space-grotesk',
+      contentFontArabic: 'alexandria',
       themeCustomization: {
         accentColor: 'blue',
         customPrimaryColor: '#2563eb',
         borderRadius: 'default',
         cardStyle: 'classic',
         tableStyle: 'clean',
-        uiFont: 'jakarta',
+        uiFont: 'cyber-clean',
         customBackgroundColor: undefined,
         customTextColor: undefined,
         customCardColor: undefined,
@@ -145,7 +145,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
   const selectedLatinObj = LATIN_FONTS.find(f => f.id === currentLatinFont) || LATIN_FONTS[0];
   const selectedArabicObj = ARABIC_FONTS.find(f => f.id === currentArabicFont) || ARABIC_FONTS[0];
-  const selectedUIFont = UI_FONTS_MAP[currentUIFont] || UI_FONTS_MAP.jakarta;
+  const selectedUIFont = UI_FONTS_MAP[currentUIFont] || UI_FONTS_MAP['cyber-clean'];
   const fontCopy = locale === 'ar'
     ? { title: 'الخطوط', open: 'فتح قائمة الخطوط', ui: 'واجهة التطبيق', latin: 'المحتوى اللاتيني', arabic: 'المحتوى العربي' }
     : locale === 'en'

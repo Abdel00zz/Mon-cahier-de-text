@@ -4,6 +4,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { clientsClaim } from 'workbox-core';
+import { readNotificationVibration } from '../utils/notificationDevicePreferences';
 import {
     defaultNotificationTag,
     isPushNotificationKind,
@@ -75,14 +76,14 @@ self.addEventListener('push', event => {
     const title = payload.title || 'Cahier de textes';
     const kind: PushNotificationKind = isPushNotificationKind(payload.kind) ? payload.kind : 'lateness';
     const targetUrl = payload.url || '/';
-    const showNotification = self.registration.showNotification(title, {
+    const showNotification = readNotificationVibration().then(vibration => self.registration.showNotification(title, {
             body: payload.body || 'Vous avez une mise à jour à faire.',
             icon: '/icons/icon-192.png',
             badge: '/icons/icon-192.png',
             tag: payload.tag || defaultNotificationTag(kind),
-            vibrate: kind === 'admin' ? [220, 100, 220] : [180, 90, 180],
+            vibrate: vibration ? (kind === 'admin' ? [220, 100, 220] : [180, 90, 180]) : [],
             data: { url: targetUrl, kind, timestamp: payload.timestamp || Date.now() },
-        } as NotificationOptions & { vibrate: number[] });
+        } as NotificationOptions & { vibrate: number[] }));
     const notifyOpenClients = kind === 'admin' && typeof payload.messageId === 'string'
         ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
             windows.forEach(client => client.postMessage({ type: 'admin-message', messageId: payload.messageId }));

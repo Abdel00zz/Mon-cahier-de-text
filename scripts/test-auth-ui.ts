@@ -139,7 +139,7 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
   assert.match(css, /editor-type-separator-date:focus[\s\S]*font-size: 16px/);
 });
 
-test('éditeur : le coach paysage est visible, temporisé et non bloquant', () => {
+test('éditeur : le coach paysage détecte fiablement un téléphone en portrait', () => {
   const nudge = readFileSync(
     new URL('../features/editor/OrientationNudge.tsx', import.meta.url),
     'utf8',
@@ -150,11 +150,15 @@ test('éditeur : le coach paysage est visible, temporisé et non bloquant', () =
   );
 
   assert.match(nudge, /orientation: portrait\) and \(pointer: coarse/);
-  assert.match(nudge, /sessionStorage/);
+  assert.match(nudge, /navigator\.maxTouchPoints/);
+  assert.match(nudge, /window\.screen\.orientation/);
+  assert.match(nudge, /window\.visualViewport/);
+  assert.match(nudge, /orientationchange/);
   assert.match(nudge, /useReducedMotion/);
   assert.match(nudge, /if \(!matches\) setIsVisible\(false\)/);
   assert.match(nudge, /wasPortraitPhone\.current && !matches/);
   assert.match(nudge, /MutationObserver/);
+  assert.match(nudge, /isVisible && isPortraitPhone/);
   assert.match(nudge, /h-11 w-11/);
   assert.match(editor, /<OrientationNudge/);
   assert.match(editor, /selectedCount > 0/);
@@ -191,6 +195,8 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
   assert.match(list, /useClassPress/);
   assert.match(card, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
   assert.match(list, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
+  assert.match(card, /font-cyber-clean/);
+  assert.match(list, /font-cyber-clean/);
 });
 
 test('sidebar : le nom de l’enseignant reflète la configuration active', () => {

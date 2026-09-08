@@ -11,6 +11,16 @@ export interface FontOption {
 
 export const LATIN_FONTS: FontOption[] = [
   {
+    id: 'space-grotesk',
+    name: 'Space Grotesk · Cyber Tech & Clean',
+    family: "'Space Grotesk', sans-serif",
+    category: 'sans',
+    descriptionFr: 'Géométrique, technique et lisible',
+    descriptionAr: 'هندسي وتقني وواضح',
+    sampleFr: 'Définition : Limite finie en un point',
+    sampleAr: 'تعريف: نهاية منتهية عند نقطة',
+  },
+  {
     id: 'itim',
     name: 'Itim',
     family: "'Itim', cursive, sans-serif",
@@ -217,10 +227,10 @@ export const ARABIC_FONTS: FontOption[] = [
 
 export const getLatinFontFamily = (id?: string): string => {
   const font = LATIN_FONTS.find(f => f.id === id);
-  return font ? font.family : "'Fira Sans', sans-serif";
+  return font ? font.family : "'Space Grotesk', sans-serif";
 };
 
 export const getArabicFontFamily = (id?: string): string => {
   const font = ARABIC_FONTS.find(f => f.id === id);
-  return font ? font.family : "'IBM Plex Sans Arabic', sans-serif";
+  return font ? font.family : "'Alexandria', sans-serif";
 };

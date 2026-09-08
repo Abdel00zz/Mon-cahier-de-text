@@ -1,20 +1,932 @@
-{
-  "_commentaire": "Programme officiel conforme aux orientations pédagogiques et à la répartition annuelle 2026-2027, 3AC Mathématiques (Maroc / APIC).",
-  "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Les racines carrées", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 2 : Identités remarquables, développement et puissances", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 3 : Ordre et opérations", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 4 : Théorème de Thalès", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 5 : Théorème de Pythagore", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 6 : Trigonométrie et angles au centre et inscrits", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 7 : Triangles isométriques et triangles semblables", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 8 : Équations et inéquations du premier degré à une inconnue", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 9 : Vecteurs et translation", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 10 : Le repère dans le plan", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 11 : Équation d'une droite", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 12 : Systèmes de deux équations à deux inconnues", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 13 : Fonctions linéaires et fonctions affines", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 14 : Statistiques", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 15 : Géométrie dans l'espace", "sections": [] }
-  ]
-}
+[
+  {
+    "chapter": "Chapitre 1 : Calcul littéral et identités remarquables",
+    "sections": [
+      {
+        "name": "Développement et réduction d'expressions littérales",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Développer un produit algébrique par distributivité simple et double",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Distributivité simple : $k(a\\pm b)=ka\\pm kb$ et double $(a+b)(c+d)$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Développer une expression littérale en appliquant la règle des signes",
+            "description": "Pour $A=-3x(2x-5)$, on distribue le terme pour obtenir $-6x^2+15x$ en respectant les signes."
+          },
+          {
+            "type": "application",
+            "title": "Développer et réduire une expression algébrique complexe du second degré",
+            "description": "Pour $E=(2x-3)(x+4)-(x-1)^2$, on développe chaque terme séparément avant de réduire les puissances semblables."
+          }
+        ]
+      },
+      {
+        "name": "Identités remarquables et factorisation",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Établir les identités remarquables par calcul d'aires de carrés",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Identités remarquables fondamentales : $(a\\pm b)^2$ et $(a-b)(a+b)=a^2-b^2$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Factorisation : transformer une somme algébrique en produit de facteurs",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Factoriser un polynôme par mise en évidence d'un facteur commun",
+            "description": "Pour $B=(2x+1)(x-3)+(2x+1)(3x+4)$, on met $(2x+1)$ en facteur pour trouver $(2x+1)(4x+1)$."
+          },
+          {
+            "type": "application",
+            "title": "Factoriser une expression en utilisant l'identité de la différence de carrés",
+            "description": "Pour $4x^2-25$, on reconnaît $(2x)^2-5^2$, ce qui permet d'écrire immédiatement le produit $(2x-5)(2x+5)$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : Puissances",
+    "sections": [
+      {
+        "name": "Puissances entières et règles opératoires",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Simplifier des produits répétés sous forme de puissances entières",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Puissance entière : $a^n = a\\times\\dots\\times a$ et inverse $a^{-n}=\\frac{1}{a^n}$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Propriétés opératoires : $a^n a^m=a^{n+m}$, $(a^n)^m=a^{nm}$ et $(ab)^n=a^n b^n$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la valeur d'une puissance d'exposant entier négatif",
+            "description": "Pour $(\\frac{2}{3})^{-3}$, on applique l'inverse pour obtenir $(\\frac{3}{2})^3=\\frac{27}{8}$."
+          },
+          {
+            "type": "application",
+            "title": "Simplifier une fraction contenant des produits de puissances entières",
+            "description": "Pour $\\frac{a^3 \\times (a^2 b)^{-4}}{a^{-5} b^2}$, on applique les règles des exposants pour isoler les puissances de $a$ et $b$."
+          }
+        ]
+      },
+      {
+        "name": "Puissances de dix et écriture scientifique",
+        "items": [
+          {
+            "type": "property",
+            "title": "Puissances de dix positives et négatives : $10^n$ et $10^{-n}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Écriture scientifique : forme $a\\times 10^p$ avec $1\\le |a|<10$ et $p\\in\\mathbb{Z}$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Convertir des nombres décimaux en notation scientifique standard",
+            "description": "Pour $0{,}00045$, on déplace la virgule de quatre rangs vers la droite pour trouver $4{,}5 \\times 10^{-4}$."
+          },
+          {
+            "type": "application",
+            "title": "Écrire le résultat d'un calcul numérique sous forme scientifique",
+            "description": "Pour le produit $(3\\times 10^4)\\times(5\\times 10^{-7})$, on calcule $15\\times 10^{-3}=1{,}5\\times 10^{-2}$ en notation normalisée."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : Racines carrées",
+    "sections": [
+      {
+        "name": "Définition et propriétés des radicaux",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Extraire un carré parfait pour simplifier une racine carrée",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Racine carrée d'un réel positif : unique réel positif de carré égal à $a$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriétés des radicaux : $\\sqrt{ab}=\\sqrt{a}\\sqrt{b}$ et $\\sqrt{\\frac{a}{b}}=\\frac{\\sqrt{a}}{\\sqrt{b}}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Identité fondamentale : $(\\sqrt{a})^2=a$ et $\\sqrt{a^2}=a$ pour tout réel positif $a$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Simplifier une somme de racines carrées en extrayant des carrés",
+            "description": "Pour $\\sqrt{50}-2\\sqrt{18}$, on extrait les carrés parfaits : $5\\sqrt{2}-2\\times 3\\sqrt{2}=-\\sqrt{2}$."
+          }
+        ]
+      },
+      {
+        "name": "Rendre rationnel un dénominateur et équations",
+        "items": [
+          {
+            "type": "method",
+            "title": "Éliminer le radical au dénominateur par multiplication par le conjugué",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Résolution de l'équation $x^2=a$ : deux solutions si $a>0$, aucune si $a<0$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Rendre rationnel le dénominateur d'une fraction comportant un radical",
+            "description": "Pour $\\frac{2}{\\sqrt{5}-1}$, on multiplie numérateur et dénominateur par le conjugué $\\sqrt{5}+1$ pour obtenir $\\frac{\\sqrt{5}+1}{2}$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : Théorème de Thalès",
+    "sections": [
+      {
+        "name": "Théorème de Thalès direct",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Mesurer et comparer des rapports de longueurs sur des sécantes",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Théorème de Thalès direct : égalité des rapports de longueurs proportionnelles",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la longueur d'un segment à l'aide de droites parallèles",
+            "description": "Dans un triangle $ABC$ avec $(MN)//(BC)$, l'égalité $\\frac{AM}{AB}=\\frac{AN}{AC}=\\frac{MN}{BC}$ permet d'isoler la distance $MN$."
+          },
+          {
+            "type": "application",
+            "title": "Déterminer une distance inaccessible à l'aide de droites parallèles sécantes",
+            "description": "On utilise la configuration en papillon de Thalès pour poser les rapports égaux et calculer une longueur manquante."
+          }
+        ]
+      },
+      {
+        "name": "Théorème de Thalès réciproque",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Conjecturer le parallélisme à partir de rapports de longueurs égaux",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Théorème de Thalès réciproque démontrant le parallélisme de deux droites",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Justifier le parallélisme de deux droites par l'égalité des rapports",
+            "description": "Si $\\frac{AM}{AB}=\\frac{AN}{AC}$ et si les points sont alignés dans le même ordre, alors les droites $(MN)$ et $(BC)$ sont parallèles."
+          },
+          {
+            "type": "application",
+            "title": "Démontrer qu'un quadrilatère est un trapèze par Thalès réciproque",
+            "description": "On calcule séparément deux rapports de longueurs issus d'un sommet commun pour conclure au parallélisme des bases opposées."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : Théorème de Pythagore",
+    "sections": [
+      {
+        "name": "Théorème de Pythagore direct",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Vérifier l'égalité de Pythagore par découpage géométrique de carrés",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Théorème de Pythagore : dans un triangle rectangle, $BC^2=AB^2+AC^2$",
+            "description": ""
+          },
+          {
+            "type": "proof",
+            "title": "Démonstration du théorème de Pythagore par comparaison d'aires de carrés",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la longueur de l'hypoténuse connaissant les côtés de l'angle droit",
+            "description": "Dans un triangle rectangle en $A$ avec $AB=6$ et $AC=8$, $BC^2=36+64=100$, d'où l'hypoténuse $BC=10\\,\\text{cm}$."
+          }
+        ]
+      },
+      {
+        "name": "Théorème de Pythagore réciproque",
+        "items": [
+          {
+            "type": "theorem",
+            "title": "Réciproque de Pythagore : si $BC^2=AB^2+AC^2$, le triangle est rectangle en $A$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Démontrer qu'un triangle est rectangle par la réciproque de Pythagore",
+            "description": "Pour des côtés $5, 12, 13$, on compare $13^2=169$ et $5^2+12^2=25+144=169$ pour conclure que le triangle est rectangle."
+          },
+          {
+            "type": "application",
+            "title": "Déterminer si un triangle donné est rectangle à partir de ses côtés",
+            "description": "On compare le carré du plus grand côté à la somme des carrés des deux autres côtés pour valider l'orthogonalité."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 6 : Trigonométrie",
+    "sections": [
+      {
+        "name": "Rapports trigonométriques dans le triangle rectangle",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Établir la constance des rapports trigonométriques dans le triangle rectangle",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Sinus, cosinus et tangente d'un angle aigu dans un triangle rectangle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Encadrements fondamentaux : $0 < \\cos(\\alpha) < 1$ et $0 < \\sin(\\alpha) < 1$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer les rapports trigonométriques des angles d'un triangle rectangle",
+            "description": "Pour un triangle rectangle de côtés $3, 4, 5$, on écrit $\\cos(\\alpha)=\\frac{3}{5}$, $\\sin(\\alpha)=\\frac{4}{5}$ et $\\tan(\\alpha)=\\frac{4}{3}$."
+          }
+        ]
+      },
+      {
+        "name": "Formules trigonométriques et angles complémentaires",
+        "items": [
+          {
+            "type": "property",
+            "title": "Identité fondamentale : $\\cos^2(\\alpha)+\\sin^2(\\alpha)=1$ et relation $\\tan(\\alpha)=\\frac{\\sin(\\alpha)}{\\cos(\\alpha)}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Rapports d'angles complémentaires : $\\sin(90^\\circ-\\alpha)=\\cos(\\alpha)$ et $\\cos(90^\\circ-\\alpha)=\\sin(\\alpha)$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le sinus et la tangente connaissant le cosinus d'un angle",
+            "description": "Sachant que $\\cos(\\alpha)=\\frac{3}{5}$, on calcule $\\sin(\\alpha)=\\sqrt{1-(\\frac{3}{5})^2}=\\frac{4}{5}$ puis $\\tan(\\alpha)=\\frac{4}{3}$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 7 : Ordre et opérations",
+    "sections": [
+      {
+        "name": "Ordre et opérations algébriques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Observer l'effet de l'addition et de la multiplication sur une inégalité",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Comparaison de deux nombres réels par l'étude du signe de la différence",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Compatibilité avec l'addition et la multiplication par un réel positif",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Inversion du sens de l'inégalité par multiplication négative ou passage à l'inverse",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Comparer deux nombres réels par l'étude du signe de leur différence",
+            "description": "Pour comparer $2\\sqrt{3}$ et $3\\sqrt{2}$, on compare leurs carrés $12$ et $18$ pour déduire $2\\sqrt{3} < 3\\sqrt{2}$."
+          }
+        ]
+      },
+      {
+        "name": "Encadrements d'expressions algébriques",
+        "items": [
+          {
+            "type": "property",
+            "title": "Règles d'encadrement pour la somme, la différence, le produit et le quotient",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Encadrer une somme et un produit à partir d'encadrements donnés",
+            "description": "Sachant que $2\\le x\\le 5$ et $-3\\le y\\le -1$, on encadre $-y$, puis on calcule les bornes de $x-y$ et $xy$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 8 : Angles au centre et angles inscrits",
+    "sections": [
+      {
+        "name": "Angles inscrits et angles au centre",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Mesurer des angles inscrits interceptant le même arc de cercle",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Angle au centre et angle inscrit interceptant un arc de cercle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Théorème de l'angle inscrit : mesure égale à la moitié de l'angle au centre",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Deux angles inscrits qui interceptent le même arc ont même mesure",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la mesure d'un angle inscrit connaissant l'angle au centre",
+            "description": "Si l'angle au centre $\\widehat{BOC}$ mesure $80^\\circ$, alors tout angle inscrit $\\widehat{BAC}$ interceptant le même arc mesure $40^\\circ$."
+          }
+        ]
+      },
+      {
+        "name": "Quadrilatères inscriptibles",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Quadrilatère inscriptible dont les quatre sommets appartiennent à un même cercle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Caractérisation du quadrilatère inscriptible par angles opposés supplémentaires",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Démontrer qu'un quadrilatère est inscriptible dans un cercle donné",
+            "description": "On montre que la somme de deux angles opposés vaut $180^\\circ$ pour conclure que ses quatre sommets sont cocycliques."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 9 : Triangles isométriques et triangles semblables",
+    "sections": [
+      {
+        "name": "Triangles isométriques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Superposer deux triangles ayant des côtés ou angles de mêmes mesures",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Triangles isométriques : triangles superposables ayant côtés homologues de même longueur",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Cas d'isométrie : trois côtés égaux, ou deux côtés et l'angle compris",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Démontrer l'isométrie de deux triangles par un cas d'égalité",
+            "description": "On vérifie que les deux triangles ont un angle égal compris entre deux côtés de mêmes longueurs respectives."
+          }
+        ]
+      },
+      {
+        "name": "Triangles semblables",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Triangles semblables : triangles ayant leurs angles homologues égaux deux à deux",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Proportionnalité des côtés homologues et coefficient d'agrandissement ou réduction",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Cas de similitude : deux angles égaux, ou côtés homologues proportionnels",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer une longueur inconnue à l'aide de triangles semblables",
+            "description": "On établit l'égalité des rapports des côtés homologues de deux triangles semblables pour en déduire la mesure manquante."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 10 : Équations et inéquations",
+    "sections": [
+      {
+        "name": "Équations du premier degré et équations produits",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Résoudre des équations par équivalences algébriques successives",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Équation du premier degré à une inconnue et résolution de $ax+b=0$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Équation produit nul : $(ax+b)(cx+d)=0 \\Leftrightarrow ax+b=0$ ou $cx+d=0$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre une équation quadratique ramenée à une équation produit nul",
+            "description": "Pour $(2x-1)(3x+2)=0$, on déduit que $2x-1=0$ ou $3x+2=0$, d'où les solutions $x=\\frac{1}{2}$ ou $x=-\\frac{2}{3}$."
+          },
+          {
+            "type": "application",
+            "title": "Mettre en équation et résoudre un problème géométrique concret",
+            "description": "On pose $x$ la largeur d'un rectangle de périmètre donné, on résout l'équation associée et on vérifie la cohérence du résultat."
+          }
+        ]
+      },
+      {
+        "name": "Inéquations du premier degré à une inconnue",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Inéquation du premier degré à une inconnue et ensemble de solutions",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Changement de sens de l'inégalité lors de la division par un négatif",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Représentation graphique des solutions d'une inéquation sur une droite graduée",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résoudre une inéquation du premier degré et représenter ses solutions",
+            "description": "Pour $-2x+6 \\le 0$, on soustrait $6$ puis on divise par $-2$ en inversant l'inégalité, ce qui donne $x \\ge 3$ représenté sur l'axe."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 11 : Translation et vecteurs",
+    "sections": [
+      {
+        "name": "Vecteurs du plan et relation de Chasles",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Identifier direction, sens et norme d'un vecteur de déplacement",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vecteur $\\overrightarrow{AB}$, direction, sens, norme et égalité vectorielle de parallélogramme",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Relation de Chasles : $\\overrightarrow{AB}+\\overrightarrow{BC}=\\overrightarrow{AC}$ et règle du parallélogramme",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Somme vectorielle, vecteur nul et produit d'un vecteur par un scalaire",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Simplifier une somme vectorielle en appliquant la relation de Chasles",
+            "description": "On simplifie $\\overrightarrow{AB}+\\overrightarrow{BC}+\\overrightarrow{CA}=\\overrightarrow{AC}+\\overrightarrow{CA}=\\overrightarrow{0}$ par regroupement des extrémités communes."
+          }
+        ]
+      },
+      {
+        "name": "La translation dans le plan",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Translation de vecteur $\\overrightarrow{u}$ associant à tout point $M$ le point $M'$ tel que $\\overrightarrow{MM'}=\\overrightarrow{u}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation des longueurs, de l'alignement, des angles et des aires",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "L'image d'une droite par une translation est une droite qui lui est parallèle",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Construire l'image d'une figure géométrique par une translation donnée",
+            "description": "On construit les images des sommets d'un triangle par le vecteur $\\overrightarrow{u}$, puis on relie les points obtenus pour former le triangle translaté."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 12 : Fonctions linéaires et fonctions affines",
+    "sections": [
+      {
+        "name": "Fonctions linéaires",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Relier la proportionnalité à la formule linéaire $f(x)=ax$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Fonction linéaire $f(x)=ax$ et coefficient de proportionnalité $a$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Représentation graphique : droite passant par l'origine du repère",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer le coefficient d'une fonction linéaire connaissant une image",
+            "description": "Si $f(3)=12$, le coefficient linéaire vaut $a=\\frac{12}{3}=4$, d'où l'expression $f(x)=4x$."
+          }
+        ]
+      },
+      {
+        "name": "Fonctions affines",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Fonction affine $f(x)=ax+b$, coefficient directeur $a$ et ordonnée à l'origine $b$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Détermination du coefficient directeur : $a=\\frac{f(x_1)-f(x_2)}{x_1-x_2}$ pour $x_1\\neq x_2$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Représentation graphique : droite de pente $a$ coupant l'axe vertical en $b$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer l'expression d'une fonction affine connaissant deux images distinctes",
+            "description": "Sachant que $f(1)=3$ et $f(3)=7$, on calcule $a=\\frac{7-3}{3-1}=2$, puis on trouve $b=1$, d'où $f(x)=2x+1$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 13 : Repère dans le plan",
+    "sections": [
+      {
+        "name": "Coordonnées de points et de vecteurs",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Repérer les coordonnées d'un point dans un repère orthonormé",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Repère orthonormé $(O,I,J)$ et coordonnées d'un point $M(x;y)$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Coordonnées d'un vecteur : $\\overrightarrow{AB}(x_B-x_A;y_B-y_A)$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Coordonnées de la somme de deux vecteurs et multiplication scalaire",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer les coordonnées d'un vecteur à partir de deux points",
+            "description": "Pour $A(2;3)$ et $B(5;-1)$, le vecteur $\\overrightarrow{AB}$ a pour coordonnées $(5-2;-1-3)=(3;-4)$."
+          }
+        ]
+      },
+      {
+        "name": "Coordonnées du milieu et distance de deux points",
+        "items": [
+          {
+            "type": "property",
+            "title": "Coordonnées du milieu d'un segment : $M(\\frac{x_A+x_B}{2};\\frac{y_A+y_B}{2})$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Distance entre deux points dans un repère orthonormé : $AB=\\sqrt{(x_B-x_A)^2+(y_B-y_A)^2}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Démontrer qu'un triangle est rectangle en calculant ses trois longueurs",
+            "description": "On calcule les carrés des distances $AB^2, BC^2, AC^2$ à partir des coordonnées pour vérifier la réciproque de Pythagore."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 14 : Équation d'une droite",
+    "sections": [
+      {
+        "name": "Équation réduite d'une droite",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Relier l'alignement de points à une équation de type $y=mx+p$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Équation réduite $y=mx+p$ avec pente $m$ et ordonnée à l'origine $p$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Calcul de la pente $m=\\frac{y_B-y_A}{x_B-x_A}$ pour deux points d'abscisses distinctes",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer l'équation réduite d'une droite passant par deux points",
+            "description": "Pour $A(1;2)$ et $B(3;6)$, on calcule la pente $m=\\frac{6-2}{3-1}=2$, puis on déduit $p=0$, soit la droite $y=2x$."
+          }
+        ]
+      },
+      {
+        "name": "Parallélisme et orthogonalité de deux droites",
+        "items": [
+          {
+            "type": "property",
+            "title": "Deux droites non verticales sont parallèles si et seulement si $m=m'$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Deux droites non verticales sont perpendiculaires si et seulement si $m\\times m'=-1$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer l'équation de la droite perpendiculaire passant par un point",
+            "description": "Connaissant la droite $y=2x+1$, toute perpendiculaire a pour pente $-\\frac{1}{2}$, et le point donné permet de fixer la constante $p$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 15 : Systèmes de deux équations à deux inconnues",
+    "sections": [
+      {
+        "name": "Méthodes de résolution algébrique",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Résoudre un problème à deux inconnues par tableau ou substitution",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Système linéaire de deux équations du premier degré à deux inconnues",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Résolution par substitution : exprimer une inconnue en fonction de l'autre",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Résolution par combinaison linéaire : éliminer une inconnue par addition",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre un système linéaire par la méthode de combinaison linéaire",
+            "description": "Dans le système formé par $2x+y=7$ et $x-y=2$, on additionne membre à membre pour obtenir $3x=9$, d'où $x=3$ et $y=1$."
+          }
+        ]
+      },
+      {
+        "name": "Interprétation graphique et résolution de problèmes",
+        "items": [
+          {
+            "type": "property",
+            "title": "Interprétation graphique : point d'intersection des deux droites associées",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Mettre en système et résoudre un problème concret d'achat groupé",
+            "description": "On pose $x$ le prix d'un cahier et $y$ celui d'un stylo pour traduire les achats en un système linéaire de deux équations."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 16 : Statistique",
+    "sections": [
+      {
+        "name": "Séries statistiques et effectifs cumulés",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Organiser les données d'un sondage dans un tableau statistique complet",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Population, caractère qualitatif ou quantitatif, effectif et fréquence décimale",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Effectifs cumulés croissants et fréquences cumulées d'une série statistique",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer les effectifs cumulés croissants et les fréquences associées",
+            "description": "À partir d'un relevé d'effectifs partiels, on additionne les effectifs au fur et à mesure pour former la ligne des cumuls."
+          }
+        ]
+      },
+      {
+        "name": "Indicateurs statistiques de position et dispersion",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Mode d'une série statistique : valeur associée au plus grand effectif",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Médiane : valeur partageant la série ordonnée en deux groupes égaux",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Moyenne arithmétique pondérée : quotient de la somme pondérée par $N$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer la moyenne, la médiane et l'étendue d'une série de notes",
+            "description": "On ordonne les valeurs pour repérer la médiane centrale, on calcule l'étendue par $x_{\\max}-x_{\\min}$ et la moyenne pondérée par les effectifs."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 17 : Géométrie dans l'espace",
+    "sections": [
+      {
+        "name": "Solides de l'espace et orthogonalité",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Identifier les solides usuels et observer les sections planes planes",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Solides usuels : parallélépipède, prisme droit, cylindre, pyramide et cône",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Droite orthogonale à un plan : orthogonale à deux sécantes de ce plan",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Formules des volumes fondamentaux des prismes, cylindres, pyramides et cônes",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer le volume d'une pyramide régulière à base carrée",
+            "description": "Pour une pyramide de base carrée de côté $6\\,\\text{cm}$ et de hauteur $9{,}5\\,\\text{cm}$, le volume vaut $V=\\frac{1}{3}\\times 36\\times 9{,}5=114\\,\\text{cm}^3$."
+          }
+        ]
+      },
+      {
+        "name": "Sections planes, agrandissement et réduction",
+        "items": [
+          {
+            "type": "property",
+            "title": "Section d'une pyramide ou d'un cône par un plan parallèle à la base",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Effet d'un agrandissement ou réduction de rapport $k$ sur longueurs, aires et volumes",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le volume d'un solide après réduction géométrique d'échelle",
+            "description": "Si une pyramide subit une réduction de rapport $k=\\frac{1}{2}$, son volume initial est multiplié par $k^3=\\frac{1}{8}$ pour obtenir le nouveau volume."
+          }
+        ]
+      }
+    ]
+  }
+]

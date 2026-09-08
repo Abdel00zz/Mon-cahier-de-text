@@ -3,37 +3,57 @@
     "chapter": "Chapitre 1 : Nombres décimaux positifs, opérations",
     "sections": [
       {
-        "name": "Suites d'opérations et parenthèses",
-        "subsections": [
+        "name": "Suites d'opérations sans parenthèses",
+        "items": [
           {
-            "name": "Priorités opératoires sans et avec parenthèses",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Calculer mentalement des dépenses combinées avec et sans parenthèses",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Priorité de la multiplication et de la division sans parenthèses",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Priorité des calculs situés à l'intérieur des parenthèses",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Calculer une expression sans parenthèses en respectant les priorités",
-                "description": "Pour $A=1{,}6+2\\times 3{,}2-1{,}2\\div 3$, on calcule d'abord les multiplications et divisions pour obtenir $A=1{,}6+6{,}4-0{,}4=7{,}6$."
-              },
-              {
-                "type": "application",
-                "title": "Calculer une suite d'opérations contenant des parenthèses imbriquées",
-                "description": "Pour $B=1{,}6\\times(38{,}5-14)-(0{,}8-0{,}08)\\div 0{,}4$, on évalue les parenthèses intérieures puis les produits et quotients pour trouver $37{,}4$."
-              }
-            ]
+            "type": "activity",
+            "title": "Calculer mentalement des dépenses combinées avec et sans parenthèses",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Priorité de la multiplication et de la division sans parenthèses",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Calcul des additions et soustractions de gauche à droite",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer une expression sans parenthèses en respectant les priorités opératoires",
+            "description": "Pour $A=1{,}6+2\\times 3{,}2-1{,}2\\div 3$, on calcule d'abord $2\\times 3{,}2=6{,}4$ et $1{,}2\\div 3=0{,}4$, puis on effectue les additions et soustractions de gauche à droite pour obtenir $7{,}6$."
+          },
+          {
+            "type": "application",
+            "title": "Évaluer un enchaînement d'opérations combinant multiplication, division et soustraction",
+            "description": "Dans l'expression $34-24\\div 4+8\\times 2$, on effectue en priorité les opérations de division et de multiplication avant de conclure par les soustractions et additions."
+          }
+        ]
+      },
+      {
+        "name": "Suites d'opérations avec parenthèses",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Calculer la longueur totale d'un tapis couvrant des marches",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Priorité des calculs situés à l'intérieur des parenthèses intérieures",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer une expression contenant des parenthèses et des priorités opératoires",
+            "description": "Pour $B=1{,}6\\times(38{,}5-14)-(0{,}8-0{,}08)\\div 0{,}4$, on calcule d'abord les contenus des parenthèses $24{,}5$ et $0{,}72$, puis on multiplie et divise pour trouver $37{,}4$."
+          },
+          {
+            "type": "application",
+            "title": "Calculer une suite d'opérations contenant des parenthèses emboîtées complexes",
+            "description": "Pour $A=28\\times[18{,}3-5{,}2]-[(37-16{,}3-9{,}5)+0{,}5+1{,}4]$, on effectue d'abord les calculs entre parenthèses intérieures avant de simplifier le crochet extérieur."
           }
         ]
       },
@@ -41,11 +61,11 @@
         "name": "Distributivité et factorisation",
         "subsections": [
           {
-            "name": "Développement et mise en facteur commun",
+            "name": "Distributivité de la multiplication",
             "items": [
               {
                 "type": "activity",
-                "title": "Calculer l'aire d'un rectangle découpé de deux manières différentes",
+                "title": "Calculer l'aire d'un rectangle partitionné de deux façons distinctes",
                 "description": ""
               },
               {
@@ -59,24 +79,34 @@
                 "description": ""
               },
               {
+                "type": "example",
+                "title": "Développer une expression littérale en appliquant la double distributivité",
+                "description": "Pour $D=(3x+1)(y-4)$, on développe terme à terme : $D=3x\\times y-3x\\times 4+1\\times y-1\\times 4=3xy-12x+y-4$."
+              }
+            ]
+          },
+          {
+            "name": "Factorisation d'une expression littérale",
+            "items": [
+              {
                 "type": "definition",
-                "title": "Factorisation d'une somme ou différence par recherche d'un facteur commun",
+                "title": "Factoriser une somme algébrique par recherche d'un facteur commun",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Formule de factorisation : $ka+kb=k(a+b)$ et $ka-kb=k(a-b)$",
                 "description": ""
               },
               {
                 "type": "example",
-                "title": "Développer et simplifier une expression littérale par double distributivité",
-                "description": "Pour $D=(3x+1)(y-4)$, on développe terme à terme pour obtenir $D=3xy-12x+y-4$."
+                "title": "Factoriser une expression numérique pour faciliter un calcul mental",
+                "description": "Pour calculer $H=25\\times 11-25\\times 7$, on met $25$ en facteur commun : $H=25\\times(11-7)=25\\times 4=100$."
               },
               {
                 "type": "application",
-                "title": "Factoriser une expression numérique pour faciliter le calcul mental",
-                "description": "Pour calculer $H=25\\times 11 - 25\\times 7$, on met $25$ en facteur commun pour obtenir $25\\times(11-7)=25\\times 4=100$."
-              },
-              {
-                "type": "exercice",
-                "title": "Calculer des enchaînements d'opérations et développer ou factoriser des expressions",
-                "description": ""
+                "title": "Factoriser astucieusement un calcul mental par mise en évidence",
+                "description": "Pour calculer $32{,}75\\times 27 - 32{,}75\\times 25$, on extrait le facteur commun $32{,}75$ pour obtenir $32{,}75\\times(27-25)=32{,}75\\times 2=65{,}5$."
               }
             ]
           }
@@ -88,172 +118,177 @@
     "chapter": "Chapitre 2 : Fractions : Opérations",
     "sections": [
       {
-        "name": "Quotients et comparaison de fractions",
-        "subsections": [
+        "name": "Écriture fractionnaire et quotient",
+        "items": [
           {
-            "name": "Écritures fractionnaires et égalité",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Exprimer le quotient exact de deux entiers sous forme fractionnaire",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Écriture fractionnaire $\\frac{a}{b}$ représentant le quotient exact de $a$ par $b$",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Invariance de la fraction par multiplication ou division du numérateur et dénominateur",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Comparaison de deux fractions de même dénominateur ou de même numérateur",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Comparaison d'une fraction à $1$ selon les valeurs de $a$ et $b$",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Comparer deux fractions en les réduisant au même dénominateur",
-                "description": "Pour comparer $\\frac{5}{4}$ et $\\frac{13}{12}$, on écrit $\\frac{5}{4}=\\frac{15}{12}$, puis comme $15>13$, on déduit $\\frac{5}{4}>\\frac{13}{12}$."
-              }
-            ]
+            "type": "activity",
+            "title": "Représenter le quotient exact de deux entiers par une fraction",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Écriture fractionnaire $\\frac{a}{b}$ désignant le quotient exact de $a$ par $b$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Invariance de la fraction par multiplication ou division non nulle",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Règles de comparaison de fractions de même dénominateur ou numérateur",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Comparaison d'une fraction au nombre un selon son numérateur",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Comparer deux fractions en les réduisant au même dénominateur",
+            "description": "Pour comparer $\\frac{5}{4}$ et $\\frac{13}{12}$, on transforme $\\frac{5}{4}=\\frac{15}{12}$. Comme $15>13$, on déduit $\\frac{5}{4}>\\frac{13}{12}$."
           }
         ]
       },
       {
-        "name": "Multiplication, division et addition de fractions",
-        "subsections": [
+        "name": "Multiplication et division de fractions",
+        "items": [
           {
-            "name": "Calculs élémentaires sur les fractions",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Calculer l'aire d'un rectangle dont les dimensions sont fractionnaires",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Produit de fractions : $\\frac{a}{b} \\times \\frac{c}{d} = \\frac{ac}{bd}$",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Prendre une fraction $\\frac{a}{b}$ d'une quantité $Q$ : calcul $Q \\times \\frac{a}{b}$",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Division par un nombre décimal en rendant le diviseur entier",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Addition et soustraction de fractions de même dénominateur ou dénominateurs multiples",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer la somme de fractions ayant des dénominateurs différents",
-                "description": "Pour calculer $\\frac{2}{3}+\\frac{8}{15}$, on transforme $\\frac{2}{3}=\\frac{10}{15}$, puis on additionne les numérateurs pour trouver $\\frac{18}{15}=\\frac{6}{5}$."
-              },
-              {
-                "type": "exercice",
-                "title": "Effectuer des calculs fractionnaires combinés et simplifier les résultats",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Déterminer l'aire d'un rectangle dont les dimensions sont des fractions",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Produit de fractions : $\\frac{a}{b}\\times\\frac{c}{d}=\\frac{ac}{bd}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Prendre une fraction d'une grandeur par multiplication de la quantité",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Division par un nombre décimal en rendant le diviseur entier",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Prendre une fraction d'une quantité entière donnée",
+            "description": "Pour prendre $\\frac{2}{3}$ de $5$, on calcule $5\\times\\frac{2}{3}=\\frac{5\\times 2}{3}=\\frac{10}{3}$."
+          },
+          {
+            "type": "application",
+            "title": "Calculer la fraction représentée par un sous-groupe d'individus",
+            "description": "Dans une classe où les filles représentent $\\frac{3}{5}$ des élèves et où $\\frac{1}{3}$ d'entre elles étudient l'allemand, la part totale vaut $\\frac{1}{3}\\times\\frac{3}{5}=\\frac{1}{5}$."
+          }
+        ]
+      },
+      {
+        "name": "Addition et soustraction de fractions",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Additionner deux portions d'un gâteau découpé en parts égales",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Addition et soustraction de fractions ayant le même dénominateur commun",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Addition et soustraction de fractions de dénominateurs différents par réduction",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Additionner deux fractions dont un dénominateur est multiple de l'autre",
+            "description": "Pour $\\frac{5}{6}+\\frac{7}{12}$, on réduit au dénominateur $12$ pour obtenir $\\frac{10}{12}+\\frac{7}{12}=\\frac{17}{12}$."
+          },
+          {
+            "type": "application",
+            "title": "Calculer et simplifier une somme de fractions à dénominateurs multiples",
+            "description": "Pour $A=\\frac{2}{3}+\\frac{8}{15}$, on transforme $\\frac{2}{3}=\\frac{10}{15}$, d'où $\\frac{10+8}{15}=\\frac{18}{15}=\\frac{6}{5}$."
           }
         ]
       }
     ]
   },
   {
-    "chapter": "Chapitre 3 : Nombres relatifs et décimaux négatifs : Opérations",
+    "chapter": "Chapitre 3 : Nombres relatifs, Nombres décimaux négatifs : Opérations",
     "sections": [
       {
-        "name": "Repérage et comparaison de relatifs",
-        "subsections": [
+        "name": "Repérage et comparaison des nombres relatifs",
+        "items": [
           {
-            "name": "Droite graduée et relation d'ordre",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Repérer des températures positives et négatives sur une échelle thermométrique",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Nombre relatif, signe, distance à zéro et nombres opposés",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Droite graduée, origine $O$, abscisse d'un point et repérage",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Distance entre deux points sur une droite graduée : abscisse maximale moins minimale",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Règles de comparaison de deux nombres relatifs de signes quelconques",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Calculer la distance de deux points repérés sur un axe",
-                "description": "Pour les points $A(1)$ et $B(-1{,}5)$, la distance vaut $AB = 1 - (-1{,}5) = 1 + 1{,}5 = 2{,}5$."
-              }
-            ]
+            "type": "activity",
+            "title": "Repérer des températures positives et négatives sur une droite verticale",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Nombre relatif, signe positif ou négatif et nombres opposés",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Droite graduée par une origine, un sens et une abscisse",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Distance entre deux points : abscisse maximale moins abscisse minimale",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Règles de comparaison de deux nombres relatifs sur la droite",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la distance entre deux points d'une droite graduée",
+            "description": "Pour $A(1)$ et $B(-1{,}5)$, la distance vaut $AB=1-(-1{,}5)=1+1{,}5=2{,}5$ unités de longueur."
           }
         ]
       },
       {
-        "name": "Addition et soustraction de relatifs",
-        "subsections": [
+        "name": "Addition et soustraction des nombres relatifs",
+        "items": [
           {
-            "name": "Règles opératoires et sommes algébriques",
-            "items": [
-              {
-                "type": "rule",
-                "title": "Addition de deux nombres relatifs de même signe ou de signes contraires",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Somme de deux nombres relatifs opposés égale à zéro : $a+(-a)=0$",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Soustraction d'un nombre relatif équivalente à l'addition de son opposé",
-                "description": ""
-              },
-              {
-                "type": "method",
-                "title": "Calcul d'une somme algébrique par regroupement des termes positifs et négatifs",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer la somme algébrique d'une suite de nombres relatifs",
-                "description": "Pour évaluer $A=6-7{,}5+9-2{,}5+6$, on regroupe les positifs $(6+9+6=21)$ et les négatifs $(-7{,}5-2{,}5=-10)$ pour trouver $11$."
-              },
-              {
-                "type": "exercice",
-                "title": "Effectuer des additions et soustractions de relatifs avec parenthèses",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Évaluer des variations consécutives de température avec des nombres relatifs",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Addition de deux nombres relatifs de même signe ou contraires",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Somme de deux nombres relatifs opposés toujours égale à zéro",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Soustraction d'un relatif équivalente à l'addition de son opposé",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Calcul d'une somme algébrique par regroupement des termes de même signe",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer une expression contenant plusieurs additions et soustractions de relatifs",
+            "description": "Pour évaluer $A=12{,}5-7{,}5+9-2{,}5+6$, on additionne séparément les termes positifs et les termes négatifs pour conclure."
           }
         ]
       }
@@ -263,72 +298,62 @@
     "chapter": "Chapitre 4 : Puissance d'un nombre relatif",
     "sections": [
       {
-        "name": "Définition et signe d'une puissance",
-        "subsections": [
+        "name": "Notion de puissance et règle des signes",
+        "items": [
           {
-            "name": "Exposant entier et règle des signes",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Exprimer le nombre de triangles par multiplication répétée d'un facteur",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Puissance d'un nombre relatif : $a^n = a \\times a \\times \\dots \\times a$",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Signe d'une puissance $a^n$ selon la parité de l'exposant $n$",
-                "description": ""
-              },
-              {
-                "type": "remark",
-                "title": "Conventions pour tout nombre relatif non nul : $a^0=1$ et $a^1=a$",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Déterminer le signe et la valeur de puissances relatives",
-                "description": "On calcule $(-5)^2 = 25$ car l'exposant est pair, tandis que $(-5)^3 = -125$ car l'exposant est impair."
-              }
-            ]
+            "type": "activity",
+            "title": "Modéliser le découpage du triangle de Sierpinski par multiplications répétées",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Puissance d'un nombre relatif : produit de $n$ facteurs égaux",
+            "description": ""
+          },
+          {
+            "type": "remark",
+            "title": "Conventions pour tout nombre relatif non nul : $a^0=1$ et $a^1=a$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Signe d'une puissance selon la parité de son exposant entier",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer des puissances d'un nombre négatif selon l'exposant",
+            "description": "On obtient $(-5)^2=25$ car l'exposant est pair, et $(-5)^3=-125$ car l'exposant est impair."
           }
         ]
       },
       {
         "name": "Propriétés opératoires et puissances de dix",
-        "subsections": [
+        "items": [
           {
-            "name": "Règles sur les exposants et écriture scientifique",
-            "items": [
-              {
-                "type": "rule",
-                "title": "Règles opératoires sur les produits, quotients et puissances de puissances",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Puissances de dix positives et négatives : $10^n$ et $10^{-n}$",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Écriture scientifique sous la forme $a \\times 10^p$ avec $1 \\le |a| < 10$",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Écrire un nombre en notation scientifique et simplifier des produits",
-                "description": "Pour $A=821\\,000$, on écrit $A=8{,}21\\times 10^5$, puis on calcule le produit $(8{,}21\\times 10^5)(2{,}93\\times 10^4)$ sous forme scientifique."
-              },
-              {
-                "type": "exercice",
-                "title": "Appliquer les règles sur les puissances pour simplifier des expressions numériques",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Déduire les formules des produits et quotients de puissances identiques",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Propriétés des exposants : $a^n a^m=a^{n+m}$, $(a^n)^m=a^{nm}$ et $(ab)^n=a^n b^n$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Puissances de dix positives et négatives : $10^n$ et $10^{-n}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Écriture scientifique : forme $a\\times 10^p$ avec $1\\le |a|<10$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Écrire des nombres astronomiques et microscopiques en notation scientifique",
+            "description": "Pour $A=821\\,000$, on écrit $A=8{,}21\\times 10^5$, et pour un produit de puissances on regroupe les facteurs numériques et les puissances de dix."
           }
         ]
       }
@@ -338,77 +363,67 @@
     "chapter": "Chapitre 5 : Angles et triangles",
     "sections": [
       {
-        "name": "Vocabulaire et relations entre angles",
-        "subsections": [
+        "name": "Vocabulaire et positions relatives des angles",
+        "items": [
           {
-            "name": "Classification et positions relatives des angles",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Mesurer et construire des angles complémentaires et supplémentaires au rapporteur",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Angles aigu, droit, obtus, plat et nul selon leur mesure",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Angles complémentaires de somme $90^\\circ$ et supplémentaires de somme $180^\\circ$",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Angles adjacents ayant même sommet et situés de part et d'autre",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Égalité des mesures de deux angles opposés par le sommet",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Mesurer et construire des angles complémentaires et supplémentaires au rapporteur",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Classification des angles : aigu, droit, obtus, plat et nul",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Angles complémentaires de somme $90^\\circ$ et supplémentaires de somme $180^\\circ$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Angles adjacents partageant un sommet et un côté commun séparateur",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Deux angles opposés par le sommet ont toujours même mesure",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la mesure d'un angle complémentaire à un angle donné",
+            "description": "Sachant que $\\widehat{A}$ et $\\widehat{B}$ sont complémentaires avec $\\widehat{A}=33^\\circ$, la mesure de $\\widehat{B}$ vaut $90^\\circ-33^\\circ=57^\\circ$."
           }
         ]
       },
       {
-        "name": "Triangles et inégalité triangulaire",
-        "subsections": [
+        "name": "Somme des angles et inégalité triangulaire",
+        "items": [
           {
-            "name": "Somme des angles et cas particuliers",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Découper et regrouper les angles d'un triangle pour former un plat",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Somme des mesures des angles d'un triangle égale à $180^\\circ$",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Inégalité triangulaire : chaque côté est inférieur à la somme des deux autres",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Propriétés angulaires des triangles isocèles, équilatéraux et rectangles",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer la mesure d'un angle manquant dans un triangle",
-                "description": "Dans un triangle $ABC$ rectangle en $A$ avec $\\widehat{ABC}=35^\\circ$, la complémentarité donne directement $\\widehat{BCA}=90^\\circ-35^\\circ=55^\\circ$."
-              },
-              {
-                "type": "exercice",
-                "title": "Construire des triangles à la règle et au compas sous contraintes",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Vérifier la somme des angles d'un triangle par découpage géométrique",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "La somme des mesures des trois angles d'un triangle vaut $180^\\circ$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Inégalité triangulaire : chaque côté est inférieur à la somme des deux autres",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriétés caractéristiques des triangles isocèles, équilatéraux et rectangles",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer un angle inconnu dans un triangle rectangle ou isocèle",
+            "description": "Dans un triangle isocèle en $A$ avec $\\widehat{A}=40^\\circ$, la somme des angles donne pour chaque angle à la base $\\frac{180^\\circ-40^\\circ}{2}=70^\\circ$."
           }
         ]
       }
@@ -418,77 +433,62 @@
     "chapter": "Chapitre 6 : Droites dans le plan : Parallélisme et perpendicularité",
     "sections": [
       {
-        "name": "Objets géométriques de base et alignement",
-        "subsections": [
+        "name": "Objets géométriques de base et appartenance",
+        "items": [
           {
-            "name": "Points, droites, segments et appartenance",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Distinguer segment, demi-droite et droite à l'aide des notations géométriques",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Droite, demi-droite, segment, milieu et appartenance d'un point",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Par deux points distincts du plan, il passe une droite unique",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Droites sécantes en un unique point commun du plan",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Distinguer segment, demi-droite et droite à l'aide des symboles géométriques",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Point, droite, demi-droite, segment, milieu et points alignés",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Par deux points distincts du plan, il passe une droite unique",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Droites sécantes coupées en un unique point d'intersection commun",
+            "description": ""
           }
         ]
       },
       {
         "name": "Parallélisme, perpendicularité et distance",
-        "subsections": [
+        "items": [
           {
-            "name": "Propriétés fondamentales des droites",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Construire des droites perpendiculaires et parallèles par pliage de papier",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Deux droites perpendiculaires à une même troisième sont parallèles entre elles",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Toute droite perpendiculaire à l'une de deux parallèles est perpendiculaire à l'autre",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Deux droites parallèles à une même troisième sont parallèles entre elles",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Projeté orthogonal d'un point et distance minimale d'un point à une droite",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Justifier le parallélisme de deux droites par la perpendicularité commune",
-                "description": "Si $(d_1) \\perp (d)$ et $(d_2) \\perp (d)$, on applique la règle pour conclure que $(d_1)$ et $(d_2)$ sont parallèles."
-              },
-              {
-                "type": "exercice",
-                "title": "Construire à l'équerre et à la règle des droites remarquables",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Construire des droites perpendiculaires et parallèles par pliage de papier",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Deux droites perpendiculaires à une même troisième sont parallèles entre elles",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Toute droite perpendiculaire à l'une de deux parallèles est perpendiculaire à l'autre",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Deux droites parallèles à une même troisième sont parallèles entre elles",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Projeté orthogonal et distance la plus courte d'un point à une droite",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Construire à la règle et à l'équerre la parallèle passant par un point",
+            "description": "On trace une perpendiculaire auxiliaire à la droite donnée passant par le point, puis la perpendiculaire à cette sécante passant par ce même point."
           }
         ]
       }
@@ -498,77 +498,82 @@
     "chapter": "Chapitre 7 : Droites remarquables dans le triangle",
     "sections": [
       {
-        "name": "Médiatrices et hauteurs du triangle",
-        "subsections": [
+        "name": "Médiatrices et cercle circonscrit",
+        "items": [
           {
-            "name": "Cercle circonscrit et orthocentre",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Construire la médiatrice au compas et observer le concours des médiatrices",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Médiatrice d'un segment et équidistance des extrémités : $MA=MB$",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Concours des trois médiatrices d'un triangle au centre du cercle circonscrit",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Hauteur issue d'un sommet et concours des trois hauteurs à l'orthocentre",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Formule de l'aire d'un triangle : $\\text{Aire} = \\frac{\\text{base} \\times \\text{hauteur}}{2}$",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Construire la médiatrice d'un segment et tester l'équidistance des points",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Médiatrice d'un segment : droite perpendiculaire passant par son milieu",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Concours des trois médiatrices d'un triangle au centre du cercle circonscrit",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Construire le cercle circonscrit à un triangle à l'aide des médiatrices",
+            "description": "On trace les médiatrices de deux côtés pour déterminer leur intersection $O$, puis on trace le cercle de centre $O$ passant par les sommets."
           }
         ]
       },
       {
-        "name": "Bissectrices et cas particuliers",
-        "subsections": [
+        "name": "Hauteurs et orthocentre d'un triangle",
+        "items": [
           {
-            "name": "Cercle inscrit et triangles particuliers",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Construire la bissectrice d'un angle et observer le cercle tangent intérieur",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Bissectrice d'un angle comme axe de symétrie équidistant des côtés",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Concours des trois bissectrices d'un triangle au centre du cercle inscrit",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Confusion des droites remarquables dans les triangles isocèles et équilatéraux",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Tracer le cercle circonscrit à un triangle à partir des médiatrices",
-                "description": "On construit les médiatrices de deux côtés, on repère leur point d'intersection $O$, puis on trace le cercle passant par les trois sommets."
-              },
-              {
-                "type": "exercice",
-                "title": "Déterminer la position de l'orthocentre et du centre du cercle inscrit",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Tracer les hauteurs d'un triangle acutangle ou obtusangle à l'équerre",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Hauteur issue d'un sommet : droite perpendiculaire au côté opposé",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Concours des trois hauteurs d'un triangle en un point appelé orthocentre",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Aire d'un triangle : moitié du produit de la base par la hauteur",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Bissectrices et cercle inscrit",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Construire la bissectrice d'un angle et vérifier l'équidistance aux côtés",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Bissectrice d'un angle : axe de symétrie équidistant des deux côtés",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Concours des trois bissectrices au centre du cercle inscrit dans le triangle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Confusion des droites remarquables dans les triangles isocèles et équilatéraux",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer la mesure d'un angle à l'aide du point de concours des bissectrices",
+            "description": "Comme le centre du cercle inscrit est équidistant des côtés, on utilise la bissectrice du troisième angle pour déduire sa mesure exacte."
           }
         ]
       }
@@ -578,67 +583,62 @@
     "chapter": "Chapitre 8 : Développement et factorisation",
     "sections": [
       {
-        "name": "Expressions littérales et distributivité",
-        "subsections": [
+        "name": "Expressions littérales et calcul algébrique",
+        "items": [
           {
-            "name": "Développement et réduction d'expressions",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Calculer le produit de deux nombres par décomposition décimale distributive",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Expression littérale comportant des lettres représentant des nombres relatifs",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Développement par distributivité simple $k(a+b)$ et double $(a+b)(c+d)$",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Factorisation d'une somme par extraction d'un facteur commun",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Développer une expression avec soustraction en appliquant la règle des signes",
-                "description": "Pour $A=-5x(2x-4)$, on distribue $-5x$ pour obtenir $A=-10x^2+20x$ en appliquant la règle des signes."
-              }
-            ]
+            "type": "activity",
+            "title": "Calculer l'aire d'un rectangle en fonction d'une variable littérale",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Expression littérale contenant des lettres représentant des nombres relatifs",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Suppression du signe de multiplication devant une lettre ou une parenthèse",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Développement par distributivité simple $k(a\\pm b)$ et double $(a+b)(c+d)$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Développer et réduire une expression littérale avec règle des signes",
+            "description": "Pour $A=-5x(2x-4)$, on distribue le terme pour obtenir $-10x^2+20x$ en appliquant la règle des signes."
           }
         ]
       },
       {
-        "name": "Identités remarquables usuelles",
-        "subsections": [
+        "name": "Factorisation et identités remarquables",
+        "items": [
           {
-            "name": "Carrés de sommes et différences",
-            "items": [
-              {
-                "type": "property",
-                "title": "Identités remarquables : $(a+b)^2$, $(a-b)^2$ et $(a-b)(a+b)$",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Calculer mentalement un carré en utilisant une identité remarquable",
-                "description": "Pour calculer $19^2$, on écrit $(20-1)^2 = 20^2 - 2\\times 20\\times 1 + 1^2 = 400 - 40 + 1 = 361$."
-              },
-              {
-                "type": "application",
-                "title": "Factoriser une différence de deux carrés de la forme $a^2-b^2$",
-                "description": "Pour factoriser $9-x^2$, on identifie $3^2-x^2$, ce qui donne directement $(3-x)(3+x)$."
-              },
-              {
-                "type": "exercice",
-                "title": "Développer et factoriser des expressions algébriques complexes du second degré",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Factoriser des expressions algébriques par recherche d'un facteur commun",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Factoriser une somme ou différence : transformer en produit de facteurs",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Identités remarquables usuelles : $(a\\pm b)^2$ et $(a-b)(a+b)=a^2-b^2$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer mentalement un carré en utilisant une identité remarquable",
+            "description": "Pour $19^2=(20-1)^2=20^2-2\\times 20\\times 1+1^2=400-40+1=361$, on calcule rapidement sans poser la multiplication."
+          },
+          {
+            "type": "application",
+            "title": "Factoriser une différence de deux carrés de la forme $a^2-b^2$",
+            "description": "Pour $9-x^2$, on identifie $3^2-x^2$, ce qui permet d'écrire immédiatement la forme factorisée $(3-x)(3+x)$."
           }
         ]
       }
@@ -648,67 +648,52 @@
     "chapter": "Chapitre 9 : Équations",
     "sections": [
       {
-        "name": "Notion d'équation et propriétés des égalités",
-        "subsections": [
+        "name": "Notion d'équation et règles d'égalité",
+        "items": [
           {
-            "name": "Égalité, addition et multiplication",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Modéliser une situation d'équilibre sur une balance par une égalité",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Équation à une inconnue et notion de solution vérifiant l'égalité",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Invariance d'une égalité par addition ou soustraction d'un même nombre",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Invariance d'une égalité par multiplication ou division par un nombre non nul",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Résoudre une équation du premier degré en isolant l'inconnue",
-                "description": "Pour résoudre $7x-3=2x+9$, on soustrait $2x$ puis on ajoute $3$ pour obtenir $5x=12$, d'où $x=2{,}4$."
-              }
-            ]
+            "type": "activity",
+            "title": "Modéliser une balance en équilibre par une égalité mathématique",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Équation du premier degré, inconnue et vérification d'un nombre solution",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Invariance de l'égalité par addition ou soustraction d'un même nombre",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Invariance de l'égalité par multiplication ou division par un nombre non nul",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre pas à pas une équation linéaire du premier degré",
+            "description": "Pour résoudre $7x-3=2x+9$, on soustrait $2x$ puis on ajoute $3$ pour obtenir $5x=12$, d'où la solution unique $x=2{,}4$."
           }
         ]
       },
       {
-        "name": "Résolution de problèmes par équations",
-        "subsections": [
+        "name": "Résolution de problèmes par mise en équation",
+        "items": [
           {
-            "name": "Méthode de mise en équation",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Traduire des problèmes d'âges ou de géométrie par des équations",
-                "description": ""
-              },
-              {
-                "type": "method",
-                "title": "Étapes de résolution : choix de l'inconnue, mise en équation et vérification",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Résoudre un problème concret de facture à l'aide d'une équation",
-                "description": "On pose $u$ le nombre d'unités pour écrire $0{,}62u+86=284{,}40$, dont la résolution donne $u=320$ unités consommées."
-              },
-              {
-                "type": "exercice",
-                "title": "Résoudre des équations linéaires et des problèmes arithmétiques concrets",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Traduire un problème concret de calcul de prix par une équation",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Méthode de résolution : choix de l'inconnue, équation, résolution et vérification",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résoudre un problème d'abonnement téléphonique à l'aide d'une équation",
+            "description": "En posant $u$ le nombre d'unités consommées, l'égalité $0{,}62u+86=284{,}40$ conduit après résolution à $u=320$ unités."
           }
         ]
       }
@@ -719,76 +704,61 @@
     "sections": [
       {
         "name": "Définition et symétriques de figures",
-        "subsections": [
+        "items": [
           {
-            "name": "Symétrique d'un point et éléments géométriques",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Effectuer un demi-tour autour d'un point sur papier quadrillé",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Symétrique d'un point $A$ par rapport à $I$ : $I$ milieu de $[AA']$",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Le symétrique d'un segment est un segment parallèle de même longueur",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Le symétrique d'une droite est une droite qui lui est parallèle",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Le symétrique d'un angle est un angle de même mesure",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Le symétrique d'un cercle est un cercle de même rayon",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Effectuer un demi-tour d'une figure géométrique sur papier quadrillé",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Symétrique d'un point par rapport à $I$ : $I$ est milieu de $[AA']$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Le symétrique d'un segment est un segment parallèle de même longueur",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Le symétrique d'une droite est une droite qui lui est parallèle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Le symétrique d'un angle a même mesure et celui d'un cercle a même rayon",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Construire l'image d'un polygone par une symétrie centrale",
+            "description": "On construit les symétriques de chaque sommet par rapport au centre $O$, puis on relie les points obtenus."
           }
         ]
       },
       {
         "name": "Propriétés de conservation et centre de symétrie",
-        "subsections": [
+        "items": [
           {
-            "name": "Conservations et figures invariantes",
-            "items": [
-              {
-                "type": "property",
-                "title": "Conservation de l'alignement, des distances, des angles et des aires",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Centre de symétrie d'une figure invariante par demi-tour autour d'un point",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Construire le symétrique d'un triangle par rapport à un point extérieur",
-                "description": "On construit les symétriques respectifs des trois sommets par rapport au centre $O$, formant un triangle de dimensions identiques."
-              },
-              {
-                "type": "application",
-                "title": "Prouver le parallélisme de segments à l'aide de la symétrie centrale",
-                "description": "Dans un rectangle de centre $O$, le symétrique d'un segment $[MN]$ est $[M'N']$, ce qui démontre que $(MN) // (M'N')$."
-              },
-              {
-                "type": "exercice",
-                "title": "Construire les symétriques de polygones et identifier des centres de symétrie",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Identifier le centre de symétrie d'un dessin ou d'un pavage",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation de l'alignement, des distances, des angles et des aires",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Centre de symétrie d'une figure invariante par demi-tour autour d'un point",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Prouver le parallélisme de deux segments par symétrie centrale",
+            "description": "Dans un rectangle de centre $O$, le symétrique d'un segment $[MN]$ étant $[M'N']$, les deux segments sont nécessairement parallèles."
           }
         ]
       }
@@ -799,86 +769,71 @@
     "sections": [
       {
         "name": "Le parallélogramme",
-        "subsections": [
+        "items": [
           {
-            "name": "Propriétés caractéristiques et reconnaissance",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Construire un quadrilatère à bandes parallèles et observer ses côtés opposés",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Parallélogramme : quadrilatère dont les côtés opposés sont deux à deux parallèles",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Diagonales se coupant en leur milieu et centre de symétrie",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Égalité des longueurs des côtés opposés et égalité des angles opposés",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Critères de reconnaissance par les côtés opposés ou les diagonales",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Aire du parallélogramme donnée par le produit base fois hauteur : $A=b\\times h$",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Construire un quadrilatère dont les diagonales se coupent en leur milieu",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Parallélogramme : quadrilatère dont les côtés opposés sont parallèles deux à deux",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Diagonales se coupant en leur milieu et centre de symétrie",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Égalité des côtés opposés et égalité des angles opposés",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Formule de calcul de l'aire d'un parallélogramme : $A = b \\times h$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Construire un parallélogramme à partir des longueurs de ses diagonales",
+            "description": "On trace deux segments se coupant en leur milieu commun $O$, puis on relie leurs extrémités pour obtenir le parallélogramme."
           }
         ]
       },
       {
         "name": "Quadrilatères particuliers",
-        "subsections": [
+        "items": [
           {
-            "name": "Rectangle, losange et carré",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Classer les quadrilatères selon l'orthogonalité et la longueur de leurs diagonales",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Rectangle : quadrilatère à quatre angles droits et diagonales de même longueur",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Losange : quadrilatère à quatre côtés égaux et diagonales perpendiculaires",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Carré possédant simultanément les propriétés du rectangle et du losange",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Axes de symétrie des quadrilatères particuliers : médiatrices et diagonales",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Démontrer qu'un quadrilatère est un losange par ses diagonales perpendiculaires",
-                "description": "Si les diagonales d'un parallélogramme se coupent en leur milieu perpendiculairement, on conclut qu'il s'agit d'un losange."
-              },
-              {
-                "type": "exercice",
-                "title": "Démontrer la nature précise de quadrilatères à l'aide des propriétés géométriques",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Classer les quadrilatères particuliers selon les propriétés de leurs diagonales",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Rectangle : parallélogramme possédant un angle droit et diagonales de même longueur",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Losange : parallélogramme à quatre côtés égaux et diagonales perpendiculaires",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Carré : quadrilatère régulier à la fois rectangle et losange",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Axes de symétrie des quadrilatères particuliers : médiatrices et diagonales",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Démontrer qu'un parallélogramme est un losange par ses diagonales",
+            "description": "Si un parallélogramme a ses diagonales perpendiculaires en leur milieu, on applique la propriété caractéristique pour conclure au losange."
           }
         ]
       }
@@ -889,256 +844,221 @@
     "sections": [
       {
         "name": "Angles alternes-internes et correspondants",
-        "subsections": [
+        "items": [
           {
-            "name": "Positions relatives formées par une sécante",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Identifier les angles formés par deux droites coupées par une sécante",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Angles alternes-internes situés de part et d'autre de la sécante",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Angles correspondants situés du même côté de la sécante",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Égalité des angles alternes-internes et correspondants formés par deux parallèles",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Réciproque : deux droites formant des angles alternes-internes égaux sont parallèles",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Calculer la mesure d'un angle alterne-interne entre parallèles",
-                "description": "Sachant que $(xy) // (zt)$ et qu'un angle vaut $72^\\circ$, l'angle alterne-interne associé mesure également $72^\\circ$."
-              },
-              {
-                "type": "application",
-                "title": "Démontrer le parallélisme de deux droites par égalité d'angles",
-                "description": "On constate que deux angles alternes-internes mesurent tous deux $43^\\circ$, ce qui prouve le parallélisme des droites supports."
-              },
-              {
-                "type": "exercice",
-                "title": "Calculer des mesures d'angles et prouver des parallélismes de droites",
-                "description": ""
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "chapter": "Chapitre 13 : Cercle et disque",
-    "sections": [
-      {
-        "name": "Éléments géométriques du cercle",
-        "subsections": [
+            "type": "activity",
+            "title": "Identifier les angles formés par deux droites coupées par une sécante",
+            "description": ""
+          },
           {
-            "name": "Rayon, diamètre, corde et disque",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Tracer l'ensemble des points situés à distance fixée d'un centre",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Cercle de centre $O$ et rayon $r$, diamètre $2r$, corde et arc",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Disque : ensemble des points du plan à distance inférieure ou égale à $r$",
-                "description": ""
-              }
-            ]
+            "type": "definition",
+            "title": "Angles alternes-internes situés de part et d'autre de la sécante",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Angles correspondants situés du même côté de la droite sécante",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Égalité des angles alternes-internes et correspondants formés par deux parallèles",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la mesure d'un angle alterne-interne entre parallèles",
+            "description": "Sachant que $(xy)//(zt)$ et qu'un angle vaut $72^\\circ$, l'angle alterne-interne correspondant mesure exactement $72^\\circ$."
           }
         ]
       },
       {
-        "name": "Tangente, périmètre et aire",
-        "subsections": [
+        "name": "Réciproques et parallélisme de droites",
+        "items": [
           {
-            "name": "Droites tangentes et formules métriques",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Observer les positions relatives d'une droite et d'un cercle",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Tangente à un cercle en un point : droite perpendiculaire au rayon",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Caractérisation de la tangente par la distance du centre à la droite",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Périmètre du cercle : $P = 2\\pi r = \\pi d$",
-                "description": ""
-              },
-              {
-                "type": "rule",
-                "title": "Aire du disque : $A = \\pi r^2$",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer le périmètre et l'aire d'un disque de rayon donné",
-                "description": "Pour un rayon $r=4\\,\\text{cm}$, le périmètre vaut $P=2\\pi\\times 4\\approx 25{,}13\\,\\text{cm}$ et l'aire $A=\\pi\\times 4^2\\approx 50{,}27\\,\\text{cm}^2$."
-              },
-              {
-                "type": "exercice",
-                "title": "Construire des tangentes au cercle et calculer des aires de couronnes",
-                "description": ""
-              }
-            ]
+            "type": "property",
+            "title": "Réciproque : deux droites formant des angles alternes-internes égaux sont parallèles",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Réciproque : deux droites formant des angles correspondants égaux sont parallèles",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Prouver le parallélisme de deux droites par observation d'angles égaux",
+            "description": "Deux angles alternes-internes mesurant tous deux $43^\\circ$, la propriété réciproque permet de conclure que les deux droites sont parallèles."
           }
         ]
       }
     ]
   },
   {
-    "chapter": "Chapitre 14 : Prisme droit et cylindre de révolution",
+    "chapter": "Chapitre 13 : Cercle, disque",
     "sections": [
       {
-        "name": "Description et représentations dans l'espace",
-        "subsections": [
+        "name": "Éléments géométriques du cercle et du disque",
+        "items": [
           {
-            "name": "Solides usuels, perspective et patrons",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Dénombrer les faces, sommets et arêtes d'un prisme droit",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Prisme droit à bases polygonales superposables et faces latérales rectangulaires",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Cylindre de révolution engendré par rotation d'un rectangle autour d'un axe",
-                "description": ""
-              },
-              {
-                "type": "method",
-                "title": "Représentation en perspective cavalière et tracé des patrons de solides",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Tracer l'ensemble des points situés à distance fixée d'un point",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Cercle de centre $O$ et rayon $r$, diamètre $d=2r$, corde et arc",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Disque : ensemble des points du plan à distance inférieure ou égale à $r$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Tangente à un cercle en un point : perpendiculaire au rayon en ce point",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Tracer la tangente à un cercle passant par un point donné du cercle",
+            "description": "On trace le rayon $[OA]$ reliant le centre au point, puis la perpendiculaire à ce rayon passant par $A$."
           }
         ]
       },
       {
-        "name": "Aires latérales et volumes",
-        "subsections": [
+        "name": "Périmètre et aire",
+        "items": [
           {
-            "name": "Calculs métriques et conversions",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Calculer l'aire latérale d'un prisme en déroulant ses faces latérales",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Aire latérale : produit du périmètre de base par la hauteur du solide",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Aire totale : somme de l'aire latérale et des aires des deux bases",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Volume du prisme droit et du cylindre : $V = A_{\\text{base}} \\times h$",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer l'aire latérale et le volume d'un cylindre de révolution",
-                "description": "Pour un cylindre de rayon $r=1\\,\\text{cm}$ et hauteur $h=3\\,\\text{cm}$, l'aire latérale vaut $2\\pi\\times 1\\times 3\\approx 18{,}9\\,\\text{cm}^2$ et le volume $\\pi\\times 1^2\\times 3\\approx 9{,}42\\,\\text{cm}^3$."
-              },
-              {
-                "type": "exercice",
-                "title": "Calculer des volumes de solides composés et effectuer des conversions d'unités",
-                "description": ""
-              }
-            ]
+            "type": "rule",
+            "title": "Formule du périmètre du cercle : $P = 2\\pi r = \\pi d$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Formule de l'aire du disque de rayon $r$ : $A = \\pi r^2$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le périmètre et l'aire d'un disque de rayon donné",
+            "description": "Pour un disque de rayon $r=4\\,\\text{cm}$, son périmètre vaut $2\\pi\\times 4\\approx 25{,}13\\,\\text{cm}$ et son aire $\\pi\\times 4^2\\approx 50{,}27\\,\\text{cm}^2$."
           }
         ]
       }
     ]
   },
   {
-    "chapter": "Chapitre 15 : Droite graduée et repère dans le plan",
+    "chapter": "Chapitre 14 : Prisme et cylindre",
     "sections": [
       {
-        "name": "Graduation et repérage cartésien",
-        "subsections": [
+        "name": "Description géométrique et patrons de solides",
+        "items": [
           {
-            "name": "Abscisses, coordonnées et distances",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Graduer une droite et déterminer l'abscisse de points repérés",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Droite graduée par une origine $O$, un sens et une unité",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Calcul de la distance entre deux points d'une droite graduée",
-                "description": ""
-              },
-              {
-                "type": "activity",
-                "title": "Repérer la position d'une ville sur une carte quadrillée",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Repère orthogonal du plan formé de deux axes gradués perpendiculaires",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Couple de coordonnées $(x,y)$ d'un point : abscisse et ordonnée",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Placer des points et lire leurs coordonnées dans un repère",
-                "description": "On place les points $A(3;-1{,}5)$ et $B(-2;1)$ dans un repère orthogonal et on vérifie leurs positions relatives par rapport aux axes."
-              },
-              {
-                "type": "exercice",
-                "title": "Déterminer des distances sur un axe et tracer des figures dans un repère",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Dénombrer les faces, sommets et arêtes d'un prisme droit",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Prisme droit à bases polygonales parallèles et faces latérales rectangulaires",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Cylindre de révolution engendré par rotation d'un rectangle autour d'un axe",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Construction des patrons et représentation en perspective cavalière des solides",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Construire le patron d'un prisme droit à base triangulaire",
+            "description": "On trace les trois faces latérales rectangulaires consécutives, puis on adjoint les deux triangles de base de part et d'autre."
+          }
+        ]
+      },
+      {
+        "name": "Aires et volumes des solides",
+        "items": [
+          {
+            "type": "property",
+            "title": "Aire latérale : produit du périmètre de base par la hauteur du solide",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Volume du prisme et du cylindre : $V = A_{\\text{base}} \\times h$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Unités de volume, contenance et correspondances décimales : $1\\,\\text{L}=1\\,\\text{dm}^3$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer l'aire latérale et le volume d'un cylindre de révolution",
+            "description": "Pour un cylindre de rayon $r=1\\,\\text{cm}$ et de hauteur $h=3\\,\\text{cm}$, l'aire latérale vaut $2\\pi\\times 1\\times 3\\approx 18{,}9\\,\\text{cm}^2$ et le volume $\\pi\\times 1^2\\times 3\\approx 9{,}42\\,\\text{cm}^3$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 15 : Droite graduée, repère dans le plan",
+    "sections": [
+      {
+        "name": "Droite graduée et distance sur un axe",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Graduer une droite avec une origine, un sens et une unité",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Droite graduée, repérage et abscisse d'un point sur l'axe",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Calcul de la distance entre deux points d'une droite graduée",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer la distance entre deux abscisses sur un axe gradué",
+            "description": "Pour les points $A(3)$ et $B(-1{,}75)$, la distance vaut $AB=3-(-1{,}75)=4{,}75$ unités de longueur."
+          }
+        ]
+      },
+      {
+        "name": "Repère orthogonal et coordonnées d'un point",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Repérer la position d'un point dans le plan par deux coordonnées",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Repère orthogonal constitué de deux axes gradués perpendiculaires en l'origine $O$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Coordonnées d'un point : couple $(x;y)$ formé de l'abscisse et l'ordonnée",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Placer des points à coordonnées relatives et tracer des figures associées",
+            "description": "On place les points $A(3;-1{,}5)$ et $B(2;1)$ dans un repère orthogonal en traçant les parallèles aux axes pour localiser l'intersection."
           }
         ]
       }
@@ -1148,72 +1068,57 @@
     "chapter": "Chapitre 16 : Proportionnalité",
     "sections": [
       {
-        "name": "Tableaux, graphiques et quatrième proportionnelle",
-        "subsections": [
+        "name": "Tableaux et caractérisation graphique",
+        "items": [
           {
-            "name": "Propriétés de la proportionnalité directe",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Compléter un tableau de prix selon le nombre de litres d'essence",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Tableau de proportionnalité et coefficient multiplicateur constant entre les lignes",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Caractérisation graphique : points alignés avec l'origine du repère",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Quatrième proportionnelle calculée par l'égalité des produits en croix",
-                "description": ""
-              },
-              {
-                "type": "example",
-                "title": "Calculer une quatrième proportionnelle par produit en croix",
-                "description": "Pour $\\frac{5}{4{,}25}=\\frac{3}{x}$, on calcule $x=\\frac{4{,}25\\times 3}{5}=2{,}55$."
-              }
-            ]
+            "type": "activity",
+            "title": "Comparer le périmètre et l'aire d'un carré face à la proportionnalité",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Tableau de proportionnalité et coefficient multiplicateur constant reliant les lignes",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Caractérisation graphique : points alignés sur une droite passant par l'origine",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Quatrième proportionnelle calculée par l'égalité des produits en croix",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer une quatrième proportionnelle par produit en croix",
+            "description": "Pour un tableau liant $2\\,\\text{L}$ à $24\\,\\text{DH}$ et $5\\,\\text{L}$ à $x$, on calcule $x=\\frac{5\\times 24}{2}=60\\,\\text{DH}$."
           }
         ]
       },
       {
-        "name": "Pourcentages, échelles et vitesse",
-        "subsections": [
+        "name": "Pourcentages, échelles et vitesse moyenne",
+        "items": [
           {
-            "name": "Applications concrètes de la proportionnalité",
-            "items": [
-              {
-                "type": "property",
-                "title": "Application d'un pourcentage $p\\%$ équivalente à une quatrième proportionnelle",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Échelle : rapport constant de la distance sur le plan à la distance réelle",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Mouvement uniforme : distance proportionnelle au temps selon la vitesse constante",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Calculer une distance réelle à l'aide d'une échelle cartographique",
-                "description": "Sur une carte à l'échelle $\\frac{1}{5\\,000\\,000}$, une distance mesurée de $4{,}8\\,\\text{cm}$ correspond à $4{,}8\\times 50\\,\\text{km}=240\\,\\text{km}$ réels."
-              },
-              {
-                "type": "exercice",
-                "title": "Résoudre des problèmes de pourcentages, d'échelles et de vitesse moyenne",
-                "description": ""
-              }
-            ]
+            "type": "definition",
+            "title": "Prendre $p\\%$ d'une quantité revient à la multiplier par $\\frac{p}{100}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Échelle d'un plan : rapport constant de la distance représentée à la distance réelle",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vitesse moyenne en mouvement uniforme : quotient de la distance par la durée",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer une vitesse moyenne et une distance parcourue proportionnelle",
+            "description": "Pour une voiture roulant à $80\\,\\text{km/h}$ pendant $1\\,\\text{h}\\,30\\,\\text{min}$, la distance parcourue vaut $80\\times 1{,}5=120\\,\\text{km}$."
           }
         ]
       }
@@ -1223,77 +1128,57 @@
     "chapter": "Chapitre 17 : Statistiques",
     "sections": [
       {
-        "name": "Organisation des données et fréquences",
-        "subsections": [
+        "name": "Organisation des données, effectifs et fréquences",
+        "items": [
           {
-            "name": "Vocabulaire, effectifs et pourcentages",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Organiser des résultats d'enquête sportive dans un tableau à double entrée",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Population statistique, individu, caractère qualitatif ou quantitatif et modalités",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Effectif d'une modalité, effectif total et fréquence décimale",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Somme des fréquences égale à $1$ et somme des pourcentages égale à $100$",
-                "description": ""
-              },
-              {
-                "type": "definition",
-                "title": "Regroupement de données quantitatives en classes d'égale amplitude",
-                "description": ""
-              }
-            ]
+            "type": "activity",
+            "title": "Regrouper les résultats d'une enquête dans un tableau d'effectifs",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Population, individu, caractère statistique qualitatif ou quantitatif et modalités",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Effectif, effectif total et fréquence décimale d'une valeur : $f=\\frac{n}{N}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Effectif cumulé croissant et regroupement en classes d'égale amplitude",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Construire le tableau des effectifs et fréquences d'une série",
+            "description": "On compte le nombre d'apparitions de chaque modalité, on calcule l'effectif total $N=40$, puis on déduit les fréquences décimales $\\frac{n}{40}$."
           }
         ]
       },
       {
-        "name": "Représentations graphiques statistiques",
-        "subsections": [
+        "name": "Représentations graphiques et moyenne pondérée",
+        "items": [
           {
-            "name": "Diagrammes et interprétation des données",
-            "items": [
-              {
-                "type": "activity",
-                "title": "Construire un diagramme circulaire en calculant les angles proportionnels",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Diagramme en bâtons ou en barres à hauteurs proportionnelles aux effectifs",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Histogramme formé de rectangles contigus pour données continues en classes",
-                "description": ""
-              },
-              {
-                "type": "property",
-                "title": "Diagramme circulaire à secteurs d'angles proportionnels aux effectifs : $\\alpha = \\frac{n}{N}\\times 360^\\circ$",
-                "description": ""
-              },
-              {
-                "type": "application",
-                "title": "Construire un diagramme semi-circulaire à partir d'un tableau d'effectifs",
-                "description": "Pour chaque modalité d'une série de $120$ personnes, on multiplie la fréquence par $180^\\circ$ pour obtenir les angles des secteurs."
-              },
-              {
-                "type": "exercice",
-                "title": "Dresser des tableaux d'effectifs cumulés et construire les graphiques associés",
-                "description": ""
-              }
-            ]
+            "type": "property",
+            "title": "Diagramme en bâtons pour variable discrète et histogramme pour classes",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Diagramme circulaire à secteurs d'angles proportionnels : $\\alpha=\\frac{n}{N}\\times 360^\\circ$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Moyenne pondérée d'une série : quotient de la somme pondérée par l'effectif total",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Construire un diagramme circulaire en calculant les angles des secteurs",
+            "description": "Pour un effectif de $16$ sur un total de $160$ élèves, l'angle au centre associé vaut $\\frac{16}{160}\\times 360^\\circ=36^\\circ$."
           }
         ]
       }

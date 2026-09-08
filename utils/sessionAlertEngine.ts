@@ -26,12 +26,12 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
     config.timetableClock,
   ).filter(block => ids.has(block.classId));
   const current = holidays ? [] : blocks.filter(block => minute >= block.startMin && minute < block.endMin);
-  if (!settings?.enabled || (settings.quietDuringVacations && holidays)) return { current, events: [] as SessionAlert[], today };
+  if (!(settings?.enabled ?? true) || ((settings?.quietDuringVacations ?? true) && holidays)) return { current, events: [] as SessionAlert[], today };
   const groups = new Map<number, SessionBlock[]>();
   blocks.forEach(block => groups.set(block.endMin, [...groups.get(block.endMin) ?? [], block]));
   const events: SessionAlert[] = [];
-  const lead = reminderMinutes(settings.sessionReminderMinutes, 1, 10);
-  const grace = reminderMinutes(settings.missingDateReminderMinutes, 5);
+  const lead = reminderMinutes(settings?.sessionReminderMinutes, 1, 10);
+  const grace = reminderMinutes(settings?.missingDateReminderMinutes, 5);
   for (const [end, group] of groups) {
     // 60-second freshness window survives ordinary re-renders but never rings after a finished session.
     const due = end - lead;

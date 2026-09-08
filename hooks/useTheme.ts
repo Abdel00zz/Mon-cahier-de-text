@@ -84,7 +84,7 @@ export function useTheme(
 
     const accentKey = themeCustomization?.accentColor || 'blue';
     const borderRadiusKey = themeCustomization?.borderRadius || 'default';
-    const uiFontKey = themeCustomization?.uiFont || 'jakarta';
+    const uiFontKey = themeCustomization?.uiFont || 'cyber-clean';
     const cardStyleKey = themeCustomization?.cardStyle || 'classic';
     const tableStyleKey = themeCustomization?.tableStyle || 'clean';
 
@@ -116,7 +116,7 @@ export function useTheme(
     root.style.setProperty('--radius-3xl', radiusTokens['3xl']);
 
     // 3. UI Font Family
-    const uiFont = UI_FONTS_MAP[uiFontKey] || UI_FONTS_MAP.jakarta;
+    const uiFont = UI_FONTS_MAP[uiFontKey] || UI_FONTS_MAP['cyber-clean'];
     root.style.setProperty('--font-sans', uiFont.family);
 
     // 4. Custom Direct Colors if set
