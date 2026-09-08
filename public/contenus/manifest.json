@@ -27,6 +27,12 @@
       "fichier": "tc-sciences-mathematiques.json"
     },
     {
+      "niveau": "Tronc Commun Lettres et Sciences Humaines",
+      "matiere": "Mathématiques",
+      "titre": "Programme officiel, Tronc Commun Lettres et Sciences Humaines · Mathématiques",
+      "fichier": "tc-lettres-mathematiques.json"
+    },
+    {
       "niveau": "1er Bac Sciences Expérimentales",
       "matiere": "Mathématiques",
       "titre": "Programme officiel, 1er Bac Sciences Expérimentales Mathématiques",

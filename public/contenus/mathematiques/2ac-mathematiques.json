@@ -1,20 +1,1277 @@
-{
-  "_commentaire": "Programme officiel conforme aux orientations pédagogiques et à la répartition annuelle 2026-2027, 2AC Mathématiques (Maroc / APIC).",
-  "lessonsData": [
-    { "type": "chapter", "title": "Chapitre 1 : Les nombres rationnels : Introduction et comparaison", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 2 : Les nombres rationnels : Somme et différence", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 3 : Les nombres rationnels : Produit et quotient", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 4 : La symétrie axiale", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 5 : Les puissances", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 6 : Les droites remarquables dans un triangle", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 7 : Milieux et parallèles dans un triangle", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 8 : Calcul littéral", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 9 : Équations", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 10 : Ordre et opérations", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 11 : Triangle rectangle et cercle", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 12 : Translation et vecteurs", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 13 : Pyramide et cône de révolution", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 14 : La proportionnalité", "sections": [] },
-    { "type": "chapter", "title": "Chapitre 15 : Statistique", "sections": [] }
-  ]
-}
+[
+  {
+    "chapter": "Chapitre 1 : Introduction des nombres rationnels",
+    "sections": [
+      {
+        "name": "Définition et signe d'un nombre rationnel",
+        "subsections": [
+          {
+            "name": "Écriture fractionnaire et signe",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Distinguer écriture décimale finie et écriture fractionnaire infinie",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Nombre rationnel : quotient $\\frac{a}{b}$ d'un entier relatif par un entier non nul",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Règle des signes : $\\frac{-a}{-b}=\\frac{a}{b}$ et $\\frac{-a}{b}=\\frac{a}{-b}=-\\frac{a}{b}$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Déterminer le signe et la forme simplifiée d'un quotient rationnel",
+                "description": "On applique la règle des signes pour simplifier $\\frac{-7}{-8}=\\frac{7}{8}$ et $\\frac{5}{-3}=-\\frac{5}{3}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Égalité, simplification et dénominateur commun",
+        "subsections": [
+          {
+            "name": "Simplification et produits en croix",
+            "items": [
+              {
+                "type": "rule",
+                "title": "Simplification : invariance du quotient par multiplication ou division non nulle",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Égalité des produits en croix : $\\frac{a}{b}=\\frac{c}{d} \\Leftrightarrow ad=bc$",
+                "description": ""
+              },
+              {
+                "type": "method",
+                "title": "Réduction de deux rationnels au même dénominateur positif commun",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Déterminer deux nombres rationnels vérifiant une proportion et une somme",
+                "description": "Sachant que $\\frac{x}{y}=\\frac{2}{3}$ et $x+y=-5$, on pose $\\frac{x}{2}=\\frac{y}{3}=\\frac{x+y}{5}=-1$, ce qui donne $x=-2$ et $y=-3$."
+              },
+              {
+                "type": "exercice",
+                "title": "Vérifier l'égalité de nombres rationnels et rendre irréductibles des fractions",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : Addition et soustraction des nombres rationnels",
+    "sections": [
+      {
+        "name": "Addition de deux nombres rationnels",
+        "subsections": [
+          {
+            "name": "Sommes de rationnels et dénominateurs",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Additionner deux surfaces fractionnaires de même dénominateur sur un quadrillage",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Addition de deux rationnels de même dénominateur : $\\frac{a}{b}+\\frac{c}{b}=\\frac{a+c}{b}$",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Addition avec dénominateurs distincts : réduction préalable au dénominateur commun",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Propriétés d'associativité, de commutativité et élément neutre zéro",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Opposé et soustraction de nombres rationnels",
+        "subsections": [
+          {
+            "name": "Différence et parenthèses",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Opposé d'un rationnel : $\\frac{a}{b}+(-\\frac{a}{b})=0$",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Soustraction équivalente à l'addition de l'opposé : $\\frac{a}{b}-\\frac{c}{d}=\\frac{a}{b}+(-\\frac{c}{d})$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer la différence de deux rationnels à dénominateurs multiples",
+                "description": "Pour $A=\\frac{3}{20}-\\frac{11}{28}$, on cherche le PPCM de $20$ et $28$ qui vaut $140$, d'où $A=\\frac{21-55}{140}=-\\frac{34}{140}=-\\frac{17}{70}$."
+              },
+              {
+                "type": "application",
+                "title": "Calculer une somme algébrique rationnelle avec parenthèses et crochets",
+                "description": "On supprime les parenthèses en appliquant la règle des signes opposés, puis on regroupe les termes de même dénominateur."
+              },
+              {
+                "type": "exercice",
+                "title": "Calculer des sommes algébriques de rationnels et simplifier le résultat",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : Symétrie axiale",
+    "sections": [
+      {
+        "name": "Symétrique d'un point et d'une figure",
+        "subsections": [
+          {
+            "name": "Définition et constructions élémentaires",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Construire le symétrique d'un point par rapport à une droite",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Symétrique d'un point : $(\\Delta)$ est la médiatrice du segment $[MM']$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Conservation de l'alignement des points par symétrie axiale",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Le symétrique d'un segment est un segment de même longueur",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Le symétrique d'une droite est une droite sécante ou parallèle",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Conservation de la mesure des angles et des aires géométriques",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Le symétrique d'un cercle est un cercle de même rayon",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Axes de symétrie des figures usuelles",
+        "subsections": [
+          {
+            "name": "Figures invariantes et démonstrations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Axes de symétrie du triangle isocèle, équilatéral, losange, rectangle et carré",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Démontrer l'égalité de deux angles géométriques par symétrie axiale",
+                "description": "Dans un cerf-volant $ABCD$ où $(AC)$ est la médiatrice de $[BD]$, les angles $\\widehat{ABC}$ et $\\widehat{ADC}$ sont symétriques, donc égaux."
+              },
+              {
+                "type": "exercice",
+                "title": "Construire les symétriques de figures composées et démontrer des propriétés",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : Multiplication et division des nombres rationnels",
+    "sections": [
+      {
+        "name": "Multiplication des nombres rationnels",
+        "subsections": [
+          {
+            "name": "Produit et propriétés algébriques",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Calculer l'aire d'une surface hachurée par produit de deux fractions",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Produit de deux rationnels : $\\frac{a}{b}\\times\\frac{c}{d}=\\frac{ac}{bd}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Commutativité, associativité et distributivité de la multiplication sur l'addition",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Simplifier les facteurs avant d'effectuer le produit de fractions",
+                "description": "Pour $A=\\frac{9}{5}\\times\\frac{2}{7}=\\frac{18}{35}$ et $C=\\frac{5}{6}\\times\\frac{36}{25}$, on simplifie par $5$ et par $6$ pour trouver directement $\\frac{6}{5}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Inverse et quotient de deux rationnels",
+        "subsections": [
+          {
+            "name": "Division et simplification",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Déterminer le nombre qui multiplié par un rationnel donne un",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Inverse d'un rationnel non nul : $(\\frac{a}{b})^{-1}=\\frac{b}{a}$ avec $\\frac{a}{b}\\times\\frac{b}{a}=1$",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Division de rationnels : $\\frac{a}{b}\\div\\frac{c}{d}=\\frac{a}{b}\\times\\frac{d}{c}$ pour $c \\neq 0$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une équation linéaire de la forme $\\frac{a}{b}x=\\frac{c}{d}$",
+                "description": "Pour $-\\frac{3}{4}x=\\frac{5}{32}$, on multiplie par l'inverse $-\\frac{4}{3}$, ce qui conduit à la solution $x=-\\frac{5}{24}$."
+              },
+              {
+                "type": "exercice",
+                "title": "Calculer des produits et quotients de rationnels avec décomposition préalable",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : Triangle et parallèles",
+    "sections": [
+      {
+        "name": "Théorème des milieux dans un triangle",
+        "subsections": [
+          {
+            "name": "Droite des milieux et segment joint",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Observer les propriétés de parallélisme et de longueur des milieux",
+                "description": ""
+              },
+              {
+                "type": "theorem",
+                "title": "Droite passant par les milieux de deux côtés parallèle au troisième",
+                "description": ""
+              },
+              {
+                "type": "theorem",
+                "title": "Longueur du segment joignant les milieux égale à la moitié du troisième",
+                "description": ""
+              },
+              {
+                "type": "theorem",
+                "title": "Droite passant par un milieu et parallèle à un côté coupe le troisième en son milieu",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer la longueur du segment des milieux dans un triangle",
+                "description": "Dans un triangle $ABC$ avec $BC=5\\,\\text{cm}$, la droite passant par les milieux $I$ et $J$ donne $IJ=\\frac{1}{2}BC=2{,}5\\,\\text{cm}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Droites parallèles et proportionnalité",
+        "subsections": [
+          {
+            "name": "Théorème de proportionnalité des segments",
+            "items": [
+              {
+                "type": "property",
+                "title": "Égalité des trois rapports : si $(MN)//(BC)$, $\\frac{AM}{AB}=\\frac{AN}{AC}=\\frac{MN}{BC}$",
+                "description": ""
+              },
+              {
+                "type": "method",
+                "title": "Partager un segment quelconque en parties égales avec règle et compas",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Calculer une longueur inconnue à l'aide de droites parallèles",
+                "description": "Dans un triangle où $(AB)//(NP)$, on écrit le rapport $\\frac{MA}{MN}=\\frac{AB}{NP}$ pour isoler et calculer la longueur $AB$."
+              },
+              {
+                "type": "exercice",
+                "title": "Démontrer des milieux et calculer des longueurs par théorèmes des parallèles",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 6 : Les quatre opérations sur les nombres rationnels",
+    "sections": [
+      {
+        "name": "Développement, factorisation et opposés",
+        "subsections": [
+          {
+            "name": "Règles opératoires globales",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Calculer l'aire totale d'un rectangle décomposé en sous-surfaces",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Distributivité du produit : $k(a\\pm b)=ka\\pm kb$ et factorisation",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Opposé d'une somme : $-(a+b)=-a-b$ et $-(a-b)=-a+b$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Invariance de la somme et du produit lors du changement d'ordre",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Priorités opératoires des calculs combinés",
+        "subsections": [
+          {
+            "name": "Enchaînements d'opérations et calcul littéral",
+            "items": [
+              {
+                "type": "rule",
+                "title": "Priorité absolue des calculs entre parenthèses sur les autres opérations",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Priorité de la multiplication et division sur l'addition et soustraction",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Évaluer une expression rationnelle combinée avec priorités opératoires",
+                "description": "Pour $A=\\frac{2}{5}-\\frac{7}{4}\\div\\frac{21}{8}$, on effectue d'abord la division en multipliant par l'inverse $\\frac{8}{21}$ avant de soustraire."
+              },
+              {
+                "type": "application",
+                "title": "Calculer la valeur numérique d'une expression littérale fractionnaire complexe",
+                "description": "Pour $E=\\frac{a+\\frac{1}{2}}{b-\\frac{3}{4}}\\div ab$, on remplace $a=\\frac{3}{4}$ et $b=-\\frac{5}{2}$ puis on simplifie méthodiquement le quotient."
+              },
+              {
+                "type": "exercice",
+                "title": "Résoudre des expressions rationnelles composées avec crochets et fractions complexes",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 7 : Droites remarquables dans un triangle",
+    "sections": [
+      {
+        "name": "Médiatrices, bissectrices et hauteurs",
+        "subsections": [
+          {
+            "name": "Points de concours fondamentaux",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Observer les points d'intersection des médiatrices, hauteurs et bissectrices",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Concours des médiatrices au centre $O$ du cercle circonscrit",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Concours des bissectrices au centre $I$ du cercle inscrit",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Concours des trois hauteurs d'un triangle en l'orthocentre $H$",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Médianes et centre de gravité",
+        "subsections": [
+          {
+            "name": "Médianes et triangles particuliers",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Médiane d'un triangle : droite reliant un sommet au milieu opposé",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Concours des médianes au centre de gravité $G$ avec $AG=\\frac{2}{3}AM$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Confusion des quatre droites remarquables dans un triangle équilatéral",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Construire la troisième hauteur issue d'un sommet par l'orthocentre",
+                "description": "On identifie l'orthocentre $H$ à l'intersection de deux hauteurs connues, puis on trace la droite reliant le troisième sommet à $H$."
+              },
+              {
+                "type": "exercice",
+                "title": "Prouver l'alignement de points et le partage d'aires par médianes",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 8 : Puissances",
+    "sections": [
+      {
+        "name": "Puissance d'un nombre rationnel",
+        "subsections": [
+          {
+            "name": "Définition et règle des signes",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Découvrir la notation puissance par produits répétés d'un rationnel",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Puissance entière : $a^n=a\\times a\\times\\dots\\times a$ et inverse $a^{-n}=\\frac{1}{a^n}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Signe d'une puissance : positive si exposant pair, signe de $a$ si impair",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer des puissances à exposants négatifs ou nuls",
+                "description": "On applique les formules pour écrire $(\\frac{3}{8})^{-2}=\\frac{1}{(\\frac{3}{8})^2}=\\frac{64}{9}$ et $(-2016)^0=1$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Propriétés de calcul et notation scientifique",
+        "subsections": [
+          {
+            "name": "Règles sur les exposants et ordre de grandeur",
+            "items": [
+              {
+                "type": "property",
+                "title": "Règles opératoires : $a^n\\times a^m=a^{n+m}$, $(a^n)^m=a^{nm}$ et $(ab)^n=a^n b^n$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Notation scientifique $a\\times 10^p$ avec $1\\le a<10$ et ordre de grandeur",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une équation d'inconnue située en exposant",
+                "description": "Pour résoudre $27^{-x}=3^{-2x}\\times 9$, on ramène tout en puissances de base $3$ pour identifier les exposants et trouver $x=-2$."
+              },
+              {
+                "type": "exercice",
+                "title": "Simplifier des écritures littérales complexes faisant intervenir des puissances",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 9 : Calcul littéral",
+    "sections": [
+      {
+        "name": "Développement et réduction d'expressions",
+        "subsections": [
+          {
+            "name": "Expressions littérales et distributivité",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Calculer le périmètre et l'aire d'une figure selon une variable",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Expression littérale et réduction en regroupant les termes semblables",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Développement par distributivité simple $a(b\\pm c)$ et double $(a+b)(c+d)$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Factorisation consistant à transformer une somme algébrique en produit",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Réduire une expression littérale après suppression des parenthèses",
+                "description": "Pour $E=4(x-2)-2(x-1)-6x$, on développe pour obtenir $4x-8-2x+2-6x$, puis on regroupe pour trouver $-4x-6$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Identités remarquables",
+        "subsections": [
+          {
+            "name": "Carrés remarquables et factorisations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Identités remarquables : $(a+b)^2$, $(a-b)^2$ et $(a+b)(a-b)=a^2-b^2$",
+                "description": ""
+              },
+              {
+                "type": "method",
+                "title": "Organigramme méthodique pour factoriser selon le nombre de termes",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Factoriser un trinôme par la méthode du début de carré",
+                "description": "Pour $x^2-5x+6$, on écrit $(x-\\frac{5}{2})^2-\\frac{25}{4}+6=(x-\\frac{5}{2})^2-(\\frac{1}{2})^2=(x-2)(x-3)$."
+              },
+              {
+                "type": "exercice",
+                "title": "Développer et factoriser des expressions complexes du second degré",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 10 : Triangle rectangle et cercle",
+    "sections": [
+      {
+        "name": "Hypoténuse et cercle circonscrit",
+        "subsections": [
+          {
+            "name": "Médiane relative à l'hypoténuse",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Construire le cercle circonscrit à un triangle rectangle par symétrie",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Dans un triangle rectangle, le milieu de l'hypoténuse est équidistant des sommets",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Réciproque : si la médiane vaut la moitié du côté, le triangle est rectangle",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Le centre du cercle circonscrit à un triangle rectangle est le milieu de l'hypoténuse",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Tout triangle inscrit dans un cercle ayant un diamètre pour côté est rectangle",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer la longueur de la médiane relative à l'hypoténuse",
+                "description": "Dans un triangle $ABC$ rectangle en $A$ avec $BC=9\\,\\text{cm}$, la médiane $AI$ mesure $\\frac{BC}{2}=4{,}5\\,\\text{cm}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Tangente à un cercle",
+        "subsections": [
+          {
+            "name": "Caractérisation géométrique de la tangente",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Tangente à un cercle : droite perpendiculaire au rayon au point de contact",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Tracer des droites perpendiculaires en utilisant le diamètre d'un cercle",
+                "description": "En choisissant des diamètres passant par les points de contact, tout point du cercle forme un angle droit inscrit sans équerre."
+              },
+              {
+                "type": "exercice",
+                "title": "Démontrer l'orthogonalité de droites et calculer des segments remarquables",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 11 : Théorème de Pythagore",
+    "sections": [
+      {
+        "name": "Énoncé et calculs de longueurs",
+        "subsections": [
+          {
+            "name": "Théorème direct de Pythagore",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Démontrer géométriquement l'égalité de Pythagore par comparaison d'aires",
+                "description": ""
+              },
+              {
+                "type": "theorem",
+                "title": "Théorème de Pythagore : dans un triangle rectangle, $BC^2=AB^2+AC^2$",
+                "description": ""
+              },
+              {
+                "type": "proof",
+                "title": "Démonstration du théorème de Pythagore par décomposition d'aires de carrés",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Dans un triangle rectangle, l'hypoténuse est strictement le plus grand côté",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer la longueur exacte de l'hypoténuse d'un triangle rectangle",
+                "description": "Dans le triangle rectangle $ABC$ en $A$ avec $AB=8$ et $AC=6$, $BC^2=64+36=100$, d'où $BC=10\\,\\text{cm}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Introduction aux racines carrées",
+        "subsections": [
+          {
+            "name": "Racine carrée d'un nombre positif",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Racine carrée $\\sqrt{a}$ : nombre positif dont le carré est $a$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Calculer la longueur d'un côté de l'angle droit au dixième",
+                "description": "Avec $BC=7$ et $AC=3$, on calcule $AB^2=49-9=40$, puis on prend la racine carrée pour obtenir $AB=\\sqrt{40}\\approx 6{,}3\\,\\text{cm}$."
+              },
+              {
+                "type": "exercice",
+                "title": "Appliquer le théorème de Pythagore aux losanges, rectangles et trapèzes",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 12 : Cosinus d'un angle aigu",
+    "sections": [
+      {
+        "name": "Définition trigonométrique du cosinus",
+        "subsections": [
+          {
+            "name": "Côté adjacent et rapport trigonométrique",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Établir la constance du rapport du côté adjacent sur l'hypoténuse",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Cosinus d'un angle aigu : quotient $\\frac{\\text{côté adjacent}}{\\text{hypoténuse}}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Encadrement fondamental du cosinus d'un angle aigu : $0 < \\cos(\\alpha) < 1$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer les cosinus des deux angles aigus d'un triangle rectangle",
+                "description": "Dans un triangle rectangle $EFG$ de côtés $12$, $5$ et $13$, on calcule $\\cos(\\widehat{EFG})=\\frac{12}{13}$ et $\\cos(\\widehat{EGF})=\\frac{5}{13}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Applications métriques du cosinus",
+        "subsections": [
+          {
+            "name": "Calcul de longueurs et de mesures d'angles",
+            "items": [
+              {
+                "type": "method",
+                "title": "Calculer la mesure d'un angle aigu à l'aide de la touche $\\arccos$",
+                "description": ""
+              },
+              {
+                "type": "method",
+                "title": "Calculer une longueur d'hypoténuse ou de côté adjacent par le cosinus",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Déterminer la hauteur d'un arbre par visée d'angle et cosinus",
+                "description": "On utilise la relation $\\cos(75^\\circ)=\\frac{5}{AB}$ pour déterminer la distance oblique, puis le théorème de Pythagore pour trouver la hauteur."
+              },
+              {
+                "type": "exercice",
+                "title": "Calculer des angles et des côtés dans des configurations géométriques",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 13 : Équations",
+    "sections": [
+      {
+        "name": "Équations du premier degré à une inconnue",
+        "subsections": [
+          {
+            "name": "Résolution de l'équation affine $ax+b=0$",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Compléter des pyramides numériques pour déterminer une inconnue $x$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Équation du premier degré et discussion de la solution $x=-\\frac{b}{a}$",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Équation produit nul : $(ax+b)(cx+d)=0 \\Leftrightarrow ax+b=0$ ou $cx+d=0$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Résoudre une équation rationnelle en réduisant au même dénominateur",
+                "description": "Pour $\\frac{x+2}{8}=1-\\frac{x+2}{4}$, on multiplie par $8$ pour éliminer les fractions, aboutissant à $3x=2$ d'où $x=\\frac{2}{3}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Équations produits et problèmes concrets",
+        "subsections": [
+          {
+            "name": "Factorisation et mise en équation",
+            "items": [
+              {
+                "type": "method",
+                "title": "Résolution de problèmes : choix de l'inconnue, résolution et interprétation",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une équation de type quadratique par factorisation remarquable",
+                "description": "Pour $x^2-49=(x-7)(2x+3)$, on factorise $x^2-49=(x-7)(x+7)$ pour mettre $(x-7)$ en facteur commun et trouver $x=7$ ou $x=4$."
+              },
+              {
+                "type": "exercice",
+                "title": "Résoudre des équations littérales et des problèmes de partage concrets",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 14 : Vecteurs et translations",
+    "sections": [
+      {
+        "name": "Vecteurs du plan et opérations",
+        "subsections": [
+          {
+            "name": "Caractéristiques vectorielles et relation de Chasles",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Identifier la direction, le sens et la longueur lors d'un déplacement",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Vecteur $\\overrightarrow{AB}$ : direction $(AB)$, sens de $A$ vers $B$ et norme $AB$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Égalité $\\overrightarrow{AB}=\\overrightarrow{DC}$ équivalente au parallélogramme $ABCD$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Caractérisation vectorielle du milieu d'un segment : $\\overrightarrow{AM}=\\overrightarrow{MB}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Règle du parallélogramme pour la somme de deux vecteurs de même origine",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Relation de Chasles : $\\overrightarrow{AB}+\\overrightarrow{BC}=\\overrightarrow{AC}$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Vecteur opposé : $\\overrightarrow{AB}+\\overrightarrow{BA}=\\overrightarrow{0}$ d'où $\\overrightarrow{BA}=-\\overrightarrow{AB}$",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "La translation dans le plan",
+        "subsections": [
+          {
+            "name": "Image d'un point et propriétés géométriques",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Translation de vecteur $\\overrightarrow{AB}$ transformant $M$ en $M'$ avec $\\overrightarrow{MM'}=\\overrightarrow{AB}$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Démontrer une égalité vectorielle dans un parallélogramme par translation",
+                "description": "Si $M$ est l'image de $C$ par la translation qui transforme $B$ en $D$, on a $\\overrightarrow{CM}=\\overrightarrow{BD}$, d'où l'on déduit $\\overrightarrow{AM}=2\\overrightarrow{AD}$."
+              },
+              {
+                "type": "exercice",
+                "title": "Simplifier des sommes vectorielles par la relation de Chasles",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 15 : Ordre des nombres rationnels et opérations",
+    "sections": [
+      {
+        "name": "Comparaison de rationnels et opérations",
+        "subsections": [
+          {
+            "name": "Différence et compatibilité de l'ordre",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Déterminer le signe d'une différence pour comparer deux nombres rationnels",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Règle fondamentale de l'ordre : $a \\le b \\Leftrightarrow b-a \\ge 0$",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Addition d'un même nombre sans changement du sens de l'inégalité",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Addition membre à membre de deux inégalités de même sens",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Comparer deux nombres rationnels par l'étude du signe de la différence",
+                "description": "Pour comparer $\\frac{9}{28}$ et $\\frac{5}{14}$, on calcule $\\frac{5}{14}-\\frac{9}{28}=\\frac{1}{28}>0$, prouvant que $\\frac{5}{14}>\\frac{9}{28}$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Multiplication par un réel et encadrements",
+        "subsections": [
+          {
+            "name": "Règles des signes et encadrement",
+            "items": [
+              {
+                "type": "rule",
+                "title": "Multiplication par un nombre positif conservant le sens de l'inégalité",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Multiplication par un nombre négatif inversant le sens de l'inégalité",
+                "description": ""
+              },
+              {
+                "type": "rule",
+                "title": "Multiplication membre à membre d'inégalités entre rationnels strictement positifs",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Encadrement d'un rationnel $x$ sous la forme continue $a \\le x \\le b$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Encadrer une combinaison linéaire de variables à coefficients quelconques",
+                "description": "Sachant que $-3 \\le a \\le -2$ et $4 \\le b \\le 5$, on encadre $2a$ et $3b$ pour en déduire l'encadrement de la somme $6 \\le 2a+3b \\le 11$."
+              },
+              {
+                "type": "exercice",
+                "title": "Encadrer des expressions rationnelles et comparer des fractions algébriques",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 16 : Proportionnalité",
+    "sections": [
+      {
+        "name": "Grandeurs proportionnelles et représentations",
+        "subsections": [
+          {
+            "name": "Coefficient et caractérisation graphique",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Distinguer le périmètre et l'aire d'un carré face à la proportionnalité",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Grandeurs proportionnelles liées par un coefficient constant $y=ax$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Caractérisation graphique : points alignés sur une droite passant par l'origine",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Identifier un tableau de proportionnalité en vérifiant l'égalité des quotients",
+                "description": "Pour les couples $(1,7), (3,21), (5,35), (6,42)$, le quotient vaut toujours $7$, confirmant un tableau de proportionnalité."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Pourcentages, échelles et vitesse moyenne",
+        "subsections": [
+          {
+            "name": "Applications classiques de la proportionnalité",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Prendre $t\\%$ d'une quantité revient à la multiplier par $\\frac{t}{100}$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Échelle : rapport constant de la longueur sur le plan à la longueur réelle",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Vitesse moyenne : quotient de la distance parcourue par la durée $v=\\frac{d}{t}$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Calculer le prix final après une hausse et une baisse successives",
+                "description": "Pour un article de $260\\,\\text{DH}$ augmentant de $15\\%$ puis baissant de $15\\%$, le prix final obtenu est de $254{,}15\\,\\text{DH}$."
+              },
+              {
+                "type": "exercice",
+                "title": "Résoudre des problèmes de vitesse, d'échelles cartographiques et d'évolution",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 17 : Statistique",
+    "sections": [
+      {
+        "name": "Tableaux statistiques et cumuls",
+        "subsections": [
+          {
+            "name": "Effectifs, fréquences et graphiques",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Organiser des âges d'élèves en effectifs cumulés et fréquences",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Population, caractère, effectif d'une valeur et effectif total de la série",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Effectif cumulé : somme de l'effectif de la valeur et des valeurs précédentes",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Fréquence décimale $f=\\frac{n}{N}$ et fréquence cumulée associée",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Représentations usuelles : diagramme en bâtons et histogramme par classes",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Moyenne pondérée et centre de classe",
+        "subsections": [
+          {
+            "name": "Indicateurs de position",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Calculer la moyenne générale de notes à partir d'un relevé d'élèves",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Moyenne pondérée : somme des produits des valeurs par leurs effectifs divisée par $N$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Centre d'une classe $[a;b[$ calculé par la demi-somme $\\frac{a+b}{2}$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer la moyenne approchée d'une série continue groupée en classes",
+                "description": "On détermine le centre de chaque classe d'intervalles de tailles, puis on applique la formule de la moyenne pondérée."
+              },
+              {
+                "type": "application",
+                "title": "Construire le tableau des effectifs cumulés et calculer la moyenne",
+                "description": "À partir d'une distribution de notes d'un devoir, on dresse le diagramme en bâtons, la ligne des cumuls et on calcule la moyenne."
+              },
+              {
+                "type": "exercice",
+                "title": "Analyser des distributions statistiques et construire des histogrammes",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 18 : Pyramides et cônes de révolution",
+    "sections": [
+      {
+        "name": "Description géométrique et patrons",
+        "subsections": [
+          {
+            "name": "Solides de l'espace et développements",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Classer des solides selon le nombre de bases et la forme des faces",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Pyramide : polygone de base et faces latérales triangulaires de sommet commun",
+                "description": ""
+              },
+              {
+                "type": "remark",
+                "title": "Une pyramide à base triangulaire est également appelée un tétraèdre",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Patron d'un solide permettant sa fabrication complète après découpage et pliage",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Cône de révolution engendré par rotation d'un triangle rectangle",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Aires latérales et calculs de volumes",
+        "subsections": [
+          {
+            "name": "Formules métriques des solides pointus",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Relier le volume de trois pyramides au volume d'un cube",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Volume d'une pyramide : $V = \\frac{1}{3} \\times \\text{Aire de base} \\times h$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Aire latérale d'un cône de révolution de rayon $r$ et génératrice $a$ : $\\pi r a$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Volume d'un cône de révolution : $V = \\frac{1}{3}\\pi r^2 h$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Fabriquer le patron d'un cône de révolution en calculant l'angle du secteur",
+                "description": "Pour un cône de rayon de base $3\\,\\text{cm}$ et génératrice $9\\,\\text{cm}$, l'angle au centre du secteur vaut $\\alpha=\\frac{360^\\circ\\times 6\\pi}{18\\pi}=120^\\circ$."
+              },
+              {
+                "type": "exercice",
+                "title": "Calculer le volume de pyramides régulières et de cônes tronqués",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

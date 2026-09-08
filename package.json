@@ -14,7 +14,7 @@
     "check:unused": "knip --no-progress",
     "check": "npm run check:data && npm run lint && npm run check:architecture && npm run check:unused && npm run build",
     "check:architecture": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
-    "check:data": "node scripts/validate-assessment-data.mjs && tsx scripts/validate-official-curriculum.ts",
+    "check:data": "node scripts/validate-assessment-data.mjs && tsx scripts/validate-predefined-content.ts && tsx scripts/validate-official-curriculum.ts",
     "test:pilotage": "tsx scripts/test-curriculum-session-alerts.ts && tsx scripts/test-chapter-lifecycle.ts",
     "bench:pilotage": "tsx scripts/benchmark-pilotage.ts",
     "check:i18n": "node scripts/audit-i18n.mjs",

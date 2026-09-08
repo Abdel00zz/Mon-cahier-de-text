@@ -1,26 +1,1687 @@
-{
-  "lessonsData": [
-    {
-      "type": "chapter",
-      "title": "Chapitre 1 : Ensembles de nombres, N, Z, Q, D, R",
-      "sections": [
-        { "name": "I. Les ensembles de nombres", "items": [
-          { "type": "activité", "title": "Activité : classer des nombres" },
-          { "type": "définition", "number": "1", "title": "Ensembles $\\mathbb{N}, \\mathbb{Z}, \\mathbb{Q}, \\mathbb{D}, \\mathbb{R}$" },
-          { "type": "exercice", "number": "1", "title": "Appartenance et inclusion" }
-        ]}
-      ]
-    },
-    {
-      "type": "chapter",
-      "title": "Chapitre 2 : Ordre dans R",
-      "sections": [
-        { "name": "I. Comparaison et encadrement", "items": [
-          { "type": "définition", "number": "1", "title": "Intervalles de $\\mathbb{R}$" },
-          { "type": "proposition", "number": "1", "title": "Valeur absolue et distance" },
-          { "type": "exercice", "number": "1", "title": "Encadrements et inégalités" }
-        ]}
-      ]
-    }
-  ]
-}
+[
+  {
+    "chapter": "Chapitre 1 : Notions d'arithmétique",
+    "sections": [
+      {
+        "name": "Nombres pairs et nombres impairs",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Décomposer des nombres entiers naturels sous les formes $2k$ et $2k+1$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Ensemble $\\mathbb{N}$, entiers pairs $n=2k$ et entiers impairs $n=2k+1$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Règles de parité pour la somme et le produit d'entiers",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer la parité d'expressions dépendant d'un entier naturel $n$",
+            "description": "Pour $A=2(7n^2+3n+5)$, $A$ est pair car factorisable par $2$, tandis que $B=2(4n+3)+1$ est impair."
+          },
+          {
+            "type": "application",
+            "title": "Démontrer que la somme de deux nombres impairs est un entier pair",
+            "description": "En écrivant $(2k+1)+(2k'+1)=2(k+k'+1)=2K$, on prouve algébriquement que la somme de deux impairs est toujours paire."
+          }
+        ]
+      },
+      {
+        "name": "Multiples et plus petit commun multiple",
+        "subsections": [
+          {
+            "name": "Multiples d'un entier naturel",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Reconnaître et cocher les multiples d'entiers naturels donnés",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Multiple d'un entier naturel : $m=a \\times k$ avec $k \\in \\mathbb{N}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Propriétés des multiples : zéro multiple universel et infinité de multiples",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Justifier qu'une différence de puissances est un multiple fixé",
+                "description": "Pour $3^{n+2}-4\\times 3^n = 3^n(9-4) = 5\\times 3^n$, l'expression est bien un multiple de $5$ pour tout entier $n$."
+              },
+              {
+                "type": "application",
+                "title": "Démontrer que la somme de deux multiples de $a$ est multiple de $a$",
+                "description": "Si $m=ak$ et $n=ak'$, alors $m+n=a(k+k')=aK$, ce qui montre que la somme est un multiple de $a$."
+              }
+            ]
+          },
+          {
+            "name": "Plus petit commun multiple",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Déterminer les multiples communs non nuls à deux entiers",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "PPCM de deux entiers non nuls : noté $\\text{ppcm}(a;b)$ ou $a \\vee b$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Propriétés du PPCM : élément neutre $a \\vee 1 = a$ et cas où $a \\mid b$",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Diviseurs et plus grand commun diviseur",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Déterminer les diviseurs d'un nombre et repérer les diviseurs communs",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Diviseur d'un entier et PGCD noté $\\text{pgcd}(a;b)$ ou $a \\wedge b$",
+            "description": ""
+          },
+          {
+            "type": "rule",
+            "title": "Critères de divisibilité usuels par $2$, $3$, $5$ et $9$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Nombres premiers entre eux : entiers dont le PGCD est égal à $1$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer deux entiers connaissant leur somme et leur PGCD",
+            "description": "Avec $a+b=40$ et $a \\wedge b=5$, on pose $a=5\\alpha$ et $b=5\\beta$ avec $\\alpha \\wedge \\beta=1$, d'où les couples solutions possibles."
+          }
+        ]
+      },
+      {
+        "name": "Nombres premiers et test de primalité",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Dénombrer les diviseurs de petits entiers et identifier les nombres premiers",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Nombre premier : entier naturel admettant exactement deux diviseurs distincts",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Test de primalité par crible d'Ératosthène jusqu'à l'entier $\\sqrt{a}$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Tester la primalité d'un nombre par division par les premiers inférieurs",
+            "description": "Pour $101$, on vérifie qu'aucun des nombres premiers $2, 3, 5, 7 \\le \\sqrt{101}$ ne le divise, donc $101$ est premier."
+          }
+        ]
+      },
+      {
+        "name": "Applications de la décomposition en facteurs premiers",
+        "subsections": [
+          {
+            "name": "Théorème fondamental de l'arithmétique",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Décomposer des nombres entiers en produits de facteurs premiers",
+                "description": ""
+              },
+              {
+                "type": "theorem",
+                "title": "Décomposition unique de tout entier supérieur à un en facteurs premiers",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Démarche de décomposition séquentielle",
+            "items": [
+              {
+                "type": "method",
+                "title": "Divisions successives par les diviseurs premiers croissants jusqu'au quotient un",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Décomposer un entier de quatre chiffres en produit de puissances premières",
+                "description": "On divise successivement $1344$ par $2$, $3$ et $7$ pour obtenir la décomposition unique $1344 = 2^6 \\times 3 \\times 7$."
+              }
+            ]
+          },
+          {
+            "name": "Calcul du PGCD et du PPCM par décomposition",
+            "items": [
+              {
+                "type": "theorem",
+                "title": "Détermination du PGCD et PPCM par produit de facteurs premiers",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Relation fondamentale entre produit, PGCD et PPCM : $(a\\wedge b)(a\\vee b)=ab$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Calculer le PGCD, le PPCM et simplifier une fraction rationnelle",
+                "description": "On décompose $a=2160$ et $b=4860$ pour en déduire $a \\wedge b$, $a \\vee b$, et simplifier la fraction $\\frac{a}{b}$ sous forme irréductible."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 2 : Calcul vectoriel",
+    "sections": [
+      {
+        "name": "Égalité vectorielle et relation de Chasles",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Simplifier des enchaînements vectoriels et construire des vecteurs égaux",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Vecteur $\\overrightarrow{AB}$, direction, sens, norme et égalité de parallélogramme",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Relation de Chasles : $\\overrightarrow{AB}+\\overrightarrow{BC}=\\overrightarrow{AC}$ et règle du parallélogramme",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Multiplication d'un vecteur par un réel et propriétés de distributivité",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Réduire une combinaison linéaire vectorielle par développement scalaire",
+            "description": "On développe $2(\\overrightarrow{u}+5\\overrightarrow{v})+3(\\overrightarrow{u}-\\overrightarrow{v})$ pour obtenir $5\\overrightarrow{u}+7\\overrightarrow{v}$."
+          }
+        ]
+      },
+      {
+        "name": "Colinéarité et applications géométriques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Construire des points vérifiant des égalités vectorielles et observer l'alignement",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Deux vecteurs colinéaires vérifient l'existence d'un réel $\\alpha$ tel que $\\overrightarrow{v}=\\alpha\\overrightarrow{u}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+                "title": "Caractérisation du parallélisme de droites et de l'alignement de points",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Démontrer que deux droites sont parallèles par colinéarité vectorielle",
+            "description": "On montre que $\\overrightarrow{MN}=\\frac{1}{2}\\overrightarrow{BC}$, ce qui prouve la colinéarité des vecteurs et le parallélisme $(MN)//(BC)$."
+          }
+        ]
+      },
+      {
+        "name": "Milieu d'un segment et centre de gravité",
+        "items": [
+          {
+            "type": "property",
+            "title": "Caractérisations vectorielles du milieu d'un segment : $\\overrightarrow{IA}+\\overrightarrow{IB}=\\overrightarrow{0}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriété caractéristique du milieu pour tout point : $\\overrightarrow{MA}+\\overrightarrow{MB}=2\\overrightarrow{MI}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Centre de gravité d'un triangle : $\\overrightarrow{GA}+\\overrightarrow{GB}+\\overrightarrow{GC}=\\overrightarrow{0}$ et $\\overrightarrow{AG}=\\frac{2}{3}\\overrightarrow{AI}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Prouver que le point $G$ appartient à la médiane issue de $A$",
+            "description": "En utilisant $\\overrightarrow{MA}+\\overrightarrow{MB}+\\overrightarrow{MC}=\\overrightarrow{0}$ avec le milieu $A'$, on établit $\\overrightarrow{GA}=-2\\overrightarrow{GA'}$, prouvant l'alignement."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 3 : Projection",
+    "sections": [
+      {
+        "name": "Projection sur une droite et conservations",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Projeté d'un point sur une droite $(D)$ parallèlement à $(\\Delta)$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Projection orthogonale : cas particulier où les directions sont perpendiculaires",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation du coefficient de colinéarité : $\\overrightarrow{P(A)P(B)}=k\\overrightarrow{P(C)P(D)}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation du milieu d'un segment par toute projection linéaire",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer un vecteur projeté à l'aide de la colinéarité conservée",
+            "description": "Sachant que $\\overrightarrow{IE}=\\frac{1}{3}\\overrightarrow{AI}$, on projette sur $(AB)$ parallèlement à $(IB)$ pour déduire $\\overrightarrow{BF}=\\frac{1}{3}\\overrightarrow{AB}$."
+          }
+        ]
+      },
+      {
+        "name": "Théorème de Thalès direct et réciproque",
+        "subsections": [
+          {
+            "name": "Théorème de Thalès direct",
+            "items": [
+              {
+                "type": "theorem",
+                "title": "Théorème de Thalès : égalité des rapports de longueurs proportionnelles",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Traduction vectorielle du théorème de Thalès : $\\overrightarrow{AM}=k\\overrightarrow{AB}$ et $\\overrightarrow{AN}=k\\overrightarrow{AC}$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer une longueur inconnue dans un triangle à côtés parallèles",
+                "description": "Par Thalès, l'égalité $\\frac{EA+AD}{EA}=\\frac{AB}{AM}$ permet d'isoler $AM=\\frac{EB\\times EA}{EA+AD}=2$."
+              }
+            ]
+          },
+          {
+            "name": "Théorème de Thalès réciproque",
+            "items": [
+              {
+                "type": "theorem",
+                "title": "Théorème de Thalès réciproque : égalité de rapports et ordre des points",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Démontrer le parallélisme de deux droites par Thalès réciproque",
+                "description": "On constate que $\\frac{DE}{DA}=\\frac{DC}{DN}=\\frac{4}{3}$ avec des points alignés dans le même ordre, ce qui justifie $(EC)//(AN)$."
+              }
+            ]
+          },
+          {
+            "name": "Théorème de Thalès par projection",
+            "items": [
+              {
+                "type": "theorem",
+                "title": "Théorème de Thalès pour des projetés sur deux droites quelconques",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Déterminer un vecteur projeté sur la base d'un parallélogramme",
+                "description": "Pour $I$ vérifiant $\\overrightarrow{AI}=\\frac{2}{3}\\overrightarrow{AB}$, son projeté $J$ sur $(DC)$ parallèlement à $(AD)$ donne $\\overrightarrow{DJ}=\\frac{2}{3}\\overrightarrow{DC}$."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 4 : Ensembles des nombres",
+    "sections": [
+      {
+        "name": "Classification des ensembles de nombres",
+        "subsections": [
+          {
+            "name": "Ensemble des entiers relatifs",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Ensemble $\\mathbb{Z}$ des entiers relatifs et inclusion stricte $\\mathbb{N}\\subset\\mathbb{Z}$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Ensemble des nombres décimaux",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Écrire des nombres sous la forme fractionnaire décimale $\\frac{a}{10^n}$",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Ensemble $\\mathbb{D}$ des décimaux relatifs sous la forme $\\frac{a}{10^n}$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Ensemble des nombres rationnels",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Ensemble $\\mathbb{Q}$ des quotients de deux entiers et irréductibilité $a\\wedge b=1$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Ensemble des nombres réels",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Ensemble $\\mathbb{R}$ réunissant les nombres rationnels et les nombres irrationnels",
+                "description": ""
+              },
+              {
+                "type": "document",
+                "title": "Chaîne des inclusions fondamentales : $\\mathbb{N}\\subset\\mathbb{Z}\\subset\\mathbb{D}\\subset\\mathbb{Q}\\subset\\mathbb{R}$",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Opérations et identités dans l'ensemble des réels",
+        "subsections": [
+          {
+            "name": "Opérations et calcul algébrique",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Simplifier des fractions composées et des expressions contenant des parenthèses",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Propriétés opératoires de l'addition, multiplication et calcul fractionnaire dans $\\mathbb{R}$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Identités remarquables du deuxième et du troisième degré sur $\\mathbb{R}$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Développer une expression contenant des identités du troisième degré",
+                "description": "On utilise les formules $(a\\pm b)^3 = a^3 \\pm 3a^2b + 3ab^2 \\pm b^3$ pour développer et réduire $(x+2)^3-2x^2$."
+              }
+            ]
+          },
+          {
+            "name": "Puissances et écriture scientifique",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Puissance entière relative et règles de calcul sur les exposants",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Écriture scientifique d'un décimal : $x=a\\times 10^p$ avec $1\\le |a|<10$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Simplifier une fraction contenant des produits de puissances entières",
+                "description": "Pour $A=\\frac{4^3\\times 10^{-5}\\times 7}{7^3\\times 10^2\\times 8}$, on décompose en puissances de nombres premiers pour réduire les termes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Les racines carrées",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Simplifier des sommes et produits de racines carrées sans calculatrice",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Racine carrée d'un réel positif : unique nombre positif dont le carré vaut $a$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Règles opératoires des radicaux : $\\sqrt{ab}=\\sqrt{a}\\sqrt{b}$ et identité $\\sqrt{a^2}=|a|$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer la valeur exacte d'un produit et d'une somme de radicaux",
+            "description": "Pour $X=\\sqrt{17+12\\sqrt{2}}$ et $Y=\\sqrt{17-12\\sqrt{2}}$, on calcule $X\\cdot Y=1$ et $X^2+Y^2=34$ pour en déduire $X+Y$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 5 : Ordre dans IR",
+    "sections": [
+      {
+        "name": "Comparaison et encadrement",
+        "subsections": [
+          {
+            "name": "Comparaison de nombres réels",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Comparer des nombres réels par l'étude du signe de leur différence",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Relation d'ordre : $a \\le b \\Leftrightarrow b-a \\ge 0$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Démontrer l'inégalité de la somme d'un réel positif et de son inverse",
+                "description": "Pour tout $x>0$, on étudie le signe de $(x+\\frac{1}{x})-2=\\frac{(x-1)^2}{x} \\ge 0$, ce qui démontre $x+\\frac{1}{x}\\ge 2$."
+              }
+            ]
+          },
+          {
+            "name": "Ordre et opérations algébriques",
+            "items": [
+              {
+                "type": "property",
+                "title": "Compatibilité de l'ordre avec l'addition et la multiplication scalaire",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Inversion du sens de l'inégalité par l'inverse pour réels de même signe",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Ordre des carrés et des racines carrées selon le signe",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Encadrer une expression rationnelle à partir d'une inégalité sur $x$",
+                "description": "Pour $x\\ge 7$, on montre que $2x-13 \\ge 1$, puis par passage à l'inverse on déduit $\\frac{-1}{2x-13} \\ge -1$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Valeur absolue",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Calculer la distance à l'origine et entre deux points sur un axe",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Valeur absolue $|x|$ définie par morceaux et distance $MN=|x-y|$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriétés algébriques de la valeur absolue et inégalité triangulaire",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Résolution des équations $|x|=r$ et inéquations $|x|\\le r$ et $|x|\\ge r$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Résoudre une équation et une inéquation contenant des valeurs absolues",
+            "description": "Pour $|3x-5|=4$, on résout $3x-5=4$ ou $3x-5=-4$. Pour $|x-2|\\le 1$, on encadre $-1 \\le x-2 \\le 1$."
+          }
+        ]
+      },
+      {
+        "name": "Intervalles de IR",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Représenter graphiquement des ensembles d'inégalités sur une droite graduée",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Intervalles fermés, ouverts, semi-ouverts et non bornés de l'ensemble $\\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Intersection $I \\cap J$ et réunion $I \\cup J$ de deux intervalles",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Caractéristiques métriques d'un intervalle : centre $\\frac{a+b}{2}$, amplitude et rayon",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer l'intersection et la réunion d'intervalles réels disjoints",
+            "description": "On détermine $[2;6]\\cap]-1;3]=[2;3]$ et $[2;6]\\cup]-1;3]=]-1;6]$ en observant le chevauchement sur l'axe."
+          }
+        ]
+      },
+      {
+        "name": "Approximations",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Encadrement, valeurs approchées par défaut et par excès d'amplitude donnée",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Approximation à une précision $r$ par l'inégalité $|x-a|\\le r$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Approximation décimale d'ordre $p$ par encadrement de pas $10^{-p}$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Déterminer l'approximation décimale d'un quotient à $10^{-2}$ près",
+            "description": "Pour $\\frac{97}{23}\\approx 4{,}217$, l'approximation par défaut à $10^{-2}$ près est $4{,}21$ et par excès $4{,}22$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 6 : Droite dans le plan",
+    "sections": [
+      {
+        "name": "Repère cartésien et déterminant de deux vecteurs",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Repère $(O,\\overrightarrow{i},\\overrightarrow{j})$, coordonnées de points, vecteurs, milieu et distance",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Déterminant de deux vecteurs : $\\det(\\overrightarrow{u},\\overrightarrow{v})=ab'-a'b$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Critère de colinéarité et condition d'alignement par annulation du déterminant",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Tester la colinéarité de deux vecteurs par le calcul du déterminant",
+            "description": "Pour $\\overrightarrow{u}(1;2)$ et $\\overrightarrow{v}(2;4)$, le déterminant $1\\times 4 - 2\\times 2 = 0$ montre qu'ils sont colinéaires."
+          }
+        ]
+      },
+      {
+        "name": "Équation cartésienne d'une droite",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Vecteur directeur et droite définie par un point et un vecteur",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Équation cartésienne $ax+by+c=0$ et vecteur directeur $\\overrightarrow{u}(-b;a)$",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Détermination de l'équation cartésienne par la condition $\\det(\\overrightarrow{AM},\\overrightarrow{u})=0$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Écrire l'équation cartésienne d'une droite passant par un point donné",
+            "description": "Pour $A(1;3)$ et $\\overrightarrow{v}(2;3)$, l'égalité $\\det(\\overrightarrow{AM},\\overrightarrow{v})=0$ conduit à l'équation $3x-2y+3=0$."
+          }
+        ]
+      },
+      {
+        "name": "Représentation paramétrique d'une droite",
+        "items": [
+          {
+            "type": "property",
+            "title": "Système de représentation paramétrique d'une droite de vecteur $\\overrightarrow{u}(a';b')$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer une représentation paramétrique et tester l'appartenance d'un point",
+            "description": "Pour $(MN)$, on exprime $x=x_M+a't$ et $y=y_M+b't$, puis on résout pour vérifier si un point correspond à un même paramètre $t$."
+          }
+        ]
+      },
+      {
+        "name": "Positions relatives de deux droites",
+        "items": [
+          {
+            "type": "property",
+            "title": "Droites parallèles par déterminant nul et droites sécantes par déterminant non nul",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Résolution de système pour déterminer les coordonnées du point d'intersection",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Démontrer que trois droites sont concourantes en un même point",
+            "description": "On calcule le point d'intersection $(x_0,y_0)$ de deux droites, puis on vérifie qu'il satisfait l'équation de la troisième droite."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 7 : Polynômes",
+    "sections": [
+      {
+        "name": "Définition et égalité de deux polynômes",
+        "subsections": [
+          {
+            "name": "Notion de polynôme et degré",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Développer un produit de binômes et repérer le degré du polynôme",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Polynôme $P(x)$, somme de monômes, coefficients et degré noté $\\text{deg}(P)$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Égalité de polynômes et degré du produit",
+            "items": [
+              {
+                "type": "property",
+                "title": "Deux polynômes sont égaux si et seulement si leurs coefficients sont identiques",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Degré du produit de deux polynômes non nuls : $\\text{deg}(PQ)=\\text{deg}(P)+\\text{deg}(Q)$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Déterminer des coefficients inconnus assurant l'égalité de deux polynômes",
+                "description": "On identifie terme à terme les coefficients de $P(x)$ et $Q(x)$ de même degré pour résoudre le système des paramètres $a, b, c$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Racine et division euclidienne",
+        "subsections": [
+          {
+            "name": "Racine d'un polynôme",
+            "items": [
+              {
+                "type": "activity",
+                "title": "Calculer les valeurs prises par un polynôme pour trouver ses racines",
+                "description": ""
+              },
+              {
+                "type": "definition",
+                "title": "Racine d'un polynôme : tout nombre réel $a$ vérifiant l'égalité $P(a)=0$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Division euclidienne par $x-a$",
+            "items": [
+              {
+                "type": "theorem",
+                "title": "Division euclidienne : $P(x)=(x-a)Q(x)+P(a)$ avec quotient de degré $n-1$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Divisibilité : $P(x)$ est divisible par $x-a$ si et seulement si $P(a)=0$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Effectuer la division euclidienne d'un polynôme par un facteur affine",
+                "description": "On divise $x^3-6x^2+13x-12$ par $x-1$ pour obtenir le quotient $Q(x)=x^2-5x+8$ et le reste $P(1)=-4$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Factorisation d'un polynôme",
+        "items": [
+          {
+            "type": "method",
+            "title": "Factorisation complète d'un polynôme de degré trois admettant une racine connue",
+            "description": ""
+          },
+          {
+            "type": "remark",
+            "title": "Dénomination : polynôme de degré un appelé binôme et degré deux trinôme",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Factoriser un polynôme en produit de trois facteurs du premier degré",
+            "description": "Pour $P(x)=x^3-2x^2-5x+6$, comme $P(1)=0$, on factorise par $x-1$ puis on factorise le trinôme restant en $(x-3)(x+2)$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 8 : Équations, inéquations et systèmes",
+    "sections": [
+      {
+        "name": "Premier degré à une inconnue et signe du binôme",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Résoudre des équations et inéquations du premier degré dans $\\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Équation du premier degré $ax+b=0$ et ensemble de solutions $S$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Tableau de signe du binôme affine $ax+b$ autour de $-\\frac{b}{a}$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Dresser le tableau de signe d'un binôme affine décroissant",
+            "description": "Pour $-3x+6$, le binôme s'annule en $2$, est positif sur $]-\\infty;2]$ et négatif sur $[2;+\\infty[$."
+          }
+        ]
+      },
+      {
+        "name": "Systèmes linéaires de deux équations",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Résoudre un système linéaire par les méthodes de substitution et combinaison",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Système linéaire de deux équations à deux inconnues et déterminant $D$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Règle de Cramer : si $D \\neq 0$, existence d'une unique solution $(x;y)$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre un système de deux équations par la méthode des déterminants",
+            "description": "On calcule $D=ab'-a'b \\neq 0$, puis on détermine les inconnues par les quotients de déterminants associés."
+          }
+        ]
+      },
+      {
+        "name": "Inéquations linéaires à deux inconnues",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Inéquation du premier degré à deux inconnues de type $ax+by+c < 0$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Régionnement du plan en demi-plans ouverts ou fermés par la droite frontière",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre graphiquement une inéquation linéaire en testant le point origine",
+            "description": "Pour $2x-y-4<0$, on trace la droite $2x-y-4=0$ et on teste $O(0;0)$ pour colorier le demi-plan contenant l'origine."
+          }
+        ]
+      },
+      {
+        "name": "Équations et inéquations du second degré",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Forme canonique du trinôme du second degré et discriminant $\\Delta=b^2-4ac$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Discussion du nombre de racines réelles selon le signe du discriminant $\\Delta$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Somme $S=-\\frac{b}{a}$ et produit $P=\\frac{c}{a}$ des racines du trinôme",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Règle générale du signe du trinôme $ax^2+bx+c$ sur l'ensemble $\\mathbb{R}$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Résoudre une inéquation du second degré à l'aide du tableau de signe",
+            "description": "Pour $x^2-7x+12 \\ge 0$, les racines sont $3$ et $4$, le trinôme est positif à l'extérieur : $S=]-\\infty;3]\\cup[4;+\\infty[$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 9 : Trigonométrie 1",
+    "sections": [
+      {
+        "name": "Cercle trigonométrique et abscisses curvilignes",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Découvrir le sens trigonométrique direct et mesurer des arcs circulaires",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Cercle trigonométrique orienté de centre $O$ muni du repère $(O,\\overrightarrow{OI},\\overrightarrow{OJ})$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Abscisses curvilignes d'un point et abscisse curviligne principale dans $]-\\pi;\\pi]$",
+            "description": ""
+          },
+          {
+            "type": "method",
+            "title": "Détermination algorithmique de l'abscisse curviligne principale par division par $2\\pi$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer l'abscisse curviligne principale d'un angle donné",
+            "description": "Pour $x=\\frac{67\\pi}{3}=22\\pi+\\frac{\\pi}{3}$, l'abscisse principale appartenant à $]-\\pi;\\pi]$ est $\\frac{\\pi}{3}$."
+          }
+        ]
+      },
+      {
+        "name": "Angle orienté de deux vecteurs",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Unités d'angle : degré, grade, radian et longueur d'arc intercepté $L=R\\theta$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Mesure d'un angle orienté $(\\overrightarrow{OA};\\overrightarrow{OB})$ et mesure principale associée",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Relation de Chasles pour les mesures d'angles orientés de vecteurs",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Cosinus, sinus et tangente d'un réel",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Cosinus et sinus d'un réel comme coordonnées du point sur le cercle",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Encadrements universels et identité fondamentale $\\cos^2(x)+\\sin^2(x)=1$",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Tangente d'un nombre réel : quotient $\\tan(x)=\\frac{\\sin(x)}{\\cos(x)}$ et droite tangente",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Relations fondamentales de la tangente : $1+\\tan^2(x)=\\frac{1}{\\cos^2(x)}$ et période $\\pi$",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Relations entre lignes trigonométriques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Repérer les coordonnées des points associés par symétries axiales et centrales",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Formules des angles associés : opposés $-x$, supplémentaires $\\pi-x$ et anti-supplémentaires $\\pi+x$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Formules des angles complémentaires : $\\frac{\\pi}{2}-x$ et $\\frac{\\pi}{2}+x$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la valeur exacte d'un angle associé à l'aide des formules",
+            "description": "On calcule $\\cos(\\frac{5\\pi}{6})=\\cos(\\pi-\\frac{\\pi}{6})=-\\cos(\\frac{\\pi}{6})=-\\frac{\\sqrt{3}}{2}$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 10 : Statistique",
+    "sections": [
+      {
+        "name": "Généralités sur les séries statistiques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Organiser un relevé de notes brutes en effectifs cumulés et fréquences",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Population, individu, caractère statistique discret ou continu et effectif total",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Fréquence d'une valeur $f_k=\\frac{n_k}{N}$, fréquences cumulées et pourcentages",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Représentation graphique d'une série statistique",
+        "subsections": [
+          {
+            "name": "Diagramme en bâtons",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Diagramme en bâtons ou en barres à hauteurs proportionnelles aux effectifs",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Histogramme",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Histogramme à bandes contigues pour données continues regroupées en classes",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Diagramme circulaire",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Diagramme circulaire à secteurs d'angles proportionnels aux effectifs : $\\alpha_k=\\frac{n_k}{N}\\times 360^\\circ$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Calculer les angles d'un diagramme circulaire à partir d'effectifs",
+                "description": "Pour un effectif de $48$ sur un total de $160$ élèves, l'angle vaut $\\frac{48}{160}\\times 360^\\circ = 108^\\circ$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Paramètres de position d'une série statistique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Mode, classe modale et médiane divisant la série ordonnée en deux",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Moyenne arithmétique pondérée : quotient de la somme pondérée par l'effectif",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la moyenne pondérée d'une série continue par centres de classes",
+            "description": "On multiplie les effectifs par les centres de chaque classe pour obtenir la moyenne pondérée de la taille des élèves."
+          }
+        ]
+      },
+      {
+        "name": "Paramètres de dispersion d'une série statistique",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Étendue, écart-moyen $e_m$, variance $V$ et écart-type $\\sigma=\\sqrt{V}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Formule développée de la variance : $V=\\frac{\\sum n_i x_i^2}{N}-\\bar{x}^2$",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer la variance et l'écart-type à l'aide d'un tableau des écarts",
+            "description": "On remplit les lignes des écarts $|x_k-\\bar{x}|$ et carrés $(x_k-\\bar{x})^2$ pour déterminer la variance et l'écart-type."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 11 : Trigonométrie 2",
+    "sections": [
+      {
+        "name": "Équations et inéquations trigonométriques",
+        "subsections": [
+          {
+            "name": "Équation en cosinus et inéquations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Solutions de l'équation $\\cos(x)=\\cos(\\alpha)$ : $x=\\alpha+2k\\pi$ ou $x=-\\alpha+2k\\pi$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Résoudre une inéquation en cosinus sur l'intervalle $[-\\pi;\\pi]$",
+                "description": "Pour $\\cos(x) > \\frac{\\sqrt{2}}{2}$, on repère l'arc situé à droite de l'abscisse pour donner $]-\\frac{\\pi}{4};\\frac{\\pi}{4}[$."
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une équation en cosinus sur l'intervalle $[0;2\\pi]$",
+                "description": "Pour $\\cos(x)=-\\frac{1}{2}$, les solutions dans $[0;2\\pi]$ sont données par $x=\\frac{2\\pi}{3}$ et $x=\\frac{4\\pi}{3}$."
+              }
+            ]
+          },
+          {
+            "name": "Équation en sinus et inéquations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Solutions de l'équation $\\sin(x)=\\sin(\\alpha)$ : $x=\\alpha+2k\\pi$ ou $x=\\pi-\\alpha+2k\\pi$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une équation en sinus sur l'intervalle $[-\\pi;2\\pi[$",
+                "description": "Pour $\\sin(x)=-\\frac{\\sqrt{3}}{2}$, on place les angles associés sur le cercle pour sélectionner les solutions dans l'intervalle."
+              }
+            ]
+          },
+          {
+            "name": "Équation en tangente et inéquations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Solutions réelles de l'équation en tangente : $x=\\alpha+k\\pi$ pour $k\\in\\mathbb{Z}$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre une inéquation en tangente sur l'intervalle $[-\\pi;\\pi[$",
+                "description": "Pour $\\tan(x)>-1$, on lit sur la droite tangente les portions d'arcs vérifiant la contrainte stricte."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Angle inscrit et relations métriques dans le triangle",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Comparer l'angle au centre et l'angle inscrit interceptant le même arc",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Théorème de l'angle inscrit : mesure égale à la moitié de l'angle au centre",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Quadrilatère inscriptible caractérisé par des angles opposés supplémentaires",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Loi des sinus : $\\frac{a}{\\sin \\widehat{A}}=\\frac{b}{\\sin \\widehat{B}}=\\frac{c}{\\sin \\widehat{C}}=2R$",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Formules de l'aire d'un triangle : $S=\\frac{1}{2}ab\\sin\\widehat{C}=\\frac{abc}{4R}=pr$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer le rayon circonscrit et le rayon inscrit d'un triangle",
+            "description": "On applique $S=\\frac{abc}{4R}$ et $S=pr$ pour déterminer les rayons $R$ et $r$ d'un triangle équilatéral."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 12 : Fonctions numériques",
+    "sections": [
+      {
+        "name": "Notions générales et domaine de définition",
+        "subsections": [
+          {
+            "name": "Fonction numérique d'une variable réelle",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Fonction numérique, image, antécédent et ensemble de définition $D_f$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Calculer des images et rechercher les antécédents d'un nombre réel",
+                "description": "Pour $f(x)=\\frac{\\sqrt{5-x}}{x-2}$, on teste l'appartenance des réels $1, 4, 6, 2$ pour identifier ceux qui ont une image."
+              }
+            ]
+          },
+          {
+            "name": "Détermination du domaine de définition",
+            "items": [
+              {
+                "type": "property",
+                "title": "Contraintes du domaine selon la présence de dénominateurs et de radicaux",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Déterminer le domaine de définition de quotients comportant des racines",
+                "description": "Pour $f(x)=\\frac{\\sqrt{4x-2}}{x+3}$, on résout $4x-2 \\ge 0$ et $x+3 \\neq 0$, aboutissant au domaine $D_f=[\\frac{1}{2};+\\infty[$."
+              }
+            ]
+          },
+          {
+            "name": "Égalité de deux fonctions",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Deux fonctions sont égales si et seulement si $D_f=D_g$ et $f(x)=g(x)$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Vérifier l'égalité de fonctions ayant même domaine et même expression",
+                "description": "Pour $f(x)=\\sqrt{x^2}$ et $g(x)=|x|$, les deux fonctions sont définies sur $\\mathbb{R}$ et égales pour tout réel $x$."
+              }
+            ]
+          },
+          {
+            "name": "Courbe représentative d'une fonction",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Courbe représentative $C_f=\\{M(x;f(x))\\; ;\\; x\\in D_f\\}$ dans un repère orthogonal",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Vérifier si des points du plan appartiennent à la courbe $C_f$",
+                "description": "Pour $f(x)=\\frac{x^2}{x+1}$, on compare l'ordonnée de chaque point à l'image calculée $f(x)$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Parité d'une fonction numérique",
+        "subsections": [
+          {
+            "name": "Fonction paire",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Fonction paire : domaine de définition symétrique et identité $f(-x)=f(x)$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Symétrie orthogonale de la courbe $C_f$ par rapport à l'axe des ordonnées",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Fonction impaire",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Fonction impaire : domaine de définition symétrique et identité $f(-x)=-f(x)$",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Symétrie centrale de la courbe $C_f$ par rapport à l'origine du repère",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Étudier la parité de fonctions algébriques et rationnelles simples",
+                "description": "Pour $f(x)=|x|-\\frac{1}{x^2}$, on vérifie la symétrie du domaine et on calcule $f(-x)=f(x)$, prouvant que $f$ est paire."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Variations et extremums d'une fonction",
+        "subsections": [
+          {
+            "name": "Taux de variation et sens de variation",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Taux de variation $T=\\frac{f(x)-f(y)}{x-y}$ et définitions de la monotonie",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Caractérisation de la croissance par $T\\ge 0$ et de la décroissance par $T\\le 0$",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Étudier les variations d'une fonction affine par son taux constant",
+                "description": "Pour $f(x)=3x-1$, le taux de variation vaut constamment $3>0$, donc la fonction est strictement croissante sur $\\mathbb{R}$."
+              }
+            ]
+          },
+          {
+            "name": "Variations et parité",
+            "items": [
+              {
+                "type": "property",
+                "title": "Sens de variation d'une fonction paire ou impaire sur intervalles symétriques",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Compléter un tableau de variations à l'aide de la parité",
+                "description": "Pour une fonction paire croissante sur $[0;+\\infty[$, on déduit immédiatement qu'elle est décroissante sur $]-\\infty;0]$."
+              }
+            ]
+          },
+          {
+            "name": "Valeurs maximale et minimale",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Maximum $f(x)\\le M$ et minimum $f(x)\\ge m$ atteints sur un intervalle",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Caractérisation des extremums locaux par changement de sens dans le tableau",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Démontrer qu'une fonction quadratique admet un maximum en zéro",
+                "description": "Pour $f(x)=-x^2+1$, comme $-x^2 \\le 0$, on a $f(x) \\le 1 = f(0)$, ce qui prouve un maximum absolu en $0$."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Fonctions de référence et résolutions graphiques",
+        "subsections": [
+          {
+            "name": "Fonction trinôme du second degré",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Parabole $y=ax^2$ : sommet à l'origine et axe de symétrie vertical",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Forme canonique $a(x+\\alpha)^2+\\beta$ et coordonnées du sommet de la parabole",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Identifier le sommet et l'axe de symétrie d'une parabole",
+                "description": "Pour $f(x)=2x^2-5x+3$, la mise sous forme canonique donne le sommet $\\Omega(\\frac{5}{4};-\\frac{1}{8})$ et l'axe $x=\\frac{5}{4}$."
+              }
+            ]
+          },
+          {
+            "name": "Fonction homographique",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Hyperbole $y=\\frac{a}{x}$ : centre à l'origine et asymptotes les axes",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Fonction homographique $x \\mapsto \\frac{ax+b}{cx+d}$, centre de symétrie et asymptotes",
+                "description": ""
+              },
+              {
+                "type": "example",
+                "title": "Mettre une fonction homographique sous forme réduite pour dresser son tableau",
+                "description": "Pour $f(x)=\\frac{2x+1}{x-3}=2+\\frac{7}{x-3}$, le centre est $\\Omega(3;2)$ et la fonction est strictement décroissante."
+              }
+            ]
+          },
+          {
+            "name": "Fonctions périodiques et trigonométriques",
+            "items": [
+              {
+                "type": "definition",
+                "title": "Fonction périodique $f(x+T)=f(x)$ et invariance de courbe par translation",
+                "description": ""
+              },
+              {
+                "type": "property",
+                "title": "Courbes des fonctions cosinus et sinus : parité et périodicité $2\\pi$",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "name": "Résolution graphique d'équations et inéquations",
+            "items": [
+              {
+                "type": "property",
+                "title": "Interprétation graphique des solutions de $f(x)=m$, $f(x)=g(x)$ et $f(x)\\ge g(x)$",
+                "description": ""
+              },
+              {
+                "type": "application",
+                "title": "Résoudre graphiquement une inéquation par intersection de deux courbes",
+                "description": "On détermine les abscisses des points pour lesquels la courbe de $f$ est située au-dessus de celle de $g$."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 13 : Produit scalaire",
+    "sections": [
+      {
+        "name": "Définition et propriétés fondamentales",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Établir la formule trigonométrique par projection orthogonale sur un triangle",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Produit scalaire : $\\overrightarrow{u}\\cdot\\overrightarrow{v}=\\|\\overrightarrow{u}\\|\\|\\overrightarrow{v}\\|\\cos(\\theta)$ et produit de projetés",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Symétrie, bilinéarité et condition d'orthogonalité : $\\overrightarrow{u}\\cdot\\overrightarrow{v}=0 \\Leftrightarrow \\overrightarrow{u}\\perp\\overrightarrow{v}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Identités remarquables scalaires pour les normes et sommes vectorielles",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Calculer un produit scalaire dans un rectangle par projection orthogonale",
+            "description": "Dans un rectangle $ABCD$, on calcule $\\overrightarrow{AB}\\cdot\\overrightarrow{AC}=AB\\times AB=AB^2$ car $B$ est le projeté orthogonal de $C$ sur $(AB)$."
+          }
+        ]
+      },
+      {
+        "name": "Théorèmes métriques dans le triangle",
+        "items": [
+          {
+            "type": "theorem",
+            "title": "Théorème d'Al-Kashi : $BC^2=AB^2+AC^2-2AB\\times AC\\cos(\\widehat{BAC})$",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Théorème de la médiane : $MA^2+MB^2=2MI^2+\\frac{1}{2}AB^2$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Relations métriques dans le triangle rectangle projeté sur l'hypoténuse",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Calculer une longueur inconnue à l'aide du théorème d'Al-Kashi",
+            "description": "Dans un triangle avec $AB=2$, $AC=\\sqrt{3}$ et $\\widehat{BAC}=\\frac{\\pi}{6}$, on applique Al-Kashi pour trouver $BC=1$."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 14 : Transformations",
+    "sections": [
+      {
+        "name": "Isométries du plan et propriétés caractéristiques",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Construire les images d'un point par translation, symétrie centrale et axiale",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Définitions de la translation $t_{\\overrightarrow{u}}$, symétrie centrale $S_I$ et symétrie axiale $S_{(\\Delta)}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriétés caractéristiques vectorielles : $\\overrightarrow{M'N'}=\\overrightarrow{MN}$ et $\\overrightarrow{M'N'}=-\\overrightarrow{MN}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation des distances, de l'alignement, des angles et du parallélisme",
+            "description": ""
+          },
+          {
+            "type": "example",
+            "title": "Déterminer l'image d'une droite par une symétrie centrale",
+            "description": "L'image d'une droite $(AB)$ par une symétrie centrale de centre $O$ est une droite $(A'B')$ qui lui est strictement parallèle."
+          }
+        ]
+      },
+      {
+        "name": "L'homothétie dans le plan",
+        "items": [
+          {
+            "type": "activity",
+            "title": "Construire l'image d'un point par homothétie et observer la colinéarité",
+            "description": ""
+          },
+          {
+            "type": "definition",
+            "title": "Homothétie de centre $\\Omega$ et rapport $k$ : $\\overrightarrow{\\Omega M'}=k\\overrightarrow{\\Omega M}$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Propriété caractéristique : $\\overrightarrow{M'N'}=k\\overrightarrow{MN}$ et multiplication des distances par $|k|$",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Conservation de l'alignement, des angles et multiplication des aires par $k^2$",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Construire l'image d'un triangle par une homothétie de rapport négatif",
+            "description": "Pour $h(A)=A'$, on trace $\\overrightarrow{D A'}=-2\\overrightarrow{D A}$ pour chaque sommet pour obtenir le triangle homothétique agrandi et inversé."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "chapter": "Chapitre 15 : Géométrie de l'espace",
+    "sections": [
+      {
+        "name": "Positions relatives et parallélisme dans l'espace",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Détermination d'un plan par trois points non alignés ou deux sécantes",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Positions relatives de deux droites, d'une droite et d'un plan",
+            "description": ""
+          },
+          {
+            "type": "theorem",
+            "title": "Théorème du toit : intersection de plans contenant des droites parallèles",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Positions relatives de deux plans sécants ou strictement parallèles",
+            "description": ""
+          }
+        ]
+      },
+      {
+        "name": "Orthogonalité dans l'espace et calculs de volumes",
+        "items": [
+          {
+            "type": "definition",
+            "title": "Droites orthogonales et droite orthogonale à un plan dans l'espace",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Critère : droite orthogonale à deux droites sécantes d'un plan",
+            "description": ""
+          },
+          {
+            "type": "property",
+            "title": "Plans perpendiculaires et plans parallèles orthogonaux à une droite commune",
+            "description": ""
+          },
+          {
+            "type": "document",
+            "title": "Formulaire d'aires latérales, totales et volumes des solides de l'espace",
+            "description": ""
+          },
+          {
+            "type": "application",
+            "title": "Démontrer l'orthogonalité d'une droite et d'un plan dans un cube",
+            "description": "Dans un cube, l'arête $(BF)$ est orthogonale à $(AB)$ et $(BC)$ sécantes dans le plan $(ABC)$, donc $(BF)\\perp (ABC)$."
+          }
+        ]
+      }
+    ]
+  }
+]
