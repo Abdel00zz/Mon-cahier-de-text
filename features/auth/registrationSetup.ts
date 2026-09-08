@@ -9,6 +9,7 @@ import {
   classNameForLevelAndGroup,
   normalizeGroupNumber,
 } from "@/utils/classGroup";
+import { createStarterDiagnostic } from "@/utils/starterDiagnostic";
 
 export interface RegistrationDraft {
   cycle: Cycle | "";
@@ -144,8 +145,10 @@ export function applyRegistrationSetup(
     classManager_v1: JSON.stringify([classInfo]),
     app_first_launch_v1: "true",
     ["classData_v1_" + id]: JSON.stringify({
-      lessonsData: setup.firstTitle
-        ? [
+      lessonsData: [
+        createStarterDiagnostic(setup.applicationLocale),
+        ...(setup.firstTitle
+          ? [
             {
               type: "chapter",
               title: setup.firstTitle,
@@ -153,7 +156,8 @@ export function applyRegistrationSetup(
               _tempId: crypto.randomUUID(),
             },
           ]
-        : [],
+          : []),
+      ],
       contentDirection: setup.firstTitle
         ? /[\u0600-\u06ff]/.test(setup.firstTitle)
           ? "rtl"

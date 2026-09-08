@@ -79,6 +79,7 @@ export const extractSyncableSettings = (config: Partial<AppConfig>): SyncableSet
     }
     if (config.notificationSettings) {
         const { pushEnabled: _ignored, sessionVibration: _ignored2, ...rest } = config.notificationSettings;
+        delete (rest as Record<string, unknown>).autoOpenCurrentClass;
         out.notify = rest;
     }
     return out as SyncableSettings;
@@ -94,13 +95,17 @@ export const mergeSyncableSettings = (local: Partial<AppConfig>, remote: Syncabl
         }
     }
     if (remote.notify) {
+        const localNotify = { ...(local.notificationSettings ?? {}) } as Record<string, unknown>;
+        const remoteNotify = { ...remote.notify } as Record<string, unknown>;
+        delete localNotify.autoOpenCurrentClass;
+        delete remoteNotify.autoOpenCurrentClass;
         merged.notificationSettings = {
-            ...(local.notificationSettings ?? ({} as NonNullable<AppConfig['notificationSettings']>)),
-            ...remote.notify,
+            ...localNotify,
+            ...remoteNotify,
             // les états push et vibration restent ceux de CET appareil
             pushEnabled: local.notificationSettings?.pushEnabled ?? false,
             sessionVibration: local.notificationSettings?.sessionVibration ?? false,
-        };
+        } as NonNullable<AppConfig['notificationSettings']>;
     }
     return merged;
 };

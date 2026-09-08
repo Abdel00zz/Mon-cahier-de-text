@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppConfig, ClassInfo, ContentDirection, LessonsData } from '../types';
+import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../utils/progression';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ import {
 import { useAuth } from './AuthContext';
 import { logger } from '../utils/logger';
 import { SyncableSettings, extractSyncableSettings, mergeSyncableSettings } from '../utils/syncSettings';
-import { effectiveSchedules } from '../utils/timetable';
+import { effectiveSchedules, normalizeTimetableClock } from '../utils/timetable';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { isContentDirection } from '../utils/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../utils/accountWorkspace';
@@ -159,6 +159,8 @@ interface ServerClassesBlob {
     timetable: AppConfig['timetable'];
     settings?: SyncableSettings;
     settingsUpdatedAt?: string;
+    /** Référentiel global imposé par la direction, indépendant des réglages professeur. */
+    timetableClock?: TimetableClockPolicy;
     classMeta: Record<string, { updatedAt: string }>;
     /** Classes administrées : leurs métadonnées restent prioritaires sur une copie locale périmée. */
     adminClassOverrides?: Record<string, ClassInfo>;
@@ -650,13 +652,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                  */
                 const localConfig = readLocalConfig();
                 const cleanedConfig = removeDeletedClassReferences(localConfig, deletedIds);
-                const config = cleanedConfig.config;
-                if (cleanedConfig.changed) {
-                    try {
-                        localStorage.setItem('appConfig_v1', JSON.stringify(config));
-                        localChanged = true;
-                    } catch { /* stockage plein */ }
-                }
+                let nextConfig = cleanedConfig.config;
+                let configChanged = cleanedConfig.changed;
                 const settings: SyncableSettings | undefined =
                     server.settings ??
                     (server.schedules || server.timetable
@@ -665,11 +662,11 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const settingsMeta = readSettingsSyncMeta();
                 const remoteSettingsAt = server.settingsUpdatedAt || server.updatedAt || '';
                 const localHasSettings =
-                    (config.schedules?.length ?? 0) > 0 ||
-                    (config.timetable?.length ?? 0) > 0 ||
-                    !!config.establishmentName ||
-                    Object.keys(config.assessmentDates ?? {}).length > 0 ||
-                    Object.keys(config.pedagogicalEvents ?? {}).length > 0;
+                    (nextConfig.schedules?.length ?? 0) > 0 ||
+                    (nextConfig.timetable?.length ?? 0) > 0 ||
+                    !!nextConfig.establishmentName ||
+                    Object.keys(nextConfig.assessmentDates ?? {}).length > 0 ||
+                    Object.keys(nextConfig.pedagogicalEvents ?? {}).length > 0;
                 const shouldApplyRemoteSettings =
                     !!settings &&
                     (
@@ -677,14 +674,29 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt)
                     );
                 if (settings && shouldApplyRemoteSettings) {
-                    try {
-                        localStorage.setItem('appConfig_v1', JSON.stringify(mergeSyncableSettings(config, settings)));
-                        if (remoteSettingsAt) markSettingsSynced(remoteSettingsAt);
-                        localChanged = true;
-                    } catch { /* stockage plein */ }
+                    nextConfig = mergeSyncableSettings(nextConfig, settings);
+                    if (remoteSettingsAt) markSettingsSynced(remoteSettingsAt);
+                    configChanged = true;
                 } else if (settings && localHasSettings && !settingsMeta.localUpdatedAt && remoteSettingsAt) {
                     touchSettingsSyncMeta();
                     markClassesListDirty();
+                }
+
+                // L'horloge de la direction n'entre jamais dans le LWW des
+                // préférences professeur : elle est autoritaire et ne repart
+                // pas dans un push utilisateur.
+                if (server.timetableClock !== undefined) {
+                    const timetableClock = normalizeTimetableClock(server.timetableClock);
+                    if (JSON.stringify(nextConfig.timetableClock) !== JSON.stringify(timetableClock)) {
+                        nextConfig = { ...nextConfig, timetableClock };
+                        configChanged = true;
+                    }
+                }
+                if (configChanged) {
+                    try {
+                        localStorage.setItem('appConfig_v1', JSON.stringify(nextConfig));
+                        localChanged = true;
+                    } catch { /* stockage plein */ }
                 }
 
                 if (localChanged) {
@@ -713,6 +725,48 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             controller.abort();
         };
     }, [authStatus, user, schedulePush]);
+
+    // Canal léger de diffusion : un compte déjà ouvert reçoit une nouvelle
+    // translation horaire sans recharger tous ses cahiers. Le dernier réglage
+    // valide reste disponible hors ligne dans appConfig_v1.
+    useEffect(() => {
+        if (authStatus !== 'authenticated' || !user) return;
+        let cancelled = false;
+        const scope = readWorkspaceScope();
+        if (scope?.owner !== user.phone || !workspaceIsCurrent(scope)) return;
+
+        const refreshClock = async () => {
+            try {
+                const response = await fetch('/api/sync?scope=timetableClock', {
+                    credentials: 'same-origin',
+                    headers: { 'X-Workspace-Owner': user.phone },
+                });
+                if (!response.ok || cancelled || !workspaceIsCurrent(scope)) return;
+                const payload = (await response.json()) as { timetableClock?: TimetableClockPolicy };
+                if (payload.timetableClock === undefined) return;
+                const timetableClock = normalizeTimetableClock(payload.timetableClock);
+                const localConfig = readLocalConfig();
+                if (JSON.stringify(localConfig.timetableClock) === JSON.stringify(timetableClock)) return;
+                localStorage.setItem('appConfig_v1', JSON.stringify({ ...localConfig, timetableClock }));
+                notifyPullApplied();
+            } catch {
+                // Hors ligne : conserver silencieusement la dernière politique.
+            }
+        };
+
+        const interval = window.setInterval(() => { void refreshClock(); }, 15_000);
+        const refreshWhenVisible = () => {
+            if (document.visibilityState === 'visible') void refreshClock();
+        };
+        window.addEventListener('online', refreshWhenVisible);
+        document.addEventListener('visibilitychange', refreshWhenVisible);
+        return () => {
+            cancelled = true;
+            window.clearInterval(interval);
+            window.removeEventListener('online', refreshWhenVisible);
+            document.removeEventListener('visibilitychange', refreshWhenVisible);
+        };
+    }, [authStatus, user]);
 
     // ── Déclencheurs : événements dirty, retour en ligne, fermeture ─────────
     useEffect(() => {

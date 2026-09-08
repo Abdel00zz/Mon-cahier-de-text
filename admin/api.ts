@@ -1,4 +1,4 @@
-import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../types';
+import type { AdminMessage, ClassInfo, ClassSchedule, ContentDirection, Cycle, LessonsData, TeacherSnapshot, TimetableClockPolicy } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 import type { OfficialStudentEventsFile } from '../utils/officialStudentEvents';
 
@@ -150,6 +150,19 @@ export const fetchAdminCalendar = (): Promise<{ calendar: HolidayCalendar }> =>
 
 export const saveAdminCalendar = (calendar: HolidayCalendar): Promise<{ ok: boolean; calendar: HolidayCalendar }> =>
     postAdmin({ action: 'saveCalendar', calendar });
+
+export const fetchAdminTimetableClock = (): Promise<{ timetableClock: TimetableClockPolicy }> =>
+    request('/api/admin?action=timetableClock');
+
+export const saveAdminTimetableClock = (
+    offsetMinutes: number,
+    expectedVersion: number,
+): Promise<{ ok: boolean; timetableClock: TimetableClockPolicy }> =>
+    postAdmin({
+        action: 'saveTimetableClock',
+        timetableClockOffsetMinutes: offsetMinutes,
+        expectedTimetableClockVersion: expectedVersion,
+    });
 
 export const fetchAdminOfficialEvents = (): Promise<{ officialEvents: OfficialStudentEventsFile }> =>
     request('/api/admin?action=officialEvents');

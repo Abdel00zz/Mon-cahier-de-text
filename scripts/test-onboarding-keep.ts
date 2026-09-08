@@ -136,6 +136,10 @@ test('l’inscription conserve classe, matière et titre dans le nouvel espace',
   assert.equal(classes[0].name, '1AC 1');
   assert.equal(
     JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData[0].title,
+    'Évaluation diagnostique 1',
+  );
+  assert.equal(
+    JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData[1].title,
     'Les fonctions',
   );
   assert.equal(storage.getItem('app_first_launch_v1'), 'true');
@@ -181,19 +185,20 @@ test('titre arabe conservé tel quel, même dans une interface française', () =
   )!;
   const notebook = JSON.parse(storage.getItem('classData_v1_' + id)!);
   assert.equal(notebook.contentDirection, 'rtl');
-  assert.equal(notebook.lessonsData[0].title, 'الدوال العددية');
+  assert.equal(notebook.lessonsData[0].title, 'Évaluation diagnostique 1');
+  assert.equal(notebook.lessonsData[1].title, 'الدوال العددية');
 });
-test('sans titre saisi, aucune donnée de démonstration n’est injectée', () => {
+test('sans titre saisi, seul le diagnostic initial obligatoire est injecté', () => {
   const storage = fresh();
   const id = applyRegistrationSetup(
     { ...setup, firstTitle: '' },
     owner,
     storage,
   )!;
-  assert.deepEqual(
-    JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData,
-    [],
-  );
+  const lessons = JSON.parse(storage.getItem('classData_v1_' + id)!).lessonsData;
+  assert.equal(lessons.length, 1);
+  assert.equal(lessons[0].type, 'evaluation_diagnostic');
+  assert.equal(lessons[0].title, 'Évaluation diagnostique 1');
 });
 test('checklist progressive : vraie classe, ouverture et créneau valide', () => {
   assert.equal(gettingStartedState({}, [classroom]).visible, false);

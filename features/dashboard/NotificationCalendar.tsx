@@ -305,7 +305,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
       const closed = dayEvents.some(event => event.kind === 'holiday' || event.kind === 'vacation' || event.kind === 'absence');
 
       if (!closed) {
-        const blocks = getDaySessionBlocks(config.timetable, date.getDay())
+        const blocks = getDaySessionBlocks(config.timetable, date.getDay(), config.timetableClock)
           .filter(block => relevantClassIds.has(block.classId));
         for (const block of blocks) {
           const classInfo = classById.get(block.classId);

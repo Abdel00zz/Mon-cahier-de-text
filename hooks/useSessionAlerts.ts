@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { detectSessionAlerts, type SessionAlert } from '../utils/sessionAlertEngine';
+import { useEffect, useState } from 'react';
+import { detectSessionAlerts } from '../utils/sessionAlertEngine';
 import { getBundledCalendar, loadHolidayCalendar } from '../utils/calendar';
 import { readCachedConfig } from '../utils/configStorage';
 import { subscribe } from '../utils/syncBus';
@@ -30,24 +30,21 @@ async function claimAlert(id: string, isCurrent: () => boolean): Promise<boolean
 }
 export function useSessionAlerts(enabled = true) {
   const [tick, setTick] = useState(0);
-  const [alert, setAlert] = useState<(SessionAlert & { message: string }) | null>(null);
   const [current, setCurrent] = useState<{ key: string; classIds: string[] }>({ key: '', classIds: [] });
-  const clearTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     const bump = () => setTick(value => value + 1);
     const unsubscribers = (['dirty', 'pull-applied', 'config-changed', 'classes-changed'] as const).map(event => subscribe(event, bump));
     const timer = window.setInterval(bump, 15_000);
     window.addEventListener('storage', bump);
     document.addEventListener('visibilitychange', bump);
-    return () => { unsubscribers.forEach(unsubscribe => unsubscribe()); window.clearInterval(timer); window.clearTimeout(clearTimer.current); window.removeEventListener('storage', bump); document.removeEventListener('visibilitychange', bump); };
+    return () => { unsubscribers.forEach(unsubscribe => unsubscribe()); window.clearInterval(timer); window.removeEventListener('storage', bump); document.removeEventListener('visibilitychange', bump); };
   }, []);
   useEffect(() => {
     let cancelled = false;
     const lease = captureWorkspaceLease();
     const fresh = () => !cancelled && lease();
-    if (!enabled) { setAlert(null); setCurrent({ key: '', classIds: [] }); return; }
+    if (!enabled) { setCurrent({ key: '', classIds: [] }); return; }
     const config = readCachedConfig();
-    if (!config.notificationSettings?.enabled) setAlert(null);
     let classes: ClassInfo[] = [];
     try { const value = JSON.parse(localStorage.getItem('classManager_v1') ?? '[]'); if (Array.isArray(value)) classes = value; } catch { /* No class means no target. */ }
     void (async () => {
@@ -66,9 +63,6 @@ export function useSessionAlerts(enabled = true) {
         const t = (key: string, values: Record<string, string | number> = {}) => translateLocaleMessage(config.applicationLocale ?? 'ar', key, values);
         const names = event.classIds.map(id => classes.find(item => item.id === id)?.name ?? '').join(', ');
         const message = event.kind === 'end' ? t('sessionAlert.endSoonBody', { classes: names }) : t('sessionAlert.missingDateMany', { count: event.classIds.length, classes: names });
-        window.clearTimeout(clearTimer.current);
-        setAlert({ ...event, message });
-        clearTimer.current = window.setTimeout(() => setAlert(null), 3000);
         if (document.visibilityState === 'visible') {
           if (config.notificationSettings?.sessionVibration) { try { navigator.vibrate?.(event.kind === 'end' ? [160, 80, 160] : [240, 100, 240]); } catch { /* Unsupported device. */ } }
         } else if (config.notificationSettings?.pushEnabled) {
@@ -79,5 +73,5 @@ export function useSessionAlerts(enabled = true) {
     })();
     return () => { cancelled = true; };
   }, [tick, enabled]);
-  return { alert, current };
+  return { current };
 }

@@ -5,7 +5,6 @@ import { AppBootSkeleton } from './components/ui/PageSkeleton';
 import { AppLocale, ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
-import { SessionAlertBell } from './components/SessionAlertBell';
 import { useAuth } from './contexts/AuthContext';
 import { AUTH_REQUIRED } from './config/features';
 import { normalizeOfficialClassName } from './constants';
@@ -19,6 +18,7 @@ import { useTheme } from './hooks/useTheme';
 import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
 import { preloadSettingsPage } from './utils/performance';
+import { claimCurrentSessionAutoOpen } from './utils/currentSessionNavigation';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -109,8 +109,8 @@ const App: React.FC = () => {
   const { status: authStatus, user: authUser } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);
-  // rappels locaux de fin de séance (vibration + toast), actifs sur toutes les vues
-  const sessionAlerts = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
+  // Un moteur unique pilote les rappels système et l'état visuel des cartes.
+  const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
@@ -296,6 +296,7 @@ const App: React.FC = () => {
     return (
       <Dashboard
         onSelectClass={handleSelectClass}
+        activeSessionClassIds={currentSession.classIds}
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOnboardingVisibilityChange={setOnboardingVisible}
       />
@@ -348,11 +349,30 @@ const App: React.FC = () => {
   const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
 
+  // Ouvre une séance non ambiguë une seule fois. Le créneau est réclamé avant
+  // la navigation : un retour natif vers le Dashboard ne relance donc pas
+  // l'ouverture, même après un nouveau rendu ou un rechargement de la page.
+  useEffect(() => {
+    if (
+      view !== 'dashboard' ||
+      isBooting ||
+      isCurrentlyOnboarding ||
+      isEvaluationsOpen ||
+      isGuideOpen ||
+      currentSession.classIds.length !== 1 ||
+      !currentSession.key ||
+      document.querySelector('[role="dialog"]')
+    ) return;
+
+    const classInfo = classes.find(item => item.id === currentSession.classIds[0]);
+    if (!classInfo) return;
+
+    if (!claimCurrentSessionAutoOpen(authUser?.phone ?? 'local', currentSession.key)) return;
+    handleSelectClass(classInfo);
+  }, [authUser?.phone, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
+
   const appSurface = (
     <div className="relative min-h-screen overflow-x-clip text-foreground">
-      {view === 'dashboard' && showNavigation && !isEvaluationsOpen && !isGuideOpen && (
-        <SessionAlertBell {...sessionAlerts} classes={classes} autoOpen={config.notificationSettings?.autoOpenCurrentClass ?? true} onSelectClass={handleSelectClass} />
-      )}
       {showNavigation && (
         <TabBar
           activeTab={activeTab}

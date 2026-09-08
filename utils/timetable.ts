@@ -1,5 +1,4 @@
-import { AppLocale, ClassSchedule, TimetableEntry } from '../types.js';
-import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
+import { ClassSchedule, TimetableClockPolicy, TimetableEntry } from '../types.js';
 
 /** Créneaux horaires de la grille (sans la colonne « 24 h » du modèle papier). */
 export interface HourSlot {
@@ -11,7 +10,7 @@ export interface HourSlot {
     lunchBefore?: boolean; // affiche une pause déjeuner avant ce créneau
 }
 
-export const HOUR_SLOTS: HourSlot[] = [
+const HOUR_SLOTS: HourSlot[] = [
     { index: 0, label: '08h–09h', startMin: 8 * 60, endMin: 9 * 60 },
     { index: 1, label: '09h–10h', startMin: 9 * 60, endMin: 10 * 60 },
     { index: 2, label: '10h–11h', startMin: 10 * 60, endMin: 11 * 60 },
@@ -21,6 +20,52 @@ export const HOUR_SLOTS: HourSlot[] = [
     { index: 6, label: '16h–17h', startMin: 16 * 60, endMin: 17 * 60 },
     { index: 7, label: '17h–18h', startMin: 17 * 60, endMin: 18 * 60 },
 ];
+
+const TIMETABLE_CLOCK_MIN_OFFSET = -120;
+const TIMETABLE_CLOCK_MAX_OFFSET = 120;
+const TIMETABLE_CLOCK_STEP = 5;
+export const DEFAULT_TIMETABLE_CLOCK: TimetableClockPolicy = {
+    offsetMinutes: 0,
+    version: 0,
+    updatedAt: null,
+};
+
+export const isValidTimetableClockOffset = (value: unknown): value is number =>
+    typeof value === 'number'
+    && Number.isInteger(value)
+    && value >= TIMETABLE_CLOCK_MIN_OFFSET
+    && value <= TIMETABLE_CLOCK_MAX_OFFSET
+    && value % TIMETABLE_CLOCK_STEP === 0;
+
+/** Frontière commune API/client : une politique invalide revient à l'horaire historique. */
+export const normalizeTimetableClock = (value: unknown): TimetableClockPolicy => {
+    if (!value || typeof value !== 'object') return DEFAULT_TIMETABLE_CLOCK;
+    const raw = value as Partial<TimetableClockPolicy>;
+    if (!isValidTimetableClockOffset(raw.offsetMinutes)) return DEFAULT_TIMETABLE_CLOCK;
+    return {
+        offsetMinutes: raw.offsetMinutes,
+        version: typeof raw.version === 'number' && Number.isInteger(raw.version) && raw.version >= 0
+            ? raw.version
+            : 0,
+        updatedAt: typeof raw.updatedAt === 'string' && Number.isFinite(Date.parse(raw.updatedAt))
+            ? raw.updatedAt
+            : null,
+    };
+};
+
+/** Translation pure : mêmes indices, durées, continuités et pause déjeuner. */
+export const getHourSlots = (
+    clock?: Pick<TimetableClockPolicy, 'offsetMinutes'> | number | null,
+): HourSlot[] => {
+    const requested = typeof clock === 'number' ? clock : clock?.offsetMinutes;
+    const offsetMinutes = isValidTimetableClockOffset(requested) ? requested : 0;
+    if (offsetMinutes === 0) return HOUR_SLOTS;
+    return HOUR_SLOTS.map(slot => ({
+        ...slot,
+        startMin: slot.startMin + offsetMinutes,
+        endMin: slot.endMin + offsetMinutes,
+    }));
+};
 
 /** Jours ouvrés affichés (lundi → samedi), valeurs en convention getDay() 0=dimanche. */
 export const TIMETABLE_DAYS: { value: number; label: string }[] = [
@@ -122,8 +167,10 @@ export interface SessionBlock {
  */
 export const getDaySessionBlocks = (
     timetable: TimetableEntry[] | undefined,
-    day: number
+    day: number,
+    clock?: Pick<TimetableClockPolicy, 'offsetMinutes'> | number | null,
 ): SessionBlock[] => {
+    const hourSlots = getHourSlots(clock);
     const byClass = new Map<string, number[]>();
     for (const entry of timetable ?? []) {
         if (entry.day !== day) continue;
@@ -136,8 +183,8 @@ export const getDaySessionBlocks = (
         let runStart = sorted[0];
         let prev = sorted[0];
         const flush = (endSlot: number): void => {
-            const start = HOUR_SLOTS.find(s => s.index === runStart);
-            const end = HOUR_SLOTS.find(s => s.index === endSlot);
+            const start = hourSlots.find(s => s.index === runStart);
+            const end = hourSlots.find(s => s.index === endSlot);
             if (start && end) {
                 blocks.push({ classId, day, startMin: start.startMin, endMin: end.endMin, hours: endSlot - runStart + 1 });
             }
@@ -228,111 +275,3 @@ export const effectiveSchedules = (
     config: { timetable?: TimetableEntry[]; schedules?: ClassSchedule[] }
 ): ClassSchedule[] =>
     (config.timetable?.length ?? 0) > 0 ? deriveSchedules(config.timetable) : (config.schedules ?? []);
-
-/* ── Prochaine séance d'une classe : temps réel + calendrier scolaire ─────────
-   Alimente le badge « Séance » des cartes du tableau de bord. Contrairement à
-   un simple test du jour de la semaine, cette fonction respecte :
-     • les jours fériés, vacances et absences (via le calendrier fourni) ;
-     • l'heure courante (séance en cours / plus tard aujourd'hui / passée) ;
-     • l'horizon réel (demain, jour de la semaine, ou date exacte si lointain). */
-
-import { HolidayCalendar, getEffectiveSchoolYear, isSchoolDay, isWithinKnownSchoolYear, nextSchoolDay, toISODate } from './calendar.js';
-
-export interface NextSessionInfo {
-    /** now = séance en cours ; season-end = année scolaire terminée (été) */
-    kind: 'now' | 'today' | 'tomorrow' | 'weekday' | 'date' | 'season-end';
-    label: string;
-}
-
-const localeCode = (locale: AppLocale): string => locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
-
-const formatHourLabel = (minutes: number, locale: AppLocale): string => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    const numbers = new Intl.NumberFormat(localeCode(locale), { minimumIntegerDigits: 2, useGrouping: false });
-    return `${numbers.format(h)}:${numbers.format(m)}`;
-};
-
-export const nextSessionInfoForClass = (
-    classId: string,
-    timetable: TimetableEntry[] | undefined,
-    scheduleWeekdays: number[],
-    calendar: HolidayCalendar,
-    locale: AppLocale = 'fr',
-    now: Date = new Date(),
-    schoolYearStart?: string,
-): NextSessionInfo | null => {
-    const entries = (timetable ?? []).filter(e => e.classId === classId);
-    const weekdays = entries.length
-        ? Array.from(new Set(entries.map(e => e.day)))
-        : scheduleWeekdays;
-    if (weekdays.length === 0) return null;
-
-    const todayISO = toISODate(now);
-    const effectiveYear = getEffectiveSchoolYear(calendar, schoolYearStart, todayISO);
-
-    // Hors de l'année choisie : inutile d'annoncer une séance avant la rentrée
-    // personnalisée ou après sa fin.
-    const isWithinYear = schoolYearStart
-        ? todayISO >= effectiveYear.debut && todayISO <= effectiveYear.fin
-        : isWithinKnownSchoolYear(calendar, todayISO);
-    if (!isWithinYear) {
-        return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
-    }
-
-    const blocksFor = (weekday: number): SessionBlock[] =>
-        entries.length
-            ? getDaySessionBlocks(timetable, weekday).filter(b => b.classId === classId)
-            : [];
-
-    // Aujourd'hui, uniquement si c'est un vrai jour de classe (ni férié, ni vacances)
-    if (isSchoolDay(todayISO, weekdays, calendar)) {
-        const blocks = blocksFor(now.getDay());
-        if (blocks.length === 0) {
-            // emploi du temps sans horaires pour cette classe : pas de précision horaire
-            return { kind: 'today', label: translateLocaleMessage(locale, 'dashboard.session.today') };
-        }
-        const nowMin = now.getHours() * 60 + now.getMinutes();
-        const active = blocks.find(b => nowMin >= b.startMin && nowMin < b.endMin);
-        if (active) return { kind: 'now', label: translateLocaleMessage(locale, 'dashboard.session.now') };
-        const upcoming = blocks
-            .filter(b => b.startMin > nowMin)
-            .sort((a, b) => a.startMin - b.startMin)[0];
-        if (upcoming) return {
-            kind: 'today',
-            label: `${translateLocaleMessage(locale, 'dashboard.session.today')} · ${formatHourLabel(upcoming.startMin, locale)}`,
-        };
-        // toutes les séances du jour sont terminées → occurrence suivante
-    }
-
-    const next = nextSchoolDay(todayISO, weekdays, calendar, effectiveYear.fin);
-    if (!next) return null;
-
-    /*
-     * Fin de saison (bis) : encore dans l'année scolaire, mais la prochaine
-     * séance possible tombe déjà dans l'année SUIVANTE (derniers jours de
-     * l'année sans créneau restant), l'année est finie pour cette classe.
-     */
-    if (next > effectiveYear.fin) {
-        return { kind: 'season-end', label: translateLocaleMessage(locale, 'dashboard.session.seasonEnd') };
-    }
-
-    const [y, m, d] = next.split('-').map(Number);
-    const nextDate = new Date(y, m - 1, d);
-    const blocks = blocksFor(nextDate.getDay());
-    const time = blocks.length
-        ? ` · ${formatHourLabel(Math.min(...blocks.map(b => b.startMin)), locale)}`
-        : '';
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffDays = Math.round((nextDate.getTime() - startOfToday.getTime()) / 86_400_000);
-
-    if (diffDays === 1) return { kind: 'tomorrow', label: `${translateLocaleMessage(locale, 'dashboard.session.tomorrow')}${time}` };
-    if (diffDays <= 6) return {
-        kind: 'weekday',
-        label: `${new Intl.DateTimeFormat(localeCode(locale), { weekday: 'long' }).format(nextDate)}${time}`,
-    };
-    return {
-        kind: 'date',
-        label: nextDate.toLocaleDateString(localeCode(locale), { day: 'numeric', month: 'short' }),
-    };
-};

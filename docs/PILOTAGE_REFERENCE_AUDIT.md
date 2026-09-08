@@ -79,7 +79,7 @@ Un seul lien discret « Relier mes chapitres au programme » est placé en bas �
 | Circuit | Sources | Résultat |
 | --- | --- | --- |
 | Fin de séance / date absente | useSessionAlerts, timetable, sessionAlertEngine | Détecteur pur, réglages indépendants de la vibration, délai configurable, fenêtre de fraîcheur de 60 s, filtre des classes supprimées, absence/année/fuseau Maroc, claims par compte et créneau. |
-| Cloche / navigation | SessionAlertBell, App, Dashboard | Seulement tableau de bord ; gauche AR, droite FR/EN ; transparente au repos, jaune 3 s, aucune pastille ; clic vers la classe, choix si conflit ; ouverture automatique facultative sans interrompre un modal. |
+| Classe en cours | useSessionAlerts, App, Dashboard, ClassCard, ClassListItem | Le détecteur partagé transmet toutes les classes actives au tableau de bord ; chaque carte adopte un accent, une bordure et une pulsation liés à sa propre teinte, sans barre Spotlight ni cloche flottante. |
 | Dates incohérentes / séances manquées / jamais démarré | dateValidation, notificationSignals, printMeta | Contrôles calendrier/emploi du temps/absences ; séparateurs désormais reconnus comme preuve de date ; une date future seule ne supprime plus le signal jamais démarré. |
 | Volume hebdomadaire | scheduleInsights, timetable | Réutilisation des blocs existants ; distinction matière/filière, sans prendre les heures des JPEG comme obligation nouvelle. |
 | Évaluations proches / absents à consigner / événements officiels | useAssessments, assessments, assessmentRules, assessmentSync, useOfficialStudentEvents, useNotificationFeed | Échéances, exceptions manuelles, exclusions et actions conservées. Rafraîchissement au changement de jour même si l’onglet reste visible. |
@@ -100,7 +100,7 @@ Sources techniques consultées : [MDN Vibration](https://developer.mozilla.org/e
 - npm run test:editor : 11 tests du parcours, des imports, des dates, de l’ordre écran/impression et de la virtualisation.
 - npm run test:notifications : 11 tests existants.
 - npm run check:data : 128 évaluations, 9 règles, 3 sources + 11 images / 9 répartitions.
-- scripts/test-pilotage-ui.mjs : Edge isolé, FR desktop et AR mobile, aucune date manuelle, lien unique, LaTeX réel, associations sauvegardées sans renommage, deux push successifs (premier envoi retardé, API simulée), détection titre/dernier contenu, exclusions DM/activités, effacement/restauration des dates et synchronisation du cahier sans rechargement ; cloche 3 s, placement, navigation et déduplication.
+- scripts/test-pilotage-ui.mjs : Edge isolé, FR desktop et AR mobile, aucune date manuelle, lien unique, LaTeX réel, associations sauvegardées sans renommage, deux push successifs (premier envoi retardé, API simulée), détection titre/dernier contenu, exclusions DM/activités, effacement/restauration des dates et synchronisation du cahier sans rechargement ; absence de cloche flottante.
 - Le même test monte aussi le véritable Editor et vérifie qu’un événement de réception cloud modifiant la date du titre actualise immédiatement l’analyse ouverte. Les écritures de test restent dans un navigateur isolé avec API simulée, sans modification d’un compte réel.
 - npm run build : compilation applicative, serveur et service worker.
 - Le tsc global reste bloqué par les exports préexistants absents ClassDraft, ClassDraftValidation, defaultLevelForCycle et resetSyncState ; aucun de ces anciens fichiers n’est supprimé dans cette tâche.

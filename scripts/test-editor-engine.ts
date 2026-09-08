@@ -14,6 +14,7 @@ import { listViewport, visibleRange } from '../utils/virtualGeometry';
 import { MainTable } from '../features/editor/MainTable';
 import { LocaleProvider } from '../i18n/LocaleProvider';
 import { useNotificationFeed, type NotificationFeed } from '../hooks/useNotificationFeed';
+import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '../utils/starterDiagnostic';
 
 const fixture: LessonsData = [
   { type: 'chapter', title: 'Premier', items: [{ type: 'exercice', title: 'Autre' }] },
@@ -25,6 +26,26 @@ const fixture: LessonsData = [
     ] }] },
   ] },
 ];
+
+test('diagnostic initial : création et import commencent exactement une fois par le type dédié', () => {
+  const manual = withStarterDiagnostic([{ type: 'chapter', title: 'Chapitre 1' }], 'fr');
+  assert.equal(manual[0].type, 'evaluation_diagnostic');
+  assert.equal(manual[0].title, 'Évaluation diagnostique 1');
+  assert.equal(manual[1].title, 'Chapitre 1');
+
+  const imported = withStarterDiagnostic([
+    { type: 'chapter', title: 'Chapitre 1' },
+    { type: 'evaluation_diagnostic', title: 'Ancien titre', date: '2026-09-08' },
+    { type: 'chapter', title: 'Chapitre 2' },
+  ], 'fr');
+  assert.equal(imported[0].type, 'evaluation_diagnostic');
+  assert.equal(imported[0].title, 'Évaluation diagnostique 1');
+  assert.equal(imported[0].date, '2026-09-08');
+  assert.equal(imported.filter(item => item.type === 'evaluation_diagnostic').length, 1);
+  assert.equal(withStarterDiagnostic(imported, 'fr'), imported);
+  assert.equal(hasOnlyPristineStarterDiagnostic([manual[0]]), true);
+  assert.equal(hasOnlyPristineStarterDiagnostic([{ ...manual[0], date: '2026-09-08' }]), false);
+});
 
 test('pilotage : les alertes horaires quittent les cartes de classe et se résolvent avec les créneaux', () => {
   const classes: ClassInfo[] = [{ id: 'schedule-test', name: 'Classe test', subject: 'Test', cycle: 'lycee', teacherName: 'Test', createdAt: '2026-09-01', color: 'blue' }];

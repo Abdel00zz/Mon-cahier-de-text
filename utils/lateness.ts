@@ -12,7 +12,7 @@ import {
  * des « vacances personnelles » : fusionnées dans le calendrier, elles sont
  * automatiquement exclues des séances attendues ET des jours d'inactivité.
  */
-export const withAbsences = (calendar: HolidayCalendar, absences?: AbsencePeriod[]): HolidayCalendar => {
+const withAbsences = (calendar: HolidayCalendar, absences?: AbsencePeriod[]): HolidayCalendar => {
     if (!absences || absences.length === 0) return calendar;
     return {
         ...calendar,

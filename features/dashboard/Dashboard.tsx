@@ -11,18 +11,16 @@ import { ClassListItem } from './ClassListItem';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { ClassInfo, Cycle } from '@/types';
-import { getBundledCalendar } from '@/utils/calendar';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
-import { withAbsences } from '@/utils/lateness';
-import { nextSessionInfoForClass, deriveSchedules } from '@/utils/timetable';
+import { deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
-import { Radio, Clock, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
+    activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
 }
@@ -41,6 +39,7 @@ const teacherKey = (value: string) => value.trim().replace(/\s+/g, ' ').toLocale
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
+    activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
 }) => {
@@ -60,7 +59,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
-    const [now, setNow] = useState(() => new Date());
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
     const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true;
 
@@ -69,19 +67,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
             setClassDisplayMode('double');
         }
     }, [classDisplayMode, setClassDisplayMode]);
-
-    useEffect(() => {
-        const refreshClock = () => setNow(new Date());
-        const timer = window.setInterval(refreshClock, 15_000);
-        const refreshWhenVisible = () => {
-            if (document.visibilityState === 'visible') refreshClock();
-        };
-        document.addEventListener('visibilitychange', refreshWhenVisible);
-        return () => {
-            window.clearInterval(timer);
-            document.removeEventListener('visibilitychange', refreshWhenVisible);
-        };
-    }, []);
 
     const isLoading = isClassesLoading || isConfigLoading;
     useEffect(() => {
@@ -235,19 +220,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
     }, [shouldShowSubjectBadge, subjectFilter, teacherSubjects]);
 
-    const calendar = getBundledCalendar();
-    const calendarWithAbsences = withAbsences(calendar, config.absences);
-    const nextSession = (classId: string) =>
-        nextSessionInfoForClass(
-            classId,
-            config.timetable,
-            config.schedules?.find(s => s.classId === classId)?.slots.map(s => s.weekday) ?? [],
-            calendarWithAbsences,
-            locale,
-            now,
-            config.schoolYearStart,
-        );
-
     const visibleClasses = [...classes]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -256,22 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return true;
     });
 
-    const spotlightInfo = useMemo(() => {
-        if (classes.length === 0) return null;
-        for (const cls of classes) {
-            const info = nextSession(cls.id);
-            if (info?.kind === 'now') {
-                return { classInfo: cls, info, isActiveNow: true };
-            }
-        }
-        for (const cls of classes) {
-            const info = nextSession(cls.id);
-            if (info?.kind === 'today') {
-                return { classInfo: cls, info, isActiveNow: false };
-            }
-        }
-        return null;
-    }, [classes, nextSession]);
+    const activeSessionIds = useMemo(() => new Set(activeSessionClassIds), [activeSessionClassIds]);
 
     if (isLoading) {
         return <DashboardSkeleton />;
@@ -291,8 +248,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const [labelKey, descriptionKey] = keys[value];
         return { label: t(labelKey), description: t(descriptionKey) };
     };
-
-    const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
@@ -411,60 +366,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             />
                         </div>
                     )}
-                    {/* Spotlight Intelligent: Séance active ou prochaine du jour */}
-                    {spotlightInfo && (
-                        <button
-                            type="button"
-                            onClick={() => openNotebook(spotlightInfo.classInfo)}
-                            className="mb-5 flex min-h-16 w-full items-center rounded-2xl border border-border bg-card p-4 text-start shadow-sm outline-none transition-all hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.99] group"
-                        >
-                            <div className="flex w-full items-center justify-between gap-4">
-                                <div className="flex items-center gap-3.5 min-w-0">
-                                    <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs ${spotlightInfo.isActiveNow ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-primary'}`}>
-                                        {spotlightInfo.isActiveNow ? (
-                                            <Radio className="h-5 w-5 animate-pulse stroke-[2.2]" />
-                                        ) : (
-                                            <Clock className="h-5 w-5 stroke-[2.2]" />
-                                        )}
-                                        {spotlightInfo.isActiveNow && (
-                                            <span className="absolute -top-1 -end-1 flex h-2.5 w-2.5">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${spotlightInfo.isActiveNow ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20' : 'bg-primary/10 text-primary border border-primary/20'}`}>
-                                                {spotlightInfo.isActiveNow ? (locale === 'ar' ? 'الآن · حصة جارية' : 'En ce moment · En direct') : (locale === 'ar' ? 'اليوم · الحصة القادمة' : 'Aujourd’hui · Séance à venir')}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground hidden sm:inline">
-                                                {spotlightInfo.info.label}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-sm sm:text-base font-bold text-foreground truncate mt-0.5 font-sans group-hover:text-primary transition-colors">
-                                            {spotlightInfo.classInfo.name}
-                                            {spotlightInfo.classInfo.subject && (
-                                                <span className="text-xs font-normal text-muted-foreground font-sans ms-1.5">
-                                                    ({formatLocalizedSubjectDisplayName(spotlightInfo.classInfo.subject, locale)})
-                                                </span>
-                                            )}
-                                        </h3>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-xs font-semibold text-primary hidden md:inline group-hover:underline">
-                                        {locale === 'ar' ? 'فتح دفتر النصوص' : 'Ouvrir le cahier'}
-                                    </span>
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                                        <ArrowIcon className="h-4 w-4 stroke-[2.2]" />
-                                    </div>
-                                </div>
-                            </div>
-                        </button>
-                    )}
-
                     <main>
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
@@ -508,7 +409,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 ) : currentDisplay === 'list' ? (
                                     <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo, index) => {
-                                            const isActiveSession = spotlightInfo?.isActiveNow && spotlightInfo.classInfo.id === classInfo.id;
+                                            const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
                                             <div
                                                 key={classInfo.id}
@@ -526,9 +427,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-x-4 gap-y-7 sm:gap-x-5 sm:gap-y-8 lg:gap-x-6 lg:gap-y-8 pt-4`}>
+                                    <div className={`grid ${classGridClass} w-full gap-x-4 gap-y-7 pt-1 sm:gap-x-5 sm:gap-y-8 sm:pt-2 lg:gap-x-6 lg:gap-y-8`}>
                                         {filteredClasses.map((classInfo, index) => {
-                                            const isActiveSession = spotlightInfo?.isActiveNow && spotlightInfo.classInfo.id === classInfo.id;
+                                            const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
                                             <div
                                                 key={classInfo.id}

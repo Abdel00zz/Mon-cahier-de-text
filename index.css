@@ -911,20 +911,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
     50% { background-color: rgba(239, 68, 68, 0.05); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
   }
 
-  @keyframes session-breathe {
-    0%, 100% { 
-      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
-      border-color: rgba(16, 185, 129, 0.4);
-    }
-    50% { 
-      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-      border-color: rgba(16, 185, 129, 0.7);
-    }
-  }
-
   --animate-advanced-blink: advanced-blink 1.5s ease-in-out infinite;
   --animate-advanced-alert: advanced-alert-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-session-breathe: session-breathe 3s ease-in-out infinite;
 }
 
 /* Entrée de la barre de sélection de l'éditeur. Définie hors @theme car
@@ -1023,11 +1011,65 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
 
   /* Couleurs ultra-douces, modernes et fleurissantes (Florales / Printemps) - Solides, sans dégradé */
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E8; --keep-dark: #2C2925; } /* Jasmin */
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #EDF7F2; --keep-dark: #242A27; } /* Sauge */
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #EEF4FA; --keep-dark: #24282D; } /* Ciel matinal */
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F5F0F8; --keep-dark: #29262C; } /* Lilas */
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #FDF0F2; --keep-dark: #2C2426; } /* Fleur de cerisier */
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E8; --keep-dark: #2C2925; --keep-accent: #A56412; --keep-accent-soft: rgb(165 100 18 / 0.11); } /* Jasmin */
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #EDF7F2; --keep-dark: #242A27; --keep-accent: #147A58; --keep-accent-soft: rgb(20 122 88 / 0.11); } /* Sauge */
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #EEF4FA; --keep-dark: #24282D; --keep-accent: #286F9E; --keep-accent-soft: rgb(40 111 158 / 0.11); } /* Ciel matinal */
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F5F0F8; --keep-dark: #29262C; --keep-accent: #76549C; --keep-accent-soft: rgb(118 84 156 / 0.11); } /* Lilas */
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #FDF0F2; --keep-dark: #2C2426; --keep-accent: #AD4961; --keep-accent-soft: rgb(173 73 97 / 0.11); } /* Fleur de cerisier */
+  .dark .keep-surface[data-keep-tone="sand"] { --keep-accent: #E1B45F; --keep-accent-soft: rgb(225 180 95 / 0.13); }
+  .dark .keep-surface[data-keep-tone="mint"] { --keep-accent: #63C39F; --keep-accent-soft: rgb(99 195 159 / 0.13); }
+  .dark .keep-surface[data-keep-tone="sky"] { --keep-accent: #75B7E1; --keep-accent-soft: rgb(117 183 225 / 0.13); }
+  .dark .keep-surface[data-keep-tone="lavender"] { --keep-accent: #BA9BD5; --keep-accent-soft: rgb(186 155 213 / 0.13); }
+  .dark .keep-surface[data-keep-tone="coral"] { --keep-accent: #DF8FA3; --keep-accent-soft: rgb(223 143 163 / 0.13); }
+
+  @keyframes keep-session-focus {
+    0%, 100% {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--keep-accent) 22%, transparent), 0 12px 26px -20px var(--keep-accent);
+    }
+    50% {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--keep-accent) 13%, transparent), 0 16px 32px -20px var(--keep-accent);
+    }
+  }
+  @keyframes keep-session-dot {
+    0%, 100% { box-shadow: 0 0 0 3px var(--keep-accent-soft); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+  }
+  .keep-session-active {
+    border-color: color-mix(in srgb, var(--keep-accent) 52%, var(--keep-border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--keep-accent) 22%, transparent), 0 12px 26px -20px var(--keep-accent);
+    animation: keep-session-focus 3.6s ease-in-out infinite;
+  }
+  .keep-session-active::before {
+    position: absolute;
+    z-index: 2;
+    inset-block: 0.65rem;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 0 999px 999px 0;
+    background-color: var(--keep-accent);
+    box-shadow: 0 0 14px var(--keep-accent-soft);
+    content: '';
+    pointer-events: none;
+  }
+  [dir="rtl"] .keep-session-active::before {
+    border-radius: 999px 0 0 999px;
+  }
+  .keep-session-chip {
+    border: 1px solid color-mix(in srgb, var(--keep-accent) 32%, transparent);
+    background-color: var(--keep-accent-soft);
+    color: var(--keep-accent);
+  }
+  .keep-session-dot {
+    background-color: var(--keep-accent);
+    animation: keep-session-dot 2.2s ease-out infinite;
+  }
+  .keep-session-active .keep-session-footer {
+    border-color: color-mix(in srgb, var(--keep-accent) 18%, transparent);
+    background-color: var(--keep-accent-soft);
+  }
+  .keep-session-active .keep-session-action {
+    color: var(--keep-accent);
+  }
   .keep-interactive {
     transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
   }
@@ -1056,8 +1098,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
       box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.5);
       border-color: rgba(255, 255, 255, 0.15);
     }
+    .keep-session-active:hover,
+    .dark .keep-session-active:hover {
+      border-color: var(--keep-accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--keep-accent) 20%, transparent), 0 18px 34px -20px var(--keep-accent);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .keep-interactive { transition: none; }
+    .keep-session-active, .keep-session-dot { animation: none; }
   }
 }

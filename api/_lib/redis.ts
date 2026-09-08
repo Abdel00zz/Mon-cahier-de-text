@@ -47,6 +47,8 @@ export const KEYS = {
   pushEndpointOwners: 'push:endpoint-owners',
   adminCalendar: 'admin:calendar',
   adminOfficialEvents: 'admin:official-events',
+  /** Translation horaire globale publiée par la direction. */
+  adminTimetableClock: 'admin:timetable-clock',
   adminMessages: (phone: string) => `admin:messages:${phone}`,
   loginRateLimit: (phone: string) => `rl:login:${phone}`,
 } as const;

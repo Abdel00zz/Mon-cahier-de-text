@@ -12,7 +12,7 @@ import {
     setCookie,
     signSession,
 } from './_lib/auth.js';
-import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableEntry, TeacherSnapshot } from '../types.js';
+import type { AdminMessage, AppConfig, ClassInfo, ClassSchedule, ClassSnapshot, Cycle, TimetableClockPolicy, TimetableEntry, TeacherSnapshot } from '../types.js';
 import { getBundledCalendar, validateHolidayCalendar, type HolidayCalendar } from '../utils/calendar.js';
 import {
     getOfficialStudentEventsFile,
@@ -21,6 +21,7 @@ import {
 } from '../utils/officialStudentEvents.js';
 import { prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
 import { assertBodySize } from './_lib/validate.js';
+import { DEFAULT_TIMETABLE_CLOCK, isValidTimetableClockOffset, normalizeTimetableClock } from '../utils/timetable.js';
 
 interface AdminBody {
     action?: string;
@@ -38,6 +39,8 @@ interface AdminBody {
     lessonsPayload?: unknown;
     importMode?: 'replace' | 'append';
     expectedUpdatedAt?: string | null;
+    timetableClockOffsetMinutes?: number;
+    expectedTimetableClockVersion?: number;
 }
 
 interface ClassesBlob {
@@ -191,6 +194,62 @@ const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
     const saved = { ...calendar, version: calendar.version + 1 };
     await redis.set(KEYS.adminCalendar, saved);
     res.status(200).json({ ok: true, calendar: saved });
+};
+
+const handleGetTimetableClock = async (res: ApiResponse) => {
+    const redis = await getRedis();
+    const stored = await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock);
+    res.status(200).json({ timetableClock: normalizeTimetableClock(stored) });
+};
+
+/**
+ * Publie une translation unique de toute la grille. Les cases des professeurs
+ * ne sont jamais réécrites : seul le référentiel horaire global est versionné.
+ */
+const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
+    if (!isValidTimetableClockOffset(body.timetableClockOffsetMinutes)) {
+        throw new HttpError(400, 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).');
+    }
+    if (typeof body.expectedTimetableClockVersion !== 'number'
+        || !Number.isInteger(body.expectedTimetableClockVersion)
+        || body.expectedTimetableClockVersion < 0) {
+        throw new HttpError(400, 'Version horaire invalide. Rechargez puis réessayez.');
+    }
+
+    const redis = await getRedis();
+    const current = normalizeTimetableClock(
+        (await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock)) ?? DEFAULT_TIMETABLE_CLOCK,
+    );
+    if (current.version !== body.expectedTimetableClockVersion) {
+        throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
+    }
+
+    const timetableClock: TimetableClockPolicy = {
+        offsetMinutes: body.timetableClockOffsetMinutes,
+        version: current.version + 1,
+        updatedAt: new Date().toISOString(),
+    };
+    // CAS atomique : deux directions ouvertes en parallèle ne peuvent pas
+    // publier la même version et écraser silencieusement la plus récente.
+    const saved = await redis.eval(
+        `local raw = redis.call('GET', KEYS[1])
+local version = 0
+if raw then
+  local ok, current = pcall(cjson.decode, raw)
+  if ok and type(current) == 'table' and type(current.version) == 'number' then
+    version = current.version
+  end
+end
+if version ~= tonumber(ARGV[1]) then return 0 end
+redis.call('SET', KEYS[1], ARGV[2])
+return 1`,
+        [KEYS.adminTimetableClock],
+        [String(body.expectedTimetableClockVersion), JSON.stringify(timetableClock)],
+    );
+    if (saved !== 1) {
+        throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
+    }
+    res.status(200).json({ ok: true, timetableClock });
 };
 
 const handleGetOfficialEvents = async (res: ApiResponse) => {
@@ -678,6 +737,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'deleteTeacher') return await handleDeleteTeacher(body, res);
             if (body.action === 'notifyTeacher') return await handleNotifyTeacher(body, res);
             if (body.action === 'saveCalendar') return await handleSaveCalendar(body, res);
+            if (body.action === 'saveTimetableClock') return await handleSaveTimetableClock(body, res);
             if (body.action === 'saveOfficialEvents') return await handleSaveOfficialEvents(body, res);
             if (body.action === 'saveAssessmentDate') return await handleSaveAssessmentDate(body, res);
             if (body.action === 'upsertTeacherClass') return await handleUpsertTeacherClass(body, res);
@@ -693,6 +753,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (action === 'teacher') return await handleTeacherDetail(req, res);
             if (action === 'messages') return await handleTeacherMessages(req, res);
             if (action === 'calendar') return await handleGetCalendar(res);
+            if (action === 'timetableClock') return await handleGetTimetableClock(res);
             if (action === 'officialEvents') return await handleGetOfficialEvents(res);
             if (action === 'lessons') return await handleClassLessons(req, res);
             throw new HttpError(400, 'Action inconnue.');

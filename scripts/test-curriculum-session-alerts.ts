@@ -4,6 +4,7 @@ import { bundledCurricula, chapterAssociations, computeOfficialProgression, find
 import { assertValidClasses } from '../api/_lib/validate';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
+import { getHourSlots, normalizeTimetableClock } from '../utils/timetable';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
@@ -103,6 +104,22 @@ test('current session has a strict end boundary and lunch is not a continuous se
   assert.equal(detect('09:59:00').current.length, 1); assert.equal(detect('10:00:00').current.length, 0);
   const timetable = [{ day: 1, slot: 3, classId: 'c1' }, { day: 1, slot: 4, classId: 'c1' }];
   assert.equal(detect('11:59:00', { timetable }).events[0]?.kind, 'end'); assert.equal(detect('12:30:00', { timetable }).current.length, 0);
+});
+test('global timetable clock translates every slot without changing duration or lunch', () => {
+  const slots = getHourSlots(30);
+  assert.equal(slots[0].startMin, 8 * 60 + 30);
+  assert.equal(slots.at(-1)?.endMin, 18 * 60 + 30);
+  assert.ok(slots.every(slot => slot.endMin - slot.startMin === 60));
+  assert.equal(slots[4].lunchBefore, true);
+  assert.equal(slots[4].startMin - slots[3].endMin, 120);
+  assert.equal(normalizeTimetableClock({ offsetMinutes: 7, version: 9, updatedAt: '2026-09-08T00:00:00Z' }).offsetMinutes, 0);
+});
+test('global timetable clock shifts live sessions and reminders together', () => {
+  const timetableClock = { offsetMinutes: 30, version: 1, updatedAt: '2026-09-08T00:00:00Z' };
+  assert.equal(detect('08:15:00', { timetableClock }).current.length, 0);
+  assert.equal(detect('08:45:00', { timetableClock }).current.length, 1);
+  assert.equal(detect('10:29:00', { timetableClock }).events[0]?.kind, 'end');
+  assert.equal(detect('10:30:00', { timetableClock }).current.length, 0);
 });
 test('simultaneous classes form one event, keeping all navigation targets', () => {
   const other = { ...classInfo, id: 'c2' };

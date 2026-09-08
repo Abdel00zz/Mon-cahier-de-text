@@ -3,8 +3,9 @@ import { getRedis, KEYS } from './_lib/redis.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
-import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableEntry } from '../types.js';
+import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockPolicy, TimetableEntry } from '../types.js';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
+import { DEFAULT_TIMETABLE_CLOCK, normalizeTimetableClock } from '../utils/timetable.js';
 
 interface ClassesBlob {
     classes: ClassInfo[];
@@ -84,6 +85,7 @@ const sanitizeSettings = (settings: Record<string, unknown>, deletedIds: Set<str
 const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const redis = await getRedis();
     const classId = getQueryParam(req, 'classId');
+    const scope = getQueryParam(req, 'scope');
 
     if (classId) {
         const blob = await redis.get<LessonsBlob>(KEYS.lessons(phone, classId));
@@ -93,8 +95,15 @@ const handlePull = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         return res.status(200).json(blob);
     }
 
+    const timetableClock = normalizeTimetableClock(
+        (await redis.get<TimetableClockPolicy>(KEYS.adminTimetableClock)) ?? DEFAULT_TIMETABLE_CLOCK,
+    );
+    if (scope === 'timetableClock') {
+        return res.status(200).json({ timetableClock });
+    }
+
     const blob = (await redis.get<ClassesBlob>(KEYS.classes(phone))) ?? EMPTY_BLOB;
-    res.status(200).json(blob);
+    res.status(200).json({ ...blob, timetableClock });
 };
 
 const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {

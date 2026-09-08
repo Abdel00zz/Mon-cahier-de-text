@@ -41,7 +41,7 @@ import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
-import { createStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
+import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease, registerWorkspaceWriter } from '@/utils/accountWorkspace';
 
@@ -161,6 +161,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   lessonsDataRef.current = lessonsData;
   contentDirectionRef.current = contentDirection;
   saveStatusRef.current = saveStatus;
+  const isNotebookAwaitingContent = lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData);
 
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
@@ -190,7 +191,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   useEffect(() => {
       let cancelled = false;
-      if (isClassLoading || lessonsData.length > 0) {
+      if (isClassLoading || !isNotebookAwaitingContent) {
           setPredefinedOffer(null);
           return;
       }
@@ -198,7 +199,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           if (!cancelled) setPredefinedOffer(entry);
       });
       return () => { cancelled = true; };
-  }, [isClassLoading, lessonsData.length, classInfo]);
+  }, [isClassLoading, isNotebookAwaitingContent, classInfo]);
 
   const handleLoadPredefined = useCallback(async () => {
       if (!predefinedOffer) return;
@@ -314,20 +315,37 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       const raw = localStorage.getItem(getStorageKey());
       const savedData = raw ? JSON.parse(raw) : [];
       const lessons = Array.isArray(savedData) ? savedData : (savedData.lessonsData ?? []);
-      resetState(migrateLessonsData(lessons), 'initial-load');
+      const migratedLessons = migrateLessonsData(lessons);
       // Les anciens cahiers (simple tableau) sont analysés une fois ; les
       // nouveaux gardent une décision explicite dans le même instantané.
       const fallback = defaultContentDirection(locale);
       const storedDirection = readStoredContentDirection(savedData);
       const detectedDirection = detectContentDirection(lessons, fallback).direction;
-      setEditorState(draft => { draft.contentDirection = storedDirection ?? detectedDirection; });
+      const nextDirection = storedDirection ?? detectedDirection;
+      const normalizedLessons = migratedLessons.length > 0
+        ? withStarterDiagnostic(migratedLessons, contentLocaleFromDirection(nextDirection))
+        : migratedLessons;
+      resetState(normalizedLessons, 'initial-load');
+      setEditorState(draft => { draft.contentDirection = nextDirection; });
+
+      // Répare une fois les cahiers existants créés avant cette règle. La
+      // correction est persistée immédiatement afin qu'elle survive au retour
+      // Dashboard et soit propagée aux autres appareils.
+      if (normalizedLessons !== migratedLessons && workspaceIsActive()) {
+        localStorage.setItem(getStorageKey(), JSON.stringify({
+          lessonsData: normalizedLessons,
+          contentDirection: nextDirection,
+        }));
+        touchClassSyncMeta(classInfo.id);
+        markClassDirty(classInfo.id);
+      }
     } catch (error) {
       logger.error("Failed to load data from localStorage", error);
       showNotification(t('editorNotice.loadError'), "error");
     } finally {
       setEditorState(draft => { draft.isClassLoading = false; });
     }
-  }, [resetState, getStorageKey, showNotification, setEditorState, t, locale]);
+  }, [resetState, getStorageKey, showNotification, setEditorState, t, locale, workspaceIsActive, classInfo.id]);
 
   const persistCurrentData = useCallback((withVisualStatus: boolean): boolean => {
     if (!workspaceIsActive()) return false;
@@ -605,12 +623,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           const insertAfterIndex = anchor?.chapterIndex;
           const newItem: TopLevelItem = { type: type as TopLevelItem['type'], title: data.title, _tempId: newId };
           setState(draft => {
-              // Garder l'accueil vide jusqu'au premier choix. Ensuite, le
-              // diagnostic devient automatiquement le premier bloc du cahier.
-              if (draft.length === 0 && type !== 'evaluation_diagnostic') {
-                  addTopLevelItem(draft, createStarterDiagnostic(contentLocaleFromDirection(contentDirection)));
-              }
               addTopLevelItem(draft, newItem, insertAfterIndex);
+              const normalized = withStarterDiagnostic(
+                draft as unknown as LessonsData,
+                contentLocaleFromDirection(contentDirection),
+              );
+              if (normalized !== draft) draft.splice(0, draft.length, ...normalized);
           }, 'add-top-level');
           notificationMessage = t('editorNotice.topLevelAdded');
           addNewItemHighlight(newId);
@@ -736,7 +754,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       if (isPrintingRef.current || !workspaceIsActive()) return;
 
       const classId = classInfo.id;
-      if (lessonsData.length === 0) {
+      if (isNotebookAwaitingContent) {
           showNotification(t('editorNotice.noPrintContent'), 'info');
           return;
       }
@@ -834,7 +852,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           printLaunchTimerRef.current = null;
           void launchPrint();
       }, selection ? 120 : 60);
-  }, [classInfo.id, lessonsData, setEditorState, showNotification, t, workspaceIsActive]);
+  }, [classInfo.id, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
       if (selectedIndices.length !== 1) return;
@@ -1007,7 +1025,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         // Ajouter à un cahier déjà structuré ne doit pas inverser brusquement
         // toutes ses colonnes. Un import de remplacement (ou le premier import)
         // adopte immédiatement l'écriture détectée à partir du titre.
-        const shouldAdoptImportedDirection = mode === 'replace' || lessonsData.length === 0;
+        const shouldAdoptImportedDirection = mode === 'replace' || isNotebookAwaitingContent;
         setEditorState(draft => {
           if (shouldAdoptImportedDirection) draft.contentDirection = direction.direction;
           draft.saveStatus = 'unsaved';
@@ -1028,15 +1046,17 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         showNotification(t('editorNotice.importInvalidStructure'), "error");
         return false;
       }
-  }, [setState, showNotification, handleModalClose, setEditorState, lessonsData.length, t]);
+  }, [setState, showNotification, handleModalClose, setEditorState, isNotebookAwaitingContent, t]);
 
   const handleUpdateLessons = useCallback((newLessons: LessonsData) => {
       setSelectionState(createSelectionState());
-      setState(() => newLessons, 'manage-lessons');
+      setState(() => newLessons.length > 0
+        ? withStarterDiagnostic(newLessons, contentLocaleFromDirection(contentDirection))
+        : newLessons, 'manage-lessons');
       handleModalClose();
       showNotification(t('editorNotice.lessonsUpdated'), 'success');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [setState, showNotification, handleModalClose, setEditorState, t]);
+  }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection]);
 
   const handleDeleteSeparator = useCallback((indices: Indices) => {
     setState(draft => deleteSeparator(draft, indices), 'delete-separator');
@@ -1161,7 +1181,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           || confirmBulkDelete
           || selectedCount > 0
           || isPrinting
-          || lessonsData.length === 0
+          || isNotebookAwaitingContent
         )}
       />
 

@@ -8,6 +8,8 @@ import {
     validateOfficialStudentEventsFile
 } from './utils/officialStudentEvents';
 import { prepareImportedLessons, summarizeImportedLessons } from './utils/importPipeline';
+import { DEFAULT_TIMETABLE_CLOCK, isValidTimetableClockOffset, normalizeTimetableClock } from './utils/timetable';
+import type { TimetableClockPolicy } from './types';
 import crypto from 'crypto';
 
 const DEV_PHONE = '0600000000';
@@ -29,6 +31,7 @@ export function setupMockApi(app: express.Express) {
     let classesBlob: Record<string, unknown> | null = null;
     let devCalendar: any = structuredClone(getBundledCalendar());
     let devOfficialEvents: any = structuredClone(getOfficialStudentEventsFile());
+    let devTimetableClock: TimetableClockPolicy = structuredClone(DEFAULT_TIMETABLE_CLOCK);
     const lessonsByClass = new Map<string, unknown>();
     let devSnapshot: Record<string, unknown> | null = null; // vue admin (poussée au sync)
     let devAdminMessages: Array<{ id: string; title: string; body: string; createdAt: string; acknowledgedAt?: string }> = [];
@@ -118,16 +121,21 @@ export function setupMockApi(app: express.Express) {
                 if (req.method === 'GET') {
                     const url = new URL(req.url ?? '/', 'http://localhost');
                     const classId = url.searchParams.get('classId');
+                    const scope = url.searchParams.get('scope');
                     if (classId) {
                         const blob = workspace.lessonsByClass.get(classId);
                         return blob
                             ? send(res, 200, blob)
                             : send(res, 404, { error: 'Aucune donnée cloud pour cette classe.' });
                     }
-                    return send(res, 200, workspace.classesBlob ?? {
+                    if (scope === 'timetableClock') {
+                        return send(res, 200, { timetableClock: devTimetableClock });
+                    }
+                    const blob = workspace.classesBlob ?? {
                         classes: [], schedules: [], timetable: [], settings: {},
                         settingsUpdatedAt: '', classMeta: {}, deletedClasses: {}, updatedAt: '',
-                    });
+                    };
+                    return send(res, 200, { ...blob, timetableClock: devTimetableClock });
                 }
                 if (req.method === 'POST') {
                     let body: Record<string, any> = {};
@@ -265,6 +273,26 @@ export function setupMockApi(app: express.Express) {
                         return send(res, 200, { ok: true });
                     }
                     if (!hasAdmin) return send(res, 401, { error: 'Session admin requise.' });
+                    if (body.action === 'saveTimetableClock') {
+                        const offsetMinutes = body.timetableClockOffsetMinutes;
+                        const expectedVersion = body.expectedTimetableClockVersion;
+                        if (!isValidTimetableClockOffset(offsetMinutes)) {
+                            return send(res, 400, { error: 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).' });
+                        }
+                        if (typeof expectedVersion !== 'number' || !Number.isInteger(expectedVersion) || expectedVersion < 0) {
+                            return send(res, 400, { error: 'Version horaire invalide. Rechargez puis réessayez.' });
+                        }
+                        const current = normalizeTimetableClock(devTimetableClock);
+                        if (current.version !== expectedVersion) {
+                            return send(res, 409, { error: 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.' });
+                        }
+                        devTimetableClock = {
+                            offsetMinutes,
+                            version: current.version + 1,
+                            updatedAt: new Date().toISOString(),
+                        };
+                        return send(res, 200, { ok: true, timetableClock: devTimetableClock });
+                    }
                     if (body.action === 'blockTeacher') {
                         devTeacherBlocked = body.blocked !== false;
                         return send(res, 200, { ok: true, blocked: devTeacherBlocked });
@@ -501,6 +529,7 @@ export function setupMockApi(app: express.Express) {
                         });
                     }
                     if (action === 'calendar') return send(res, 200, { calendar: devCalendar });
+                    if (action === 'timetableClock') return send(res, 200, { timetableClock: devTimetableClock });
                     if (action === 'officialEvents') return send(res, 200, { officialEvents: devOfficialEvents });
                     if (action === 'messages') return send(res, 200, { adminMessages: devAdminMessages.slice(0, 20) });
                     if (action === 'teacher') {
@@ -540,7 +569,7 @@ export function setupMockApi(app: express.Express) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   setupMockApi(app);
 

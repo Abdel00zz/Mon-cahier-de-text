@@ -15,6 +15,7 @@ import {
 } from "../features/auth/registrationSetup";
 import { CLASS_LEVELS_BY_CYCLE, classLevelGroupsForCycle } from "../constants";
 import { switchAccountWorkspace } from "../utils/accountWorkspace";
+import { claimCurrentSessionAutoOpen } from "../utils/currentSessionNavigation";
 
 test("dernière ouverture : une ancienne synchronisation ne fait pas reculer la date", () => {
   assert.equal(
@@ -41,6 +42,18 @@ test("API : conserve la date valide et ignore une valeur invalide", () => {
     ),
     undefined,
   );
+});
+
+test("séance en cours : ouverture automatique unique pour préserver le retour navigateur", () => {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, value); },
+  };
+  assert.equal(claimCurrentSessionAutoOpen("teacher-test", "2026-09-08:c1-480-540", storage), true);
+  assert.equal(claimCurrentSessionAutoOpen("teacher-test", "2026-09-08:c1-480-540", storage), false);
+  assert.equal(claimCurrentSessionAutoOpen("teacher-test", "2026-09-08:c1-540-600", storage), true);
+  assert.equal(claimCurrentSessionAutoOpen("teacher-test", "", storage), false);
 });
 
 test("nouveau visiteur : entrée principale et inscription après préparation", () => {
@@ -263,6 +276,10 @@ test("préparation terminée : cahier et checklist, pas de deuxième onboarding"
   assert.equal(config.showGettingStarted, true);
   assert.equal(
     JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData[0].title,
+    "التقويم التشخيصي 1",
+  );
+  assert.equal(
+    JSON.parse(storage.getItem("classData_v1_" + id)!).lessonsData[1].title,
     "الدوال",
   );
 });

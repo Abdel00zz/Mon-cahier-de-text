@@ -2,8 +2,8 @@ import type { AppConfig, ClassInfo } from '../types.js';
 import { getDaySessionBlocks, type SessionBlock } from './timetable.js';
 import { getEffectiveSchoolYear, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from './calendar.js';
 
-export interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number }
-export const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
+interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number }
+const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
   Number.isFinite(value) ? Math.min(max, Math.max(1, Math.round(value!))) : fallback;
 export const moroccoClockMinutes = (now: Date, zone = 'Africa/Casablanca'): number => {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: zone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(now);
@@ -20,7 +20,11 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
   const absent = config.absences?.some(period => today >= period.debut && today <= period.fin);
   if (absent || today < year.debut || today > year.fin) return { current: [] as SessionBlock[], events: [] as SessionAlert[], today };
   const ids = new Set(classes.map(item => item.id));
-  const blocks = getDaySessionBlocks(config.timetable ?? [], new Date(`${today}T12:00:00Z`).getUTCDay()).filter(block => ids.has(block.classId));
+  const blocks = getDaySessionBlocks(
+    config.timetable ?? [],
+    new Date(`${today}T12:00:00Z`).getUTCDay(),
+    config.timetableClock,
+  ).filter(block => ids.has(block.classId));
   const current = holidays ? [] : blocks.filter(block => minute >= block.startMin && minute < block.endMin);
   if (!settings?.enabled || (settings.quietDuringVacations && holidays)) return { current, events: [] as SessionAlert[], today };
   const groups = new Map<number, SessionBlock[]>();

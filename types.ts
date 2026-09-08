@@ -124,6 +124,8 @@ export interface AppConfig {
     // Emploi du temps hebdomadaire et alertes de retard
     schedules?: ClassSchedule[];        // dérivé de `timetable`, consommé par le moteur de retard
     timetable?: TimetableEntry[];       // grille complète saisie par l'enseignant
+    /** Horloge globale publiée par la direction ; absente = grille historique sans décalage. */
+    timetableClock?: TimetableClockPolicy;
     notificationSettings?: NotificationSettings;
     /** signaux masqués par portée (`classId` ou `_global_`), synchronisés entre appareils */
     notificationDismissals?: Record<string, string[]>;
@@ -211,6 +213,13 @@ export interface TimetableEntry {
     room?: string;
 }
 
+/** Translation globale des créneaux, sans modifier les affectations des classes. */
+export interface TimetableClockPolicy {
+    offsetMinutes: number;
+    version: number;
+    updatedAt: string | null;
+}
+
 export interface NotificationSettings {
     enabled: boolean;
     pushEnabled: boolean;
@@ -229,7 +238,6 @@ export interface NotificationSettings {
     sessionReminderMinutes?: number;
     missingDateReminderEnabled?: boolean;
     missingDateReminderMinutes?: number;
-    autoOpenCurrentClass?: boolean;
 }
 
 /** Période d'absence justifiée (certificat de maladie, congé...) : exclue du calcul de retard. */

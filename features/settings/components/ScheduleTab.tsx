@@ -4,9 +4,9 @@ import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import {
-    HOUR_SLOTS,
     TIMETABLE_DAYS,
     deriveSchedules,
+    getHourSlots,
     getDaySlotRuns,
     getTimetableEntry,
     setTimetableEntry,
@@ -133,9 +133,16 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         () => new Intl.NumberFormat(locale, { minimumIntegerDigits: 2, numberingSystem: 'latn', useGrouping: false }),
         [locale],
     );
-    const hourLabel = (startMin: number, endMin: number) => locale === 'fr'
-        ? `${String(Math.floor(startMin / 60)).padStart(2, '0')}h–${String(Math.floor(endMin / 60)).padStart(2, '0')}h`
-        : `${hourNumber.format(Math.floor(startMin / 60))}:00–${hourNumber.format(Math.floor(endMin / 60))}:00`;
+    const hourSlots = React.useMemo(
+        () => getHourSlots(config.timetableClock),
+        [config.timetableClock?.offsetMinutes],
+    );
+    const clockPart = (minutes: number) => {
+        const hour = hourNumber.format(Math.floor(minutes / 60));
+        const minute = String(minutes % 60).padStart(2, '0');
+        return locale === 'fr' ? `${hour}h${minute === '00' ? '' : minute}` : `${hour}:${minute}`;
+    };
+    const hourLabel = (startMin: number, endMin: number) => `${clockPart(startMin)}–${clockPart(endMin)}`;
     const classLabel = (name: string) => formatLocalizedClassDisplayName(name, locale);
     const subjectLabel = (subject: string) => locale === 'ar'
         ? formatLocalizedSubjectDisplayName(subject, locale)
@@ -198,10 +205,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [timetable]);
 
     const visibleHourSlots = React.useMemo(() => {
-        if (visiblePeriod === 'morning') return HOUR_SLOTS.filter(slot => slot.startMin < 12 * 60);
-        if (visiblePeriod === 'afternoon') return HOUR_SLOTS.filter(slot => slot.startMin >= 12 * 60);
-        return HOUR_SLOTS;
-    }, [visiblePeriod]);
+        if (visiblePeriod === 'morning') return hourSlots.filter(slot => slot.index < 4);
+        if (visiblePeriod === 'afternoon') return hourSlots.filter(slot => slot.index >= 4);
+        return hourSlots;
+    }, [visiblePeriod, hourSlots]);
 
     const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
 

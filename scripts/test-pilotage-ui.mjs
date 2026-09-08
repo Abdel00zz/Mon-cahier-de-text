@@ -117,18 +117,7 @@ try {
     await page.getByRole('dialog').getByRole('button', { name: locale === 'ar' ? 'إغلاق' : 'Fermer', exact: true }).last().click();
     await page.waitForFunction(() => document.querySelectorAll('[role="dialog"]').length === 0);
     assert.equal(await page.getByRole('button', { name: /Relier le chapitre|ربط الدرس/ }).count(), 0);
-    await page.clock.setFixedTime(new Date('2026-09-21T09:59:00+01:00'));
-    await page.evaluate(() => window.dispatchEvent(new Event('storage')));
-    const bell = page.locator('button').filter({ has: page.locator('svg.lucide-bell') });
-    await page.waitForFunction(() => document.querySelector('svg.lucide-bell')?.closest('button')?.className.includes('bg-amber'));
-    const box = await bell.boundingBox();
-    assert.ok(locale === 'ar' ? box.x < 100 : box.x > 900);
-    await bell.click();
-    assert.equal(await page.getByTestId('selected').textContent(), 'qa-c1');
-    await page.screenshot({ path: fileURLToPath(new URL(`${locale}-bell.png`, screenshots)), fullPage: true });
-    await page.waitForFunction(() => !document.querySelector('svg.lucide-bell')?.closest('button')?.className.includes('bg-amber'));
-    await page.evaluate(() => window.dispatchEvent(new Event('storage')));
-    assert.ok(!(await bell.getAttribute('class')).includes('bg-amber'));
+    assert.equal(await page.locator('svg.lucide-bell').count(), 0);
     if (locale === 'fr') {
       await page.goto(`${base}/scripts/fixtures/pilotage.html?locale=fr&editor=1`, { waitUntil: 'networkidle' });
       await page.locator('[data-editor-toolbar] button[aria-haspopup="menu"]').click();
@@ -147,7 +136,7 @@ try {
       console.log('Éditeur réel : réception cloud du cahier et recalcul de l’analyse sans rechargement OK');
     }
     await context.close();
-    console.log(`${locale}: aucune date manuelle, détection titre/dernier contenu, DM/activités exclus, effacement/restauration synchronisés, deux barres réactives, LaTeX et cloche 3 s OK`);
+    console.log(`${locale}: aucune date manuelle, détection titre/dernier contenu, DM/activités exclus, effacement/restauration synchronisés, deux barres réactives, LaTeX et absence de cloche flottante OK`);
   }
   assert.deepEqual(errors, []);
 } finally { await browser.close(); }

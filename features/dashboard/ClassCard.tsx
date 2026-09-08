@@ -35,25 +35,32 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
             data-keep-tone={keepToneForClass(classInfo.id)}
+            data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "keep-surface keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",
-                isActiveSession && "animate-session-breathe z-10"
+                isActiveSession && "keep-session-active z-10"
             )}
         >
             {/* Zone Supérieure : Titre et Métadonnées avec espacement équilibré et hauteur compacte */}
             <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-4 pb-2.5">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-2.5">
                     <h3 className="min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
                         <button
                             type="button"
                             {...pressHandlers}
-                            aria-label={t('dashboard.openClass', { className: displayName })}
+                            aria-label={`${t('dashboard.openClass', { className: displayName })}${isActiveSession ? ` · ${t('dashboard.session.now')}` : ''}`}
                             title={displayName}
                             className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
                             <span className="line-clamp-2 break-words text-balance">{displayName}</span>
                         </button>
                     </h3>
+                    {isActiveSession && (
+                        <span className="keep-session-chip relative z-10 inline-flex min-h-6 shrink-0 items-center gap-1.5 px-2 py-1 text-[10px] font-bold leading-none" role="status">
+                            <span className="keep-session-dot h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                            {t('dashboard.session.now')}
+                        </span>
+                    )}
                     {/* Style Google Keep PC : bouton paramètre discret affiché au survol sur ordinateur */}
                     <button
                         type="button"
@@ -87,8 +94,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             </div>
 
             {/* Zone Inférieure : Design minimaliste et aérien, couleur unie */}
-            <div className="w-full bg-black/[0.015] dark:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.04] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.03] dark:group-hover:bg-white/[0.05]">
-                <p className="flex items-center justify-between gap-2 text-[11px] sm:text-xs font-medium text-foreground/40 group-hover:text-foreground/80 transition-colors" aria-hidden="true">
+            <div className="keep-session-footer w-full bg-black/[0.015] dark:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.04] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.03] dark:group-hover:bg-white/[0.05]">
+                <p className="keep-session-action flex items-center justify-between gap-2 text-[11px] sm:text-xs font-medium text-foreground/40 group-hover:text-foreground/80 transition-colors" aria-hidden="true">
                     <span className="tracking-tight">{locale === 'ar' ? 'فتح دفتر النصوص' : locale === 'en' ? 'Open notebook' : 'Ouvrir le cahier'}</span>
                     <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
                 </p>

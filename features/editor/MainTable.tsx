@@ -10,6 +10,7 @@ import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataIte
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { hasOnlyPristineStarterDiagnostic } from '@/utils/starterDiagnostic';
 
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
@@ -318,7 +319,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
     });
   }, [flatData.length, renderRows.length, renderedCount, shouldVirtualize, totalSize, virtualItems]);
 
-  if (!lessonsData || lessonsData.length === 0) {
+  if (!lessonsData || lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData)) {
       return (
           <div dir={contentDirection} data-content-direction={contentDirection}>
               <EmptyState

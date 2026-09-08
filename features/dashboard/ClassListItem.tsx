@@ -35,16 +35,17 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     return (
         <article
             data-keep-tone={keepToneForClass(classInfo.id)}
+            data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "keep-surface keep-interactive group relative flex h-[68px] sm:h-[72px] min-h-[68px] items-center overflow-hidden",
-                isActiveSession && "animate-session-breathe z-10"
+                isActiveSession && "keep-session-active z-10"
             )}
         >
             <button
                 type="button"
                 {...pressHandlers}
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
-                aria-label={t('dashboard.openClass', { className: displayName })}
+                aria-label={`${t('dashboard.openClass', { className: displayName })}${isActiveSession ? ` · ${t('dashboard.session.now')}` : ''}`}
             >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
                     <Users className="h-4 w-4" />
@@ -68,6 +69,12 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         )}
                     </div>
                 </div>
+                {isActiveSession && (
+                    <span className="keep-session-chip inline-flex min-h-6 shrink-0 items-center gap-1.5 px-2 py-1 text-[10px] font-bold leading-none" role="status">
+                        <span className="keep-session-dot h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                        <span className="max-[380px]:sr-only">{t('dashboard.session.now')}</span>
+                    </span>
+                )}
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
             </button>
             <div

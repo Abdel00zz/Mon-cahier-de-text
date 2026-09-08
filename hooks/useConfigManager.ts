@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
-import { AppConfig, AppLocale } from '../types';
+import { AppConfig, AppLocale, NotificationSettings } from '../types';
 import { logger } from '../utils/logger';
-import { effectiveSchedules } from '../utils/timetable';
+import { DEFAULT_TIMETABLE_CLOCK, effectiveSchedules, normalizeTimetableClock } from '../utils/timetable';
 import { SYNCABLE_KEYS } from '../utils/syncSettings';
 import { markClassesListDirty, notifyConfigChanged, subscribe, touchSettingsSyncMeta } from '../utils/syncBus';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
@@ -25,8 +25,16 @@ export const defaultNotificationSettings = {
     sessionReminderMinutes: 1,
     missingDateReminderEnabled: true,
     missingDateReminderMinutes: 5,
-    autoOpenCurrentClass: true,
 } as const;
+
+const normalizeNotificationSettings = (value: unknown): NotificationSettings => {
+    const stored = value && typeof value === 'object'
+        ? { ...(value as Record<string, unknown>) }
+        : {};
+    // Migration de l'ancien contrôle lié à la cloche flottante supprimée.
+    delete stored.autoOpenCurrentClass;
+    return { ...defaultNotificationSettings, ...stored } as NotificationSettings;
+};
 
 const defaultConfig: AppConfig = {
     theme: 'light',
@@ -49,6 +57,7 @@ const defaultConfig: AppConfig = {
     hasCompletedWelcome: false,
     schedules: [],
     timetable: [],
+    timetableClock: DEFAULT_TIMETABLE_CLOCK,
     notificationSettings: { ...defaultNotificationSettings },
     notificationDismissals: {},
     absences: [],
@@ -103,7 +112,8 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             hasCompletedWelcome: loadedConfig.hasCompletedWelcome ?? false,
             schedules: effectiveSchedules(loadedConfig),
             timetable: loadedConfig.timetable ?? [],
-            notificationSettings: { ...defaultNotificationSettings, ...(loadedConfig.notificationSettings ?? {}) },
+            timetableClock: normalizeTimetableClock(loadedConfig.timetableClock),
+            notificationSettings: normalizeNotificationSettings(loadedConfig.notificationSettings),
             notificationDismissals: loadedConfig.notificationDismissals ?? {},
             absences: loadedConfig.absences ?? [],
             assessmentDates: loadedConfig.assessmentDates ?? {},
