@@ -42,6 +42,7 @@ import {
   PieChart as LucidePieChart,
   Printer as LucidePrinter,
   Bell as LucideBell,
+  BellRing as LucideBellRing,
   BookOpen as LucideBookOpen,
   Book as LucideBook,
   Pencil as LucidePencil,
@@ -148,6 +149,7 @@ export const ListTree = createIcon(LucideListTree);
 export const PieChart = createIcon(LucidePieChart);
 export const Printer = createIcon(LucidePrinter);
 export const Bell = createIcon(LucideBell);
+export const AlarmBell = createIcon(LucideBellRing);
 export const BookOpen = createIcon(LucideBookOpen);
 export const Book = createIcon(LucideBook);
 export const Pencil = createIcon(LucidePencil);

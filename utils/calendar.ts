@@ -152,7 +152,7 @@ export const loadHolidayCalendar = async (): Promise<HolidayCalendar> => {
     return cachedCalendar;
 };
 
-export const toISODate = (d: Date): string => {
+const toISODate = (d: Date): string => {
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -201,7 +201,7 @@ const getWeekday = (iso: string): number => {
 
 const INSTRUCTION_WEEKDAYS = [1, 2, 3, 4, 5, 6];
 
-export const isSchoolDay = (date: string | Date, weekdays: number[], cal: HolidayCalendar): boolean => {
+const isSchoolDay = (date: string | Date, weekdays: number[], cal: HolidayCalendar): boolean => {
     const iso = asISO(date);
     if (!weekdays.includes(getWeekday(iso))) return false;
     return !isHoliday(iso, cal) && !isVacation(iso, cal);
@@ -392,23 +392,4 @@ export const countExpectedSessions = (
         guard += 1;
     }
     return total;
-};
-
-/** Prochain jour de classe strictement après `afterDate` (ou null si hors année scolaire). */
-export const nextSchoolDay = (
-    afterDate: string,
-    weekdays: number[],
-    cal: HolidayCalendar,
-    until?: string,
-): string | null => {
-    if (!weekdays.length) return null;
-    const lastKnownEnd = until ?? getYears(cal)[getYears(cal).length - 1].fin;
-    let cursor = addDaysISO(asISO(afterDate), 1);
-    let guard = 0;
-    while (cursor <= lastKnownEnd && guard < 800) {
-        if (isSchoolDay(cursor, weekdays, cal)) return cursor;
-        cursor = addDaysISO(cursor, 1);
-        guard += 1;
-    }
-    return null;
 };

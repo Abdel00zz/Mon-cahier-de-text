@@ -1,6 +1,5 @@
 import { GraduationCap, School, FlaskConical } from '@/components/ui/icons';
 import { SUBJECTS } from '@/constants';
-import type { Cycle } from '@/types';
 import type { CycleOption, ModalLang, OnboardingCopy } from './types';
 
 export const ONBOARDING_CYCLES: CycleOption[] = [
@@ -8,18 +7,6 @@ export const ONBOARDING_CYCLES: CycleOption[] = [
     { key: 'lycee', icon: GraduationCap },
     { key: 'prepa', icon: FlaskConical },
 ];
-
-export const defaultLevelForCycle = (cycle: Cycle): string => {
-    switch (cycle) {
-        case 'college':
-            return '1ac';
-        case 'prepa':
-            return 'mpsi';
-        case 'lycee':
-        default:
-            return 'tcs';
-    }
-};
 
 export const subjectOptionsFor = (selectedSubjects: string[] | undefined): string[] =>
     Array.from(new Set([...SUBJECTS, ...(selectedSubjects ?? [])]));

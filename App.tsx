@@ -386,7 +386,6 @@ const App: React.FC = () => {
             } catch {}
             return next;
           })}
-          isRtl={isRtl}
           teacherName={config.defaultTeacherName || (authUser ? `${authUser.prenom || ''} ${authUser.nom || ''}`.trim() : '')}
         />
       )}

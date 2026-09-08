@@ -22,7 +22,7 @@ export interface ClassInfo {
   curriculumChapterMatches?: Record<string, { index: number; title: string }[]>;
 }
 
-export interface OfficialChapter {
+interface OfficialChapter {
   id: string;
   order: number;
   semester: 1 | 2;

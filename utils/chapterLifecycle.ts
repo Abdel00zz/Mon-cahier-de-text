@@ -49,8 +49,8 @@ function readEvidence(lessons: LessonsData): NotebookEvidence {
   return evidence;
 }
 
-export type ChapterState = 'not_started' | 'scheduled' | 'in_progress' | 'completed' | 'inconsistent';
-export interface ChapterLifecycle {
+type ChapterState = 'not_started' | 'scheduled' | 'in_progress' | 'completed' | 'inconsistent';
+interface ChapterLifecycle {
   startDate?: string;
   endDate?: string;
   itemsCount: number;

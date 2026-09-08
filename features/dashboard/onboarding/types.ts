@@ -21,19 +21,6 @@ export interface CycleOption {
     icon: ComponentType<{ className?: string }>;
 }
 
-export interface ClassDraft {
-    mode: 'catalog' | 'manual';
-    level: string;
-    group: string;
-    label: string;
-    subject: string;
-}
-
-export interface ClassDraftValidation {
-    name: string | null;
-    issue: 'missingGroup' | 'invalidGroup' | 'missingLabel' | 'existingClass' | null;
-}
-
 export interface OnboardingCopy {
     brand: string;
     title: string;

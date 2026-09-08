@@ -42,7 +42,7 @@ export interface PlannedAssessment {
     predictionReason: string;
 }
 
-export interface PlanDevoir {
+interface PlanDevoir {
     type: DevoirType;
     num: number;
     semaine: number;
@@ -50,7 +50,7 @@ export interface PlanDevoir {
     fenetre?: string;
 }
 
-export interface PlanExam {
+interface PlanExam {
     type: 'local' | 'regional' | 'national' | 'blanc';
     libelle: string;
     dateDebut: string;
@@ -60,14 +60,14 @@ export interface PlanExam {
     description?: string;
 }
 
-export interface PlanSemester {
+interface PlanSemester {
     n: 1 | 2;
     devoirs: PlanDevoir[];
     massarCloture?: string;
     remiseBulletins?: string;
 }
 
-export interface Plan {
+interface Plan {
     id?: string;
     /** matière concernée (ex. « Mathématiques », « SVT ») */
     matiere: string;
@@ -224,7 +224,7 @@ const normalize = (value: string): string =>
     value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 
 /** Plan officiel correspondant à la matière, au cycle, à la classe et à la branche. */
-export const findPlanFor = (
+const findPlanFor = (
     planning: PlanningFile,
     classInfo: Pick<ClassInfo, 'name' | 'subject' | 'cycle'> & Partial<Pick<ClassInfo, 'level' | 'branch'>>,
 ): Plan | null => {

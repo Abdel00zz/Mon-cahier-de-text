@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { Users, Settings, CircleHelp, PieChart, CalendarCheck, Menu } from '@/components/ui/icons';
+import { Users, Settings, CircleHelp, AlarmBell, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { useLocale, AppLocale } from '@/i18n/LocaleProvider';
@@ -15,14 +15,13 @@ interface TabBarProps {
   notificationsCount?: number;
   isExpanded: boolean;
   onToggleExpanded: () => void;
-  isRtl: boolean;
   teacherName?: string;
 }
 
 const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
   { id: 'dashboard', icon: Users },
   { id: 'evaluations', icon: CalendarCheck },
-  { id: 'notifications', icon: PieChart },
+  { id: 'notifications', icon: AlarmBell },
 ];
 
 const NAV_COPY: Record<AppLocale, {
@@ -56,7 +55,6 @@ export const TabBar = React.memo<TabBarProps>(({
   notificationsCount,
   isExpanded,
   onToggleExpanded,
-  isRtl,
   teacherName,
 }) => {
   const { impact } = useHapticFeedback();

@@ -218,20 +218,6 @@ export const reloadSyncState = (): void => {
     classesListSyncedVersion = state?.classesListSyncedVersion ?? 0;
 };
 
-/** Réinitialise l'état du bus en mémoire et dans le stockage local lors d'une déconnexion. */
-export const resetSyncState = (): void => {
-    dirtyClassVersions.clear();
-    deletedClasses.clear();
-    dirtySeq = 0;
-    classesListVersion = 0;
-    classesListSyncedVersion = 0;
-    try {
-        localStorage.removeItem(SYNC_PENDING_KEY);
-    } catch {
-        // Ignorer en environnement restreint
-    }
-};
-
 export interface PendingWork {
     dirtyClassIds: string[];
     /** version capturée par classe : ne nettoyer que si inchangée depuis */

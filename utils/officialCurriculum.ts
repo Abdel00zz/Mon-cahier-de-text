@@ -11,7 +11,7 @@ export interface CurriculumCatalog {
   documents: { id: string; file: string; sha256?: string; duplicateOf?: string }[];
   plans: OfficialCurriculumPlan[];
 }
-export const validCurriculumDate = validChapterDate;
+const validCurriculumDate = validChapterDate;
 
 /** Reject a partial update: never mix incompatible sources. */
 export function validateCurriculumCatalog(value: unknown): CurriculumCatalog {
@@ -44,7 +44,6 @@ export function validateCurriculumCatalog(value: unknown): CurriculumCatalog {
 }
 export const bundledCurricula = validateCurriculumCatalog(bundledJson);
 let latestCurricula = bundledCurricula;
-export const getCurriculumCatalog = () => latestCurricula;
 export async function loadCurriculumCatalog(signal?: AbortSignal): Promise<CurriculumCatalog> {
   const response = await fetch('/doc_officiel/curriculum.json', { cache: 'no-store', signal });
   if (!response.ok) throw new Error('Catalogue indisponible');

@@ -102,7 +102,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
   subject,
   contentDirection,
 }) => {
-  const { t, isRtl } = useLocale();
+  const { t } = useLocale();
   // Les éléments ajoutés restent cohérents avec la langue du cahier (FR si le
   // contenu est en écriture latine, AR sinon), pas avec celle de l'interface.
   const tc = (key: string, values?: Record<string, string | number>): string =>

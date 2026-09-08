@@ -17,6 +17,7 @@ import {
   Database,
   GraduationCap,
   History,
+  AlarmBell,
   PieChart,
   Undo2,
   User,
@@ -692,7 +693,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   const modalTitle = (
     <div className="flex min-w-0 items-center gap-2.5 pe-1">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <PieChart className="h-4 w-4" />
+        <AlarmBell className="h-4 w-4" />
       </span>
       <span className="min-w-0">
         <span className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
