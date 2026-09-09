@@ -23,7 +23,8 @@ interface ClassCardProps {
 const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
-    const displayName = formatLocalizedClassDisplayName(classInfo.name, locale);
+    const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
+    const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
     const subject = classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : null;
     const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
 
@@ -45,23 +46,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             {/* Zone Supérieure : Titre et Métadonnées avec espacement équilibré et hauteur compacte */}
             <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-4 pb-2.5">
                 <div className="flex items-start justify-between gap-2.5">
-                    <h3 className="keep-class-title min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
+                    <h3 aria-live="polite" aria-atomic="true" className="keep-class-title min-w-0 flex-1 text-sm sm:text-base font-bold leading-snug">
                         <button
                             type="button"
                             {...pressHandlers}
-                            aria-label={`${t('dashboard.openClass', { className: displayName })}${isActiveSession ? ` · ${t('dashboard.session.now')}` : ''}`}
+                            aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
                             title={displayName}
                             className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
                             <ClassCardTitle name={displayName} />
                         </button>
                     </h3>
-                    {isActiveSession && (
-                        <span className="keep-session-chip relative z-10 inline-flex min-h-6 shrink-0 items-center gap-1.5 px-2 py-1 text-[10px] font-bold leading-none" role="status">
-                            <span className="keep-session-dot h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true" />
-                            {t('dashboard.session.now')}
-                        </span>
-                    )}
                     {/* Style Google Keep PC : bouton paramètre discret affiché au survol sur ordinateur */}
                     <button
                         type="button"

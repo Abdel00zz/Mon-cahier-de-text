@@ -1071,10 +1071,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
         0 10px 24px -15px rgb(15 23 42 / 0.34);
     }
   }
-  @keyframes keep-session-dot {
-    0%, 100% { box-shadow: 0 0 0 3px var(--keep-accent-soft); }
-    50% { box-shadow: 0 0 0 6px transparent; }
-  }
   .keep-session-active {
     border-width: 2px;
     border-color: color-mix(in srgb, var(--keep-accent) 74%, var(--keep-border));
@@ -1088,17 +1084,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .dark .keep-session-active {
     background-color: color-mix(in srgb, var(--keep-dark) 95%, var(--keep-accent) 5%);
-  }
-  .keep-session-chip {
-    border: 1px solid color-mix(in srgb, var(--keep-accent) 32%, transparent);
-    border-radius: 999px;
-    background-color: var(--keep-accent-soft);
-    color: var(--keep-accent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--keep-accent) 12%, transparent);
-  }
-  .keep-session-dot {
-    background-color: var(--keep-accent);
-    animation: keep-session-dot 2.2s ease-out infinite;
   }
   .keep-session-active .keep-session-footer {
     border-color: color-mix(in srgb, var(--keep-accent) 18%, transparent);
@@ -1176,6 +1161,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   @media (prefers-reduced-motion: reduce) {
     .keep-interactive { transition: none; }
-    .keep-session-active, .keep-session-dot { animation: none; }
+    .keep-session-active { animation: none; }
   }
 }
