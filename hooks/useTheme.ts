@@ -82,7 +82,7 @@ export function useTheme(
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
 
-    const accentKey = themeCustomization?.accentColor || 'blue';
+    const accentKey = themeCustomization?.accentColor || 'warm-sand';
     const borderRadiusKey = themeCustomization?.borderRadius || 'default';
     const uiFontKey = themeCustomization?.uiFont || 'cyber-clean';
     const cardStyleKey = themeCustomization?.cardStyle || 'classic';

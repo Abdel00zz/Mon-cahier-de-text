@@ -1,4 +1,5 @@
 export type AccentColorKey =
+  | 'warm-sand'
   | 'blue'
   | 'emerald'
   | 'indigo'
@@ -38,6 +39,26 @@ export interface AccentColorPreset {
 }
 
 export const ACCENT_PALETTES: AccentColorPreset[] = [
+  {
+    id: 'warm-sand',
+    nameFr: 'Beige Écrémé (#C85A32)',
+    nameAr: 'بيج قشدي دافئ (#C85A32)',
+    hex: '#C85A32',
+    light: {
+      primary: '16 60% 49%',
+      primaryForeground: '0 0% 100%',
+      ring: '16 60% 49%',
+      accent: '38 33% 94%',
+      accentForeground: '16 60% 38%',
+    },
+    dark: {
+      primary: '16 68% 56%',
+      primaryForeground: '0 0% 100%',
+      ring: '16 68% 56%',
+      accent: '16 60% 18%',
+      accentForeground: '16 68% 80%',
+    },
+  },
   {
     id: 'blue',
     nameFr: 'Bleu Moderne (#3b82f6)',

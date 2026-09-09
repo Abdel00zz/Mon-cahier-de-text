@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { ClassOfficialPlanBanner } from './ClassOfficialPlanBanner';
+import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 
 interface DevoirsViewProps {
   classes: ClassInfo[];
@@ -128,6 +129,13 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
         : [],
     [config.pedagogicalEvents, selectedClass]
   );
+
+  const devoirTabItems: FluidTabItem<'all' | 's1' | 's2' | 'events'>[] = useMemo(() => [
+    { id: 'all', label: `${t('evaluations.tabAll')} (${number.format(links.length)})` },
+    { id: 's1', label: t('evaluations.semester', { number: 1 }) },
+    { id: 's2', label: t('evaluations.semester', { number: 2 }) },
+    { id: 'events', label: `${t('evaluations.activities')} (${number.format(pedagogicalEvents.length)})` },
+  ], [t, number, links.length, pedagogicalEvents.length]);
 
   const classGroups = useMemo(() => {
     const definitions = [
@@ -313,56 +321,16 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Modern Filter Tabs & Action Toolbar (Android 16 Style) */}
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        {/* Organic Pill Segmented Filter */}
-        <div className="modern-scrollbar flex w-full items-center gap-0.5 overflow-x-auto rounded-full bg-muted/50 p-0.5 shadow-2xs backdrop-blur-xs sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('all')}
-            className={cn(
-              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
-              activeTab === 'all'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {t('evaluations.tabAll')} ({number.format(links.length)})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('s1')}
-            className={cn(
-              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
-              activeTab === 's1'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {t('evaluations.semester', { number: 1 })}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('s2')}
-            className={cn(
-              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
-              activeTab === 's2'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {t('evaluations.semester', { number: 2 })}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('events')}
-            className={cn(
-              'shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all duration-200 cursor-pointer active:scale-[0.97] sm:text-[11px]',
-              activeTab === 'events'
-                ? 'bg-card text-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {t('evaluations.activities')} ({number.format(pedagogicalEvents.length)})
-          </button>
+        {/* Organic Pill Segmented Filter avec auto-centrage fluide */}
+        <div className="w-full sm:w-auto">
+          <FluidTabRail<'all' | 's1' | 's2' | 'events'>
+            items={devoirTabItems}
+            activeId={activeTab}
+            onChange={setActiveTab}
+            layoutId="devoirs-filter-subpill"
+            size="sm"
+            ariaLabel={t('evaluations.tabAll')}
+          />
         </div>
 
         {/* Floating Action Buttons */}

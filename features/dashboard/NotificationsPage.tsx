@@ -38,6 +38,7 @@ import {
 import { consumeNotificationsAxis, type NotificationsAxisId } from '@/utils/notificationNavigation';
 import { NotificationCalendar } from './NotificationCalendar';
 import { NotificationFeed } from '@/hooks/useNotificationFeed';
+import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 
@@ -711,6 +712,29 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     </div>
   );
 
+  const mobileAxisItems: FluidTabItem<AxisId>[] = useMemo(() => {
+    return menuItems.map(item => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      badge: item.count > 0 ? (
+        <span className={cn(
+          'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
+          item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
+        )}>
+          {item.count}
+        </span>
+      ) : undefined,
+    }));
+  }, [menuItems]);
+
+  const activityFilterItems: FluidTabItem<ActivityFilter>[] = useMemo(() => {
+    return ACTIVITY_FILTERS.map(filter => ({
+      id: filter,
+      label: t(`notifications.activityFilter.${filter}`),
+    }));
+  }, [t]);
+
   return (
     <Modal
       isOpen={isModalOpen}
@@ -728,41 +752,17 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       bodyClassName="p-3.5 sm:p-4.5"
     >
       <div data-pilotage-root className="min-w-0 text-foreground">
-        {/* Même accès direct que dans Paramètres sur mobile et tablette. */}
-        <nav
-          aria-label={t('notifications.sidebarLabel')}
-          className="-mx-1 mb-3 flex items-center gap-1.5 overflow-x-auto px-1 pb-2.5 lg:hidden no-scrollbar"
-        >
-          {menuItems.map(item => {
-            const isActive = activeAxis === item.id;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => handleSelectAxis(item.id)}
-                className={cn(
-                  'flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
-                  isActive
-                    ? 'border-primary/25 bg-primary/10 text-primary shadow-xs'
-                    : 'border-border/60 bg-card/60 text-muted-foreground hover:bg-muted hover:text-foreground',
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{item.label}</span>
-                {item.count > 0 && (
-                  <span className={cn(
-                    'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
-                    item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
-                  )}>
-                    {item.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
+        {/* Même accès direct que dans Paramètres sur mobile et tablette avec auto-centrage fluide. */}
+        <div className="-mx-1 mb-3 flex px-1 lg:hidden">
+          <FluidTabRail<AxisId>
+            items={mobileAxisItems}
+            activeId={activeAxis}
+            onChange={handleSelectAxis}
+            layoutId="notifications-mobile-tab-pill"
+            size="md"
+            ariaLabel={t('notifications.sidebarLabel')}
+          />
+        </div>
 
         <div className="grid min-w-0 grid-cols-1 items-start gap-4 lg:grid-cols-12 lg:gap-5">
           {/* Navigation master/detail conservée sur grand écran. */}
@@ -978,21 +978,15 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      {ACTIVITY_FILTERS.map(filter => (
-                        <button
-                          key={filter}
-                          onClick={() => setActivityFilter(filter)}
-                          className={cn(
-                            'px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer',
-                            activityFilter === filter
-                              ? 'bg-foreground text-background dark:text-zinc-900 shadow-2xs'
-                              : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground hover:bg-muted'
-                          )}
-                        >
-                          {t(`notifications.activityFilter.${filter}`)}
-                        </button>
-                      ))}
+                    <div className="w-full">
+                      <FluidTabRail<ActivityFilter>
+                        items={activityFilterItems}
+                        activeId={activityFilter}
+                        onChange={setActivityFilter}
+                        layoutId="activity-filter-pill"
+                        size="sm"
+                        ariaLabel={t('notifications.activity')}
+                      />
                     </div>
 
                     {filteredActivity.length === 0 ? (

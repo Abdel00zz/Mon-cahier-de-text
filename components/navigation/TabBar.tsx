@@ -1,4 +1,5 @@
 import React, { useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Users, Settings, CircleHelp, AlarmBell, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -27,21 +28,25 @@ const tabs: Array<{ id: TabType; icon: React.FC<{ className?: string }> }> = [
 const NAV_COPY: Record<AppLocale, {
   brand: string; teacherSpace: string;
   dashboard: string; evaluations: string; notifications: string; settings: string; help: string;
+  dashboardMobile?: string; evaluationsMobile?: string; notificationsMobile?: string; settingsMobile?: string;
   collapse: string; expand: string; mainNav: string; mobileNav: string;
 }> = {
   fr: {
     brand: 'Cahier de textes', teacherSpace: 'ESPACE ENSEIGNANT',
     dashboard: 'Classes', evaluations: 'Contrôle continu', notifications: 'Pilotage', settings: 'Paramètres', help: 'Guide',
+    dashboardMobile: 'Classes', evaluationsMobile: 'Évaluations', notificationsMobile: 'Pilotage', settingsMobile: 'Paramètres',
     collapse: 'Réduire', expand: 'Développer', mainNav: 'Navigation principale', mobileNav: 'Navigation mobile',
   },
   ar: {
     brand: 'دفتر النصوص', teacherSpace: 'فضاء الأستاذ',
     dashboard: 'أقسامك', evaluations: 'المراقبة المستمرة', notifications: 'لوحة القيادة', settings: 'الإعدادات', help: 'الدليل التربوي',
+    dashboardMobile: 'أقسامك', evaluationsMobile: 'المراقبة', notificationsMobile: 'لوحة القيادة', settingsMobile: 'الإعدادات',
     collapse: 'تصغير القائمة', expand: 'توسيع القائمة', mainNav: 'التنقل الرئيسي', mobileNav: 'التنقل على الهاتف',
   },
   en: {
     brand: 'Lesson Notebook', teacherSpace: 'TEACHER SPACE',
     dashboard: 'Classes', evaluations: 'Continuous Assessment', notifications: 'Dashboard', settings: 'Settings', help: 'Pedagogical Guide',
+    dashboardMobile: 'Classes', evaluationsMobile: 'Assessments', notificationsMobile: 'Dashboard', settingsMobile: 'Settings',
     collapse: 'Collapse', expand: 'Expand', mainNav: 'Main navigation', mobileNav: 'Mobile navigation',
   },
 };
@@ -64,10 +69,20 @@ export const TabBar = React.memo<TabBarProps>(({
   const userName = teacherName?.trim() || (user ? `${user.prenom || ''} ${user.nom || ''}`.trim() : '') || copy.teacherSpace;
   const touchStartX = useRef(0);
 
+  const isRtl = locale === 'ar';
+
   const goTo = useCallback((tab: TabType) => {
     impact('light');
     onTabChange(tab);
   }, [impact, onTabChange]);
+
+  const getMobileLabel = useCallback((id: TabType) => {
+    if (id === 'dashboard') return copy.dashboardMobile ?? copy.dashboard;
+    if (id === 'evaluations') return copy.evaluationsMobile ?? copy.evaluations;
+    if (id === 'notifications') return copy.notificationsMobile ?? copy.notifications;
+    if (id === 'settings') return copy.settingsMobile ?? copy.settings;
+    return copy[id];
+  }, [copy]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -75,17 +90,17 @@ export const TabBar = React.memo<TabBarProps>(({
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) < 60) return;
-    const currentIndex = tabs.findIndex(t => t.id === activeTab);
+    if (Math.abs(delta) < 45) return;
+    const allNavTabs: TabType[] = ['dashboard', 'evaluations', 'notifications', 'settings'];
+    const currentIndex = allNavTabs.indexOf(activeTab);
     if (currentIndex === -1) return;
-    const nextIndex = delta > 0
-      ? Math.max(0, currentIndex - 1)
-      : Math.min(tabs.length - 1, currentIndex + 1);
+    const direction = isRtl ? (delta > 0 ? 1 : -1) : (delta > 0 ? -1 : 1);
+    const nextIndex = Math.max(0, Math.min(allNavTabs.length - 1, currentIndex + direction));
     if (nextIndex !== currentIndex) {
-      impact('light');
-      onTabChange(tabs[nextIndex].id);
+      impact('medium');
+      onTabChange(allNavTabs[nextIndex]);
     }
-  }, [activeTab, impact, onTabChange]);
+  }, [activeTab, impact, onTabChange, isRtl]);
 
   return (
     <>
@@ -254,35 +269,49 @@ export const TabBar = React.memo<TabBarProps>(({
         </div>
       </nav>
 
-      {/* Barre mobile compacte */}
+      {/* Barre mobile compacte - Ergonomie avancée style iPhone 17 sans coupure de texte ni écrasement */}
       <nav
-        className="mobile-tab-bar fixed inset-x-2.5 z-40 overflow-visible rounded-xl border border-border bg-card text-muted-foreground shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] print:hidden sm:hidden will-change-transform font-sans"
-        style={{ bottom: 'max(0.6rem, env(safe-area-inset-bottom, 0.6rem))' }}
+        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border/70 bg-card/90 dark:bg-card/85 backdrop-blur-2xl text-muted-foreground shadow-[0_12px_36px_-6px_rgba(43,38,32,0.14),0_4px_16px_-2px_rgba(43,38,32,0.06)] dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.6)] print:hidden sm:hidden will-change-transform font-sans"
+        style={{ bottom: 'max(0.65rem, env(safe-area-inset-bottom, 0.65rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="mx-auto flex h-[64px] max-w-md items-center justify-around px-1 py-1">
+        {/* Ligne spéculaire de réfraction de verre */}
+        <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" aria-hidden="true" />
+
+        <div className="relative mx-auto flex h-[68px] max-w-md items-center justify-around px-1 pt-1 pb-1.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? notificationsCount : undefined;
 
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 type="button"
+                whileTap={{ scale: 0.90 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => goTo(tab.id)}
-                className={cn(
-                  'relative flex flex-1 flex-col items-center justify-center py-1 rounded-lg transition-all duration-150 active:scale-[0.96] cursor-pointer',
-                  'min-h-[50px] min-w-[48px]',
-                  isActive ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground',
-                )}
+                className="relative flex flex-1 flex-col items-center justify-center pt-1.5 pb-2 px-0.5 rounded-xl min-h-[58px] min-w-0 cursor-pointer select-none"
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <div className="relative flex items-center justify-center">
-                  <Icon className="h-5 w-5" />
+                {/* Pastille coulissante dynamique (Spring Pill) */}
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-tab-active-pill"
+                    className="absolute inset-x-0.5 inset-y-1 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                    transition={{ type: 'spring', stiffness: 450, damping: 32, mass: 0.8 }}
+                  />
+                )}
+
+                <motion.div
+                  animate={{ scale: isActive ? 1.08 : 1, y: isActive ? -1 : 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="relative z-10 flex items-center justify-center shrink-0"
+                >
+                  <Icon className={cn("h-5 w-5 transition-colors duration-150", isActive ? "text-primary" : "text-muted-foreground")} />
                   {count ? (
                     <span
                       className="absolute -top-1.5 -end-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
@@ -290,41 +319,60 @@ export const TabBar = React.memo<TabBarProps>(({
                       {countLabel(count)}
                     </span>
                   ) : null}
-                </div>
+                </motion.div>
+
                 <span className={cn(
-                  "mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium",
-                  locale === 'ar' && "text-[12px] font-bold leading-none"
+                  "relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible leading-normal transition-colors duration-150",
+                  locale === 'ar'
+                    ? "text-[11.5px] font-bold leading-normal tracking-normal pb-0.5"
+                    : "text-[10.5px] font-semibold leading-normal pb-0.5",
+                  isActive ? "text-primary font-bold" : "text-muted-foreground"
                 )}>
-                  {copy[tab.id]}
+                  {getMobileLabel(tab.id)}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.90 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
             onClick={() => goTo('settings')}
             onTouchStart={preloadSettingsPage}
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
-            className={cn(
-              'relative flex flex-1 flex-col items-center justify-center py-1 rounded-lg transition-all duration-150 active:scale-[0.96] cursor-pointer',
-              'min-h-[50px] min-w-[48px]',
-              activeTab === 'settings' ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground',
-            )}
+            className="relative flex flex-1 flex-col items-center justify-center pt-1.5 pb-2 px-0.5 rounded-xl min-h-[58px] min-w-0 cursor-pointer select-none"
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <div className="relative flex items-center justify-center">
-              <Settings className="h-5 w-5" />
-            </div>
+            {/* Pastille coulissante dynamique si settings actif */}
+            {activeTab === 'settings' && (
+              <motion.div
+                layoutId="mobile-tab-active-pill"
+                className="absolute inset-x-0.5 inset-y-1 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                transition={{ type: 'spring', stiffness: 450, damping: 32, mass: 0.8 }}
+              />
+            )}
+
+            <motion.div
+              animate={{ scale: activeTab === 'settings' ? 1.08 : 1, y: activeTab === 'settings' ? -1 : 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="relative z-10 flex items-center justify-center shrink-0"
+            >
+              <Settings className={cn("h-5 w-5 transition-colors duration-150", activeTab === 'settings' ? "text-primary" : "text-muted-foreground")} />
+            </motion.div>
+
             <span className={cn(
-              "mt-0.5 block max-w-full truncate text-[10px] leading-tight font-medium",
-              locale === 'ar' && "text-[12px] font-bold leading-none"
+              "relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible leading-normal transition-colors duration-150",
+              locale === 'ar'
+                ? "text-[11.5px] font-bold leading-normal tracking-normal pb-0.5"
+                : "text-[10.5px] font-semibold leading-normal pb-0.5",
+              activeTab === 'settings' ? "text-primary font-bold" : "text-muted-foreground"
             )}>
-              {copy.settings}
+              {getMobileLabel('settings')}
             </span>
-          </button>
+          </motion.button>
         </div>
       </nav>
     </>

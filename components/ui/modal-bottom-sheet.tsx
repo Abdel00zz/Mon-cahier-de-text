@@ -230,8 +230,8 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 min-h-14 border-b border-border/70 bg-transparent px-5 py-3.5 sm:px-6 sm:py-4 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
-                !hideClose ? 'pe-14 sm:pe-16' : 'pe-5 sm:pe-6',
+                'modal-header relative z-10 shrink-0 min-h-14 sm:min-h-12 border-b border-border/70 bg-transparent px-5 py-3.5 sm:px-6 sm:py-3 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
+                !hideClose ? 'pe-14 sm:pe-12' : 'pe-5 sm:pe-6',
                 headerClassName
               )}
             >
@@ -248,16 +248,16 @@ export function ModalBottomSheet({
             </div>
           )}
 
-          {/* Close button */}
+          {/* Close button - Calibré style Microsoft Desktop avec teinte douce et positionnement précis */}
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute end-3 sm:end-4 z-30 inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer',
-                (title || description) ? 'top-2.5 sm:top-3.5' : 'top-3 sm:top-4'
+                'dialog-close absolute end-3 sm:end-3 z-30 inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-xl sm:rounded-lg bg-transparent text-muted-foreground/45 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer',
+                (title || description) ? 'top-2.5 sm:top-2' : 'top-3 sm:top-2'
               )}
             >
-              <X className="h-4 w-4" strokeWidth={2.2} />
+              <X className="h-4 w-4 stroke-[1.8] sm:stroke-[1.75]" />
               <span className="sr-only">{closeLabel}</span>
             </DialogPrimitive.Close>
           )}

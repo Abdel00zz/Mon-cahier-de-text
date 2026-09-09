@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CountryFlag } from '@/components/ui/CountryFlags';
+import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { AccountTab } from './components/AccountTab';
 import { getProvincesForAcademy, MOROCCO_EDUCATION_ACADEMIES } from '@/utils/moroccoEducation';
 import { SUBJECTS, formatLocalizedSubjectDisplayName } from '@/constants';
@@ -194,8 +195,25 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
   const wasOpenRef = useRef(false);
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('emploi');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      const stored = localStorage.getItem('settings_sidebar_collapsed_v1');
+      if (stored !== null) return stored === 'true';
+    } catch {}
+    return true; // Réduit par défaut sur desktop selon les directives utilisateur
+  });
   const [subjectExpanded, setSubjectExpanded] = useState(false);
+
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('settings_sidebar_collapsed_v1', String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     if (isOpen && !wasOpenRef.current) {
@@ -679,11 +697,11 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const supportMenuItems = SETTING_ITEMS.filter(i => i.group === 'support');
   const isEffectiveCollapsed = isSidebarCollapsed;
 
-  // Master sidebar
+  // Master sidebar - Format compact style Microsoft desktop avec icônes parfaitement centrées
   const menuListContent = (
-    <div className="space-y-2.5 transition-all duration-300 h-full flex flex-col">
+    <div className="space-y-2 transition-all duration-300 h-full flex flex-col">
       {/* Sidebar Toggle Button (Desktop Only) */}
-      <div className={cn('hidden lg:flex items-center justify-between pb-1', isEffectiveCollapsed ? 'justify-center' : '')}>
+      <div className={cn('hidden lg:flex items-center pb-1', isEffectiveCollapsed ? 'justify-center' : 'justify-between px-1')}>
         {!isEffectiveCollapsed && (
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
             {locale === 'ar' ? 'الأقسام' : 'Sections'}
@@ -691,19 +709,53 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         )}
         <button
           type="button"
-          onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer border border-border/40"
+          onClick={toggleSidebar}
+          className={cn(
+            'flex items-center justify-center rounded-lg border border-border/50 bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
+            isEffectiveCollapsed ? 'h-8 w-8 mx-auto' : 'h-7 w-7'
+          )}
           title={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
+          aria-label={t(isSidebarCollapsed ? 'settings.expandMenu' : 'settings.collapseMenu')}
         >
-          <ChevronRight className={cn('h-3.5 w-3.5 transition-transform duration-200', (isRtl ? isSidebarCollapsed : !isSidebarCollapsed) && 'rotate-180')} />
+          <ChevronRight className={cn(
+            'h-3.5 w-3.5 transition-transform duration-200',
+            isEffectiveCollapsed
+              ? (isRtl ? 'rotate-180' : '')
+              : (isRtl ? '' : 'rotate-180')
+          )} />
         </button>
       </div>
 
       {/* Paramètres principaux */}
-      <div className="flex-1 space-y-1">
+      <div className={cn('flex-1 space-y-1', isEffectiveCollapsed && 'space-y-1.5')}>
         {mainMenuItems.map(item => {
           const isActive = activeCategory === item.id;
           const Icon = item.icon;
+
+          if (isEffectiveCollapsed) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelectCategory(item.id)}
+                aria-pressed={isActive}
+                onPointerDown={() => preloadTabComponent(item.id)}
+                onPointerEnter={() => preloadTabComponent(item.id)}
+                onFocus={() => preloadTabComponent(item.id)}
+                title={t(item.titleKey)}
+                aria-label={t(item.titleKey)}
+                className={cn(
+                  'relative flex h-10 w-10 mx-auto items-center justify-center rounded-xl transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95',
+                  isActive
+                    ? 'bg-primary/15 dark:bg-primary/25 text-primary'
+                    : 'bg-transparent text-muted-foreground/75 hover:bg-muted/70 hover:text-foreground'
+                )}
+              >
+                <Icon className="h-5 w-5 stroke-[1.85] shrink-0" />
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.id}
@@ -715,10 +767,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               onFocus={() => preloadTabComponent(item.id)}
               title={t(item.titleKey)}
               className={cn(
-                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
-                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                'group relative flex w-full items-center justify-between gap-2.5 px-3 py-2 rounded-xl transition-all duration-150 cursor-pointer text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]',
                 isActive
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
+                  ? 'bg-primary/12 dark:bg-primary/20 text-primary font-bold'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
@@ -731,34 +782,64 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
-                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
+                <div className="min-w-0 flex-1">
                   <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
                     {t(item.titleKey)}
                   </span>
                 </div>
               </div>
 
-              {!isEffectiveCollapsed && (
-                <div className="shrink-0 self-center flex items-center justify-center ps-1">
-                  <ChevronRight
-                    className={cn(
-                      'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
-                      isRtl && 'rotate-180',
-                      isActive && 'text-primary'
-                    )}
-                  />
-                </div>
-              )}
+              <div className="shrink-0 self-center flex items-center justify-center ps-1">
+                <ChevronRight
+                  className={cn(
+                    'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
+                    isRtl && 'rotate-180',
+                    isActive && 'text-primary'
+                  )}
+                />
+              </div>
             </button>
           );
         })}
       </div>
 
+      {/* Séparateur élégant */}
+      {isEffectiveCollapsed ? (
+        <div className="my-1.5 h-[1px] w-6 mx-auto bg-border/60" aria-hidden="true" />
+      ) : (
+        <div className="my-1 border-t border-border/50" aria-hidden="true" />
+      )}
+
       {/* Assistance & Archives */}
-      <div className="pt-1 space-y-1">
+      <div className={cn('space-y-1', isEffectiveCollapsed && 'space-y-1.5')}>
         {supportMenuItems.map(item => {
           const isActive = activeCategory === item.id;
           const Icon = item.icon;
+
+          if (isEffectiveCollapsed) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelectCategory(item.id)}
+                aria-pressed={isActive}
+                onPointerDown={() => preloadTabComponent(item.id)}
+                onPointerEnter={() => preloadTabComponent(item.id)}
+                onFocus={() => preloadTabComponent(item.id)}
+                title={t(item.titleKey)}
+                aria-label={t(item.titleKey)}
+                className={cn(
+                  'relative flex h-10 w-10 mx-auto items-center justify-center rounded-xl transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95',
+                  isActive
+                    ? 'bg-primary/15 dark:bg-primary/25 text-primary'
+                    : 'bg-transparent text-muted-foreground/75 hover:bg-muted/70 hover:text-foreground'
+                )}
+              >
+                <Icon className="h-5 w-5 stroke-[1.85] shrink-0" />
+              </button>
+            );
+          }
+
           return (
             <button
               key={item.id}
@@ -770,10 +851,9 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               onFocus={() => preloadTabComponent(item.id)}
               title={t(item.titleKey)}
               className={cn(
-                'group relative flex w-full items-center transition-all duration-150 cursor-pointer rounded-xl focus:outline-none active:scale-[0.99]',
-                isEffectiveCollapsed ? 'justify-center p-2' : 'justify-between gap-2.5 px-3 py-2 text-start',
+                'group relative flex w-full items-center justify-between gap-2.5 px-3 py-2 rounded-xl transition-all duration-150 cursor-pointer text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]',
                 isActive
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-2xs'
+                  ? 'bg-primary/12 dark:bg-primary/20 text-primary font-bold'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground'
               )}
             >
@@ -786,30 +866,36 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 >
                   <Icon className="h-4 w-4 stroke-[2]" />
                 </div>
-                <div className={cn('min-w-0 flex-1', isEffectiveCollapsed ? 'hidden lg:hidden' : 'block')}>
+                <div className="min-w-0 flex-1">
                   <span className={cn('block text-xs leading-snug truncate transition-colors', isRtl && 'text-sm font-semibold', isActive ? 'font-bold' : 'font-medium')}>
                     {t(item.titleKey)}
                   </span>
                 </div>
               </div>
 
-              {!isEffectiveCollapsed && (
-                <div className="shrink-0 self-center flex items-center justify-center ps-1">
-                  <ChevronRight
-                    className={cn(
-                      'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
-                      isRtl && 'rotate-180',
-                      isActive && 'text-primary'
-                    )}
-                  />
-                </div>
-              )}
+              <div className="shrink-0 self-center flex items-center justify-center ps-1">
+                <ChevronRight
+                  className={cn(
+                    'h-3.5 w-3.5 text-muted-foreground/60 transition-transform duration-200',
+                    isRtl && 'rotate-180',
+                    isActive && 'text-primary'
+                  )}
+                />
+              </div>
             </button>
           );
         })}
       </div>
     </div>
   );
+
+  const mobileSettingItems: FluidTabItem<SettingsCategory>[] = useMemo(() => {
+    return SETTING_ITEMS.map(item => ({
+      id: item.id,
+      label: t(item.titleKey),
+      icon: item.icon,
+    }));
+  }, [t]);
 
   return (
     <>
@@ -825,39 +911,32 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       headerClassName="border-b border-border/70 bg-muted/20"
       bodyClassName="p-3.5 sm:p-4.5"
     >
-      {/* Mobile Horizontal Tabs Selector (Direct access, NO back button) */}
-      <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 -mx-1 px-1 no-scrollbar">
-        {SETTING_ITEMS.map(item => {
-          const isActive = activeCategory === item.id;
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleSelectCategory(item.id)}
-              aria-pressed={isActive}
-              className={cn(
-                'flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-medium transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
-                isActive
-                  ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold border border-primary/30 shadow-xs'
-                  : 'border border-border/60 bg-background/60 text-muted-foreground hover:bg-muted hover:text-foreground'
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span>{t(item.titleKey)}</span>
-            </button>
-          );
-        })}
+      {/* Mobile Horizontal Tabs Selector avec déplacement fluide et centrage dynamique */}
+      <div className="flex lg:hidden mb-3 -mx-1 px-1">
+        <FluidTabRail<SettingsCategory>
+          items={mobileSettingItems}
+          activeId={activeCategory}
+          onChange={handleSelectCategory}
+          layoutId="settings-mobile-tab-pill"
+          size="md"
+          ariaLabel={t('settings.title')}
+        />
       </div>
 
-      <div data-settings-ui className="rtl-config-split grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 min-h-[440px]">
-        {/* Desktop Sidebar */}
-        <div className={cn('hidden lg:flex flex-col', isEffectiveCollapsed ? 'lg:col-span-1' : 'lg:col-span-4')}>
+      <div data-settings-ui className="rtl-config-split flex flex-col lg:flex-row gap-4 lg:gap-5 min-h-[460px]">
+        {/* Desktop Sidebar Rail */}
+        <aside
+          aria-label={locale === 'ar' ? 'أقسام الإعدادات' : 'Catégories des paramètres'}
+          className={cn(
+            'hidden lg:flex flex-col shrink-0 transition-[width] duration-200 ease-out border-e border-border/60 pe-2.5',
+            isEffectiveCollapsed ? 'w-14' : 'w-56'
+          )}
+        >
           {menuListContent}
-        </div>
+        </aside>
 
         {/* Content Zone */}
-        <div className={cn('settings-content-zone flex flex-col', isEffectiveCollapsed ? 'lg:col-span-11' : 'lg:col-span-8 col-span-1')}>
+        <main className="settings-content-zone flex flex-1 flex-col min-w-0">
           <div className="flex-1">
             <section key={activeCategory} aria-label={t(SETTING_ITEMS.find(item => item.id === activeCategory)!.titleKey)} className="settings-page-content">
               {renderCategoryContent()}
@@ -867,7 +946,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <div className="mt-4 pt-1">
             {footer}
           </div>
-        </div>
+        </main>
       </div>
     </Modal>
     <ConfirmDialog

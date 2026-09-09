@@ -23,6 +23,7 @@ import {
 import { getDaySessionBlocks } from '@/utils/timetable';
 import { collectSessionDates } from '@/utils/printMeta';
 import { readClassLessons } from '@/utils/notificationSignals';
+import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { loadPlanning, resolveClassAssessments, type PlanningFile } from '@/utils/assessments';
 import {
   getOfficialStudentEventsFile,
@@ -446,12 +447,12 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
     return Clock;
   };
 
-  const layers: Array<{ id: CalendarLayer; label: string }> = [
+  const layers: FluidTabItem<CalendarLayer>[] = useMemo(() => [
     { id: 'all', label: t('calendar.layer.all') },
     { id: 'schedule', label: t('calendar.layer.schedule') },
     { id: 'breaks', label: t('calendar.layer.breaks') },
     { id: 'official', label: t('calendar.layer.official') },
-  ];
+  ], [t]);
 
   return (
     <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -496,28 +497,16 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
           </div>
         </div>
 
-        {/* Filtres de couches (Segmented Pills) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-border/60 bg-muted/40 p-1 shadow-2xs" role="tablist" aria-label={t('calendar.layers')}>
-          {layers.map(item => {
-            const active = layer === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setLayer(item.id)}
-                className={cn(
-                  'h-9 shrink-0 rounded-xl px-3.5 text-xs font-bold transition-all duration-150',
-                  active
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:bg-card/70 hover:text-foreground',
-                )}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+        {/* Filtres de couches ultra-fluides avec auto-centrage */}
+        <div className="w-full lg:w-auto">
+          <FluidTabRail<CalendarLayer>
+            items={layers}
+            activeId={layer}
+            onChange={setLayer}
+            layoutId="calendar-layer-subpill"
+            size="sm"
+            ariaLabel={t('calendar.layers')}
+          />
         </div>
       </header>
 

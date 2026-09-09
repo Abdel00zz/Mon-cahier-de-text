@@ -102,8 +102,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
 
   const currentTheme = config.theme || 'light';
   const custom = config.themeCustomization || {};
-  const currentAccent: AccentColorKey = custom.accentColor || 'blue';
-  const currentCustomHex: string = custom.customPrimaryColor || '#2563eb';
+  const currentAccent: AccentColorKey = custom.accentColor || 'warm-sand';
+  const currentCustomHex: string = custom.customPrimaryColor || '#C85A32';
   const currentRadius: BorderRadiusOption = custom.borderRadius || 'default';
   const currentCardStyle: CardStyleOption = custom.cardStyle || 'classic';
   const currentTableStyle: TableStyleOption = custom.tableStyle || 'clean';
@@ -130,8 +130,8 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       contentFontLatin: 'space-grotesk',
       contentFontArabic: 'alexandria',
       themeCustomization: {
-        accentColor: 'blue',
-        customPrimaryColor: '#2563eb',
+        accentColor: 'warm-sand',
+        customPrimaryColor: '#C85A32',
         borderRadius: 'default',
         cardStyle: 'classic',
         tableStyle: 'clean',

@@ -13,6 +13,7 @@ import {
 } from '@/utils/timetable';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { keepToneForClass, KEEP_TONES } from '@/utils/keepTheme';
+import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 
 export interface ModernClassColor {
     key: string;
@@ -239,11 +240,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return { hours, sessions };
     };
 
-    const periodOptions: Array<{ value: SchedulePeriod; label: string }> = [
-        { value: 'all', label: t('schedule.viewAll') },
-        { value: 'morning', label: t('schedule.viewMorning') },
-        { value: 'afternoon', label: t('schedule.viewAfternoon') },
-    ];
+    const periodTabItems: FluidTabItem<SchedulePeriod>[] = React.useMemo(() => [
+        { id: 'morning', label: t('schedule.viewMorning') },
+        { id: 'afternoon', label: t('schedule.viewAfternoon') },
+        { id: 'all', label: t('schedule.viewAll') },
+    ], [t]);
 
     return (
         <div className="space-y-5">
@@ -271,22 +272,15 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             )}
                         </div>
                     </div>
-                    <div className="inline-flex w-full rounded-md border border-zinc-200 bg-zinc-100/90 p-1 shadow-none dark:border-zinc-800 dark:bg-zinc-900/80 sm:w-auto" role="group" aria-label={t('schedule.viewLabel')}>
-                        {periodOptions.map(option => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => setVisiblePeriod(option.value)}
-                                aria-pressed={visiblePeriod === option.value}
-                                className={`min-w-0 flex-1 rounded-md px-3 py-1.5 text-xs font-bold transition-all sm:flex-none sm:px-3.5 cursor-pointer ${
-                                    visiblePeriod === option.value
-                                        ? 'bg-white text-zinc-950 shadow-xs dark:bg-zinc-800 dark:text-zinc-50'
-                                        : 'text-zinc-500 hover:bg-zinc-200/70 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100'
-                                }`}
-                            >
-                                {option.label}
-                            </button>
-                        ))}
+                    <div className="w-full sm:w-auto">
+                        <FluidTabRail<SchedulePeriod>
+                            items={periodTabItems}
+                            activeId={visiblePeriod}
+                            onChange={setVisiblePeriod}
+                            layoutId="schedule-period-subpill"
+                            size="sm"
+                            ariaLabel={t('schedule.viewLabel')}
+                        />
                     </div>
                 </div>
 
@@ -299,16 +293,16 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
                 <div className="settings-surface overflow-hidden">
                     <div className="overflow-x-auto overscroll-x-contain">
-                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[44rem]' : 'min-w-full table-fixed'}`}>
+                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[36rem] sm:min-w-[44rem]' : 'min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
-                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-[5.75rem] border-b border-border/70 bg-muted/70 px-3 py-3 text-start font-bold tracking-wide text-foreground/70`}>
+                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-16 sm:w-[5.75rem] border-b border-border/70 bg-muted/70 px-1.5 sm:px-3 py-1.5 sm:py-3 text-start text-[11px] sm:text-xs font-bold tracking-wide text-foreground/70`}>
                                 {t('schedule.day')}
                             </th>
                             {visibleHourSlots.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border/70 bg-muted/70 px-1 py-2 text-center text-[9px] sm:text-[10px] font-bold text-foreground/75 ${
+                                    className={`border-b border-border/70 bg-muted/70 px-0.5 sm:px-1 py-1 sm:py-2 text-center text-[8px] sm:text-[10px] font-bold text-foreground/75 ${
                                         hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''
                                     }`}
                                 >
@@ -320,7 +314,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     <tbody>
                         {TIMETABLE_DAYS.map((day, dayIndex) => (
                             <tr key={day.value} className="group transition-colors hover:bg-muted/30">
-                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-border/70 bg-muted/70 px-3 py-2.5 font-bold text-foreground transition-colors group-hover:bg-muted ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
+                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-border/70 bg-muted/70 px-1.5 sm:px-3 py-1.5 sm:py-2.5 text-[11px] sm:text-xs font-bold text-foreground transition-colors group-hover:bg-muted ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
                                     {t(`schedule.day.${day.value}`)}
                                 </td>
                                 {visibleHourSlots.map(hour => {
@@ -335,7 +329,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         <td
                                             key={hour.index}
                                             colSpan={span}
-                                            className={`relative p-2 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''}`}
+                                            className={`relative p-1 sm:p-2 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
@@ -349,9 +343,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
                                                 title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                className={`h-16 w-full cursor-pointer rounded-2xl border px-2 text-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                                                className={`h-11 sm:h-16 w-full cursor-pointer rounded-xl sm:rounded-2xl border px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                                                     classInfo && color
-                                                    ? `${color.border} ${color.bg} text-transparent shadow-[0_6px_18px_-6px_rgba(0,0,0,0.22)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-6px_rgba(0,0,0,0.30)] hover:brightness-105 active:scale-[0.99]`
+                                                    ? `${color.border} ${color.bg} text-transparent shadow-[0_4px_12px_-4px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-6px_rgba(0,0,0,0.30)] hover:brightness-105 active:scale-[0.99]`
                                                     : 'border-dashed border-border/70 bg-muted/20 text-zinc-700 dark:text-zinc-300 hover:border-primary/40 hover:bg-primary/[0.06] hover:text-zinc-950 dark:hover:text-zinc-50'
                                                 }`}
                                                 aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
@@ -370,18 +364,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                             </select>
                                             {classInfo && color && (
                                                 <span
-                                                    className={`pointer-events-none absolute inset-2 flex min-w-0 flex-col items-center justify-center px-1.5 text-center ${color.text}`}
+                                                    className={`pointer-events-none absolute inset-1 sm:inset-2 flex min-w-0 flex-col items-center justify-center px-0.5 sm:px-1.5 text-center ${color.text}`}
                                                 >
-                                                    <span className="max-w-full truncate text-[11.5px] font-black tracking-tight drop-shadow-xs sm:text-xs">
+                                                    <span className="max-w-full truncate text-[10px] font-black tracking-tight drop-shadow-xs sm:text-xs">
                                                         {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
                                                     </span>
-                                                    <span className={`mt-0.5 max-w-full truncate text-[9.5px] font-bold uppercase tracking-wider ${color.subtext}`}>
+                                                    <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9.5px] font-bold uppercase tracking-wider ${color.subtext}`}>
                                                         {subjectLabel(classInfo.subject)}
                                                     </span>
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className="pointer-events-none absolute start-3 top-1.5 rounded-full border border-white/30 bg-black/30 px-1.5 text-[9px] font-bold leading-4 text-white shadow-xs backdrop-blur-xs">
+                                                <span className="pointer-events-none absolute start-1.5 sm:start-3 top-1 sm:top-1.5 rounded-full border border-white/30 bg-black/30 px-1 sm:px-1.5 text-[7.5px] sm:text-[9px] font-bold leading-3.5 sm:leading-4 text-white shadow-xs backdrop-blur-xs">
                                                     {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}
