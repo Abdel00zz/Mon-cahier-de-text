@@ -31,11 +31,15 @@ export type AdminTeacherSummary = TeacherSnapshot & {
     lastMessageAt: string | null;
 };
 
+export class AdminApiError extends Error {
+    constructor(message: string, public status: number) { super(message); }
+}
+
 const request = async (input: string, init?: RequestInit) => {
     const response = await fetch(input, { credentials: 'same-origin', ...init });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.');
+        throw new AdminApiError(typeof data?.error === 'string' ? data.error : 'Une erreur est survenue.', response.status);
     }
     return data;
 };
@@ -54,8 +58,8 @@ export const adminLogout = (): Promise<void> =>
         body: JSON.stringify({ action: 'logout' }),
     }).then(() => undefined);
 
-export const fetchOverview = async (): Promise<{ teachers: AdminTeacherSummary[] }> => {
-    const data = await request('/api/admin?action=overview');
+export const fetchOverview = async (signal?: AbortSignal): Promise<{ teachers: AdminTeacherSummary[] }> => {
+    const data = await request('/api/admin?action=overview', { signal });
     // validation de frontière : une réponse inattendue (proxy, dev sans API,
     // hash corrompu) ne doit jamais propager `undefined` dans l'interface
     if (!Array.isArray(data?.teachers)) {

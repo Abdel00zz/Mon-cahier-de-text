@@ -5,7 +5,7 @@ import { assertValidClasses, assertValidSyncSettings } from '../api/_lib/validat
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
 import { getHourSlots, normalizeTimetableClock, resolveTimetableClock } from '../utils/timetable';
-import { resolveDashboardClassOrder } from '../utils/classOrder';
+import { prioritizeActiveClasses, resolveDashboardClassOrder } from '../utils/classOrder';
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
@@ -141,6 +141,32 @@ test('dashboard class order is stable, filter-safe and strictly validated at syn
   assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['a', 'a'] }, new Set(['a'])));
   assert.throws(() => assertValidSyncSettings({ dashboardClassOrder: ['ghost'] }, new Set(['a'])));
 });
+test('active class moves first without mutating the saved order or class objects', () => {
+  const classes = ['a', 'b', 'c', 'd'].map(id => ({ id }));
+  const result = prioritizeActiveClasses(classes, new Set(['c']));
+  assert.deepEqual(result.map(c => c.id), ['c', 'a', 'b', 'd']);
+  assert.deepEqual(classes.map(c => c.id), ['a', 'b', 'c', 'd']);
+  assert.equal(result[0], classes[2]);
+  assert.equal(prioritizeActiveClasses(classes, new Set()), classes);
+});
+
+test('simultaneous active classes stay stable; filters never reintroduce hidden classes', () => {
+  const classes = ['a', 'b', 'c', 'd'].map(id => ({ id }));
+  assert.deepEqual(prioritizeActiveClasses(classes, new Set(['d', 'b'])).map(c => c.id), ['b', 'd', 'a', 'c']);
+  const filtered = classes.filter(c => c.id !== 'b');
+  assert.deepEqual(prioritizeActiveClasses(filtered, new Set(['b', 'd'])).map(c => c.id), ['d', 'a', 'c']);
+  assert.equal(prioritizeActiveClasses(classes, new Set(['a', 'b'])), classes);
+  assert.equal(prioritizeActiveClasses(classes, new Set(['deleted'])), classes);
+});
+
+test('session handover and end derive order from the baseline, never the previous promotion', () => {
+  const classes = ['a', 'b', 'c'].map(id => ({ id }));
+  assert.deepEqual(prioritizeActiveClasses(classes, new Set(['c'])).map(c => c.id), ['c', 'a', 'b']);
+  assert.deepEqual(prioritizeActiveClasses(classes, new Set(['b'])).map(c => c.id), ['b', 'a', 'c']);
+  assert.deepEqual(prioritizeActiveClasses(classes, new Set()).map(c => c.id), ['a', 'b', 'c']);
+  assert.deepEqual(prioritizeActiveClasses([], new Set(['c'])), []);
+});
+
 test('simultaneous classes form one event, keeping all navigation targets', () => {
   const other = { ...classInfo, id: 'c2' };
   const result = detectSessionAlerts({ ...config, timetable: [...config.timetable!, { day: 1, slot: 1, classId: 'c2' }] }, [classInfo, other], calendar, new Date('2026-09-14T09:59:00+01:00'), () => false);

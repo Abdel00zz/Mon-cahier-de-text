@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useClassManager } from '@/hooks/useClassManager';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
@@ -17,7 +18,7 @@ import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrientation } from '@/hooks/useOrientation';
-import { resolveDashboardClassOrder } from '@/utils/classOrder';
+import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -29,6 +30,7 @@ interface DashboardProps {
 type ClassDisplayMode = 'list' | 'single' | 'double';
 
 const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
+const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
 
 const subjectKey = (value: string) => value
     .trim()
@@ -45,6 +47,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     onOnboardingVisibilityChange,
 }) => {
     const { locale, t, isRtl } = useLocale();
+    const reduceMotion = useReducedMotion();
     const { user: accountUser, completeWelcome } = useAuth();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
@@ -229,12 +232,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         () => resolveDashboardClassOrder(classes, config.dashboardClassOrder),
         [classes, config.dashboardClassOrder],
     );
-    const filteredClasses = persistedClassOrder
-        .map(id => classById.get(id))
-        .filter((classInfo): classInfo is ClassInfo => Boolean(classInfo))
-        .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter);
-
     const activeSessionIds = useMemo(() => new Set(activeSessionClassIds), [activeSessionClassIds]);
+    const filteredClasses = useMemo(() => prioritizeActiveClasses(
+        persistedClassOrder
+            .map(id => classById.get(id))
+            .filter((classInfo): classInfo is ClassInfo => Boolean(classInfo))
+            .filter(classInfo => subjectFilter === 'all' || classInfo.subject === subjectFilter),
+        activeSessionIds,
+    ), [persistedClassOrder, classById, subjectFilter, activeSessionIds]);
+    // Measure only when order, session title or display mode changes, not on
+    // unrelated sync/config renders. Position-only animation keeps text crisp.
+    const classLayoutKey = JSON.stringify([classDisplayMode, filteredClasses.map(c => [c.id, activeSessionIds.has(c.id)])]);
 
     if (isLoading) {
         return <DashboardSkeleton />;
@@ -414,14 +422,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </div>
                                 ) : currentDisplay === 'list' ? (
                                     <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
-                                        {filteredClasses.map((classInfo, index) => {
+                                        {filteredClasses.map((classInfo) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
-                                            <div
+                                            <motion.div
                                                 key={classInfo.id}
                                                 role="listitem"
-                                                className="animate-in slide-in-from-bottom-4 fade-in duration-200"
-                                                style={{ animationDelay: `${Math.min(index, 8) * 35}ms`, animationFillMode: 'backwards' }}
+                                                layout={reduceMotion ? false : 'position'}
+                                                layoutDependency={classLayoutKey}
+                                                initial={false}
+                                                transition={{ layout: CLASS_MOVE_TRANSITION }}
+                                                className="relative"
+                                                style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
                                                 <ClassListItem
                                                     classInfo={classInfo}
@@ -429,7 +441,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     onConfigure={() => setEditingClass(classInfo)}
                                                     isActiveSession={isActiveSession}
                                                 />
-                                            </div>
+                                            </motion.div>
                                         )})}
                                     </div>
                                 ) : (
@@ -437,10 +449,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
-                                            <div
+                                            <motion.div
                                                 key={classInfo.id}
-                                                className="h-full w-full flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-200"
-                                                style={{ animationDelay: `${Math.min(index, 8) * 45}ms`, animationFillMode: 'backwards' }}
+                                                layout={reduceMotion ? false : 'position'}
+                                                layoutDependency={classLayoutKey}
+                                                initial={false}
+                                                transition={{ layout: CLASS_MOVE_TRANSITION }}
+                                                className="relative h-full w-full flex flex-col"
+                                                style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
                                                 <ClassCard
                                                     classInfo={classInfo}
@@ -451,7 +467,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     index={index}
                                                     isActiveSession={isActiveSession}
                                                 />
-                                            </div>
+                                            </motion.div>
                                         )})}
                                 </div>
                             )}

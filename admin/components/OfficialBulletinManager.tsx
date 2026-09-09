@@ -24,11 +24,13 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const publishedVersionRef = useRef<number | null>(null);
 
     useEffect(() => {
         fetchAdminOfficialEvents()
             .then(({ officialEvents }) => {
                 const validated = validateOfficialStudentEventsFile(officialEvents);
+                publishedVersionRef.current = validated.version;
                 setBulletin(validated);
                 setJsonText(JSON.stringify(validated, null, 2));
             })
@@ -60,11 +62,13 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
 
     const publish = async () => {
         const validated = validateText();
-        if (!validated) return;
+        if (!validated || publishedVersionRef.current === null || busy) return;
         setBusy(true);
         setMessage('');
         try {
-            const result = await saveAdminOfficialEvents(validated);
+            // The imported file's version is not the version this editor opened.
+            const result = await saveAdminOfficialEvents({ ...validated, version: publishedVersionRef.current });
+            publishedVersionRef.current = result.officialEvents.version;
             setBulletin(result.officialEvents);
             setJsonText(JSON.stringify(result.officialEvents, null, 2));
             setMessage(`Bulletin ${result.officialEvents.schoolYear} publié. Les enseignants recevront cette version au prochain chargement.`);
@@ -197,4 +201,3 @@ export const OfficialBulletinManager: React.FC<{ onBack: () => void }> = ({ onBa
         </main>
     );
 };
-

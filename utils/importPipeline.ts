@@ -1,4 +1,5 @@
-import type { LessonsData, TopLevelItem } from '../types.js';
+import type { ContentDirection, LessonsData, TopLevelItem } from '../types.js';
+import { withStarterDiagnostic } from './starterDiagnostic.js';
 import { logger } from './logger.js';
 import { detectContentDirection, isContentDirection } from './contentDirection.js';
 import type { ContentDirectionDetection } from './contentDirection.js';
@@ -309,3 +310,18 @@ export const prepareImportedLessons = (payload: unknown): ImportPreparationResul
 };
 
 export type { ImportPreparationResult };
+
+/** Final admin import boundary: apply the starter rule AFTER appending, not
+ * to the incoming fragment (which would create an unnecessary diagnostic).
+ */
+export const composeAdminLessonImport = (
+  prepared: ImportPreparationResult,
+  existing: { lessonsData?: unknown; contentDirection?: ContentDirection } | null,
+  mode: 'append' | 'replace',
+): { lessonsData: LessonsData; contentDirection: ContentDirection } => {
+  const current = Array.isArray(existing?.lessonsData) ? existing.lessonsData as LessonsData : [];
+  const contentDirection = mode === 'append' && current.length > 0
+    ? existing?.contentDirection ?? prepared.direction.direction : prepared.direction.direction;
+  const combined = mode === 'append' ? [...current, ...prepared.lessonsData] : prepared.lessonsData;
+  return { lessonsData: withStarterDiagnostic(combined, contentDirection === 'rtl' ? 'ar' : 'fr'), contentDirection };
+};

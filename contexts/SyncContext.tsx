@@ -185,6 +185,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const pushingRef = useRef(false);
     const immediatePushRequestedRef = useRef(false);
     const pushAbortRef = useRef<AbortController | null>(null);
+    const pullAbortRef = useRef<AbortController | null>(null);
     const authStatusRef = useRef(authStatus);
     authStatusRef.current = authStatus;
     const userRef = useRef(user);
@@ -218,6 +219,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const scope = readWorkspaceScope();
         if (!currentUser || authStatusRef.current !== 'authenticated' || scope?.owner !== currentUser.phone || !workspaceIsCurrent(scope) || pushingRef.current || !hasPendingWork()) return;
 
+        pullAbortRef.current?.abort();
         const controller = new AbortController();
         pushAbortRef.current = controller;
         const isCurrent = () => !controller.signal.aborted && userRef.current?.phone === currentUser.phone && workspaceIsCurrent(scope);
@@ -303,7 +305,7 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const pushedIds: string[] = [];
             let serverTime: string | null = null;
             let pushedSettingsAt: string | null = null;
-            let failure: { status: number; message?: string; firstBatch: boolean } | null = null;
+            let failure: { status: number; message?: string; code?: string; firstBatch: boolean } | null = null;
 
             for (let i = 0; i < batches.length; i++) {
                 if (!isCurrent()) return;
@@ -337,21 +339,30 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (!isCurrent()) return;
                 if (!response.ok) {
                     let message: string | undefined;
+                    let code: string | undefined;
                     try {
-                        message = ((await response.json()) as { error?: string }).error;
+                        const error = (await response.json()) as { error?: string; code?: string };
+                        message = error.error;
+                        code = error.code;
                     } catch { /* corps non JSON */ }
-                    failure = { status: response.status, message, firstBatch: isFirst };
+                    failure = { status: response.status, message, code, firstBatch: isFirst };
                     break;
                 }
 
-                const data = (await response.json()) as { serverTime?: string };
+                const data = (await response.json()) as { serverTime?: string; acceptedClassIds?: string[]; settingsAccepted?: boolean };
                 if (!isCurrent()) return;
                 if (typeof data.serverTime === 'string') serverTime = data.serverTime;
-                if (includeSettings) pushedSettingsAt = settingsUpdatedAt;
+                if (includeSettings && data.settingsAccepted !== false) pushedSettingsAt = settingsUpdatedAt;
                 for (const entry of batches[i]) {
                     pushedIds.push(entry.classId);
                     // point de synchro commun local/cloud (détection de conflit)
-                    markClassSynced(entry.classId, entry.updatedAt);
+                    if (!data.acceptedClassIds || data.acceptedClassIds.includes(entry.classId)) {
+                        markClassSynced(entry.classId, entry.updatedAt);
+                    } else {
+                        // An authoritative admin import rejected this older payload.
+                        // Keep a recovery copy even on a device never synced before.
+                        backupConflictVersion(entry.classId, entry.lessonsData, 'local');
+                    }
                 }
             }
 
@@ -384,10 +395,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
             }
             setSyncStatus('error');
-            notifySyncError(failure.status, failure.message);
+            if (failure.code !== 'WRITE_CONFLICT') notifySyncError(failure.status, failure.message);
             // 5xx / 429 : panne passagère → nouvel essai automatique dans 1 min.
             // 401 (reconnexion) et 413 (cahier trop gros) : inutile d'insister.
-            if (failure.status >= 500 || failure.status === 429) {
+            if (failure.status >= 500 || failure.status === 429 || failure.code === 'WRITE_CONFLICT') {
                 if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
                 scheduledPushAtRef.current = Date.now() + 60_000;
                 debounceRef.current = window.setTimeout(() => {
@@ -460,16 +471,24 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return push();
     }, [push]);
 
-    // ── Pull initial après authentification ────────────────────────────────
+    // Pull initial + diffusion continue. Aucun chevauchement ; une saisie ou
+    // un push invalide la réponse en vol avant qu'elle touche le stockage local.
     useEffect(() => {
         if (authStatus !== 'authenticated' || !user) return;
         let cancelled = false;
         const scope = readWorkspaceScope();
         if (scope?.owner !== user.phone || !workspaceIsCurrent(scope)) return;
-        const controller = new AbortController();
-        const isCurrent = () => !cancelled && !controller.signal.aborted && workspaceIsCurrent(scope);
-
-        (async () => {
+        let inFlight = false;
+        let associationOffered = false;
+        const unsubscribeDirty = subscribe('dirty', () => pullAbortRef.current?.abort());
+        const refresh = async () => {
+            if (cancelled || inFlight || pushingRef.current || document.visibilityState === 'hidden' || !navigator.onLine) return;
+            inFlight = true;
+            const controller = new AbortController();
+            pullAbortRef.current = controller;
+            let timedOut = false;
+            const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 30_000);
+            const isCurrent = () => !cancelled && !controller.signal.aborted && !pushingRef.current && workspaceIsCurrent(scope);
             setSyncStatus('syncing');
             try {
                 const response = await fetch('/api/sync', { credentials: 'same-origin', headers: { 'X-Workspace-Owner': user.phone }, signal: controller.signal });
@@ -494,20 +513,29 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const queuedClassIds = new Set(getPendingWork().dirtyClassIds);
                 const needsAssociation = localVisibleClasses.some(classInfo => !queuedClassIds.has(classInfo.id) && !syncMeta[classInfo.id]?.lastSyncedAt);
                 if ((server.classes?.length ?? 0) === 0 && remoteDeletedIds.size === 0 && needsAssociation) {
+                    // Refusing notebook association must not disable the admin clock.
+                    if (server.timetableClock !== undefined) {
+                        const config = readLocalConfig();
+                        const timetableClock = normalizeTimetableClock(server.timetableClock);
+                        if (JSON.stringify(config.timetableClock) !== JSON.stringify(timetableClock)) {
+                            localStorage.setItem('appConfig_v1', JSON.stringify({ ...config, timetableClock }));
+                            notifyPullApplied();
+                        }
+                    }
                     // Première association : des cahiers locaux existent mais le
                     // cloud est vide. Les créations explicitement mises en file
                     // (dont l'essai conservé à l'inscription) sont déjà autorisées.
                     // Proposition NON bloquante pour les autres cahiers locaux.
                     // L'application conseille, le professeur décide et rien n'est interrompu.
                     setSyncStatus('synced');
-                    toast.info(
+                    if (!associationOffered) toast.info(
                         syncText('sync.localNotLinked', { count: localClasses.length }),
                         {
                             duration: 15_000,
                             action: {
                                 label: syncText('sync.linkAction'),
                                 onClick: () => {
-                                    if (!isCurrent()) return;
+                                    if (cancelled || !workspaceIsCurrent(scope)) return;
                                     localClasses.forEach(c => markClassDirty(c.id));
                                     markClassesListDirty();
                                     schedulePush(500);
@@ -515,21 +543,25 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             },
                         }
                     );
+                    associationOffered = true;
                     return;
                 }
 
                 const mergedClasses = [...localVisibleClasses];
                 let localChanged = mergedClasses.length !== localClasses.length;
                 const conflictNames: string[] = [];
+                const commits: Array<() => void> = [];
 
                 // Un tombstone cloud est définitif pour cet identifiant. On
                 // retire également la copie locale des cours et ses métadonnées
                 // avant toute décision de fusion.
                 for (const classId of deletedIds) {
-                    try { localStorage.removeItem(`classData_v1_${classId}`); } catch { /* stockage indisponible */ }
-                    try { localStorage.removeItem(`editJournal_v1_${classId}`); } catch { /* stockage indisponible */ }
-                    try { localStorage.removeItem(`printMeta_v1_${classId}`); } catch { /* stockage indisponible */ }
-                    try { localStorage.removeItem(`editor_actions_ignored_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    commits.push(() => {
+                        try { localStorage.removeItem(`classData_v1_${classId}`); } catch { /* stockage indisponible */ }
+                        try { localStorage.removeItem(`editJournal_v1_${classId}`); } catch { /* stockage indisponible */ }
+                        try { localStorage.removeItem(`printMeta_v1_${classId}`); } catch { /* stockage indisponible */ }
+                        try { localStorage.removeItem(`editor_actions_ignored_v1_${classId}`); } catch { /* stockage indisponible */ }
+                    });
                     if (syncMeta[classId]) {
                         delete syncMeta[classId];
                         localChanged = true;
@@ -562,9 +594,10 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // dernier point commun (édition sur deux appareils hors-ligne)
                     const conflict =
                         localIndex !== -1 &&
-                        !!serverUpdatedAt && !!localUpdatedAt && !!lastSyncedAt &&
+                        ((queuedClassIds.has(serverClass.id) && serverIsNewer) ||
+                        (!!serverUpdatedAt && !!localUpdatedAt && !!lastSyncedAt &&
                         serverUpdatedAt > lastSyncedAt && localUpdatedAt > lastSyncedAt &&
-                        serverUpdatedAt !== localUpdatedAt;
+                        serverUpdatedAt !== localUpdatedAt));
                     const hasAdminOverride = !!server.adminClassOverrides?.[serverClass.id];
 
                     const action: PullDecision['action'] =
@@ -578,12 +611,12 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     });
 
                 // ── Phase 2 : exécution en parallèle (un aller-retour par classe) ──
-                await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, hasAdminOverride, serverIsNewer }) => {
+                await Promise.all(decisions.map(async ({ serverClass, serverUpdatedAt, localIndex, action, conflict, serverIsNewer }) => {
                     if (!isCurrent()) return;
                     if (action === 'apply') {
                         // le cloud va remplacer le local : archiver la version locale perdante
                         if (conflict) {
-                            backupConflictVersion(serverClass.id, readLocalLessons(serverClass.id), 'local');
+                            commits.push(() => backupConflictVersion(serverClass.id, readLocalLessons(serverClass.id), 'local'));
                             conflictNames.push(serverClass.name);
                         }
                         // Les champs d'une classe administrée doivent se mettre à jour
@@ -597,13 +630,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             const contentDirection = isContentDirection(blob.contentDirection)
                                 ? blob.contentDirection
                                 : undefined;
-                            localStorage.setItem(
+                            commits.push(() => localStorage.setItem(
                                 `classData_v1_${serverClass.id}`,
                                 JSON.stringify({
                                     lessonsData: blob.lessonsData ?? [],
                                     ...(contentDirection ? { contentDirection } : {}),
                                 })
-                            );
+                            ));
                             const syncedAt = blob.updatedAt ?? serverUpdatedAt ?? new Date().toISOString();
                             syncMeta[serverClass.id] = { localUpdatedAt: syncedAt, lastSyncedAt: syncedAt };
                             localChanged = true;
@@ -617,19 +650,21 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 serverIsNewer ? serverClass : localClass,
                             );
                         }
-                        if (hasAdminOverride || localIndex !== -1) localChanged = true;
+                        if (localIndex === -1 || JSON.stringify(mergedClasses[localIndex]) !== JSON.stringify(localClasses.find(c => c.id === serverClass.id))) localChanged = true;
                     } else if (action === 'requeue') {
                         // le local va écraser le cloud au prochain push : archiver la version cloud perdante
                         if (conflict) {
                             const blob = await fetchLessonsBlob(serverClass.id, user.phone, controller.signal);
                             if (!isCurrent()) return;
-                            if (blob) backupConflictVersion(serverClass.id, blob.lessonsData ?? [], 'cloud');
+                            if (blob) commits.push(() => backupConflictVersion(serverClass.id, blob.lessonsData ?? [], 'cloud'));
                             conflictNames.push(serverClass.name);
                         }
-                        markClassDirty(serverClass.id);
+                        commits.push(() => markClassDirty(serverClass.id));
                     }
                 }));
                 if (!isCurrent()) return;
+                // No await below this point: user edits cannot interleave with commit.
+                for (const commit of commits) commit();
 
                 if (conflictNames.length > 0) {
                     toast.warning(
@@ -678,7 +713,8 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     !!settings &&
                     (
                         (!localHasSettings && !settingsMeta.localUpdatedAt) ||
-                        (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt)
+                        (!!remoteSettingsAt && !!settingsMeta.localUpdatedAt && remoteSettingsAt > settingsMeta.localUpdatedAt
+                            && remoteSettingsAt !== settingsMeta.lastSyncedAt)
                     );
                 if (settings && shouldApplyRemoteSettings) {
                     nextConfig = mergeSyncableSettings(nextConfig, settings);
@@ -724,56 +760,30 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     logger.error('Sync pull failed (offline?)', error);
                     setSyncStatus('offline');
                 }
-            }
-        })();
-
-        return () => {
-            cancelled = true;
-            controller.abort();
-        };
-    }, [authStatus, user, schedulePush]);
-
-    // Canal léger de diffusion : un compte déjà ouvert reçoit une nouvelle
-    // translation horaire sans recharger tous ses cahiers. Le dernier réglage
-    // valide reste disponible hors ligne dans appConfig_v1.
-    useEffect(() => {
-        if (authStatus !== 'authenticated' || !user) return;
-        let cancelled = false;
-        const scope = readWorkspaceScope();
-        if (scope?.owner !== user.phone || !workspaceIsCurrent(scope)) return;
-
-        const refreshClock = async () => {
-            try {
-                const response = await fetch('/api/sync?scope=timetableClock', {
-                    credentials: 'same-origin',
-                    headers: { 'X-Workspace-Owner': user.phone },
-                });
-                if (!response.ok || cancelled || !workspaceIsCurrent(scope)) return;
-                const payload = (await response.json()) as { timetableClock?: TimetableClockPolicy };
-                if (payload.timetableClock === undefined) return;
-                const timetableClock = normalizeTimetableClock(payload.timetableClock);
-                const localConfig = readLocalConfig();
-                if (JSON.stringify(localConfig.timetableClock) === JSON.stringify(timetableClock)) return;
-                localStorage.setItem('appConfig_v1', JSON.stringify({ ...localConfig, timetableClock }));
-                notifyPullApplied();
-            } catch {
-                // Hors ligne : conserver silencieusement la dernière politique.
+            } finally {
+                window.clearTimeout(timeout);
+                if (pullAbortRef.current === controller) pullAbortRef.current = null;
+                inFlight = false;
+                if (!cancelled && workspaceIsCurrent(scope) && !pushingRef.current && controller.signal.aborted) {
+                    setSyncStatus(hasPendingWork() ? 'pending' : timedOut ? 'offline' : 'idle');
+                }
             }
         };
-
-        const interval = window.setInterval(() => { void refreshClock(); }, 15_000);
-        const refreshWhenVisible = () => {
-            if (document.visibilityState === 'visible') void refreshClock();
-        };
+        void refresh();
+        const interval = window.setInterval(() => { void refresh(); }, 15_000);
+        const refreshWhenVisible = () => { void refresh(); };
         window.addEventListener('online', refreshWhenVisible);
         document.addEventListener('visibilitychange', refreshWhenVisible);
+
         return () => {
             cancelled = true;
+            pullAbortRef.current?.abort();
+            unsubscribeDirty();
             window.clearInterval(interval);
             window.removeEventListener('online', refreshWhenVisible);
             document.removeEventListener('visibilitychange', refreshWhenVisible);
         };
-    }, [authStatus, user]);
+    }, [authStatus, user, schedulePush]);
 
     // ── Déclencheurs : événements dirty, retour en ligne, fermeture ─────────
     useEffect(() => {

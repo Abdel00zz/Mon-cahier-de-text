@@ -2,6 +2,9 @@ import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError
 import { randomUUID } from 'node:crypto';
 import { MAX_ADMIN_MESSAGES_PER_TEACHER, normalizeAdminMessages, recentAdminMessages } from './_lib/adminMessages.js';
 import { getRedis, KEYS } from './_lib/redis.js';
+import { beginAccountWrite, saveVersionedDocument } from './_lib/atomicWrite.js';
+import { enforceAdminLoginLimit } from './_lib/adminLoginLimit.js';
+import { withStarterDiagnostic } from '../utils/starterDiagnostic.js';
 import { PushEntry, configureVapid, pushEndpointField, sendToEntry } from './_lib/webpush.js';
 import {
     ADMIN_COOKIE,
@@ -19,7 +22,7 @@ import {
     validateOfficialStudentEventsFile,
     type OfficialStudentEventsFile,
 } from '../utils/officialStudentEvents.js';
-import { prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
+import { composeAdminLessonImport, prepareImportedLessons, summarizeImportedLessons } from '../utils/importPipeline.js';
 import { assertBodySize } from './_lib/validate.js';
 import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from '../utils/timetable.js';
 
@@ -128,12 +131,13 @@ const updateSnapshotClass = (
     };
 };
 
-const handleAdminLogin = async (body: AdminBody, res: ApiResponse) => {
+const handleAdminLogin = async (body: AdminBody, req: ApiRequest, res: ApiResponse) => {
     const expected = process.env.ADMIN_SECRET;
     if (!expected || expected.length < 6) {
         throw new HttpError(500, "ADMIN_SECRET non configuré sur le serveur.");
     }
-    if (typeof body.code !== 'string' || !safeEqualStrings(body.code, expected)) {
+    await enforceAdminLoginLimit(await getRedis(), req, res);
+    if (typeof body.code !== 'string' || body.code.length > 1024 || !safeEqualStrings(body.code, expected)) {
         throw new HttpError(401, "Code d'accès incorrect.");
     }
     const token = await signSession({ role: 'admin' }, ADMIN_MAX_AGE);
@@ -194,7 +198,7 @@ const handleSaveCalendar = async (body: AdminBody, res: ApiResponse) => {
     const calendar = validateCalendar(body.calendar);
     const redis = await getRedis();
     const saved = { ...calendar, version: calendar.version + 1 };
-    await redis.set(KEYS.adminCalendar, saved);
+    await saveVersionedDocument(redis, KEYS.adminCalendar, calendar.version, saved, getBundledCalendar().version);
     res.status(200).json({ ok: true, calendar: saved });
 };
 
@@ -229,26 +233,7 @@ const saveVersionedClock = async (
     value: TimetableClockPolicy | TimetableClockAssignment,
 ): Promise<void> => {
     const redis = await getRedis();
-    // CAS atomique : deux directions ouvertes en parallèle ne peuvent pas
-    // publier la même version et écraser silencieusement la plus récente.
-    const saved = await redis.eval(
-        `local raw = redis.call('GET', KEYS[1])
-local version = 0
-if raw then
-  local ok, current = pcall(cjson.decode, raw)
-  if ok and type(current) == 'table' and type(current.version) == 'number' then
-    version = current.version
-  end
-end
-if version ~= tonumber(ARGV[1]) then return 0 end
-redis.call('SET', KEYS[1], ARGV[2])
-return 1`,
-        [key],
-        [String(expectedVersion), JSON.stringify(value)],
-    );
-    if (saved !== 1) {
-        throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
-    }
+    await saveVersionedDocument(redis, key, expectedVersion, value);
 };
 
 /**
@@ -323,7 +308,7 @@ const handleSaveOfficialEvents = async (body: AdminBody, res: ApiResponse) => {
     }
     const redis = await getRedis();
     const saved = { ...validated, version: validated.version + 1 };
-    await redis.set(KEYS.adminOfficialEvents, saved);
+    await saveVersionedDocument(redis, KEYS.adminOfficialEvents, validated.version, saved, getOfficialStudentEventsFile().version);
     res.status(200).json({ ok: true, officialEvents: saved });
 };
 
@@ -400,6 +385,7 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
     if (!body.classId || !body.assessmentId) throw new HttpError(400, 'Classe et devoir requis.');
     if (body.date && !validISO(body.date)) throw new HttpError(400, 'Date de devoir invalide.');
     const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
     const blob = await redis.get<ClassesBlob>(KEYS.classes(phone));
     if (!blob) throw new HttpError(404, 'Données de l\'enseignant introuvables.');
     const assessmentDates = { ...(blob.settings?.assessmentDates ?? {}) };
@@ -408,12 +394,13 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
     else delete forClass[body.assessmentId];
     assessmentDates[body.classId] = forClass;
     const now = new Date().toISOString();
-    await redis.set(KEYS.classes(phone), {
+    write.set(KEYS.classes(phone), {
         ...blob,
         settings: { ...(blob.settings ?? {}), assessmentDates },
         settingsUpdatedAt: now,
         updatedAt: now,
     });
+    await write.exec();
     res.status(200).json({ ok: true, assessmentDates });
 };
 
@@ -424,6 +411,7 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     if (!input || typeof input !== 'object') throw new HttpError(400, 'Informations de classe manquantes.');
 
     const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
     const pipeline = redis.pipeline();
     pipeline.get(KEYS.user(phone));
     pipeline.get(KEYS.classes(phone));
@@ -458,7 +446,6 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     const deletedClasses = { ...(storedBlob?.deletedClasses ?? {}) };
     delete deletedClasses[classInfo.id];
 
-    const write = redis.pipeline();
     write.set(KEYS.classes(phone), {
         classes,
         schedules: storedBlob?.schedules ?? [],
@@ -472,7 +459,9 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         updatedAt: now,
     } satisfies ClassesBlob);
     if (!existing) {
-        write.set(KEYS.lessons(phone, classInfo.id), { lessonsData: [], updatedAt: now });
+        write.set(KEYS.lessons(phone, classInfo.id), {
+            lessonsData: withStarterDiagnostic([], storedBlob?.settings?.applicationLocale ?? 'fr'), updatedAt: now,
+        });
     }
     const nextSnapshot = updateSnapshotClass(storedSnapshot, classInfo, now);
     if (nextSnapshot) write.hset(KEYS.adminSnapshots, { [phone]: nextSnapshot });
@@ -486,6 +475,7 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const classId = requiredText(body.classId, 'Classe');
     const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
     const pipeline = redis.pipeline();
     pipeline.get(KEYS.user(phone));
     pipeline.get(KEYS.classes(phone));
@@ -511,7 +501,6 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         ? { ...storedSnapshot, classes: storedSnapshot.classes.filter(item => item.id !== classId) }
         : null;
 
-    const write = redis.pipeline();
     write.set(KEYS.classes(phone), {
         ...storedBlob,
         classes,
@@ -573,6 +562,7 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
     }
 
     const redis = await getRedis();
+    const write = await beginAccountWrite(redis, phone);
     const lookup = redis.pipeline();
     lookup.get(KEYS.user(phone));
     lookup.get(KEYS.classes(phone));
@@ -593,15 +583,7 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
         throw new HttpError(409, 'Ce cahier a changé depuis son ouverture. Rechargez-le avant de confirmer l’import.');
     }
 
-    const currentLessons = Array.isArray(existingLessons?.lessonsData)
-        ? existingLessons.lessonsData
-        : [];
-    const lessonsData = body.importMode === 'append'
-        ? [...currentLessons, ...prepared.lessonsData]
-        : prepared.lessonsData;
-    const contentDirection = body.importMode === 'append' && currentLessons.length > 0
-        ? existingLessons?.contentDirection ?? prepared.direction.direction
-        : prepared.direction.direction;
+    const { lessonsData, contentDirection } = composeAdminLessonImport(prepared, existingLessons, body.importMode);
     const now = new Date().toISOString();
 
     // La taille finale compte aussi l'ancien cahier en mode ajout.
@@ -640,8 +622,7 @@ const handleImportClassLessons = async (body: AdminBody, res: ApiResponse) => {
             : [...snapshotBase.classes, nextClassSnapshot],
     };
 
-    // MULTI garde le blob, son index de version et la projection admin alignés.
-    const write = redis.multi();
+    // La révision vérifiée atomiquement protège aussi la lecture expectedUpdatedAt.
     write.set(KEYS.lessons(phone, classId), { lessonsData, contentDirection, updatedAt: now } satisfies LessonsBlob);
     write.set(KEYS.classes(phone), {
         ...classesBlob,
@@ -686,12 +667,12 @@ const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
 const handleDeleteTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const redis = await getRedis();
+    const pipeline = await beginAccountWrite(redis, phone);
     const [classesBlob, pushEntry] = await Promise.all([
         redis.get<ClassesBlob>(KEYS.classes(phone)),
         redis.hget<PushEntry>(KEYS.pushSubs, phone),
     ]);
 
-    const pipeline = redis.pipeline();
     pipeline.del(KEYS.user(phone));
     pipeline.del(KEYS.classes(phone));
     for (const cls of classesBlob?.classes ?? []) {
@@ -782,7 +763,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     try {
         if (req.method === 'POST') {
             const body = parseBody<AdminBody>(req.body);
-            if (body.action === 'login') return await handleAdminLogin(body, res);
+            if (body.action === 'login') return await handleAdminLogin(body, req, res);
             if (body.action === 'logout') {
                 clearCookie(res, ADMIN_COOKIE);
                 return res.status(200).json({ ok: true });

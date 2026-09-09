@@ -1,5 +1,24 @@
 import type { ClassInfo } from '../types.js';
 
+/** Temporary presentation order, never persisted: O(n), stable in both groups.
+ * When a session ends, the original order is restored without a settings write.
+ */
+export const prioritizeActiveClasses = <T extends { id: string }>(
+    classes: T[], activeIds: ReadonlySet<string>,
+): T[] => {
+    if (activeIds.size === 0) return classes;
+    const active: T[] = [];
+    const remaining: T[] = [];
+    let needsMove = false;
+    for (const classInfo of classes) {
+        if (activeIds.has(classInfo.id)) {
+            if (remaining.length > 0) needsMove = true;
+            active.push(classInfo);
+        } else remaining.push(classInfo);
+    }
+    return needsMove ? [...active, ...remaining] : classes;
+};
+
 /**
  * Produit un ordre complet, unique et tolérant aux anciennes configurations.
  * Les nouvelles classes absentes de la préférence restent classées par création.

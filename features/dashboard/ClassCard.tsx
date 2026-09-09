@@ -54,7 +54,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                             title={displayName}
                             className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
-                            <ClassCardTitle name={displayName} />
+                            <ClassCardTitle name={displayName} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} />
                         </button>
                     </h3>
                     {/* Style Google Keep PC : bouton paramètre discret affiché au survol sur ordinateur */}

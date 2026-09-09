@@ -54,7 +54,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                     <Users className="h-4 w-4" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-lg" : "text-base")}><ClassCardTitle name={displayName} compact={!isActiveSession} /></h3>
+                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-lg" : "text-base")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
                     <div className="mt-1 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
                             className={cn('truncate', isRtl ? 'text-sm leading-none' : 'text-[11.9px] leading-none')}

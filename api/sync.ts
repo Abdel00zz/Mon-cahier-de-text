@@ -1,5 +1,6 @@
 import { ApiRequest, ApiResponse, HttpError, getQueryParam, parseBody, sendError } from './_lib/http.js';
 import { getRedis, KEYS } from './_lib/redis.js';
+import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { assertBodySize, assertValidClasses, assertValidLessonsPayload, assertValidSyncSettings, assertValidTeacherSnapshot, assertValidTimetable } from './_lib/validate.js';
 import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
@@ -116,6 +117,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const body = parseBody<SyncPushBody>(req.body);
 
     const redis = await getRedis();
+    const pipeline = await beginAccountWrite(redis, phone);
     const now = new Date().toISOString();
     const existing = (await redis.get<ClassesBlob>(KEYS.classes(phone))) ?? EMPTY_BLOB;
     const requestedClasses = assertValidClasses(body.classes);
@@ -149,8 +151,11 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const validClassIds = new Set(classes.map(c => c.id));
     const requestedClassIds = new Set(requestedClasses.map(c => c.id));
     const submittedSettings = assertValidSyncSettings(body.settings, requestedClassIds);
+    const submittedSettingsAt = isTimestamp(body.settingsUpdatedAt) ? body.settingsUpdatedAt : now;
+    const acceptSettings = !!submittedSettings && (!existing.settingsUpdatedAt || submittedSettingsAt >= existing.settingsUpdatedAt);
     const submittedTimetable = assertValidTimetable(body.timetable, requestedClassIds);
-    const timetable = (submittedTimetable ?? existing.timetable ?? [])
+    const acceptLegacySchedule = !existing.settingsUpdatedAt && !submittedSettings;
+    const timetable = ((acceptSettings || acceptLegacySchedule ? submittedTimetable : undefined) ?? existing.timetable ?? [])
         .filter(entry => !deletedClassIds.has(entry.classId));
 
     const lessons = assertValidLessonsPayload(body.lessons, requestedClassIds)
@@ -180,15 +185,15 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
 
     const nextBlob: ClassesBlob = {
         classes,
-        schedules: (Array.isArray(body.schedules) ? body.schedules : existing.schedules)
+        schedules: ((acceptSettings || acceptLegacySchedule) && Array.isArray(body.schedules) ? body.schedules : existing.schedules)
             .filter(schedule => !deletedClassIds.has(schedule.classId)),
         timetable,
         settings: sanitizeSettings(
-            submittedSettings ?? (existing.settings ?? {}),
+            acceptSettings ? submittedSettings! : (existing.settings ?? {}),
             deletedClassIds
         ),
-        settingsUpdatedAt: submittedSettings
-            ? (typeof body.settingsUpdatedAt === 'string' && body.settingsUpdatedAt ? body.settingsUpdatedAt : now)
+        settingsUpdatedAt: acceptSettings
+            ? submittedSettingsAt
             : (existing.settingsUpdatedAt ?? ''),
         classMeta,
         adminClassOverrides,
@@ -197,7 +202,6 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         updatedAt: now,
     };
 
-    const pipeline = redis.pipeline();
     pipeline.set(KEYS.classes(phone), nextBlob);
     for (const entry of acceptedLessons) {
         pipeline.set(KEYS.lessons(phone, entry.classId), {
@@ -215,13 +219,23 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         // l'horodatage restent imposés par la session serveur.
         const snapshot = assertValidTeacherSnapshot(body.snapshot, phone, {
             syncedAt: now,
-            validClassIds,
+            validClassIds: requestedClassIds,
+        });
+        const storedSnapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone);
+        const previousById = new Map((storedSnapshot?.classes ?? []).map(item => [item.id, item]));
+        const incomingById = new Map(snapshot.classes.map(item => [item.id, item]));
+        snapshot.classes = classes.flatMap(classInfo => {
+            const previous = previousById.get(classInfo.id);
+            const entry = adminLessonsUpdatedAt[classInfo.id] && previous
+                ? previous : incomingById.get(classInfo.id) ?? previous;
+            return entry ? [{ ...entry, name: classInfo.name, subject: classInfo.subject, cycle: classInfo.cycle }] : [];
         });
         pipeline.hset(KEYS.adminSnapshots, { [phone]: snapshot });
     }
     await pipeline.exec();
 
-    res.status(200).json({ ok: true, serverTime: now, classMeta, deletedClasses });
+    res.status(200).json({ ok: true, serverTime: now, classMeta, deletedClasses,
+        acceptedClassIds: acceptedLessons.map(entry => entry.classId), settingsAccepted: acceptSettings });
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {

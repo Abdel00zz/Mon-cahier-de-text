@@ -14,7 +14,7 @@ export interface ApiResponse {
 }
 
 export class HttpError extends Error {
-  constructor(public statusCode: number, message: string) {
+  constructor(public statusCode: number, message: string, public code?: string) {
     super(message);
   }
 }
@@ -47,7 +47,7 @@ export const getQueryParam = (req: ApiRequest, name: string): string | undefined
 
 export const sendError = (res: ApiResponse, error: unknown): void => {
   if (error instanceof HttpError) {
-    res.status(error.statusCode).json({ error: error.message });
+    res.status(error.statusCode).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
     return;
   }
   console.error('[api] erreur inattendue', error);

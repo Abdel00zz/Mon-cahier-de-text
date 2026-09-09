@@ -1098,6 +1098,12 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dark .keep-session-active .keep-class-title {
     color: color-mix(in srgb, var(--keep-accent) 72%, #e8eaed);
   }
+  .keep-session-active .keep-session-intro {
+    color: color-mix(in srgb, currentColor 86%, var(--keep-light));
+  }
+  .dark .keep-session-active .keep-session-intro {
+    color: color-mix(in srgb, currentColor 86%, var(--keep-dark));
+  }
   .keep-session-active .keep-class-icon {
     border: 1px solid color-mix(in srgb, var(--keep-accent) 25%, transparent);
     background-color: var(--keep-accent-soft);

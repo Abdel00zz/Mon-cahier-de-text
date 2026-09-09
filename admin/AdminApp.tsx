@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { AdminTeacherSummary } from './api';
-import { adminLogout, fetchOverview } from './api';
+import { AdminApiError, adminLogout, fetchOverview } from './api';
 import { AdminLogin } from './components/AdminLogin';
 import { TeacherList } from './components/TeacherList';
 import { TeacherDetail } from './components/TeacherDetail';
@@ -54,6 +54,39 @@ export const AdminApp: React.FC = () => {
         setTeachers([]);
         setView({ name: 'locked' });
     }, []);
+
+    // Only refresh the overview: never replace an administrator's open form.
+    useEffect(() => {
+        if (view.name !== 'overview' || isLoading) return;
+        let stopped = false;
+        let controller: AbortController | null = null;
+        const refresh = async () => {
+            if (stopped || controller || document.visibilityState === 'hidden' || !navigator.onLine) return;
+            const requestController = new AbortController();
+            controller = requestController;
+            const timeout = window.setTimeout(() => requestController.abort(), 15_000);
+            try {
+                const result = await fetchOverview(requestController.signal);
+                if (!stopped && !requestController.signal.aborted) setTeachers(result.teachers);
+            } catch (error) {
+                if (!stopped && error instanceof AdminApiError && error.status === 401) setView({ name: 'locked' });
+            } finally {
+                window.clearTimeout(timeout);
+                controller = null;
+            }
+        };
+        const interval = window.setInterval(() => { void refresh(); }, 30_000);
+        const wake = () => { void refresh(); };
+        window.addEventListener('online', wake);
+        document.addEventListener('visibilitychange', wake);
+        return () => {
+            stopped = true;
+            controller?.abort();
+            window.clearInterval(interval);
+            window.removeEventListener('online', wake);
+            document.removeEventListener('visibilitychange', wake);
+        };
+    }, [view.name, isLoading]);
 
     if (!bootChecked) {
         return (
