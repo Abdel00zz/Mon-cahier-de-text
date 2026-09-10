@@ -12,6 +12,15 @@ export const registerWorkspaceWriter = (flush: () => boolean): (() => void) => {
   return () => { pendingWriters.delete(flush); };
 };
 
+/** Réutilisé avant mise à jour PWA, fermeture et envoi au cloud. */
+export const flushWorkspaceWriters = (): boolean => {
+  let saved = true;
+  for (const flush of pendingWriters) {
+    try { if (!flush()) saved = false; } catch { saved = false; }
+  }
+  return saved;
+};
+
 /** Capture once per component lifetime; reject writes from a previous workspace. */
 export const captureWorkspaceLease = (storage: WorkspaceStorage = localStorage): (() => boolean) => {
   const marker = storage.getItem(WORKSPACE_SCOPE_KEY);
@@ -85,9 +94,7 @@ export const switchAccountWorkspace = (
 ): WorkspaceScope => {
   const storage = options.storage ?? localStorage;
   if (owner !== null && !validOwner(owner)) throw new WorkspaceSwitchError();
-  for (const flush of pendingWriters) {
-    try { if (!flush()) throw new WorkspaceSwitchError(); } catch { throw new WorkspaceSwitchError(); }
-  }
+  if (!flushWorkspaceWriters()) throw new WorkspaceSwitchError();
   const oldScope = readWorkspaceScope(storage);
   const previousOwner = oldScope ? oldScope.owner : (validOwner(options.legacyOwner) ? options.legacyOwner : null);
   const revision = options.revision ?? crypto.randomUUID();

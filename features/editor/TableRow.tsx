@@ -213,26 +213,23 @@ const TableRowComponent: FC<TableRowProps> = ({
    *   par une entree/sortie visuelle, sans couper l'interieur du groupe.
    */
   const isMergedDateGroup = !!dateMerge?.isMerged;
-  const isDatedGroupStart = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isStart);
   const isDatedGroupEnd = hasAssignedDate && (!isMergedDateGroup || dateMerge?.isEnd);
   
   const isDatedSequenceStart = !!dateMerge?.isDatedSequenceStart;
   const isDatedSequenceEnd = !!dateMerge?.isDatedSequenceEnd;
 
-  const topBorderClass = isDatedSequenceStart 
-    ? (hasWarning ? 'border-t-[2px] border-warning/[0.7]' : 'border-t-[2px] border-foreground/30') 
-    : isDatedGroupStart 
-      ? (hasWarning ? 'border-t border-warning/[0.5]' : 'border-t border-border/70') 
-      : '';
+  const topBorderClass = isDatedSequenceStart
+    ? (hasWarning ? 'border-t-[2px] border-t-warning/[0.7]' : 'border-t-[2px] border-t-foreground/30')
+    : '';
       
   const bottomBorderClass = isDatedSequenceEnd 
-    ? (hasWarning ? 'border-b-[2px] border-warning/[0.7]' : 'border-b-[2px] border-foreground/30') 
+    ? (hasWarning ? 'border-b-[2px] border-b-warning/[0.7]' : 'border-b-[2px] border-b-foreground/30')
     : isDatedGroupEnd 
-      ? (hasWarning ? 'border-b border-warning/[0.65]' : 'border-b border-border/70') 
+      ? (hasWarning ? 'border-b border-b-warning/[0.65]' : 'border-b border-b-border/70')
       : '';
 
   const datedLineClass = [topBorderClass, bottomBorderClass].filter(Boolean).join(' ');
-  const undatedLineClass = isSelected ? 'border-b border-primary/15' : '';
+  const undatedLineClass = isSelected ? 'border-b border-b-primary/15' : '';
   const rowLineClass = hasAssignedDate ? datedLineClass : undatedLineClass;
 
   const dateBottomBorder = rowLineClass;
@@ -263,21 +260,21 @@ const TableRowComponent: FC<TableRowProps> = ({
   
   // Séparateurs verticaux Date|Contenu|Remarque, filets nets et discrets style Keep
   const dividerClass = isSelected
-    ? 'border-e border-border'
+    ? 'border-e border-e-border'
     : hasAssignedDate
       ? hasWarning
-        ? 'border-e border-warning/40'
-        : 'border-e border-border'
-      : 'border-e border-border';
+        ? 'border-e border-e-warning/40'
+        : 'border-e border-e-border'
+      : 'border-e border-e-border';
   const contentDividerClass = layout === 'content-only'
     ? ''
     : isSelected
-      ? 'border-e border-border'
+      ? 'border-e border-e-border'
       : hasAssignedDate
         ? hasWarning
-          ? 'border-e border-warning/40'
-          : 'border-e border-border'
-        : 'border-e border-border';
+          ? 'border-e border-e-warning/40'
+          : 'border-e border-e-border'
+        : 'border-e border-e-border';
 
   /* Rail latéral supprimé selon la demande. */
   const stateRail = null;

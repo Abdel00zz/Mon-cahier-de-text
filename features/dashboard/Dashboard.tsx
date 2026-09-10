@@ -57,9 +57,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const { type: deviceType } = useDevice();
     const isMobile = deviceType === 'phone';
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
-    const { value: selectedCycle, setValue: setSelectedCycle } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
+    const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
     const { isLandscape } = useOrientation();
-    const { value: classDisplayMode, setValue: setClassDisplayMode } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
+    const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         }
     }, [classDisplayMode, setClassDisplayMode]);
 
-    const isLoading = isClassesLoading || isConfigLoading;
+    // Les cartes ne sont révélées qu'avec leur cycle et leur disposition réels,
+    // ce qui évite un flash dans le mauvais filtre ou le mauvais nombre de colonnes.
+    const isLoading = isClassesLoading || isConfigLoading || isCycleLoading || isDisplayModeLoading;
     useEffect(() => {
         if (!isDisplayMenuOpen) return;
         const closeMenu = (event: PointerEvent) => {

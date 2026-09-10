@@ -1,224 +1,104 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useImmer } from 'use-immer';
+import { useState, useEffect, useCallback } from 'react';
 import { ClassInfo } from '../types';
 import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
-import { normalizeOfficialClassName } from '../constants';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
+import { CLASS_STORAGE_KEY, readStoredClasses } from '../utils/localClassStorage';
 
-const STORAGE_KEY  = 'classManager_v1';
-const DATA_PREFIX  = 'classData_v1_';
-const LAUNCH_FLAG  = 'app_first_launch_v1';
-
-const parseStoredClasses = (storedRaw: string | null): ClassInfo[] => {
-    if (!storedRaw) return [];
-    try {
-        const stored = JSON.parse(storedRaw);
-        if (Array.isArray(stored)) {
-            return stored.map((classInfo: ClassInfo) => ({
-                ...classInfo,
-                name: normalizeOfficialClassName(classInfo.name),
-                color: '',
-            }));
-        }
-    } catch (e) {
-        logger.error('Failed to parse stored classes', e);
-    }
-    return [];
-};
+const DATA_PREFIX = 'classData_v1_';
 
 export const useClassManager = () => {
     const [workspaceIsActive] = useState(() => captureWorkspaceLease());
-    const [classes, setClasses] = useImmer<ClassInfo[]>(() => {
-        if (typeof window !== 'undefined') {
-            return parseStoredClasses(localStorage.getItem(STORAGE_KEY));
-        }
-        return [];
+    const [classes, setClasses] = useState<ClassInfo[]>(() => {
+        try { return readStoredClasses(); }
+        catch (error) { logger.error('Failed to read local classes', error); return []; }
     });
-    const [isLoading, setIsLoading] = useState(false);
-    // Guard: skip the persistence effect until after the initial load completes
-    const [ready, setReady] = useState(true);
-    const skipNextPersistRef = useRef(true);
-    // Les créations groupées (onboarding) doivent toujours partir de la liste
-    // la plus récente, même avant le prochain rendu React.
-    const classesRef = useRef<ClassInfo[]>(classes);
 
+    // Le marqueur d'onboarding n'a aucune autorité sur les classes déjà stockées.
+    // Lecture immédiate, sans spinner réseau ni réécriture à chaque rendu.
     useEffect(() => {
-        classesRef.current = classes;
-    }, [classes]);
+        if (!workspaceIsActive()) return;
+        try {
+            const normalized = readStoredClasses();
+            const raw = localStorage.getItem(CLASS_STORAGE_KEY);
+            if (raw !== null && raw !== JSON.stringify(normalized)) {
+                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(normalized));
+                markClassesListDirty();
+            }
+            localStorage.setItem('app_first_launch_v1', 'true');
+            setClasses(normalized);
+        } catch (error) {
+            // Un stockage corrompu reste récupérable : ne jamais le remplacer par [].
+            logger.error('Local class initialization failed', error);
+        }
+    }, [workspaceIsActive]);
 
-    /**
-     * La liste est la source de vérité structurelle : l'écrire avant d'émettre
-     * l'évènement de synchro évite qu'un rechargement ou un push immédiat lise
-     * encore la liste précédente.
-     */
-    const persistClassesNow = useCallback((nextClasses: ClassInfo[], markDirty = true) => {
+    const persistClassesNow = useCallback((next: ClassInfo[], markDirty = true) => {
         if (!workspaceIsActive()) return false;
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(nextClasses));
+            localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(next));
+            setClasses(next);
             if (markDirty) markClassesListDirty();
             notifyClassesChanged();
             return true;
-        } catch (err) {
-            logger.error('Failed to persist classes', err);
+        } catch (error) {
+            logger.error('Failed to persist classes', error);
             return false;
         }
     }, [workspaceIsActive]);
 
-    // ── Initial load ────────────────────────────────────────────────────────
-    useEffect(() => {
-        let cancelled = false;
-
-        (() => {
-            if (!workspaceIsActive()) return;
-            const storedRaw   = localStorage.getItem(STORAGE_KEY);
-            const hadLaunched = !!localStorage.getItem(LAUNCH_FLAG);
-
-            // ① Normal case: classes already stored and non-empty
-            if (hadLaunched && storedRaw) {
-                try {
-                    const stored = JSON.parse(storedRaw);
-                    if (!Array.isArray(stored)) {
-                        throw new Error('Stored classes are not an array');
-                    }
-                    const normalized = stored.map((classInfo: ClassInfo) => ({
-                        ...classInfo,
-                        name: normalizeOfficialClassName(classInfo.name),
-                        color: '',
-                    }));
-                    const changed = normalized.some((classInfo, index) => (
-                        classInfo.name !== stored[index]?.name ||
-                        stored[index]?.color !== ''
-                    ));
-                    if (changed) {
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-                        markClassesListDirty();
-                    }
-                    if (!cancelled) {
-                        setClasses(normalized);
-                        classesRef.current = normalized;
-                        setIsLoading(false);
-                        setReady(true);
-                    }
-                    return;
-                } catch { /* fall through to clean init */ }
-            }
-
-            // ② First launch OR empty/corrupt storage → load clean empty list
-            localStorage.setItem(LAUNCH_FLAG, 'true');
-
-            if (!cancelled) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-                setClasses([]);
-                classesRef.current = [];
-                setIsLoading(false);
-                setReady(true);
-            }
-        })();
-
-        return () => { cancelled = true; };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // ── Persist to localStorage whenever classes mutate (after init) ────────
-    // We serialize the *committed state* value, NOT an immer draft proxy,
-    // which avoids the proxy-serialisation bug present in the old saveClasses.
-    useEffect(() => {
-        if (!ready) return;
-        if (skipNextPersistRef.current) {
-            skipNextPersistRef.current = false;
-            return;
-        }
-        persistClassesNow(classes);
-    }, [classes, persistClassesNow, ready]);
-
-    // ── Rechargement quand un pull cloud a réécrit le localStorage ─────────
     useEffect(() => {
         const reload = () => {
-            try {
-                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                if (!Array.isArray(stored)) {
-                    throw new Error('Stored classes are not an array');
-                }
-                skipNextPersistRef.current = true; // ne pas re-marquer dirty ce rechargement
-                setClasses(() => stored);
-                classesRef.current = stored;
-            } catch (err) {
-                logger.error('Failed to reload classes after storage change', err);
-            }
-        };
-        const unsubscribePull = subscribe('pull-applied', reload);
-        const unsubscribeClasses = subscribe('classes-changed', reload);
-        return () => {
-            unsubscribePull();
-            unsubscribeClasses();
-        };
-    }, [setClasses]);
-
-    // ── Mutations ───────────────────────────────────────────────────────────
-    const addClass = useCallback(
-        (details: Omit<ClassInfo, 'id' | 'createdAt' | 'color'>) => {
-            if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
-            const newClass: ClassInfo = {
-                ...details,
-                cycle:     details.cycle ?? 'college',
-                id:        crypto.randomUUID(),
-                createdAt: new Date().toISOString(),
-                color:     '',
-            };
-            const nextClasses = [...classesRef.current, newClass];
-            classesRef.current = nextClasses;
-            persistClassesNow(nextClasses);
-            skipNextPersistRef.current = true;
-            setClasses(() => nextClasses);
-            // Conserver l'écran vide « créer / charger ». Le diagnostic est
-            // injecté au premier ajout ou au chargement d'un contenu prédéfini.
-            localStorage.setItem(`${DATA_PREFIX}${newClass.id}`, JSON.stringify([]));
-            touchClassSyncMeta(newClass.id);
-            markClassDirty(newClass.id);
-            return newClass;
-        },
-        [persistClassesNow, setClasses, workspaceIsActive],
-    );
-
-    const deleteClass = useCallback(
-        (classId: string) => {
             if (!workspaceIsActive()) return;
-            // La confirmation est portée par la couche UI (ConfirmDialog de la
-            // carte), pas de `window.confirm` ici, sinon double confirmation.
-            const target = classes.find(c => c.id === classId);
-            if (!target) return;
-            const nextClasses = classes.filter(c => c.id !== classId);
-            classesRef.current = nextClasses;
-            persistClassesNow(nextClasses, false);
-            skipNextPersistRef.current = true;
-            setClasses(() => nextClasses);
-            localStorage.removeItem(`${DATA_PREFIX}${classId}`);
-            localStorage.removeItem(`editJournal_v1_${classId}`);
-            localStorage.removeItem(`printMeta_v1_${classId}`);
-            localStorage.removeItem(`editor_actions_ignored_v1_${classId}`);
-            markClassDeleted(classId);
-        },
-        [classes, persistClassesNow, setClasses, workspaceIsActive],
-    );
+            try { setClasses(readStoredClasses()); }
+            catch (error) { logger.error('Failed to reload classes', error); }
+        };
+        const onStorage = (event: StorageEvent) => {
+            if (event.key === CLASS_STORAGE_KEY) reload();
+        };
+        const offPull = subscribe('pull-applied', reload);
+        const offClasses = subscribe('classes-changed', reload);
+        window.addEventListener('storage', onStorage);
+        return () => { offPull(); offClasses(); window.removeEventListener('storage', onStorage); };
+    }, [workspaceIsActive]);
 
-    const updateClass = useCallback(
-        (classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {
-            if (!workspaceIsActive()) return false;
-            // Other mounted managers may have updated another field since this render.
-            let latest: ClassInfo[];
-            try { latest = parseStoredClasses(localStorage.getItem(STORAGE_KEY)); } catch { return false; }
-            if (!latest.some(classInfo => classInfo.id === classId)) return false;
-            const nextClasses = latest.map(classInfo =>
-                classInfo.id === classId ? { ...classInfo, ...updates } : classInfo
-            );
-            if (!persistClassesNow(nextClasses)) return false;
-            classesRef.current = nextClasses;
-            skipNextPersistRef.current = true;
-            setClasses(() => nextClasses);
-            return true;
-        },
-        [classes, persistClassesNow, setClasses, workspaceIsActive],
-    );
+    const addClass = useCallback((details: Omit<ClassInfo, 'id' | 'createdAt' | 'color'>) => {
+        if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
+        const newClass: ClassInfo = {
+            ...details, cycle: details.cycle ?? 'college', id: crypto.randomUUID(),
+            createdAt: new Date().toISOString(), color: '',
+        };
+        const next = [...readStoredClasses(), newClass];
+        // Initialiser le cahier avant d'exposer sa carte et de réveiller le cloud.
+        localStorage.setItem(DATA_PREFIX + newClass.id, '[]');
+        if (!persistClassesNow(next)) {
+            localStorage.removeItem(DATA_PREFIX + newClass.id);
+            throw new Error('Impossible de sauvegarder la classe sur cet appareil.');
+        }
+        touchClassSyncMeta(newClass.id);
+        markClassDirty(newClass.id);
+        return newClass;
+    }, [persistClassesNow, workspaceIsActive]);
 
-    return { classes, addClass, deleteClass, updateClass, isLoading };
+    const deleteClass = useCallback((classId: string) => {
+        if (!workspaceIsActive()) return;
+        const latest = readStoredClasses();
+        if (!latest.some(c => c.id === classId)) return;
+        if (!persistClassesNow(latest.filter(c => c.id !== classId), false)) return;
+        markClassDeleted(classId);
+        for (const prefix of [DATA_PREFIX, 'editJournal_v1_', 'printMeta_v1_', 'editor_actions_ignored_v1_']) {
+            localStorage.removeItem(prefix + classId);
+        }
+    }, [persistClassesNow, workspaceIsActive]);
+
+    const updateClass = useCallback((classId: string, updates: Partial<Omit<ClassInfo, 'id'>>) => {
+        if (!workspaceIsActive()) return false;
+        try {
+            const latest = readStoredClasses();
+            if (!latest.some(c => c.id === classId)) return false;
+            return persistClassesNow(latest.map(c => c.id === classId ? { ...c, ...updates } : c));
+        } catch (error) { logger.error('Failed to update local class', error); return false; }
+    }, [persistClassesNow, workspaceIsActive]);
+
+    return { classes, addClass, deleteClass, updateClass, isLoading: false };
 };

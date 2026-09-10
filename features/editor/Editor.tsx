@@ -6,7 +6,7 @@ import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
 import { OrientationNudge } from './OrientationNudge';
-import { EditorSkeleton } from '@/components/ui/PageSkeleton';
+import { AppBootSkeleton, EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Plus } from '@/components/ui/icons';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
@@ -44,6 +44,8 @@ import { todayInMorocco } from '@/utils/calendar';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { captureWorkspaceLease, registerWorkspaceWriter } from '@/utils/accountWorkspace';
+import { hasMathContent } from '@/utils/math';
+import { useMathRuntime, usePendingMathTypesets } from '@/contexts/MathRuntimeContext';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -99,6 +101,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const { t, locale } = useLocale();
   const { state: lessonsData, setState, resetState, undo, redo, canUndo, canRedo, operationType, historyAction } = useHistoryState<LessonsData>([]);
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
+  const mathRuntime = useMathRuntime();
+  const pendingMathTypesets = usePendingMathTypesets();
 
   const [editorState, setEditorState] = useImmer({
     classInfo: initialClassInfo,
@@ -127,6 +131,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const consumedSessionFocusRef = useRef<string | null>(null);
   const [printMetaVersion, setPrintMetaVersion] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [initialMathTypesetComplete, setInitialMathTypesetComplete] = useState(false);
   const isPrintingRef = useRef(false);
   const printLaunchTimerRef = useRef<number | null>(null);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
@@ -162,6 +167,28 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   contentDirectionRef.current = contentDirection;
   saveStatusRef.current = saveStatus;
   const isNotebookAwaitingContent = lessonsData.length === 0 || hasOnlyPristineStarterDiagnostic(lessonsData);
+  const notebookHasMath = useMemo(() => hasMathContent(lessonsData), [lessonsData]);
+
+  useEffect(() => {
+    if (initialMathTypesetComplete || isClassLoading || isConfigLoading) return;
+    if (!notebookHasMath || mathRuntime.status === 'degraded') {
+      setInitialMathTypesetComplete(true);
+      return;
+    }
+    if (mathRuntime.status !== 'ready' || pendingMathTypesets > 0) return;
+
+    // Les composants MathText s'enregistrent pendant les layout effects. Deux
+    // frames sans travail en attente garantissent que la première peinture est
+    // composée, sans imposer de temporisation fixe aux cahiers déjà prêts.
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => setInitialMathTypesetComplete(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [initialMathTypesetComplete, isClassLoading, isConfigLoading, mathRuntime.status, notebookHasMath, pendingMathTypesets]);
 
   useEffect(() => {
     editingIndicesRef.current = editingIndices;
@@ -1107,6 +1134,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   // varie (retour à la ligne sur mobile, ouverture de la recherche), un
   // ResizeObserver republie la variable CSS --cdt-sticky-top en temps réel.
   const isLoading = isClassLoading || isConfigLoading;
+  const isInitialMathPreparing = notebookHasMath
+    && !initialMathTypesetComplete
+    && mathRuntime.status !== 'degraded';
 
   if (isLoading) {
     return <EditorSkeleton />;
@@ -1303,6 +1333,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         confirmLabel={t('selection.delete')}
         onConfirm={executeBulkDelete}
       />
+
+      {isInitialMathPreparing && <AppBootSkeleton stage="latex" overlay />}
     </div>
   );
 };

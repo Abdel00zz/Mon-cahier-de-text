@@ -93,7 +93,6 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     getDateWarnings,
 }) => {
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
-    const displayedItems = mergeContent ? items.slice(0, 1) : items;
     const toggleMerged = () => {
         const shouldSelect = !items.every(item => selectedKeys.has(item.key));
         items.forEach(item => {
@@ -107,24 +106,74 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(items[0]));
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
     const sharedRemark = getMergeableRemark(items[0]);
+    // Une grille commune garde les traits de contenu et de remarque sur le
+    // même axe, même si une remarque ou une description occupe plusieurs lignes.
+    const visualRowCount = mergeContent && sameRemark ? 1 : items.length;
+    const firstMerge = items[0].dateMerge;
+    const lastMerge = items[items.length - 1].dateMerge;
 
     const dividerClass = groupIsSelected
-        ? 'border-e border-primary/45'
+        ? 'border-e border-e-primary/45'
         : hasWarning
-            ? 'border-e border-warning/45'
-            : 'border-e border-border';
+            ? 'border-e border-e-warning/45'
+            : 'border-e border-e-border';
+
+    const innerLineClass = groupIsSelected
+        ? 'border-b border-b-primary/25'
+        : hasWarning
+            ? 'border-b border-b-warning/35'
+            : 'border-b border-b-border/50';
+    const topBoundaryClass = firstMerge?.isDatedSequenceStart
+        ? (hasWarning ? 'border-t-2 border-t-warning/70' : 'border-t-2 border-t-foreground/30')
+        : '';
+    // Une seule bordure porte la limite avec la séance suivante : aucun
+    // empilement border-bottom + border-top entre deux groupes datés.
+    const bottomBoundaryClass = lastMerge?.isDatedSequenceEnd
+        ? (hasWarning ? 'border-b-2 border-b-warning/70' : 'border-b-2 border-b-foreground/30')
+        : (hasWarning ? 'border-b border-b-warning/60' : 'border-b border-b-border/70');
+
+    const renderContent = (item: FlatDataItem, merged: boolean) => {
+        const isSelected = merged ? groupIsSelected : selectedKeys.has(item.key);
+        const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
+        return (
+            <TableRow
+                data={item.data}
+                indices={item.indices}
+                elementType={item.elementType}
+                dateMerge={item.dateMerge}
+                lineClassOverride=""
+                layout="content-only"
+                onToggleSelect={merged ? toggleMerged : onToggleSelect}
+                onDoubleClickEdit={onDoubleClickEdit}
+                isSelected={isSelected}
+                isNew={isNew}
+                showDescriptions={showDescriptions}
+                descriptionTypes={descriptionTypes}
+                searchQuery={searchQuery}
+                getDateWarnings={getDateWarnings}
+            />
+        );
+    };
 
     return (
         <div
+            data-session-group="true"
             className={[
-                `group relative grid ${TABLE_GRID_CLASS} border-y border-border transition-colors duration-200`,
+                `group relative grid ${TABLE_GRID_CLASS} transition-colors duration-200`,
+                topBoundaryClass,
+                bottomBoundaryClass,
                 hasWarning
-                    ? 'border-warning/[0.6] bg-warning/[0.07]'
+                    ? 'bg-warning/[0.07]'
                     : 'bg-card',
                 groupIsSelected ? 'bg-zinc-100 dark:bg-zinc-800/60' : '',
             ].filter(Boolean).join(' ')}
+            style={{ gridTemplateRows: `repeat(${visualRowCount}, minmax(52px, auto))` }}
         >
-            <div className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-muted/30'}`}>
+            <div
+                data-session-cell="date"
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-muted/30'}`}
+                style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
+            >
                 {uniqueDates.length > 1 ? (
                     <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
                 ) : (
@@ -132,48 +181,49 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 )}
             </div>
 
-            <div className={`min-w-0 self-stretch ${dividerClass} ${mergeContent ? 'flex flex-col justify-center [&>div]:w-full [&_.editor-type-item-title]:text-center' : ''}`}>
-                {displayedItems.map((item, idx) => {
-                    const isSelected = mergeContent ? groupIsSelected : selectedKeys.has(item.key);
-                    const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
-                    const isLast = idx === displayedItems.length - 1;
-                    return (
-                        <TableRow
-                            key={item.key}
-                            data={item.data}
-                            indices={item.indices}
-                            elementType={item.elementType}
-                            dateMerge={item.dateMerge}
-                            lineClassOverride={isLast ? '' : 'border-b border-border/40'}
-                            layout="content-only"
-                            onToggleSelect={mergeContent ? toggleMerged : onToggleSelect}
-                            onDoubleClickEdit={onDoubleClickEdit}
-                            isSelected={isSelected}
-                            isNew={isNew}
-                            showDescriptions={showDescriptions}
-                            descriptionTypes={descriptionTypes}
-                            searchQuery={searchQuery}
-                            getDateWarnings={getDateWarnings}
-                        />
-                    );
-                })}
-            </div>
+            {mergeContent ? (
+                <div
+                    data-session-cell="content"
+                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full [&_.editor-type-item-title]:text-center`}
+                    style={{ gridColumn: 2, gridRow: `1 / span ${visualRowCount}` }}
+                >
+                    {renderContent(items[0], true)}
+                </div>
+            ) : items.map((item, index) => (
+                <div
+                    key={`content-${item.key}`}
+                    data-session-cell="content"
+                    data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
+                    className={`min-w-0 self-stretch ${dividerClass} ${index < items.length - 1 ? innerLineClass : ''}`}
+                    style={{ gridColumn: 2, gridRow: index + 1 }}
+                >
+                    {renderContent(item, false)}
+                </div>
+            ))}
 
-            <div className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`} onClick={event => event.stopPropagation()}>
-                {sameRemark ? (
+            {sameRemark ? (
+                <div
+                    data-session-cell="remark"
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
+                    onClick={event => event.stopPropagation()}
+                >
                     <div className="flex min-h-full w-full flex-col justify-center">
                         <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
                     </div>
-                ) : (
-                    <div className="flex w-full flex-col">
-                        {items.map(item => (
-                            <div key={item.key} className="min-h-[40px] p-0.5 sm:p-1">
-                                <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                </div>
+            ) : items.map((item, index) => (
+                <div
+                    key={`remark-${item.key}`}
+                    data-session-cell="remark"
+                    data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    style={{ gridColumn: 3, gridRow: index + 1 }}
+                    onClick={event => event.stopPropagation()}
+                >
+                    <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                </div>
+            ))}
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 'react';
 import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
-import { AppBootSkeleton } from './components/ui/PageSkeleton';
+import { AppBootSkeleton, DashboardSkeleton } from './components/ui/PageSkeleton';
 import { AppLocale, ClassInfo } from './types';
 import { useConfigManager } from './hooks/useConfigManager';
 import { useSessionAlerts } from './hooks/useSessionAlerts';
@@ -121,6 +121,13 @@ const App: React.FC = () => {
     const cancelIdle = (window as any).cancelIdleCallback || clearTimeout;
     const idleHandle = requestIdle(() => {
       preloadSettingsPage();
+      // Le tableau de bord est déjà visible : préparer l'éditeur avant le
+      // premier clic. Sur une URL d'éditeur, préparer plutôt le retour accueil.
+      if (initialRouteRef.current?.view === 'editor') {
+        void import('./features/dashboard/Dashboard');
+      } else {
+        void import('./features/editor/Editor');
+      }
     });
     return () => cancelIdle(idleHandle);
   }, []);
@@ -306,6 +313,9 @@ const App: React.FC = () => {
   const routeKey = backgroundView === 'editor' && backgroundClass
     ? `editor-${backgroundClass.id}`
     : backgroundView;
+  const routeFallback = backgroundView === 'dashboard'
+    ? <DashboardSkeleton />
+    : <AppBootSkeleton />;
 
   const activeTab: TabType = isEvaluationsOpen
     ? 'evaluations'
@@ -394,7 +404,7 @@ const App: React.FC = () => {
         className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
       >
         <div key={routeKey} className="relative z-10 min-h-screen">
-          <Suspense fallback={<AppBootSkeleton />}>
+          <Suspense fallback={routeFallback}>
             {renderContent()}
           </Suspense>
         </div>

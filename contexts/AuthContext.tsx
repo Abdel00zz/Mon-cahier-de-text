@@ -4,6 +4,7 @@ import { applyRegistrationSetup, type RegistrationSetup } from '../features/auth
 import { toast } from 'sonner';
 import { readWorkspaceScope, switchAccountWorkspace, workspaceIsCurrent, WORKSPACE_SCOPE_KEY } from '../utils/accountWorkspace';
 import { unsubscribeFromPush } from '../utils/push';
+import { isRetryableSyncError, requestSyncJson, retryDelayMs, SyncRequestError } from '../utils/syncTransport';
 
 interface AuthUser {
   phone: string;
@@ -125,58 +126,81 @@ const postAuth = async (payload: Record<string, unknown>): Promise<AuthUser> => 
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [status, setStatus] = useState<AuthStatus>('loading');
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const cached = readCachedUser();
+      return localStorage.getItem(SIGNED_OUT_KEY) !== 'true' && cached?.phone === readWorkspaceScope()?.owner ? cached : null;
+    } catch { return null; }
+  });
+  const [status, setStatus] = useState<AuthStatus>(() => user ? 'offline' : 'loading');
   const requestVersion = useRef(0);
   const initialRequest = useRef<AbortController | null>(null);
   const logoutRequest = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const controller = new AbortController();
-    initialRequest.current = controller;
+    let checking = false;
+    let needsValidation = true;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let failures = 0;
     const version = ++requestVersion.current;
     const current = () => !cancelled && version === requestVersion.current;
-    (async () => {
-      // Persist the legacy owner before a 401 removes the cached session.
+    const verifySession = async () => {
+      if (!current() || checking) return;
+      checking = true;
+      clearTimeout(retryTimer);
+      const controller = new AbortController();
+      initialRequest.current = controller;
       const cached = readCachedUser();
       try {
         if (localStorage.getItem(SIGNED_OUT_KEY) === 'true') {
+          setUser(null);
           setStatus('anonymous');
+          needsValidation = false;
           return;
         }
         if (!readWorkspaceScope() && cached) switchAccountWorkspace(cached.phone, { legacyOwner: cached.phone });
-        const response = await fetch('/api/auth?action=me', { credentials: 'same-origin', signal: controller.signal });
+        if (!navigator.onLine) throw new TypeError('Offline');
+        const data = await requestSyncJson<{ user: AuthUser }>('/api/auth?action=me', {
+          credentials: 'same-origin', signal: controller.signal,
+        }, 8_000);
         if (!current()) return;
-        if (response.ok) {
-          const data = await response.json();
-          if (!current()) return;
-          if (!isAuthUser(data.user)) throw new Error('Invalid session response');
-          activateUserWorkspace(data.user);
-          setUser(data.user);
-          setStatus('authenticated');
-        } else {
-          if (response.status >= 500) throw new TypeError('Session service unavailable');
-          setUser(null);
-          setStatus('anonymous');
-          cacheUser(null);
-        }
+        if (!isAuthUser(data.user)) throw new TypeError('Invalid session response');
+        activateUserWorkspace(data.user);
+        setUser(data.user);
+        setStatus('authenticated');
+        needsValidation = false;
       } catch (error) {
-        // Erreur réseau (pas un 401) : on laisse travailler hors ligne si une session a déjà existé.
         if (!current()) return;
-        // Never reinterpret a failed account switch as an offline login.
-        if (error instanceof TypeError && cached && readWorkspaceScope()?.owner === cached.phone) {
+        const rejected = error instanceof SyncRequestError && (error.status === 401 || error.status === 403);
+        // La session locale permet de travailler, jamais d'autoriser un push cloud.
+        if (isRetryableSyncError(error) && cached && readWorkspaceScope()?.owner === cached.phone) {
           reloadSyncState();
           setUser(cached);
           setStatus('offline');
+          if (navigator.onLine) retryTimer = setTimeout(() => { void verifySession(); }, retryDelayMs(failures++));
         } else {
+          setUser(null);
           setStatus('anonymous');
+          needsValidation = false;
+          if (rejected) cacheUser(null);
         }
+      } finally {
+        checking = false;
       }
-    })();
+    };
+    void verifySession();
+    const resume = () => {
+      if (needsValidation && current() && navigator.onLine && document.visibilityState !== 'hidden') void verifySession();
+    };
+    window.addEventListener('online', resume);
+    document.addEventListener('visibilitychange', resume);
     return () => {
       cancelled = true;
-      controller.abort();
+      initialRequest.current?.abort();
+      clearTimeout(retryTimer);
+      window.removeEventListener('online', resume);
+      document.removeEventListener('visibilitychange', resume);
     };
   }, []);
 

@@ -40,8 +40,10 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
   );
 };
 
-export const DashboardSkeleton: React.FC = () => (
-  <div className="min-h-screen bg-background p-3 pb-8 sm:p-8">
+export const DashboardSkeleton: React.FC = () => {
+  const { t } = useLocale();
+  return (
+  <div className="min-h-screen bg-background p-3 pb-8 sm:p-8" role="status" aria-live="polite" aria-label={t('boot.teacher.schedule')}>
     <div className="mx-auto max-w-5xl px-3 sm:px-4">
       <div className="mb-6 flex items-center justify-between pb-3">
         <div className="flex items-center gap-3">
@@ -69,10 +71,13 @@ export const DashboardSkeleton: React.FC = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
-export const EditorSkeleton: React.FC<{ className?: string }> = ({ className }) => (
-  <div className="min-h-screen bg-background p-2 sm:p-5">
+export const EditorSkeleton: React.FC<{ className?: string }> = ({ className }) => {
+  const { t } = useLocale();
+  return (
+  <div className="min-h-screen bg-background p-2 sm:p-5" role="status" aria-live="polite" aria-label={t('boot.teacher.notebooks')}>
     <div className="container mx-auto flex min-h-[calc(100vh-2.5rem)] max-w-7xl flex-col bg-card p-3 shadow-2xl sm:p-6">
       <div className="mb-6 flex items-center justify-center">
         <Skeleton className="absolute left-4 h-10 w-10 rounded-xl" />
@@ -106,4 +111,5 @@ export const EditorSkeleton: React.FC<{ className?: string }> = ({ className }) 
       {className && <span className="sr-only">{className}</span>}
     </div>
   </div>
-);
+  );
+};

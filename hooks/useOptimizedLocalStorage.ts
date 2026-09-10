@@ -16,7 +16,13 @@ export function useOptimizedLocalStorage<T>(
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (!workspaceIsActive()) return;
+    if (!workspaceIsActive()) {
+      // Un changement de compte invalide cette instance, mais ne doit jamais
+      // laisser un écran consommateur bloqué derrière son squelette.
+      setIsLoading(false);
+      initializedRef.current = true;
+      return;
+    }
     try {
       const storedValue = localStorage.getItem(key);
       if (storedValue) {

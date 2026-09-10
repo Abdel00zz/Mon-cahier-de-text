@@ -9,7 +9,7 @@ import { groupLessonRows } from '../utils/tableRows';
 import { findItem, addItem, addSection } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { renderDescriptionWithBold } from '../utils/textFormat';
-import { hasMathSyntax, splitMathText } from '../utils/math';
+import { hasMathContent, hasMathSyntax, splitMathText } from '../utils/math';
 import { listViewport, visibleRange } from '../utils/virtualGeometry';
 import { MainTable } from '../features/editor/MainTable';
 import { LocaleProvider } from '../i18n/LocaleProvider';
@@ -115,6 +115,31 @@ test('fusion : même date, dates inversées, absence de date et contenus distinc
   assert.equal(grouped.flatData[1].dateMerge?.mergeType, 'content');
 });
 
+test('séance fusionnée : les séparateurs de contenu et remarque partagent les mêmes rangées', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Cours', items: [
+    { type: 'exercice', title: 'Première ligne', description: 'Description longue\nsur deux lignes', date: '2026-09-14', remark: 'Remarque A' },
+    { type: 'exercice', title: 'Deuxième ligne', date: '2026-09-14', remark: 'Remarque B' },
+  ] }];
+  const rows = buildLessonRows(data);
+  const noop = () => {};
+  const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
+      contentDirection: 'ltr', onCellUpdate: noop, onDeleteSeparator: noop, onOpenAddContentModal: noop,
+      selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
+      showDescriptions: true,
+    }),
+  }));
+  const occurrences = (token: string) => html.split(token).length - 1;
+  assert.equal(occurrences('data-session-group="true"'), 1);
+  assert.equal(occurrences('data-session-cell="date"'), 1);
+  assert.equal(occurrences('data-session-cell="content"'), 2);
+  assert.equal(occurrences('data-session-cell="remark"'), 2);
+  // Un trait sous chaque cellule de la première rangée, jamais dans la date fusionnée.
+  assert.equal(occurrences('data-session-row-divider="true"'), 2);
+  assert.match(html, /grid-row:1 \/ span 2/);
+  assert.equal(html.includes('border-y'), false);
+});
+
 test('recherche : modifier, dater et insérer après le résultat conserve le chemin source', () => {
   const filtered = filterLessonRows(buildLessonRows(fixture), 'Cible');
   const row = filtered.find(row => row.elementType === 'item')!;
@@ -193,6 +218,14 @@ test('math : les cinq formes de délimiteurs sont reconnues et préservées', ()
   }
   assert.equal(hasMathSyntax(String.raw`Prix : \$20`), false);
   assert.equal(hasMathSyntax('Texte simple'), false);
+});
+
+test('chargement MathJax : seuls les cahiers contenant réellement une formule attendent le moteur', () => {
+  assert.equal(hasMathContent([{ type: 'chapter', title: 'Fonctions numériques' }]), false);
+  assert.equal(hasMathContent([{ type: 'chapter', title: 'Fonctions', sections: [{ name: 'Limites', items: [
+    { type: 'définition', title: 'Limite de $f(x)$', description: '' },
+  ] }] }]), true);
+  assert.equal(hasMathContent({ lessonsData: [{ type: 'exemple', description: String.raw`\[x^2+1\]` }] }), true);
 });
 
 test('math et listes : formule et texte restent ensemble dans la puce', () => {
