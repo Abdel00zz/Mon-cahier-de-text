@@ -123,14 +123,17 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         : hasWarning
             ? 'border-b border-b-warning/35'
             : 'border-b border-b-border/50';
-    const topBoundaryClass = firstMerge?.isDatedSequenceStart
+    const hasAssignedDate = uniqueDates.length > 0;
+    const topBoundaryClass = (hasAssignedDate && firstMerge?.isDatedSequenceStart)
         ? (hasWarning ? 'border-t-2 border-t-warning/70' : 'border-t-2 border-t-foreground/30')
         : '';
     // Une seule bordure porte la limite avec la séance suivante : aucun
     // empilement border-bottom + border-top entre deux groupes datés.
-    const bottomBoundaryClass = lastMerge?.isDatedSequenceEnd
-        ? (hasWarning ? 'border-b-2 border-b-warning/70' : 'border-b-2 border-b-foreground/30')
-        : (hasWarning ? 'border-b border-b-warning/60' : 'border-b border-b-border/70');
+    const bottomBoundaryClass = hasAssignedDate
+        ? (lastMerge?.isDatedSequenceEnd
+            ? (hasWarning ? 'border-b-2 border-b-warning/70' : 'border-b-2 border-b-foreground/30')
+            : (hasWarning ? 'border-b border-b-warning/60' : 'border-b border-b-border/70'))
+        : (groupIsSelected ? 'border-b border-b-primary/15' : '');
 
     const renderContent = (item: FlatDataItem, merged: boolean) => {
         const isSelected = merged ? groupIsSelected : selectedKeys.has(item.key);
@@ -171,7 +174,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         >
             <div
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : 'bg-muted/30'}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/30' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
             >
                 {uniqueDates.length > 1 ? (
@@ -184,7 +187,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             {mergeContent ? (
                 <div
                     data-session-cell="content"
-                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full [&_.editor-type-item-title]:text-center`}
+                    className={`min-w-0 self-stretch ${dividerClass} flex flex-col justify-center [&>div]:w-full ${hasAssignedDate ? '[&_.editor-type-item-title]:text-center' : ''}`}
                     style={{ gridColumn: 2, gridRow: `1 / span ${visualRowCount}` }}
                 >
                     {renderContent(items[0], true)}

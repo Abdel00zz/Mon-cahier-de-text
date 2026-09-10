@@ -1,15 +1,14 @@
 {
-  "classInfo": {
-    "id": "ec8e31c6-c314-4224-a361-6564141b5556",
-    "name": "2ème Bac Sciences Physiques 5",
-    "teacherName": "بدوح عبدالمالك",
-    "subject": "Mathématiques",
-    "createdAt": "2026-07-12T18:30:09.919Z",
-    "color": "",
-    "cycle": "lycee"
-  },
+  "contentDirection": "ltr",
   "lessonsData": [
     {
+      "type": "evaluation_diagnostic",
+      "title": "Évaluation diagnostique 1",
+      "sections": []
+    },
+    {
+      "type": "chapter",
+      "title": "Les limites et la continuité",
       "sections": [
         {
           "name": "Rappel",
@@ -18,21 +17,18 @@
               "name": "Les limites usuelles",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "1",
-                  "title": "Limites usuelles en $+\\infty$ et en $-\\infty$",
+                  "type": "propriété",
+                  "title": "Limites de $x^n$, $\\sqrt{x}$ et $1/x^n$ à l’infini",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "2",
-                  "title": "Limites usuelles en $0$",
+                  "type": "propriété",
+                  "title": "Limites de $x^n$, $\\sqrt{x}$ et $1/x^n$ en zéro",
                   "description": ""
                 },
                 {
                   "type": "théorème",
-                  "number": "1",
-                  "title": "Équivalence des limites latérales",
+                  "title": "Limite en $a$ et limites latérales",
                   "description": ""
                 }
               ]
@@ -42,82 +38,92 @@
               "items": [
                 {
                   "type": "remarque",
-                  "number": "1",
-                  "title": "Règles pour somme, produit, inverse et quotient",
+                  "title": "Attention aux formes indéterminées",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’une somme",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’un produit",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’un inverse",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’un quotient",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Les limites d'une fonction polynôme et d'une fonction rationnelle",
+              "name": "Limites d’une fonction polynôme et rationnelle",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "3",
-                  "title": "Limites des fonctions polynômes et rationnelles",
+                  "type": "propriété",
+                  "title": "Limites des polynômes et fonctions rationnelles",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "1",
-                  "title": "Calcul de limites",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Les limites d'une fonction irrationnelle",
+              "name": "Limites d’une fonction irrationnelle",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "4",
-                  "title": "Limites de racines de fonctions",
+                  "type": "propriété",
+                  "title": "Limite de $\\sqrt{f(x)}$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "2",
-                  "title": "Validité pour différentes valeurs",
+                  "title": "Même règle pour les limites latérales",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "2",
-                  "title": "Calcul de limites irrationnelles",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Les limites des fonctions trigonométriques",
+              "name": "Limites des fonctions trigonométriques",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "5",
-                  "title": "Limites fondamentales trigonométriques",
+                  "type": "propriété",
+                  "title": "Limites trigonométriques en zéro",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "3",
-                  "title": "Calcul de limites trigonométriques",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Les limites et l'ordre",
+              "name": "Limites et ordre",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "6",
-                  "title": "Théorèmes d'encadrement et de comparaison",
+                  "type": "propriété",
+                  "title": "Limites par comparaison et encadrement",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "4",
-                  "title": "Calcul par encadrement",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
@@ -125,108 +131,94 @@
           ]
         },
         {
-          "name": "La continuité en un point- la continuité sur un intervalle",
+          "name": "Continuité en un point et sur un intervalle",
           "subsections": [
             {
-              "name": "La continuité en un point",
+              "name": "Continuité en un point",
               "items": [
                 {
                   "type": "activité",
-                  "number": "1",
-                  "title": "Analyse graphique de la continuité",
+                  "title": "Observer continuité en un point",
                   "description": ""
                 },
                 {
                   "type": "définition",
-                  "number": "1",
-                  "title": "Continuité en un point",
+                  "title": "$f$ continue en $x_0$ : $\\displaystyle\\lim_{x\\to x_0}f(x)=f(x_0)$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "5",
-                  "title": "Continuité d'une fonction définie par morceaux",
+                  "title": "Étudier la continuité (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "6",
-                  "title": "Étude de continuité en $0$",
+                  "title": "Étudier la continuité (exercice 2)",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "La continuité à droite et la continuité à gauche en un point",
+              "name": "Continuité à droite et à gauche en un point",
               "items": [
                 {
                   "type": "définition",
-                  "number": "2",
-                  "title": "Continuité latérale en un point",
+                  "title": "Continuité à droite et à gauche en $x_0$",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "7",
-                  "title": "Lien entre continuité et continuité latérale",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "7",
-                  "title": "Étude de la continuité à gauche et à droite",
+                  "type": "propriété",
+                  "title": "Continuité en $x_0$ : limites latérales égales",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "8",
-                  "title": "Étude avec valeur absolue",
+                  "title": "Étudier la continuité (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Étudier la continuité (exercice 2)",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "La continuité sur un intervalle",
+              "name": "Continuité sur un intervalle",
               "items": [
                 {
                   "type": "activité",
-                  "number": "2",
-                  "title": "Analyse de courbes",
+                  "title": "Observer continuité sur un intervalle",
                   "description": ""
                 },
                 {
                   "type": "définition",
-                  "number": "3",
-                  "title": "Continuité sur un intervalle",
+                  "title": "Continuité sur $]a,b[$ ou $[a,b]$",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "La fonction de la partie entière",
+              "name": "Fonction partie entière",
               "items": [
                 {
                   "type": "définition",
-                  "number": "4",
-                  "title": "Partie entière d'un réel",
+                  "title": "Partie entière : $n\\le x<n+1$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "1",
-                  "title": "Valeurs de la partie entière",
+                  "title": "Calculer des parties entières",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "3",
-                  "title": "Discontinuités de la fonction partie entière",
+                  "title": "$E(x)$ est discontinue aux entiers",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "9",
-                  "title": "Étude de la fonction partie entière",
+                  "title": "Calculer et tracer $E(x)$",
                   "description": ""
                 }
               ]
@@ -235,15 +227,13 @@
               "name": "Continuité des fonctions usuelles",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "8",
-                  "title": "Continuité des fonctions élémentaires",
+                  "type": "propriété",
+                  "title": "Continuité des fonctions usuelles",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "2",
-                  "title": "Fonction rationnelle et domaine de continuité",
+                  "title": "Vérifier une continuité",
                   "description": ""
                 }
               ]
@@ -252,27 +242,23 @@
               "name": "Opérations sur les fonctions continues",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "9",
-                  "title": "Stabilité par opérations algébriques",
+                  "type": "propriété",
+                  "title": "Somme, produit et quotient de fonctions continues",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "3",
-                  "title": "Étude d'une fonction trigonométrique-polynomiale",
+                  "title": "Opérations sur les fonctions continues en pratique",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "10",
-                  "title": "Continuité de la composée",
+                  "type": "propriété",
+                  "title": "Composition $g\\circ f$ de fonctions continues",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "4",
-                  "title": "Composition avec $\\sqrt{x}$ et $\\cos(x)$",
+                  "title": "Opérations sur les fonctions continues en pratique",
                   "description": ""
                 }
               ]
@@ -280,44 +266,19 @@
           ]
         },
         {
-          "name": "L'image d'un intervalle par une fonction continue",
+          "name": "Image d’un intervalle par une fonction continue",
           "subsections": [
             {
-              "name": "Propriétés de l'image",
+              "name": "Image par une fonction strictement monotone",
               "items": [
                 {
-                  "type": "activité",
-                  "number": "3",
-                  "title": "Analyse graphique d'une fonction",
-                  "description": ""
-                },
-                {
-                  "type": "remarque",
-                  "number": "4",
-                  "title": "Extrema d'une fonction continue",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "11",
-                  "title": "Image d'un intervalle par une fonction continue",
-                  "description": ""
-                }
-              ]
-            },
-            {
-              "name": "L'image d'un intervalle par une fonction strictement monotone",
-              "items": [
-                {
-                  "type": "proposition",
-                  "number": "12",
-                  "title": "Image par une fonction monotone",
+                  "type": "propriété",
+                  "title": "Image d’un intervalle monotone",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "10",
-                  "title": "Détermination d'images d'intervalles",
+                  "title": "S’entraîner sur image par une fonction strictement monotone",
                   "description": ""
                 }
               ]
@@ -327,32 +288,27 @@
               "items": [
                 {
                   "type": "théorème",
-                  "number": "2",
-                  "title": "Théorème des valeurs intermédiaires",
+                  "title": "TVI : existence de $c$ tel que $f(c)=k$",
                   "description": ""
                 },
                 {
                   "type": "corollaire",
-                  "number": "1",
-                  "title": "Corollaire pour l'équation $f(x)=0$",
+                  "title": "Zéro d’une fonction continue",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "5",
-                  "title": "Application à la résolution de $\\cos(x)=x$",
+                  "title": "Résoudre une équation avec le TVI",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "11",
-                  "title": "Équations avec racines et fonctions transcendantes",
+                  "title": "Utiliser le TVI (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "12",
-                  "title": "Point fixe d'une fonction continue",
+                  "title": "Utiliser le TVI (exercice 2)",
                   "description": ""
                 }
               ]
@@ -362,175 +318,175 @@
               "items": [
                 {
                   "type": "activité",
-                  "number": "4",
-                  "title": "Recherche d'une racine par dichotomie",
+                  "title": "Construire un encadrement par dichotomie",
                   "description": ""
                 },
                 {
-                  "type": "remarque",
-                  "number": "5",
-                  "title": "Principe de la dichotomie",
+                  "type": "méthode",
+                  "title": "Dichotomie : réduire l’intervalle",
                   "description": ""
                 }
               ]
             }
+          ],
+          "items": [
+            {
+              "type": "activité",
+              "title": "Explorer image d’un intervalle par une fonction continue",
+              "description": ""
+            },
+            {
+              "type": "remarque",
+              "title": "Minimum, maximum et image de $[a,b]$",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Image d’un intervalle continu",
+              "description": ""
+            }
           ]
         },
         {
-          "name": "Fonction réciproque",
+          "name": "Fonction réciproque $f^{-1}$",
           "items": [
             {
               "type": "définition",
-              "number": "5",
-              "title": "Définition d'une fonction réciproque",
+              "title": "$f^{-1}(y)=x$ si $f(x)=y$",
               "description": ""
             },
             {
               "type": "corollaire",
-              "number": "2",
-              "title": "Relations entre une fonction et sa réciproque",
+              "title": "$f^{-1}\\circ f=\\mathrm{id}$ et $f\\circ f^{-1}=\\mathrm{id}$",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "13",
-              "title": "Continuité et monotonie de la fonction réciproque",
+              "type": "propriété",
+              "title": "Continuité et monotonie de $f^{-1}$",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "14",
-              "title": "Résolution d'équations via une fonction bijective",
+              "type": "propriété",
+              "title": "Unicité de la solution de $f(x)=y$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "13",
-              "title": "Détermination d'une fonction réciproque",
+              "title": "Déterminer une fonction réciproque",
               "description": ""
             }
           ]
         },
         {
-          "name": "Fonction racine n-ième",
+          "name": "Fonction $x\\mapsto\\sqrt[n]{x}$",
           "items": [
             {
-              "type": "remarque",
-              "number": "6",
-              "title": "La fonction racine n-ième comme fonction réciproque",
+              "type": "introduction",
+              "title": "Construire $\\sqrt[n]{x}$ comme fonction réciproque",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "15",
-              "title": "Propriétés des racines n-ièmes",
+              "type": "propriété",
+              "title": "Racine comme réciproque de $x^n$",
               "description": ""
             },
             {
               "type": "remarque",
-              "number": "7",
-              "title": "Racine 2n-ième et valeur absolue",
+              "title": "Cas pair : $\\sqrt[2n]{x^{2n}}=|x|$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "14",
-              "title": "Résolution d'équations avec des puissances",
+              "title": "Calculer avec les racines",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "16",
-              "title": "Propriétés algébriques des racines",
+              "type": "propriété",
+              "title": "Règles de calcul avec $\\sqrt[n]{x}$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "15",
-              "title": "Simplification d'expressions avec des racines",
+              "title": "Calculer avec les racines",
               "description": ""
             }
           ]
         },
         {
-          "name": "Puissances rationnelles",
+          "name": "Puissances rationnelles $a^{p/q}$",
           "subsections": [
             {
-              "name": "Puissances rationnelles d'un réel strictement positif",
+              "name": "Puissances rationnelles d’un réel strictement positif",
               "items": [
                 {
                   "type": "définition",
-                  "number": "6",
-                  "title": "Définition d'une puissance rationnelle",
+                  "title": "$a^{p/q}=\\sqrt[q]{a^p}$ pour $a>0$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "6",
-                  "title": "Calcul de puissances rationnelles",
+                  "title": "Calculer des puissances rationnelles",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "17",
-                  "title": "Règles de calcul des puissances rationnelles",
+                  "type": "propriété",
+                  "title": "Règles de calcul de $a^r$",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Continuité et limite de la fonction $\\sqrt[n]{f}$",
+              "name": "Continuité et limite de $\\sqrt[n]{f}$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "18",
-                  "title": "Continuité et limites des fonctions racines",
+                  "type": "propriété",
+                  "title": "Continuité et limite de $\\sqrt[n]{f}$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "16",
-                  "title": "Étude de continuité et de limites",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
             }
           ]
         }
-      ],
-      "title": "Les limites et la continuité",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Dérivation et étude des fonctions",
       "sections": [
         {
-          "name": "La dérivabilité d'une fonction en un point",
+          "name": "Dérivabilité en un point",
           "subsections": [
             {
-              "name": "Le nombre dérivé d'une fonction en un point",
+              "name": "Nombre dérivé $f'(a)$",
               "items": [
                 {
                   "type": "activité",
-                  "number": "1",
-                  "title": "Dérivée de $f(x) = x^2$ et équation de la tangente",
+                  "title": "Tangente à $f(x)=x^2$ en $x=3$",
                   "description": ""
                 },
                 {
                   "type": "activité",
-                  "number": "2",
-                  "title": "Dérivabilité de $\\sqrt{x}$ et $|x|$",
+                  "title": "Dérivabilité de $\\sqrt{x}$ et $|x|$ en zéro",
                   "description": ""
                 },
                 {
                   "type": "définition",
-                  "number": "1",
-                  "title": "Nombre dérivé : $$\\lim_{x \\to a} \\frac{f(x)-f(a)}{x-a} = f'(a)$$",
+                  "title": "Nombre dérivé $f'(a)$",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "1",
-                  "title": "Si $f$ est dérivable en $a$, alors $f$ est continue en $a$",
+                  "type": "propriété",
+                  "title": "Tangente en $a$ : $y=f'(a)(x-a)+f(a)$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Dérivabilité en $a$ implique continuité",
                   "description": ""
                 }
               ]
@@ -540,14 +496,12 @@
               "items": [
                 {
                   "type": "définition",
-                  "number": "2",
-                  "title": "Fonction tangente : $g(x) = f'(a)(x-a)+f(a)$",
+                  "title": "Approximation affine : $f(x)\\approx f(a)+f'(a)(x-a)$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "1",
-                  "title": "Approximation affine de $\\sqrt{1+x}$ au voisinage de $0$",
+                  "title": "Approcher une valeur par la tangente",
                   "description": ""
                 }
               ]
@@ -555,67 +509,49 @@
           ]
         },
         {
-          "name": "Dérivabilité à droite - Dérivabilité à gauche",
+          "name": "Dérivabilité latérale",
           "items": [
             {
               "type": "définition",
-              "number": "3",
-              "title": "Dérivée à droite : $$\\lim_{x \\to a^+} \\frac{f(x)-f(a)}{x-a} = f'_d(a)$$",
+              "title": "Dérivée à droite $f'_d(a)$",
               "description": ""
             },
             {
               "type": "définition",
-              "number": "4",
-              "title": "Dérivée à gauche : $$\\lim_{x \\to a^-} \\frac{f(x)-f(a)}{x-a} = f'_g(a)$$",
+              "title": "Dérivée à gauche $f'_g(a)$",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "2",
-              "title": "Dérivabilité $\\Leftrightarrow f'_d(a) = f'_g(a)$",
+              "type": "propriété",
+              "title": "Dérivabilité en $a$ : $f'_d(a)=f'_g(a)$",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Demi-tangentes et tangentes verticales",
               "description": ""
             },
             {
               "type": "application",
-              "number": "2",
-              "title": "Étude de la dérivabilité d'une fonction définie par morceaux",
+              "title": "Calculer et exploiter des dérivées",
               "description": ""
             }
           ]
         },
         {
-          "name": "La fonction dérivée d'une fonction",
+          "name": "Fonction dérivée $f'$",
           "subsections": [
             {
-              "name": "Définitions et propriétés",
+              "name": "Dérivées des fonctions usuelles",
               "items": [
                 {
-                  "type": "controle_continu",
-                  "title": "فرض المراقبة المستمرة 1",
-                  "_tempId": "0b70a127-a61c-4789-b39c-f2093bc8ba92",
-                  "date": "2026-10-16"
-                },
-                {
-                  "type": "définition",
-                  "number": "5",
-                  "title": "Fonction dérivée $f'$ sur un intervalle $I$",
+                  "type": "propriété",
+                  "title": "Dérivées des fonctions usuelles",
                   "description": ""
                 },
                 {
                   "type": "définition",
-                  "number": "6",
-                  "title": "Dérivées d'ordre supérieur : $f'', f^{(n)}$",
-                  "description": ""
-                }
-              ]
-            },
-            {
-              "name": "Dérivées de fonctions usuelles",
-              "items": [
-                {
-                  "type": "proposition",
-                  "number": "3",
-                  "title": "Tableau des dérivées des fonctions usuelles",
+                  "title": "Dérivées successives $f''$ et $f^{(n)}$",
                   "description": ""
                 }
               ]
@@ -624,69 +560,82 @@
               "name": "Opérations sur les fonctions dérivables",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "4",
-                  "title": "Dérivées de $f+g$, $f \\times g$, $\\frac{f}{g}$",
+                  "type": "propriété",
+                  "title": "Somme, produit et quotient : dérivées",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "3",
-                  "title": "Calcul de dérivées de fonctions rationnelles et trigonométriques",
+                  "title": "Calculer et exploiter des dérivées (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "4",
-                  "title": "Calcul de limites à l'aide du nombre dérivé",
+                  "title": "Calculer et exploiter des dérivées (exercice 2)",
                   "description": ""
                 }
               ]
             }
-          ]
-        },
-        {
-          "name": "Dérivabilité de la fonction composée",
+          ],
           "items": [
             {
-              "type": "proposition",
-              "number": "5",
-              "title": "Dérivée de $g \\circ f$ : $(g \\circ f)'(x) = f'(x) \\times g'(f(x))$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "6",
-              "title": "Dérivées de $\\sqrt[n]{f(x)}$, $f(x)^n$ et $f(x)^r$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "5",
-              "title": "Calcul des dérivées de $\\sqrt[n]{x}$ et $f(x)^r$",
+              "type": "définition",
+              "title": "Fonction dérivée $f'$",
               "description": ""
             }
           ]
         },
         {
-          "name": "Dérivabilité de la fonction réciproque",
+          "name": "Dérivée de $g\\circ f$",
           "items": [
             {
-              "type": "proposition",
-              "number": "7",
-              "title": "Dérivée de $f^{-1}$ : $(f^{-1})'(f(a)) = \\displaystyle\\frac{1}{f'(a)}$",
+              "type": "activité",
+              "title": "Explorer la dérivée d’une composée",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Dérivée de $g\\circ f$",
+              "description": ""
+            },
+            {
+              "type": "corollaire",
+              "title": "Dérivées des composées usuelles",
               "description": ""
             },
             {
               "type": "application",
-              "number": "6",
-              "title": "Étude de la réciproque de $f(x) = x^2-2x+3$",
+              "title": "Calculer et exploiter des dérivées",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Dérivées de puissances et racines composées",
               "description": ""
             },
             {
               "type": "application",
-              "number": "7",
-              "title": "Étude de la réciproque de $f(x) = \\sqrt{x^2+1}$",
+              "title": "Calculer et exploiter des dérivées",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Dérivée de $f^{-1}$",
+          "items": [
+            {
+              "type": "propriété",
+              "title": "Dérivée de $f^{-1}$ : $(f^{-1})'(x)=\\dfrac{1}{f'(f^{-1}(x))}$",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Déterminer une fonction réciproque (exercice 1)",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Déterminer une fonction réciproque (exercice 2)",
               "description": ""
             }
           ]
@@ -695,46 +644,56 @@
           "name": "Applications de la dérivation",
           "subsections": [
             {
-              "name": "Monotonie d'une fonction et signe de sa fonction dérivée",
+              "name": "Monotonie et signe de $f'$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "8",
-                  "title": "Lien entre le signe de $f'$ et la monotonie de $f$",
+                  "type": "propriété",
+                  "title": "Signe de $f'$ et variations de $f$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "$f'\\ge0$ avec zéros isolés",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Extremums d'une fonction",
+              "name": "Extremums d’une fonction",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "9",
-                  "title": "Condition nécessaire d'extremum : $f'(a) = 0$",
+                  "type": "propriété",
+                  "title": "Extremum local et signe de $f'$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "$f'(a)=0$ ne suffit pas",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "8",
-                  "title": "Étude des variations et des extremums",
+                  "title": "Étudier les variations (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "9",
-                  "title": "Étude de $f(x) = 2\\sqrt{x} - x$ sur $[0, +\\infty[$",
+                  "title": "Étudier les variations (exercice 2)",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Point d'inflexion",
+              "name": "Point d’inflexion",
               "items": [
                 {
                   "type": "définition",
-                  "number": "7",
-                  "title": "Point d'inflexion : la courbe traverse sa tangente",
+                  "title": "Point d’inflexion et tangente",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Attention au critère du point d’inflexion",
                   "description": ""
                 }
               ]
@@ -742,68 +701,64 @@
           ]
         },
         {
-          "name": "Concavité d'une courbe - Éléments de symétrie",
+          "name": "Concavité et éléments de symétrie",
           "subsections": [
             {
-              "name": "Concavité d'une courbe",
+              "name": "Concavité d’une courbe",
               "items": [
                 {
                   "type": "définition",
-                  "number": "8",
-                  "title": "Fonctions convexes et concaves",
+                  "title": "Convexité et concavité de $C_f$",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "10",
-                  "title": "Lien entre le signe de $f''$ et la concavité de $C_f$",
+                  "type": "propriété",
+                  "title": "Signe de $f''$ et convexité",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "10",
-                  "title": "Étude de la concavité de $f(x) = x^3-3x^2+6$",
+                  "title": "S’entraîner sur concavité d’une courbe",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Axe et Centre de symétrie",
+              "name": "Position de $C_f$ et d’une droite",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "11",
-                  "title": "Axe de symétrie $x=a$ : $f(2a-x) = f(x)$",
+                  "type": "propriété",
+                  "title": "Signe de $f(x)-(ax+b)$",
                   "description": ""
-                },
+                }
+              ]
+            },
+            {
+              "name": "Axe et centre de symétrie",
+              "items": [
                 {
-                  "type": "proposition",
-                  "number": "12",
-                  "title": "Centre de symétrie $(a,b)$ : $f(2a-x) = 2b-f(x)$",
-                  "description": ""
-                },
-                {
-                  "type": "exemple",
-                  "number": "1",
-                  "title": "Axe de symétrie de $f(x) = (x-1)^2$",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "11",
-                  "title": "Symétrie d'une fonction rationnelle",
+                  "type": "propriété",
+                  "title": "Axe et centre de symétrie de $C_f$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "2",
-                  "title": "Centre de symétrie de $f(x) = \\frac{2x}{x-1}$",
+                  "title": "Vérifier une symétrie de $C_f$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "12",
-                  "title": "Symétrie d'une autre fonction rationnelle",
+                  "title": "Vérifier une symétrie",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Vérifier une symétrie de $C_f$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Vérifier une symétrie",
                   "description": ""
                 }
               ]
@@ -811,204 +766,197 @@
           ]
         },
         {
-          "name": "Les branches infinies",
+          "name": "Branches infinies",
           "subsections": [
             {
-              "name": "Les droites asymptotes",
+              "name": "Droites asymptotes",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "13",
-                  "title": "Asymptotes horizontales, verticales et obliques",
+                  "type": "propriété",
+                  "title": "Asymptotes de $C_f$",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Les branches paraboliques",
+              "name": "Branches paraboliques",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "14",
-                  "title": "Branches paraboliques : comportement à l'infini",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "13",
-                  "title": "Étude de $f(x) = \\frac{-x^3+5x}{x^2+3}$ à l'infini",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "14",
-                  "title": "Étude de $f(x) = x + \\sqrt{x^2+1}$ à l'infini",
+                  "type": "propriété",
+                  "title": "Direction d’une branche infinie",
                   "description": ""
                 }
               ]
             }
           ]
         }
-      ],
-      "title": "La dérivation - Études des fonctions",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Suites numériques",
       "sections": [
         {
           "name": "Généralités sur les suites",
           "subsections": [
             {
-              "name": "Définition d'une suite",
-              "items": [
-                {
-                  "type": "définition",
-                  "number": "1",
-                  "title": "Définition d'une suite numérique",
-                  "description": ""
-                },
-                {
-                  "type": "exemple",
-                  "number": "1",
-                  "title": "Exemples de suites",
-                  "description": ""
-                }
-              ]
-            },
-            {
               "name": "Suite majorée, minorée et bornée",
               "items": [
                 {
                   "type": "définition",
-                  "number": "2",
-                  "title": "Bornes d'une suite",
+                  "title": "Suites majorées, minorées et bornées",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "2",
-                  "title": "Exemples de suites bornées",
+                  "title": "Étudier une suite",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Monotonie d'une suite",
+              "name": "Monotonie d’une suite",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "1",
-                  "title": "Définition de la monotonie",
+                  "type": "propriété",
+                  "title": "Monotonie d’une suite: $(u_n)$, $u_{n+1}-u_n$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "1",
-                  "title": "Méthode d'étude de la monotonie",
+                  "title": "Point clé sur monotonie d’une suite",
                   "description": ""
                 }
               ]
+            }
+          ],
+          "items": [
+            {
+              "type": "définition",
+              "title": "Généralités sur les suites: $(u_n)$, $\\mathbb{N}$",
+              "description": ""
+            },
+            {
+              "type": "exemple",
+              "title": "Étudier une suite",
+              "description": ""
             }
           ]
         },
         {
           "name": "Suites arithmétiques",
-          "items": [
+          "subsections": [
             {
-              "type": "définition",
-              "number": "3",
-              "title": "Définition d'une suite arithmétique",
-              "description": ""
+              "name": "Suite arithmétique $(u_n)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Suite arithmétique: $u_{n+1}=u_n+r$, croissante ou décroissante selon $r$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "2",
-              "title": "Expression du terme général",
-              "description": ""
+              "name": "Terme général $u_n$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Terme général d’une suite arithmétique: $u_n=u_p+(n-p)r$ rang",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur expression du terme général",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "1",
-              "title": "Application sur une suite arithmétique",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Somme de termes consécutifs",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "2",
-              "title": "Application sur la somme",
-              "description": ""
+              "name": "Somme de termes",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Somme de termes arithmétiques",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur somme de termes consécutifs",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
           "name": "Suites géométriques",
-          "items": [
+          "subsections": [
             {
-              "type": "définition",
-              "number": "4",
-              "title": "Définition d'une suite géométrique",
-              "description": ""
+              "name": "Suite géométrique $(u_n)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Suite géométrique: $u_{n+1}=q u_n$ avec raison constante $q$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "4",
-              "title": "Expression du terme général",
-              "description": ""
+              "name": "Terme général $u_n$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Terme général d’une suite géométrique: $u_n=u_p q^{n-p}$ rang",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur expression du terme général",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "3",
-              "title": "Application sur une suite géométrique",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "5",
-              "title": "Somme de termes consécutifs",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "4",
-              "title": "Application sur la somme",
-              "description": ""
+              "name": "Somme de termes",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Somme géométrique finie: $1+q+\\cdots+q^n=(1-q^{n+1})/(1-q)$ lorsque $q\\ne1$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur somme de termes consécutifs",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
-          "name": "Limite d'une suite numérique",
+          "name": "Limite de $(u_n)$",
           "subsections": [
             {
               "name": "Limite finie",
               "items": [
                 {
                   "type": "définition",
-                  "number": "5",
-                  "title": "Définition de la limite finie",
+                  "title": "Limite finie: $\\ell$, $u_n$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "2",
-                  "title": "Unicité de la limite",
+                  "title": "Point clé : Limite finie",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "3",
-                  "title": "Exemples de suites convergentes",
+                  "title": "Calculer une limite",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "6",
-                  "title": "Limites usuelles (puissances de $n$ inverses)",
+                  "type": "propriété",
+                  "title": "Limites usuelles vers zéro pour $1/n$, $1/n^k$ et $1/\\sqrt{n}$",
                   "description": ""
                 }
               ]
@@ -1018,37 +966,57 @@
               "items": [
                 {
                   "type": "définition",
-                  "number": "6",
-                  "title": "Définition de la limite infinie",
+                  "title": "Limite infinie: $+\\infty$, $u_n$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Limite infinie",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "4",
-                  "title": "Exemples de suites divergentes",
+                  "title": "Calculer une limite",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "7",
-                  "title": "Limites usuelles (puissances de $n$)",
+                  "type": "propriété",
+                  "title": "Limites usuelles infinies",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Opérations sur les limites",
+              "name": "Opérations sur les limites de $(u_n)$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "8",
-                  "title": "Tableau des opérations sur les limites",
+                  "type": "remarque",
+                  "title": "Attention aux formes indéterminées",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’une somme de suites",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’un produit de suites",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Opérations sur les limites: $1/u_n$, $u_n$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite d’un quotient de suites",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "5",
-                  "title": "Calcul de limites de suites rationnelles",
+                  "title": "Calculer des limites",
                   "description": ""
                 }
               ]
@@ -1056,67 +1024,72 @@
           ]
         },
         {
-          "name": "Propriétés principales des limites",
-          "items": [
+          "name": "Propriétés principales",
+          "subsections": [
             {
-              "type": "proposition",
-              "number": "9",
-              "title": "Limite et encadrement",
-              "description": ""
+              "name": "Limite et relation d’ordre",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Limite et relation d’ordre: $u_n\\le v_n$, $\\ell\\le \\ell'$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Limite et relation d’ordre: $+\\infty$, $-\\infty$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "10",
-              "title": "Limite et comparaison",
-              "description": ""
+              "name": "Théorèmes fondamentaux",
+              "items": [
+                {
+                  "type": "théorème",
+                  "title": "Théorèmes fondamentaux: $|u_n|\\le v_n$, $v_n$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur théorèmes fondamentaux",
+                  "description": ""
+                },
+                {
+                  "type": "théorème",
+                  "title": "Théorèmes fondamentaux: $u_n$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur théorèmes fondamentaux",
+                  "description": ""
+                },
+                {
+                  "type": "théorème",
+                  "title": "Comparaison et limites infinies",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur théorèmes fondamentaux",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "théorème",
-              "number": "1",
-              "title": "Théorème d'encadrement (cas $|u_n - l| \\le v_n$)",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "6",
-              "title": "Application : $\\lim \\frac{\\sin(n)}{n^2+1}$",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "2",
-              "title": "Théorème des gendarmes",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "7",
-              "title": "Application : $\\lim \\frac{(-1)^n}{n^4+1}$",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "3",
-              "title": "Théorème de comparaison (limites infinies)",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "8",
-              "title": "Application à $\\sin(n) + n^3 + 1$",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "4",
-              "title": "Théorème de la limite monotone",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "9",
-              "title": "Application à une suite récurrente",
-              "description": ""
+              "name": "Théorème de convergence monotone",
+              "items": [
+                {
+                  "type": "théorème",
+                  "title": "Convergence des suites monotones bornées",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur théorème de convergence monotone",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
@@ -1124,423 +1097,344 @@
           "name": "Limite de suites particulières",
           "subsections": [
             {
-              "name": "Suite de la forme $u_n = q^n$",
+              "name": "Suite de la forme $u_n=q^n$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "11",
-                  "title": "Limites des suites géométriques",
+                  "type": "propriété",
+                  "title": "Suite de la forme $u_n=q^n$: $q^n$, $q$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "10",
-                  "title": "Calcul de limites de suites géométriques",
+                  "title": "Étudier une suite",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Suite de la forme $u_n = n^r$",
+              "name": "Suite de la forme $u_n=n^r$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "12",
-                  "title": "Limites des suites de la forme $n^r$",
+                  "type": "propriété",
+                  "title": "Limite de $n^r$ selon $r$",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Suite de la forme $v_n = f(u_n)$",
+              "name": "Suite de la forme $v_n=f(u_n)$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "13",
-                  "title": "Limite de la composée d'une suite et d'une fonction",
+                  "type": "propriété",
+                  "title": "Limite de $f(u_n)$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "11",
-                  "title": "Applications avec les fonctions $\\cos$ et $\\sqrt{\\cdot}$",
+                  "title": "Étudier une suite",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Suites récurrentes de la forme $u_{n+1} = f(u_n)$",
+              "name": "Suites récurrentes $u_{n+1}=f(u_n)$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "14",
-                  "title": "Convergence vers un point fixe",
+                  "type": "propriété",
+                  "title": "Suites récurrentes $u_{n+1}=f(u_n)$: $\\ell$, $f(\\ell)=\\ell$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "12",
-                  "title": "Étude de la suite $u_{n+1} = \\sqrt{u_n + 1}$",
+                  "title": "Étudier une suite (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "13",
-                  "title": "Étude de la suite $u_{n+1} = u_n^2$",
+                  "title": "Étudier une suite (exercice 2)",
                   "description": ""
                 }
               ]
-            }
-          ]
-        },
-        {
-          "name": "Exercices",
-          "items": [
-            {
-              "type": "exercice",
-              "number": "1",
-              "title": "Étude d'une suite arithmético-géométrique",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Étude d'une suite homographique (1)",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "3",
-              "title": "Étude d'une suite homographique (2)",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "4",
-              "title": "Étude d'une suite homographique (3)",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "5",
-              "title": "Étude de la suite de Héron",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "6",
-              "title": "Étude d'une suite homographique (4)",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "7",
-              "title": "Étude d'une suite homographique (5)",
-              "description": ""
             }
           ]
         }
-      ],
-      "title": "Limite d'une suite numérique",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Fonctions primitives",
       "sections": [
         {
-          "name": "Notion de fonction primitive",
+          "name": "Primitive $F$ de $f$",
           "items": [
             {
               "type": "activité",
-              "number": "1",
-              "title": "Recherche de fonctions ayant la même dérivée",
+              "title": "Découvrir la notion de primitive",
               "description": ""
             },
             {
               "type": "définition",
-              "number": "1",
-              "title": "Définition d'une primitive sur un intervalle",
+              "title": "Primitive $F$ de $f$ sur $I$: $F'(x)=f(x)$ sur $I$",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "1",
-              "title": "Exemples de primitives simples",
+              "title": "Déterminer une primitive",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "1",
-              "title": "Théorème d'existence de primitive",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Primitive d'une fonction définie par morceaux",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Ensemble des primitives d'une fonction",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Unicité de la primitive vérifiant une condition initiale",
+              "type": "propriété",
+              "title": "Vérifier une primitive par dérivation",
               "description": ""
             },
             {
               "type": "application",
-              "number": "2",
-              "title": "Détermination d'une primitive avec condition initiale",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "4",
-              "title": "Linéarité de la recherche de primitives",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "5",
-              "title": "Primitives et opérations sur les fonctions",
+              "title": "Déterminer des primitives",
               "description": ""
             }
           ]
         },
         {
-          "name": "Fonctions primitives des fonctions usuelles",
+          "name": "Primitives d’une fonction continue",
           "items": [
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Tableau des primitives usuelles",
+              "type": "propriété",
+              "title": "Primitives d’une fonction continue: $f$, $F+C$",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Primitive vérifiant $F(x_0)=y_0$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "1",
-              "title": "Calcul de primitives de fonctions polynomiales",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "2",
-              "title": "Calcul de primitives avec racines et fractions",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "3",
-              "title": "Calcul de primitives de fonctions trigonométriques",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "3",
-              "title": "Formules pour $f'f^n$ et autres composées",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Calcul de la primitive de $(2x+1)(x^2+x+1)^5$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "2",
-              "title": "Exemples de primitives de fonctions composées",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "3",
-              "title": "Calcul de la primitive de $\\frac{x}{(x^2+1)^2}$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "4",
-              "title": "Calcul de la primitive de $x^2+\\frac{1}{\\sqrt{x}}$",
+              "title": "Déterminer des primitives",
               "description": ""
             }
           ]
         },
         {
-          "name": "Exercices",
+          "name": "Opérations sur les fonctions primitives",
           "items": [
             {
-              "type": "exercice",
-              "number": "1",
-              "title": "Exercice de calcul de primitive (1)",
+              "type": "propriété",
+              "title": "Primitives de $f+g$ et $\\lambda f$",
               "description": ""
             },
             {
-              "type": "exercice",
-              "number": "2",
-              "title": "Exercice de calcul de primitive (2)",
+              "type": "propriété",
+              "title": "Primitives liées à $(fg)'$ et $(f/g)'$",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Primitives des fonctions usuelles",
+          "items": [
+            {
+              "type": "propriété",
+              "title": "Primitives des fonctions usuelles",
               "description": ""
             },
             {
-              "type": "exercice",
-              "number": "3",
-              "title": "Exercice de calcul de primitive (3)",
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 1)",
               "description": ""
             },
             {
-              "type": "exercice",
-              "number": "4",
-              "title": "Exercice de calcul de primitive (4)",
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 2)",
               "description": ""
             },
             {
-              "type": "exercice",
-              "number": "5",
-              "title": "Exercice de calcul de primitive (5)",
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 3)",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Primitives et opérations sur les fonctions",
+          "items": [
+            {
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 1)",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 2)",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 3)",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Déterminer des primitives (exercice 4)",
               "description": ""
             }
           ]
         }
-      ],
-      "title": "Les fonctions primitives",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Fonction logarithme népérien",
       "sections": [
         {
           "name": "Fonction logarithme népérien",
           "subsections": [
             {
-              "name": "Définition et propriétés initiales",
+              "name": "Définition de $\\ln$",
               "items": [
                 {
-                  "type": "activité",
-                  "number": "1",
-                  "title": "Introduction à $\\ln$ comme primitive de $\\frac{1}{x}$",
-                  "description": ""
-                },
-                {
                   "type": "définition",
-                  "number": "1",
-                  "title": "Définition de la fonction logarithme népérien",
+                  "title": "Définitions: $\\ln$, $1/x$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "1",
-                  "title": "Propriétés élémentaires et graphe",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "1",
-                  "title": "Croissance stricte de la fonction $\\ln$",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "2",
-                  "title": "Conséquences de la stricte croissance",
-                  "description": ""
-                },
-                {
-                  "type": "remarque",
-                  "number": "2",
-                  "title": "Tableau de variation de $\\ln(x)$",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "1",
-                  "title": "Détermination de domaines de définition",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "2",
-                  "title": "Résolution d'équations et inéquations",
+                  "title": "Point clé : Définitions",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Propriétés algébriques",
+              "name": "Propriétés de $\\ln$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "3",
-                  "title": "Propriétés algébriques de $\\ln(x)$",
+                  "type": "propriété",
+                  "title": "Dérivée de $\\ln$ : $(\\ln x)'=1/x$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Ordre et logarithme",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Propriétés",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "1",
-                  "title": "Calculs avec $\\ln(2)$ et $\\ln(3)$",
+                  "title": "S’entraîner sur propriétés (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "2",
-                  "title": "Simplification d'expressions",
+                  "title": "S’entraîner sur propriétés (exercice 2)",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Calculs avec $\\ln$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Calculs avec $\\ln$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "3",
-                  "title": "Résolution d'équations",
+                  "title": "S’entraîner sur propriétés algébriques (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur propriétés algébriques (exercice 2)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur propriétés algébriques (exercice 3)",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "1",
-                  "title": "Résolution de $\\ln(x^2-9)=\\ln(x)$",
+                  "title": "Propriétés algébriques en pratique",
                   "description": ""
                 }
               ]
             }
-          ]
-        },
-        {
-          "name": "Étude de la fonction $x \\mapsto \\ln(x)$",
+          ],
           "items": [
             {
               "type": "activité",
-              "number": "2",
-              "title": "Étude du comportement asymptotique de $\\ln(x)$",
+              "title": "Explorer la fonction $\\ln$",
               "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Étude de la fonction $x\\mapsto\\ln(x)$",
+          "subsections": [
+            {
+              "name": "Limites fondamentales",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Limites fondamentales de $\\ln$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "4",
-              "title": "Limites fondamentales de $\\ln(x)$",
-              "description": ""
+              "name": "Branches infinies",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Asymptote de $\\ln$ : $x=0$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "remarque",
-              "number": "3",
-              "title": "Asymptote verticale et branche parabolique",
-              "description": ""
+              "name": "Nombre $e$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Nombre $e$: $\\ln(e)=1$, unique réel positif ayant cette propriété",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Nombre $e$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Le nombre $e$",
-              "description": ""
+              "name": "Tangente au point d’abscisse $1$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Tangente à $y=\\ln x$ en $x=1$ d’équation $y=x-1$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "remarque",
-              "number": "5",
-              "title": "Propriétés et valeur de $e$",
-              "description": ""
-            },
+              "name": "Variations et représentation graphique",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Variations de $\\ln$",
+                  "description": ""
+                }
+              ]
+            }
+          ],
+          "items": [
             {
-              "type": "remarque",
-              "number": "6",
-              "title": "Tangente et représentation graphique",
+              "type": "activité",
+              "title": "Explorer la fonction $\\ln$",
               "description": ""
             }
           ]
@@ -1549,68 +1443,53 @@
           "name": "Limites usuelles",
           "items": [
             {
-              "type": "proposition",
-              "number": "5",
-              "title": "Tableau des limites usuelles avec $\\ln(x)$",
+              "type": "propriété",
+              "title": "Limites usuelles: $\\ln x$, $x$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "1",
-              "title": "Calcul de limites en $0$ et $+\\infty$",
+              "title": "Calculer des limites (exercice 1)",
               "description": ""
             },
             {
               "type": "application",
-              "number": "2",
-              "title": "Calcul de limites (formes indéterminées)",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "3",
-              "title": "Calcul de limites avec puissances et $\\ln(x)$",
+              "title": "Calculer des limites (exercice 2)",
               "description": ""
             }
           ]
         },
         {
-          "name": "Dérivée logarithmique d'une fonction",
+          "name": "Dérivée logarithmique d’une fonction",
           "items": [
             {
-              "type": "proposition",
-              "number": "6",
-              "title": "Dérivée de $\\ln(u(x))$",
+              "type": "propriété",
+              "title": "Dérivée de $\\ln(u(x))$: $u'(x)/u(x)$ lorsque $u(x)>0$",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "7",
-              "title": "Dérivée de $\\ln|u(x)|$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Calcul de dérivées",
+              "type": "propriété",
+              "title": "Dérivée de $\\ln|u(x)|$: $u'(x)/u(x)$ lorsque $u(x)\\ne0$",
               "description": ""
             },
             {
               "type": "application",
-              "number": "2",
-              "title": "Étude de la fonction $f(x)=x\\ln(x)-x$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "8",
-              "title": "Primitive de $\\frac{u'(x)}{u(x)}$",
+              "title": "Calculer et exploiter des dérivées (exercice 1)",
               "description": ""
             },
             {
               "type": "application",
-              "number": "3",
-              "title": "Calcul de primitives",
+              "title": "Calculer et exploiter des dérivées (exercice 2)",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Dérivation logarithmique d’un produit",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Calculer et exploiter des dérivées",
               "description": ""
             }
           ]
@@ -1619,47 +1498,36 @@
           "name": "Fonction logarithme de base $a$",
           "subsections": [
             {
-              "name": "Définition et propriétés",
+              "name": "Définition de $\\log_a$",
               "items": [
                 {
                   "type": "définition",
-                  "number": "2",
-                  "title": "Définition de la fonction $\\log_a(x)$",
+                  "title": "Logarithme de base $a$: $\\log_a x=\\ln x/\\ln a$ pour $a>0$, $a\\ne1$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "8",
-                  "title": "Valeurs particulières",
+                  "title": "Point clé : Définition et propriétés",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "9",
-                  "title": "Propriétés algébriques",
+                  "type": "propriété",
+                  "title": "Propriétés algébriques de $\\log_a$",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Étude de la fonction",
+              "name": "Étude du logarithme de base $a$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "10",
-                  "title": "Dérivée et variations",
-                  "description": ""
-                },
-                {
-                  "type": "remarque",
-                  "number": "9",
-                  "title": "Représentation graphique",
+                  "type": "propriété",
+                  "title": "Monotonie de $\\log_a$ croissante si $a>1$, décroissante si $0<a<1$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "4",
-                  "title": "Calculs avec différentes bases",
+                  "title": "Calculer avec $\\ln$",
                   "description": ""
                 }
               ]
@@ -1671,460 +1539,342 @@
           "items": [
             {
               "type": "définition",
-              "number": "3",
-              "title": "Définition de la fonction $\\log(x)$",
+              "title": "Logarithme décimal: $\\log x=\\log_{10}x=\\ln x/\\ln10$ pour $x>0$",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "11",
-              "title": "Propriétés du logarithme décimal",
+              "type": "propriété",
+              "title": "Propriétés de $\\log$",
               "description": ""
             },
             {
               "type": "remarque",
-              "number": "11",
-              "title": "Propriété $\\log(10^n)=n$",
+              "title": "Point clé sur le logarithme",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "2",
-              "title": "Calculs avec $\\log(x)$",
+              "title": "Calculer avec les logarithmes",
               "description": ""
             },
             {
               "type": "application",
-              "number": "5",
-              "title": "Résolution d'équations avec $\\log(x)$",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Exercices",
-          "items": [
-            {
-              "type": "exercice",
-              "number": "1",
-              "title": "Résolution d'équations",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Résolution d'inéquations",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "3",
-              "title": "Résolution de systèmes",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "4",
-              "title": "Calcul de limites",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "5",
-              "title": "Étude de fonction (1)",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "6",
-              "title": "Étude de fonction (2)",
+              "title": "Calculer avec $\\ln$",
               "description": ""
             }
           ]
         }
-      ],
-      "title": "Les fonctions logarithmes",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Nombres complexes",
       "sections": [
         {
-          "name": "Introduction aux nombres complexes",
-          "items": [
-            {
-              "type": "définition",
-              "number": "1",
-              "title": "Ensemble $\\mathbb{C}$ et le nombre $i$",
-              "description": ""
-            },
-            {
-              "type": "exemple",
-              "number": "1",
-              "title": "Exemples de nombres complexes",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "2",
-              "title": "Partie réelle et partie imaginaire",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "1",
-              "title": "Nombres réels et imaginaires purs",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "1",
-              "title": "Condition d'égalité",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Calculs et résolution",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Opérations et interprétation géométrique",
+          "name": "Ensemble $\\mathbb{C}$",
           "subsections": [
             {
-              "name": "Opérations sur les nombres complexes",
+              "name": "Définition",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "2",
-                  "title": "Addition et multiplication",
+                  "type": "définition",
+                  "title": "Nombres complexes : $i^2=-1$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "2",
-                  "title": "Exemple de calcul",
+                  "title": "Définition en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Forme $z=a+ib$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Forme algébrique : $z=a+ib$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "2",
-                  "title": "Les puissances de $i$",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "2",
-                  "title": "Calculs avec les puissances de $i$",
+                  "title": "Point clé : Forme algébrique",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Représentation géométrique",
+              "name": "Égalité dans $\\mathbb{C}$",
               "items": [
                 {
-                  "type": "définition",
-                  "number": "3",
-                  "title": "Affixe d'un point et d'un vecteur",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "3",
-                  "title": "Affixe de la somme de vecteurs",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "4",
-                  "title": "Affixe de $\\overrightarrow{AB}$ et du milieu",
+                  "type": "propriété",
+                  "title": "Égalité $a+ib=a'+ib'$ équivalente aux égalités $a=a'$ et $b=b'$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "3",
-                  "title": "Démonstration d'un parallélogramme",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "4",
-                  "title": "Représentation de points",
+                  "title": "Résoudre avec les nombres complexes",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Alignement et Conjugué",
+              "name": "Affixe d’un point ou d’un vecteur",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "5",
-                  "title": "Condition d'alignement",
+                  "type": "définition",
+                  "title": "Affixe d’un point : $z_M=x+iy$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "5",
-                  "title": "Application sur l'alignement",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Opérations dans $\\mathbb{C}$",
+          "subsections": [
+            {
+              "name": "Puissances de $i$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Cycle des puissances de $i$",
                   "description": ""
                 },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur puissances de $i$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Affixes et parallélogramme",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Vecteur et milieu par les affixes",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur puissances de $i$",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Alignement de trois points",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Alignement par quotient d’affixes",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur alignement de trois points",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Conjugué $\\overline z$",
+              "items": [
                 {
                   "type": "définition",
-                  "number": "4",
-                  "title": "Définition du conjugué $\\overline{z}$",
+                  "title": "Conjugué : $\\overline z=a-ib$",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "6",
-                  "title": "Propriétés du conjugué",
+                  "type": "exemple",
+                  "title": "Calculer avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Conjugué d’une somme, produit ou quotient",
                   "description": ""
                 },
                 {
                   "type": "exercice",
-                  "number": "1",
-                  "title": "Caractérisation des réels et imaginaires purs",
-                  "description": ""
+                  "description": "Caractériser les nombres réels et imaginaires purs à l’aide de relations sur le conjugué."
                 },
                 {
-                  "type": "proposition",
-                  "number": "7",
-                  "title": "Règles opératoires du conjugué",
+                  "type": "propriété",
+                  "title": "Produit $z\\overline z=|z|^2$ et inverse $1/z=\\overline z/|z|^2$ pour $z\\ne0$",
                   "description": ""
                 },
                 {
                   "type": "remarque",
-                  "number": "3",
-                  "title": "Expression de l'inverse",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "6",
-                  "title": "Calcul de conjugués",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "7",
-                  "title": "Détermination d'un ensemble de points",
-                  "description": ""
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "Module et argument",
-          "subsections": [
-            {
-              "name": "Module",
-              "items": [
-                {
-                  "type": "définition",
-                  "number": "5",
-                  "title": "Définition du module $|z|$",
-                  "description": ""
-                },
-                {
-                  "type": "remarque",
-                  "number": "4",
-                  "title": "Propriétés du module",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "8",
-                  "title": "Calcul de modules",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "8",
-                  "title": "Règles opératoires du module",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "9",
-                  "title": "Calcul de modules d'expressions",
-                  "description": ""
-                }
-              ]
-            },
-            {
-              "name": "Argument et Forme Trigonométrique",
-              "items": [
-                {
-                  "type": "définition",
-                  "number": "6",
-                  "title": "Définition de l'argument $\\arg(z)$",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "9",
-                  "title": "Propriétés de l'argument",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "10",
-                  "title": "Règles opératoires de l'argument",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "11",
-                  "title": "Forme trigonométrique",
+                  "title": "Point clé : Conjugué d’un nombre complexe",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "5",
-                  "title": "Exemple de forme trigonométrique",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "12",
-                  "title": "Condition d'égalité (forme trigo)",
-                  "description": ""
-                },
-                {
-                  "type": "remarque",
-                  "number": "7",
-                  "title": "Formules pour $\\cos(\\theta)$ et $\\sin(\\theta)$",
+                  "title": "Calculer avec les nombres complexes",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "11",
-                  "title": "Calcul de $\\cos(\\frac{\\pi}{12})$ et $\\sin(\\frac{\\pi}{12})$",
-                  "description": ""
-                }
-              ]
-            },
-            {
-              "name": "Applications géométriques",
-              "items": [
-                {
-                  "type": "proposition",
-                  "number": "13",
-                  "title": "Relations argument et géométrie",
-                  "description": ""
-                },
-                {
-                  "type": "proposition",
-                  "number": "14",
-                  "title": "Mesure de l'angle $(\\overrightarrow{AB},\\overrightarrow{CD})$",
+                  "title": "Résoudre avec les nombres complexes (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "12",
-                  "title": "Nature d'un triangle (1)",
-                  "description": ""
-                },
-                {
-                  "type": "application",
-                  "number": "13",
-                  "title": "Nature d'un triangle (2)",
+                  "title": "Résoudre avec les nombres complexes (exercice 2)",
                   "description": ""
                 }
               ]
             }
-          ]
-        },
-        {
-          "name": "Cocyclicité et lieux géométriques",
+          ],
           "items": [
             {
-              "type": "proposition",
-              "number": "15",
-              "title": "Condition de cocyclicité (birapport)",
+              "type": "propriété",
+              "title": "Opérations sur les nombres complexes: $i^2=-1$",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "7",
-              "title": "Vérification de cocyclicité",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "14",
-              "title": "Démonstration de cocyclicité",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "9",
-              "title": "Interprétation de lieux géométriques",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Détermination d'ensembles de points",
+              "title": "Calculer avec les nombres complexes",
               "description": ""
             }
           ]
-        }
-      ],
-      "title": "Les nombres complexes",
-      "type": "chapter"
-    },
-    {
-      "sections": [
+        },
         {
-          "name": "Équations du second degré dans $\\mathbb{C}$",
+          "name": "Module et argument d’un nombre complexe",
           "subsections": [
             {
-              "name": "Résolution de $z^2 = a$ où $a \\in \\mathbb{R}$",
+              "name": "Module $|z|$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "1",
-                  "title": "Solutions de l'équation $z^2 = a$",
+                  "type": "définition",
+                  "title": "Module de $z=a+ib$: $|z|=\\sqrt{a^2+b^2}$, distance de l’origine",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé sur le module",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Propriétés du module $|z|$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Argument $\\arg(z)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Argument de $z\\ne0$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé sur l’argument",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Argument d’un produit et quotient",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé sur l’argument",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Argument du conjugué et de l’opposé",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Forme trigonométrique de $z$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Forme $z=|z|(\\cos\\theta+i\\sin\\theta)$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "1",
-                  "title": "Résolution de $z^2 = 7$ et $z^2 = -3$",
+                  "title": "Calculer avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Calculs en forme trigonométrique",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Forme trigonométrique d’un complexe non nul",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes (exercice 2)",
                   "description": ""
                 }
               ]
             },
             {
-              "name": "Résolution de $az^2 + bz + c = 0$",
+              "name": "Argument de $z_B-z_A$",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "2",
-                  "title": "Solutions de l'équation du second degré",
+                  "type": "propriété",
+                  "title": "Direction de $\\overrightarrow{AB}$ via $\\arg(z_B-z_A)$",
                   "description": ""
                 },
                 {
-                  "type": "remarque",
-                  "number": "1",
-                  "title": "Relations entre les racines",
+                  "type": "exemple",
+                  "title": "Calculer avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Angle orienté via un quotient d’affixes",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "1",
-                  "title": "Résolution d'équations du second degré",
+                  "title": "Résoudre avec les nombres complexes (exercice 1)",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "2",
-                  "title": "Étude d'une équation du second degré",
+                  "title": "Résoudre avec les nombres complexes (exercice 2)",
                   "description": ""
                 }
               ]
@@ -2132,343 +1882,478 @@
           ]
         },
         {
-          "name": "Notation exponentielle, Moivre et Euler",
+          "name": "Cocyclicité des points",
+          "subsections": [
+            {
+              "name": "Ensemble des points vérifiant une équation",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Lieux complexes : droites et cercles",
+                  "description": ""
+                },
+                {
+                  "type": "exercice",
+                  "description": "Déterminer des ensembles de points du plan complexe définis par des égalités de modules."
+                }
+              ]
+            }
+          ],
           "items": [
             {
-              "type": "définition",
-              "number": "1",
-              "title": "Définition de la notation $e^{i\\theta}$",
+              "type": "propriété",
+              "title": "Cocyclicité et angles orientés",
               "description": ""
             },
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Forme exponentielle $z = re^{i\\theta}$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Opérations avec la forme exponentielle",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "3",
-              "title": "Conversion en notation exponentielle",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "4",
-              "title": "Vérification d'une formule trigonométrique",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "4",
-              "title": "Formule de Moivre",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "5",
-              "title": "Formules d'Euler",
+              "type": "propriété",
+              "title": "Cocyclicité par quotient d’affixes",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "5",
-              "title": "Exemple de linéarisation",
+              "title": "Cocyclicité des points en pratique",
               "description": ""
             },
             {
               "type": "application",
-              "number": "5",
-              "title": "Linéarisation de $\\sin^2(\\theta)$ et $\\cos^3(\\theta)$",
+              "title": "S’entraîner sur cocyclicité des points",
               "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Équations de degré deux dans $\\mathbb{C}$",
+          "subsections": [
+            {
+              "name": "Équation $z^2=a$ avec $a\\in\\mathbb{R}$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Résoudre $z^2=a$ dans $\\mathbb{C}$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Équation $z^2=a$ avec $a\\in\\mathbb{R}$ en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Équation $az^2+bz+c=0$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Équation $az^2+bz+c=0$ résolue par le discriminant $\\Delta=b^2-4ac$ dans $\\mathbb{C}$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Équation de degré deux dans $\\mathbb{C}$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur équation de degré deux dans $\\mathbb{c}$ (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur équation de degré deux dans $\\mathbb{c}$ (exercice 2)",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Notation $e^{i\\theta}$",
+          "subsections": [
+            {
+              "name": "Définition de $e^{i\\theta}$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Notation exponentielle: $e^{i\\theta}=\\cos\\theta+i\\sin\\theta$ $\\theta$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Définition et propriétés en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "définition",
+                  "title": "Forme exponentielle : $z=|z|e^{i\\theta}$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Calculs avec $re^{i\\theta}$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Définition et propriétés",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Définition et propriétés en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur définition et propriétés (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur définition et propriétés (exercice 2)",
+                  "description": ""
+                }
+              ],
+              "subsubsections": [
+                {
+                  "name": "Formule de Moivre",
+                  "items": [
+                    {
+                      "type": "propriété",
+                      "title": "Formule de Moivre : $(e^{i\\theta})^n=e^{in\\theta}$",
+                      "description": ""
+                    },
+                    {
+                      "type": "exemple",
+                      "title": "Formule de Moivre en pratique",
+                      "description": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Formules d’Euler",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Formules d’Euler: $\\cos\\theta$, $\\sin\\theta$",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Linéarisation et factorisation trigonométriques",
+              "items": [
+                {
+                  "type": "exemple",
+                  "title": "Linéarisation et factorisation trigonométriques en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur linéarisation et factorisation trigonométriques",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
           "name": "Transformations usuelles et nombres complexes",
-          "items": [
+          "subsections": [
             {
-              "type": "proposition",
-              "number": "6",
-              "title": "Écriture complexe d'une translation",
-              "description": ""
+              "name": "Écriture complexe d’une translation",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Translation : $z'=z+b$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes (exercice 2)",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "7",
-              "title": "Application d'une translation",
-              "description": ""
+              "name": "Écriture complexe d’une homothétie",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Homothétie de centre $\\omega$ et rapport $k$ écrite $z'-\\omega=k(z-\\omega)$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "7",
-              "title": "Écriture complexe d'une homothétie",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "8",
-              "title": "Application d'une homothétie",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "8",
-              "title": "Écriture complexe d'une rotation",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "9",
-              "title": "Application d'une rotation",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Exercices de synthèse",
-          "items": [
-            {
-              "type": "exercice",
-              "number": "1",
-              "title": "Synthèse 1",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Synthèse 2",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "3",
-              "title": "Synthèse 3",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "4",
-              "title": "Synthèse 4",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "5",
-              "title": "Synthèse 5",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "6",
-              "title": "Synthèse 6",
-              "description": ""
+              "name": "Écriture complexe d’une rotation",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Rotation de centre $\\omega$ et angle $\\theta$ écrite $z'-\\omega=e^{i\\theta}(z-\\omega)$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer avec les nombres complexes",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre avec les nombres complexes",
+                  "description": ""
+                }
+              ]
             }
           ]
         }
-      ],
-      "title": "Les nombres complexes II",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Fonction exponentielle",
       "sections": [
         {
-          "name": "Définition et propriétés",
+          "name": "Fonction exponentielle népérienne",
+          "subsections": [
+            {
+              "name": "Définition de $\\exp$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Définitions: $\\exp$, $\\ln$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Définitions",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Propriétés de $\\exp$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Fonctions réciproques: $\\ln(\\exp x)=x$ et $\\exp(\\ln x)=x$ pour $x>0$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Croissance et ordre avec $\\exp$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur propriétés",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Représentation graphique",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Représentation graphique: $\\exp$, $\\ln$",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Calculs avec $e^x$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Exponentielle transforme sommes en produits: $\\exp(x+y)=\\exp x\\,\\exp y$ et règles associées",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Nombre $e$ et notation $e^x$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Nombre $e=\\exp(1)$ et notation $e^x=\\exp(x)$ $x$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Règles de calcul de $e^x$",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur nombre $e$ et notation $e^x$ (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur nombre $e$ et notation $e^x$ (exercice 2)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur nombre $e$ et notation $e^x$ (exercice 3)",
+                  "description": ""
+                }
+              ]
+            }
+          ],
           "items": [
             {
               "type": "activité",
-              "number": "1",
-              "title": "Introduction à la fonction exponentielle",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "1",
-              "title": "Définition de $\\exp$ comme réciproque de $\\ln$",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "1",
-              "title": "Propriétés élémentaires et graphe",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "1",
-              "title": "Relations de réciprocité $\\exp/\\ln$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Comparaison et inégalités",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Résolution d'équations et inéquations",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "2",
-              "title": "Symétrie des courbes $\\exp$ et $\\ln$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Propriétés algébriques de l'exponentielle",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "3",
-              "title": "Notation $e^x$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "4",
-              "title": "Relations avec la notation $e^x$",
+              "title": "Explorer la fonction $\\exp$",
               "description": ""
             }
           ]
         },
         {
-          "name": "Applications de la fonction exponentielle",
-          "items": [
+          "name": "Étude de la fonction $x\\mapsto\\exp(x)$",
+          "subsections": [
             {
-              "type": "application",
-              "number": "2",
-              "title": "Techniques de résolution d'équations",
-              "description": ""
+              "name": "Continuité et dérivabilité de $\\exp$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Exponentielle continue et dérivable sur $\\mathbb{R}$ avec $(e^x)'=e^x>0$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "3",
-              "title": "Simplification d'expressions",
-              "description": ""
+              "name": "Dérivée de $e^{u(x)}$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Dérivée d’une exponentielle composée: $(e^{u(x)})'=u'(x)e^{u(x)}$",
+                  "description": ""
+                },
+                {
+                  "type": "corollaire",
+                  "title": "Conséquence directe sur la dérivée",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer et exploiter des dérivées (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer et exploiter des dérivées (exercice 2)",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "4",
-              "title": "Résolution de systèmes",
-              "description": ""
+              "name": "Limites fondamentales",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Limites fondamentales: $e^x$, $-\\infty$",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Branches infinies",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Branches infinies: $y=0$, $x$",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
-          "name": "Étude et limites de la fonction $e^x$",
+          "name": "Limites usuelles",
           "items": [
             {
               "type": "propriété",
-              "number": "5",
-              "title": "Continuité et dérivabilité de $e^x$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "6",
-              "title": "Dérivée de $e^{u(x)}$",
-              "description": ""
-            },
-            {
-              "type": "corollaire",
-              "number": "1",
-              "title": "Primitives de $u'(x)e^{u(x)}$",
+              "title": "Exponentielle face aux puissances",
               "description": ""
             },
             {
               "type": "application",
-              "number": "5",
-              "title": "Calcul de dérivées",
+              "title": "Calculer des limites (exercice 1)",
               "description": ""
             },
             {
               "type": "application",
-              "number": "6",
-              "title": "Calcul de primitives",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "7",
-              "title": "Limites fondamentales de $e^x$",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "5",
-              "title": "Branches infinies et asymptotes",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "8",
-              "title": "Limites usuelles de $e^x$",
+              "title": "Calculer des limites (exercice 2)",
               "description": ""
             },
             {
               "type": "application",
-              "number": "7",
-              "title": "Démonstrations des limites",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "8",
-              "title": "Techniques de calcul de limites",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "9",
-              "title": "Calcul de limites complexes",
+              "title": "Calculer des limites (exercice 3)",
               "description": ""
             }
           ]
         },
         {
           "name": "Fonction exponentielle de base $a$",
-          "items": [
+          "subsections": [
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Définition de la fonction $\\exp_a(x)$",
-              "description": ""
+              "name": "Définition de $a^x$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Exponentielle de base $a$: $a^x=e^{x\\ln a}$ pour $a>0$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "corollaire",
-              "number": "2",
-              "title": "Notation $a^x$",
-              "description": ""
+              "name": "Expression de $\\exp_a(x)$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Expression de base $a$: $\\exp_a(x)=a^x=e^{x\\ln a}$ $x$",
+                  "description": ""
+                },
+                {
+                  "type": "corollaire",
+                  "title": "Conséquence : Expression de $\\exp_a(x)$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Règles de calcul de $a^x$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "9",
-              "title": "Règles opératoires de $a^x$",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "7",
-              "title": "Étude pour $a>1$",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "8",
-              "title": "Étude pour $0 < a < 1$",
-              "description": ""
+              "name": "Étude de l’exponentielle de base $a$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Monotonie de $a^x$ croissante si $a>1$, décroissante si $0<a<1$",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
@@ -2477,193 +2362,84 @@
           "items": [
             {
               "type": "exercice",
-              "number": "1",
-              "title": "Page 15-17",
-              "description": ""
+              "description": "Étudier des fonctions mêlant exponentielle et logarithme, puis exploiter variations, limites et représentation graphique."
             },
             {
               "type": "exercice",
-              "number": "2",
-              "title": "Page 18-20",
-              "description": ""
+              "description": "Étudier des fonctions exponentielles par dérivation, variations, limites et comparaison avec des droites."
             },
             {
               "type": "exercice",
-              "number": "3",
-              "title": "Page 21-23",
-              "description": ""
+              "description": "Étudier une fonction exponentielle, résoudre une équation puis analyser une fonction définie par morceaux."
             },
             {
               "type": "exercice",
-              "number": "4",
-              "title": "Page 24-26",
-              "description": ""
+              "description": "Étudier continuité, dérivabilité, variations, courbe et aire d’une fonction définie par morceaux."
             }
           ]
         }
-      ],
-      "title": "Fonction exponentielle népérienne",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Calcul intégral",
       "sections": [
         {
-          "name": "Équation différentielle d'ordre 1 : $y'=ay+b$",
-          "items": [
+          "name": "Intégrale $\\displaystyle \\int_a^b f(x)\\,dx$",
+          "subsections": [
             {
-              "type": "définition",
-              "number": "1",
-              "title": "Définition d'une équation différentielle d'ordre 1",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "1",
-              "title": "Solution générale de $y'=ay$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Résolution de $y'=2y$ avec condition initiale",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "1",
-              "title": "Notation de la solution $y(x)=Ce^{ax}$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Solution générale de $y'=ay+b$",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "1",
-              "title": "Résolution de $2y'-2y+5=0$",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Résolution de $2y'+3y=6$",
-              "description": ""
+              "name": "Interprétation géométrique",
+              "items": [
+                {
+                  "type": "activité",
+                  "title": "Explorer interprétation géométrique",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Interprétation géométrique: $f\\ge0$, $a$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Linéarité et relation de Chasles",
+                  "description": ""
+                }
+              ]
             }
-          ]
-        },
-        {
-          "name": "Équation différentielle d'ordre 2 : $y''+ay'+by=0$",
+          ],
           "items": [
             {
               "type": "définition",
-              "number": "2",
-              "title": "Définition d'une équation différentielle d'ordre 2",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "3",
-              "title": "Équation caractéristique : $r^2+ar+b=0$",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Solutions générales selon le signe de $\\Delta=a^2-4b$",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "3",
-              "title": "Résolution pour $\\Delta > 0$",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "4",
-              "title": "Résolution pour $\\Delta < 0$",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "5",
-              "title": "Résolution pour $\\Delta = 0$",
-              "description": ""
-            }
-          ]
-        }
-      ],
-      "title": "Les équations différentielles",
-      "type": "chapter"
-    },
-    {
-      "sections": [
-        {
-          "name": "Intégrale d'une fonction continue",
-          "items": [
-            {
-              "type": "définition",
-              "number": "1",
-              "title": "Définition de l'intégrale sur un intervalle $[a,b]$",
+              "title": "Intégrale: $\\displaystyle \\int_a^b f(x)\\,dx=F(b)-F(a)$ pour une primitive $F$",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "1",
-              "title": "Exemples de calculs d'intégrales",
+              "title": "Calculer une intégrale",
               "description": ""
             },
             {
               "type": "application",
-              "number": "2",
-              "title": "Calcul d'intégrales de fonctions usuelles",
-              "description": ""
-            },
-            {
-              "type": "activité",
-              "number": "1",
-              "title": "Interprétation géométrique : aire sous la courbe",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "1",
-              "title": "Aire sous la courbe pour une fonction positive",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Propriétés de l'intégrale",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "1",
-              "title": "Application des propriétés pour le calcul",
+              "title": "Calculer des intégrales et des aires",
               "description": ""
             }
           ]
         },
         {
-          "name": "Méthodes de calcul d'intégrales",
+          "name": "Méthodes de calcul des intégrales",
           "subsections": [
             {
-              "name": "Utilisation des primitives",
+              "name": "Utilisation des fonctions primitives",
               "items": [
                 {
-                  "type": "définition",
-                  "number": "2",
-                  "title": "Tableau des primitives des fonctions usuelles",
+                  "type": "méthode",
+                  "title": "Calculer une intégrale par primitive",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "2",
-                  "title": "Calcul d'intégrales à l'aide de primitives",
+                  "title": "Déterminer des primitives",
                   "description": ""
                 }
               ]
@@ -2672,44 +2448,59 @@
               "name": "Intégration par parties",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "3",
-                  "title": "Formule de l'intégration par parties",
+                  "type": "propriété",
+                  "title": "Intégration par parties: $\\displaystyle \\int_a^b u'v=[uv]_a^b-\\int_a^b uv'$",
                   "description": ""
                 },
                 {
                   "type": "exemple",
-                  "number": "2",
-                  "title": "Exemples d'applications de l'IPP",
+                  "title": "Calculer une intégrale",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "3",
-                  "title": "Exercices sur l'intégration par parties",
+                  "title": "Calculer des intégrales et des aires",
                   "description": ""
                 }
               ]
-            },
+            }
+          ],
+          "items": [
             {
-              "name": "Intégrale et Ordre",
+              "type": "exercice",
+              "description": "Calculer plusieurs intégrales et linéariser une puissance trigonométrique avant intégration."
+            }
+          ]
+        },
+        {
+          "name": "Intégrale et ordre",
+          "subsections": [
+            {
+              "name": "Comparaison de deux intégrales",
               "items": [
                 {
-                  "type": "proposition",
-                  "number": "4",
-                  "title": "Comparaison et Inégalités",
+                  "type": "propriété",
+                  "title": "Ordre des fonctions conservé par l’intégrale: $f\\le g$ implique $\\int f\\le\\int g$",
                   "description": ""
                 },
                 {
                   "type": "application",
-                  "number": "1",
-                  "title": "Exemple d'encadrement d'intégrale",
+                  "title": "Calculer des intégrales et des aires (exercice 1)",
                   "description": ""
                 },
                 {
-                  "type": "proposition",
-                  "number": "5",
-                  "title": "Inégalité de la moyenne",
+                  "type": "application",
+                  "title": "Calculer des intégrales et des aires (exercice 2)",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Inégalité de la moyenne",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Encadrement $m\\le f\\le M$ donnant $m(b-a)\\le\\int_a^b f\\le M(b-a)$ sur $[a,b]$",
                   "description": ""
                 }
               ]
@@ -2717,49 +2508,477 @@
           ]
         },
         {
-          "name": "Calcul d'aires et de volumes",
+          "name": "Calcul d’aires et de volumes",
+          "subsections": [
+            {
+              "name": "Calcul d’aires",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Aire entre $C_f$ et l’axe: $\\displaystyle \\int_a^b |f(x)|\\,dx$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Calcul d’aires",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Aire entre deux courbes",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des intégrales et des aires (exercice 1)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des intégrales et des aires (exercice 2)",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des intégrales et des aires (exercice 3)",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Calcul de volumes",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Volume d’un solide de révolution",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des intégrales et des aires",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Valeur moyenne d’une fonction continue",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Valeur moyenne : $\\dfrac{1}{b-a}\\int_a^b f(x)\\,dx$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Valeur moyenne d’une fonction continue en pratique",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Exercices",
           "items": [
             {
-              "type": "proposition",
-              "number": "6",
-              "title": "Calcul d'aires et valeur absolue de l'intégrale",
-              "description": ""
+              "type": "exercice",
+              "description": "Calculer des intégrales par primitives et intégration par parties dans plusieurs situations."
             },
             {
-              "type": "proposition",
-              "number": "7",
-              "title": "Calcul de l'aire entre deux courbes",
-              "description": ""
+              "type": "exercice",
+              "description": "Décomposer des fonctions rationnelles puis calculer les intégrales correspondantes."
             },
             {
-              "type": "application",
-              "number": "1",
-              "title": "Application : aire entre deux fonctions",
-              "description": ""
+              "type": "exercice",
+              "description": "Relier deux intégrales simples pour déterminer leurs valeurs par combinaison."
             },
             {
-              "type": "proposition",
-              "number": "8",
-              "title": "Calcul du volume d'un solide de révolution",
-              "description": ""
+              "type": "exercice",
+              "description": "Calculer des intégrales puis des aires délimitées par courbes et droites."
             },
             {
-              "type": "application",
-              "number": "4",
-              "title": "Application : calcul de volume",
-              "description": ""
+              "type": "exercice",
+              "description": "Exploiter primitives et intégration par parties pour calculer une aire entre courbes."
             },
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Définition de la valeur moyenne",
+              "type": "exercice",
+              "description": "Utiliser intégration par parties et primitives pour déterminer une aire entre deux courbes."
+            },
+            {
+              "type": "exercice",
+              "description": "Encadrer une fonction puis déduire un encadrement de l’aire correspondante."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "chapter",
+      "title": "Équations différentielles",
+      "sections": [
+        {
+          "name": "Équation différentielle du premier ordre $y'=ay+b$",
+          "items": [
+            {
+              "type": "propriété",
+              "title": "Solutions de $y'=ay$ : $y=Ce^{ax}$",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "3",
-              "title": "Exemple de calcul de valeur moyenne",
+              "title": "Équation différentielle du premier ordre $y'=ay+b$ en pratique",
               "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Équation différentielle du premier ordre $y'=ay+b$: $y'=ay+b$",
+              "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Équation différentielle du second ordre $y''+ay'+by=0$",
+          "items": [
+            {
+              "type": "définition",
+              "title": "Équation $y''+ay'+by=0$ associée au polynôme caractéristique $r^2+ar+b$",
+              "description": ""
+            },
+            {
+              "type": "propriété",
+              "title": "Solutions via le polynôme caractéristique",
+              "description": ""
+            },
+            {
+              "type": "exemple",
+              "title": "Équation différentielle du second ordre $y''+ay'+by=0$ en pratique (exemple 1)",
+              "description": ""
+            },
+            {
+              "type": "exemple",
+              "title": "Équation différentielle du second ordre $y''+ay'+by=0$ en pratique (exemple 2)",
+              "description": ""
+            },
+            {
+              "type": "application",
+              "title": "Résoudre une équation différentielle",
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "chapter",
+      "title": "Produit scalaire dans l’espace",
+      "sections": [
+        {
+          "name": "Produit scalaire et rappels vectoriels",
+          "subsections": [
+            {
+              "name": "Colinéarité et coplanarité",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Colinéarité par déterminants",
+                  "description": ""
+                },
+                {
+                  "type": "définition",
+                  "title": "Trois vecteurs coplanaires",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Coplanarité de trois vecteurs: un déterminant d’ordre trois = zéro",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Produit scalaire $\\vec u\\cdot\\vec v$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Produit scalaire de $\\vec u$ et $\\vec v$: $\\vec u\\cdot\\vec v=\\|u\\|\\|v\\|\\cos\\theta$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Orthogonalité : $\\vec u\\cdot\\vec v=0$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Définition du produit scalaire dans l’espace",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Calcul de $\\vec u\\cdot\\vec v$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Expression analytique $\\vec u\\cdot\\vec v=xx'+yy'+zz'$ dans un repère orthonormé de l’espace",
+                  "description": ""
+                },
+                {
+                  "type": "corollaire",
+                  "title": "Conséquence : Expression analytique et propriétés",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Propriétés du produit scalaire",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur expression analytique et propriétés",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Orthogonalité dans l’espace",
+          "subsections": [
+            {
+              "name": "Vecteurs orthogonaux",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Vecteurs orthogonaux : $\\vec u\\cdot\\vec v=0$",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Vecteur normal à un plan",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Vecteur normal : orthogonal au plan",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Plans parallèles et vecteurs normaux",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Orthogonalité entre droites et plans",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Droite orthogonale à un plan",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Plans perpendiculaires et vecteurs normaux",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Plans et distances",
+          "subsections": [
+            {
+              "name": "Équation cartésienne d’un plan",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Plan de vecteur normal $(a,b,c)$ décrit par l’équation $ax+by+cz+d=0$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Équation cartésienne d’un plan en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Distance d’un point à un plan",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Distance d’un point à un plan",
+                  "description": ""
+                },
+                {
+                  "type": "théorème",
+                  "title": "Distance à $ax+by+cz+d=0$: $|ax_0+by_0+cz_0+d|/\\sqrt{a^2+b^2+c^2}$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Distance d’un point à un plan en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Étude analytique de la sphère",
+          "subsections": [
+            {
+              "name": "Sphère $(x-a)^2+(y-b)^2+(z-c)^2=R^2$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Sphère de centre $\\Omega$ et rayon $R$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Équation cartésienne d’une sphère: $(x-a)^2+(y-b)^2+(z-c)^2=R^2$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Définition et équation cartésienne en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Sphère de diamètre donné",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Sphère de diamètre $[AB]$: $\\overrightarrow{AM}\\cdot\\overrightarrow{BM}=0$ point $M$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Sphère de diamètre donné en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Reconnaître une sphère par son équation",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Reconnaître une sphère par complétion des carrés",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Reconnaître une sphère par son équation en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Représentation paramétrique d’une sphère",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Paramétrisation d’une sphère par deux angles",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Représentation paramétrique d’une sphère en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Intersections et plan tangent",
+          "subsections": [
+            {
+              "name": "Intersection d’une sphère et d’une droite",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Intersection droite-sphère par substitution",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Intersection d’une sphère et d’une droite",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Intersection d’une sphère et d’une droite en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Intersection d’une sphère et d’un plan",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Intersection plan-sphère selon $d(\\Omega,P)$ et $R$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Intersection d’une sphère et d’un plan en pratique (exemple 1)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Intersection d’une sphère et d’un plan en pratique (exemple 2)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Intersection d’une sphère et d’un plan en pratique (exemple 3)",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Plan tangent à une sphère",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Plan tangent à une sphère: $A$, $\\overrightarrow{\\Omega A}$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Plan tangent à une sphère en pratique (exemple 1)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Plan tangent à une sphère en pratique (exemple 2)",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
@@ -2768,215 +2987,217 @@
           "items": [
             {
               "type": "exercice",
-              "number": "1",
-              "title": "Calculs d'intégrales",
-              "description": ""
+              "description": "Étudier une sphère, deux plans, une tangence et une intersection circulaire dans l’espace."
             },
             {
               "type": "exercice",
-              "number": "2",
-              "title": "Intégration et décomposition",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "3",
-              "title": "Combinaison d'intégrales",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "4",
-              "title": "Étude d'une fonction définie par une intégrale",
-              "description": ""
+              "description": "Construire droite, plans et sphère puis exploiter orthogonalité, tangence et intersection."
             }
           ]
         }
-      ],
-      "title": "Calcul intégral",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Produit vectoriel dans l’espace",
       "sections": [
         {
-          "name": "Définition et expression analytique",
-          "items": [
+          "name": "Orientation dans l’espace",
+          "subsections": [
             {
-              "type": "définition",
-              "number": "1",
-              "title": "Produit scalaire $\\vec{u} \\cdot \\vec{v}$",
-              "description": ""
+              "name": "Trièdre",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Trièdre de trois vecteurs non coplanaires",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "1",
-              "title": "Calcul par projection orthogonale",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Expression analytique",
-              "description": ""
-            },
-            {
-              "type": "corollaire",
-              "number": "1",
-              "title": "Distance entre deux points",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Propriétés algébriques",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "1",
-              "title": "Application à la nature d'un triangle",
-              "description": ""
+              "name": "Repère direct et repère indirect",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Orientation d’un repère dans l’espace",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Orientation et signe du déterminant",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Repère direct et repère indirect",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
-          "name": "Orthogonalité et vecteurs normaux",
-          "items": [
+          "name": "Produit vectoriel $\\vec u\\wedge\\vec v$",
+          "subsections": [
             {
-              "type": "définition",
-              "number": "2",
-              "title": "Vecteurs orthogonaux",
-              "description": ""
+              "name": "Définition",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Produit vectoriel $\\vec u\\wedge\\vec v$",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "théorème",
-              "number": "1",
-              "title": "Caractérisation de l'orthogonalité",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "3",
-              "title": "Vecteur normal à un plan",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "4",
-              "title": "Condition de normalité",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "5",
-              "title": "Perpendicularité d'un plan et d'une droite",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "6",
-              "title": "Perpendicularité de deux plans",
-              "description": ""
+              "name": "Interprétation géométrique",
+              "items": [
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Interprétation géométrique",
+                  "description": ""
+                },
+                {
+                  "type": "corollaire",
+                  "title": "Conséquence : Interprétation géométrique",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Interprétation géométrique en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Norme de $\\vec u\\wedge\\vec v$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Interprétation géométrique en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur interprétation géométrique",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
-          "name": "Équations de plans et de sphères",
-          "items": [
+          "name": "Propriétés du produit vectoriel",
+          "subsections": [
             {
-              "type": "proposition",
-              "number": "7",
-              "title": "Équation cartésienne d'un plan",
-              "description": ""
+              "name": "Propriétés algébriques",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Propriétés algébriques de $\\vec u\\wedge\\vec v$",
+                  "description": ""
+                },
+                {
+                  "type": "corollaire",
+                  "title": "Conséquence : Propriétés algébriques",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Propriétés algébriques en pratique",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "application",
-              "number": "3",
-              "title": "Détermination de l'équation d'un plan",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "2",
-              "title": "Distance d'un point à un plan",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "4",
-              "title": "Calcul de distances point-plan",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "8",
-              "title": "Équation cartésienne d'une sphère",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "9",
-              "title": "Sphère définie par un diamètre",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "10",
-              "title": "Étude de l'ensemble $x^2+y^2+z^2+ax+by+cz+d=0$",
-              "description": ""
-            },
-            {
-              "type": "application",
-              "number": "5",
-              "title": "Caractérisation d'une sphère",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "11",
-              "title": "Représentation paramétrique d'une sphère",
-              "description": ""
+              "name": "Coordonnées de $\\vec u\\wedge\\vec v$",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Coordonnées de $\\vec u\\wedge\\vec v$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Expression analytique en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "S’entraîner sur expression analytique",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
         {
-          "name": "Positions relatives et intersections",
-          "items": [
+          "name": "Applications du produit vectoriel",
+          "subsections": [
             {
-              "type": "proposition",
-              "number": "12",
-              "title": "Position relative d'une sphère et d'une droite",
-              "description": ""
+              "name": "Équation d’un plan défini par trois points",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Plan $(ABC)$ : normal $\\overrightarrow{AB}\\wedge\\overrightarrow{AC}$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Équation d’un plan défini par trois points en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "exercice",
-              "number": "1",
-              "title": "Étude d'intersection sphère-droite",
-              "description": ""
+              "name": "Distance d’un point à une droite",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Distance à une droite: $\\|\\overrightarrow{AM}\\wedge\\vec u\\|/\\|\\vec u\\|$ pour un directeur $\\vec u$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Distance d’un point à une droite",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Distance d’un point à une droite en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "13",
-              "title": "Position relative d'une sphère et d'un plan",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "2",
-              "title": "Étude d'intersection sphère-plan",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "14",
-              "title": "Caractérisation du plan tangent",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "5",
-              "title": "Détermination d'équations de plans tangents",
-              "description": ""
+              "name": "Intersection de deux plans",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Direction de l’intersection de deux plans",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Intersection de deux plans en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Résoudre un problème de géométrie",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
@@ -2985,133 +3206,487 @@
           "items": [
             {
               "type": "exercice",
-              "number": "6",
-              "title": "Problème complet : plan, sphère, cercle",
-              "description": ""
+              "description": "Exploiter le produit vectoriel dans un parallélépipède et interpréter géométriquement sa norme."
             },
             {
               "type": "exercice",
-              "number": "7",
-              "title": "Problème complet : sphère et plans tangents",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "8",
-              "title": "Problème complet : plan perpendiculaire et intersection",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "9",
-              "title": "Problème complet : sphère tangente et intersection",
-              "description": ""
+              "description": "Calculer produit vectoriel, équation de plan, aire de triangle et distance à une droite."
             }
           ]
         }
-      ],
-      "title": "Le produit scalaire dans l'espace",
-      "type": "chapter"
+      ]
     },
     {
+      "type": "chapter",
+      "title": "Probabilités",
       "sections": [
         {
-          "name": "Définition et propriétés du produit vectoriel",
+          "name": "Principe fondamental de dénombrement",
           "items": [
             {
-              "type": "définition",
-              "number": "1",
-              "title": "Définition du trièdre et du repère direct",
+              "type": "activité",
+              "title": "Compter par choix successifs",
               "description": ""
             },
             {
-              "type": "définition",
-              "number": "3",
-              "title": "Définition du produit vectoriel $\\vec{u} \\wedge \\vec{v}$",
+              "type": "propriété",
+              "title": "Principe multiplicatif des choix successifs",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "1",
-              "title": "Exemples dans une base orthonormale directe",
+              "title": "Principe fondamental de dénombrement en pratique (exemple 1)",
               "description": ""
             },
             {
-              "type": "proposition",
-              "number": "1",
-              "title": "Caractérisation de la colinéarité",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "2",
-              "title": "Propriétés algébriques (anticommutativité, distributivité)",
+              "type": "exemple",
+              "title": "Principe fondamental de dénombrement en pratique (exemple 2)",
               "description": ""
             },
             {
               "type": "application",
-              "number": "1",
-              "title": "Application des propriétés algébriques",
+              "title": "Compter des configurations",
               "description": ""
             }
           ]
         },
         {
-          "name": "Expression analytique et applications géométriques",
+          "name": "Arrangements et combinaisons",
+          "subsections": [
+            {
+              "name": "Arrangements avec répétition $n^p$",
+              "items": [
+                {
+                  "type": "activité",
+                  "title": "Explorer les arrangements",
+                  "description": ""
+                },
+                {
+                  "type": "définition",
+                  "title": "Arrangements avec répétition: $p$, $n$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Arrangements avec répétition : $n^p$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Arrangements avec répétition en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Arrangements $A_n^p$",
+              "items": [
+                {
+                  "type": "activité",
+                  "title": "Explorer les arrangements",
+                  "description": ""
+                },
+                {
+                  "type": "définition",
+                  "title": "Arrangement sans répétition",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Nombre d’arrangements sans répétition: $A_n^p=n!/(n-p)!$ pour $0\\le p\\le n$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Arrangements sans répétition en pratique (exemple 1)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Arrangements sans répétition en pratique (exemple 2)",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Arrangements sans répétition",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Permutations avec répétitions: $n!/(n_1!n_2!\\cdots n_r!)$ lorsque des objets sont identiques",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Arrangements sans répétition en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Compter des configurations",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Combinaisons $C_n^p$",
+              "items": [
+                {
+                  "type": "activité",
+                  "title": "Explorer les combinaisons",
+                  "description": ""
+                },
+                {
+                  "type": "définition",
+                  "title": "Combinaison : choix non ordonné",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Nombre de combinaisons: $C_n^p=n!/[p!(n-p)!]$ pour $0\\le p\\le n$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Combinaisons en pratique (exemple 1)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Combinaisons en pratique (exemple 2)",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Symétrie des combinaisons: $C_n^p=C_n^{n-p}$ $0\\le p\\le n$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Relation de Pascal: $C_n^p+C_n^{p+1}=C_{n+1}^{p+1}$ pour les indices admissibles",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Compter des configurations",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Vocabulaire des probabilités",
           "items": [
             {
               "type": "définition",
-              "number": "4",
-              "title": "Calcul d'aires avec le produit vectoriel",
+              "title": "Vocabulaire des probabilités: $\\Omega$",
               "description": ""
             },
             {
-              "type": "application",
-              "number": "2",
-              "title": "Calcul de l'aire d'un triangle",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "3",
-              "title": "Expression analytique du produit vectoriel",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "4",
-              "title": "Équation d'un plan défini par trois points",
+              "type": "propriété",
+              "title": "Événements incompatibles : $A\\cap B=\\varnothing$",
               "description": ""
             },
             {
               "type": "exemple",
-              "number": "2",
-              "title": "Exemple de calcul d'équation de plan",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "5",
-              "title": "Vecteur directeur de l'intersection de deux plans",
+              "title": "Calculer une probabilité",
               "description": ""
             },
             {
               "type": "application",
-              "number": "3",
-              "title": "Détermination de la droite d'intersection",
+              "title": "Calculer des intégrales et des aires",
               "description": ""
+            }
+          ]
+        },
+        {
+          "name": "Notion de probabilité",
+          "subsections": [
+            {
+              "name": "Probabilité $P(A)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Probabilité d’un événement: $P$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Probabilité d’un événement",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Contraire et réunion d’événements",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des probabilités",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "proposition",
-              "number": "6",
-              "title": "Distance d'un point à une droite dans l'espace",
-              "description": ""
+              "name": "Équiprobabilité",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Issues équiprobables dans $\\Omega$",
+                  "description": ""
+                },
+                {
+                  "type": "théorème",
+                  "title": "En équiprobabilité, $P(A)=\\operatorname{card}(A)/\\operatorname{card}(\\Omega)$ événement $A$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des probabilités",
+                  "description": ""
+                }
+              ]
             },
             {
-              "type": "exemple",
-              "number": "4",
-              "title": "Exemple de calcul de distance",
-              "description": ""
+              "name": "Opérations sur les événements",
+              "items": [
+                {
+                  "type": "propriété",
+                  "title": "Calculs sur les événements",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Opérations sur les événements en pratique (exemple 1)",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Opérations sur les événements en pratique (exemple 2)",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Probabilité conditionnelle et indépendance",
+          "subsections": [
+            {
+              "name": "Probabilité conditionnelle $P_A(B)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Probabilité conditionnelle: $P_A(B)=P(A\\cap B)/P(A)$ lorsque $P(A)>0$",
+                  "description": ""
+                },
+                {
+                  "type": "théorème",
+                  "title": "Formule des probabilités totales",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Produit des probabilités: $P(A\\cap B)=P(A)P_A(B)=P(B)P_B(A)$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Calculs sur un arbre pondéré",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Indépendance de $A$ et $B$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Indépendance de $A$ et $B$: $P(A\\cap B)=P(A)P(B)$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Indépendance de deux événements",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Indépendance de deux événements en pratique",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des probabilités",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Répétition d’épreuves indépendantes",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Épreuves indépendantes",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Produit des probabilités indépendantes",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Répétition d’épreuves indépendantes en pratique",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Variable aléatoire et loi de probabilité",
+          "subsections": [
+            {
+              "name": "Variable aléatoire $X$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Variable aléatoire: $X$, $\\Omega$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Variable aléatoire",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Variable aléatoire en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Loi de $X$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Loi de probabilité de $X$",
+                  "description": ""
+                },
+                {
+                  "type": "remarque",
+                  "title": "Point clé : Loi de probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des probabilités",
+                  "description": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Espérance, variance, écart-type et loi binomiale",
+          "subsections": [
+            {
+              "name": "Espérance $E(X)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Espérance d’une variable discrète: $E(X)=\\sum_i x_iP(X=x_i)$, valeur moyenne théorique",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Espérance mathématique en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Variance $V(X)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Variance: $V(X)=E(X^2)-[E(X)]^2$, mesure de dispersion quadratique",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Variance en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Écart-type $\\sigma(X)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Écart-type: $\\sigma(X)=\\sqrt{V(X)}$, exprimé dans l’unité",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Écart-type en pratique",
+                  "description": ""
+                }
+              ]
+            },
+            {
+              "name": "Loi binomiale $\\mathcal{B}(n,p)$",
+              "items": [
+                {
+                  "type": "définition",
+                  "title": "Loi binomiale $X\\sim\\mathcal{B}(n,p)$",
+                  "description": ""
+                },
+                {
+                  "type": "propriété",
+                  "title": "Probabilité binomiale $P(X=k)$",
+                  "description": ""
+                },
+                {
+                  "type": "exemple",
+                  "title": "Calculer une probabilité",
+                  "description": ""
+                },
+                {
+                  "type": "application",
+                  "title": "Calculer des probabilités",
+                  "description": ""
+                }
+              ]
             }
           ]
         },
@@ -3120,150 +3695,31 @@
           "items": [
             {
               "type": "exercice",
-              "number": "1",
-              "title": "Synthèse : Plan tangent et produit vectoriel",
-              "description": ""
+              "description": "Calculer des probabilités lors d’un tirage simultané de trois boules de plusieurs couleurs."
             },
             {
               "type": "exercice",
-              "number": "2",
-              "title": "Synthèse : Sphère et plan",
-              "description": ""
+              "description": "Étudier probabilités conditionnelles et loi du nombre de boules noires issues de deux urnes."
             },
             {
               "type": "exercice",
-              "number": "3",
-              "title": "Synthèse : Plan, sphère et cercle",
-              "description": ""
+              "description": "Étudier couleurs, chiffres, variable aléatoire puis répétitions indépendantes lors de tirages simultanés."
+            },
+            {
+              "type": "exercice",
+              "description": "Étudier indépendance et loi du nombre de résultats pairs lors de lancers répétés."
+            },
+            {
+              "type": "exercice",
+              "description": "Exploiter un arbre pondéré pour calculer des probabilités conditionnelles liées à un test."
+            },
+            {
+              "type": "exercice",
+              "description": "Déterminer les lois de $X$ et $G$, puis espérance, variance et écart-type."
             }
           ]
         }
-      ],
-      "title": "Produit vectoriel",
-      "type": "chapter"
-    },
-    {
-      "sections": [
-        {
-          "name": "Dénombrement",
-          "items": [
-            {
-              "type": "définition",
-              "number": "2",
-              "title": "Principe fondamental du dénombrement",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "1",
-              "title": "Formule des arrangements ($A_n^p$)",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "2",
-              "title": "Formule des combinaisons ($C_n^p$)",
-              "description": ""
-            },
-            {
-              "type": "remarque",
-              "number": "4",
-              "title": "Classification des types de tirages",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Probabilités conditionnelles et indépendance",
-          "items": [
-            {
-              "type": "théorème",
-              "number": "3",
-              "title": "Hypothèse d'équiprobabilité",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "6",
-              "title": "Propriétés générales des probabilités",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "8",
-              "title": "Probabilité conditionnelle",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "7",
-              "title": "Formule des probabilités totales",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "10",
-              "title": "Événements indépendants",
-              "description": ""
-            },
-            {
-              "type": "théorème",
-              "number": "4",
-              "title": "Caractérisation de l'indépendance",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Variables aléatoires et Loi Binomiale",
-          "items": [
-            {
-              "type": "définition",
-              "number": "12",
-              "title": "Variable aléatoire, espérance, variance et écart-type",
-              "description": ""
-            },
-            {
-              "type": "définition",
-              "number": "13",
-              "title": "Définition de la loi binomiale",
-              "description": ""
-            },
-            {
-              "type": "proposition",
-              "number": "9",
-              "title": "Caractéristiques de la loi binomiale",
-              "description": ""
-            }
-          ]
-        },
-        {
-          "name": "Exercices d'examens nationaux",
-          "items": [
-            {
-              "type": "exercice",
-              "number": "6",
-              "title": "Examen National 2015 - Normale",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "7",
-              "title": "Examen National 2023 - Normale",
-              "description": ""
-            },
-            {
-              "type": "exercice",
-              "number": "8",
-              "title": "Examen National 2023 - Rattrapage",
-              "description": ""
-            }
-          ]
-        }
-      ],
-      "title": "Calcul de probabilité",
-      "type": "chapter"
+      ]
     }
-  ],
-  "contentDirection": "ltr"
+  ]
 }

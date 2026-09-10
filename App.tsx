@@ -483,13 +483,14 @@ const App: React.FC = () => {
 
         <GlobalTooltip />
         <Toaster
-          position={isRtl ? 'bottom-left' : 'bottom-right'}
+          position="bottom-right"
+          dir={isRtl ? 'rtl' : 'ltr'}
           closeButton={false}
           expand={false}
           gap={4}
           visibleToasts={2}
           offset={{ bottom: 20, right: 20 }}
-          mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', left: 16, right: 16 }}
+          mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', right: 16 }}
           className="print:hidden"
         />
       </LocaleProvider>
