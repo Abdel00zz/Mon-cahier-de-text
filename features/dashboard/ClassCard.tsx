@@ -65,7 +65,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                             impact('light');
                             onConfigure();
                         }}
-                        className="relative z-10 -me-1 -mt-1 hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-none text-muted-foreground opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 hover:text-foreground dark:hover:bg-white/10 cursor-pointer"
+                        className="relative z-10 -me-1 -mt-1 hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-md,0.625rem)] text-muted-foreground opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 hover:text-foreground dark:hover:bg-white/10 cursor-pointer"
                         title={t('dashboard.classSettings')}
                         aria-label={t('dashboard.edit') + ' ' + displayName}
                     >

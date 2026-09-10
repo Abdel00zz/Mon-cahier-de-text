@@ -54,13 +54,13 @@ const TableHeader: React.FC = React.memo(() => {
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
       <div className="flex items-center justify-center border-e border-border px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
-        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-neutral-600 dark:text-neutral-300">{t('editor.date')}</span>
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
-        <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-neutral-800 dark:text-neutral-100">{t('editor.content')}</span>
+        <span className="editor-type-table-main font-sans font-bold uppercase tracking-[0.08em] text-foreground">{t('editor.content')}</span>
       </div>
       <div className="flex items-center justify-center px-1 py-1.5 sm:px-2.5 sm:py-2 text-center">
-        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-neutral-600 dark:text-neutral-300">{t('editor.remark')}</span>
+        <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.remark')}</span>
       </div>
     </div>
   </div>
@@ -240,9 +240,9 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="rounded-none border border-border bg-card px-5 py-12 shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-8 sm:py-14">
+        <section className="rounded-[var(--radius-xl,0.875rem)] border border-border bg-card px-5 py-12 shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-8 sm:py-14">
             <div className="mx-auto flex max-w-xl flex-col items-center text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-none border border-primary/20 bg-primary/10 text-primary">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-lg,0.75rem)] border border-primary/20 bg-primary/10 text-primary">
                     <BookOpen className="h-8 w-8 stroke-[2.2]" />
                 </div>
                 <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-primary">{t('emptyNotebook.label')}</p>
@@ -397,7 +397,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-none border border-border bg-card shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-200"
+      className="rtl-table mx-0 overflow-hidden rounded-[var(--radius-xl,0.875rem)] border border-border bg-card shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-200"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

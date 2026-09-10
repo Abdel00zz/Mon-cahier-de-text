@@ -61,8 +61,8 @@ const ActionButton: FC<{
     aria-label={title}
   >
     <Icon aria-hidden className="h-4.5 w-4.5 stroke-[2.2] shrink-0 transition-transform duration-200 group-hover:scale-105 sm:h-4 sm:w-4" />
-    {label && <span className="hidden whitespace-nowrap text-xs font-semibold sm:inline font-tajawal">{label}</span>}
-    <span className="pointer-events-none absolute -top-10 start-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-none border border-border bg-popover px-2.5 py-1 text-[11px] font-semibold text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-tajawal">
+    {label && <span className="hidden whitespace-nowrap text-xs font-semibold sm:inline font-sans">{label}</span>}
+    <span className="pointer-events-none absolute -top-10 start-1/2 z-[70] hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2.5 py-1 text-[11px] font-semibold text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 sm:block font-sans">
       {title}
     </span>
   </Button>
@@ -164,7 +164,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
         size="icon"
         onClick={onClear}
         title={t('selection.closeShortcut')}
-        className="h-9 w-9 shrink-0 rounded-none border border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer active:scale-95 sm:h-9 sm:w-9"
+        className="h-9 w-9 shrink-0 rounded-xl border border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer active:scale-95 sm:h-9 sm:w-9"
         aria-label={t('selection.clearAria')}
       >
         <X className="h-4.5 w-4.5 stroke-[2.2] sm:h-4 sm:w-4" />

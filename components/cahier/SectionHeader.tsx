@@ -23,7 +23,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <div className="flex items-center gap-2.5">
         <h2
           className={cn(
-            'text-[#202124] dark:text-[#e8eaed] tracking-wide leading-none',
+            'text-foreground tracking-wide leading-none',
             isArabic ? 'font-sans text-xl sm:text-2xl font-bold' : 'font-sans text-xl sm:text-2xl font-bold'
           )}
         >
@@ -32,7 +32,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 
         {typeof count === 'number' && (
           <span
-            className="inline-flex h-6 min-w-[24px] px-1.5 items-center justify-center rounded-full bg-[#f1f3f4] dark:bg-[#3c4043] border border-[#e0e0e0] dark:border-[#5f6368] text-xs font-bold text-[#202124] dark:text-[#e8eaed] font-sans"
+            className="inline-flex h-6 min-w-[24px] px-1.5 items-center justify-center rounded-full bg-muted border border-border text-xs font-bold text-foreground font-sans"
             aria-label={`${count} éléments`}
           >
             {count}
@@ -40,7 +40,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         )}
 
         {subtitle && (
-          <span className="text-xs text-[#5f6368] dark:text-[#9aa0a6] font-sans">
+          <span className="text-xs text-muted-foreground font-sans">
             {subtitle}
           </span>
         )}

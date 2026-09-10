@@ -38,12 +38,12 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
 
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-3xl: 26px;
 
   --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -291,6 +291,14 @@
     --chart-3: 38 92% 50%;
     --chart-4: 199 89% 48%;
     --chart-5: 262 83% 58%;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 22px;
+    --radius-3xl: 26px;
+    --radius: var(--radius-md);
 
     --content-font-latin: 'Fira Sans', sans-serif;
     --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
@@ -664,7 +672,7 @@
   :focus-visible {
     outline: 2px solid hsl(var(--ring) / 0.5);
     outline-offset: 2px;
-    border-radius: 0px;
+    border-radius: var(--radius-sm, 6px);
   }
 
   /* L’arabe ne se compose pas avec l’espacement latin des capitales. */
@@ -813,14 +821,14 @@
   background-color: transparent;
 }
 .settings-surface {
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 0px !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius-xl, 18px) !important;
   background: hsl(var(--card)) !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04) !important;
 }
 
 .dark .settings-surface {
-  border-color: #5f6368 !important;
+  border-color: hsl(var(--border)) !important;
 }
 
 .settings-page-content > div {
@@ -949,14 +957,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
 .app-settings-parent[data-settings-sheet-open='true'] {
   min-height: 100dvh;
   overflow: hidden;
-  border-radius: 0px;
+  border-radius: var(--radius-2xl, 22px);
   transform: translate3d(0, 0.65rem, 0) scale(0.975);
   box-shadow: 0 20px 65px rgb(2 8 23 / 0.2);
 }
 
 @media (max-width: 639px) {
   .app-settings-parent[data-settings-sheet-open='true'] {
-    border-radius: 0px;
+    border-radius: var(--radius-2xl, 22px);
     transform: translate3d(0, max(0.55rem, env(safe-area-inset-top)), 0) scale(0.955);
   }
 
@@ -965,7 +973,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
     width: auto !important;
     max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
-    border-radius: 0px !important;
+    border-radius: var(--radius-2xl, 22px) !important;
     border-width: 1px !important;
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
@@ -981,7 +989,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     width: auto !important;
     max-height: calc(var(--app-viewport-height, 100dvh) - max(1rem, env(safe-area-inset-top, 0px)) - max(1rem, env(safe-area-inset-bottom, 0px))) !important;
     margin: auto !important;
-    border-radius: 0px !important;
+    border-radius: var(--radius-2xl, 22px) !important;
     padding-bottom: 0 !important;
     box-shadow: 0 28px 80px rgb(2 8 23 / 0.38) !important;
   }

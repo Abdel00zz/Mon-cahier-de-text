@@ -177,7 +177,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'group relative flex h-11 w-full cursor-pointer items-center rounded-none transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+                  'group relative flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
                     ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs'
@@ -223,7 +223,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-none transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+              'group flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
                 ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs'
@@ -250,7 +250,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-none text-muted-foreground transition-all duration-150 hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+              'group flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] text-muted-foreground transition-all duration-150 hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
             )}
             aria-label={copy.help}
