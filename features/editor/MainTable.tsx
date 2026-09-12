@@ -11,6 +11,7 @@ import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { hasOnlyPristineStarterDiagnostic } from '@/utils/starterDiagnostic';
+import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
 
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
@@ -44,6 +45,9 @@ interface MainTableProps {
 const VIRTUALIZATION_THRESHOLD = 140;
 const ESTIMATED_ROW_HEIGHT = 72;
 const VIRTUAL_OVERSCAN = 16;
+/** Référence stable : un `[]` littéral par défaut créait un nouveau tableau à
+ *  chaque rendu et invalidait les `useMemo` dont il est une dépendance. */
+const NO_DESCRIPTION_TYPES: string[] = [];
 
 const TableHeader: React.FC = React.memo(() => {
   const { t } = useLocale();
@@ -115,13 +119,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     const dividerClass = groupIsSelected
         ? 'border-e border-e-primary/45'
         : hasWarning
-            ? 'border-e border-e-warning/45'
+            ? 'border-e border-e-alert/45'
             : 'border-e border-e-border';
 
     const innerLineClass = groupIsSelected
         ? 'border-b border-b-primary/25'
         : hasWarning
-            ? 'border-b border-b-warning/35'
+            ? 'border-b border-b-alert/35'
             : 'border-b border-b-border/50';
     const hasAssignedDate = uniqueDates.length > 0;
     const topBoundaryClass = (hasAssignedDate && firstMerge?.isDatedSequenceStart)
@@ -166,7 +170,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 topBoundaryClass,
                 bottomBoundaryClass,
                 hasWarning
-                    ? 'bg-warning/[0.07]'
+                    ? 'bg-alert/[0.07]'
                     : 'bg-card',
                 groupIsSelected ? 'bg-zinc-100 dark:bg-zinc-800/60' : '',
             ].filter(Boolean).join(' ')}
@@ -207,7 +211,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             {sameRemark ? (
                 <div
                     data-session-cell="remark"
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
                     style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -220,7 +224,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     key={`remark-${item.key}`}
                     data-session-cell="remark"
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-warning/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
                     style={{ gridColumn: 3, gridRow: index + 1 }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -239,7 +243,7 @@ const EmptyState: React.FC<{
   predefinedProgramTitle?: string;
   onLoadPredefined?: () => void;
 }> = ({ onOpenAddContentModal, predefinedProgramTitle, onLoadPredefined }) => {
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
@@ -277,6 +281,15 @@ const EmptyState: React.FC<{
                         {t('emptyNotebook.createChapter')}
                     </Button>
                 </div>
+
+                {/* Service de création de cahiers : information et contact direct,
+                    sans acquittement ni case à cocher. */}
+                <SupportWhatsAppBlock
+                    locale={locale}
+                    hint={t('support.serviceHint')}
+                    label={t('support.serviceWhatsApp')}
+                    className="mt-9"
+                />
             </div>
         </section>
     );
@@ -289,7 +302,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   contentDirection,
   onOpenAddContentModal,
   showDescriptions,
-  descriptionTypes = [],
+  descriptionTypes = NO_DESCRIPTION_TYPES,
   selectedKeys,
   onToggleSelect,
   newlyAddedIds,

@@ -3,8 +3,12 @@ import { AppConfig } from '../types.js';
 /**
  * Sous-ensemble de la configuration qui appartient AU PROFESSEUR et doit
  * suivre son compte d'un appareil à l'autre (synchronisé dans le blob
- * `classes:{phone}`). On exclut ce qui est spécifique à l'appareil
- * (ex. `pushEnabled` d'un téléphone donné).
+ * `classes:{phone}`).
+ *
+ * On exclut ce qui est spécifique à l'appareil : `pushEnabled` (un téléphone
+ * donné peut être abonné et un autre non) et `sessionVibration`. Ces deux
+ * valeurs peuvent toutefois être REMONTÉES en lecture seule vers
+ * l'administration via `TeacherSnapshot.notifyPrefs` (voir utils/progression.ts).
  */
 export type SyncableSettings = Pick<
     AppConfig,

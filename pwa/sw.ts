@@ -54,6 +54,19 @@ registerRoute(
     })
 );
 
+/*
+ * Contenus prédéfinis (fichiers JSON sous public/contenus/) : chargés à la
+ * demande quand le professeur choisit un programme officiel. Le manifeste est
+ * précaché (voir includeAssets) ; les fichiers de contenu, de poids variable,
+ * sont mis en cache au premier chargement puis servis hors ligne.
+ */
+registerRoute(
+    ({ url, request }) => url.origin === self.location.origin
+        && url.pathname.startsWith('/contenus/')
+        && request.destination !== 'document',
+    new StaleWhileRevalidate({ cacheName: 'predefined-contents' })
+);
+
 // ── Web Push ────────────────────────────────────────────────────────────────
 // Persist the runtime, extensions, character data and web fonts actually used.
 // A first online visit is required; previously unseen extensions still need a network.

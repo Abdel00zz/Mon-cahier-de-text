@@ -4,7 +4,7 @@ import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { flattenLessons } from './dataUtils';
 import { readCachedLessons } from './notebookStorage';
 import { readCachedConfig } from './configStorage';
-import { DateWarning, validateSessionDate } from './dateValidation';
+import { DateWarning, toDisplayWarnings, validateSessionDate } from './dateValidation';
 import { computeClassHoursInsight } from './scheduleInsights';
 import { computeProgressionStats } from './progression';
 import { readJournal } from './journal';
@@ -252,7 +252,11 @@ export const collectClassSignals = (classInfo: ClassInfo, config: AppConfig, loc
 
     // 1 · Dates saisies en conflit avec le calendrier ou l'emploi du temps
     for (const [date, indicesList] of entriesByDate) {
-        const warnings = validateSessionDate(date, classInfo, config, locale);
+        // Les alertes factuelles (férié, vacances, absence, hors année) restent
+        // visibles même sur une séance passée. Seul le conflit d'emploi du
+        // temps y est neutralisé : la grille a pu changer depuis, et la date
+        // n'est plus modifiable. Les séances manquées gardent leur signal dédié.
+        const warnings = toDisplayWarnings(validateSessionDate(date, classInfo, config, locale), date, today);
         if (warnings.length === 0) continue;
         const id = dateActionId(classInfo.id, date, warnings);
         signals.push({

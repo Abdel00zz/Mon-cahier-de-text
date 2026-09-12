@@ -118,7 +118,7 @@ export const TimetableClockManager: React.FC<TimetableClockManagerProps> = ({ on
     };
 
     return (
-        <div className="mx-auto min-h-screen max-w-5xl p-4 sm:p-8">
+        <div className="mx-auto min-h-dvh max-w-5xl p-4 sm:p-8">
             <button type="button" onClick={onBack} className="mb-4 inline-flex min-h-11 items-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground hover:bg-muted">
                 ← Retour
             </button>

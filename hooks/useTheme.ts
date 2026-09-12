@@ -108,6 +108,7 @@ export function useTheme(
 
     // 2. Border Radius Variables
     const radiusTokens = BORDER_RADIUS_MAP[borderRadiusKey] || BORDER_RADIUS_MAP.default;
+    root.style.setProperty('--radius', radiusTokens.md);
     root.style.setProperty('--radius-sm', radiusTokens.sm);
     root.style.setProperty('--radius-md', radiusTokens.md);
     root.style.setProperty('--radius-lg', radiusTokens.lg);

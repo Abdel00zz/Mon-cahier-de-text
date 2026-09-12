@@ -238,8 +238,11 @@ export interface NotificationSettings {
     inactivityThresholdDays: number;
     quietDuringVacations: boolean;
     /**
-     * rappels locaux de fin de séance (vibration + toast), spécifique à
-     * l'appareil, comme `pushEnabled` : exclu de la synchronisation cloud
+     * Rappels locaux de fin de séance (vibration + toast). Préférence propre à
+     * l'appareil : exclue du blob de réglages synchronisé (voir
+     * `utils/syncSettings.ts`). Elle ne gouverne PAS les retours haptiques des
+     * boutons (`useHapticFeedback`) : ceux-ci relèvent du confort d'interface,
+     * pas de la notification de séance.
      */
     sessionVibration?: boolean;
     sessionEndReminderEnabled?: boolean;
@@ -289,6 +292,11 @@ export interface TeacherSnapshot {
     notifyPrefs?: Pick<NotificationSettings, 'gapThreshold' | 'inactivityThresholdDays' | 'quietDuringVacations'> & {
         /** Absent sur les anciens snapshots : traité comme activé pour rétro-compatibilité. */
         enabled?: boolean;
+        /**
+         * État Push de l'appareil, remonté EN LECTURE SEULE vers l'admin dans le
+         * snapshot. Il reste hors du blob de réglages synchronisé : l'admin
+         * l'observe, il ne le pilote pas.
+         */
         pushEnabled?: boolean;
     };
     /** absences justifiées (certificats), le cron n'alerte pas pendant, et les exclut du retard */

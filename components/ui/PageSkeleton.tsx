@@ -21,7 +21,7 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden bg-background px-6 py-[max(2rem,env(safe-area-inset-top))] text-foreground ${overlay ? 'fixed inset-0 z-[90] min-h-[100dvh]' : 'min-h-screen'}`}
+      className={`relative flex items-center justify-center overflow-hidden bg-background px-6 py-[max(2rem,env(safe-area-inset-top))] text-foreground ${overlay ? 'fixed inset-0 z-[90] min-h-[100dvh]' : 'min-h-dvh'}`}
       role="status"
       aria-live="polite"
       aria-label={isLatexLoading ? t('boot.latex.ariaLabel') : t('boot.teacher.ariaLabel')}
@@ -43,7 +43,7 @@ export const AppBootSkeleton: React.FC<AppBootSkeletonProps> = ({ stage = 'works
 export const DashboardSkeleton: React.FC = () => {
   const { t } = useLocale();
   return (
-  <div className="min-h-screen bg-background p-3 pb-8 sm:p-8" role="status" aria-live="polite" aria-label={t('boot.teacher.schedule')}>
+  <div className="min-h-dvh bg-background p-3 pb-8 sm:p-8" role="status" aria-live="polite" aria-label={t('boot.teacher.schedule')}>
     <div className="mx-auto max-w-5xl px-3 sm:px-4">
       <div className="mb-6 flex items-center justify-between pb-3">
         <div className="flex items-center gap-3">
@@ -77,8 +77,8 @@ export const DashboardSkeleton: React.FC = () => {
 export const EditorSkeleton: React.FC<{ className?: string }> = ({ className }) => {
   const { t } = useLocale();
   return (
-  <div className="min-h-screen bg-background p-2 sm:p-5" role="status" aria-live="polite" aria-label={t('boot.teacher.notebooks')}>
-    <div className="container mx-auto flex min-h-[calc(100vh-2.5rem)] max-w-7xl flex-col bg-card p-3 shadow-2xl sm:p-6">
+  <div className="min-h-dvh bg-background p-2 sm:p-5" role="status" aria-live="polite" aria-label={t('boot.teacher.notebooks')}>
+    <div className="container mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-7xl flex-col bg-card p-3 shadow-2xl sm:p-6">
       <div className="mb-6 flex items-center justify-center">
         <Skeleton className="absolute left-4 h-10 w-10 rounded-xl" />
         <div className="text-center">

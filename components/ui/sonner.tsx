@@ -24,10 +24,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "!py-2 !px-3 !min-h-0 !gap-2 !rounded-xl !shadow-sm !border !border-border/60 !bg-slate-900/95 !text-slate-50 dark:!bg-slate-800/95 dark:!text-slate-100 font-sans tracking-tight leading-tight",
-          title: "!text-[11.5px] sm:!text-[12.5px] !font-medium !leading-snug",
-          description: "!text-[10.5px] !opacity-85 !leading-tight",
-          actionButton: "!text-[10.5px] !h-6 !px-2 !rounded-md",
-          cancelButton: "!text-[10.5px] !h-6 !px-2 !rounded-md",
+          title: "!text-[13px] !font-semibold !leading-snug",
+          description: "!text-[12px] !opacity-90 !leading-snug",
+          actionButton: "!text-[12.5px] !font-semibold !h-9 !px-3 !rounded-lg",
+          cancelButton: "!text-[12.5px] !font-semibold !h-9 !px-3 !rounded-lg",
           closeButton: "!h-4 !w-4 !text-xs",
         },
       }}

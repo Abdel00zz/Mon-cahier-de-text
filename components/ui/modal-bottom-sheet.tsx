@@ -161,7 +161,7 @@ export function ModalBottomSheet({
         <DialogPrimitive.Content
           dir={isRtl ? 'rtl' : 'ltr'}
           className={cn(
-            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[14px] rounded-b-none border border-border/80 bg-background text-foreground shadow-2xl outline-none',
+            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[20px] rounded-b-none border border-border/80 bg-background text-foreground shadow-2xl outline-none',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
@@ -207,8 +207,11 @@ export function ModalBottomSheet({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Material 3 Drag Handle */}
-          {dragHandle && (
+          {/* Material 3 Drag Handle.
+              La zone tactile fait 44px de haut (seuil Fitts/tactile) alors que
+              la pastille visible reste fine ; la poignée n'est rendue que
+              lorsqu'elle a réellement une action (paliers ou repli possible). */}
+          {dragHandle && mobilePresentation === 'sheet' && (
             <button
               type="button"
               data-swipe-dismiss-handle
@@ -218,10 +221,10 @@ export function ModalBottomSheet({
                 if (canExpand) expandSheet();
                 else if (canCollapse) collapseSheet();
               }}
-              className="absolute left-1/2 top-2.5 z-20 flex h-4 w-16 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
+              className="absolute left-1/2 top-0 z-20 flex h-11 w-24 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
             >
               {typeof dragHandle === 'boolean'
-                ? <span className="h-1 w-8 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 hover:w-10 hover:bg-muted-foreground/55" />
+                ? <span className="h-1.5 w-10 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 active:w-12 active:bg-muted-foreground/55" />
                 : dragHandle}
             </button>
           )}

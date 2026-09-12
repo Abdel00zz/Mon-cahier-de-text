@@ -190,7 +190,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon className={cn('h-5 w-5 shrink-0 stroke-[2]', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
                   {count ? (
                     <span
-                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
+                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
                     >
                       {countLabel(count)}
                     </span>
@@ -314,7 +314,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   <Icon className={cn("h-5 w-5 transition-colors duration-150", isActive ? "text-primary" : "text-muted-foreground")} />
                   {count ? (
                     <span
-                      className="absolute -top-1.5 -end-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
+                      className="absolute -top-1.5 -end-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
                     >
                       {countLabel(count)}
                     </span>
@@ -322,11 +322,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 </motion.div>
 
                 <span className={cn(
-                  "relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible leading-normal transition-colors duration-150",
-                  locale === 'ar'
-                    ? "text-[11.5px] font-bold leading-normal tracking-normal pb-0.5"
-                    : "text-[10.5px] font-semibold leading-normal pb-0.5",
-                  isActive ? "text-primary font-bold" : "text-muted-foreground"
+                  "mobile-tab-label relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible pb-0.5 transition-colors duration-150",
+                  isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {getMobileLabel(tab.id)}
                 </span>
@@ -364,11 +361,8 @@ export const TabBar = React.memo<TabBarProps>(({
             </motion.div>
 
             <span className={cn(
-              "relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible leading-normal transition-colors duration-150",
-              locale === 'ar'
-                ? "text-[11.5px] font-bold leading-normal tracking-normal pb-0.5"
-                : "text-[10.5px] font-semibold leading-normal pb-0.5",
-              activeTab === 'settings' ? "text-primary font-bold" : "text-muted-foreground"
+              "mobile-tab-label relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible pb-0.5 transition-colors duration-150",
+              activeTab === 'settings' ? "text-primary" : "text-muted-foreground"
             )}>
               {getMobileLabel('settings')}
             </span>

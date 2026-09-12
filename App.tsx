@@ -382,7 +382,7 @@ const App: React.FC = () => {
   }, [authUser?.phone, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
 
   const appSurface = (
-    <div className="relative min-h-screen overflow-x-clip text-foreground">
+    <div className="relative min-h-dvh overflow-x-clip text-foreground">
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -401,9 +401,9 @@ const App: React.FC = () => {
       )}
       <div
         data-settings-sheet-open={view === 'settings' || view === 'notifications' ? 'true' : 'false'}
-        className={`app-settings-parent relative min-h-screen overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
+        className={`app-settings-parent relative min-h-dvh overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
       >
-        <div key={routeKey} className="relative z-10 min-h-screen">
+        <div key={routeKey} className="relative z-10 min-h-dvh">
           <Suspense fallback={routeFallback}>
             {renderContent()}
           </Suspense>

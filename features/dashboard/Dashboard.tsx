@@ -282,7 +282,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-screen bg-white dark:bg-[#202124] text-[#202124] dark:text-[#e8eaed] font-sans antialiased pb-20 sm:pb-8"
+            className="min-h-dvh bg-white dark:bg-[#202124] text-[#202124] dark:text-[#e8eaed] font-sans antialiased pb-20 sm:pb-8"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>

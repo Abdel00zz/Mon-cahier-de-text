@@ -83,28 +83,27 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       }
     >
       <div dir={isAr ? 'rtl' : 'ltr'} className={`text-start ${isAr ? 'font-ar' : ''}`}>
+        {/* 1 · Mission principale : renseigner l'emploi du temps. */}
         <p className="break-words text-sm sm:text-[15px] font-medium leading-relaxed text-muted-foreground">
           {t.message(classLabel)}
         </p>
 
-        <div className="mt-6 flex flex-col gap-2">
-          <Button
-            type="button"
-            onClick={onFill}
-            className="h-11 w-full rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90"
-          >
-            {t.fill}
-          </Button>
+        <Button
+          type="button"
+          onClick={onFill}
+          className="mt-6 h-11 w-full rounded-xl px-5 text-sm font-bold"
+        >
+          {t.fill}
+        </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onSkip}
-            className="h-10 w-full rounded-xl border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700 shadow-none hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:text-sm dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15"
-          >
-            {t.understood}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onSkip}
+          className="mt-2 h-10 w-full rounded-xl text-xs font-semibold sm:text-sm"
+        >
+          {t.understood}
+        </Button>
       </div>
     </Modal>
   );

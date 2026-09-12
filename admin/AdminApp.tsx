@@ -90,7 +90,7 @@ export const AdminApp: React.FC = () => {
 
     if (!bootChecked) {
         return (
-            <div className="flex min-h-screen items-center justify-center text-muted-foreground" style={{ backgroundColor: 'var(--clr-bg)' }}>
+            <div className="flex min-h-dvh items-center justify-center text-muted-foreground" style={{ backgroundColor: 'var(--clr-bg)' }}>
                 Chargement…
             </div>
         );
@@ -120,7 +120,7 @@ export const AdminApp: React.FC = () => {
     if (view.name === 'bulletin') return <OfficialBulletinManager onBack={() => setView({ name: 'overview' })} />;
 
     return (
-        <div className="min-h-screen" style={{ backgroundColor: 'var(--clr-bg)' }}>
+        <div className="min-h-dvh" style={{ backgroundColor: 'var(--clr-bg)' }}>
             <div className="mx-auto flex max-w-6xl flex-wrap justify-end gap-2 px-4 pt-4 sm:px-8">
                 <button onClick={() => setView({ name: 'timetableClock' })} className="min-h-11 rounded-xl border border-border bg-card px-4 text-xs font-bold text-foreground shadow-sm hover:bg-muted">
                     Horaires des séances

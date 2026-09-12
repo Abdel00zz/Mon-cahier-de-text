@@ -27,6 +27,8 @@ interface EditorModalsProps {
   selectedIndices: Indices[];
   /** validation intelligente : renvoie les alertes pour une date donnée */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** même validation, filtrée pour l'affichage : jamais d'alerte sur une séance passée */
+  getDisplayDateWarnings?: (date: string) => { type: string; message: string }[];
   assignDateInitialDate?: string;
   classInfo: ClassInfo;
   contentDirection?: ContentDirection;
@@ -62,6 +64,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   handleConfirmAddContent,
   selectedIndices,
   getDateWarnings,
+  getDisplayDateWarnings,
   assignDateInitialDate,
   classInfo,
   contentDirection,
@@ -133,7 +136,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
           />
         );
       case 'analyse':
-        return <AnalysisModal isOpen={isOpen} onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDateWarnings} classInfo={classInfo} config={config} />;
+        return <AnalysisModal isOpen={isOpen} onClose={handleModalClose} lessonsData={lessonsData} getDateWarnings={getDisplayDateWarnings ?? getDateWarnings} classInfo={classInfo} config={config} />;
       case 'evaluations':
         return (
           <ClassEvaluationsSheet

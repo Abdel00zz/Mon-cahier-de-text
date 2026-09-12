@@ -30,6 +30,31 @@ export interface DateWarning {
     message: string;
 }
 
+/**
+ * Une séance passée est un fait historique : l'emploi du temps actuel ne la
+ * remet pas en cause. Seules les dates du jour ou à venir sont alertables,
+ * sinon modifier son emploi du temps repeindrait rétroactivement d'anciennes
+ * séances. La validation de saisie, elle, reste toujours active.
+ */
+const isActionableSessionDate = (iso: string, todayIso: string): boolean =>
+    !!iso && !!todayIso && iso.slice(0, 10) >= todayIso.slice(0, 10);
+
+/**
+ * Avertissements affichables.
+ *
+ * Une séance passée n'est plus modifiable : son conflit avec l'emploi du temps
+ * est donc neutralisé, car la grille a pu changer depuis l'affectation de la
+ * date et ce serait un faux positif rétroactif.
+ *
+ * Toutes les autres alertes restent affichées, y compris sur le passé : férié,
+ * vacances, absence justifiée, date invalide, hors année. Ce sont des faits
+ * rattachés à la date elle-même, indépendants de tout changement d'horaire.
+ */
+export const toDisplayWarnings = (warnings: DateWarning[], iso: string, todayIso: string): DateWarning[] =>
+    isActionableSessionDate(iso, todayIso)
+        ? warnings
+        : warnings.filter(warning => warning.type !== 'not-scheduled');
+
 const getWeekday = (iso: string): number => {
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(Date.UTC(y, m - 1, d)).getUTCDay();

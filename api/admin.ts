@@ -656,10 +656,15 @@ const requirePhone = (body: AdminBody): string => {
 const handleBlockTeacher = async (body: AdminBody, res: ApiResponse) => {
     const phone = requirePhone(body);
     const redis = await getRedis();
+    // Contrat d'écriture de compte : la révision est lue AVANT toute lecture
+    // dont dépend l'écriture. Un `redis.set` direct pouvait être écrasé par un
+    // push ou une inscription concurrents, et perdre le blocage.
+    const write = await beginAccountWrite(redis, phone);
     const user = await redis.get<StoredUser & { passwordHash?: string }>(KEYS.user(phone));
     if (!user) throw new HttpError(404, 'Enseignant introuvable.');
     const blocked = body.blocked !== false;
-    await redis.set(KEYS.user(phone), { ...user, blocked });
+    write.set(KEYS.user(phone), { ...user, blocked });
+    await write.exec();
     res.status(200).json({ ok: true, blocked });
 };
 
@@ -708,6 +713,10 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
         : 'Message de la direction';
 
     const redis = await getRedis();
+    // Même contrat que l'accusé de lecture côté professeur (api/messages.ts) :
+    // sans révision partagée, une publication simultanée à un accusé pouvait
+    // perdre l'un des deux messages.
+    const write = await beginAccountWrite(redis, phone);
     const [user, storedMessages, entry] = await Promise.all([
         redis.get<StoredUser>(KEYS.user(phone)),
         redis.get<AdminMessage[]>(KEYS.adminMessages(phone)),
@@ -723,7 +732,8 @@ const handleNotifyTeacher = async (body: AdminBody, res: ApiResponse) => {
     };
     const messages = [message, ...normalizeAdminMessages(storedMessages)]
         .slice(0, MAX_ADMIN_MESSAGES_PER_TEACHER);
-    await redis.set(KEYS.adminMessages(phone), messages);
+    write.set(KEYS.adminMessages(phone), messages);
+    await write.exec();
 
     const entrySubs = Array.isArray(entry?.subs) ? entry.subs : [];
     // Le message reste disponible dans l'application même sans abonnement push.

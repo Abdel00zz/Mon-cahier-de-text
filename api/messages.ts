@@ -1,4 +1,5 @@
 import { ApiRequest, ApiResponse, HttpError, parseBody, sendError } from './_lib/http.js';
+import { beginAccountWrite } from './_lib/atomicWrite.js';
 import { normalizeAdminMessages } from './_lib/adminMessages.js';
 import { requireUser } from './_lib/auth.js';
 import { getRedis, KEYS } from './_lib/redis.js';
@@ -27,6 +28,10 @@ const handleList = async (res: ApiResponse, phone: string) => {
 const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: string) => {
     if (!isMessageId(body.messageId)) throw new HttpError(400, 'Identifiant de message invalide.');
     const redis = await getRedis();
+    // Le message est publié par la direction sur la même clé : un simple
+    // read-modify-write écrasait un message arrivé entre la lecture et
+    // l'écriture. La révision de compte sérialise les deux écrivains.
+    const write = await beginAccountWrite(redis, phone);
     const messages = normalizeAdminMessages(await redis.get<AdminMessage[]>(KEYS.adminMessages(phone)));
     const index = messages.findIndex(message => message.id === body.messageId);
     if (index === -1) throw new HttpError(404, 'Message introuvable.');
@@ -34,7 +39,8 @@ const handleAcknowledge = async (body: MessageBody, res: ApiResponse, phone: str
     const message = messages[index];
     if (!message.acknowledgedAt) {
         messages[index] = { ...message, acknowledgedAt: new Date().toISOString() };
-        await redis.set(KEYS.adminMessages(phone), messages);
+        write.set(KEYS.adminMessages(phone), messages);
+        await write.exec();
     }
     res.status(200).json({ ok: true, message: messages[index] });
 };

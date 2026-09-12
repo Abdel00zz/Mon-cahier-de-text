@@ -14,13 +14,14 @@ import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey } from '@/utils/lessonRows';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
+import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
 import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
-import { DateWarning, validateSessionDate } from '@/utils/dateValidation';
+import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/utils/dateValidation';
 import { appendJournal } from '@/utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/utils/predefinedContent';
 import {
@@ -302,6 +303,19 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const getDateWarnings = useCallback(
     (date: string) => validateSessionDate(date, classInfo, config, locale),
     [classInfo, config, locale]
+  );
+
+  /*
+   * Affichage du tableau : une séance déjà passée ne doit plus être repeinte
+   * en orange parce que l'emploi du temps a changé depuis l'affectation des
+   * dates. Les dates elles-mêmes ne sont jamais modifiées ; seule la couleur
+   * rétroactive disparaît. La saisie d'une date (requestDateCommit) continue
+   * d'utiliser la validation complète, y compris pour une saisie rétroactive.
+   */
+  const today = useMoroccoToday();
+  const getDisplayDateWarnings = useCallback(
+    (date: string) => toDisplayWarnings(getDateWarnings(date), date, today),
+    [getDateWarnings, today]
   );
 
   const requestDateCommit = useCallback((date: string, commit: () => void) => {
@@ -1144,7 +1158,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
 
   return (
     <div className="relative w-full pb-8 safe-bottom print:bg-card print:p-0" data-editor-root>
-      <div className="max-w-screen-2xl mx-auto flex min-h-screen w-full flex-col bg-slate-50/45 px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
+      <div className="max-w-screen-2xl mx-auto flex min-h-dvh w-full flex-col bg-slate-50/45 px-3 sm:px-5 lg:px-8 print:mx-0 print:w-full print:max-w-none print:min-h-0 print:bg-card print:p-0 print:shadow-none">
         <div className="print-hidden flex flex-col flex-1">
           <Header
             classInfo={classInfo}
@@ -1189,7 +1203,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onToggleSelect={handleToggleSelectRow}
               onOpenContentEditor={handleOpenContentEditor}
               newlyAddedIds={newlyAddedIds}
-              getDateWarnings={getDateWarnings}
+              getDateWarnings={getDisplayDateWarnings}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}
@@ -1281,6 +1295,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         handleConfirmAddContent={handleConfirmAddContent}
         selectedIndices={selectedIndices}
         getDateWarnings={getDateWarnings}
+        getDisplayDateWarnings={getDisplayDateWarnings}
         assignDateInitialDate={assignDateInitialDate}
         classInfo={classInfo}
         contentDirection={contentDirection}

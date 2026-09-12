@@ -86,8 +86,9 @@ React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Font Awesome, Immer, MathJax
 - Synchronisation par classe et travail hors ligne.
 - Notifications web push avec validation centralisée des types.
 - Contrôle des dépendances par `npm audit`.
-- Budget de 220 kB par chunk non compressé ; les écrans lourds, les modales et MathJax sont chargés à la demande.
-- Le suivi analytics est différé pour ne pas ralentir le premier affichage.
+- Budget de 320 kB par chunk non compressé (`config/optimization.ts`) ; les écrans lourds, les modales et MathJax sont chargés à la demande.
+- `npm run analyze` publie la taille réelle de chaque chunk et **échoue** au-delà du budget : c'est le garde-fou budgétaire du projet.
+- Aucun script analytics tiers n'est embarqué : le premier affichage ne dépend d'aucune mesure réseau externe.
 
 ## Règles de maintenance
 

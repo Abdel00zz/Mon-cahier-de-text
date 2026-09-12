@@ -86,7 +86,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
   if (parsedDates.length === 0) return null;
   const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div className={`min-w-0 max-w-full py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-destructive' : 'text-primary'}`}>
+    <div className={`min-w-0 max-w-full py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
       {parsedDates.map((date, index) => (
         <React.Fragment key={date.source}>
           {index > 0 ? <>{' '}<span className="font-normal text-foreground">{conjunction}</span>{' '}</> : null}
@@ -104,7 +104,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
   const bgClass = isSelected 
     ? 'bg-muted dark:bg-muted/80'
     : hasWarning
-      ? 'bg-warning/[0.12]'
+      ? 'bg-alert/[0.12]'
     : hasAssignedDate
       ? 'bg-muted/40'
       : 'bg-card';
@@ -144,7 +144,7 @@ const RemarkCell: FC<{
   const bgClass = isSelected 
     ? 'bg-muted dark:bg-muted/80'
     : hasWarning
-      ? 'bg-warning/[0.055]'
+      ? 'bg-alert/[0.055]'
     : hasAssignedDate
       ? 'bg-card/55'
       : 'bg-card';
@@ -219,13 +219,13 @@ const TableRowComponent: FC<TableRowProps> = ({
   const isDatedSequenceEnd = !!dateMerge?.isDatedSequenceEnd;
 
   const topBorderClass = isDatedSequenceStart
-    ? (hasWarning ? 'border-t-[2px] border-t-warning/[0.7]' : 'border-t-[2px] border-t-foreground/30')
+    ? (hasWarning ? 'border-t-[2px] border-t-alert/[0.7]' : 'border-t-[2px] border-t-foreground/30')
     : '';
       
   const bottomBorderClass = isDatedSequenceEnd 
-    ? (hasWarning ? 'border-b-[2px] border-b-warning/[0.7]' : 'border-b-[2px] border-b-foreground/30')
+    ? (hasWarning ? 'border-b-[2px] border-b-alert/[0.7]' : 'border-b-[2px] border-b-foreground/30')
     : isDatedGroupEnd 
-      ? (hasWarning ? 'border-b border-b-warning/[0.65]' : 'border-b border-b-border/70')
+      ? (hasWarning ? 'border-b border-b-alert/[0.65]' : 'border-b border-b-border/70')
       : '';
 
   const datedLineClass = [topBorderClass, bottomBorderClass].filter(Boolean).join(' ');
@@ -241,7 +241,7 @@ const TableRowComponent: FC<TableRowProps> = ({
    * teinte primaire subtile + rail primaire, lisible et professionnel.
    */
   const datedWash = hasWarning
-    ? 'bg-warning/[0.07]'
+    ? 'bg-alert/[0.07]'
     : hasAssignedDate
       ? 'bg-card/70'
       : 'bg-transparent';
@@ -249,7 +249,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   const hoverWash = isSelected
     ? ''
     : hasWarning
-      ? 'hover:bg-warning/[0.11]'
+      ? 'hover:bg-alert/[0.11]'
       : hasAssignedDate
         ? 'hover:bg-muted/40'
         : 'hover:bg-muted/50';
@@ -263,7 +263,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     ? 'border-e border-e-border'
     : hasAssignedDate
       ? hasWarning
-        ? 'border-e border-e-warning/40'
+        ? 'border-e border-e-alert/40'
         : 'border-e border-e-border'
       : 'border-e border-e-border';
   const contentDividerClass = layout === 'content-only'
@@ -272,7 +272,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       ? 'border-e border-e-border'
       : hasAssignedDate
         ? hasWarning
-          ? 'border-e border-e-warning/40'
+          ? 'border-e border-e-alert/40'
           : 'border-e border-e-border'
         : 'border-e border-e-border';
 
@@ -289,7 +289,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
     const contentCell = (
       <div
-        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
+        className={`flex min-w-0 flex-1 items-center justify-center px-2 py-1.5 sm:px-3 cursor-pointer ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-colors ${contentBottomBorder}`}
         data-row-content="true"
         onClick={event => {
           const target = event.target as HTMLElement | null;
@@ -345,7 +345,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 
   const contentCell = (
     <div
-      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-warning/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-all duration-150 ${contentBottomBorder}`}
+      className={`relative min-w-0 flex-1 cursor-pointer px-2 py-1.5 sm:px-3 ${contentDividerClass} ${isSelected ? '' : hasWarning ? 'hover:bg-alert/[0.08]' : hasAssignedDate ? 'hover:bg-muted/40' : 'hover:bg-muted/50'} transition-all duration-150 ${contentBottomBorder}`}
       data-row-content="true"
       onClick={event => {
         const target = event.target as HTMLElement | null;

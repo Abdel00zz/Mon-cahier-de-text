@@ -21,7 +21,7 @@ export const AdminLogin: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4" style={{ backgroundColor: 'var(--clr-bg)' }}>
+        <div className="flex min-h-dvh items-center justify-center p-4" style={{ backgroundColor: 'var(--clr-bg)' }}>
             <form
                 onSubmit={handleSubmit}
                 className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-lg"

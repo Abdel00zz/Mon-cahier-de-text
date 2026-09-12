@@ -27,6 +27,8 @@
   --color-success-strong: hsl(var(--success-strong));
   --color-warning-strong: hsl(var(--warning-strong));
   --color-destructive-strong: hsl(var(--destructive-strong));
+  --color-alert: hsl(var(--alert));
+  --color-alert-strong: hsl(var(--alert-strong));
   --color-scheduled: hsl(var(--scheduled));
   --color-scheduled-foreground: hsl(var(--scheduled-foreground));
   --color-border: hsl(var(--border));
@@ -76,11 +78,11 @@
 @utility text-fluid-4xl { font-size: var(--text-fluid-4xl); }
 
 /* ── 2. Spring Physics Micro-Interactions ───────────────────────────────── */
+/* Le survol est déclaré plus bas dans un `@media (hover: hover)` : sur un
+   écran tactile, `:hover` reste « collé » après le tap et fige l'élément dans
+   une position élevée. Seul l'état pressé est donc inconditionnel ici. */
 @utility spring-interactive {
   transition: transform 260ms var(--ease-spring), box-shadow 260ms ease, background-color 180ms ease, border-color 180ms ease;
-  &:hover {
-    transform: translateY(-2px) scale(1.015);
-  }
   &:active {
     transform: translateY(0) scale(0.975);
     transition-duration: 120ms;
@@ -97,9 +99,6 @@
 /* ── 3. Color States & Accessibility Tokens (Kole Jain Rules) ─────────── */
 @utility state-interactive {
   transition: filter 160ms ease, transform 160ms var(--ease-spring), background-color 160ms ease;
-  &:hover:not(:disabled) {
-    filter: brightness(1.10);
-  }
   &:active:not(:disabled) {
     filter: brightness(0.90);
     transform: scale(0.98);
@@ -119,6 +118,50 @@
   justify-content: center;
 }
 
+/* Bouton d'action flottant mobile (FAB de l'éditeur).
+   Ancre le bouton juste au-dessus de la barre d'onglets mobile (68px de haut,
+   posée à 0.65rem du bas) sans jamais passer sous l'encoche ni sous la barre
+   gestuelle. Sans cette règle, `position: fixed` sans `bottom` laissait le FAB
+   à sa position statique, donc sous la barre d'onglets sur la plupart des
+   téléphones. */
+@utility fab-safe {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5.75rem);
+  transition: opacity 200ms ease, transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, opacity;
+}
+
+/* Le FAB disparaît avec la barre d'onglets quand le clavier virtuel s'ouvre :
+   il ne doit jamais flotter au-dessus de la zone de saisie. */
+html[data-keyboard='open'] .fab-safe {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, calc(100% + 2rem), 0);
+}
+
+/* ── Survol réservé aux appareils à pointeur fin ─────────────────────────
+   Sur tactile, `:hover` s'applique au tap puis reste « collé » jusqu'au tap
+   suivant : les cartes restaient soulevées et les boutons éclaircis. */
+@media (hover: hover) and (pointer: fine) {
+  .spring-interactive:hover {
+    transform: translateY(-2px) scale(1.015);
+  }
+  .state-interactive:hover:not(:disabled) {
+    filter: brightness(1.10);
+  }
+}
+
+/* ── Cibles tactiles des menus ───────────────────────────────────────────
+   Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
+   44px recommandé par la ligne directrice iOS/Android. */
+@media (pointer: coarse) {
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"],
+  [role="option"] {
+    min-height: 44px;
+  }
+}
+
 /* ── 4. GPU-Accelerated Structural Shimmer Skeletons (CLS = 0) ─────────── */
 @keyframes skeleton-shimmer {
   0% {
@@ -133,7 +176,7 @@
   position: relative;
   overflow: hidden;
   background-color: hsl(var(--muted) / 0.6);
-  border-radius: 0px;
+  border-radius: var(--radius-md, 0.5rem);
 }
 
 .skeleton-shimmer::after {
@@ -280,6 +323,11 @@
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
+    /* Alerte de séance du cahier : non-conformité signalée en rouge moderne.
+       Jeton dédié, distinct de `warning` (ambre, usage général) et de
+       `destructive` (actions destructives). Texte « strong » : ~6,4:1 (AA). */
+    --alert: 0 78% 56%;
+    --alert-strong: 0 74% 42%;
     --scheduled: 216 88% 95%; /* #e8f1fe (Ligne active sélectionnée: Bleu très clair) */
     --scheduled-foreground: 33 9% 23%;
     --badge-bg: 216 88% 95%; /* #e8f1fe (Badge date fond) */
@@ -331,6 +379,10 @@
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 84.2% 60%;
+    /* Rouge d'alerte désaturé pour ne pas vibrer sur fond sombre ;
+       texte éclairci : ~7:1 sur le fond de page. */
+    --alert: 0 72% 62%;
+    --alert-strong: 0 84% 74%;
     --scheduled: 217 33% 17%; /* #1e293b (Ligne active sélectionnée: Bleu très sombre) */
     --scheduled-foreground: 213 96% 78%; /* #93c5fd */
     --badge-bg: 217 33% 17%; /* #1e293b (Badge date fond) */
@@ -346,6 +398,24 @@
 
   * {
     @apply border-border;
+  }
+
+  /* Sureté tactile : supprime le délai de 300 ms du double-tap et le zoom
+     accidentel lors d'un appui répété sur un contrôle. Consolidé ici, sur les
+     éléments réellement interactifs, plutôt que répété dans chaque écran. */
+  button, a, label, select, summary, [role="button"], [role="menuitem"], [role="option"] {
+    touch-action: manipulation;
+  }
+
+  /* iOS / iPadOS : un champ sous 16px déclenche un zoom automatique du
+     viewport au focus. Le plancher n'est appliqué qu'au focus pour ne pas
+     modifier la densité des tableaux et des grilles au repos. */
+  @media (pointer: coarse) {
+    input:focus,
+    select:focus,
+    textarea:focus {
+      font-size: max(1rem, 1em);
+    }
   }
 
   body {
@@ -418,9 +488,19 @@
   }
 
   /* Navigation & Barre latérale / mobile en version arabe (+15%) */
-  html[lang="ar"] .mobile-tab-bar button span {
-    font-size: 0.775rem;
+  /* Libellés de la barre d'onglets mobile : la taille suit la largeur réelle
+     de l'écran, afin de ne jamais tronquer « Évaluations » sur un écran de
+     320px tout en restant généreuse sur les grands téléphones. Le sélecteur
+     vise uniquement le libellé (`> span`), jamais la pastille de notification
+     imbriquée dans le conteneur d'icône. */
+  .mobile-tab-bar .mobile-tab-label {
+    font-size: clamp(0.6875rem, 2.9vw, 0.75rem);
     line-height: 1.25;
+    font-weight: 600;
+  }
+
+  html[lang="ar"] .mobile-tab-bar .mobile-tab-label {
+    font-size: clamp(0.6875rem, 3.1vw, 0.8125rem);
     font-weight: 700;
   }
 
@@ -460,7 +540,7 @@
   *::-webkit-scrollbar-thumb {
     min-height: 2.5rem;
     border: 2px solid transparent;
-    border-radius: 0px;
+    border-radius: 999px;
     background: hsl(var(--muted-foreground) / 0.36);
     background-clip: padding-box;
   }

@@ -155,7 +155,7 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 - Les pages principales sont chargées avec `React.lazy`.
 - Les modales lourdes de l’éditeur sont chargées à la demande.
 - MathProvider partage la promesse de démarrage MathJax entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
-- Les analytics sont chargées après le rendu de la surface principale, sans bloquer l’interface.
+- Aucun script de mesure tierce (analytics) n’est chargé : le premier affichage ne dépend d’aucun réseau externe.
 - Administration et application enseignant sont deux entrées séparées.
 - Workbox précache uniquement les ressources nécessaires.
 - Le budget avertit au-delà de 320 kB par chunk non compressé.
