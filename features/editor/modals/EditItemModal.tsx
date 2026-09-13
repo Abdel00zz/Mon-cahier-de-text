@@ -414,6 +414,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={titleNode}
+      description={t('addContent.subtitle')}
       maxWidth={stage === 'select' ? "3xl" : "xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-2xl sm:rounded-2xl"}
       headerClassName="border-b-0 bg-background/85 backdrop-blur-md"
@@ -465,14 +466,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Book}
                 label={tc('manageLessons.type.chapter')}
 
-                colorClass="text-foreground"
+                colorClass="text-indigo-600 dark:text-indigo-400"
                 onClick={() => handleSelectType('chapter')}
               />
               <CategoryCard
                 icon={Network}
                 label={t('addContent.section')}
 
-                colorClass="text-foreground"
+                colorClass="text-violet-600 dark:text-violet-400"
                 onClick={() => handleSelectType('section')}
                 disabled={!canAddSection}
                 tooltip={t('addContent.sectionTooltip')}
@@ -481,7 +482,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label={t('addContent.subsection')}
 
-                colorClass="text-foreground"
+                colorClass="text-cyan-600 dark:text-cyan-400"
                 onClick={() => handleSelectType('subsection')}
                 disabled={!canAddSubsection}
                 tooltip={t('addContent.subsectionTooltip')}
@@ -490,7 +491,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={Network}
                 label={t('addContent.subsubsection')}
 
-                colorClass="text-foreground"
+                colorClass="text-teal-600 dark:text-teal-400"
                 onClick={() => handleSelectType('subsubsection')}
                 disabled={!canAddSubsubsection}
                 tooltip={t('addContent.subsubsectionTooltip')}
@@ -499,7 +500,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={ListTree}
                 label={t('addContent.item')}
 
-                colorClass="text-foreground"
+                colorClass="text-blue-600 dark:text-blue-400"
                 onClick={() => handleSelectType('item')}
                 disabled={!canAddItem}
                 tooltip={t('addContent.itemTooltip')}
@@ -508,7 +509,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={GripHorizontal}
                 label={t('addContent.separator')}
 
-                colorClass="text-muted-foreground"
+                colorClass="text-slate-600 dark:text-slate-400"
                 onClick={() => handleSelectType('separator')}
                 disabled={!canAddSeparator}
                 tooltip={t('addContent.separatorTooltip')}
@@ -526,21 +527,21 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={TestTube}
                 label={tc('manageLessons.type.evaluation_diagnostic')}
 
-                colorClass="text-foreground"
+                colorClass="text-amber-600 dark:text-amber-400"
                 onClick={() => handleSelectType('evaluation_diagnostic')}
               />
               <CategoryCard
                 icon={Home}
                 label={tc('manageLessons.type.devoir_maison')}
 
-                colorClass="text-foreground"
+                colorClass="text-orange-600 dark:text-orange-400"
                 onClick={() => handleSelectType('devoir_maison')}
               />
               <CategoryCard
                 icon={FileSignature}
                 label={tc('manageLessons.type.controle_continu')}
 
-                colorClass="text-foreground"
+                colorClass="text-rose-600 dark:text-rose-400"
                 onClick={() => handleSelectType('controle_continu')}
               />
             </div>
@@ -563,7 +564,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 icon={CheckSquare}
                 label={tc('manageLessons.type.correction_controle_continu')}
 
-                colorClass="text-foreground"
+                colorClass="text-emerald-600 dark:text-emerald-400"
                 onClick={() => handleSelectType('correction_controle_continu')}
               />
             </div>

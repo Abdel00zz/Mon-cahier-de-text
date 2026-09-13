@@ -31,7 +31,7 @@ interface SupportWhatsAppBlockProps {
  * valider. Ne rend rien si aucun numéro exploitable n'est configuré
  * (voir `constants/support.ts`).
  *
- * Contraste vérifié : texte vert très foncé sur vert WhatsApp (~7,3:1, AA).
+ * Contraste vérifié : texte blanc sur vert profond (~4,7:1, AA).
  */
 export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
   locale = 'fr',
@@ -42,16 +42,16 @@ export const SupportWhatsAppBlock: React.FC<SupportWhatsAppBlockProps> = ({
   if (!hasSupportWhatsApp()) return null;
 
   return (
-    <div className={`w-full border-t border-border/60 pt-5 ${className}`}>
+    <div className={`flex w-full flex-col items-center border-t border-border/60 pt-5 text-center ${className}`}>
       <p className="mx-auto max-w-md text-xs font-medium leading-relaxed text-muted-foreground">
         {hint}
       </p>
       <Button
         asChild
-        className="mt-3 h-11 w-full rounded-xl border-0 bg-[#25D366] text-[13px] font-bold text-[#06301F] shadow-sm hover:brightness-105 active:brightness-95 sm:w-auto sm:px-5"
+        className="mt-4 min-h-14 w-full max-w-[390px] rounded-full border-0 bg-[#2e7d4f] px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(44,42,38,0.12)] transition-all duration-200 ease-out hover:-translate-y-px hover:bg-[#286b44] hover:shadow-[0_10px_22px_rgba(44,42,38,0.16)] active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#2e7d4f]/60 focus-visible:ring-offset-2 sm:min-h-[54px] sm:w-auto sm:px-8"
       >
-        <a href={buildSupportWhatsAppUrl(locale)} target="_blank" rel="noopener noreferrer">
-          <WhatsAppIcon className="h-[18px] w-[18px]" />
+        <a href={buildSupportWhatsAppUrl(locale)} target="_blank" rel="noopener noreferrer" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+          <WhatsAppIcon className="h-6 w-6 shrink-0" />
           {label}
         </a>
       </Button>
