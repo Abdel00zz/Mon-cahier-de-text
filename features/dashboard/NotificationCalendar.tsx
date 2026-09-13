@@ -544,7 +544,7 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
             const current = inCurrentMonth(date);
             const selected = iso === selectedDate;
             const isToday = iso === today;
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            const isWeekend = date.getDay() === 0;
 
             const holiday = allDayEvents.find(event => event.kind === 'holiday');
             const vacation = allDayEvents.find(event => event.kind === 'vacation');

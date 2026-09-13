@@ -101,6 +101,23 @@ test('master switch, teacher absences, deleted classes and holidays silence aler
   const holiday = { ...calendar, vacances: [{ debut: '2026-09-14', fin: '2026-09-14', nom: 'Congé' }] };
   assert.equal(detectSessionAlerts(config, [classInfo], holiday, new Date('2026-09-14T09:59:00+01:00'), () => false).events.length, 0);
 });
+
+test('Sunday rest suppresses legacy session alerts and automatic current-class navigation', () => {
+  const sundayConfig = { ...config, timetable: [{ day: 0, slot: 0, classId: classInfo.id }], notificationSettings: { ...config.notificationSettings!, quietDuringVacations: false } };
+  for (const time of ['08:30:00', '08:59:00', '09:05:00']) {
+    const result = detectSessionAlerts(sundayConfig, [classInfo], calendar, new Date(`2026-09-13T${time}+01:00`), () => false);
+    assert.deepEqual(result.current, []);
+    assert.deepEqual(result.events, []);
+  }
+  const saturday = detectSessionAlerts({ ...sundayConfig, timetable: [{ day: 6, slot: 0, classId: classInfo.id }] }, [classInfo], calendar, new Date('2026-09-12T08:59:00+01:00'), () => false);
+  assert.equal(saturday.current.length, 1);
+  assert.equal(saturday.events.length, 1);
+});
+
+test('Sunday slots in legacy data never accelerate official progression estimates', () => {
+  const result = analyse(classInfo, lessons, { config: { ...config, timetable: [...config.timetable!, { day: 0, slot: 0, classId: classInfo.id }] } });
+  assert.equal(result.rows[0].estimatedEnd, analyse().rows[0].estimatedEnd);
+});
 test('current session has a strict end boundary and lunch is not a continuous session', () => {
   assert.equal(detect('09:59:00').current.length, 1); assert.equal(detect('10:00:00').current.length, 0);
   const timetable = [{ day: 1, slot: 3, classId: 'c1' }, { day: 1, slot: 4, classId: 'c1' }];

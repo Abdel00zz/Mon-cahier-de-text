@@ -5,6 +5,7 @@ import {
     getEffectiveSchoolYear,
     getBundledCalendar,
     isWithinKnownSchoolYear,
+    isWeeklyRestDay,
     localizeCalendarName,
 } from './calendar.js';
 import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
@@ -23,7 +24,7 @@ import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
  * séance exceptionnelle...), mais il est prévenu immédiatement.
  */
 
-type DateWarningType = 'invalid' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
+type DateWarningType = 'invalid' | 'weekly-rest' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
 
 export interface DateWarning {
     type: DateWarningType;
@@ -78,9 +79,14 @@ export const validateSessionDate = (
         return [{ type: 'invalid', message: t('dateWarning.invalid') }];
     }
 
-    // 1. Emploi du temps : le prof enseigne-t-il cette classe ce jour-là ?
+    // Le dimanche est signalé même sans horaire (ou avec un ancien horaire
+    // importé le dimanche). L'exception reste confirmable par le professeur.
+    const weeklyRest = isWeeklyRestDay(iso);
+    if (weeklyRest) warnings.push({ type: 'weekly-rest', message: t('dateWarning.weeklyRest') });
+
+    // Évite de répéter « pas de cours prévu » pour ce même jour de repos.
     const schedule = config.schedules?.find(s => s.classId === classInfo.id);
-    if (schedule && schedule.slots.length > 0) {
+    if (!weeklyRest && schedule && schedule.slots.length > 0) {
         const weekday = getWeekday(iso);
         if (!schedule.slots.some(slot => slot.weekday === weekday)) {
             warnings.push({

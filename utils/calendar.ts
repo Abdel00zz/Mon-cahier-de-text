@@ -199,11 +199,15 @@ const getWeekday = (iso: string): number => {
     return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
 };
 
+/** Repos hebdomadaire du cahier : le samedi reste un jour d'enseignement. */
+export const isWeeklyRestDay = (iso: string): boolean =>
+    isValidISODate(iso) && getWeekday(iso) === 0;
+
 const INSTRUCTION_WEEKDAYS = [1, 2, 3, 4, 5, 6];
 
 const isSchoolDay = (date: string | Date, weekdays: number[], cal: HolidayCalendar): boolean => {
     const iso = asISO(date);
-    if (!weekdays.includes(getWeekday(iso))) return false;
+    if (isWeeklyRestDay(iso) || !weekdays.includes(getWeekday(iso))) return false;
     return !isHoliday(iso, cal) && !isVacation(iso, cal);
 };
 
@@ -385,7 +389,7 @@ export const countExpectedSessions = (
     let guard = 0;
     while (cursor <= end && guard < 1000) {
         const weekday = getWeekday(cursor);
-        if (sessionsByWeekday.has(weekday) && !isHoliday(cursor, cal) && !isVacation(cursor, cal)) {
+        if (!isWeeklyRestDay(cursor) && sessionsByWeekday.has(weekday) && !isHoliday(cursor, cal) && !isVacation(cursor, cal)) {
             total += sessionsByWeekday.get(weekday)!;
         }
         cursor = addDaysISO(cursor, 1);

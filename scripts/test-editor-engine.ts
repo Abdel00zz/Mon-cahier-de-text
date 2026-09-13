@@ -15,6 +15,92 @@ import { MainTable } from '../features/editor/MainTable';
 import { LocaleProvider } from '../i18n/LocaleProvider';
 import { useNotificationFeed, type NotificationFeed } from '../hooks/useNotificationFeed';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '../utils/starterDiagnostic';
+import { validateSessionDate, toDisplayWarnings } from '../utils/dateValidation';
+import { countExpectedSessions, countSchoolDaysBetween, isWeeklyRestDay, type HolidayCalendar } from '../utils/calendar';
+import { collectClassSignals, dateActionId } from '../utils/notificationSignals';
+import { SelectionBar } from '../features/editor/SelectionBar';
+
+const dateCalendar: HolidayCalendar = {
+  version: 1, pays: 'MA', fuseau: 'Africa/Casablanca',
+  anneeScolaire: { libelle: '2026-2027', debut: '2026-09-07', fin: '2027-07-03' },
+  joursFeries: [], vacances: [],
+};
+const dateClass: ClassInfo = { id: 'sunday-test', name: '1AC 1', subject: 'Mathématiques', cycle: 'college', teacherName: '', createdAt: '2026-09-07', color: 'blue' };
+
+test('dimanche : avertissement autonome, traduit, sans doublon horaire ; samedi ouvré', () => {
+  for (const locale of ['fr', 'ar', 'en'] as const) {
+    for (const slots of [[], [{ weekday: 1 }], [{ weekday: 0 }]]) {
+      const warnings = validateSessionDate('2026-09-13', dateClass, { schedules: [{ classId: dateClass.id, slots }] }, locale, dateCalendar);
+      assert.deepEqual(warnings.map(warning => warning.type), ['weekly-rest']);
+      assert.ok(!warnings[0].message.includes('dateWarning.'));
+      assert.deepEqual(toDisplayWarnings(warnings, '2026-09-13', '2026-09-21'), warnings);
+    }
+  }
+  assert.equal(validateSessionDate('2026-09-12', dateClass, {}, 'fr', dateCalendar).length, 0);
+  assert.equal(validateSessionDate('2026-09-14', dateClass, {}, 'fr', dateCalendar).length, 0);
+  assert.equal(validateSessionDate('2026-02-31', dateClass, {}, 'fr', dateCalendar)[0].type, 'invalid');
+  assert.equal(isWeeklyRestDay('2026-02-31'), false);
+  assert.equal(isWeeklyRestDay(''), false);
+});
+
+test('dimanche : les alertes férié/absence restent distinctes, aucun jour déplacé', () => {
+  const date = '2026-09-13';
+  const config = { absences: [{ debut: date, fin: date, motif: 'Absence' }] };
+  const cal = { ...dateCalendar, joursFeries: [{ date, nom: 'Férié test', type: 'national' as const }] };
+  const before = JSON.stringify({ config, cal });
+  const warnings = validateSessionDate(date, dateClass, config, 'fr', cal);
+  assert.deepEqual(warnings.map(warning => warning.type), ['weekly-rest', 'holiday', 'absence']);
+  assert.equal(JSON.stringify({ config, cal }), before);
+});
+
+test('dimanche : aucun retard fictif avec un ancien horaire dimanche, samedi conservé', () => {
+  const slots = [{ weekday: 0 }, { weekday: 6 }];
+  assert.equal(countExpectedSessions('2026-09-12', '2026-09-13', slots, dateCalendar), 1);
+  assert.equal(countSchoolDaysBetween('2026-09-12', '2026-09-13', [0, 6], dateCalendar), 1);
+});
+
+test('dimanche : la même alerte alimente le cahier et les notifications, sans retard fictif', context => {
+  context.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-09-14T12:00:00Z') });
+  const storage = new Map<string, string>();
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: (key: string) => storage.get(key) ?? null } });
+  try {
+    const date = '2026-09-13';
+    const config = { schedules: [{ classId: dateClass.id, slots: [{ weekday: 0 }] }], notificationSettings: { enabled: true } } as unknown as AppConfig;
+    storage.set(`classData_v1_${dateClass.id}`, JSON.stringify([{ type: 'chapter', title: 'Test', date }]));
+    const warnings = validateSessionDate(date, dateClass, config);
+    const id = dateActionId(dateClass.id, date, warnings);
+    const signal = collectClassSignals(dateClass, config).find(item => item.id === id);
+    assert.ok(signal);
+    assert.match(signal.detail, /dimanche/);
+    assert.equal(signal.date, date);
+    assert.equal(signal.dismissible, true);
+    storage.set('appConfig_v1', JSON.stringify({ notificationDismissals: { [dateClass.id]: [id] } }));
+    assert.equal(collectClassSignals(dateClass, config).find(item => item.id === id)?.ignored, true);
+    storage.delete(`classData_v1_${dateClass.id}`);
+    assert.equal(collectClassSignals(dateClass, config).some(item => item.kind === 'missed-session'), false);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('barre de sélection : vide masquée, compteur accessible et mutations verrouillées pendant le calcul', () => {
+  const noop = () => {};
+  const props = { count: 2, hasDate: true, canAdd: true, canAssignDate: true, canEdit: true,
+    onAdd: noop, onAssignDate: noop, onAssignToday: noop, onClearDate: noop, onEdit: noop, onDelete: noop, onClear: noop };
+  const render = (overrides = {}) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(SelectionBar, { ...props, ...overrides }),
+  }));
+  assert.equal(render({ count: 0 }), '');
+  const html = render({ isPending: true });
+  assert.match(html, /role="toolbar"/);
+  assert.match(html, /aria-busy="true"/);
+  assert.match(html, /aria-label="2 éléments sélectionnés"/);
+  assert.equal((html.match(/<button\b/g) ?? []).length, 5);
+  assert.equal((html.match(/disabled=""/g) ?? []).length, 4);
+  assert.ok(!html.includes('overflow-x-auto'));
+});
 
 const fixture: LessonsData = [
   { type: 'chapter', title: 'Premier', items: [{ type: 'exercice', title: 'Autre' }] },

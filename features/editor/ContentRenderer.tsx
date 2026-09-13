@@ -78,12 +78,12 @@ const renderChapterTitleStyled = (text: string) => {
 
     return (
       <span className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center leading-snug">
-        <span className="text-[0.95em] font-bold text-primary font-sans tracking-tight">
+        <span className="text-[0.95em] font-bold text-inherit font-sans tracking-tight">
           {renderChapterLabel(chapterPrefix)}
-          {separator ? <span className="ms-1 text-primary/80">{separator}</span> : null}
+          {separator ? <span className="ms-1 opacity-80">{separator}</span> : null}
         </span>
         {restTitle ? (
-          <span className="text-[0.85em] font-semibold text-primary">
+          <span className="text-[0.85em] font-semibold text-inherit">
             {restTitle}
           </span>
         ) : null}
@@ -92,7 +92,7 @@ const renderChapterTitleStyled = (text: string) => {
   }
 
   return (
-    <span className="text-[0.85em] font-bold text-primary">
+    <span className="text-[0.85em] font-bold text-inherit">
       {text}
     </span>
   );
@@ -151,7 +151,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = item.title || config.name;
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="editor-type-chapter text-primary my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
+          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
             <span className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />

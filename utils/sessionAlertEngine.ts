@@ -1,6 +1,6 @@
 import type { AppConfig, ClassInfo } from '../types.js';
 import { getDaySessionBlocks, type SessionBlock } from './timetable.js';
-import { getEffectiveSchoolYear, isHoliday, isVacation, todayInMorocco, type HolidayCalendar } from './calendar.js';
+import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar.js';
 
 interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number }
 const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
@@ -18,7 +18,7 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
   const settings = config.notificationSettings;
   const holidays = isHoliday(today, calendar) || isVacation(today, calendar);
   const absent = config.absences?.some(period => today >= period.debut && today <= period.fin);
-  if (absent || today < year.debut || today > year.fin) return { current: [] as SessionBlock[], events: [] as SessionAlert[], today };
+  if (isWeeklyRestDay(today) || absent || today < year.debut || today > year.fin) return { current: [] as SessionBlock[], events: [] as SessionAlert[], today };
   const ids = new Set(classes.map(item => item.id));
   const blocks = getDaySessionBlocks(
     config.timetable ?? [],

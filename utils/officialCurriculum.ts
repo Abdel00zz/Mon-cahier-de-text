@@ -1,7 +1,7 @@
 import bundledJson from '../public/doc_officiel/curriculum.json' with { type: 'json' };
 import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types.js';
 import { normalizeOfficialClassName } from '../constants/class-levels.js';
-import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, schoolYearLabelFromDate, todayInMorocco, type HolidayCalendar } from './calendar.js';
+import { getBundledCalendar, getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, schoolYearLabelFromDate, todayInMorocco, type HolidayCalendar } from './calendar.js';
 import { getDaySessionBlocks } from './timetable.js';
 import { detectChapterLifecycles, validChapterDate } from './chapterLifecycle.js';
 
@@ -128,7 +128,7 @@ export function computeOfficialProgression(classInfo: ClassInfo, lessons: Lesson
     for (let n = 0; n < 370; n++, date.setUTCDate(date.getUTCDate() + 1)) {
       const iso = date.toISOString().slice(0, 10);
       if (iso > year.fin) break;
-      if (isHoliday(iso, calendar) || isVacation(iso, calendar)
+      if (isWeeklyRestDay(iso) || isHoliday(iso, calendar) || isVacation(iso, calendar)
         || config.absences?.some(absence => iso >= absence.debut && iso <= absence.fin)) continue;
       const hours = hoursByWeekday[date.getUTCDay()];
       const reserved = options.reservedHours?.[iso];

@@ -21,6 +21,7 @@ import {
     getEffectiveSchoolYear,
     isHoliday,
     isVacation,
+    isWeeklyRestDay,
     todayInMorocco,
 } from './calendar';
 
@@ -194,7 +195,7 @@ const isClassSchoolDay = (
     calendar: HolidayCalendar,
     absences: AppConfig['absences'],
 ): boolean => {
-    if (!weekdays.has(new Date(toUTC(iso)).getUTCDay())) return false;
+    if (isWeeklyRestDay(iso) || !weekdays.has(new Date(toUTC(iso)).getUTCDay())) return false;
     if (isHoliday(iso, calendar) || isVacation(iso, calendar)) return false;
     if (absences?.some(period => iso >= period.debut && iso <= period.fin)) return false;
     return true;
