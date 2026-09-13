@@ -1328,3 +1328,105 @@ html[data-keyboard='open'] .mobile-tab-bar {
     .keep-session-active { animation: none; }
   }
 }
+
+/* ── 4. Design System "Beige Chaud & Épuré" ─────────────────────────────── */
+:root {
+  --ds-bg-page: #f7f5f2;
+  --ds-surface: #ffffff;
+  --ds-surface-secondary: #f1eee9;
+  --ds-border: #e6e1d9;
+  --ds-text-primary: #2c2a26;
+  --ds-text-secondary: #6b6560;
+  --ds-accent: #8b7355;
+  --ds-accent-soft: #e8e0d5;
+  --ds-accent-hover: #6d5a42;
+  --ds-whatsapp: #2e7d4f;
+  --ds-whatsapp-hover: #256841;
+  --ds-whatsapp-soft: #e8f5ee;
+  --ds-shadow-card: 0 4px 24px rgba(44, 42, 38, 0.08);
+  --ds-radius-card: 16px;
+  --ds-radius-btn: 10px;
+  --ds-radius-pill: 50px;
+  --ds-radius-icon: 14px;
+}
+
+.dark {
+  --ds-bg-page: #171513;
+  --ds-surface: #1f1d1a;
+  --ds-surface-secondary: #181614;
+  --ds-border: #38332c;
+  --ds-text-primary: #f3efe8;
+  --ds-text-secondary: #a8a199;
+  --ds-accent: #a08766;
+  --ds-accent-soft: #342e26;
+  --ds-accent-hover: #b59b77;
+  --ds-whatsapp: #2e7d4f;
+  --ds-whatsapp-hover: #256841;
+  --ds-whatsapp-soft: #1c2b21;
+  --ds-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.ds-card {
+  background-color: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-card);
+  box-shadow: var(--ds-shadow-card);
+}
+
+.ds-card-footer {
+  background-color: var(--ds-surface-secondary);
+  border-top: 1px solid var(--ds-border);
+}
+
+.ds-btn-primary {
+  background-color: var(--ds-accent);
+  color: #ffffff;
+  border-radius: var(--ds-radius-btn);
+  font-weight: 600;
+  transition: all 0.15s ease-out;
+}
+.ds-btn-primary:hover {
+  background-color: var(--ds-accent-hover);
+  transform: translateY(-1px);
+}
+.ds-btn-primary:active {
+  transform: translateY(0);
+}
+
+.ds-btn-secondary {
+  background-color: var(--ds-surface);
+  color: var(--ds-text-primary);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-btn);
+  font-weight: 600;
+  transition: all 0.15s ease-out;
+}
+.ds-btn-secondary:hover {
+  background-color: var(--ds-bg-page);
+  transform: translateY(-1px);
+}
+.ds-btn-secondary:active {
+  transform: translateY(0);
+}
+
+.ds-btn-whatsapp {
+  background-color: var(--ds-whatsapp);
+  color: #ffffff;
+  border-radius: var(--ds-radius-pill);
+  font-weight: 600;
+  transition: all 0.15s ease-out;
+}
+.ds-btn-whatsapp:hover {
+  background-color: var(--ds-whatsapp-hover);
+  transform: translateY(-1px);
+}
+.ds-btn-whatsapp:active {
+  transform: translateY(0);
+}
+
+.ds-icon-box {
+  background-color: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  border-radius: var(--ds-radius-icon);
+}
+

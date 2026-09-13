@@ -1166,26 +1166,27 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
             onClassInfoChange={handleClassInfoChange}
             onBack={onBack}
           />
-          {/* Barre d'outils COLLANTE : rendue en enfant direct de la colonne
-              flex (pas de wrapper à sa taille, sinon le sticky serait confiné à
-              cette boîte et ne dépasserait pas). Elle reste ainsi visible tout
-              au long du défilement, avec l'en-tête de colonnes calé dessous. */}
-          <Toolbar
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            onSave={saveData}
-            saveStatus={saveStatus}
-            onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
-            onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
-            onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
-            onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
-            onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
-            onPrint={handleSmartPrint}
-            searchQuery={searchQuery}
-            setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
-          />
+          {/* Barre d'outils COLLANTE : masquée tant que le cahier est vide
+              en attente du choix de démarrage (importer le programme ou créer un chapitre).
+              Elle s'affiche dès que du contenu est créé ou importé. */}
+          {!isNotebookAwaitingContent && (
+            <Toolbar
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onSave={saveData}
+              saveStatus={saveStatus}
+              onOpenDataTransfer={() => setEditorState(draft => { draft.activeModal = 'dataTransfer'; })}
+              onOpenManageLessons={() => setEditorState(draft => { draft.activeModal = 'manageLessons'; })}
+              onOpenGuide={() => setEditorState(draft => { draft.activeModal = 'guide'; })}
+              onOpenAnalyse={() => setEditorState(draft => { draft.activeModal = 'analyse'; })}
+              onOpenEvaluations={() => setEditorState(draft => { draft.activeModal = 'evaluations'; })}
+              onPrint={handleSmartPrint}
+              searchQuery={searchQuery}
+              setSearchQuery={value => setEditorState(draft => { draft.searchQuery = value; })}
+            />
+          )}
           {/* Bloc tableau aligne sur le padding interieur de la carte parente. */}
           <main className="flex-1 pb-24 sm:pb-20 print:mx-0" onClick={handleDeselectAll}>
             <MainTable

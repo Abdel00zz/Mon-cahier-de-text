@@ -99,7 +99,7 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         sectionProfile: 'في أي سلك تدرّس؟',
         sectionSubjects: 'المواد الدراسية',
         sectionClasses: 'قسمك الأول (نموذج)',
-        sectionSchedule: 'استعمال الزمن',
+        sectionSchedule: 'املأ استعمال زمانك الخاص بك',
         languageSelect: 'اختر لغتك الرئيسية',
         fullName: 'الاسم الكامل',
         fullNamePlaceholder: 'مثال: الأستاذ أحمد بنعلي',

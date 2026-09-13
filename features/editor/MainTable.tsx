@@ -237,7 +237,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
 
 SessionGroupRow.displayName = 'SessionGroupRow';
 
-/* État vide, une seule décision, sans bannière concurrente. */
+/* État vide réinventé selon le design system éditorial chaud & épuré. */
 const EmptyState: React.FC<{
   onOpenAddContentModal: (indices?: Indices) => void;
   predefinedProgramTitle?: string;
@@ -247,48 +247,74 @@ const EmptyState: React.FC<{
     const canLoadPredefined = Boolean(predefinedProgramTitle && onLoadPredefined);
 
     return (
-        <section className="rounded-[var(--radius-xl,0.875rem)] border border-border bg-card px-5 py-12 shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] sm:px-8 sm:py-14">
-            <div className="mx-auto flex max-w-xl flex-col items-center text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[var(--radius-lg,0.75rem)] border border-primary/20 bg-primary/10 text-primary">
-                    <BookOpen className="h-8 w-8 stroke-[2.2]" />
-                </div>
-                <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-primary">{t('emptyNotebook.label')}</p>
-                <p className="mt-3 max-w-md text-base leading-7 text-foreground">
-                    {canLoadPredefined ? (
-                        <>
-                            <strong className="font-bold text-foreground">{t('emptyNotebook.programAvailable')}</strong> {t('emptyNotebook.programHint')}
-                        </>
-                    ) : (
-                        <>
-                            {t('emptyNotebook.createPrefix')} <strong className="font-bold text-foreground">{t('emptyNotebook.firstChapter')}</strong> {t('emptyNotebook.createSuffix')}
-                        </>
-                    )}
-                </p>
+        <section className="flex justify-center py-6 sm:py-10">
+            <div className="w-full max-w-[460px] overflow-hidden rounded-[16px] border border-[#e6e1d9] bg-white shadow-[0_4px_24px_rgba(44,42,38,0.08)] transition-all dark:border-[#38332c] dark:bg-[#1f1d1a] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+                {/* Surface principale */}
+                <div className="flex flex-col items-center px-7 pt-9 pb-8 text-center sm:px-9 sm:pt-10 sm:pb-9">
+                    {/* Conteneur d'icône 56x56 */}
+                    <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#e8e0d5] text-[#8b7355] dark:bg-[#342e26] dark:text-[#d4c3af]">
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="28"
+                            height="28"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                        >
+                            <rect x="4" y="3" width="16" height="18" rx="2.5" />
+                            <line x1="8" y1="8" x2="16" y2="8" />
+                            <line x1="8" y1="12" x2="16" y2="12" />
+                            <line x1="8" y1="16" x2="12" y2="16" />
+                        </svg>
+                    </div>
 
-                <div className="mt-7 flex w-full flex-col items-center justify-center gap-3 sm:flex-row">
-                    {canLoadPredefined && (
-                        <Button type="button" onClick={onLoadPredefined} className="w-full shadow-lg shadow-primary/20 sm:w-auto" variant="default">
-                            {t('emptyNotebook.importProgram')}
-                        </Button>
-                    )}
-                    {canLoadPredefined && <span className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">{t('emptyNotebook.or')}</span>}
-                    <Button
-                        type="button"
-                        onClick={() => onOpenAddContentModal()}
-                        className="w-full sm:w-auto"
-                        variant={canLoadPredefined ? 'outline' : 'default'}
-                    >
-                        {t('emptyNotebook.createChapter')}
-                    </Button>
+                    {/* Titre 21px bold */}
+                    <h2 className="mt-5 text-[21px] font-bold tracking-tight text-[#2c2a26] dark:text-[#f3efe8]">
+                        {t('emptyNotebook.label')}
+                    </h2>
+
+                    {/* Description 14.5px */}
+                    <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-[#6b6560] dark:text-[#a8a199]">
+                        {canLoadPredefined ? (
+                            `${t('emptyNotebook.programAvailable')} ${t('emptyNotebook.programHint')}`
+                        ) : (
+                            `${t('emptyNotebook.createPrefix')} ${t('emptyNotebook.firstChapter')} ${t('emptyNotebook.createSuffix')}`
+                        )}
+                    </p>
+
+                    {/* Boutons d'action */}
+                    <div className="mt-7 flex w-full flex-col gap-2.5">
+                        {canLoadPredefined && (
+                            <button
+                                type="button"
+                                onClick={onLoadPredefined}
+                                className="flex h-12 w-full items-center justify-center rounded-[10px] bg-[#8b7355] px-5 text-[14.5px] font-semibold text-white transition-all duration-150 hover:-translate-y-px hover:bg-[#6d5a42] active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b7355]"
+                            >
+                                {t('emptyNotebook.importProgram')}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => onOpenAddContentModal()}
+                            className={`flex h-12 w-full items-center justify-center rounded-[10px] text-[14.5px] font-semibold transition-all duration-150 hover:-translate-y-px active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b7355] ${
+                                canLoadPredefined
+                                    ? 'border border-[#e6e1d9] bg-white text-[#2c2a26] hover:bg-[#f7f5f2] dark:border-[#38332c] dark:bg-[#1f1d1a] dark:text-[#f3efe8] dark:hover:bg-[#28241f]'
+                                    : 'bg-[#8b7355] text-white hover:bg-[#6d5a42]'
+                            }`}
+                        >
+                            {t('emptyNotebook.createChapter')}
+                        </button>
+                    </div>
                 </div>
 
-                {/* Service de création de cahiers : information et contact direct,
-                    sans acquittement ni case à cocher. */}
+                {/* Surface secondaire : assistance WhatsApp */}
                 <SupportWhatsAppBlock
                     locale={locale}
                     hint={t('support.serviceHint')}
                     label={t('support.serviceWhatsApp')}
-                    className="mt-9"
                 />
             </div>
         </section>

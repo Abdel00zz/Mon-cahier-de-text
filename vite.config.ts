@@ -194,13 +194,11 @@ const PWA_MANIFEST: LocalizedManifest = {
 };
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    const port = Number(process.env.PORT || env.PORT) || 3000;
     return {
         server: {
-            port,
-            host: true,
-            strictPort: false,
+            port: 3000,
+            host: '0.0.0.0',
+            strictPort: true,
             allowedHosts: true,
             hmr: { },
         },

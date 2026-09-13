@@ -24,47 +24,47 @@ export interface ModernClassColor {
     dot: string;
 }
 
-/** Palette synchronisée avec les cartes de classes (Google Keep tones) */
+/** Palette synchronisée avec les cartes de classes (Google Keep tones) - teintes chic et éditoriales */
 export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
     sand: {
         key: 'sand',
-        bg: 'bg-[#fff8b8] dark:bg-[#4b443a]',
-        border: 'border-[#ebd966] dark:border-[#5c5448]',
-        text: 'text-[#3c362a] dark:text-[#f8f5ee]',
-        subtext: 'text-[#6b6250] dark:text-[#ded7cb]',
-        dot: 'bg-[#fbc02d]',
+        bg: 'bg-[#faf6ed] dark:bg-[#383329]',
+        border: 'border-[#e5dac5] dark:border-[#524b3c]',
+        text: 'text-[#383023] dark:text-[#f8f5ee]',
+        subtext: 'text-[#70614a] dark:text-[#ded7cb]',
+        dot: 'bg-[#8b7355]',
     },
     mint: {
         key: 'mint',
-        bg: 'bg-[#e2f6d3] dark:bg-[#345039]',
-        border: 'border-[#bfe5a5] dark:border-[#436449]',
-        text: 'text-[#233d27] dark:text-[#ebf7eb]',
-        subtext: 'text-[#4c7352] dark:text-[#c4e6c8]',
-        dot: 'bg-[#4caf50]',
+        bg: 'bg-[#eff6f1] dark:bg-[#26382b]',
+        border: 'border-[#c6dfcd] dark:border-[#38533e]',
+        text: 'text-[#1c3825] dark:text-[#ebf7eb]',
+        subtext: 'text-[#446b4e] dark:text-[#c4e6c8]',
+        dot: 'bg-[#2e7d4f]',
     },
     sky: {
         key: 'sky',
-        bg: 'bg-[#d4e4ed] dark:bg-[#2d4855]',
-        border: 'border-[#b0d1e3] dark:border-[#3d5d6c]',
-        text: 'text-[#1e3440] dark:text-[#e8f1f5]',
-        subtext: 'text-[#46697d] dark:text-[#bad7e7]',
-        dot: 'bg-[#29b6f6]',
+        bg: 'bg-[#f0f5f9] dark:bg-[#243540]',
+        border: 'border-[#c9deed] dark:border-[#364e5d]',
+        text: 'text-[#1b3240] dark:text-[#e8f1f5]',
+        subtext: 'text-[#476a7d] dark:text-[#bad7e7]',
+        dot: 'bg-[#3b82f6]',
     },
     lavender: {
         key: 'lavender',
-        bg: 'bg-[#e9e3f4] dark:bg-[#443e50]',
-        border: 'border-[#cebfe4] dark:border-[#554e63]',
-        text: 'text-[#2d2539] dark:text-[#f1edf7]',
-        subtext: 'text-[#5d5172] dark:text-[#d3c8e7]',
-        dot: 'bg-[#ab47bc]',
+        bg: 'bg-[#f5f1f9] dark:bg-[#32283b]',
+        border: 'border-[#ded2ee] dark:border-[#4b3c59]',
+        text: 'text-[#30203f] dark:text-[#f1edf7]',
+        subtext: 'text-[#664e7c] dark:text-[#d3c8e7]',
+        dot: 'bg-[#8e52c7]',
     },
     coral: {
         key: 'coral',
-        bg: 'bg-[#f8e2dd] dark:bg-[#594340]',
-        border: 'border-[#e6beb4] dark:border-[#6e5450]',
-        text: 'text-[#3d2724] dark:text-[#f8ece9]',
-        subtext: 'text-[#74504a] dark:text-[#e4c8c2]',
-        dot: 'bg-[#ff7043]',
+        bg: 'bg-[#faf1ef] dark:bg-[#3d2a27]',
+        border: 'border-[#edd4cf] dark:border-[#5a3e39]',
+        text: 'text-[#3f231f] dark:text-[#f8ece9]',
+        subtext: 'text-[#7a4c46] dark:text-[#e4c8c2]',
+        dot: 'bg-[#d95c43]',
     },
 };
 
@@ -293,17 +293,17 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                 {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
                 <div className="settings-surface overflow-hidden">
                     <div className="overflow-x-auto overscroll-x-contain">
-                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[36rem] sm:min-w-[44rem]' : 'min-w-full table-fixed'}`}>
+                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem]' : 'min-w-full table-fixed'}`}>
                     <thead>
                         <tr>
-                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-16 sm:w-[5.75rem] border-b border-border/70 bg-muted/70 px-1.5 sm:px-3 py-1.5 sm:py-3 text-start text-[11px] sm:text-xs font-bold tracking-wide text-foreground/70`}>
+                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-14 sm:w-20 border-b border-[#e6e1d9] bg-[#f7f5f2] px-1 sm:px-2 py-1.5 sm:py-2 text-start text-[10px] sm:text-xs font-bold tracking-wide text-[#6b6560] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#a8a199]`}>
                                 {t('schedule.day')}
                             </th>
                             {visibleHourSlots.map(hour => (
                                 <th
                                     key={hour.index}
-                                    className={`border-b border-border/70 bg-muted/70 px-0.5 sm:px-1 py-1 sm:py-2 text-center text-[8px] sm:text-[10px] font-bold text-foreground/75 ${
-                                        hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''
+                                    className={`border-b border-[#e6e1d9] bg-[#f7f5f2] px-0.5 sm:px-1 py-1 sm:py-1.5 text-center text-[8px] sm:text-[9.5px] font-semibold text-[#6b6560] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#a8a199] ${
+                                        hour.lunchBefore ? 'border-l border-l-[#8b7355]/25' : ''
                                     }`}
                                 >
                                     <span dir="ltr" className="inline-block leading-tight tracking-tight">{hourLabel(hour.startMin, hour.endMin)}</span>
@@ -313,8 +313,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                     </thead>
                     <tbody>
                         {TIMETABLE_DAYS.map((day, dayIndex) => (
-                            <tr key={day.value} className="group transition-colors hover:bg-muted/30">
-                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-border/70 bg-muted/70 px-1.5 sm:px-3 py-1.5 sm:py-2.5 text-[11px] sm:text-xs font-bold text-foreground transition-colors group-hover:bg-muted ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/50' : ''}`}>
+                            <tr key={day.value} className="group transition-colors hover:bg-[#faf8f5]/60 dark:hover:bg-[#1e1c19]/40">
+                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-[#e6e1d9] bg-[#fbfaf8] px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10.5px] sm:text-xs font-semibold text-[#2c2a26] transition-colors group-hover:bg-[#f5f1eb] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#f3efe8] dark:group-hover:bg-[#24211c] ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-[#e6e1d9]/60 dark:border-[#38332c]/60' : ''}`}>
                                     {t(`schedule.day.${day.value}`)}
                                 </td>
                                 {visibleHourSlots.map(hour => {
@@ -329,7 +329,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         <td
                                             key={hour.index}
                                             colSpan={span}
-                                            className={`relative p-1 sm:p-2 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-border/40' : ''} ${hour.lunchBefore ? 'border-l border-l-indigo-500/25' : ''}`}
+                                            className={`relative p-0.5 sm:p-1 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-[#e6e1d9]/50 dark:border-[#38332c]/50' : ''} ${hour.lunchBefore ? 'border-l border-l-[#8b7355]/20' : ''}`}
                                         >
                                             <select
                                                 value={entry?.classId ?? ''}
@@ -343,39 +343,39 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                     else assign(day.value, hour.index, e.target.value || null);
                                                 }}
                                                 title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                className={`h-11 sm:h-16 w-full cursor-pointer rounded-xl sm:rounded-2xl border px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                                                className={`h-9 sm:h-11 w-full cursor-pointer rounded-lg border px-1 text-center text-[10px] sm:text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7355]/30 ${
                                                     classInfo && color
-                                                    ? `${color.border} ${color.bg} text-transparent shadow-[0_4px_12px_-4px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_-6px_rgba(0,0,0,0.30)] hover:brightness-105 active:scale-[0.99]`
-                                                    : 'border-dashed border-border/70 bg-muted/20 text-zinc-700 dark:text-zinc-300 hover:border-primary/40 hover:bg-primary/[0.06] hover:text-zinc-950 dark:hover:text-zinc-50'
+                                                    ? `${color.border} ${color.bg} text-transparent shadow-xs hover:-translate-y-0.5 hover:shadow-sm hover:brightness-105 active:scale-[0.99]`
+                                                    : 'border-[#e6e1d9] bg-white text-[#8c827a] shadow-[0_1px_2px_rgba(44,42,38,0.04)] hover:border-[#8b7355]/50 hover:bg-[#faf8f5] dark:border-[#38332c] dark:bg-[#1f1d1a] dark:text-[#a8a199] dark:hover:bg-[#27231e]'
                                                 }`}
                                                 aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                             >
-                                                <option value="" className="text-zinc-700 dark:text-zinc-300 dark:bg-zinc-800">{t('schedule.noClass')}</option>
+                                                <option value="" className="text-[#8c827a] dark:text-[#a8a199] dark:bg-[#1f1d1a]">{t('schedule.noClass')}</option>
                                                 {classes.map(c => (
-                                                    <option key={c.id} value={c.id} className="text-slate-800 dark:text-slate-100 dark:bg-zinc-800">
+                                                    <option key={c.id} value={c.id} className="text-[#2c2a26] dark:text-[#f3efe8] dark:bg-[#1f1d1a]">
                                                         {subjectLabel(c.subject)} · {classLabel(c.name)}
                                                     </option>
                                                 ))}
                                                 {canCreateFromSchedule && (
-                                                    <option value="__create__" className="text-slate-800 dark:text-slate-100 dark:bg-zinc-800 font-bold">
+                                                    <option value="__create__" className="text-[#8b7355] font-bold dark:bg-[#1f1d1a]">
                                                         ＋ {t('schedule.createClass')}
                                                     </option>
                                                 )}
                                             </select>
                                             {classInfo && color && (
                                                 <span
-                                                    className={`pointer-events-none absolute inset-1 sm:inset-2 flex min-w-0 flex-col items-center justify-center px-0.5 sm:px-1.5 text-center ${color.text}`}
+                                                    className={`pointer-events-none absolute inset-0.5 sm:inset-1 flex min-w-0 flex-col items-center justify-center px-0.5 text-center ${color.text}`}
                                                 >
-                                                    <span className="max-w-full truncate text-[10px] font-black tracking-tight drop-shadow-xs sm:text-xs">
+                                                    <span className="max-w-full truncate text-[10px] font-bold tracking-tight sm:text-[11.5px]">
                                                         {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
                                                     </span>
-                                                    <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9.5px] font-bold uppercase tracking-wider ${color.subtext}`}>
+                                                    <span className={`mt-0.5 max-w-full truncate text-[7.5px] sm:text-[8.5px] font-semibold uppercase tracking-wider ${color.subtext}`}>
                                                         {subjectLabel(classInfo.subject)}
                                                     </span>
                                                 </span>
                                             )}
                                             {merged && (
-                                                <span className="pointer-events-none absolute start-1.5 sm:start-3 top-1 sm:top-1.5 rounded-full border border-white/30 bg-black/30 px-1 sm:px-1.5 text-[7.5px] sm:text-[9px] font-bold leading-3.5 sm:leading-4 text-white shadow-xs backdrop-blur-xs">
+                                                <span className="pointer-events-none absolute start-1 sm:start-1.5 top-0.5 sm:top-1 rounded-full border border-white/40 bg-black/35 px-1 py-0.2 text-[7px] sm:text-[8px] font-bold leading-none text-white shadow-2xs">
                                                     {t('schedule.hoursShort', { count: span })}
                                                 </span>
                                             )}
