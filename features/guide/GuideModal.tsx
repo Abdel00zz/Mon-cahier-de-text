@@ -1,194 +1,142 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { GUIDE_FR, GUIDE_AR } from '@/constants';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Modal } from '@/components/ui/modal';
-import { Button } from '@/components/ui/button';
-import { LangToggle, useModalLang, type ModalLang } from '@/components/ui/lang-toggle';
+import { BookOpen, Search, X } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { BookOpen } from '@/components/ui/icons';
+import './guide.css';
 
-interface GuideModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+interface GuideModalProps { isOpen: boolean; onClose: () => void }
 
-/*
- * Guide REFONDU Pro Edition
- */
-
-const LANG_KEY = 'guide_lang_v1';
-
-/** Markdown minimal → HTML de lecture, compatible mode clair et sombre. */
-const toHtml = (markdown: string, prefix: ModalLang): string => {
-  let headingIndex = 0;
-  const isArabic = prefix === 'ar';
-  const headingFontClass = isArabic ? 'font-bold tracking-normal' : 'font-bold tracking-tight';
-  const bodyClass = isArabic
-    ? 'text-[16px] sm:text-[17px] leading-[2] text-muted-foreground'
-    : 'text-[14px] sm:text-[15px] leading-relaxed text-muted-foreground';
-  const inline = (value: string) => value
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-foreground">$1</strong>')
-    .replace(/`([^`]+)`/g, '<code class="rounded-lg border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.85em] text-foreground font-semibold">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-bold text-primary underline underline-offset-4 hover:text-primary/80">$1</a>');
-
-  return markdown
-    .split('\n')
-    .map(line => {
-      if (line.startsWith('# ')) {
-        const t = line.replace('# ', '').trim();
-        return `<h1 class="mb-4 ${headingFontClass} text-xl sm:text-2xl font-black text-foreground">${t}</h1>`;
-      }
-      if (line.startsWith('## ')) {
-        const t = line.replace('## ', '').trim();
-        const id = `${prefix}-sec-${headingIndex}`;
-        headingIndex++;
-        return `<h2 id="${id}" class="mb-3.5 mt-8 scroll-mt-4 ${headingFontClass} text-lg sm:text-xl font-bold text-foreground">${t}</h2>`;
-      }
-      if (line.startsWith('### ')) {
-        const t = line.replace('### ', '').trim();
-        return `<h3 class="mb-2.5 mt-5 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${t}</h3>`;
-      }
-
-      const imageMatch = line.match(/^!\[(.+?)\]\((\/guide\/[^\s)]+\.(?:png|jpe?g|webp|gif))\)$/i);
-      if (imageMatch) {
-        const [, caption, src] = imageMatch;
-        return `<figure class="my-6 overflow-hidden rounded-xl border border-border/80 bg-muted/20 shadow-xs"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" class="block h-auto w-full object-contain"><figcaption class="px-4 py-3 text-center text-xs font-semibold leading-relaxed text-muted-foreground">${caption}</figcaption></figure>`;
-      }
-
-      const numListMatch = line.match(/^([0-9]+)\. \*\*(.+?)\*\* : (.+)$/);
-      if (numListMatch) {
-        const [, , title, desc] = numListMatch;
-        return `<section class="mb-5 p-4 rounded-xl border border-border/60 bg-background/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
-      }
-
-      const boldBulletMatch = line.match(/^- \*\*(.+?)\*\* : (.+)$/);
-      if (boldBulletMatch) {
-        const [, title, desc] = boldBulletMatch;
-        return `<section class="mb-5 p-4 rounded-xl border border-border/60 bg-background/60 shadow-xs"><h3 class="mb-1 ${headingFontClass} text-sm sm:text-base font-bold text-foreground">${title}</h3><p class="${bodyClass}">${inline(desc)}</p></section>`;
-      }
-
-      if (line.startsWith('- ')) {
-        const content = inline(line.replace('- ', '').trim());
-        return `<div class="mb-2.5 flex items-start gap-2.5"><span class="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"></span><span class="${bodyClass}">${content}</span></div>`;
-      }
-
-      if (line.trim() === '---') return '<div class="h-4" aria-hidden="true"></div>';
-      if (!line.trim()) return '';
-
-      return `<p class="mb-4 ${bodyClass}">${inline(line)}</p>`;
-    })
-    .join('\n');
-};
-
-export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
+export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
   const { locale } = useLocale();
-  const contentRef = useRef<HTMLDivElement>(null);
-  const { lang, setLang: persistLang } = useModalLang(LANG_KEY, locale === 'ar' ? 'ar' : 'fr');
-  const [activeSection, setActiveSection] = useState<string>('sec-0');
-
-  const setLang = (next: ModalLang) => {
-    persistLang(next);
-    setActiveSection('sec-0');
-    contentRef.current?.scrollTo({ top: 0 });
-  };
-
-  // Synchronise automatiquement la langue du guide lorsque la langue de l'application change ou à l'ouverture
-  useEffect(() => {
-    const targetLang: ModalLang = locale === 'ar' ? 'ar' : 'fr';
-    persistLang(targetLang);
-    setActiveSection('sec-0');
-    contentRef.current?.scrollTo({ top: 0 });
-  }, [locale]);
+  const [lang, setLang] = useState<'fr' | 'ar'>(locale === 'ar' ? 'ar' : 'fr');
+  const [query, setQuery] = useState('');
+  const [chapterId, setChapterId] = useState('start');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const isAr = lang === 'ar';
+  const entries = isAr ? GUIDE_AR : GUIDE_FR;
+  const results = useMemo(() => searchGuide(entries, query), [entries, query]);
+  const active = results.find(entry => entry.id === chapterId) ?? results[0];
+  const activeIndex = active ? entries.indexOf(active) : -1;
 
   useEffect(() => {
-    if (isOpen) {
-      const targetLang: ModalLang = locale === 'ar' ? 'ar' : 'fr';
-      persistLang(targetLang);
-      setActiveSection('sec-0');
-    }
+    if (!isOpen) return;
+    setLang(locale === 'ar' ? 'ar' : 'fr');
+    setQuery('');
+    setChapterId('start');
   }, [isOpen, locale]);
 
-  const isAr = lang === 'ar';
-  const html = useMemo(() => toHtml(isAr ? GUIDE_AR : GUIDE_FR, lang), [lang, isAr]);
+  useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [active?.id, lang, isOpen]);
 
-  const handleScroll = () => {
-    const container = contentRef.current;
-    if (!container) return;
-    let current = activeSection;
-    for (const header of Array.from(container.querySelectorAll('h2'))) {
-      const rect = header.getBoundingClientRect();
-      if (rect.top - container.getBoundingClientRect().top < 120) {
-        current = header.id.replace(`${lang}-`, '');
-      }
-    }
-    if (current !== activeSection) setActiveSection(current);
+  const openChapter = (id: string, clearSearch = false) => {
+    if (clearSearch) setQuery('');
+    setChapterId(id);
+    // Content heading remains stable across chapter changes, so keyboard users
+    // arrive at the article instead of having to traverse the entire contents.
+    headingRef.current?.focus({ preventScroll: true });
   };
+  const changeLanguage = (next: 'fr' | 'ar') => { setLang(next); setQuery(''); };
+  const toc = isAr ? 'فهرس الدليل التوجيهي' : 'Sommaire du guide';
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="3xl"
+      dir={isAr ? 'rtl' : 'ltr'}
+      mobileDetents={[0.94]} initialMobileDetent={0.94}
+      className="learning-guide h-[90dvh] sm:rounded-2xl"
+      headerClassName="learning-guide-header" bodyClassName="learning-guide-body"
       title={
-        <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full select-none flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-3 text-start">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100/90 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 shadow-xs border border-amber-200/60 dark:border-amber-500/30">
-              <BookOpen className="h-5 w-5 stroke-[2.2]" />
-            </span>
-            <div>
-              <span className={`${isAr ? 'font-bold tracking-normal' : 'font-bold tracking-tight'} text-lg sm:text-xl text-foreground block`}>
-                {isAr ? 'دليل الاستخدام' : "Guide d'utilisation"}
-              </span>
-              <span className="block text-xs font-medium text-muted-foreground mt-0.5">
-                {isAr ? 'الأساسيات خطوة بخطوة, ببساطة ووضوح' : "L'essentiel pas à pas, simple et complet"}
-              </span>
-            </div>
+        <div className="guide-heading" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
+          <span className="guide-mark"><BookOpen size={26} strokeWidth={1.8} aria-hidden="true" /></span>
+          <div className="min-w-0 flex-1">
+            <span className="guide-title">{isAr ? 'دليل مسك وتدبير دفتر النصوص الرقمي' : 'Guide d’utilisation du cahier de textes numérique'}</span>
+            <span className="guide-subtitle">{isAr ? 'المساطر العملية والتوجيهات المنهجية وفق المعايير التربوية الرسمية' : 'Procédures pratiques et conformité aux orientations pédagogiques officielles'}</span>
           </div>
+          <div className="guide-languages" aria-label={isAr ? 'لغة الدليل' : 'Langue du guide'}>
+            <button type="button" lang="fr" aria-pressed={!isAr} onClick={() => changeLanguage('fr')}>FR</button>
+            <button type="button" lang="ar" aria-pressed={isAr} onClick={() => changeLanguage('ar')}>العربية</button>
+          </div>
+        </div>
+      }>
+      <div className="guide-layout" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
+        <aside className="guide-navigation" aria-label={toc}>
+          <label className="guide-search">
+            <Search size={18} strokeWidth={1.8} aria-hidden="true" />
+            <input type="search" value={query} onChange={event => setQuery(event.target.value)}
+              aria-label={isAr ? 'البحث في الدليل التربوي' : 'Rechercher dans le guide'}
+              placeholder={isAr ? 'ابحث عن إجراء أو مفهوم (فرض، حصة، تقويم تشخيصي...)' : 'Rechercher une notion, action ou procédure…'} />
+          </label>
+          <p className="guide-result-count" role="status" aria-live="polite">
+            {query.trim()
+              ? (isAr ? `${results.length} محاور مطابقة` : `${results.length} résultat${results.length === 1 ? '' : 's'}`)
+              : (isAr ? `${entries.length} فصول إرشادية وتوجيهية` : `${entries.length} chapitres de référence`)}
+          </p>
+          <label className="guide-mobile-toc">
+            <span className="sr-only">{toc}</span>
+            <select value={active?.id ?? ''} disabled={!results.length} onChange={event => openChapter(event.target.value)}>
+              {!results.length && <option value="">{isAr ? 'لا توجد نتائج مطابقة' : 'Aucun résultat'}</option>}
+              {results.map(entry => <option key={entry.id} value={entry.id}>{entry.title}</option>)}
+            </select>
+          </label>
+          <nav className="guide-desktop-toc" aria-label={toc}>
+            <ol>{results.map(entry => <li key={entry.id}>
+              <button type="button" aria-current={entry.id === active?.id ? 'page' : undefined}
+                onClick={() => openChapter(entry.id)}>
+                <span aria-hidden="true">{String(entries.indexOf(entry) + 1).padStart(2, '0')}</span>
+                {entry.title}
+              </button>
+            </li>)}</ol>
+          </nav>
+        </aside>
 
-          <LangToggle
-            lang={lang}
-            onChange={setLang}
-            labels={{ fr: 'Français', ar: 'العربية' }}
-            className="self-start sm:self-center"
-          />
-        </div>
-      }
-      maxWidth="5xl"
-      hideClose={false}
-      className="h-[92vh] max-w-5xl overflow-hidden sm:h-[88vh] sm:rounded-2xl"
-      headerClassName="border-b border-border/70 bg-background/80 backdrop-blur-md"
-      bodyClassName="flex flex-col overflow-hidden bg-background p-0 sm:p-0"
-      footerClassName="border-t border-border/70 bg-background/80 backdrop-blur-md"
-      footer={
-        <div dir={isAr ? 'rtl' : 'ltr'} className="flex w-full justify-end">
-          <Button type="button" variant="default" onClick={onClose} className="h-10 px-6 w-full sm:w-auto text-xs sm:text-sm">
-            {isAr ? 'إغلاق' : 'Fermer le guide'}
-          </Button>
-        </div>
-      }
-    >
-      <div className="flex h-full flex-1 flex-col overflow-hidden bg-background text-card-foreground">
-        <div
-          ref={contentRef}
-          onScroll={handleScroll}
-          className="relative flex-1 overflow-y-auto overscroll-contain"
-          style={{ scrollbarGutter: 'stable', height: '100%' }}
-          dir={isAr ? 'rtl' : 'ltr'}
-          lang={lang}
-        >
-          <div className="mx-auto max-w-4xl px-5 py-6 sm:px-10 sm:py-8">
-            <div className="mb-7 overflow-hidden rounded-2xl border border-border/80 bg-muted/20 shadow-xs sm:mb-9">
-              <img
-                src={isAr ? '/login_ar.png' : '/login_fr.png'}
-                alt={isAr ? 'واجهة تسجيل الدخول والترحيب' : 'Interface de connexion et accueil'}
-                loading="lazy"
-                decoding="async"
-                className="block aspect-[16/9] h-auto w-full object-cover object-center"
-              />
-            </div>
-            <div
-              className={`max-w-none ${isAr ? 'text-right' : ''}`}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-          </div>
+        <div ref={scrollRef} className="guide-reader" tabIndex={0}
+          aria-label={isAr ? 'محتوى الدليل' : 'Contenu du guide'}>
+          {active ? <article className="guide-article" aria-labelledby="guide-chapter-title">
+            <header>
+              <p className="guide-eyebrow">{isAr ? 'الدليل التربوي والتنظيمي' : 'Guide pédagogique & organisationnel'} · {activeIndex + 1} / {entries.length}</p>
+              <h2 id="guide-chapter-title" ref={headingRef} tabIndex={-1}>{active.title}</h2>
+              <p className="guide-summary">{active.summary}</p>
+            </header>
+            {active.sections.map((section, index) => <section key={`${active.id}-${index}`}>
+              <h3>{section.title}</h3>
+              {section.body && <p dir="auto">{section.body}</p>}
+              {section.steps && <ol className="guide-steps">{section.steps.map((step, i) =>
+                <li key={i}><span dir="auto">{step}</span></li>)}</ol>}
+              {section.items && <dl className="guide-terms">{section.items.map(item => <div key={item.term}>
+                <dt>{item.term}</dt><dd dir="auto">{item.detail}</dd>
+              </div>)}</dl>}
+            </section>)}
+            {active.tip && <p className="guide-tip"><strong>{isAr ? 'إضاءة وتوجيه تربوي' : 'Repère pédagogique'}</strong> — {active.tip}</p>}
+            {active.image && <figure className="guide-figure">
+              <a href={`/guide/current/${active.image.key}-${lang}.webp`} target="_blank" rel="noopener noreferrer"
+                aria-label={`${active.image.caption} — ${isAr ? 'فتح الصورة بحجم أكبر في علامة تبويب جديدة' : 'Agrandir dans un nouvel onglet'}`}>
+                <img src={`/guide/current/${active.image.key}-${lang}.webp`} alt={active.image.caption}
+                  width={1120} height={active.image.key === 'classes' ? 360 : 800}
+                  loading="lazy" decoding="async" />
+              </a>
+              <figcaption>{active.image.caption}<span>{isAr
+                ? 'معاينة حية لواجهة دفتر النصوص الرقمي. انقر لتكبير الصورة.'
+                : 'Interface du cahier de textes numérique. Touchez l’image pour l’agrandir.'}</span></figcaption>
+            </figure>}
+            <nav className="guide-related" aria-label={isAr ? 'محاور ومساطر ذات صلة' : 'Pour aller plus loin'}>
+              <h3>{isAr ? 'محاور ومساطر ذات صلة' : 'Procédures et rubriques associées'}</h3>
+              {active.related.map(id => {
+                const entry = entries.find(item => item.id === id);
+                return entry && <button key={id} type="button" onClick={() => openChapter(id, true)}>{entry.title}<span aria-hidden="true">{isAr ? '←' : '→'}</span></button>;
+              })}
+            </nav>
+            <nav className="guide-pagination" aria-label={isAr ? 'التنقل بين الفصول' : 'Parcourir les chapitres'}>
+              <button type="button" disabled={activeIndex <= 0} onClick={() => openChapter(entries[activeIndex - 1].id, true)}>{isAr ? 'الفصل السابق' : 'Chapitre précédent'}</button>
+              {activeIndex < entries.length - 1
+                ? <button type="button" onClick={() => openChapter(entries[activeIndex + 1].id, true)}>{isAr ? 'الفصل الموالي' : 'Chapitre suivant'}</button>
+                : <button type="button" onClick={onClose}>{isAr ? 'إغلاق والعودة للدفتر' : 'Fermer et revenir au cahier'}</button>}
+            </nav>
+          </article> : <div className="guide-empty">
+            <Search size={28} aria-hidden="true" />
+            <h2>{isAr ? 'لم يُعثر على نتائج مطابقة' : 'Aucun résultat trouvé'}</h2>
+            <p>{isAr ? 'جرّب البحث بكلمات دقيقة من قبيل: فرض، تقويم تشخيصي، استعمال الزمن، تأريخ، طباعة.' : 'Par exemple : devoir, séance, horaire, date ou impression.'}</p>
+            <button type="button" onClick={() => setQuery('')}><X size={16} aria-hidden="true" />{isAr ? 'إلغاء التصفية' : 'Effacer la recherche'}</button>
+          </div>}
         </div>
       </div>
     </Modal>

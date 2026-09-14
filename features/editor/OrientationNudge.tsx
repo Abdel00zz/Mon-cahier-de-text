@@ -146,7 +146,7 @@ export const OrientationNudge: React.FC<OrientationNudgeProps> = ({ suppressed =
       {isVisible && isPortraitPhone && !isKeyboardOpen && !suppressed ? (
         <motion.aside
           data-orientation-nudge
-          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] z-[65] mx-auto max-w-md print:hidden"
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-[65] mx-auto max-w-md print:hidden"
           initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}

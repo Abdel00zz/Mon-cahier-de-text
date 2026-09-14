@@ -8,7 +8,6 @@ import { SelectionBar } from './SelectionBar';
 import { OrientationNudge } from './OrientationNudge';
 import { AppBootSkeleton, EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Plus } from '@/components/ui/icons';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
@@ -1229,18 +1228,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           || isNotebookAwaitingContent
         )}
       />
-
-      {/* FAB mobile : ajout rapide de contenu (masqué quand la barre de sélection est ouverte) */}
-      {!activeModal && selectedCount === 0 && (
-        <button
-          type="button"
-          onClick={() => handleOpenAddContentModal()}
-          className="fab-safe fixed right-4 z-[55] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/25 transition-transform active:scale-95 sm:hidden print:hidden"
-          aria-label={t('addContent.title')}
-        >
-          <Plus className="h-6 w-6" />
-        </button>
-      )}
 
       {!activeModal && (
         <SelectionBar

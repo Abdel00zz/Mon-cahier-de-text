@@ -96,7 +96,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="relative z-10 flex flex-col w-full sm:max-w-xl max-h-[92dvh] sm:max-h-[85dvh] overflow-hidden rounded-t-[20px] sm:rounded-2xl border border-cream-300 dark:border-border/80 bg-cream-50 dark:bg-card text-espresso-900 dark:text-foreground shadow-2xl"
+            className="relative z-10 flex flex-col w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden rounded-t-[20px] sm:rounded-2xl border border-cream-300 dark:border-border/80 bg-cream-50 dark:bg-card text-espresso-900 dark:text-foreground shadow-2xl"
           >
             {/* Header */}
             <ModalHeader activeTab={activeTab} onClose={onClose} />

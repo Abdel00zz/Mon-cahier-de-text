@@ -219,7 +219,8 @@ export default defineConfig(({ mode }) => {
                 // n'ont pas besoin d'être listés ici.
                 includeAssets: [
                     'icons/*.png',
-                    'icons/favicon.ico',
+                      'icons/favicon.ico',
+                      'guide/current/*.webp',
                     'planning-devoirs.json',
                     'assessment-rules.json',
                     'official-sources.json',

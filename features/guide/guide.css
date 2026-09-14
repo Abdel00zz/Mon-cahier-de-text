@@ -1,0 +1,113 @@
+.learning-guide {
+  --guide-bg: #f7f5f2;
+  --guide-surface: #fff;
+  --guide-soft: #f1eee9;
+  --guide-border: #e6e1d9;
+  --guide-ink: #2c2a26;
+  --guide-muted: #6b6560;
+  --guide-accent: #8b7355;
+  --guide-link: #6d5a42;
+  color: var(--guide-ink);
+  background: var(--guide-surface);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-shadow: 0 4px 24px rgb(44 42 38 / 8%);
+}
+.dark .learning-guide {
+  --guide-bg: #252421;
+  --guide-surface: #2d2b27;
+  --guide-soft: #38342e;
+  --guide-border: #484238;
+  --guide-ink: #eee9e0;
+  --guide-muted: #c3bbae;
+  --guide-accent: #c5ae8b;
+  --guide-link: #d7bf9a;
+}
+.learning-guide .learning-guide-header { background: var(--guide-surface); border-color: var(--guide-border); padding: 20px 24px; }
+.learning-guide .learning-guide-body { display: flex; flex: 1; min-height: 0; padding: 0; overflow: hidden; }
+.guide-heading { display: flex; align-items: center; gap: 14px; width: 100%; padding-inline-end: 44px; }
+.guide-mark { display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; border-radius: 14px; background: var(--guide-soft); color: var(--guide-accent); }
+.guide-title { display: block; font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -.025em; }
+[dir="rtl"] .guide-title { letter-spacing: normal; }
+.guide-subtitle { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: var(--guide-muted); }
+.guide-languages { display: flex; flex-shrink: 0; gap: 2px; }
+.learning-guide button, .guide-search input, .guide-mobile-toc select { font: inherit; }
+.guide-languages button { min-width: 44px; min-height: 44px; padding: 6px; font-size: 13px; color: var(--guide-muted); cursor: pointer; }
+.guide-languages button[aria-pressed="true"] { color: var(--guide-link); text-decoration: underline; text-underline-offset: 7px; font-weight: 700; }
+.learning-guide button:focus-visible, .guide-figure a:focus-visible, .guide-search:focus-within, .guide-mobile-toc select:focus-visible, .guide-reader:focus-visible {
+  outline: 2px solid var(--guide-accent); outline-offset: 3px; border-radius: 4px;
+}
+.guide-layout { display: grid; grid-template-columns: 265px minmax(0, 1fr); flex: 1; min-height: 0; width: 100%; }
+.guide-navigation { display: flex; flex-direction: column; min-height: 0; padding: 22px 16px 16px; background: var(--guide-bg); border-inline-end: 1px solid var(--guide-border); }
+.guide-search { display: flex; gap: 8px; align-items: center; min-height: 44px; color: var(--guide-muted); border-bottom: 1px solid var(--guide-border); }
+.guide-search input { width: 100%; min-width: 0; padding: 10px 0; background: transparent; color: var(--guide-ink); font-size: 14px; outline: none; }
+.guide-search input::placeholder { color: var(--guide-muted); }
+.guide-result-count { margin: 12px 0; font-size: 12px; color: var(--guide-muted); }
+.guide-desktop-toc { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.guide-desktop-toc ol { padding: 0; margin: 0; list-style: none; }
+.guide-desktop-toc button { display: flex; gap: 10px; width: 100%; min-height: 44px; padding: 10px 8px; align-items: baseline; text-align: start; line-height: 1.45; font-size: 13px; color: var(--guide-muted); cursor: pointer; }
+.guide-desktop-toc button span { font-size: 11px; font-variant-numeric: tabular-nums; }
+.guide-desktop-toc button[aria-current="page"] { color: var(--guide-link); background: var(--guide-soft); border-radius: 6px; font-weight: 600; }
+.guide-mobile-toc { display: none; }
+.guide-reader { min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.guide-article { max-width: 790px; margin-inline: auto; padding: 32px 36px 24px; overflow-wrap: anywhere; }
+.guide-eyebrow { margin-bottom: 10px; color: var(--guide-muted); font-size: 12px; }
+.guide-article h2, .guide-empty h2 { font-size: clamp(20px, 2vw, 24px); line-height: 1.4; font-weight: 700; letter-spacing: -.02em; }
+.guide-article h2:focus { outline: none; }
+.guide-summary { margin-top: 10px; font-size: 15px; line-height: 1.65; color: var(--guide-muted); }
+.guide-article section { margin-top: 28px; }
+.guide-article h3 { margin-bottom: 12px; font-size: 16px; font-weight: 600; line-height: 1.5; }
+.guide-article section p, .guide-steps, .guide-terms, .guide-tip { font-size: 15px; line-height: 1.75; color: var(--guide-muted); }
+.guide-steps { padding-inline-start: 24px; list-style: decimal; }
+.guide-steps li { padding-inline-start: 8px; margin-bottom: 14px; }
+.guide-steps li::marker { color: var(--guide-link); font-weight: 600; font-variant-numeric: tabular-nums; }
+.guide-terms > div { margin-bottom: 16px; }
+.guide-terms dt { color: var(--guide-ink); font-weight: 600; }
+.guide-terms dd { margin: 3px 0 0; }
+.guide-tip { margin-top: 26px; padding-block: 18px; border-block: 1px solid var(--guide-border); }
+.guide-tip strong { color: var(--guide-link); font-weight: 600; }
+.guide-figure { margin: 28px 0; }
+.guide-figure a { display: block; }
+.guide-figure img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.guide-figure figcaption { margin-top: 10px; font-size: 12px; line-height: 1.6; color: var(--guide-muted); }
+.guide-figure figcaption span { display: block; margin-top: 3px; }
+.guide-related { margin-top: 28px; }
+.guide-related button { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 44px; padding-block: 8px; width: 100%; text-align: start; color: var(--guide-link); font-size: 14px; cursor: pointer; }
+.guide-pagination { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--guide-border); }
+.guide-pagination button, .guide-empty button { min-height: 44px; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.guide-pagination button:last-child { background: #8b7355; color: #fff; }
+.guide-pagination button:disabled { opacity: .5; cursor: default; }
+.guide-empty { padding: 48px 28px; color: var(--guide-muted); }
+.guide-empty h2 { margin: 20px 0 12px; color: var(--guide-ink); }
+.guide-empty p { font-size: 15px; line-height: 1.65; }
+.guide-empty button { display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; color: var(--guide-link); background: var(--guide-soft); }
+@media (hover: hover) {
+  .guide-related button:hover, .guide-languages button:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .guide-desktop-toc button:hover { color: var(--guide-link); }
+  .guide-pagination button:last-child:hover { background: #6d5a42; }
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+  .learning-guide .learning-guide-header { padding: 16px 20px; }
+  .guide-layout { grid-template-columns: 220px minmax(0, 1fr); }
+  .guide-navigation { padding: 16px 12px 14px; }
+  .guide-article { padding: 24px 22px 20px; }
+  .guide-heading { gap: 12px; }
+  .guide-title { font-size: 19px; }
+}
+@media (max-width: 767px) {
+  .learning-guide .learning-guide-header { padding: 14px 16px; }
+  .guide-heading { gap: 10px; flex-wrap: wrap; padding-inline-end: 40px; }
+  .guide-mark { width: 40px; height: 40px; border-radius: 12px; }
+  .guide-title { font-size: 18px; }
+  .guide-subtitle { font-size: 12px; }
+  .guide-languages { margin-inline-start: auto; }
+  .guide-layout { display: flex; flex-direction: column; }
+  .guide-navigation { padding: 8px 18px 12px; border-inline-end: 0; border-bottom: 1px solid var(--guide-border); flex-shrink: 0; }
+  .guide-result-count { margin: 7px 0 5px; font-size: 11px; }
+  .guide-desktop-toc { display: none; }
+  .guide-mobile-toc { display: block; }
+  .guide-mobile-toc select { min-height: 44px; width: 100%; padding: 8px 0; font-size: 14px; color: var(--guide-ink); background: var(--guide-bg); border: 0; text-overflow: ellipsis; }
+  .guide-reader { flex: 1; }
+  .guide-article { padding: 24px 20px; }
+  .guide-article section p, .guide-steps, .guide-terms, .guide-tip, .guide-summary { font-size: 14px; }
+  .guide-article section { margin-top: 24px; }
+}

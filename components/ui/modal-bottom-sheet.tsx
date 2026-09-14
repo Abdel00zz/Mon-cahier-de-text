@@ -24,6 +24,7 @@ export interface ModalBottomSheetProps {
   swipeToDismiss?: boolean;
   swipeFromBody?: boolean;
   blockDismiss?: boolean;
+  dir?: 'ltr' | 'rtl';
   /** Paliers de hauteur autorisés sur téléphone portrait, entre 0 et 1. */
   mobileDetents?: number[];
   /** Palier affiché à l'ouverture. Par défaut, le plus petit. */
@@ -32,7 +33,7 @@ export interface ModalBottomSheetProps {
   mobilePresentation?: 'sheet' | 'dialog';
 }
 
-const DEFAULT_MOBILE_DETENTS = [0.55, 0.9];
+const DEFAULT_MOBILE_DETENTS = [0.9, 0.96];
 
 const normalizeDetents = (values: number[]): number[] => {
   const normalized = values
@@ -45,13 +46,13 @@ const normalizeDetents = (values: number[]): number[] => {
 const maxWidthClassMap: Record<string, string> = {
   xs: 'sm:max-w-sm',
   sm: 'sm:max-w-md',
-  md: 'sm:max-w-xl',
-  lg: 'sm:max-w-2xl',
-  xl: 'sm:max-w-3xl',
-  '2xl': 'sm:max-w-4xl',
-  '3xl': 'sm:max-w-5xl',
-  '4xl': 'sm:max-w-6xl',
-  '5xl': 'sm:max-w-7xl',
+  md: 'sm:max-w-lg md:max-w-xl',
+  lg: 'sm:max-w-xl md:max-w-2xl',
+  xl: 'sm:max-w-2xl md:max-w-3xl',
+  '2xl': 'sm:max-w-3xl md:max-w-4xl',
+  '3xl': 'sm:max-w-4xl md:max-w-5xl',
+  '4xl': 'sm:max-w-5xl md:max-w-6xl',
+  '5xl': 'sm:max-w-6xl md:max-w-7xl',
   full: 'sm:max-w-[94vw]',
 };
 
@@ -77,11 +78,14 @@ export function ModalBottomSheet({
   swipeToDismiss = true,
   swipeFromBody = false,
   blockDismiss = false,
+  dir,
   mobileDetents = DEFAULT_MOBILE_DETENTS,
   initialMobileDetent,
   mobilePresentation = 'sheet',
 }: ModalBottomSheetProps) {
   const { isRtl, t } = useLocale();
+  const effectiveDir = dir ?? (isRtl ? 'rtl' : 'ltr');
+  const effectiveIsRtl = effectiveDir === 'rtl';
   const dismissCallback = useCallback(() => {
     if (onDismissRequest) {
       onDismissRequest();
@@ -159,22 +163,23 @@ export function ModalBottomSheet({
 
         {/* Material 3 ModalBottomSheet Container */}
         <DialogPrimitive.Content
-          dir={isRtl ? 'rtl' : 'ltr'}
+          dir={effectiveDir}
           className={cn(
-            'rtl-flow fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[20px] rounded-b-none border border-border/80 bg-background text-foreground shadow-2xl outline-none',
+            effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
+            'fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[20px] rounded-b-none border border-border/80 bg-background text-foreground shadow-2xl outline-none',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
             'motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100',
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[14px] sm:border',
-            'landscape:max-h-[min(96dvh,calc(100dvh-1rem))] landscape:inset-0 landscape:m-auto landscape:rounded-[14px]',
+            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-2xl sm:border',
+            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] landscape:rounded-2xl',
             'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
             swipe.isDragging && 'select-none',
             mwClass,
-            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-1.5rem)] rounded-[14px] pb-0 data-[state=open]:animate-pop-in data-[state=closed]:translate-y-0 data-[state=closed]:scale-[0.97]',
+            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-1.5rem)] rounded-2xl pb-0 data-[state=open]:animate-pop-in data-[state=closed]:translate-y-0 data-[state=closed]:scale-[0.97]',
             className,
-            isCompactSheet && '!h-[var(--sheet-detent-height)] transition-[height,transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+            isCompactSheet && 'max-h-[var(--sheet-detent-height)] transition-[max-height,transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
             // La position appartient au socle modal. Une classe décorative
             // passée par un écran ne doit jamais pouvoir la remplacer.
             '!fixed'
@@ -221,10 +226,10 @@ export function ModalBottomSheet({
                 if (canExpand) expandSheet();
                 else if (canCollapse) collapseSheet();
               }}
-              className="absolute left-1/2 top-0 z-20 flex h-11 w-24 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
+              className="absolute left-1/2 top-1.5 z-20 flex h-7 w-20 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
             >
               {typeof dragHandle === 'boolean'
-                ? <span className="h-1.5 w-10 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 active:w-12 active:bg-muted-foreground/55" />
+                ? <span className="h-1.5 w-9 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 active:w-12 active:bg-muted-foreground/55" />
                 : dragHandle}
             </button>
           )}
@@ -233,8 +238,8 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 min-h-14 sm:min-h-12 border-b border-border/70 bg-transparent px-5 py-3.5 sm:px-6 sm:py-3 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
-                !hideClose ? 'pe-14 sm:pe-12' : 'pe-5 sm:pe-6',
+                'modal-header relative z-10 shrink-0 min-h-14 sm:min-h-12 border-b border-border/70 bg-transparent px-5 pt-5 pb-3 sm:px-6 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
+                !hideClose ? (effectiveIsRtl ? 'pe-14 sm:pe-12' : 'pr-14 sm:pr-12 pl-5 sm:pl-6') : 'px-5 sm:px-6',
                 headerClassName
               )}
             >
@@ -251,13 +256,14 @@ export function ModalBottomSheet({
             </div>
           )}
 
-          {/* Close button - Calibré style Microsoft Desktop avec teinte douce et positionnement précis */}
+          {/* Close button - Calibré avec cibles tactiles Fitts (min 40-44px) et contraste doux */}
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute end-3 sm:end-3 z-30 inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-xl sm:rounded-lg bg-transparent text-muted-foreground/45 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer',
-                (title || description) ? 'top-2.5 sm:top-2' : 'top-3 sm:top-2'
+                'dialog-close absolute z-30 inline-flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-transparent text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer',
+                effectiveIsRtl ? 'start-auto end-3' : 'left-auto right-3',
+                (title || description) ? 'top-2.5 sm:top-2.5' : 'top-3 sm:top-2.5'
               )}
             >
               <X className="h-4 w-4 stroke-[1.8] sm:stroke-[1.75]" />
@@ -269,7 +275,7 @@ export function ModalBottomSheet({
           <div
             data-swipe-scroll-region
             className={cn(
-              'modal-body modern-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 sm:py-4 landscape:py-2 landscape:px-5 [overflow-anchor:none] scroll-smooth motion-reduce:scroll-auto [-webkit-overflow-scrolling:touch]',
+              'modal-body modern-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-4 py-3.5 sm:px-6 sm:py-4 landscape:py-2.5 landscape:px-5 [overflow-anchor:none] scroll-smooth motion-reduce:scroll-auto [-webkit-overflow-scrolling:touch]',
               !(title || description) && 'pt-8 sm:pt-6 landscape:pt-4',
               !footer && 'pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
               bodyClassName
@@ -282,7 +288,7 @@ export function ModalBottomSheet({
           {footer && (
             <div
               className={cn(
-                'modal-footer relative z-10 border-t border-border/70 flex shrink-0 flex-col-reverse gap-2 bg-background px-5 py-3.5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-2.5 landscape:px-6 text-foreground',
+                'modal-footer relative z-10 border-t border-border/70 flex shrink-0 flex-col-reverse gap-2 bg-background px-4 py-3 pb-[calc(0.85rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-6 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground',
                 footerClassName
               )}
             >
