@@ -41,8 +41,8 @@ export interface AccentColorPreset {
 export const ACCENT_PALETTES: AccentColorPreset[] = [
   {
     id: 'warm-sand',
-    nameFr: 'Beige Écrémé (#C85A32)',
-    nameAr: 'بيج قشدي دافئ (#C85A32)',
+    nameFr: 'Beige Écrémé',
+    nameAr: 'بيج قشدي دافئ',
     hex: '#C85A32',
     light: {
       primary: '16 60% 49%',
@@ -61,8 +61,8 @@ export const ACCENT_PALETTES: AccentColorPreset[] = [
   },
   {
     id: 'blue',
-    nameFr: 'Bleu Moderne (#3b82f6)',
-    nameAr: 'أزرق عصري (#3b82f6)',
+    nameFr: 'Bleu Moderne',
+    nameAr: 'أزرق عصري',
     hex: '#3b82f6',
     light: {
       primary: '217 91% 60%',

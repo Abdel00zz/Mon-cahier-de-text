@@ -20,7 +20,8 @@
     "check:i18n": "node scripts/audit-i18n.mjs",
     "test:notifications": "tsx scripts/test-notification-mechanisms.ts",
     "test:admin-sync": "tsx scripts/test-admin-sync.ts",
-    "test:editor": "node scripts/run-editor-tests.mjs"
+    "test:editor": "node scripts/run-editor-tests.mjs",
+    "test:guide": "tsx scripts/test-guide.ts"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.3",

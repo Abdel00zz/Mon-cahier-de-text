@@ -27,8 +27,3 @@ export {
   SUBJECTS,
   formatLocalizedSubjectDisplayName,
 } from './constants/subjects';
-
-export {
-  GUIDE_FR,
-  GUIDE_AR,
-} from './constants/guides';

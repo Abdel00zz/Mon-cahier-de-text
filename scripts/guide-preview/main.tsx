@@ -8,6 +8,8 @@ import { ClassCard } from '../../features/dashboard/ClassCard';
 import { NotificationsPage } from '../../features/dashboard/NotificationsPage';
 import { ScheduleTab } from '../../features/settings/components/ScheduleTab';
 import { NotificationsTab } from '../../features/settings/components/NotificationsTab';
+import { AppearanceTab } from '../../features/settings/components/AppearanceTab';
+import { AssignDateModal } from '../../features/editor/modals/AssignDateModal';
 import { MainTable } from '../../features/editor/MainTable';
 import { SelectionBar } from '../../features/editor/SelectionBar';
 import { AddContentModal } from '../../features/editor/modals/EditItemModal';
@@ -39,12 +41,13 @@ const initialConfig: AppConfig = {
   notificationSettings: { ...defaultNotificationSettings }, theme: 'light',
 };
 const isAr = locale === 'ar';
-const lessons: LessonsData = [{ type: 'chapter', title: isAr ? 'الأعداد الكسرية' : 'Nombres rationnels', items: [
-  { type: 'définition', title: isAr ? 'عدد كسري' : 'Nombre rationnel', description: '$\\displaystyle\\frac{a}{b},\\quad b\\ne0$', date: '2026-09-14' },
-  { type: 'propriété', title: isAr ? 'تساوي عددين كسريين' : 'Égalité de deux quotients', description: '$\\displaystyle\\frac{a}{b}=\\frac{ka}{kb},\\quad k\\ne0$', date: '2026-09-14' },
-  { type: 'exemple', title: isAr ? 'اختزال كسر' : 'Simplifier une fraction', description: '$\\displaystyle\\frac{12}{18}=\\frac{2}{3}$' },
-  { type: 'application', title: '', description: isAr ? 'اختزال كسور وتبرير المراحل.' : 'Simplifier des fractions et justifier les étapes.' },
-  { type: 'remarque', title: isAr ? 'التحقق من المقام' : 'Vérifier le dénominateur', description: '' },
+// Course direction is independent of interface language: a French course stays LTR.
+const lessons: LessonsData = [{ type: 'chapter', title: 'Nombres rationnels', items: [
+  { type: 'définition', title: 'Nombre rationnel', description: '$\\displaystyle\\frac{a}{b},\\quad b\\ne0$', date: '2026-09-14' },
+  { type: 'propriété', title: 'Égalité de deux quotients', description: '$\\displaystyle\\frac{a}{b}=\\frac{ka}{kb},\\quad k\\ne0$', date: '2026-09-14' },
+  { type: 'exemple', title: 'Simplifier une fraction', description: '$\\displaystyle\\frac{12}{18}=\\frac{2}{3}$' },
+  { type: 'application', title: 'S’entraîner', description: 'Simplifier des fractions et justifier les étapes.' },
+  { type: 'remarque', title: 'Vérifier le dénominateur', description: '' },
 ] }];
 const noop = () => {};
 
@@ -61,15 +64,18 @@ function Preview() {
       {screen === 'classes' && <><h1 className="mb-6 text-xl font-semibold">{isAr ? 'أقسامي' : 'Mes classes'}</h1><div className="grid grid-cols-3 gap-4">{classes.map((classInfo, i) => <ClassCard key={classInfo.id} classInfo={classInfo} isActiveSession={i === 0} onSelect={noop} onConfigure={noop} />)}</div></>}
       {screen === 'schedule' && <ScheduleTab config={config} classes={classes} onChange={onChange} />}
       {screen === 'notifications' && <NotificationsTab config={config} onChange={onChange} />}
+      {screen === 'appearance' && <AppearanceTab config={config} onConfigChange={onChange} />}
+      {screen === 'dates' && <AssignDateModal isOpen={open} onClose={() => setOpen(false)} onApply={noop}
+        initialDate="2026-09-14" selectedCount={2} selectedItems={[]} />}
       {(screen === 'editor' || screen === 'add') && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'دفتر النصوص — الرياضيات' : 'Cahier de textes — Mathématiques'}</h1>
-        <MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} contentDirection={isAr ? 'rtl' : 'ltr'}
+        <MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} contentDirection="ltr"
           onClearSearch={noop} onCellUpdate={noop} onDeleteSeparator={noop} onOpenAddContentModal={() => setAdd(true)}
           showDescriptions selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} />
         <SelectionBar count={2} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
           onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={noop} />
         <AddContentModal isOpen={add} onClose={() => setAdd(false)} onConfirm={noop} lessonsData={lessons}
-          selectedIndices={null} subject="Mathématiques" contentDirection={isAr ? 'rtl' : 'ltr'} />
+          selectedIndices={null} subject="Mathématiques" contentDirection="ltr" />
       </>}
     </main>}
   </>;

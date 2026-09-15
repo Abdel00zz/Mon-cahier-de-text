@@ -3,6 +3,8 @@ import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Modal } from '@/components/ui/modal';
 import { BookOpen, Search, X } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { GuideFigure } from './GuideFigure';
+import { GuideText } from './GuideText';
 import './guide.css';
 
 interface GuideModalProps { isOpen: boolean; onClose: () => void }
@@ -37,7 +39,7 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
     headingRef.current?.focus({ preventScroll: true });
   };
   const changeLanguage = (next: 'fr' | 'ar') => { setLang(next); setQuery(''); };
-  const toc = isAr ? 'فهرس الدليل التوجيهي' : 'Sommaire du guide';
+  const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="3xl"
@@ -49,8 +51,8 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
         <div className="guide-heading" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
           <span className="guide-mark"><BookOpen size={26} strokeWidth={1.8} aria-hidden="true" /></span>
           <div className="min-w-0 flex-1">
-            <span className="guide-title">{isAr ? 'دليل مسك وتدبير دفتر النصوص الرقمي' : 'Guide d’utilisation du cahier de textes numérique'}</span>
-            <span className="guide-subtitle">{isAr ? 'المساطر العملية والتوجيهات المنهجية وفق المعايير التربوية الرسمية' : 'Procédures pratiques et conformité aux orientations pédagogiques officielles'}</span>
+            <span className="guide-title">{isAr ? 'دليل دفتر النصوص' : 'Guide du cahier'}</span>
+            <span className="guide-subtitle">{isAr ? 'تعلّم استخدام التطبيق، خطوة بخطوة' : 'Prenez en main l’application, étape par étape'}</span>
           </div>
           <div className="guide-languages" aria-label={isAr ? 'لغة الدليل' : 'Langue du guide'}>
             <button type="button" lang="fr" aria-pressed={!isAr} onClick={() => changeLanguage('fr')}>FR</button>
@@ -63,13 +65,13 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
           <label className="guide-search">
             <Search size={18} strokeWidth={1.8} aria-hidden="true" />
             <input type="search" value={query} onChange={event => setQuery(event.target.value)}
-              aria-label={isAr ? 'البحث في الدليل التربوي' : 'Rechercher dans le guide'}
-              placeholder={isAr ? 'ابحث عن إجراء أو مفهوم (فرض، حصة، تقويم تشخيصي...)' : 'Rechercher une notion, action ou procédure…'} />
+              aria-label={isAr ? 'البحث في الدليل' : 'Rechercher dans le guide'}
+              placeholder={isAr ? 'قسم، تاريخ، إشعارات…' : 'Classe, date, notifications…'} />
           </label>
           <p className="guide-result-count" role="status" aria-live="polite">
             {query.trim()
               ? (isAr ? `${results.length} محاور مطابقة` : `${results.length} résultat${results.length === 1 ? '' : 's'}`)
-              : (isAr ? `${entries.length} فصول إرشادية وتوجيهية` : `${entries.length} chapitres de référence`)}
+              : (isAr ? `${entries.length} مواضيع للمساعدة` : `${entries.length} rubriques d’aide`)}
           </p>
           <label className="guide-mobile-toc">
             <span className="sr-only">{toc}</span>
@@ -93,33 +95,23 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
           aria-label={isAr ? 'محتوى الدليل' : 'Contenu du guide'}>
           {active ? <article className="guide-article" aria-labelledby="guide-chapter-title">
             <header>
-              <p className="guide-eyebrow">{isAr ? 'الدليل التربوي والتنظيمي' : 'Guide pédagogique & organisationnel'} · {activeIndex + 1} / {entries.length}</p>
+              <p className="guide-eyebrow">{isAr ? 'دليل الاستخدام' : 'Mode d’emploi'} · {activeIndex + 1} / {entries.length}</p>
               <h2 id="guide-chapter-title" ref={headingRef} tabIndex={-1}>{active.title}</h2>
-              <p className="guide-summary">{active.summary}</p>
+              <p className="guide-summary"><GuideText>{active.summary}</GuideText></p>
             </header>
+            {active.image && <GuideFigure key={`${active.image.key}-${lang}`} image={active.image} lang={lang} />}
             {active.sections.map((section, index) => <section key={`${active.id}-${index}`}>
               <h3>{section.title}</h3>
-              {section.body && <p dir="auto">{section.body}</p>}
+              {section.body && <p dir="auto"><GuideText>{section.body}</GuideText></p>}
               {section.steps && <ol className="guide-steps">{section.steps.map((step, i) =>
-                <li key={i}><span dir="auto">{step}</span></li>)}</ol>}
+                <li key={i}><span dir="auto"><GuideText>{step}</GuideText></span></li>)}</ol>}
               {section.items && <dl className="guide-terms">{section.items.map(item => <div key={item.term}>
-                <dt>{item.term}</dt><dd dir="auto">{item.detail}</dd>
+                <dt>{item.term}</dt><dd dir="auto"><GuideText>{item.detail}</GuideText></dd>
               </div>)}</dl>}
             </section>)}
-            {active.tip && <p className="guide-tip"><strong>{isAr ? 'إضاءة وتوجيه تربوي' : 'Repère pédagogique'}</strong> — {active.tip}</p>}
-            {active.image && <figure className="guide-figure">
-              <a href={`/guide/current/${active.image.key}-${lang}.webp`} target="_blank" rel="noopener noreferrer"
-                aria-label={`${active.image.caption} — ${isAr ? 'فتح الصورة بحجم أكبر في علامة تبويب جديدة' : 'Agrandir dans un nouvel onglet'}`}>
-                <img src={`/guide/current/${active.image.key}-${lang}.webp`} alt={active.image.caption}
-                  width={1120} height={active.image.key === 'classes' ? 360 : 800}
-                  loading="lazy" decoding="async" />
-              </a>
-              <figcaption>{active.image.caption}<span>{isAr
-                ? 'معاينة حية لواجهة دفتر النصوص الرقمي. انقر لتكبير الصورة.'
-                : 'Interface du cahier de textes numérique. Touchez l’image pour l’agrandir.'}</span></figcaption>
-            </figure>}
+            {active.tip && <p className="guide-tip"><strong>{isAr ? 'نصيحة' : 'Conseil'}</strong> — <GuideText>{active.tip}</GuideText></p>}
             <nav className="guide-related" aria-label={isAr ? 'محاور ومساطر ذات صلة' : 'Pour aller plus loin'}>
-              <h3>{isAr ? 'محاور ومساطر ذات صلة' : 'Procédures et rubriques associées'}</h3>
+              <h3>{isAr ? 'مواضيع ذات صلة' : 'À lire aussi'}</h3>
               {active.related.map(id => {
                 const entry = entries.find(item => item.id === id);
                 return entry && <button key={id} type="button" onClick={() => openChapter(id, true)}>{entry.title}<span aria-hidden="true">{isAr ? '←' : '→'}</span></button>;
@@ -139,6 +131,9 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
           </div>}
         </div>
       </div>
+      <footer className="guide-credit" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
+        {isAr ? <>الفكرة والتصميم: <bdi>بدوح عبد المالك</bdi></> : <>Idée et conception : <bdi>BOUDOUH ABDELMALEK</bdi></>}
+      </footer>
     </Modal>
   );
 };

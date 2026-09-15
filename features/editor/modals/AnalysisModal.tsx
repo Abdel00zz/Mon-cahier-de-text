@@ -77,9 +77,6 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ isOpen, onClose, l
         </div>
       }
       maxWidth="3xl"
-      mobilePresentation="dialog"
-      dragHandle={false}
-      swipeToDismiss={false}
       className="sm:max-w-4xl sm:rounded-2xl"
       headerClassName="border-b-0 bg-background"
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"

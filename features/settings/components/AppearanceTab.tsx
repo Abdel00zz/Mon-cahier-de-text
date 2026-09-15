@@ -314,7 +314,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                   <p className="text-xs font-bold text-foreground truncate">
                     {isRtl ? palette.nameAr : palette.nameFr}
                   </p>
-                  <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                  <p dir="ltr" className="text-[10px] text-muted-foreground font-mono mt-0.5">
                     {palette.hex}
                   </p>
                 </div>
@@ -365,6 +365,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
                   }
                 }}
                 maxLength={7}
+                dir="ltr"
                 placeholder="#2563eb"
                 className="mt-1 w-full text-center text-[10px] font-mono px-1 py-0.5 rounded border border-border bg-background text-foreground"
               />

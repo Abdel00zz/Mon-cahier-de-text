@@ -3,7 +3,7 @@ import { normalizeOfficialClassName } from '../constants';
 
 export const CLASS_STORAGE_KEY = 'classManager_v1';
 
-export class LocalSyncDataError extends Error {
+class LocalSyncDataError extends Error {
   constructor(key: string) {
     super(`Données locales illisibles (${key}). La copie existante est conservée ; synchronisation suspendue.`);
     this.name = 'LocalSyncDataError';
@@ -11,7 +11,7 @@ export class LocalSyncDataError extends Error {
 }
 
 /** Une donnée endommagée n'est jamais assimilée à un cahier volontairement vide. */
-export const parseLocalJson = (raw: string | null, key: string, fallback: unknown): unknown => {
+const parseLocalJson = (raw: string | null, key: string, fallback: unknown): unknown => {
   try { return raw === null ? fallback : JSON.parse(raw); }
   catch { throw new LocalSyncDataError(key); }
 };

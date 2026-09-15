@@ -1,5 +1,5 @@
 /** Structured bilingual help: plain text only, no HTML injection. */
-export interface GuideSection {
+interface GuideSection {
   title: string;
   body?: string;
   steps?: string[];
@@ -22,52 +22,54 @@ const chapter = (id: string, related: string[], fr: Content, ar: Content) => ({
 
 const chapters = [
   chapter('start', ['profile', 'schedule', 'content'], {
-    title: 'Démarrage rapide : votre premier cahier de textes',
-    summary: 'Initialisation du profil administratif, création de classe et premier enregistrement de séances selon les directives officielles.',
+    title: 'Créer votre premier cahier',
+    summary: 'Préparez votre profil, ajoutez une classe, puis enregistrez votre première séance.',
+    image: { key: 'classes', caption: 'Chaque carte ouvre le cahier de la classe correspondante.' },
     keywords: 'démarrage début cahier de textes professeur classe niveau filière emploi du temps séance inspection pédagogique',
     sections: [
       {
-        title: 'Initialiser une classe et son emploi du temps',
+        title: 'Commencez en cinq étapes',
         steps: [
-          'Accédez à Paramètres → Profil pour renseigner votre cadre d’enseignement : nom, établissement, académie (AREF), direction provinciale, matières et cycles (Collège, Lycée qualifiant ou CPGE).',
-          'Depuis le tableau de bord, créez votre première division (classe) : indiquez le niveau scolaire, la filière / branche (ex. Sciences Expérimentales, Mathématiques), la matière et le groupe ou فوج.',
-          'Renseignez la grille hebdomadaire dans Paramètres → Emploi du temps. Elle sert de repère automatique pour dater vos séances et contrôler la régularité du journal de classe.',
-          'Ouvrez le cahier de textes de la classe : importez le programme officiel préconfiguré ou construisez votre progression pédagogique personnalisée.',
-          'À l’issue de chaque séance réalisée, sélectionnez les éléments traités, appliquez la date effective et consignez le travail à faire pour la séance suivante.',
+          'Ouvrez Paramètres → Profil. Renseignez vos informations, choisissez vos matières et vos cycles, puis cliquez sur « Enregistrer le profil ».',
+          'Ajoutez une classe depuis le tableau de bord. Choisissez son niveau, sa matière et son groupe.',
+          'Dans Paramètres → Emploi du temps, affectez la classe à ses créneaux de cours.',
+          'Ouvrez sa carte. Importez le programme proposé ou créez vos propres chapitres.',
+          'Après le cours, sélectionnez les éléments réalisés, attribuez leur date et notez le travail à faire.',
         ],
       },
       {
-        title: 'Régularité et conformité pédagogique',
-        body: 'Le cahier de textes est une pièce maîtresse de liaison administrative et de contrôle pédagogique. Avant le cours : planifiez les situations d’apprentissage. Après le cours : datez les acquis réels et notez les devoirs ou consignes. En fin de semaine : consultez le centre de pilotage pour vérifier le rythme d’avancement et la sauvegarde.',
+        title: 'Un geste simple après chaque cours',
+        body: 'Datez uniquement le travail réalisé. En fin de semaine, consultez le centre de pilotage pour repérer les séances à compléter. Vérifiez aussi la synchronisation et conservez une sauvegarde.',
       },
     ],
     tip: 'Une configuration rigoureuse de l’emploi du temps dès la rentrée garantit un suivi fluide et évite tout décalage dans la datation des séances.',
   }, {
-    title: 'الانطلاقة السريعة: إعداد دفتر النصوص الرقمي',
-    summary: 'الخطوات المنهجية لتهيئة المعطيات الإدارية، إعداد القسم الدراسي، ومسك الحصص وفق التوجيهات التربوية الرسمية.',
+    title: 'أنشئ أول دفتر نصوص',
+    summary: 'أعدّ ملفك الشخصي، أضف قسماً، ثم سجّل أول حصة.',
+    image: { key: 'classes', caption: 'تفتح كل بطاقة دفتر النصوص الخاص بالقسم.' },
     keywords: 'بداية انطلاقة دفتر النصوص أستاذ قسم مستوى سلك مؤسسة تفتيش توجيهات تربوية مقرر وزاري مسك حصة إسناد تاريخ',
     sections: [
       {
-        title: 'تهيئة أول قسم دراسي واستعمال الزمن',
+        title: 'ابدأ في خمس خطوات',
         steps: [
-          'ادخل إلى «الإعدادات» ثم «الملف الشخصي» للتحقق من المعطيات الإدارية: الاسم، المؤسسة التعليمية، الأكاديمية الجهوية (AREF)، المديرية الإقليمية، المواد والأسلاك المسندة.',
-          'من لوحة التحكم الرئيسية، أضف فصلاً دراسياً: حدّد المستوى الدراسي، الشعبة أو المسلك (مثل: العلوم التجريبية، العلوم الرياضية، الآداب)، المادة، والفوج إن وجد.',
-          'اضبط الحصص الأسبوعية في «الإعدادات» ثم «استعمال الزمن». يُعد هذا الجدول الركيزة الأساسية لرصد الحصص والتحقق التلقائي من مطابقة التواريخ.',
-          'افتح دفتر نصوص القسم: استورد التوزيع الدوري والمقرر الدراسي الرسمي المعتمد، أو ابنِ تدرجك البيداغوجي ذاتياً.',
-          'إثر كل حصة منجزة، حدّد المفاهيم والأنشطة المنجزة فعلياً، أسند تاريخ الحصة، ودوّن الملاحظات والواجبات المنزلية الموجهة للمتعلمين.',
+          'افتح «الإعدادات» ثم «الملف الشخصي». أدخل بياناتك واختر المواد والأسلاك، ثم اضغط على «حفظ الملف الشخصي».',
+          'أضف قسماً من لوحة التحكم. حدّد المستوى والمادة ورقم المجموعة.',
+          'في «الإعدادات» ثم «استعمال الزمن»، أسند القسم إلى حصصه الأسبوعية.',
+          'افتح بطاقة القسم. استورد البرنامج المقترح أو أنشئ فصولك الخاصة.',
+          'بعد الحصة، حدّد العناصر المنجزة وأسند إليها تاريخ الإنجاز، ثم دوّن العمل المطلوب.',
         ],
       },
       {
-        title: 'قواعد التوثيق المنتظم والانضباط التربوي',
-        body: 'دفتر النصوص وثيقة إدارية وتربوية رسمية تعكس السير الفعلي لتنفيذ المقررات الدراسية، وتخضع لتأشير إدارة المؤسسة وهيئة التفتيش التربوي. قبل الحصة: حضّر الأنشطة التعلمية. إثر الحصة: وثّق المحتويات المنجزة وتاريخها فوراً. نهاية كل أسبوع: راجع مؤشرات مركز القيادة وحالة الحفظ والمزامنة السحابية.',
+        title: 'خطوة بسيطة بعد كل حصة',
+        body: 'أسند التاريخ إلى العمل المنجز فقط. وفي نهاية الأسبوع، راجع مركز القيادة لمعرفة الحصص التي تحتاج إلى إكمال. تحقق أيضاً من المزامنة واحتفظ بنسخة احتياطية.',
       },
     ],
     tip: 'ضبط جدول الحصص الأسبوعي بدقة من بداية الموسم الدراسي يمنع أخطاء تواريخ الحصص ويسهّل التأشير الإداري والمراقبة التربوية.',
   }),
 
   chapter('profile', ['schedule', 'classes', 'appearance'], {
-    title: 'Profil enseignant, matières et cycles d’enseignement',
-    summary: 'Paramétrage des données administratives, des cycles scolaires et personnalisation des en-têtes officiels.',
+    title: 'Profil, matières et cycles',
+    summary: 'Renseignez les informations de vos en-têtes et choisissez les cycles que vous enseignez.',
     keywords: 'profil enseignant collège lycée prépa matière AREF direction provinciale établissement cycle langue',
     sections: [
       {
@@ -112,8 +114,8 @@ const chapters = [
   }),
 
   chapter('schedule', ['classes', 'dates', 'notifications'], {
-    title: 'Emploi du temps hebdomadaire et créneaux de cours',
-    summary: 'Structuration de la grille horaire hebdomadaire pour fiabiliser le repérage et la datation des séances.',
+    title: 'Configurer l’emploi du temps',
+    summary: 'Placez chaque classe dans la grille pour repérer les séances en cours et vérifier leurs dates.',
     keywords: 'emploi du temps grille horaire créneaux matin après-midi séances hebdomadaires rentrée scolaire décalage',
     image: { key: 'schedule', caption: 'Affectation des classes aux créneaux hebdomadaires de l’emploi du temps.' },
     sections: [
@@ -143,7 +145,7 @@ const chapters = [
         steps: [
           'في «الإعدادات» ثم «استعمال الزمن»، تحقق من تاريخ انطلاق الموسم الدراسي المعتمد في المقرر الوزاري لتنظيم السنة الدراسية.',
           'اضغط على الخانة المتقاطعة بين اليوم وساعة التدريس (صباحاً أو بعد الزوال) لإسناد القسم الدراسي المعني.',
-          'في حالة الحصص المزدوجة (ساعتان متتاليتان)، أسند القسم نفسه للخانcurrentين المتتاليتين؛ حيث يتم دمجهما تلقائياً في حصة تدريسية واحدة.',
+          'لحصة من ساعتين، أسند القسم نفسه إلى الخانتين المتتاليتين؛ سيجمعهما التطبيق في حصة واحدة.',
           'لحذف حصة، اختر الخانة الفارغة. راجع بعد ذلك جدول الحصيلة للتأكد من مطابقة الغلاف الزمني الأسبوعي لحصص المادة المقررة رسمياً.',
         ],
       },
@@ -156,10 +158,10 @@ const chapters = [
   }),
 
   chapter('classes', ['content', 'schedule', 'pilotage'], {
-    title: 'Tableau de bord et gestion de la séance en cours',
+    title: 'Retrouver vos classes',
     summary: 'Accès immédiat au cahier de textes, repérage automatique de la classe en cours et gestes mobiles.',
     keywords: 'dashboard tableau de bord séance en cours carte classe appui long tactile raccourci filtres',
-    image: { key: 'classes', caption: 'Repérage visuel de la classe active et indicateurs de suivi en temps réel.' },
+    image: { key: 'classes', caption: 'La carte de la séance en cours se distingue des autres classes.' },
     sections: [
       {
         title: 'Interactions et gestes clés',
@@ -179,10 +181,10 @@ const chapters = [
       },
     ],
   }, {
-    title: 'لوحة التحكم وتدبير الحصة التعليمية الجارية',
+    title: 'الوصول إلى أقسامك',
     summary: 'الولوج المباشر لدفتر نصوص القسم، الرصد التلقائي للحصة الجارية وفق استعمال الزمن، واختصارات التفاعل السريع.',
     keywords: 'لوحة التحكم حصة جارية بطاقة القسم ضغط مطول تفويج قسم نشط فرز تصفية',
-    image: { key: 'classes', caption: 'التمييز البصري للحصة التعليمية الجارية ومؤشرات التتبع الفوري.' },
+    image: { key: 'classes', caption: 'تتميّز بطاقة القسم الذي تدرّسه الآن عن بقية الأقسام.' },
     sections: [
       {
         title: 'العمليات الأساسية على بطاقات الأقسام',
@@ -204,8 +206,8 @@ const chapters = [
   }),
 
   chapter('content', ['editor', 'curriculum', 'backup'], {
-    title: 'Programmation pédagogique : import officiel, rédaction libre ou service sur mesure',
-    summary: 'Adopter le programme officiel ministériel, concevoir librement votre progression, ou confier la préparation de votre cahier à notre service d’assistance à partir de vos propres cours.',
+    title: 'Préparer le contenu du cahier',
+    summary: 'Importez un programme, rédigez vos cours ou contactez le service de préparation sur mesure.',
     keywords: 'programme officiel curriculum import progression pédagogique rédaction libre service préparation cahier de textes WhatsApp cours personnels diagnostic',
     sections: [
       {
@@ -224,8 +226,8 @@ const chapters = [
     ],
     tip: 'Que vous choisissiez l’import officiel, la rédaction libre ou l’accompagnement par notre service à partir de vos cours, seules les séances effectivement dispensées en classe doivent recevoir une date de réalisation.',
   }, {
-    title: 'التخطيط البيداغوجي: استيراد المنهاج الرسمي، التحرير الحر أو إعداد الدفتر من دروسك الخاصة',
-    summary: 'ثلاثة خيارات مرنة لتنظيم دفتر النصوص: اعتماد المنهاج والتوزيع السنوي الرسمي، البناء والتحرير الحر لتدرجك الخاص، أو التواصل مع خدمة تحرير ورقمنة الدفتر انطلاقاً من محتوى دروسك.',
+    title: 'إعداد محتوى الدفتر',
+    summary: 'استورد برنامجاً، اكتب دروسك، أو تواصل مع خدمة إعداد الدفتر من وثائقك.',
     keywords: 'منهاج رسمي توزيع سنوي توجيهات تربوية استيراد تدرج بيداغوجي تحرير حر خدمة إعداد دفاتر النصوص جذاذات دروس خاصة واتساب تقويم تشخيصي',
     sections: [
       {
@@ -246,10 +248,10 @@ const chapters = [
   }),
 
   chapter('editor', ['types', 'dates', 'math'], {
-    title: 'Tenue quotidienne du cahier de textes numérique',
-    summary: 'Sélection des apprentissages réalisés, datation rigoureuse et consignation des remarques pédagogiques.',
+    title: 'Compléter une séance',
+    summary: 'Sélectionnez le travail réalisé, attribuez une date et ajoutez vos remarques.',
     keywords: 'éditeur cahier de textes tableau séances datation travail à faire devoirs remarques pédagogiques sélection',
-    image: { key: 'editor', caption: 'Tableau de bord du cahier de textes et barre d’actions de datation des séances.' },
+    image: { key: 'editor', caption: 'Le tableau réunit les dates, le contenu et les remarques. Les actions sont en bas.' },
     sections: [
       {
         title: 'Enregistrement d’une séance d’enseignement',
@@ -271,10 +273,10 @@ const chapters = [
     ],
     tip: 'Sur smartphone, basculez l’appareil en mode paysage pour bénéficier d’une visibilité optimale sur l’ensemble des colonnes du cahier.',
   }, {
-    title: 'مسك دفتر النصوص وتوثيق الحصص الصفية',
-    summary: 'تأشير الأنشطة المنجزة، إسناد تاريخ الحصة، وتدوين الملاحظات البيداغوجية والواجبات المنزلية بدقة.',
+    title: 'تسجيل حصة منجزة',
+    summary: 'حدّد العمل المنجز، أسند إليه تاريخاً، ثم أضف ملاحظاتك.',
     keywords: 'مسك دفتر النصوص جدول الحصص توثيق إنجاز تأريخ ملاحظات بيداغوجية واجبات منزلية تفتيش تربوي شريط الإجراءات',
-    image: { key: 'editor', caption: 'جدول مسك الحصص وشريط الإجراءات لتأريخ التعلمات والأنشطة.' },
+    image: { key: 'editor', caption: 'واجهة عربية ودرس بالفرنسية: يبقى نص الدرس وصِيَغه الرياضية من اليسار إلى اليمين.' },
     sections: [
       {
         title: 'خطوات تدوين الحصة الدراسية بعد إنجازها',
@@ -298,10 +300,10 @@ const chapters = [
   }),
 
   chapter('types', ['editor', 'math', 'content'], {
-    title: 'Typologie didactique des contenus d’enseignement',
-    summary: 'Structurer la démarche pédagogique en distinguant situations de recherche, notions institutionnalisées et phases d’entraînement.',
+    title: 'Ajouter un élément au cours',
+    summary: 'Choisissez le type qui décrit votre contenu : définition, propriété, exemple, application…',
     keywords: 'didactique situation problème définition théorème propriété démonstration exemple application activité exercice soutien',
-    image: { key: 'add', caption: 'Palette didactique pour l’insertion d’activités, définitions et théorèmes.' },
+    image: { key: 'add', caption: 'Le bouton « + » propose un chapitre, un élément ou une évaluation selon votre sélection.' },
     sections: [
       {
         title: 'Articuler les moments didactiques',
@@ -327,10 +329,10 @@ const chapters = [
       },
     ],
   }, {
-    title: 'التصنيف الديداكتيكي لعناصر المحتوى الدراسي',
-    summary: 'هيكلة مسار التعلمات: التمييز بين الأنشطة الاستكشافية، مأسسة المعارف، والتطبيقات الداعمة.',
+    title: 'إضافة عنصر إلى الدرس',
+    summary: 'اختر النوع المناسب للمحتوى: تعريف، خاصية، مثال، تطبيق…',
     keywords: 'ديداكتيك وضعية مشكلة نشاط استكشافي تعريف خاصية مبرهنة برهان مثال تطبيق تمرين توليفي أنشطة الدعم',
-    image: { key: 'add', caption: 'القائمة الديداكتيكية لإدراج الأنشطة والتعاريف والمبرهنات والتمارين.' },
+    image: { key: 'add', caption: 'يتيح زر «+» إضافة فصل أو عنصر أو تقويم، حسب موضع التحديد.' },
     sections: [
       {
         title: 'الهيكلة الديداكتيكية للدرس',
@@ -358,56 +360,58 @@ const chapters = [
   }),
 
   chapter('dates', ['schedule', 'notifications', 'pilotage'], {
-    title: 'Calendrier scolaire officiel, datation et jours chômés',
-    summary: 'Conformité des dates de séances avec l’Arrêté ministériel d’organisation de l’année scolaire et gestion des vacances.',
+    title: 'Choisir et vérifier une date',
+    summary: 'Attribuez la date réelle de la séance et vérifiez les éventuels avertissements avant de confirmer.',
+    image: { key: 'dates', caption: 'Choisissez la date à appliquer aux éléments sélectionnés, puis confirmez.' },
     keywords: 'calendrier scolaire arrêté ministériel vacances jours fériés dimanche absence contrôle datation séance',
     sections: [
       {
-        title: 'Fiabiliser la datation des séances',
+        title: 'Appliquer la date en quatre étapes',
         steps: [
-          'Sélectionnez les notions abordées et ouvrez le calendrier de saisie de la date.',
-          'Prenez connaissance des alertes automatiques : dimanche (jour de repos hebdomadaire), vacances scolaires officielles, jours fériés nationaux ou religieux, ou absence préalablement déclarée.',
-          'En cas de séance exceptionnelle de rattrapage (validée par l’administration de l’établissement), confirmez la date après vérification.',
-          'L’option « Ne plus avertir pour cette date » mémorise la dérogation sans dispenser d’une vigilance pédagogique.',
+          'Sélectionnez le travail réalisé, puis choisissez « Choisir une date… » dans la barre d’actions.',
+          'Saisissez une date ou utilisez « Hier », « Aujourd’hui » ou « Demain ». Vérifiez le jour affiché.',
+          'Cliquez sur « Appliquer la date ». Si un avertissement apparaît, vérifiez le motif avant de continuer.',
+          '« Ne plus avertir pour cette date » masque les prochains avertissements pour ce jour. Cette option ne modifie pas votre emploi du temps.',
         ],
       },
       {
-        title: 'Respect du calendrier officiel du Ministère (MEN)',
-        body: 'Le calendrier intégré prend en compte la programmation officielle des vacances scolaires et des fêtes nationales. Il respecte les découpages semestriels et périodiques officiels. Veillez à actualiser vos dates en cas de circulaire ministérielle modificative.',
+        title: 'Comprendre les avertissements',
+        body: 'L’application peut signaler un dimanche, une période de vacances, un jour férié, une absence enregistrée ou une date incompatible avec votre emploi du temps. Vérifiez la situation réelle : un avertissement vous invite à contrôler, il ne confirme pas qu’un cours a eu lieu.',
       },
       {
-        title: 'Cas des séances dédoublées ou multiples',
-        body: 'La présence d’une date sur un cours n’implique pas automatiquement que toutes les séances du jour ont été enregistrées pour cette classe. Vérifiez systématiquement le nombre d’heures déclarées face à votre quota hebdomadaire.',
+        title: 'Deux séances le même jour',
+        body: 'Une date déjà présente ne signifie pas que les deux séances sont complètes. Vérifiez séparément le travail réalisé à chaque séance.',
       },
     ],
   }, {
-    title: 'التقويم المدرسي الرسمي، التأريخ وأيام التوقف',
-    summary: 'ملاءمة تواريخ الحصص مع المقرر الوزاري لتنظيم السنة الدراسية وتدبير العطل والرخص الإدارية.',
+    title: 'اختيار تاريخ الحصة والتحقق منه',
+    summary: 'أسند تاريخ الإنجاز الفعلي وراجع أي تنبيه قبل التأكيد.',
+    image: { key: 'dates', caption: 'اختر التاريخ الذي سيُطبّق على العناصر المحددة، ثم أكّد الاختيار.' },
     keywords: 'المقرر الوزاري تنظيم السنة الدراسية تقويم مدرسي عطل مدرسية أعياد وطنية دينية رخص غياب حصص استدراكية',
     sections: [
       {
-        title: 'تدقيق تواريخ الإنجاز الفعلي للحصص',
+        title: 'طبّق التاريخ في أربع خطوات',
         steps: [
-          'حدّد عناصر الدرس المنجزة ثم افتح نافذة إسناد التاريخ لاختيار يوم الحصة الفعلي.',
-          'انتبه للتنبيهات الآلية الصادرة عن النظام: يوم الأحد (راحة أسبوعية)، فترات العطل المدرسية الرسمية، الأعياد الوطنية والدينية، أو رخص الغياب المسجلة للأستاذ.',
-          'في حال برمجة حصة دعم أو حصة استدراكية مرخصة من إدارة المؤسسة في يوم عطلة، أكد إسناد التاريخ بوعي كامل بالاستثناء.',
-          'يُستخدم خيار «عدم التنبيه لهذا التاريخ مجدداً» فقط لتسجيل هذا الاستثناء الرسمي في أرشيف الدفتر.',
+          'حدّد العمل المنجز، ثم اختر «اختيار تاريخ…» من شريط الإجراءات.',
+          'أدخل التاريخ أو استخدم «أمس» أو «اليوم» أو «غداً». تحقّق من اليوم الظاهر.',
+          'اضغط على «تطبيق التاريخ». إذا ظهر تنبيه، اقرأ السبب وتحقّق منه قبل المتابعة.',
+          'يخفي خيار «عدم التنبيه إلى هذا التاريخ مجدداً» التنبيهات المقبلة لهذا اليوم، ولا يغيّر استعمال الزمن.',
         ],
       },
       {
-        title: 'التطابق مع المقرر الوزاري لوزارة التربية الوطنية',
-        body: 'يعتمد النظام جدول العطل المدرسية الموحد الصادر عن وزارة التربية الوطنية والتعليم الأولي والرياضة. تظل المذكرات الوزارية الدورية والجهوية المرجع الأساسي لأي طارئ أو تعديل في المواقيت.',
+        title: 'ماذا تعني التنبيهات؟',
+        body: 'قد ينبهك التطبيق إلى يوم أحد، أو عطلة، أو غياب مسجل، أو تاريخ لا يوافق استعمال الزمن. راجع الوضع الفعلي: التنبيه يدعوك إلى التحقق، ولا يثبت إنجاز الحصة.',
       },
       {
-        title: 'تدبير الحصص المزدوجة وفترات التفويج',
-        body: 'تسجيل تاريخ لحصة صباحية لا يعني تلقائياً تدوين الحصة المسائية إن كان للقسم حصتان في اليوم نفسه. تأكد دائماً من تسجيل وتوثيق كل فترة دراسية مستقلة استيفاءً للغلاف الزمني القانوني للمادة.',
+        title: 'حصتان في اليوم نفسه',
+        body: 'وجود تاريخ في الدفتر لا يعني اكتمال الحصتين. راجع العمل المنجز في كل حصة على حدة.',
       },
     ],
   }),
 
   chapter('math', ['types', 'appearance', 'troubleshooting'], {
-    title: 'Formules mathématiques (LaTeX), bilinguisme et recherche',
-    summary: 'Régularité des écritures scientifiques, respect de la typographie mathématique et recherche textuelle.',
+    title: 'Écrire des formules et rechercher',
+    summary: 'Saisissez vos formules en LaTeX, vérifiez leur rendu et retrouvez rapidement un contenu.',
     keywords: 'LaTeX MathJax mathématiques formules scientifiques équations fractions bilingue RTL LTR recherche',
     sections: [
       {
@@ -430,7 +434,7 @@ const chapters = [
     ],
     tip: 'En cas de formule non interprétée, vérifiez l’absence d’accolade manquante et attendez le chargement complet du moteur de rendu MathJax.',
   }, {
-    title: 'الصياغة الرياضية والترميز العلمي (LaTeX) والبحث',
+    title: 'كتابة الصيغ الرياضية والبحث',
     summary: 'كتابة المعادلات والرموز العلمية بدقة، التوافق بين اللغات والاتجاهات (RTL/LTR)، والبحث السريع.',
     keywords: 'رياضيات ترميز علمي معادلات صيغ LaTeX MathJax لاتكس ماثجاكس كسور نهايات متجهات بحث',
     sections: [
@@ -456,23 +460,24 @@ const chapters = [
   }),
 
   chapter('pilotage', ['curriculum', 'assessments', 'notifications'], {
-    title: 'Centre de pilotage et suivi de progression pédagogique',
-    summary: 'Tableau de bord stratégique pour le contrôle de l’avancement des programmes, des échéances et de la régularité du cahier.',
+    title: 'Utiliser le centre de pilotage',
+    summary: 'Repérez les points à vérifier, les prochaines échéances et les classes à compléter.',
     keywords: 'centre de pilotage progression pédagogique tableau de bord cloche échéances devoirs conformité inspection',
-    image: { key: 'pilotage', caption: 'Indicateurs de conformité et de rythme de progression dans le centre de pilotage.' },
+    image: { key: 'pilotage', caption: 'Les repères signalent ici un emploi du temps incomplet et proposent une action.' },
     sections: [
       {
-        title: 'Votre tour de contrôle pédagogique',
-        body: 'Accessible via la cloche du tableau de bord, le centre de pilotage centralise l’analyse continue de vos enseignements : rythme de progression par rapport au calendrier officiel, séances en attente de datation et prévision des contrôles continus.',
+        title: 'Savoir quoi vérifier en priorité',
+        body: 'Ouvrez la cloche du tableau de bord. Le centre de pilotage rassemble les alertes et les échéances pour vous aider à choisir la prochaine action utile.',
       },
       {
-        title: 'Rubriques d’analyse et indicateurs de conformité',
+        title: 'À quoi sert chaque rubrique ?',
         items: [
-          { term: 'Repères de vigilance', detail: 'Signalement immédiat des anomalies : grille horaire incomplète, séances non datées, décalage avec le calendrier officiel ou absence prolongée d’activité.' },
-          { term: 'Échéances de contrôle continu', detail: 'Rappel des dates prévues pour les devoirs surveillés, devoirs à domicile et activités d’évaluation diagnostique ou sommative.' },
-          { term: 'Calendrier et périodes ministérielles', detail: 'Repérage des étapes clés de l’année scolaire : fin de période, arrêts des notes et vacances officielles.' },
-          { term: 'Suivi synthétique des classes', detail: 'Vue panoramique sur le taux de complétion des cahiers, la date de dernière séance enregistrée et le statut d’impression.' },
-          { term: 'Journal d’activité pédagogique', detail: 'Historique chronologique des modifications et opérations de saisie effectuées sur vos cahiers.' },
+          { term: 'Repères', detail: 'Les points à vérifier : emploi du temps incomplet, séance non datée ou interruption du suivi.' },
+          { term: 'Échéances', detail: 'Les prochaines dates à préparer, notamment les évaluations programmées.' },
+          { term: 'Calendrier', detail: 'Les événements et périodes disponibles dans le calendrier de l’application.' },
+          { term: 'Classes', detail: 'Un résumé du suivi de vos classes et un accès aux cahiers concernés.' },
+          { term: 'Activité', detail: 'Les opérations récentes enregistrées dans l’application.' },
+          { term: 'Masqués', detail: 'Les alertes que vous avez masquées, lorsque cette rubrique est disponible.' },
         ],
       },
       {
@@ -485,23 +490,24 @@ const chapters = [
       },
     ],
   }, {
-    title: 'مركز القيادة والتتبع البيداغوجي',
-    summary: 'لوحة تتبع استراتيجية لقياس وتيرة تنفيذ المقررات، مواعيد المراقبة المستمرة، والانضباط التوثيقي.',
+    title: 'استخدام مركز القيادة',
+    summary: 'تعرّف على ما يحتاج إلى مراجعة، والمواعيد المقبلة، والأقسام التي تحتاج إلى إكمال.',
     keywords: 'مركز القيادة تتبع بيداغوجي وتيرة الإنجاز مراقبة مستمرة مؤشرات التفتيش فروض محروسة تنبيهات',
-    image: { key: 'pilotage', caption: 'مؤشرات الانضباط وتتبع وتيرة إنجاز المقررات بمركز القيادة.' },
+    image: { key: 'pilotage', caption: 'تشير المؤشرات هنا إلى استعمال زمن غير مكتمل وتقترح إجراءً لإكماله.' },
     sections: [
       {
-        title: 'غرفة المتابعة التربوية والتدبيرية',
-        body: 'يُفتح مركز القيادة عبر أيقونة الجرس في لوحة التحكم، ويشكل فضاءً تحليلياً متكاملاً يتيح للأستاذ استباق الإجراءات الإدارية والتربوية، وضبط وتيرة تقدم الدروس مقارنة مع التوزيع السنوي الرسمي.',
+        title: 'اعرف ما يحتاج إلى انتباهك أولاً',
+        body: 'افتح أيقونة الجرس من لوحة التحكم. يجمع مركز القيادة التنبيهات والمواعيد ليساعدك على اختيار الخطوة المناسبة.',
       },
       {
-        title: 'مكونات لوحة التتبع والمؤشرات المعتمدة',
+        title: 'ما دور كل قسم في هذه الصفحة؟',
         items: [
-          { term: 'مؤشرات اليقظة والانتظام', detail: 'رصد الثغرات الإجرائية: استعمال زمن غير مكتمل، حصص منجزة غير مؤرخة، أو انقطاع غير معتاد في التدوين.' },
-          { term: 'محطات المراقبة المستمرة', detail: 'جدولة استحقاقات الفروض المحروسة والمنزلية والتقويم التشخيصي وأنشطة الدعم المبرمجة.' },
-          { term: 'المحطات الرسمية والمقرر الوزاري', detail: 'متابعة الفترات الدراسية، تواريخ توقف الدروس، العطل المدرسية، وفترات مسك النقط في منظومة مسار.' },
-          { term: 'وضعية الأقسام ونسب الإنجاز', detail: 'حوصلة إحصائية لحالة كل قسم: نسبة تغطية المنهاج، تاريخ آخر حصة موثقة، وجاهزية سجل الحصص للطباعة.' },
-          { term: 'سجل العمليات والأنشطة', detail: 'توثيق زمني دقيق لكافة التعديلات والإضافات المنجزة على الدفاتر لضمان سلامة المعطيات.' },
+          { term: 'المؤشرات', detail: 'ما يحتاج إلى مراجعة، مثل استعمال زمن غير مكتمل أو حصة دون تاريخ.' },
+          { term: 'المواعيد', detail: 'التواريخ المقبلة التي تستعد لها، ومنها التقويمات المبرمجة.' },
+          { term: 'التقويم', detail: 'الأحداث والفترات المتاحة في تقويم التطبيق.' },
+          { term: 'أقسامك', detail: 'ملخص لتتبع الأقسام مع إمكانية فتح الدفتر المعني.' },
+          { term: 'النشاط', detail: 'العمليات الأخيرة المسجلة في التطبيق.' },
+          { term: 'المخفية', detail: 'التنبيهات التي أخفيتها، عندما يكون هذا القسم متاحاً.' },
         ],
       },
       {
@@ -516,7 +522,7 @@ const chapters = [
   }),
 
   chapter('curriculum', ['content', 'pilotage', 'dates'], {
-    title: 'Suivi du programme officiel et répartitions périodiques',
+    title: 'Relier les cours au programme',
     summary: 'Mesurer la réalisation des objectifs pédagogiques et comparer l’avancement réel aux prévisions officielles.',
     keywords: 'programme officiel répartition annuelle périodique couverture programme progression pourcentages inspection',
     sections: [
@@ -531,7 +537,7 @@ const chapters = [
       },
       {
         title: 'Interpréter les pourcentages d’avancement',
-        body: 'Le taux d’exécution reflète les séances datées par rapport au volume horaire prescrit par le ministère. Importer un programme ne suffit pas à le déclarer réalisé : seul le مسك des séances effectives alimente fidèlement le rapport d’avancement remis à la direction ou au corps d’inspection.',
+        body: 'Le taux d’exécution reflète les séances datées par rapport au volume horaire prescrit par le ministère. Importer un programme ne suffit pas à le déclarer réalisé : seul l’enregistrement effectif des séances alimente fidèlement le rapport d’avancement remis à la direction ou au corps d’inspection.',
       },
       {
         title: 'Ajustement en cas de réorganisation de la progression',
@@ -539,7 +545,7 @@ const chapters = [
       },
     ],
   }, {
-    title: 'تتبع تنفيذ المنهاج الدراسي والتوزيع الدوري الرسمي',
+    title: 'ربط الدروس بالبرنامج وتتبع التقدم',
     summary: 'مقاربة وتيرة الإنجاز الفعلي بالبرمجة السنوية والتوجيهات التربوية لوزارة التربية الوطنية.',
     keywords: 'منهاج دراسي توزيع سنوي توزيع دوري توجيهات تربوية نسبة الإنجاز تفتيش تربوي كفايات مستهدفة',
     sections: [
@@ -563,59 +569,199 @@ const chapters = [
     ],
   }),
 
-  chapter('assessments', ['pilotage', 'dates', 'backup'], {
-    title: 'Contrôle continu, évaluations et activités de remédiation',
-    summary: 'Planification des devoirs surveillés, évaluations diagnostiques, soutien pédagogique et suivi des absences des élèves.',
-    keywords: 'contrôle continu devoir surveillé devoir à domicile évaluation diagnostique soutien remédiation absence élèves examen semestriel',
+  chapter('legal', ['curriculum', 'editor', 'dates', 'assessments'], {
+    title: 'Consulter les références officielles',
+    summary: 'Fondements réglementaires (Notes 255 et 175), normes organisationnelles et didactiques, valeur probante et protection de l’enseignant.',
+    keywords: 'note 255 note 175 réglementation orientations pédagogiques répartition périodique contrôle continu cadres référence inspection preuve décharge',
     sections: [
+      {
+        title: '1. Référentiels officiels régissant le contrôle du cahier de textes',
+        body: 'Le cahier de textes tire son autorité institutionnelle d’un ensemble cohérent de textes législatifs et didactiques officiels :',
+        items: [
+          { term: 'Orientations pédagogiques', detail: 'Directives ministérielles et programmes officiels encadrant la discipline.' },
+          { term: 'Répartition périodique des cours', detail: 'Progression chronologique et découpage horaire annuel des apprentissages.' },
+          { term: 'Notes d’évaluation et cadres de référence', detail: 'Référentiels des examens certificatifs délimitant les domaines notionnels et niveaux taxonomiques d’habileté.' },
+          { term: 'Calendrier périodique du contrôle continu', detail: 'Planification officielle des devoirs surveillés et des fenêtres de passation.' },
+          { term: 'Note ministérielle n° 255 (23 décembre 1981)', detail: 'Texte fondamental régissant le contrôle rigoureux des documents scolaires par la direction et l’inspection.' },
+          { term: 'Note ministérielle n° 175 (19 novembre 2010)', detail: 'Cadre d’encadrement et de suivi des modalités du contrôle continu dans l’enseignement scolaire.' },
+        ],
+      },
+      {
+        title: '2. Importance didactique et portée institutionnelle',
+        body: 'Pièce maîtresse des documents pédagogiques de l’enseignant, le cahier de textes répond à des fonctions capitales :',
+        items: [
+          { term: 'Miroir de l’activité en classe', detail: 'Reflète la diversité des situations d’apprentissage, des exercices et le degré d’organisation de l’enseignant.' },
+          { term: 'Mesure du rythme de progression', detail: 'Fournit une vue exacte sur la cadence d’achèvement du programme officiel et la pertinence des outils d’évaluation.' },
+          { term: 'Conformité aux cadres de référence', detail: 'Garantit le respect des domaines notionnels, des niveaux d’habileté et des critères de notation prescrits.' },
+          { term: 'Analyse formative et remédiation', detail: 'Permet d’examiner les barèmes de notation, d’analyser les erreurs fréquentes des élèves et de structurer le soutien didactique.' },
+          { term: 'Lien institutionnel permanent', detail: 'Assure la coordination entre l’enseignant, la direction de l’établissement et l’inspecteur pédagogique chargé de l’encadrement.' },
+          { term: 'Pièce maîtresse d’arbitrage', detail: 'Document pivot auquel l’administration et l’inspection se réfèrent pour apprécier l’effort didactique et trancher tout litige.' },
+        ],
+      },
+      {
+        title: '3. Texte officiel de la Note 255 et critères d’inspection',
+        body: 'La Note ministérielle n° 255 du 23 décembre 1981 énonce textuellement :\n\n« Il appartient aux professeurs de renseigner les cahiers de textes avec la plus grande rigueur, soin et de manière régulière. MM. les inspecteurs consacreront au contrôle des cahiers de textes un temps suffisant lors de leurs visites pédagogiques pour les examiner avec attention, formuler leurs remarques et directives sur leur tenue, contrôler avec rigueur le nombre de devoirs corrigés par le professeur, et prendre expressément cet élément en compte dans la notation pédagogique lors de la rédaction de leur rapport consécutif à chaque inspection. »',
+      },
+      {
+        title: '4. Normes organisationnelles de tenue du cahier',
+        items: [
+          { term: 'Renseignements administratifs', detail: 'Identité complète, cadre, matricule (SOM), matière, établissement et direction provinciale.' },
+          { term: 'Structure par niveaux et divisions', detail: 'Organisation distincte et méthodique pour chaque classe et groupe attribué.' },
+          { term: 'Documents intégrés obligatoires', detail: 'Intégration de l’emploi du temps, de la liste nominative des élèves, des fiches de notation des activités intégrées et des grilles d’évaluation.' },
+          { term: 'Saisie continue et maintien sur place', detail: 'Émargement rigoureux à l’issue de chaque séance et maintien du document dans l’établissement à la disposition des autorités compétentes.' },
+        ],
+      },
+      {
+        title: '5. Normes pédagogiques et didactiques',
+        items: [
+          { term: 'Traduction des activités effectives', detail: 'Consigner fidèlement les situations didactiques, exercices, cours et synthèses conduits en classe.' },
+          { term: 'Méthodes et pédagogies actives', detail: 'Rendre compte de la gestion du temps d’apprentissage et de la différenciation pédagogique.' },
+          { term: 'Respect du rythme et des directives', detail: 'Attester de la cadence d’avancement par rapport à la répartition périodique et aux orientations de la matière.' },
+          { term: 'Exploitation du contrôle continu', detail: 'Tracer la régularité des devoirs surveillés et la mobilisation des résultats dans le soutien et la remédiation.' },
+        ],
+      },
+      {
+        title: '6. Protection juridique et valeur probante devant les juridictions',
+        body: 'Le cahier de textes constitue une pièce probante essentielle qui protège l’enseignant ou engage sa responsabilité, y compris devant les juridictions, en cas de litige relatif à l’achèvement du programme. Lors des examens certificatifs ou normalisés, face à d’éventuelles réclamations d’élèves ou de parents alléguant la non-dispense d’une notion, le cahier de textes régulièrement émargé et visé constitue le moyen de preuve irréfutable attestant de la dispense effective des cours et dégageant formellement l’enseignant.',
+      },
+      {
+        title: '7. Écueils fréquents et rectifications réglementaires',
+        items: [
+          { term: 'Défaut de tenue du cahier', detail: 'Négliger la saisie du cahier, quel qu’en soit le motif, expose l’enseignant à une mise en cause administrative et le prive de sa protection probante.' },
+          { term: 'Inscriptions non conformes', detail: 'Enregistrer des séances non dispensées ou antidater des cours anéantit la valeur légale et la crédibilité de la pièce.' },
+          { term: 'Différer la saisie par souci esthétique', detail: 'Retarder la tenue du cahier en attendant la stabilisation des emplois du temps ou des divisions est une erreur courante. Le cahier doit traduire la réalité vivante : toute modification conjoncturelle se porte simplement en marge (طرة الدفتر) sans interrompre la continuité de la saisie.' },
+        ],
+      },
+    ],
+    tip: 'Renseigner le cahier de textes dès la fin de chaque séance, consigner l’ensemble des activités menées en classe et le laisser à la disposition de l’établissement constitue votre garantie juridique et professionnelle absolue.',
+  }, {
+    title: 'الاطلاع على المرجعيات الرسمية',
+    summary: 'المرجعيات الرسمية (المذكرتان 255 و175)، الأدوار البيداغوجية، الضوابط التنظيمية والتربوية، الحماية القانونية والقضائية، والأخطاء الشائعة.',
+    keywords: 'المذكرة 255 المذكرة 175 التوجيهات التربوية التوزيع الدوري الأطر المرجعية المراقبة المستمرة وثيقة تربوية حماية قانونية إبراء الذمة تفتيش رئيس المؤسسة القضاء',
+    sections: [
+      {
+        title: '1. المرجعيات المؤطرة لمراقبة دفتر النصوص',
+        body: 'يستند تأطير ومراقبة دفتر النصوص إلى منظومة مرجعية رسمية تتكامل فيها الجوانب التشريعية والديداكتيكية :',
+        items: [
+          { term: 'التوجيهات التربوية', detail: 'التوجيهات والبرامج الرسمية الصادرة عن الوزارة الوصية والخاصة بمادة التدريس.' },
+          { term: 'التوزيع الدوري للدروس', detail: 'التخطيط الزمني السنوي والدوري لتدبير وتدرج مفردات البرنامج الدراسي.' },
+          { term: 'مذكرات التقويم والأطر المرجعية', detail: 'الأطر المرجعية المنظمة للامتحانات الإشهادية المحددة للمجالات المضامينية والمستويات المهارية.' },
+          { term: 'الجدولة الدورية لفروض المراقبة المستمرة', detail: 'البرمجة الرسمية لمحطات وفترات إجراء الفروض المحروسة والمنزلية والأنشطة المدمجة.' },
+          { term: 'المذكرة الوزارية 255 (23 دجنبر 1981)', detail: 'المذكرة المرجعية في شأن مراقبة الوثائق التربوية والمدرسية وتحديد التزامات الأستاذ والمفتش.' },
+          { term: 'المذكرة الوزارية 175 (19 نونبر 2010)', detail: 'المذكرة المحددة لضوابط وتأطير وتتبع المراقبة المستمرة بالتعليم المدرسي.' },
+        ],
+      },
+      {
+        title: '2. أهمية دفتر النصوص وقيمته من خلال المرجعيات المؤطرة',
+        body: 'يعتبر دفتر النصوص وثيقة أساسية ضمن الوثائق التربوية للأستاذ، وتكمن أدواره المحورية فيما يلي :',
+        items: [
+          { term: 'مرآة العمل الصفي', detail: 'مرآة تعكس مختلف الأنشطة الصفية المنجزة من طرف المدرس مع تلامذته، كما تعكس درجة التنظيم في عمل الأستاذ.' },
+          { term: 'وتيرة إنجاز البرنامج الدراسي', detail: 'يقدم صورة دقيقة حول وتيرة إنجاز البرنامج الدراسي وعن شكل ومضمون أدوات التقويم المستعملة.' },
+          { term: 'احترام المذكرات والأطر المرجعية', detail: 'يسمح بالتأكد من مدى احترامها للمذكرات المنظمة للمراقبة المستمرة وللأطر المرجعية للامتحانات الإشهادية سواء على مستوى المجالات المضامينية أو المستويات المهارية.' },
+          { term: 'أساليب التقويم والمعالجة', detail: 'يوفر إمكانية الوقوف عند سلم التنقيط وأساليب تصحيحها مع التلاميذ لتحديد أهم الأخطاء الشائعة، وأساليب الدعم والمعالجة المعتمدة.' },
+          { term: 'حلقة وصل وتنسيق', detail: 'صلة وصل بين إدارة المؤسسة والأستاذ من جهة، وبين هذا الأخير والمشرف التربوي (المفتش) من جهة ثانية لتتبع البرامج والتوزيعات.' },
+          { term: 'الاحتكام والاستثمار المهني', detail: 'الوثيقة الأساسية التي يتم الاحتكام إليها في حالة حدوث توترات حول إنجاز البرنامج الدراسي من عدمه، ووثيقة أساسية قابلة للاستثمار في تأطير وتقويم عمل المدرس.' },
+        ],
+      },
+      {
+        title: '3. نص المذكرة الوزارية رقم 255 الصادرة في 23 دجنبر 1981 وتوجيهات التفتيش',
+        body: 'نصت المذكرة الوزارية رقم 255 في شأن مراقبة الوثائق المدرسية حرفياً على ما يلي :\n\n«على السادة الأساتذة أن يقوموا بتعبئة دفاتر النصوص بكل دقة وعناية وبكيفية منتظمة وعلى السادة المفتشين أن يخصصوا لمراقبة دفاتر النصوص وقتا كافيا أثناء زيارتهم للأساتذة يتفحصوها بكل اهتمام، كما عليهم أن يبدوا ملاحظاتهم حولها ويوجهوا تعليماتهم للأساتذة حول كيفية تعبئة دفاتر النصوص، وأن يراقبوا بكيفية جدية عدد الواجبات التي قام بتصحيحها الأستاذ، وأن يعتبروا ذلك في تنقيط الأستاذ أثناء وضع التقرير الذي يحررونه تلو كل تفتيش»',
+      },
+      {
+        title: '4. ضوابط تنظيمية في تعبئة دفتر النصوص',
+        items: [
+          { term: 'معلومات شخصية وإدارية', detail: 'تضمين الهوية الكاملة للأستاذ، الإطار، المادة، رقم التأجير (SOM)، المؤسسة والمديرية الإقليمية.' },
+          { term: 'تقسيم الدفتر بحسب المستويات', detail: 'هيكلة الدفتر وتنظيمه بدقة وفق الفصول والمستويات والمسالك الدراسية المسندة للأستاذ.' },
+          { term: 'الوثائق التنظيمية المدمجة', detail: 'تضمينه لجدول الحصص (استعمال الزمن)، لوائح بأسماء التلاميذ، أوراق تنقيط الأنشطة المدمجة، وأوراق التنقيط وشبكات المراقبة المستمرة.' },
+          { term: 'التعبئة المستمرة والحفظ بالمؤسسة', detail: 'تعبئته باستمرار عند نهاية كل حصة، وتركه بالمؤسسة رهن إشارة الجهات التربوية والإدارية المختصة (الإدارة وهيئة التفتيش).' },
+        ],
+      },
+      {
+        title: '5. ضوابط تربوية وبيداغوجية لمحتوى الحصص',
+        items: [
+          { term: 'عكس مختلف الأنشطة الصفية', detail: 'توثيق مختلف الوضعيات التعليمية، الأنشطة المنجزة، التمارين، والمفاهيم المقدمة فعلياً في الفصل.' },
+          { term: 'طرق وبيداغوجيات التدريس', detail: 'يعكس طرق التدريس المعتمدة والبيداغوجيات الموظفة وصورة دقيقة عن تدبير زمن التعلمات.' },
+          { term: 'احترام وتيرة الإنجاز والتوجيهات', detail: 'يعكس وتيرة إنجاز البرنامج الدراسي ومدى احترام التوجيهات التربوية للمادة والتوزيع الدوري.' },
+          { term: 'تتبع وتيرة المراقبة المستمرة', detail: 'يعكس وتيرة إنجاز المراقبة المستمرة ومدى احترام مذكرات التقويم، ودرجة استحضار مختلف أشكال التقويم وكيفية استثمارها في الدعم والمعالجة.' },
+        ],
+      },
+      {
+        title: '6. خلاصة قانونية وقضائية: الحماية وإبراء الذمة',
+        body: 'دفتر النصوص وثيقة أساسية في عمل الأستاذ تحميه أو تدينه أمام القضاء في حالات وجود توترات حول مدى إنجاز البرنامج الدراسي؛ فهو المعيار القانوني المعتمد لدى الإدارة وهيئة التأطير والمراقبة التربوية لحسم التظلمات والشكاوى (خصوصاً أثناء الامتحانات الإشهادية بدعوى عدم إنجاز درس أو محور)، ويشكل دليلاً قاطعاً على إبراء ذمة الأستاذ وإثبات التزامه المهني والتربوي.',
+      },
+      {
+        title: '7. أخطاء شائعة في التعامل مع دفتر النصوص وتصويباتها',
+        items: [
+          { term: 'عدم تعبئة دفتر النصوص', detail: 'إهمال تعبئة الدفتر لأي سبب يعد إخلالاً بالواجبات والتعليمات الرسمية، ويعرض الأستاذ لمساءلة إدارية وتربوية مباشرة ويفقده حجة حمايته القانونية.' },
+          { term: 'الإدلاء بمعلومات غير مطابقة', detail: 'كتسجيل دروس لم تنجز فعلياً في القسم، أو عدم احترام برمجة الدروس وتواريخها الحقيقية، مما يفرغ الوثيقة من مصداقيتها وقيمتها الإثباتية.' },
+          { term: 'تأخير التعبئة انتظاراً لاستقرار البنية', detail: 'يتأخر بعض الأساتذة بحسن نية انتظاراً لاستقرار استعمال الزمن أو ثبات الأقسام حفاظاً على جمالية الدفتر؛ والصواب أن الدفتر يعكس العمل اليومي الحقيقي الفعلي للأستاذ، وأي تغيير طارئ يُشار إليه في طرة الدفتر دون تأخير ودون حاجة لتغيير الدفتر.' },
+        ],
+      },
+    ],
+    tip: 'دفتر النصوص وثيقة أساسية في عمل الأستاذ تحميه أو تدينه أمام القضاء في حالات وجود توترات حول مدى إنجاز البرنامج الدراسي، يمكن الاعتماد عليه واستثماره في تقييم عمل المدرس، لذا يجب العناية به وتعبئته باستمرار عند نهاية كل حصة وتضمينه لكل الأنشطة المنجزة في الفصل الدراسي مع تركه بالمؤسسة.',
+  }),
+
+  chapter('assessments', ['pilotage', 'dates', 'legal', 'backup'], {
+    title: 'Organiser les évaluations et le soutien',
+    summary: 'Planification des devoirs surveillés, conformité aux cadres de référence, barèmes de notation, remédiation et suivi des absences.',
+    keywords: 'contrôle continu note 175 devoir surveillé devoir à domicile évaluation diagnostique cadres référence domaines notionnels niveaux habileté barème soutien remédiation absence élèves examen semestriel',
+    sections: [
+      {
+        title: 'Fondements réglementaires du contrôle continu (Note 175)',
+        body: 'Conformément à la Note ministérielle n° 175 du 19 novembre 2010 et aux cadres de référence des examens certificatifs, les outils d’évaluation doivent respecter scrupuleusement les domaines notionnels, les niveaux taxonomiques d’habileté prescrits, ainsi qu’un barème de notation précis et équilibré.',
+      },
       {
         title: 'Programmer et consigner une évaluation',
         steps: [
-          'Accédez à l’onglet Évaluations de la classe concernée.',
-          'Créez une évaluation : indiquez la modalité (Devoir surveillé, Devoir à domicile, Contrôle oral, Évaluation diagnostique), le semestre, le numéro d’ordre et la date de passation.',
-          'Précisez la durée et le barème indicatif, puis consignez la liste des élèves absents lors de l’épreuve.',
-          'Retrouvez les échéances programmées directement dans votre centre de pilotage pour anticiper la préparation des sujets et des corrigés.',
+          'Accédez à l’onglet Évaluations / Contrôle continu de la classe concernée.',
+          'Créez une évaluation : indiquez la modalité (Devoir surveillé, Devoir à domicile, Activités intégrées / Compétences orales, Évaluation diagnostique), le semestre, le numéro d’ordre et la date de passation.',
+          'Précisez la durée, les compétences ciblées et le barème indicatif, puis consignez la liste des élèves absents lors de l’épreuve.',
+          'Retrouvez les échéances programmées directement dans votre centre de pilotage pour anticiper la préparation des sujets, des grilles de correction et des fiches d’analyse.',
         ],
       },
       {
-        title: 'Diversité des situations d’évaluation',
-        body: 'L’application permet de distinguer clairement les devoirs comptant pour le contrôle continu officiel (consignés ensuite dans Massar) des activités pédagogiques spécifiques : séances de soutien scolaire, remédiation ciblée, examens blancs ou concours blancs.',
+        title: 'Exploitation didactique des résultats et remédiation',
+        body: 'L’évaluation continue ne se limite pas à l’attribution d’une note chiffrée : l’analyse des copies permet d’identifier les erreurs fréquentes des élèves et d’organiser des séances de soutien et de remédiation ciblées avant les examens certificatifs.',
       },
       {
-        title: 'Distinction rigoureuse des absences',
-        body: 'Les absences renseignées dans le module d’évaluation concernent exclusivement les élèves lors des devoirs. Vos propres autorisations d’absence ou congés se déclarent dans Paramètres → Notifications.',
+        title: 'Fiches de notation des activités intégrées et distinction des absences',
+        body: 'Les absences consignées dans ce module concernent exclusivement les élèves lors des devoirs surveillés (pour organiser les séances de rattrapage). Les activités intégrées et orales s’appuient sur des fiches d’observation continue conformément aux orientations officielles.',
       },
     ],
   }, {
-    title: 'المراقبة المستمرة، الفروض والأنشطة التقويمية والداعمة',
-    summary: 'جدولة الفروض المحروسة والمنزلية، التقويم التشخيصي، حصص الدعم وتثبيت المكتسبات، وتتبع غياب التلاميذ.',
-    keywords: 'مراقبة مستمرة فرض محروس فرض منزلي تقويم تشخيصي دعم معالجة غياب التلاميذ امتحان تجريبي مسار',
+    title: 'تنظيم التقويمات وأنشطة الدعم',
+    summary: 'جدولة الفروض المحروسة والمنزلية، احترام الأطر المرجعية وسلم التنقيط، تشخيص الأخطاء الشائعة، حصص الدعم وتتبع غياب التلاميذ.',
+    keywords: 'مراقبة مستمرة المذكرة 175 فرض محروس فرض منزلي تقويم تشخيصي أطر مرجعية مجالات مضامينية مستويات مهارية سلم التنقيط دعم معالجة أخطاء شائعة غياب التلاميذ امتحان تجريبي مسار',
     sections: [
       {
-        title: 'تنظيم وجدولة محطات التقويم',
+        title: 'المرجعية البيداغوجية لفروض المراقبة المستمرة (المذكرة 175)',
+        body: 'استناداً إلى المذكرة الوزارية رقم 175 بتاريخ 19 نونبر 2010 والأطر المرجعية للامتحانات الإشهادية، يجب أن تراعي أدوات المراقبة المستمرة التوازن الدقيق بين المجالات المضامينية والمستويات المهارية للمتعلمين مع تدقيق سلم التنقيط المعتمد.',
+      },
+      {
+        title: 'تنظيم وجدولة محطات التقويم والفروض',
         steps: [
-          'افتح نافذة «التقويمات» الخاصة بالقسم الدراسي المعني.',
-          'أضف تقويماً جديداً: اختر طبيعته (فرض محروس، فرض منزلي، نشاط مندمج، تقويم تشخيصي)، الأسدوس الدراسي، رقم الفرض، وتاريخ الإنجاز المبرمج.',
-          'حدّد المدة الزمنية المخصصة للاختبار، ودوّن لائحة التلاميذ الغائبين أثناء إجراء الفرض للرجوع إليها عند تنظيم حصص الاستدراك.',
-          'تابع مواعيد الفروض المقبلة في مركز القيادة للتهيئة المسبقة لمواضيع الاختبارات وعناصر الإجابة وسلم التنقيط.',
+          'افتح نافذة «المراقبة المستمرة والتقويمات» الخاصة بالقسم الدراسي المعني.',
+          'أضف تقويماً جديداً: اختر طبيعته (فرض محروس، فرض منزلي، أنشطة مندمجة / شفهية، تقويم تشخيصي)، الأسدوس الدراسي، رقم الفرض، وتاريخ الإنجاز المبرمج.',
+          'حدّد المدة الزمنية المخصصة للاختبار وسلّم التنقيط، ودوّن لائحة التلاميذ الغائبين أثناء إجراء الفرض للرجوع إليها عند تنظيم الفروض الاستدراكية.',
+          'تابع مواعيد الفروض المقبلة في مركز القيادة للتهيئة المسبقة لمواضيع الاختبارات وعناصر الإجابة وشبكات التنقيط والتصحيح.',
         ],
       },
       {
-        title: 'التمايز بين محطات التقويم والدعم',
-        body: 'يفرّق النظام بدقة بين فروض المراقبة المستمرة المقررة رسمياً والمحتسبة في نتائج منظومة «مسار»، وبين الأنشطة التربوية الموازية: حصص الدعم البيداغوجي، أسابيع المعالجة المركزة، الامتحانات التجريبية، والأنشطة المندمجة.',
+        title: 'استثمار نتائج التقويم في الدعم والمعالجة وتصويب الأخطاء',
+        body: 'يوفر دفتر النصوص إمكانية الوقوف عند سلم التنقيط وأساليب التصحيح مع التلاميذ لتحديد أهم الأخطاء الشائعة، وبلورة أساليب الدعم البيداغوجي وأسابيع المعالجة لتثبيت المكتسبات قبل الاختبارات الإشهادية.',
       },
       {
-        title: 'التفريق المنهجي بين أصناف الغياب',
-        body: 'يقتصر تسجيل الغياب في شاشة التقويمات على غياب المتعلمين عن موعد الاختبار. أما رخص غياب الأستاذ أو الانقطاعات الإدارية فتُسجل في «الإعدادات» ثم «الإشعارات» لتكييف حساب حصص العمل.',
+        title: 'أوراق تنقيط الأنشطة المدمجة وتتبع الغياب',
+        body: 'يفرّق النظام بدقة بين توثيق غياب المتعلمين عن الفروض المحروسة (لإعداد الاستدراك)، وبين تنقيط الأنشطة المدمجة والمهارات الشفهية التي تشكل جزءاً عضوياً من التقييم المستمر وفق التوجيهات الرسمية.',
       },
     ],
   }),
 
   chapter('notifications', ['pilotage', 'schedule', 'devices'], {
-    title: 'Alertes en classe, rappels de saisie et notifications',
+    title: 'Activer les rappels et notifications',
     summary: 'Paramétrer les rappels de fin de séance, les alertes d’oubli de datation et les notifications système.',
     keywords: 'notifications alertes rappels fin de séance oubli de datation seuils de retard vibration push PWA',
-    image: { key: 'notifications', caption: 'Paramétrage des alertes de fin de cours et de rappel de datation.' },
+    image: { key: 'notifications', caption: 'Dans cet exemple, le navigateur bloque les notifications système. Vérifiez son autorisation avant le test.' },
     sections: [
       {
         title: 'Activer les notifications sur votre appareil',
@@ -642,10 +788,10 @@ const chapters = [
       },
     ],
   }, {
-    title: 'التنبيهات التلقائية والإشعارات اللحظية أثناء الحصة',
+    title: 'تفعيل التذكيرات والإشعارات',
     summary: 'ضبط تذكيرات اختتام الحصة، تنبيهات استدراك التدوين، وإشعارات النظام على الهواتف واللوحات.',
     keywords: 'إشعارات تنبيهات تذكير اختتام الحصة تأريخ الحصص تدوين إشعار فوري اهتزاز هاتف PWA',
-    image: { key: 'notifications', caption: 'ضبط تنبيهات اختتام الحصة والتذكير بمسك الحصص غير المؤرخة.' },
+    image: { key: 'notifications', caption: 'في هذا المثال، يمنع المتصفح إشعارات النظام. تحقّق من الإذن قبل اختبار الإشعار.' },
     sections: [
       {
         title: 'تفعيل الإشعارات على جهازك المستخدم',
@@ -674,8 +820,9 @@ const chapters = [
   }),
 
   chapter('appearance', ['profile', 'math', 'print'], {
-    title: 'Confort visuel, typographie et personnalisation de l’interface',
-    summary: 'Optimisation de la lisibilité pour l’affichage en classe, sur vidéoprojecteur et sur écran mobile.',
+    title: 'Personnaliser l’apparence',
+    summary: 'Choisissez un thème, des couleurs et des polices confortables pour votre écran.',
+    image: { key: 'appearance', caption: 'Les réglages d’apparence permettent de choisir le thème et la palette de couleurs.' },
     keywords: 'apparence thème sombre clair police arabe latin contraste lisibilité vidéoprojecteur Cyber Tech Clean',
     sections: [
       {
@@ -697,8 +844,9 @@ const chapters = [
       },
     ],
   }, {
-    title: 'التخصيص البصري، الخطوط وراحة القراءة',
-    summary: 'ملاءمة واجهة العرض لبيئة الحجرة الدراسية، شاشات الهواتف وأجهزة العرض الضوئي (Data Show).',
+    title: 'تخصيص المظهر',
+    summary: 'اختر الوضع والألوان والخطوط الأنسب للقراءة على شاشتك.',
+    image: { key: 'appearance', caption: 'اختر وضع العرض ولوحة الألوان من إعدادات المظهر.' },
     keywords: 'مظهر مريح مظهر داكن فاتح خط عربي أصيل تباين خط لاتيني مسلاط ضوئي هواتف ذكية وضوح القراءة',
     sections: [
       {
@@ -722,7 +870,7 @@ const chapters = [
   }),
 
   chapter('print', ['dates', 'appearance', 'backup'], {
-    title: 'Édition papier, visa administratif et export PDF officiel',
+    title: 'Imprimer ou exporter en PDF',
     summary: 'Génération des états d’impression du cahier de textes conformes aux exigences administratives et d’inspection.',
     keywords: 'impression cahier de textes PDF visa administratif inspection contrôle signature directeur censeur marges',
     sections: [
@@ -746,7 +894,7 @@ const chapters = [
       },
     ],
   }, {
-    title: 'الطباعة الرسمية، التأشير الإداري والتصدير بصيغة PDF',
+    title: 'الطباعة والتصدير بصيغة PDF',
     summary: 'استخراج وثيقة دفتر النصوص الورقية مطابقة للمواصفات الرسمية لغايات التأشير الإداري والمراقبة التربوية.',
     keywords: 'طباعة دفتر النصوص تصدير PDF تأشير إداري تفتيش تربوي توقيع المدير الناظر المفتش ترويسة رسمية',
     sections: [
@@ -772,7 +920,7 @@ const chapters = [
   }),
 
   chapter('devices', ['notifications', 'backup', 'troubleshooting'], {
-    title: 'Installation PWA, utilisation hors ligne et synchronisation',
+    title: 'Installer l’application et synchroniser',
     summary: 'Saisie autonome en classe sans connexion Internet et synchronisation sécurisée avec votre espace en ligne.',
     keywords: 'PWA application installer Android iPhone iPad hors ligne sans connexion synchronisation compte cloud',
     sections: [
@@ -799,7 +947,7 @@ const chapters = [
       },
     ],
   }, {
-    title: 'تثبيت التطبيق (PWA)، العمل دون إنترنت والمزامنة السحابية',
+    title: 'تثبيت التطبيق ومزامنة البيانات',
     summary: 'مسك دفتر النصوص داخل حجرة الدرس دون اتصال بالشبكة، والمزامنة التلقائية الآمنة فور توفر الإنترنت.',
     keywords: 'تثبيت PWA بدون إنترنت دون اتصال هاتف ذكي لوحة إلكترونية مزامنة سحابية تخزين محلي أمان البيانات',
     sections: [
@@ -828,7 +976,7 @@ const chapters = [
   }),
 
   chapter('backup', ['devices', 'print', 'content'], {
-    title: 'Sauvegardes sécurisées, restauration et archivage annuel',
+    title: 'Sauvegarder et restaurer vos données',
     summary: 'Préservation de vos données pédagogiques, transferts de cahiers et archivage à la fin de l’année scolaire.',
     keywords: 'sauvegarde restauration JSON données exporter importer archive fin d’année sécurité',
     sections: [
@@ -878,7 +1026,7 @@ const chapters = [
   }),
 
   chapter('troubleshooting', ['notifications', 'devices', 'profile'], {
-    title: 'Diagnostic des difficultés, assistance et support technique',
+    title: 'Résoudre un problème ou demander de l’aide',
     summary: 'Vérifications méthodiques pour résoudre les anomalies courantes et contacter l’équipe d’assistance.',
     keywords: 'assistance aide support contact WhatsApp problème formule affichage synchronisation bug diagnostic',
     sections: [

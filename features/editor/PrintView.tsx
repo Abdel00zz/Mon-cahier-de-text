@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { buildLessonRows } from '@/utils/lessonRows';
 import { ContentRenderer } from './ContentRenderer';
-import { 
-    LessonsData, 
+import {
+    LessonsData,
     ClassInfo,
-    TopLevelItem, 
-    Section, 
-    SubSection, 
-    SubSubSection, 
-    LessonItem, 
-    Indices, 
+    TopLevelItem,
+    Section,
+    SubSection,
+    SubSubSection,
+    LessonItem,
+    Indices,
     ElementType,
     Separator,
     AppConfig,
@@ -74,7 +74,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     const isArabicClassName = containsArabic(classInfo.name);
     const sizes = TEXT_SIZES[textSize];
     const spacing = LINE_SPACINGS[lineSpacing];
-    
+
     const flatData = useMemo(() => buildLessonRows(lessonsData), [lessonsData]);
 
     const printRows = useMemo<PrintRow[]>(() => {
@@ -126,7 +126,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     const isRtlPrint = contentDirection === 'rtl' || isArabicClassName;
     const academy = getAcademyById(config.academyRegion);
     const province = academy?.provinces.find(item => item.id === config.educationProvince);
-    
+
     const academyLine = isRtlPrint
         ? (academy ? `الأكاديمية الجهوية للتربية والتكوين · ${academy.arabicLabel}` : 'الأكاديمية الجهوية للتربية والتكوين')
         : (academy ? `Académie Régionale d’Éducation et de Formation · ${academy.label}` : 'Académie Régionale d’Éducation et de Formation');
@@ -139,7 +139,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         ? `${formatDateDDMMYYYY(firstPrintDate)} – ${formatDateDDMMYYYY(lastPrintDate)}`
         : (isRtlPrint ? 'لا توجد حصص مؤرخة' : 'Aucune séance datée');
     const schoolYearLabel = getSchoolYearLabel(config.schoolYearStart, firstPrintDate);
-    
+
     const formatSeparatorDate = (dateString: string): string => {
         const ddmmyyyy = formatDateDDMMYYYY(dateString);
         return ddmmyyyy || '';
@@ -151,17 +151,72 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     const renderPrintContent = (item: FlatDataItem) => (
 
             <ContentRenderer
-                data={item.data} 
-                indices={item.indices} 
-                elementType={item.elementType} 
-                isPrint={true} 
+                data={item.data}
+                indices={item.indices}
+                elementType={item.elementType}
+                isPrint={true}
                 showDescriptions={config.printDescriptionMode === 'all' ? true : config.printDescriptionMode === 'none' ? false : undefined}
                 descriptionTypes={config.printDescriptionTypes}
             />
 
     );
 
-    const collectSessionRemarks = (items: FlatDataItem[]): string[] => {
+    // Table de correspondance pour le report du غياب المتعلمين في الفروض المحروسة بدفتر النصوص (المذكرة 255)
+    const absencesLookup = useMemo(() => {
+        const dateMap = new Map<string, string[]>();
+        const classAbsences = config.assessmentAbsences?.[classInfo.id];
+        if (!classAbsences || Object.keys(classAbsences).length === 0) return dateMap;
+
+        // 1. Dates explicites enregistrées
+        for (const [assessmentId, record] of Object.entries(classAbsences)) {
+            if (!record?.names || record.names.length === 0) continue;
+            const customDate = config.assessmentDates?.[classInfo.id]?.[assessmentId];
+            if (customDate) {
+                dateMap.set(customDate, record.names);
+            }
+            const manual = config.manualAssessments?.[classInfo.id]?.find((m) => m.id === assessmentId);
+            if (manual?.dateISO) {
+                dateMap.set(manual.dateISO, record.names);
+            }
+        }
+
+        // 2. Recherche dans les devoirs du cahier
+        try {
+            const visitItemForDate = (type: string, title: string, date?: string) => {
+                if (!date || dateMap.has(date)) return;
+                const isAssessment = ['controle_continu', 'controle_court', 'controle_global', 'devoir_maison'].includes(type);
+                if (!isAssessment) return;
+
+                for (const [assessmentId, record] of Object.entries(classAbsences)) {
+                    if (!record?.names || record.names.length === 0) continue;
+                    const matchNum = title.match(/(\d+)/);
+                    if (matchNum && assessmentId.includes(matchNum[1])) {
+                        dateMap.set(date, record.names);
+                        break;
+                    }
+                }
+            };
+
+            for (const top of lessonsData) {
+                visitItemForDate(top.type, top.title, top.date);
+                for (const s of top.sections ?? []) {
+                    for (const item of s.items ?? []) visitItemForDate(item.type, item.title, item.date);
+                    for (const ss of s.subsections ?? []) {
+                        for (const item of ss.items ?? []) visitItemForDate(item.type, item.title, item.date);
+                        for (const sss of ss.subsubsections ?? []) {
+                            for (const item of sss.items ?? []) visitItemForDate(item.type, item.title, item.date);
+                        }
+                    }
+                }
+            }
+        } catch {
+            // Silently continue if lessonsData format is unexpected
+        }
+
+        return dateMap;
+    }, [config.assessmentAbsences, config.assessmentDates, config.manualAssessments, classInfo.id, lessonsData]);
+
+    const collectSessionRemarks = (items: FlatDataItem[], sessionDate?: string): string[] => {
         const seen = new Set<string>();
         const remarks: string[] = [];
 
@@ -172,6 +227,21 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 remarks.push(remark);
             }
         });
+
+        // Report automatique des absents selon la Note 255
+        if (sessionDate && absencesLookup.has(sessionDate)) {
+            const names = absencesLookup.get(sessionDate)!;
+            if (names.length > 0) {
+                const prefix = isRtlPrint ? 'الغياب: ' : 'Absents : ';
+                const sep = isRtlPrint ? '، ' : ', ';
+                const absenceRemark = `${prefix}${names.join(sep)}`;
+                const alreadyIncluded = remarks.some((r) => r.includes('الغياب') || r.toLowerCase().includes('absent'));
+                if (!alreadyIncluded && !seen.has(absenceRemark)) {
+                    seen.add(absenceRemark);
+                    remarks.push(absenceRemark);
+                }
+            }
+        }
 
         return remarks;
     };
@@ -315,7 +385,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         line-height: ${spacing.line};
                         border-inline-end: 1px solid hsl(var(--border)) !important;
                     }
-                    .print-table th:last-child, 
+                    .print-table th:last-child,
                     .print-table td:last-child {
                         border-inline-end: none !important;
                     }
@@ -409,7 +479,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     .print-session-remark {
                         white-space: pre-wrap;
                     }
-                    
+
                     /* Modern, fluid style for manual separators, même signature que l'écran */
                     .print-separator-row {
                         break-inside: avoid;
@@ -440,7 +510,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         border-radius: 999px;
                         padding: 3px 12px;
                     }
-                    
+
                     /* New Chapter styling */
                     .print-chapter-row {
                         page-break-before: auto;
@@ -614,7 +684,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     }
                 }
             `}</style>
-            
+
             {/* En-tête administratif : les champs choisis dans Paramètres sont
                 repris sans écraser le nom réel de la classe ou de la matière. */}
             {headerMode === 'first' && administrativeHeader}
@@ -658,7 +728,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                             }
 
                             if (row.kind === 'session') {
-                                const remarks = collectSessionRemarks(row.items);
+                                const remarks = collectSessionRemarks(row.items, row.date);
                                 const rowClassName = [
                                     'print-session-row',
                                     'new-date-row',
@@ -711,6 +781,17 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                 isNew ? 'new-item-print-highlight' : '',
                             ].filter(Boolean).join(' ');
 
+                            const itemAbsences = item.data.date ? absencesLookup.get(item.data.date) : undefined;
+                            let displayRemark = isChapter ? '' : (item.data.remark || '');
+                            if (itemAbsences && itemAbsences.length > 0) {
+                                const prefix = isRtlPrint ? 'الغياب: ' : 'Absents : ';
+                                const sep = isRtlPrint ? '، ' : ', ';
+                                const absenceStr = `${prefix}${itemAbsences.join(sep)}`;
+                                if (!displayRemark.includes('الغياب') && !displayRemark.toLowerCase().includes('absent')) {
+                                    displayRemark = displayRemark ? `${displayRemark}\n${absenceStr}` : absenceStr;
+                                }
+                            }
+
                             return (
                                 <tr key={`content-${JSON.stringify(item.indices)}-${index}`} className={rowClassName}>
                                     <td className="print-col-date"></td>
@@ -718,7 +799,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                         {renderPrintContent(item)}
                                     </td>
                                     <td className="print-col-remark">
-                                        {isChapter ? '' : (item.data.remark || '')}
+                                        {displayRemark}
                                     </td>
                                 </tr>
                             );

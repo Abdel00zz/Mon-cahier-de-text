@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { AppConfig, ClassInfo, Cycle } from '@/types';
-import type { ModalLang } from '@/components/ui/lang-toggle';
+type ModalLang = 'fr' | 'ar';
 
 export const ONBOARDING_TOTAL_STEPS = 4 as const;
 

@@ -29,11 +29,12 @@ import {
   Trash2,
   Users,
   X,
+  Copy,
+  Info,
   AwardIcon,
   BookOpen,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { ClassOfficialPlanBanner } from './ClassOfficialPlanBanner';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 
 interface DevoirsViewProps {
@@ -102,7 +103,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
   const classVisual = selectedClass ? getClassVisual(selectedClass.name) : null;
-  const { assessments, hasPlan, planDetails, planning } = useClassAssessments(selectedClass, config);
+  const { assessments, hasPlan } = useClassAssessments(selectedClass, config);
   const [absencesFor, setAbsencesFor] = useState<AssessmentLink | null>(null);
   const [eventEditorOpen, setEventEditorOpen] = useState(false);
   const [manualEditorOpen, setManualEditorOpen] = useState(false);
@@ -356,15 +357,6 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 
       {/* Main Content Area */}
       <div className="space-y-5">
-        {/* Official Plan & Pedagogical Hierarchy Context Banner */}
-        {selectedClass && (
-          <ClassOfficialPlanBanner
-            classInfo={selectedClass}
-            planDetails={planDetails}
-            planning={planning}
-          />
-        )}
-
         {/* Pedagogical Events Section (shown when on 'all' or 'events' tab) */}
         {(activeTab === 'all' || activeTab === 'events') && pedagogicalEvents.length > 0 && (
           <PedagogicalEventsSection
@@ -1089,27 +1081,66 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
     setDraft('');
   };
 
+  const handleCopy = async () => {
+    if (names.length === 0) return;
+    try {
+      await navigator.clipboard.writeText(names.join('\n'));
+      toast.success(t('evaluations.absenteesCopied'));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-3.5">
         {names.length > 0 && (
-          <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
-            {names.map((name) => (
-              <span
-                key={name}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-background border border-border/80 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
-              >
-                {name}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="text-[11px] font-bold text-muted-foreground">
+                {t(names.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', {
+                  count: new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length),
+                })}
+              </span>
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
-                  className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                  aria-label={t('evaluations.removeStudentAria', { name })}
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                  title={t('evaluations.copyAbsentees')}
                 >
-                  <X className="h-3 w-3" />
+                  <Copy className="h-3 w-3" />
+                  <span>{t('evaluations.copyAbsentees')}</span>
                 </button>
-              </span>
-            ))}
+                <button
+                  type="button"
+                  onClick={() => setNames([])}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                  title={t('evaluations.clearAllAbsentees')}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>{t('evaluations.clearAllAbsentees')}</span>
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/40 border border-border/70 max-h-36 overflow-y-auto">
+              {names.map((name) => (
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-background border border-border/80 px-2.5 py-1 text-xs font-bold text-foreground shadow-2xs"
+                >
+                  {name}
+                  <button
+                    type="button"
+                    onClick={() => setNames((prev) => prev.filter((n) => n !== name))}
+                    className="rounded-full text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                    aria-label={t('evaluations.removeStudentAria', { name })}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
@@ -1149,6 +1180,11 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           {t('evaluations.pasteHint')}
         </p>
+
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-[11px] leading-relaxed text-muted-foreground flex items-start gap-2">
+          <Info className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
+          <span>{t('evaluations.absenceNoteDirective')}</span>
+        </div>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
           <button

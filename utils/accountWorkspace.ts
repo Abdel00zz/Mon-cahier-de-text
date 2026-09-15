@@ -12,8 +12,8 @@ export const registerWorkspaceWriter = (flush: () => boolean): (() => void) => {
   return () => { pendingWriters.delete(flush); };
 };
 
-/** Réutilisé avant mise à jour PWA, fermeture et envoi au cloud. */
-export const flushWorkspaceWriters = (): boolean => {
+/** Flush registered writers before switching the active account workspace. */
+const flushWorkspaceWriters = (): boolean => {
   let saved = true;
   for (const flush of pendingWriters) {
     try { if (!flush()) saved = false; } catch { saved = false; }
