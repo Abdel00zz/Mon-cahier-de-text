@@ -276,17 +276,15 @@ const EmptyState: React.FC<{
                         {t('emptyNotebook.label')}
                     </h2>
 
-                    {/* Description 14.5px */}
-                    <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-[#6b6560] dark:text-[#a8a199]">
-                        {canLoadPredefined ? (
-                            `${t('emptyNotebook.programAvailable')} ${t('emptyNotebook.programHint')}`
-                        ) : (
-                            `${t('emptyNotebook.createPrefix')} ${t('emptyNotebook.firstChapter')} ${t('emptyNotebook.createSuffix')}`
-                        )}
-                    </p>
+                    {/* Description 14.5px (uniquement si programme officiel disponible) */}
+                    {canLoadPredefined && (
+                        <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-[#6b6560] dark:text-[#a8a199]">
+                            {t('emptyNotebook.programAvailable')}
+                        </p>
+                    )}
 
                     {/* Boutons d'action */}
-                    <div className="mt-7 flex w-full flex-col gap-2.5">
+                    <div className="mt-6 flex w-full flex-col gap-2.5">
                         {canLoadPredefined && (
                             <button
                                 type="button"

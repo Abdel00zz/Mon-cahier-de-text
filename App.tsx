@@ -483,14 +483,15 @@ const App: React.FC = () => {
 
         <GlobalTooltip />
         <Toaster
-          position="bottom-right"
+          position={isRtl ? 'bottom-left' : 'bottom-right'}
           dir={isRtl ? 'rtl' : 'ltr'}
           closeButton={false}
           expand={false}
-          gap={4}
-          visibleToasts={2}
-          offset={{ bottom: 20, right: 20 }}
-          mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', right: 16 }}
+          gap={6}
+          visibleToasts={3}
+          duration={3000}
+          offset={24}
+          mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', left: 16, right: 16 }}
           className="print:hidden"
         />
       </LocaleProvider>

@@ -52,8 +52,8 @@ const maxWidthClassMap: Record<string, string> = {
   '2xl': 'sm:max-w-3xl md:max-w-4xl',
   '3xl': 'sm:max-w-4xl md:max-w-5xl',
   '4xl': 'sm:max-w-5xl md:max-w-6xl',
-  '5xl': 'sm:max-w-6xl md:max-w-7xl',
-  full: 'sm:max-w-[94vw]',
+  '5xl': 'sm:max-w-6xl md:max-w-7xl lg:max-w-7xl xl:max-w-7xl',
+  full: 'sm:max-w-[94vw] lg:max-w-[96vw]',
 };
 
 /**
@@ -172,7 +172,7 @@ export function ModalBottomSheet({
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
             'motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100',
             'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-2xl sm:border',
-            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] landscape:rounded-2xl',
+            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-2xl',
             'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
             swipe.isDragging && 'select-none',
@@ -238,13 +238,13 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 min-h-14 sm:min-h-12 border-b border-border/70 bg-transparent px-5 pt-5 pb-3 sm:px-6 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
-                !hideClose ? (effectiveIsRtl ? 'pe-14 sm:pe-12' : 'pr-14 sm:pr-12 pl-5 sm:pl-6') : 'px-5 sm:px-6',
+                'modal-header relative z-10 shrink-0 min-h-12 sm:min-h-12 border-b border-border/70 bg-transparent px-4 sm:px-6 py-3 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
+                !hideClose ? 'pe-12 sm:pe-12 ps-4 sm:ps-6' : 'px-4 sm:px-6',
                 headerClassName
               )}
             >
               {title && (
-                <DialogPrimitive.Title data-ui-title className="text-base sm:text-lg font-bold leading-snug tracking-tight text-foreground">
+                <DialogPrimitive.Title data-ui-title className="text-sm sm:text-base font-bold leading-snug tracking-tight text-foreground">
                   {title}
                 </DialogPrimitive.Title>
               )}
@@ -261,9 +261,8 @@ export function ModalBottomSheet({
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute z-30 inline-flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-transparent text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer',
-                effectiveIsRtl ? 'start-auto end-3' : 'left-auto right-3',
-                (title || description) ? 'top-2.5 sm:top-2.5' : 'top-3 sm:top-2.5'
+                'dialog-close absolute z-30 inline-flex h-9 w-9 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-transparent text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer end-2.5 sm:end-3',
+                (title || description) ? 'top-1.5 sm:top-2' : 'top-2 sm:top-2.5'
               )}
             >
               <X className="h-4 w-4 stroke-[1.8] sm:stroke-[1.75]" />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
@@ -24,47 +25,47 @@ export interface ModernClassColor {
     dot: string;
 }
 
-/** Palette synchronisée avec les cartes de classes (Google Keep tones) - teintes chic et éditoriales */
+/** Palette synchronisée avec les cartes de classes - teintes foncées, riches et attractives */
 export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
     sand: {
         key: 'sand',
-        bg: 'bg-[#faf6ed] dark:bg-[#383329]',
-        border: 'border-[#e5dac5] dark:border-[#524b3c]',
-        text: 'text-[#383023] dark:text-[#f8f5ee]',
-        subtext: 'text-[#70614a] dark:text-[#ded7cb]',
-        dot: 'bg-[#8b7355]',
+        bg: 'bg-[#fde68a] dark:bg-[#451a03]/90',
+        border: 'border-[#d97706] dark:border-[#b45309]',
+        text: 'text-[#78350f] dark:text-[#fef3c7]',
+        subtext: 'text-[#92400e] dark:text-[#fde68a]',
+        dot: 'bg-[#d97706]',
     },
     mint: {
         key: 'mint',
-        bg: 'bg-[#eff6f1] dark:bg-[#26382b]',
-        border: 'border-[#c6dfcd] dark:border-[#38533e]',
-        text: 'text-[#1c3825] dark:text-[#ebf7eb]',
-        subtext: 'text-[#446b4e] dark:text-[#c4e6c8]',
-        dot: 'bg-[#2e7d4f]',
+        bg: 'bg-[#a7f3d0] dark:bg-[#064e3b]/90',
+        border: 'border-[#059669] dark:border-[#10b981]',
+        text: 'text-[#064e3b] dark:text-[#ecfdf5]',
+        subtext: 'text-[#047857] dark:text-[#a7f3d0]',
+        dot: 'bg-[#059669]',
     },
     sky: {
         key: 'sky',
-        bg: 'bg-[#f0f5f9] dark:bg-[#243540]',
-        border: 'border-[#c9deed] dark:border-[#364e5d]',
-        text: 'text-[#1b3240] dark:text-[#e8f1f5]',
-        subtext: 'text-[#476a7d] dark:text-[#bad7e7]',
-        dot: 'bg-[#3b82f6]',
+        bg: 'bg-[#bae6fd] dark:bg-[#0c4a6e]/90',
+        border: 'border-[#0284c7] dark:border-[#38bdf8]',
+        text: 'text-[#082f49] dark:text-[#f0f9ff]',
+        subtext: 'text-[#0369a1] dark:text-[#bae6fd]',
+        dot: 'bg-[#0284c7]',
     },
     lavender: {
         key: 'lavender',
-        bg: 'bg-[#f5f1f9] dark:bg-[#32283b]',
-        border: 'border-[#ded2ee] dark:border-[#4b3c59]',
-        text: 'text-[#30203f] dark:text-[#f1edf7]',
-        subtext: 'text-[#664e7c] dark:text-[#d3c8e7]',
-        dot: 'bg-[#8e52c7]',
+        bg: 'bg-[#ddd6fe] dark:bg-[#3b0764]/90',
+        border: 'border-[#7c3aed] dark:border-[#a78bfa]',
+        text: 'text-[#3b0764] dark:text-[#f5f3ff]',
+        subtext: 'text-[#6d28d9] dark:text-[#ddd6fe]',
+        dot: 'bg-[#7c3aed]',
     },
     coral: {
         key: 'coral',
-        bg: 'bg-[#faf1ef] dark:bg-[#3d2a27]',
-        border: 'border-[#edd4cf] dark:border-[#5a3e39]',
-        text: 'text-[#3f231f] dark:text-[#f8ece9]',
-        subtext: 'text-[#7a4c46] dark:text-[#e4c8c2]',
-        dot: 'bg-[#d95c43]',
+        bg: 'bg-[#fecdd3] dark:bg-[#4c0519]/90',
+        border: 'border-[#e11d48] dark:border-[#fb7185]',
+        text: 'text-[#4c0519] dark:text-[#fff1f2]',
+        subtext: 'text-[#be123c] dark:text-[#fecdd3]',
+        dot: 'bg-[#e11d48]',
     },
 };
 
@@ -181,11 +182,22 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return KEEP_SCHEDULE_PALETTE[tone] || KEEP_SCHEDULE_PALETTE.sand;
     }, []);
 
-    // Les avis sont recalculés dans le bloc unique au-dessus de la grille.
-    // L'affectation reste immédiate et ne déclenche pas de toast en doublon.
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
+        if (classId) {
+            const target = classes.find(c => c.id === classId);
+            const name = target ? classLabel(target.name) : '';
+            toast.success(
+                locale === 'ar' ? `تم تسجيل الحصة : ${name}` : `Créneau enregistré : ${name}`,
+                { id: 'schedule-slot-update', duration: 2200 }
+            );
+        } else {
+            toast.info(
+                locale === 'ar' ? 'تم تفريغ الحصة' : 'Créneau libéré',
+                { id: 'schedule-slot-update', duration: 2000 }
+            );
+        }
     };
 
     // séance fusionnée (2 h+) : la cellule unique pilote TOUTES ses heures d'un coup
@@ -195,6 +207,19 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             next = setTimetableEntry(next, day, slot, classId);
         }
         onChange({ timetable: next, schedules: deriveSchedules(next) });
+        if (classId) {
+            const target = classes.find(c => c.id === classId);
+            const name = target ? classLabel(target.name) : '';
+            toast.success(
+                locale === 'ar' ? `تم تسجيل الحصة (${hours} س) : ${name}` : `Séance de ${hours}h enregistrée : ${name}`,
+                { id: 'schedule-slot-update', duration: 2200 }
+            );
+        } else {
+            toast.info(
+                locale === 'ar' ? 'تم تفريغ الحصص' : 'Créneaux libérés',
+                { id: 'schedule-slot-update', duration: 2000 }
+            );
+        }
     };
 
     // séances continues par jour : deux créneaux consécutifs de la même classe
@@ -211,7 +236,13 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         return hourSlots;
     }, [visiblePeriod, hourSlots]);
 
-    const setSchoolYearStart = (value: string) => onChange({ schoolYearStart: value || undefined });
+    const setSchoolYearStart = (value: string) => {
+        onChange({ schoolYearStart: value || undefined });
+        toast.success(
+            locale === 'ar' ? 'تم تحديث تاريخ بداية السنة' : 'Date de rentrée mise à jour',
+            { id: 'schedule-year-start', duration: 2200 }
+        );
+    };
 
     // ZÉRO classe ≠ blocage : la grille reste affichée, les classes se créent
     // directement depuis les cases (« + Créer une classe… »). On encourage.
@@ -227,19 +258,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
         );
     }
 
-    // heures = cases cochées ; séances = blocs continus (ce que compte le
-    // moteur de retard : une séance de 2 h = une seule date attendue)
-    const weeklyStats = (classId: string) => {
-        const hours = timetable.filter(e => e.classId === classId).length;
-        let sessions = 0;
-        for (const runs of runsByDay.values()) {
-            for (const run of runs.values()) {
-                if (run.classId === classId && run.isStart) sessions += 1;
-            }
-        }
-        return { hours, sessions };
-    };
-
     const periodTabItems: FluidTabItem<SchedulePeriod>[] = React.useMemo(() => [
         { id: 'morning', label: t('schedule.viewMorning') },
         { id: 'afternoon', label: t('schedule.viewAfternoon') },
@@ -247,168 +265,176 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     ], [t]);
 
     return (
-        <div className="space-y-5">
-            <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs space-y-4" aria-label={t('schedule.gridTitle')}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
-                        <label className="text-xs font-bold text-foreground/80">{t('schedule.startYear')}</label>
-                        <div className="relative">
-                            <input
-                                type="date"
-                                value={schoolYearStart}
-                                onChange={e => setSchoolYearStart(e.target.value)}
-                                lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
-                                dir="ltr"
-                                className={`h-9 rounded-md border border-border/70 bg-background/80 px-3 text-xs font-semibold shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
-                            />
-                            {locale === 'ar' && (
-                                <span
-                                    aria-hidden
-                                    dir="ltr"
-                                    className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center text-xs font-bold text-foreground"
-                                >
-                                    {displaySchoolYearStart}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="w-full sm:w-auto">
-                        <FluidTabRail<SchedulePeriod>
-                            items={periodTabItems}
-                            activeId={visiblePeriod}
-                            onChange={setVisiblePeriod}
-                            layoutId="schedule-period-subpill"
-                            size="sm"
-                            ariaLabel={t('schedule.viewLabel')}
+        <div className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex shrink-0 items-center gap-2.5" aria-label={t('schedule.startYear')}>
+                    <label className="text-xs lg:text-sm font-bold text-foreground/80">{t('schedule.startYear')}</label>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={schoolYearStart}
+                            onChange={e => setSchoolYearStart(e.target.value)}
+                            lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
+                            dir="ltr"
+                            className={`h-9 lg:h-10 rounded-md border border-border/70 bg-background/80 px-3 text-xs lg:text-sm font-semibold shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
                         />
+                        {locale === 'ar' && (
+                            <span
+                                aria-hidden
+                                dir="ltr"
+                                className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center text-xs lg:text-sm font-bold text-foreground"
+                            >
+                                {displaySchoolYearStart}
+                            </span>
+                        )}
                     </div>
                 </div>
-
-                {noClassesYet && (
-                    <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
-                )}
-
-                {/* Une seule zone d'avis, toujours avant la grille. */}
-
-                {/* Grille jours × créneaux : la vue demi-journée s'adapte à la largeur d'un téléphone. */}
-                <div className="settings-surface overflow-hidden">
-                    <div className="overflow-x-auto overscroll-x-contain">
-                    <table className={`rtl-table w-full border-separate border-spacing-0 text-xs sm:text-sm ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem]' : 'min-w-full table-fixed'}`}>
-                    <thead>
-                        <tr>
-                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-14 sm:w-20 border-b border-[#e6e1d9] bg-[#f7f5f2] px-1 sm:px-2 py-1.5 sm:py-2 text-start text-[10px] sm:text-xs font-bold tracking-wide text-[#6b6560] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#a8a199]`}>
-                                {t('schedule.day')}
-                            </th>
-                            {visibleHourSlots.map(hour => (
-                                <th
-                                    key={hour.index}
-                                    className={`border-b border-[#e6e1d9] bg-[#f7f5f2] px-0.5 sm:px-1 py-1 sm:py-1.5 text-center text-[8px] sm:text-[9.5px] font-semibold text-[#6b6560] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#a8a199] ${
-                                        hour.lunchBefore ? 'border-l border-l-[#8b7355]/25' : ''
-                                    }`}
-                                >
-                                    <span dir="ltr" className="inline-block leading-tight tracking-tight">{hourLabel(hour.startMin, hour.endMin)}</span>
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {TIMETABLE_DAYS.map((day, dayIndex) => (
-                            <tr key={day.value} className="group transition-colors hover:bg-[#faf8f5]/60 dark:hover:bg-[#1e1c19]/40">
-                                <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 border-[#e6e1d9] bg-[#fbfaf8] px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10.5px] sm:text-xs font-semibold text-[#2c2a26] transition-colors group-hover:bg-[#f5f1eb] dark:border-[#38332c] dark:bg-[#1a1815] dark:text-[#f3efe8] dark:group-hover:bg-[#24211c] ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-[#e6e1d9]/60 dark:border-[#38332c]/60' : ''}`}>
-                                    {t(`schedule.day.${day.value}`)}
-                                </td>
-                                {visibleHourSlots.map(hour => {
-                                    const run = runsByDay.get(day.value)?.get(hour.index);
-                                    if (run && !run.isStart) return null;
-                                    const merged = !!run && run.hours > 1;
-                                    const span = run ? run.hours : 1;
-                                    const entry = getTimetableEntry(timetable, day.value, hour.index);
-                                    const classInfo = entry ? classById.get(entry.classId) : undefined;
-                                    const color = entry ? colorFor(entry.classId) : null;
-                                    return (
-                                        <td
-                                            key={hour.index}
-                                            colSpan={span}
-                                            className={`relative p-0.5 sm:p-1 align-top ${dayIndex < TIMETABLE_DAYS.length - 1 ? 'border-b border-[#e6e1d9]/50 dark:border-[#38332c]/50' : ''} ${hour.lunchBefore ? 'border-l border-l-[#8b7355]/20' : ''}`}
-                                        >
-                                            <select
-                                                value={entry?.classId ?? ''}
-                                                onChange={e => {
-                                                    if (e.target.value === '__create__') {
-                                                        setPendingCreate({ day: day.value, slot: hour.index, span });
-                                                        e.target.value = entry?.classId ?? '';
-                                                        return;
-                                                    }
-                                                    if (merged) assignRun(day.value, hour.index, span, e.target.value || null);
-                                                    else assign(day.value, hour.index, e.target.value || null);
-                                                }}
-                                                title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
-                                                className={`h-9 sm:h-11 w-full cursor-pointer rounded-lg border px-1 text-center text-[10px] sm:text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b7355]/30 ${
-                                                    classInfo && color
-                                                    ? `${color.border} ${color.bg} text-transparent shadow-xs hover:-translate-y-0.5 hover:shadow-sm hover:brightness-105 active:scale-[0.99]`
-                                                    : 'border-[#e6e1d9] bg-white text-[#8c827a] shadow-[0_1px_2px_rgba(44,42,38,0.04)] hover:border-[#8b7355]/50 hover:bg-[#faf8f5] dark:border-[#38332c] dark:bg-[#1f1d1a] dark:text-[#a8a199] dark:hover:bg-[#27231e]'
-                                                }`}
-                                                aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
-                                            >
-                                                <option value="" className="text-[#8c827a] dark:text-[#a8a199] dark:bg-[#1f1d1a]">{t('schedule.noClass')}</option>
-                                                {classes.map(c => (
-                                                    <option key={c.id} value={c.id} className="text-[#2c2a26] dark:text-[#f3efe8] dark:bg-[#1f1d1a]">
-                                                        {subjectLabel(c.subject)} · {classLabel(c.name)}
-                                                    </option>
-                                                ))}
-                                                {canCreateFromSchedule && (
-                                                    <option value="__create__" className="text-[#8b7355] font-bold dark:bg-[#1f1d1a]">
-                                                        ＋ {t('schedule.createClass')}
-                                                    </option>
-                                                )}
-                                            </select>
-                                            {classInfo && color && (
-                                                <span
-                                                    className={`pointer-events-none absolute inset-0.5 sm:inset-1 flex min-w-0 flex-col items-center justify-center px-0.5 text-center ${color.text}`}
-                                                >
-                                                    <span className="max-w-full truncate text-[10px] font-bold tracking-tight sm:text-[11.5px]">
-                                                        {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
-                                                    </span>
-                                                    <span className={`mt-0.5 max-w-full truncate text-[7.5px] sm:text-[8.5px] font-semibold uppercase tracking-wider ${color.subtext}`}>
-                                                        {subjectLabel(classInfo.subject)}
-                                                    </span>
-                                                </span>
-                                            )}
-                                            {merged && (
-                                                <span className="pointer-events-none absolute start-1 sm:start-1.5 top-0.5 sm:top-1 rounded-full border border-white/40 bg-black/35 px-1 py-0.2 text-[7px] sm:text-[8px] font-bold leading-none text-white shadow-2xs">
-                                                    {t('schedule.hoursShort', { count: span })}
-                                                </span>
-                                            )}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                    <FluidTabRail<SchedulePeriod>
+                        items={periodTabItems}
+                        activeId={visiblePeriod}
+                        onChange={setVisiblePeriod}
+                        layoutId="schedule-period-subpill"
+                        size="sm"
+                        ariaLabel={t('schedule.viewLabel')}
+                        className="w-max mx-auto sm:mx-0"
+                        tabClassName="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-2.5"
+                    />
                 </div>
             </div>
 
-                {/* Récapitulatif neutre : les avertissements restent uniquement en haut. */}
-                <div className="flex flex-wrap gap-2 pt-1">
-                {classes.map(c => {
-                    const { hours, sessions } = weeklyStats(c.id);
-                    return (
-                        <span
-                            key={c.id}
-                            className="settings-surface inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-foreground"
-                        >
-                            <span className={`h-2.5 w-2.5 rounded-full ${colorFor(c.id).dot}`} />
-                            {classLabel(c.name)}
-                            <span className="text-muted-foreground font-medium">
-                                · {t('schedule.sessionsPerWeek', { count: sessions, plural: sessions > 1 && locale !== 'ar' ? 's' : ''})}
-                                {hours !== sessions ? ` (${t('schedule.hoursShort', { count: hours })})` : ''}
-                            </span>
-                        </span>
-                    );
-                })}
-                </div>
-            </section>
+            {noClassesYet && (
+                <p className="-mt-1 text-xs font-semibold text-primary">{t('schedule.emptyHint')}</p>
+            )}
+
+            {/* Grille jours × créneaux : tracé direct du tableau, sans boîte englobante */}
+            <div className="overflow-x-auto overscroll-x-contain">
+                <table className={`rtl-table w-full border-separate border-spacing-0 border border-[#c4bcaf] bg-white text-xs sm:text-sm dark:border-[#38332c] dark:bg-[#181614] ${visiblePeriod === 'all' ? 'min-w-[34rem] sm:min-w-[42rem] lg:min-w-full lg:table-fixed' : 'min-w-full table-fixed'}`}>
+                    <thead>
+                        <tr>
+                            <th className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-20 w-16 sm:w-20 lg:w-28 xl:w-32 border-b border-[#c4bcaf] bg-[#eeeae3] px-2 sm:px-3 py-2.5 sm:py-3 text-center text-[11px] sm:text-xs lg:text-sm font-bold tracking-wide text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc]`}>
+                                {t('schedule.day')}
+                            </th>
+                            {visibleHourSlots.map((hour, idx) => {
+                                const isLast = idx === visibleHourSlots.length - 1;
+                                return (
+                                    <th
+                                        key={hour.index}
+                                        className={`border-b border-[#c4bcaf] bg-[#eeeae3] px-1 sm:px-2 py-2 sm:py-3 text-center text-[9px] sm:text-xs lg:text-[13px] font-bold text-[#2e2a25] dark:border-[#38332c] dark:bg-[#1e1b18] dark:text-[#ede6dc] ${
+                                            locale === 'ar'
+                                                ? (isLast ? '' : 'border-l border-[#c4bcaf] dark:border-[#38332c]')
+                                                : (isLast ? '' : 'border-r border-[#c4bcaf] dark:border-[#38332c]')
+                                        } ${
+                                            hour.lunchBefore
+                                                ? (locale === 'ar' ? '!border-r-2 !border-r-[#8b7355]/60' : '!border-l-2 !border-l-[#8b7355]/60')
+                                                : ''
+                                        }`}
+                                    >
+                                        <span dir="ltr" className="inline-block leading-tight font-semibold tracking-tight">{hourLabel(hour.startMin, hour.endMin)}</span>
+                                    </th>
+                                );
+                            })}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {TIMETABLE_DAYS.map((day, dayIndex) => {
+                            const isLastRow = dayIndex === TIMETABLE_DAYS.length - 1;
+                            return (
+                                <tr key={day.value} className="group transition-colors">
+                                    <td className={`sticky ${locale === 'ar' ? 'right-0 border-l' : 'left-0 border-r'} z-10 ${
+                                        isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
+                                    } border-[#c4bcaf] bg-[#f7f4ee] px-2 sm:px-3 py-2 text-center text-[11px] sm:text-xs lg:text-sm font-bold text-[#262420] transition-colors group-hover:bg-[#eee9df] dark:border-[#38332c] dark:bg-[#1b1916] dark:text-[#f3eee7] dark:group-hover:bg-[#23201c]`}>
+                                        {t(`schedule.day.${day.value}`)}
+                                    </td>
+                                    {visibleHourSlots.map((hour, idx) => {
+                                        const run = runsByDay.get(day.value)?.get(hour.index);
+                                        if (run && !run.isStart) return null;
+                                        const merged = !!run && run.hours > 1;
+                                        const span = run ? run.hours : 1;
+                                        const entry = getTimetableEntry(timetable, day.value, hour.index);
+                                        const classInfo = entry ? classById.get(entry.classId) : undefined;
+                                        const color = entry ? colorFor(entry.classId) : null;
+                                        const isLastCol = idx + span - 1 >= visibleHourSlots.length - 1;
+
+                                        return (
+                                            <td
+                                                key={hour.index}
+                                                colSpan={span}
+                                                className={`relative p-0 align-middle ${
+                                                    isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
+                                                } ${
+                                                    locale === 'ar'
+                                                        ? (isLastCol ? '' : 'border-l border-[#c4bcaf] dark:border-[#38332c]')
+                                                        : (isLastCol ? '' : 'border-r border-[#c4bcaf] dark:border-[#38332c]')
+                                                } ${
+                                                    hour.lunchBefore
+                                                        ? (locale === 'ar' ? '!border-r-2 !border-r-[#8b7355]/60' : '!border-l-2 !border-l-[#8b7355]/60')
+                                                        : ''
+                                                }`}
+                                            >
+                                                <div className="relative h-12 sm:h-14 lg:h-16 xl:h-[4.25rem] w-full">
+                                                    <select
+                                                        value={entry?.classId ?? ''}
+                                                        onChange={e => {
+                                                            if (e.target.value === '__create__') {
+                                                                setPendingCreate({ day: day.value, slot: hour.index, span });
+                                                                e.target.value = entry?.classId ?? '';
+                                                                return;
+                                                            }
+                                                            if (merged) assignRun(day.value, hour.index, span, e.target.value || null);
+                                                            else assign(day.value, hour.index, e.target.value || null);
+                                                        }}
+                                                        title={classInfo ? `${subjectLabel(classInfo.subject)} · ${classLabel(classInfo.name)}` : undefined}
+                                                        className={`h-full w-full cursor-pointer appearance-none rounded-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#8b7355]/40 ${
+                                                            classInfo && color
+                                                                ? `${color.bg} text-transparent hover:brightness-95 active:brightness-90`
+                                                                : 'bg-white text-[#9c9389] hover:bg-[#faf7f2] dark:bg-[#181614] dark:text-[#787169] dark:hover:bg-[#201e1a]'
+                                                        }`}
+                                                        aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
+                                                    >
+                                                        <option value="" className="text-[#8c827a] dark:text-[#a8a199] dark:bg-[#1f1d1a]">{t('schedule.noClass')}</option>
+                                                        {classes.map(c => (
+                                                            <option key={c.id} value={c.id} className="text-[#2c2a26] dark:text-[#f3efe8] dark:bg-[#1f1d1a]">
+                                                                {subjectLabel(c.subject)} · {classLabel(c.name)}
+                                                            </option>
+                                                        ))}
+                                                        {canCreateFromSchedule && (
+                                                            <option value="__create__" className="text-[#8b7355] font-bold dark:bg-[#1f1d1a]">
+                                                                ＋ {t('schedule.createClass')}
+                                                            </option>
+                                                        )}
+                                                    </select>
+
+                                                    {/* État vide : centré, sobre, sans chevron encombrant */}
+                                                    {!classInfo && (
+                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10.5px] sm:text-xs lg:text-[13px] font-normal text-[#9c9389] dark:text-[#787169] tracking-wide">
+                                                            {t('schedule.noClass')}
+                                                        </div>
+                                                    )}
+
+                                                    {/* État assigné : carte pleine sans bords arrondis excessifs, sans badge, typographie nette */}
+                                                    {classInfo && color && (
+                                                        <div
+                                                            className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
+                                                        >
+                                                            <span className="max-w-full truncate text-[11px] sm:text-xs lg:text-sm xl:text-[15px] font-bold tracking-tight leading-snug">
+                                                                {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
+                                                            </span>
+                                                            <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
+                                                                {subjectLabel(classInfo.subject)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
             {/* Création de classe DEPUIS la grille : la classe naît et se pose
                 aussitôt sur le créneau qui l'a demandée. */}
             {onCreateClass && (

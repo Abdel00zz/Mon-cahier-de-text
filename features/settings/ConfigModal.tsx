@@ -328,6 +328,15 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     </section>
   );
 
+  const liveChangesHintNode = (
+    <div className="mt-4 pt-3 lg:mt-6 lg:pt-4 border-t border-border/40">
+      <p className="text-[10.5px] sm:text-[11px] leading-relaxed text-muted-foreground/75 text-start">
+        <span className="font-semibold text-muted-foreground/60">— </span>
+        {t('settings.liveChangesHint')}
+      </p>
+    </div>
+  );
+
   const renderCategoryContent = () => {
     switch (activeCategory) {
       case 'compte':
@@ -335,6 +344,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <div className="space-y-3 sm:space-y-3.5">
             <AccountTab />
             {languageSection}
+            {liveChangesHintNode}
           </div>
         );
 
@@ -538,6 +548,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 onConfigChange={applyLive}
               />
             </React.Suspense>
+            {liveChangesHintNode}
           </div>
         );
 
@@ -547,6 +558,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ScheduleTab classes={classes} config={localConfig} onChange={applyLive} onCreateClass={onCreateClass} />
             </React.Suspense>
+            {liveChangesHintNode}
           </div>
         );
 
@@ -556,6 +568,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <NotificationsTab config={localConfig} onChange={applyLive} />
             </React.Suspense>
+            {liveChangesHintNode}
           </div>
         );
 
@@ -666,30 +679,28 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
 
   const footer = (
-    <div className="space-y-3">
-    <p className="text-xs leading-relaxed text-muted-foreground">{t('settings.liveChangesHint')}</p>
-    <div className={cn(
-      'flex w-full flex-col gap-3 sm:flex-row sm:items-center',
-      hasProfileChanges ? 'items-stretch justify-between' : 'items-end justify-end',
-    )}>
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => requestExit()}
-        className="min-h-10 sm:min-h-11 rounded-xl border border-border/60 px-4 text-xs font-medium cursor-pointer"
-      >
-        {t(hasProfileChanges ? 'settings.discardProfile' : 'common.close')}
-      </Button>
+    <div className="space-y-2.5">
+      {hasProfileChanges && (
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => requestExit()}
+            className="min-h-10 sm:min-h-11 rounded-xl border border-border/60 px-4 text-xs font-medium cursor-pointer"
+          >
+            {t('settings.discardProfile')}
+          </Button>
 
-      {hasProfileChanges && <Button
-        type="button"
-        onClick={handleSave}
-        className="min-h-10 sm:min-h-11 gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/30 border border-primary/30 px-4 text-xs font-semibold cursor-pointer"
-      >
-        <Save className="h-4 w-4" />
-        <span>{t('settings.saveProfile')}</span>
-      </Button>}
-    </div>
+          <Button
+            type="button"
+            onClick={handleSave}
+            className="min-h-10 sm:min-h-11 gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/30 border border-primary/30 px-4 text-xs font-semibold cursor-pointer"
+          >
+            <Save className="h-4 w-4" />
+            <span>{t('settings.saveProfile')}</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -907,29 +918,29 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.92}
-      className="settings-modal-sheet overflow-hidden sm:max-w-5xl sm:rounded-2xl"
-      headerClassName="border-b border-border/70 bg-muted/20"
-      bodyClassName="p-3.5 sm:p-4.5"
+      className="settings-modal-sheet overflow-hidden sm:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] sm:rounded-2xl"
+      headerClassName="border-b border-border/70 bg-muted/20 lg:px-6 lg:py-4"
+      bodyClassName="p-3.5 sm:p-4.5 lg:p-6 xl:p-8"
     >
       {/* Mobile Horizontal Tabs Selector avec déplacement fluide et centrage dynamique */}
-      <div className="flex lg:hidden mb-3 -mx-1 px-1">
+      <div className="flex lg:hidden mb-2.5 -mx-1 px-1">
         <FluidTabRail<SettingsCategory>
           items={mobileSettingItems}
           activeId={activeCategory}
           onChange={handleSelectCategory}
           layoutId="settings-mobile-tab-pill"
-          size="md"
+          size="sm"
           ariaLabel={t('settings.title')}
         />
       </div>
 
-      <div data-settings-ui className="rtl-config-split flex flex-col lg:flex-row gap-4 lg:gap-5 min-h-[460px]">
+      <div data-settings-ui className="rtl-config-split flex flex-col lg:flex-row gap-4 lg:gap-6 xl:gap-8 min-h-[460px] lg:min-h-[560px] xl:min-h-[620px]">
         {/* Desktop Sidebar Rail */}
         <aside
           aria-label={locale === 'ar' ? 'أقسام الإعدادات' : 'Catégories des paramètres'}
           className={cn(
-            'hidden lg:flex flex-col shrink-0 transition-[width] duration-200 ease-out border-e border-border/60 pe-2.5',
-            isEffectiveCollapsed ? 'w-14' : 'w-56'
+            'hidden lg:flex flex-col shrink-0 transition-[width] duration-200 ease-out border-e border-border/60 pe-2.5 xl:pe-3.5',
+            isEffectiveCollapsed ? 'w-14' : 'w-56 xl:w-64'
           )}
         >
           {menuListContent}
@@ -943,7 +954,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </section>
           </div>
 
-          <div className="mt-4 pt-1">
+          <div className="mt-4 pt-1 lg:mt-6 lg:pt-2">
             {footer}
           </div>
         </main>

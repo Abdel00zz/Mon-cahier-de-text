@@ -152,9 +152,9 @@ export function FluidTabRail<T extends string = string>({
   };
 
   const sizeClasses = {
-    sm: 'h-9 px-2.5 text-[11px] rounded-lg gap-1.5',
-    md: 'min-h-11 px-3 py-1.5 text-xs rounded-xl gap-1.5',
-    lg: 'min-h-12 px-4 py-2 text-sm rounded-xl gap-2',
+    sm: 'h-8 px-2.5 text-[11px] sm:text-xs rounded-lg gap-1.5',
+    md: 'min-h-9 sm:min-h-10 px-3 py-1 text-xs rounded-xl gap-1.5',
+    lg: 'min-h-10 sm:min-h-11 px-3.5 sm:px-4 py-1.5 text-xs sm:text-sm rounded-xl gap-2',
   }[size];
 
   return (
@@ -233,7 +233,11 @@ export function FluidTabRail<T extends string = string>({
               )}
 
               {Icon && (
-                <Icon className={cn('relative z-10 h-4 w-4 shrink-0 transition-transform duration-150 group-active:scale-95', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+                <Icon className={cn(
+                  'relative z-10 shrink-0 transition-transform duration-150 group-active:scale-95',
+                  size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4',
+                  isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                )} />
               )}
               <span className="relative z-10 select-none">{item.label}</span>
               {item.badge && (
