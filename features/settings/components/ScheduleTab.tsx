@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
-import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName, getBaseLevelKey } from '@/constants';
 import {
     TIMETABLE_DAYS,
     deriveSchedules,
@@ -178,9 +178,11 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
      * Attribution de la couleur synchronisée avec la carte de classe (Google Keep tone).
      */
     const colorFor = React.useCallback((classId: string): ModernClassColor => {
-        const tone = keepToneForClass(classId);
+        const classInfo = classById.get(classId);
+        const toneKey = classInfo ? getBaseLevelKey(classInfo.name) : classId;
+        const tone = keepToneForClass(toneKey);
         return KEEP_SCHEDULE_PALETTE[tone] || KEEP_SCHEDULE_PALETTE.sand;
-    }, []);
+    }, [classById]);
 
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
@@ -388,7 +390,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         className={`h-full w-full cursor-pointer appearance-none rounded-none border-0 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#8b7355]/40 ${
                                                             classInfo && color
                                                                 ? `${color.bg} text-transparent hover:brightness-95 active:brightness-90`
-                                                                : 'bg-white text-[#9c9389] hover:bg-[#faf7f2] dark:bg-[#181614] dark:text-[#787169] dark:hover:bg-[#201e1a]'
+                                                                : 'bg-white text-transparent hover:bg-[#faf7f2] dark:bg-[#181614] dark:hover:bg-[#201e1a]'
                                                         }`}
                                                         aria-label={`${t(`schedule.day.${day.value}`)} ${hourLabel(hour.startMin, hour.endMin)}${classInfo ? `, ${classLabel(classInfo.name)}` : ''}${merged ? ` (${t('schedule.mergedSession', { count: span })})` : ''}`}
                                                     >

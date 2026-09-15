@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { getBaseLevelKey } from '@/constants/class-levels';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { ChevronRight, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -37,7 +38,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(classInfo.id)}
+            data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "keep-surface dashboard-class-surface font-cyber-clean keep-interactive group relative flex min-h-[68px] sm:min-h-[72px] items-center overflow-hidden",

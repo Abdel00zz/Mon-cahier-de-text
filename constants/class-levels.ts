@@ -213,6 +213,12 @@ const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
   .sort((left, right) => right.length - left.length);
 
+export const getBaseLevelKey = (name: string): string => {
+  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
+  const level = DISPLAY_LEVEL_KEYS.find(key => normalized === key || normalized.startsWith(`${key} `));
+  return level || normalized;
+};
+
 export const formatClassDisplayName = (name: string): string => {
   const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
   const level = DISPLAY_LEVEL_KEYS.find(key =>

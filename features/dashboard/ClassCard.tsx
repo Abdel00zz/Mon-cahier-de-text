@@ -8,6 +8,7 @@ import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
+import { getBaseLevelKey } from '@/constants/class-levels';
 import { ClassCardTitle } from './ClassCardTitle';
 
 interface ClassCardProps {
@@ -36,7 +37,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(classInfo.id)}
+            data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "keep-surface dashboard-class-surface font-cyber-clean keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",

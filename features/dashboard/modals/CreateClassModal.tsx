@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, Check, GraduationCap, Settings, Trash2, Sparkles
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';
+import { keepToneForClass } from '@/utils/keepTheme';
 import { classNameForLevelAndGroup, normalizeGroupNumber, sanitizeGroupNumberInput } from '@/utils/classGroup';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { classCyclePolicy, existingClassCycle, firstFreeGroup, initialClassDraft, reconcileClassCycle, usedGroupsForLevel, type WizardStep } from './classCreationFlow';
@@ -53,7 +54,7 @@ const COPY: Record<AppLocale, {
     cycle: 'السلك التعليمي', cyclePlaceholder: 'اختر السلك', level: 'القسم', branch: 'الشعبة أو المسلك', group: 'رقم الفوج',
     groupHint: 'من 1 إلى 99. يُقترح أول رقم فوج متاح تلقائياً.', invalidGroup: 'أدخل رقماً من 1 إلى 99.', duplicateGroup: 'هذا الفوج موجود بالفعل لهذا القسم.',
     subject: 'المادة الدراسية', subjectPlaceholder: 'اختر المادة', customLevelPlaceholder: 'مثال: مجموعة الدعم', customSubjectPlaceholder: 'أدخل المادة',
-    createCustom: 'قسم غير مدرج', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
+    createCustom: 'هل قسمك غير مدرج', switchToOfficial: 'اللائحة الرسمية', selectedClass: 'القسم المختار', guidedLabel: 'إعداد موجّه',
     cycleLabels: { college: 'الثانوي الإعدادي', lycee: 'الثانوي التأهيلي', prepa: 'الأقسام التحضيرية' },
   },
   en: {
@@ -74,13 +75,19 @@ const EMPTY_CYCLES: Cycle[] = [];
 const EMPTY_CLASSES: ClassInfo[] = [];
 const CLASS_MODAL_DETENTS = [0.78, 0.94];
 
-const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
+const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; tone?: string }> = ({ children, onClick, tone }) => (
   <button
     type="button"
     onClick={onClick}
-    className="group flex min-h-[64px] w-full cursor-pointer items-center justify-center rounded-xl border border-border bg-background px-5 py-4 text-center text-sm font-semibold text-card-foreground shadow-[0_2px_8px_rgba(63,58,52,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-all duration-200 hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]"
+    data-keep-tone={tone}
+    className={cn(
+      "group flex min-h-[64px] w-full cursor-pointer items-center justify-center rounded-xl border px-5 py-4 text-center text-sm font-semibold shadow-[0_2px_8px_rgba(63,58,52,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]",
+      tone 
+        ? "keep-surface !rounded-xl border-[var(--keep-border)] bg-[var(--keep-light)] dark:bg-[var(--keep-dark)] text-[var(--keep-accent)] hover:border-[var(--keep-accent)] hover:brightness-[0.97] dark:hover:brightness-[1.10]"
+        : "border-border bg-background text-card-foreground hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm"
+    )}
   >
-    <span className="min-w-0 flex-1 leading-snug text-center font-medium tracking-normal text-foreground">{children}</span>
+    <span className="min-w-0 flex-1 leading-snug text-center font-bold tracking-normal">{children}</span>
   </button>
 );
 
@@ -340,7 +347,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             {customMode ? <Input value={customLevel} onChange={event => setCustomLevel(event.target.value)} placeholder={copy.customLevelPlaceholder} className="h-12 rounded-2xl border border-border bg-background text-foreground px-4" autoFocus /> : cycle === 'college' ? <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{CLASS_LEVELS_BY_CYCLE.college.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div> : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{levelGroups.map(item => <ChoiceCard key={item.key} onClick={() => chooseLevelGroup(item.key)}>{formatClassLevelGroupLabel(item.key, locale)}</ChoiceCard>)}</div>}
           </section>}
 
-          {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
+          {step === 'branch' && activeLevelGroup && <section className="space-y-3"><h3 className="text-sm font-bold text-foreground">{copy.branch}</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{activeLevelGroup.levels.map(item => <ChoiceCard key={item} onClick={() => chooseLevel(item)} tone={keepToneForClass(item)}>{formatLocalizedClassDisplayName(item, locale, { includeClassPrefix: false })}</ChoiceCard>)}</div></section>}
 
           {step === 'details' && <section className="space-y-3"><div className="keep-surface p-4"><div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-start"><div><p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{copy.selectedClass}</p><p className="mt-1 text-lg font-medium tracking-tight text-foreground">{selectedClassLabel}</p><p id="group-help" className={cn('mt-1 text-[11px]', groupError ? 'font-semibold text-destructive' : 'text-muted-foreground')}>{groupError ?? copy.groupHint}</p></div><div className="min-w-0 self-start"><label htmlFor="class-group" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.group}</label><Input id="class-group" value={group} onChange={event => setGroup(sanitizeGroupNumberInput(event.target.value))} onBlur={() => { const value = normalizeGroupNumber(group); if (value) setGroup(value); }} placeholder="1–99" inputMode="numeric" enterKeyHint="done" maxLength={2} aria-describedby="group-help" aria-invalid={Boolean(groupError)} className="h-11 w-full rounded-[12px] border border-border bg-background text-center text-sm font-medium text-foreground shadow-none focus:border-primary" /></div></div>
             {showSubjectChoice && <div className="mt-3 border-t border-border/55 pt-3"><label htmlFor="class-subject" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{copy.subject}</label>{customMode ? <Input id="class-subject" value={customSubject} onChange={event => setCustomSubject(event.target.value)} placeholder={copy.customSubjectPlaceholder} className="h-11 rounded-[12px] border-border bg-background text-sm" /> : <Select value={subject} onValueChange={setSubject}><SelectTrigger id="class-subject" className="!h-11 rounded-[8px] border-border bg-background text-sm"><SelectValue placeholder={copy.subjectPlaceholder} /></SelectTrigger><SelectContent className="rounded-[12px]">{subjectOptions.map(item => <SelectItem key={item} value={item}>{formatLocalizedSubjectDisplayName(item, locale)}</SelectItem>)}</SelectContent></Select>}</div>}

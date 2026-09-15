@@ -329,7 +329,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   );
 
   const liveChangesHintNode = (
-    <div className="mt-4 pt-3 lg:mt-6 lg:pt-4 border-t border-border/40">
+    <div className="mt-4 lg:mt-6">
       <p className="text-[10.5px] sm:text-[11px] leading-relaxed text-muted-foreground/75 text-start">
         <span className="font-semibold text-muted-foreground/60">— </span>
         {t('settings.liveChangesHint')}
