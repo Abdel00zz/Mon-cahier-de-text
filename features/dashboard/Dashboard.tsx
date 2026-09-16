@@ -66,7 +66,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
     const displayMenuRef = useRef<HTMLDivElement>(null);
     const teacherName = (config.defaultTeacherName || accountTeacherName).trim();
-    const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true;
+    const welcomeCompleted = config.hasCompletedWelcome === true || accountUser?.hasCompletedWelcome === true || classes.length > 0;
 
     useEffect(() => {
         if (!CLASS_DISPLAY_OPTIONS.includes(classDisplayMode)) {

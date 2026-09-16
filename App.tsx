@@ -370,7 +370,8 @@ const App: React.FC = () => {
     classes.length === 0 &&
     !config.hasCompletedWelcome &&
     authUser?.hasCompletedWelcome !== true;
-  const isCurrentlyOnboarding = isOnboardingVisible || shouldBootOnboarding;
+  const isCurrentlyOnboarding =
+    (isOnboardingVisible && classes.length === 0) || shouldBootOnboarding;
 
   const showNavigation = !isAuthView && !isBooting && backgroundView !== 'editor' && !isCurrentlyOnboarding;
   const isRtl = (config.applicationLocale ?? 'ar') === 'ar';
