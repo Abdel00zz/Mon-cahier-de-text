@@ -107,19 +107,22 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-none border-b border-border/40 bg-background/95 backdrop-blur-sm px-1 py-1.5 print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2">
+    <div
+      data-editor-toolbar
+      className="rtl-flow rtl-toolbar sticky top-1 sm:top-2 z-[50] mb-3.5 mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-[#e8e2d8] dark:border-stone-800/90 bg-[#fbf9f4]/90 dark:bg-[#1c1917]/90 backdrop-blur-md px-2 sm:px-3 py-1 sm:py-1.5 shadow-[0_2px_12px_-3px_rgba(40,30,20,0.06)] dark:shadow-[0_2px_12px_-3px_rgba(0,0,0,0.4)] print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] transition-all duration-200"
+    >
       <div className="flex min-w-0 items-center justify-start gap-1.5">
         <SyncStatusBadge />
       </div>
       
-      <div className="hidden items-center justify-center gap-0.5 sm:flex">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
+      <div className="hidden items-center justify-center gap-1 sm:flex bg-[#f2ede4]/60 dark:bg-stone-800/40 p-0.5 rounded-xl border border-[#eae3d7]/60 dark:border-stone-800/60">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7.5 w-7.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-[#eae3d5] dark:hover:bg-stone-700/80 hover:text-stone-900 dark:hover:text-stone-100 active:scale-95 disabled:opacity-30">
           <Undo2 className="h-3.5 w-3.5 stroke-[2.2]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7.5 w-7.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-[#eae3d5] dark:hover:bg-stone-700/80 hover:text-stone-900 dark:hover:text-stone-100 active:scale-95 disabled:opacity-30">
           <Redo2 className="h-3.5 w-3.5 stroke-[2.2]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7.5 w-7.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-[#eae3d5] dark:hover:bg-stone-700/80 hover:text-stone-900 dark:hover:text-stone-100 active:scale-95 disabled:opacity-30">
           <Save className="h-3.5 w-3.5 stroke-[2.2]" />
         </Button>
       </div>
@@ -133,29 +136,29 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             aria-label={t('toolbar.search')}
             aria-expanded={isSearchVisible}
             aria-controls="toolbar-search-panel toolbar-search-panel-mobile"
-            className={`relative h-7 w-7 rounded-lg border-none transition-all duration-150 active:scale-95 ${searchQuery ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'}`}
+            className={`relative h-7.5 w-7.5 rounded-lg border-none transition-all duration-150 active:scale-95 ${searchQuery ? 'bg-[#ede6d8] dark:bg-stone-800 text-stone-900 dark:text-stone-100' : 'text-stone-600 dark:text-stone-300 hover:bg-[#eae3d5] dark:hover:bg-stone-800/80 hover:text-stone-900 dark:hover:text-stone-100'}`}
           >
             <Search className="h-3.5 w-3.5 stroke-[2.2]" />
-            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-foreground" />}
+            {searchQuery && <span aria-hidden className="toolbar-search-indicator absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />}
           </Button>
           {/* Mobile overlay bar */}
           {isSearchVisible && (
-            <div className="sm:hidden fixed top-0 inset-x-0 z-30 px-3 pt-2 pb-1.5 bg-background/95 backdrop-blur-md border-b border-border/40 shadow-sm animate-in slide-in-from-top-4 fade-in duration-200" id="toolbar-search-panel-mobile">
+            <div className="sm:hidden fixed top-2 inset-x-3 z-30 px-3.5 py-2 bg-[#fbf9f4]/95 dark:bg-[#1c1917]/95 backdrop-blur-md border border-[#e8e2d8] dark:border-stone-800 rounded-2xl shadow-xl animate-in slide-in-from-top-3 fade-in duration-200" id="toolbar-search-panel-mobile">
               <div className="flex items-center gap-2">
-                <Search className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground" />
+                <Search className="h-4 w-4 stroke-[2.2] text-stone-500 dark:text-stone-400" />
                 <Input
                   ref={searchInputRef}
                   type="search"
                   placeholder={t('toolbar.searchPlaceholder')}
                   value={localSearch}
                   onChange={(e) => setLocalSearch(e.target.value)}
-                  className="flex-1 h-7.5 text-xs rounded-lg border-border/60 bg-transparent focus:border-border/80 focus:ring-0 focus:outline-none"
+                  className="flex-1 h-8 text-xs rounded-xl border-[#e2dcd0] dark:border-stone-800 bg-background/60 focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
                 />
                 {localSearch && (
                   <button 
                     type="button" 
                     onClick={() => { setLocalSearch(''); setSearchQuery(''); }} 
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer"
+                    className="w-7.5 h-7.5 flex items-center justify-center rounded-lg bg-[#eae3d5] dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 transition-all duration-150 active:scale-95 cursor-pointer"
                     aria-label={t('toolbar.clearSearch')}
                   >
                     <X className="h-3.5 w-3.5 stroke-[2.2]" />
@@ -164,7 +167,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 <button
                   type="button"
                   onClick={() => setIsSearchVisible(false)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-muted/60 hover:bg-muted text-foreground transition-all duration-150 active:scale-95 cursor-pointer"
+                  className="w-7.5 h-7.5 flex items-center justify-center rounded-lg bg-[#eae3d5] dark:bg-stone-800 text-stone-700 dark:text-stone-200 transition-all duration-150 active:scale-95 cursor-pointer"
                   aria-label={t('toolbar.closeSearch')}
                 >
                   <ChevronUp className="h-3.5 w-3.5 stroke-[2.2]" />
@@ -175,7 +178,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
           {/* Desktop popover */}
           <div
             id="toolbar-search-panel"
-            className={`rtl-search-popover absolute hidden sm:block transition-all duration-300 ease-in-out top-1/2 -translate-y-1/2 w-44 ${isRtl ? 'left-[calc(100%+0.5rem)] origin-left' : 'right-[calc(100%+0.5rem)] origin-right'} ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
+            className={`rtl-search-popover absolute hidden sm:block transition-all duration-300 ease-in-out top-1/2 -translate-y-1/2 w-48 ${isRtl ? 'left-[calc(100%+0.5rem)] origin-left' : 'right-[calc(100%+0.5rem)] origin-right'} ${isSearchVisible ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'}`}
           >
             <div className="relative w-full">
               <Input
@@ -184,7 +187,7 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
                 placeholder={t('toolbar.searchPlaceholder')}
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                className="rounded-lg h-7.5 text-xs px-2.5 border-border/60 bg-background/80 backdrop-blur-sm focus:border-border/80 focus:ring-0"
+                className="rounded-xl h-8 text-xs px-3 border-[#e2dcd0] dark:border-stone-800 bg-[#fbf9f4]/95 dark:bg-[#1c1917]/95 backdrop-blur-sm shadow-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -195,13 +198,13 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-7 w-7 cursor-pointer rounded-lg text-muted-foreground transition-all hover:bg-muted/60 hover:text-foreground active:scale-95"
+              className="relative h-7.5 w-7.5 cursor-pointer rounded-lg text-stone-600 dark:text-stone-300 transition-all hover:bg-[#eae3d5] dark:hover:bg-stone-800/80 hover:text-stone-900 dark:hover:text-stone-100 active:scale-95"
               aria-label={t('toolbar.actionsMenu')}
             >
               <MoreVertical className="h-3.5 w-3.5 stroke-[2.2]" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-56 rounded-xl border border-border bg-card p-1.5 shadow-lg">
+          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-56 rounded-2xl border border-[#e8e2d8] dark:border-stone-800 bg-[#fbf9f4]/98 dark:bg-[#1c1917]/98 backdrop-blur-md p-1.5 shadow-xl">
             <DropdownMenuLabel className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               {t('toolbar.actions')}
             </DropdownMenuLabel>

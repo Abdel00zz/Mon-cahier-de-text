@@ -95,7 +95,7 @@ const App: React.FC = () => {
       const stored = localStorage.getItem('cdt_sidebar_expanded_v1');
       if (stored !== null) return stored === 'true';
     } catch {}
-    return false; // Réduite par défaut sur PC
+    return true; // Développée par défaut sur PC
   });
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
 
@@ -362,11 +362,12 @@ const App: React.FC = () => {
   const isAuthView = AUTH_REQUIRED && authStatus === 'anonymous';
   const isBooting = isConfigLoading || (AUTH_REQUIRED && authStatus === 'loading');
 
-  // L'accueil masque la navigation dès le premier rendu puis pendant tout le
-  // parcours déclaré par Dashboard. Une classe créée en cours d'onboarding ne
-  // peut donc plus faire réapparaître le sidebar prématurément.
+  // L'accueil ne masque la navigation que pendant le vrai premier parcours :
+  // aucune classe et compte non validé. Si des classes existent déjà,
+  // la navigation reste toujours visible pour l'enseignant.
   const shouldBootOnboarding =
     backgroundView === 'dashboard' &&
+    classes.length === 0 &&
     !config.hasCompletedWelcome &&
     authUser?.hasCompletedWelcome !== true;
   const isCurrentlyOnboarding = isOnboardingVisible || shouldBootOnboarding;

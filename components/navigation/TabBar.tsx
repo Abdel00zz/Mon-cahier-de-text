@@ -107,7 +107,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-inline-end border-border/40',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-e border-border/70 shadow-2xs',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
