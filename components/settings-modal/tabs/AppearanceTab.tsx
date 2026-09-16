@@ -8,24 +8,24 @@ interface AppearanceTabProps {
 }
 
 const THEME_MODES: { id: SettingsData['appearance']['themeMode']; label: string; desc: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'warm', label: 'Beige Écrémé', desc: 'Warm Sand doux pour les yeux', icon: Sun },
-  { id: 'dark', label: 'Sombre Épuré', desc: 'Contraste reposant pour la nuit', icon: Moon },
+  { id: 'warm', label: 'Clair Moderne (Sketch)', desc: 'Canvas aéré et surfaces épurées', icon: Sun },
+  { id: 'dark', label: 'Sombre Obsidian', desc: 'Contraste reposant pour la nuit', icon: Moon },
   { id: 'system', label: 'Système', desc: 'Suit les réglages de l’appareil', icon: Laptop },
 ];
 
 const ACCENT_COLORS = [
+  { id: '#FDB300', name: 'Sketch Jaune (#FDB300)', bg: 'bg-[#FDB300]' },
+  { id: '#212123', name: 'Shark Charbon', bg: 'bg-[#212123]' },
+  { id: '#3562FF', name: 'Bleu Indigo macOS', bg: 'bg-[#3562FF]' },
   { id: '#C85A32', name: 'Terracotta', bg: 'bg-[#C85A32]' },
-  { id: '#C25E00', name: 'Ocre Doré', bg: 'bg-[#C25E00]' },
-  { id: '#2563EB', name: 'Bleu Royal', bg: 'bg-[#2563EB]' },
   { id: '#059669', name: 'Émeraude', bg: 'bg-[#059669]' },
   { id: '#7C3AED', name: 'Violet Doux', bg: 'bg-[#7C3AED]' },
-  { id: '#4F46E5', name: 'Indigo', bg: 'bg-[#4F46E5]' },
 ];
 
 const BORDER_RADII: { id: SettingsData['appearance']['borderRadius']; label: string; previewClass: string }[] = [
+  { id: 'standard', label: 'Sketch UI (8px)', previewClass: 'rounded-md' },
+  { id: 'rounded', label: 'Modale Douce (22px)', previewClass: 'rounded-2xl' },
   { id: 'sharp', label: 'Droit (0px)', previewClass: 'rounded-none' },
-  { id: 'standard', label: 'Standard (8px)', previewClass: 'rounded-lg' },
-  { id: 'rounded', label: 'Arrondi (14px)', previewClass: 'rounded-2xl' },
 ];
 
 export const AppearanceTab: React.FC<AppearanceTabProps> = ({ appearance, onChange }) => {

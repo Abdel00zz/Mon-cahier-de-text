@@ -41,7 +41,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "keep-surface dashboard-class-surface font-cyber-clean keep-interactive group relative flex min-h-[68px] sm:min-h-[72px] items-center overflow-hidden",
+                "group relative flex min-h-[68px] sm:min-h-[72px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
                 isActiveSession && "keep-session-active z-10"
             )}
         >

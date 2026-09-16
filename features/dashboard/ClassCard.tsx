@@ -75,14 +75,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                 </div>
 
                 {/* Métadonnées compactes et élégantes (Dernière ouverture & Matière sur ligne fluide) */}
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-muted-foreground">
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-foreground/75 dark:text-foreground/80 font-medium">
                     <span className="truncate" title={lastOpened}>
                         {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{lastOpened}</time> : lastOpened}
                     </span>
                     {subject && showSubjectBadge && (
                         <>
                             <span className="opacity-50 select-none text-[10px]" aria-hidden="true">•</span>
-                            <span className="truncate font-medium text-foreground/80" title={subject}>
+                            <span className="truncate font-semibold text-foreground/90" title={subject}>
                                 {subject}
                             </span>
                         </>
@@ -91,8 +91,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             </div>
 
             {/* Zone Inférieure : Design minimaliste et aérien, couleur unie */}
-            <div className="keep-session-footer w-full bg-black/[0.015] dark:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.04] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.03] dark:group-hover:bg-white/[0.05]">
-                <p className="keep-session-action flex items-center justify-between gap-2 text-[11px] sm:text-xs font-medium text-foreground/40 group-hover:text-foreground/80 transition-colors" aria-hidden="true">
+            <div className="keep-session-footer w-full bg-black/[0.025] dark:bg-white/[0.03] border-t border-black/[0.06] dark:border-white/[0.06] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.04] dark:group-hover:bg-white/[0.06]">
+                <p className="keep-session-action flex items-center justify-between gap-2 text-[11px] sm:text-xs font-semibold text-foreground/70 group-hover:text-foreground/95 transition-colors" aria-hidden="true">
                     <span className="tracking-tight">{locale === 'ar' ? 'فتح دفتر النصوص' : locale === 'en' ? 'Open notebook' : 'Ouvrir le cahier'}</span>
                     <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
                 </p>

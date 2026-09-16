@@ -25,6 +25,7 @@ interface DashboardProps {
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
+    onOpenGuide?: () => void;
 }
 
 type ClassDisplayMode = 'list' | 'single' | 'double';
@@ -45,6 +46,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
+    onOpenGuide,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const reduceMotion = useReducedMotion();
@@ -282,16 +284,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-dvh bg-white dark:bg-[#202124] text-[#202124] dark:text-[#e8eaed] font-sans antialiased pb-20 sm:pb-8"
+            className="min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-4 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-0 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
                     {classes.length > 0 && (
                         <div className="mb-4">
                             <SectionHeader
                                 title={t('dashboard.classes')}
                                 isArabic={isRtl}
+                                count={classes.length}
                                 actions={
                                     <div className="flex items-center gap-2">
                                         {shouldShowSubjectBadge ? (
@@ -423,7 +426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </div>
                                     </div>
                                 ) : currentDisplay === 'list' ? (
-                                    <div className="space-y-3" role="list" aria-label={t('dashboard.classList')}>
+                                    <div className="overflow-hidden rounded-[var(--radius-xl,0.875rem)] border border-border bg-card shadow-none" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (

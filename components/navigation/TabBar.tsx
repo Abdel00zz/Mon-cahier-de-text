@@ -107,25 +107,12 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card text-muted-foreground print:hidden shadow-2xl sm:flex py-4 font-sans select-none border-inline-end border-border/80',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-inline-end border-border/40',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
         aria-label={copy.mainNav}
       >
-        {/* Perforations reliure de cahier le long du bord extérieur */}
-        <div
-          className="absolute inset-y-0 start-1 sm:start-1.5 flex flex-col justify-between py-6 pointer-events-none z-20"
-          aria-hidden="true"
-        >
-          {Array.from({ length: 18 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-muted/80 shadow-xs"
-            />
-          ))}
-        </div>
-
         {/* En-tête */}
         <div
           className={cn(
@@ -271,7 +258,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
       {/* Barre mobile compacte - Ergonomie avancée style iPhone 17 sans coupure de texte ni écrasement */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border/70 bg-card/90 dark:bg-card/85 backdrop-blur-2xl text-muted-foreground shadow-[0_12px_36px_-6px_rgba(43,38,32,0.14),0_4px_16px_-2px_rgba(43,38,32,0.06)] dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.6)] print:hidden sm:hidden will-change-transform font-sans"
+        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border bg-background/95 backdrop-blur-md text-muted-foreground shadow-lg print:hidden sm:hidden will-change-transform font-sans"
         style={{ bottom: 'max(0.65rem, env(safe-area-inset-bottom, 0.65rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}

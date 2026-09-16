@@ -1,3 +1,5 @@
+import React from "react";
+import { Sparkles, Calendar, Bell, ArrowRight, ArrowLeft, LogIn } from "lucide-react";
 import type { AppLocale } from "@/types";
 
 const COPY = {
@@ -8,9 +10,9 @@ const COPY = {
     login: "Se connecter",
     register: "Créer un compte",
     badges: [
-      { text: "Saisie rapide et intelligente", tone: "sand" },
-      { text: "Calendrier scolaire officiel", tone: "mint" },
-      { text: "Notifications importantes", tone: "sky" },
+      { text: "Saisie rapide et intelligente", tone: "sand", icon: Sparkles },
+      { text: "Calendrier scolaire officiel", tone: "mint", icon: Calendar },
+      { text: "Notifications importantes", tone: "sky", icon: Bell },
     ],
     imgAlt: "Aperçu de la démonstration du cahier de textes et des tableaux",
   },
@@ -20,19 +22,19 @@ const COPY = {
     login: "تسجيل الدخول",
     register: "إنشاء حساب جديد",
     badges: [
-      { text: "تعبئة سريعة وذكية", tone: "sand" },
-      { text: "التقويم المدرسي الرسمي", tone: "mint" },
-      { text: "إشعارات مهمة", tone: "sky" },
+      { text: "تعبئة سريعة وذكية", tone: "sand", icon: Sparkles },
+      { text: "التقويم المدرسي الرسمي", tone: "mint", icon: Calendar },
+      { text: "إشعارات مهمة", tone: "sky", icon: Bell },
     ],
     imgAlt: "معاينة توضيحية لدفتر النصوص والجداول",
   },
 } as const;
 
 const BADGE_STYLES = {
-  sand: "bg-[#fef9c3] text-[#713f12] border border-[#fef08a] dark:bg-[#45371c] dark:text-[#fef08a] dark:border-[#713f12]",
-  mint: "bg-[#dcfce7] text-[#14532d] border border-[#bbf7d0] dark:bg-[#143823] dark:text-[#bbf7d0] dark:border-[#14532d]",
-  sky: "bg-[#e0f2fe] text-[#075985] border border-[#bae6fd] dark:bg-[#13354a] dark:text-[#bae6fd] dark:border-[#075985]",
-};
+  sand: "bg-amber-500/10 text-amber-900 dark:text-amber-200 border-amber-500/30 hover:bg-amber-500/15",
+  mint: "bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 border-emerald-500/30 hover:bg-emerald-500/15",
+  sky: "bg-sky-500/10 text-sky-900 dark:text-sky-200 border-sky-500/30 hover:bg-sky-500/15",
+} as const;
 
 export function LandingPage({
   locale,
@@ -47,58 +49,74 @@ export function LandingPage({
   const copy = COPY[ar ? "ar" : "fr"];
 
   return (
-    <div className="flex flex-1 flex-col items-center px-3 py-4 sm:px-6 sm:py-6 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background">
+    <div
+      dir={ar ? "rtl" : "ltr"}
+      className="flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
+    >
       <div className="auth-view-enter w-full max-w-4xl flex flex-col items-center text-center gap-4 sm:gap-6">
-        {/* Title and Subtitle with breathable spacing */}
-        <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto pt-1">
+        {/* Title and Subtitle with breathable, balanced spacing */}
+        <div className="space-y-2.5 sm:space-y-3.5 max-w-2xl mx-auto pt-1">
           <h1
             tabIndex={-1}
-            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.25] sm:leading-[1.2]"
+            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
           >
             {copy.title}
           </h1>
 
-          <p className="text-xs sm:text-base md:text-lg text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl mx-auto">
+          <p className="text-xs sm:text-base md:text-lg text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl mx-auto font-normal">
             {copy.subtitle}
           </p>
         </div>
 
-        {/* CTA Actions - Aligned and compact on mobile (Single Row) */}
+        {/* CTA Actions - Touch target >= 44px, ergonomic buttons with icons */}
         <div className="flex flex-col items-center gap-2 w-full max-w-sm sm:max-w-md mx-auto">
-          <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 w-full">
+          <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full">
             <button
               type="button"
               onClick={onRegister}
-              className="auth-action flex-1 inline-flex min-h-11 sm:min-h-12 items-center justify-center rounded-full bg-[#f97316] hover:bg-[#ea580c] px-3 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md cursor-pointer whitespace-nowrap"
+              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-4 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
               <span>{copy.register}</span>
+              {ar ? (
+                <ArrowLeft className="w-4 h-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
+              ) : (
+                <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+              )}
             </button>
             <button
               type="button"
               onClick={onLogin}
-              className="auth-action flex-1 inline-flex min-h-11 sm:min-h-12 items-center justify-center rounded-full bg-white dark:bg-stone-900 border-2 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 hover:bg-stone-50 dark:hover:bg-stone-800/80 px-3 sm:px-6 text-xs sm:text-base font-bold shadow-sm cursor-pointer whitespace-nowrap"
+              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-stone-100/90 dark:bg-stone-900/90 border border-stone-300/80 dark:border-stone-700/80 text-stone-900 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 px-4 sm:px-6 text-xs sm:text-base font-semibold shadow-xs hover:border-stone-400 dark:hover:border-stone-600 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
-              {copy.login}
+              <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors" />
+              <span>{copy.login}</span>
             </button>
           </div>
         </div>
 
-        {/* Wider Screen Mockup Container to clearly display tables and schedule GIFs */}
+        {/* Device Chassis Preview: Nested border radius mathematically calculated */}
+        {/* Outer Radius = 28px/36px/40px, Padding = 8px/10px/12px -> Inner Radius = 20px/26px/28px */}
         <div className="relative mx-auto flex items-center justify-center w-full my-1 sm:my-3">
-          {/* Subtle warm ambient glow behind the device */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-[32rem] h-60 sm:h-80 bg-gradient-to-tr from-amber-500/20 via-orange-500/15 to-transparent rounded-full blur-3xl -z-10" />
+          {/* Subtle warm ambient glow behind the device chassis */}
+          <div
+            aria-hidden="true"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-[32rem] h-60 sm:h-80 bg-gradient-to-tr from-amber-500/15 via-orange-500/10 to-transparent rounded-full blur-3xl -z-10 pointer-events-none"
+          />
 
-          {/* Wide Device Chassis (Optimized for tables readability) */}
-          <div className="relative w-full max-w-[340px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl h-[42vh] sm:h-[50vh] md:h-[54vh] max-h-[500px] min-h-[260px] rounded-[28px] sm:rounded-[36px] md:rounded-[40px] p-2 sm:p-2.5 md:p-3 bg-stone-900 dark:bg-stone-950 border-[3.5px] sm:border-[5px] border-stone-700/80 dark:border-stone-600/80 shadow-2xl ring-1 ring-black/30 flex flex-col justify-between overflow-hidden">
-            {/* Screen Inner Wrapper */}
-            <div className="relative w-full h-full rounded-[20px] sm:rounded-[28px] md:rounded-[32px] overflow-hidden bg-black flex flex-col">
+          {/* Device Chassis (Graphite & subtle specular border) */}
+          <div className="relative w-full max-w-[340px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl h-[42vh] sm:h-[50vh] md:h-[54vh] max-h-[500px] min-h-[260px] rounded-[28px] sm:rounded-[36px] md:rounded-[40px] p-2 sm:p-2.5 md:p-3 bg-stone-900 dark:bg-stone-950 border-[3.5px] sm:border-[5px] border-stone-700/90 dark:border-stone-700 shadow-2xl ring-1 ring-black/40 flex flex-col justify-between overflow-hidden">
+            {/* Screen Inner Wrapper (Outer - Padding = 20px / 26px / 28px) */}
+            <div className="relative w-full h-full rounded-[20px] sm:rounded-[26px] md:rounded-[28px] overflow-hidden bg-stone-950 flex flex-col">
               {/* Dynamic Island / Modern Camera Bar */}
-              <div className="absolute top-1.5 sm:top-2 left-1/2 -translate-x-1/2 z-20 flex items-center justify-between px-2 w-14 sm:w-20 h-3.5 sm:h-4.5 bg-black rounded-full shadow-inner border border-white/10">
+              <div
+                aria-hidden="true"
+                className="absolute top-1.5 sm:top-2 left-1/2 -translate-x-1/2 z-20 flex items-center justify-between px-2 w-14 sm:w-20 h-3.5 sm:h-4.5 bg-black rounded-full shadow-inner border border-white/10 pointer-events-none"
+              >
                 <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-stone-800" />
                 <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-blue-950/80 ring-1 ring-blue-900/50" />
               </div>
 
-              {/* Responsive GIF Preview: Landscape on tablet/desktop, portrait on small mobile with wide clarity */}
+              {/* Responsive GIF Preview: Landscape on tablet/desktop, portrait on small mobile */}
               <picture className="block w-full h-full">
                 <source media="(min-width: 640px)" srcSet="/landscape.gif" />
                 <img
@@ -110,23 +128,31 @@ export function LandingPage({
               </picture>
 
               {/* Bottom Home Indicator Bar */}
-              <div className="absolute bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-1 sm:h-1.5 bg-white/70 rounded-full z-20 pointer-events-none" />
+              <div
+                aria-hidden="true"
+                className="absolute bottom-1 sm:bottom-1.5 left-1/2 -translate-x-1/2 w-16 sm:w-24 h-1 sm:h-1.5 bg-white/60 dark:bg-white/40 rounded-full z-20 pointer-events-none"
+              />
             </div>
           </div>
         </div>
 
-        {/* Feature Badges at the bottom */}
+        {/* Feature Badges with contextual icons and harmonious tones */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1 pb-4">
-          {copy.badges.map((badge) => (
-            <span
-              key={badge.text}
-              className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-semibold shadow-xs ${BADGE_STYLES[badge.tone]}`}
-            >
-              {badge.text}
-            </span>
-          ))}
+          {copy.badges.map((badge) => {
+            const Icon = badge.icon;
+            return (
+              <span
+                key={badge.text}
+                className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs md:text-sm font-semibold border shadow-2xs transition-all ${BADGE_STYLES[badge.tone]}`}
+              >
+                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 opacity-80" />
+                <span>{badge.text}</span>
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
+

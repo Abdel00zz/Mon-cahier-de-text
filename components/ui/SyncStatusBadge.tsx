@@ -24,15 +24,15 @@ export const SyncStatusBadge: React.FC = () => {
             type="button"
             onClick={syncNow}
             variant="ghost"
-            className="group/sync h-6 cursor-pointer flex-row-reverse gap-1 rounded-md bg-transparent px-1 text-muted-foreground/65 shadow-none transition-colors hover:bg-slate-50 hover:text-primary"
+            className="group/sync h-6.5 cursor-pointer flex-row-reverse items-center gap-1.5 rounded-md bg-transparent px-1.5 text-muted-foreground/80 shadow-none transition-colors hover:bg-muted/60 hover:text-foreground"
             title={t('sync.syncNow')}
             aria-label={t('sync.statusAria', { status: label })}
         >
-            <span className="relative -mt-1 flex h-2.5 w-2.5 shrink-0 self-start items-center justify-center" aria-hidden>
+            <span className="relative flex h-2 w-2 shrink-0 items-center justify-center" aria-hidden>
                 {config.pulse && <span className={`absolute inset-0 rounded-full opacity-45 ${config.dotClass} animate-ping`} />}
                 <span className={`relative h-1.5 w-1.5 rounded-full ${config.dotClass} ${config.glowClass}`} />
             </span>
-            <span className="max-w-28 truncate font-mono text-[8px] font-bold tracking-[0.035em] opacity-75 sm:max-w-36 sm:text-[9px]" aria-live="polite">{label}</span>
+            <span className="max-w-28 truncate font-mono text-[9px] font-semibold tracking-wide text-foreground/75 sm:max-w-36 sm:text-[10px]" aria-live="polite">{label}</span>
         </Button>
     );
 };

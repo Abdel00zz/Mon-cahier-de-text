@@ -41,13 +41,13 @@
   --color-chart-5: hsl(var(--chart-5));
 
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-2xl: 22px;
   --radius-3xl: 26px;
 
-  --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-itim: 'Itim', cursive, sans-serif;
 
@@ -315,99 +315,94 @@ html[data-keyboard='open'] .fab-safe {
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Mode Clair Beige Crème (Sharp UI · Lighter Cream Beige) */
-    --background: 38 33% 97.5%; /* #faf8f5 (Fond de page: Crème très claire et lumineuse) */
-    --foreground: 33 9% 23%; /* #3f3a34 (Texte principal: Brun-gris foncé) */
-    --card: 38 27% 94%; /* #f5f1ea (Fond du Dock / Cartes: Beige clair) */
-    --card-foreground: 33 9% 23%; /* #3f3a34 */
-    --popover: 38 27% 94%; /* #f5f1ea */
-    --popover-foreground: 33 9% 23%;
-    --primary: 217 91% 60%; /* #3b82f6 (Accent principal: Bleu moderne) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 36 24% 89.5%; /* #ebe5dc (Hover: Beige doux) */
-    --secondary-foreground: 33 9% 23%;
-    --muted: 36 24% 89.5%; /* #ebe5dc */
-    --muted-foreground: 35 8% 52%; /* #8c857b (Texte secondaire: Gris-beige) */
-    --accent: 36 24% 89.5%; /* #ebe5dc */
-    --accent-foreground: 33 9% 23%;
-    --border: 38 20% 85.5%; /* #e2dcd2 (Bordure du Dock / Séparateurs: Beige grisé) */
-    --input: 38 27% 94%; /* #f5f1ea */
-    --ring: 217 91% 60%;
-    --destructive: 0 84.2% 60.2%; /* #ef4444 (Danger: Rouge doux) */
+    /* Mode Clair Fondé sur l'ADN Sketch.com ("Shark + Hint of Red" & "Selective Yellow") */
+    --background: 330 14% 97.6%; /* #FAF8F9 ("Hint of Red" Blanc cassé officiel Sketch) */
+    --foreground: 240 3% 13.3%; /* #212123 ("Shark" Charbon profond) */
+    --card: 0 0% 100%; /* #FFFFFF (Surfaces & fenêtres épurées) */
+    --card-foreground: 240 3% 13.3%; /* #212123 */
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 240 3% 13.3%;
+    --primary: 42.5 100% 49.6%; /* #FDB300 (Sketch Selective Yellow) */
+    --primary-foreground: 240 3% 13.3%; /* #212123 (Texte charbon contrasté ~9.4:1 WCAG AAA) */
+    --secondary: 240 5% 95.5%; /* #F3F3F6 (Gris interface macOS/Sketch) */
+    --secondary-foreground: 240 3% 13.3%;
+    --muted: 240 5% 95%; /* #F3F3F5 */
+    --muted-foreground: 240 3% 46%; /* #73737C (Texte secondaire neutre et lisible) */
+    --accent: 42.5 100% 94%; /* #FFF8E6 (Teinte douce jaune) */
+    --accent-foreground: 240 3% 13.3%;
+    --border: 240 5% 89.5%; /* #E4E4EB (Bordure 1px ultra-fine et discrète) */
+    --input: 240 5% 95%; /* #F3F3F6 */
+    --ring: 42.5 100% 49.6%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge doux) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 70% 28%;
     --warning-strong: 38 92% 40%;
     --destructive-strong: 0 84.2% 50%;
-    /* Alerte de séance du cahier : non-conformité signalée en rouge moderne.
-       Jeton dédié, distinct de `warning` (ambre, usage général) et de
-       `destructive` (actions destructives). Texte « strong » : ~6,4:1 (AA). */
     --alert: 0 78% 56%;
     --alert-strong: 0 74% 42%;
-    --scheduled: 216 88% 95%; /* #e8f1fe (Ligne active sélectionnée: Bleu très clair) */
-    --scheduled-foreground: 33 9% 23%;
-    --badge-bg: 216 88% 95%; /* #e8f1fe (Badge date fond) */
-    --badge-border: 214 95% 87%; /* #bfdbfe (Badge date bordure) */
-    --badge-text: 221 83% 53%; /* #2563eb (Badge date texte) */
-    --dock-shadow: 0 8px 30px rgba(63, 58, 52, 0.08);
-    --chart-1: 221 83% 53%;
-    --chart-2: 142.1 76.2% 36.3%;
-    --chart-3: 38 92% 50%;
+    --scheduled: 226 100% 96.5%; /* #EDF2FE (Bleu indigo de sélection Sketch macOS) */
+    --scheduled-foreground: 226 80% 36%; /* #1E40AF */
+    --badge-bg: 226 100% 96.5%; /* #EDF2FE */
+    --badge-border: 226 80% 88%; /* #BFDBFE */
+    --badge-text: 226 80% 36%; /* #1E40AF */
+    --dock-shadow: 0 10px 30px rgba(33, 33, 35, 0.06);
+    --chart-1: 42.5 100% 49.6%;
+    --chart-2: 226 80% 55%;
+    --chart-3: 142.1 76.2% 36.3%;
     --chart-4: 199 89% 48%;
     --chart-5: 262 83% 58%;
 
     --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 18px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
     --radius-2xl: 22px;
     --radius-3xl: 26px;
     --radius: var(--radius-md);
 
-    --content-font-latin: 'Fira Sans', sans-serif;
+    --content-font-latin: 'Plus Jakarta Sans', sans-serif;
     --content-font-arabic: 'IBM Plex Sans Arabic', sans-serif;
   }
 
   .dark {
     color-scheme: only dark;
-    /* Mode Sombre (Sharp UI · Figma & Notion Dark) */
-    --background: 0 0% 5.9%; /* #0f0f0f (Fond de page: Noir profond) */
-    --foreground: 0 0% 89.8%; /* #e5e5e5 (Texte principal: Blanc cassé) */
-    --card: 0 0% 10.2%; /* #1a1a1a (Fond du Dock / Cartes: Gris très foncé) */
-    --card-foreground: 0 0% 89.8%; /* #e5e5e5 */
-    --popover: 0 0% 10.2%; /* #1a1a1a */
-    --popover-foreground: 0 0% 89.8%;
-    --primary: 217 91% 60%; /* #3b82f6 (Accent principal: Bleu vif) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 14.5%; /* #252525 (Hover: Gris foncé) */
-    --secondary-foreground: 0 0% 89.8%;
-    --muted: 0 0% 14.5%; /* #252525 */
-    --muted-foreground: 0 0% 53.3%; /* #888888 (Texte secondaire: Gris moyen) */
-    --accent: 0 0% 14.5%; /* #252525 */
-    --accent-foreground: 0 0% 89.8%;
-    --border: 0 0% 16.5%; /* #2a2a2a (Bordure du Dock / Séparateurs: Gris anthracite) */
-    --input: 0 0% 10.2%; /* #1a1a1a */
-    --ring: 217 91% 60%;
-    --destructive: 0 84.2% 60.2%; /* #ef4444 (Danger: Rouge vif) */
+    /* Mode Sombre Inspiré de Sketch.com (Obsidian Charbon #141416 & Shark #212123) */
+    --background: 240 6% 8.5%; /* #141416 (Fond de page sombre aéré) */
+    --foreground: 330 10% 96%; /* #FAF8F9 (Texte principal) */
+    --card: 240 3% 13.3%; /* #212123 (Surfaces "Shark" surélevées) */
+    --card-foreground: 330 10% 96%; /* #FAF8F9 */
+    --popover: 240 3% 13.3%; /* #212123 */
+    --popover-foreground: 330 10% 96%;
+    --primary: 42.5 100% 50%; /* #FDB300 (Sketch Selective Yellow vif) */
+    --primary-foreground: 240 3% 13.3%; /* #212123 (Texte sombre lisible) */
+    --secondary: 240 4% 18%; /* #2A2A2E (Hover gris foncé) */
+    --secondary-foreground: 330 10% 96%;
+    --muted: 240 4% 18%; /* #2A2A2E */
+    --muted-foreground: 240 4% 65%; /* #9E9EA8 (Texte secondaire neutre) */
+    --accent: 42.5 50% 18%; /* #4A3A05 */
+    --accent-foreground: 42.5 100% 85%;
+    --border: 240 4% 20%; /* #313136 (Bordures fines graphite 1px) */
+    --input: 240 4% 18%; /* #2A2A2E */
+    --ring: 42.5 100% 50%;
+    --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge vif) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 70.6% 45.3%;
     --warning: 38 92% 50%;
     --success-strong: 142.1 76% 55%;
     --warning-strong: 38 92% 55%;
     --destructive-strong: 0 84.2% 60%;
-    /* Rouge d'alerte désaturé pour ne pas vibrer sur fond sombre ;
-       texte éclairci : ~7:1 sur le fond de page. */
     --alert: 0 72% 62%;
     --alert-strong: 0 84% 74%;
-    --scheduled: 217 33% 17%; /* #1e293b (Ligne active sélectionnée: Bleu très sombre) */
-    --scheduled-foreground: 213 96% 78%; /* #93c5fd */
-    --badge-bg: 217 33% 17%; /* #1e293b (Badge date fond) */
-    --badge-border: 215 25% 27%; /* #334155 (Badge date bordure) */
-    --badge-text: 213 96% 78%; /* #93c5fd (Badge date texte) */
-    --dock-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 60% 45%;
+    --scheduled: 226 50% 20%; /* Sélection indigo sombre Sketch */
+    --scheduled-foreground: 226 100% 88%;
+    --badge-bg: 226 50% 20%;
+    --badge-border: 226 50% 30%;
+    --badge-text: 226 100% 85%;
+    --dock-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+    --chart-1: 42.5 100% 50%;
+    --chart-2: 226 80% 65%;
     --chart-3: 30 80% 55%;
     --chart-4: 199 89% 58%;
     --chart-5: 262 83% 58%;
@@ -985,13 +980,41 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   gap: 1rem;
 }
 
-/* Les modales et les réglages respirent */
-.modal-header,
-.modal-footer {
-  background-color: hsl(var(--background)) !important;
+/* Style des modales inspiré de Sketch.com */
+.modal-header {
+  background-color: transparent !important;
   background-image: none !important;
-  backdrop-filter: none !important;
   box-shadow: none !important;
+}
+
+.modal-footer {
+  background-color: hsl(var(--muted) / 0.25) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Sketch.com Aurora Canvas & Visual Identity ────────────────────────── */
+.sketch-aurora-canvas {
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(at 18% 12%, rgba(255, 218, 235, 0.42) 0px, transparent 55%),
+    radial-gradient(at 82% 16%, rgba(232, 220, 255, 0.45) 0px, transparent 60%),
+    radial-gradient(at 50% 6%, rgba(215, 238, 255, 0.38) 0px, transparent 50%);
+}
+
+.dark .sketch-aurora-canvas {
+  background-image: 
+    radial-gradient(at 18% 12%, rgba(180, 70, 120, 0.10) 0px, transparent 55%),
+    radial-gradient(at 82% 16%, rgba(120, 90, 210, 0.12) 0px, transparent 60%),
+    radial-gradient(at 50% 6%, rgba(60, 120, 220, 0.08) 0px, transparent 50%);
+}
+
+.sketch-headline {
+  letter-spacing: -0.022em;
+}
+
+.sketch-subhead {
+  letter-spacing: -0.012em;
 }
 
 
@@ -1429,4 +1452,42 @@ html[data-keyboard='open'] .mobile-tab-bar {
   color: var(--ds-accent);
   border-radius: var(--ds-radius-icon);
 }
+
+/* ── Fly.io Design System Tokens & Effects ───────────────────────────── */
+.btn-fly-glow {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-fly-glow:hover {
+  box-shadow: 0 0 22px rgba(99, 102, 241, 0.45);
+}
+.btn-fly-glow:active {
+  transform: scale(0.98);
+}
+
+@keyframes flash-new {
+  0% {
+    background-color: rgba(99, 102, 241, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.flash-new-entry {
+  animation: flash-new 1.5s ease-out;
+}
+
+.fly-terminal-pre {
+  background-color: #0a0a0b;
+  border: 1px solid #27272a;
+  border-radius: 0.75rem;
+  font-family: 'JetBrains Mono', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.dark .fly-card-surface {
+  background-color: #17171a;
+  border-color: #27272a;
+  color: #f8fafc;
+}
+
 

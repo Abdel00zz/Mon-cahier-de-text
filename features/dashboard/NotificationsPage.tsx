@@ -102,11 +102,19 @@ const SignalCard: React.FC<{
 
       <div className="flex shrink-0 items-center justify-end gap-2 pt-2 sm:pt-0">
         {signal.dismissible && (
-          <button type="button" onClick={onIgnore} className="h-7 rounded-lg px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+          <button
+            type="button"
+            onClick={onIgnore}
+            className="min-h-8 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+          >
             {ignoreLabel}
           </button>
         )}
-        <button type="button" onClick={onResolve} className="h-7 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-colors hover:bg-primary/90">
+        <button
+          type="button"
+          onClick={onResolve}
+          className="min-h-8 rounded-xl bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-xs shadow-primary/20 transition-all hover:bg-primary/90 active:scale-[0.98] cursor-pointer"
+        >
           {actionLabel}
         </button>
       </div>

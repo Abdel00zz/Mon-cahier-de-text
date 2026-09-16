@@ -13,14 +13,14 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
   isSubmitting = false,
 }) => {
   return (
-    <div className="shrink-0 border-t border-cream-300/80 dark:border-border/70 bg-cream-100/90 dark:bg-card/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] backdrop-blur-md">
+    <div className="shrink-0 border-t border-border/60 bg-muted/20 dark:bg-muted/10 px-5 sm:px-7 py-3 sm:py-3.5 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))]">
       <div className="flex items-center justify-end gap-2.5">
         {/* Cancel Button */}
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="touch-target inline-flex h-11 items-center justify-center rounded-xl border border-cream-300 dark:border-border bg-cream-50 dark:bg-card px-4 text-xs font-semibold text-espresso-800 dark:text-muted-foreground hover:bg-cream-200 dark:hover:bg-muted active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+          className="inline-flex h-10 min-h-[40px] items-center justify-center rounded-[10px] border border-border/80 bg-card px-4.5 text-xs sm:text-sm font-medium text-foreground hover:bg-muted/60 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
         >
           <span>Annuler (إلغاء)</span>
         </button>
@@ -30,7 +30,7 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
           type="button"
           onClick={onSave}
           disabled={isSubmitting}
-          className="touch-target inline-flex h-11 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-terracotta-500 hover:bg-terracotta-600 dark:bg-primary dark:hover:bg-primary/90 px-5 text-xs font-bold text-white shadow-sm active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+          className="inline-flex h-10 min-h-[40px] flex-1 sm:flex-initial items-center justify-center gap-2 rounded-[10px] bg-primary hover:brightness-105 active:brightness-95 px-5 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
         >
           {isSubmitting ? (
             <>

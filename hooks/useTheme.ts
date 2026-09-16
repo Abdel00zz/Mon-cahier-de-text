@@ -68,7 +68,7 @@ export function useTheme(
 
     // Update theme-color meta tag for PWA and mobile status bar
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
-      meta.setAttribute('content', isDark ? '#0f0f0f' : '#faf8f5');
+      meta.setAttribute('content', isDark ? '#121214' : '#faf9f9');
     });
 
     const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
@@ -82,9 +82,9 @@ export function useTheme(
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
 
-    const accentKey = themeCustomization?.accentColor || 'warm-sand';
+    const accentKey = themeCustomization?.accentColor || 'sketch';
     const borderRadiusKey = themeCustomization?.borderRadius || 'default';
-    const uiFontKey = themeCustomization?.uiFont || 'cyber-clean';
+    const uiFontKey = themeCustomization?.uiFont || 'sketch-marfa';
     const cardStyleKey = themeCustomization?.cardStyle || 'classic';
     const tableStyleKey = themeCustomization?.tableStyle || 'clean';
 

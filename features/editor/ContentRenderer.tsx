@@ -151,7 +151,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const chapterTitle = item.title || config.name;
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
-          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-bold tracking-tight select-none">
+          <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
             <span className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
@@ -168,7 +168,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
-        <div className={`editor-type-top font-extrabold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
+        <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <HighlightedText text={item.title} query={highlight} />
         </div>
       </MaybeMathJax>
@@ -180,7 +180,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-section font-bold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-section font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -189,7 +189,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsection font-bold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsection font-semibold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>

@@ -1,5 +1,8 @@
 export type AccentColorKey =
+  | 'sketch'
   | 'warm-sand'
+  | 'fly-indigo'
+  | 'fly-violet'
   | 'blue'
   | 'emerald'
   | 'indigo'
@@ -14,7 +17,7 @@ export type AccentColorKey =
 export type BorderRadiusOption = 'sharp' | 'default' | 'soft' | 'pill';
 export type CardStyleOption = 'classic' | 'bordered' | 'elevated' | 'glass';
 export type TableStyleOption = 'clean' | 'striped' | 'bordered' | 'compact';
-export type UIFontOption = 'cyber-clean' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
+export type UIFontOption = 'sketch-marfa' | 'cyber-clean' | 'fly-tech' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
 export type BackgroundContrastOption = 'normal' | 'soft' | 'vibrant';
 
 export interface AccentColorPreset {
@@ -40,6 +43,26 @@ export interface AccentColorPreset {
 
 export const ACCENT_PALETTES: AccentColorPreset[] = [
   {
+    id: 'sketch',
+    nameFr: 'Sketch Jaune Sélectif (#FDB300)',
+    nameAr: 'أصفر سكتش الرسمي (#FDB300)',
+    hex: '#FDB300',
+    light: {
+      primary: '42.5 100% 49.6%',
+      primaryForeground: '240 4% 13.3%',
+      ring: '42.5 100% 49.6%',
+      accent: '42.5 100% 94%',
+      accentForeground: '240 4% 13.3%',
+    },
+    dark: {
+      primary: '42.5 100% 50%',
+      primaryForeground: '240 4% 13.3%',
+      ring: '42.5 100% 50%',
+      accent: '42.5 50% 18%',
+      accentForeground: '42.5 100% 85%',
+    },
+  },
+  {
     id: 'warm-sand',
     nameFr: 'Beige Écrémé',
     nameAr: 'بيج قشدي دافئ',
@@ -57,6 +80,46 @@ export const ACCENT_PALETTES: AccentColorPreset[] = [
       ring: '16 68% 56%',
       accent: '16 60% 18%',
       accentForeground: '16 68% 80%',
+    },
+  },
+  {
+    id: 'fly-indigo',
+    nameFr: 'Fly.io Indigo Tech (#6366F1)',
+    nameAr: 'فلاي نيلي تقني (#6366F1)',
+    hex: '#6366F1',
+    light: {
+      primary: '239 84% 67%',
+      primaryForeground: '0 0% 100%',
+      ring: '239 84% 67%',
+      accent: '239 84% 96%',
+      accentForeground: '239 84% 45%',
+    },
+    dark: {
+      primary: '239 84% 67%',
+      primaryForeground: '0 0% 100%',
+      ring: '239 84% 67%',
+      accent: '239 84% 20%',
+      accentForeground: '238 100% 85%',
+    },
+  },
+  {
+    id: 'fly-violet',
+    nameFr: 'Fly.io Violet Accent (#8B5CF6)',
+    nameAr: 'فلاي بنفسجي بارز (#8B5CF6)',
+    hex: '#8B5CF6',
+    light: {
+      primary: '258 90% 66%',
+      primaryForeground: '0 0% 100%',
+      ring: '258 90% 66%',
+      accent: '258 90% 96%',
+      accentForeground: '258 90% 45%',
+    },
+    dark: {
+      primary: '258 90% 66%',
+      primaryForeground: '0 0% 100%',
+      ring: '258 90% 66%',
+      accent: '258 90% 20%',
+      accentForeground: '258 90% 85%',
     },
   },
   {
@@ -254,13 +317,13 @@ export const BORDER_RADIUS_MAP: Record<BorderRadiusOption, { sm: string; md: str
   },
   default: {
     sm: '6px',
-    md: '10px',
-    lg: '14px',
-    xl: '18px',
+    md: '8px',
+    lg: '12px',
+    xl: '16px',
     '2xl': '22px',
     '3xl': '26px',
-    labelFr: 'Élégant & Moderne (10-14px)',
-    labelAr: 'أنيق وعصري (10-14px)',
+    labelFr: 'Sketch UI (8px boutons, 12px cards, 22px modales)',
+    labelAr: 'سكتش القياسي (8px أزرar، 12px بطاقات، 22px نوافذ)',
   },
   soft: {
     sm: '0.5rem',
@@ -285,11 +348,23 @@ export const BORDER_RADIUS_MAP: Record<BorderRadiusOption, { sm: string; md: str
 };
 
 export const UI_FONTS_MAP: Record<UIFontOption, { family: string; labelFr: string; labelAr: string; descriptionFr: string }> = {
+  'sketch-marfa': {
+    family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",
+    labelFr: 'Sketch Eina & Néo-Grotesque',
+    labelAr: 'سكتش إينا وجروتسك (رسمي)',
+    descriptionFr: 'Inspiré de Sketch.com · Eina & SF Pro / Inter, tracking serré, clarté macOS',
+  },
   'cyber-clean': {
     family: "'Space Grotesk', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",
     labelFr: 'Cyber Tech & Clean',
     labelAr: 'Cyber Tech & Clean · تقني وواضح',
     descriptionFr: 'Space Grotesk et Alexandria · interface et cartes',
+  },
+  'fly-tech': {
+    family: "'Inter', 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'IBM Plex Sans Arabic', ui-sans-serif, sans-serif",
+    labelFr: 'Fly.io Tech (Inter + JetBrains Mono)',
+    labelAr: 'فلاي آي أو التقني (Inter + JetBrains Mono)',
+    descriptionFr: 'Typographie développeur-first : Inter pour l’UI et JetBrains Mono pour le code/données',
   },
   jakarta: {
     family: "'Plus Jakarta Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",

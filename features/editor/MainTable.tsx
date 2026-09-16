@@ -54,10 +54,10 @@ const TableHeader: React.FC = React.memo(() => {
   return (
   /* §G : aucun padding externe, les colonnes de l'en-tête restent alignées
      avec celles des rangées. Style épuré inspiré de Google Keep. */
-  <div className="border-b border-border bg-muted/60 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)] dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.03)]">
+  <div className="border-b border-border/60 bg-muted/30">
     {/* filets verticaux : prolongent ceux des rangées (Date|Contenu|Remarque) */}
     <div className={`grid min-h-9 sm:min-h-11 ${TABLE_GRID_CLASS}`}>
-      <div className="flex items-center justify-center border-e border-border px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
+      <div className="flex items-center justify-center border-e border-border/60 px-1 py-1.5 text-center sm:px-2.5 sm:py-2">
         <span className="editor-type-table-side font-sans font-bold uppercase tracking-[0.08em] text-muted-foreground">{t('editor.date')}</span>
       </div>
       <div className="flex items-center justify-center border-e border-border px-2 py-1.5 text-center sm:px-3 sm:py-2">
@@ -178,7 +178,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         >
             <div
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/30' : 'bg-transparent')}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
             >
                 {uniqueDates.length > 1 ? (
@@ -211,7 +211,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
             {sameRemark ? (
                 <div
                     data-session-cell="remark"
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: `1 / span ${visualRowCount}` }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -224,7 +224,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     key={`remark-${item.key}`}
                     data-session-cell="remark"
                     data-session-row-divider={index < items.length - 1 ? 'true' : undefined}
-                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-card/[0.28] dark:bg-slate-950/[0.18]'}`}
+                    className={`flex min-w-0 self-stretch p-0.5 sm:p-1 ${index < items.length - 1 ? innerLineClass : ''} ${hasWarning ? 'bg-alert/[0.055]' : 'bg-transparent'}`}
                     style={{ gridColumn: 3, gridRow: index + 1 }}
                     onClick={event => event.stopPropagation()}
                 >
@@ -248,11 +248,11 @@ const EmptyState: React.FC<{
 
     return (
         <section className="flex justify-center py-6 sm:py-10">
-            <div className="w-full max-w-[460px] overflow-hidden rounded-[16px] border border-[#e6e1d9] bg-white shadow-[0_4px_24px_rgba(44,42,38,0.08)] transition-all dark:border-[#38332c] dark:bg-[#1f1d1a] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+            <div className="w-full max-w-[460px] overflow-hidden rounded-[16px] border border-border bg-card shadow-none transition-all">
                 {/* Surface principale */}
                 <div className="flex flex-col items-center px-7 pt-9 pb-8 text-center sm:px-9 sm:pt-10 sm:pb-9">
                     {/* Conteneur d'icône 56x56 */}
-                    <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#e8e0d5] text-[#8b7355] dark:bg-[#342e26] dark:text-[#d4c3af]">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-muted text-muted-foreground">
                         <svg
                             viewBox="0 0 24 24"
                             width="28"
@@ -272,13 +272,13 @@ const EmptyState: React.FC<{
                     </div>
 
                     {/* Titre 21px bold */}
-                    <h2 className="mt-5 text-[21px] font-bold tracking-tight text-[#2c2a26] dark:text-[#f3efe8]">
+                    <h2 className="mt-5 text-[21px] font-bold tracking-tight text-foreground">
                         {t('emptyNotebook.label')}
                     </h2>
 
                     {/* Description 14.5px (uniquement si programme officiel disponible) */}
                     {canLoadPredefined && (
-                        <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-[#6b6560] dark:text-[#a8a199]">
+                        <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-muted-foreground">
                             {t('emptyNotebook.programAvailable')}
                         </p>
                     )}
@@ -289,7 +289,7 @@ const EmptyState: React.FC<{
                             <button
                                 type="button"
                                 onClick={onLoadPredefined}
-                                className="flex h-12 w-full items-center justify-center rounded-[10px] bg-[#8b7355] px-5 text-[14.5px] font-semibold text-white transition-all duration-150 hover:-translate-y-px hover:bg-[#6d5a42] active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b7355]"
+                                className="flex h-12 w-full items-center justify-center rounded-[10px] bg-primary px-5 text-[14.5px] font-semibold text-primary-foreground transition-all duration-150 hover:-translate-y-px hover:brightness-110 active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                             >
                                 {t('emptyNotebook.importProgram')}
                             </button>
@@ -297,10 +297,10 @@ const EmptyState: React.FC<{
                         <button
                             type="button"
                             onClick={() => onOpenAddContentModal()}
-                            className={`flex h-12 w-full items-center justify-center rounded-[10px] text-[14.5px] font-semibold transition-all duration-150 hover:-translate-y-px active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b7355] ${
+                            className={`flex h-12 w-full items-center justify-center rounded-[10px] text-[14.5px] font-semibold transition-all duration-150 hover:-translate-y-px active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                                 canLoadPredefined
-                                    ? 'border border-[#e6e1d9] bg-white text-[#2c2a26] hover:bg-[#f7f5f2] dark:border-[#38332c] dark:bg-[#1f1d1a] dark:text-[#f3efe8] dark:hover:bg-[#28241f]'
-                                    : 'bg-[#8b7355] text-white hover:bg-[#6d5a42]'
+                                    ? 'border border-border bg-transparent text-foreground hover:bg-muted'
+                                    : 'bg-primary text-primary-foreground hover:brightness-110'
                             }`}
                         >
                             {t('emptyNotebook.createChapter')}
@@ -432,12 +432,11 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   }
 
   return (
-    /* Cadre complet Sharp UI : angles droits, bordure nette et ombre douce */
     <Card
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-[var(--radius-xl,0.875rem)] border border-border bg-card shadow-[0_8px_30px_rgba(63,58,52,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-shadow duration-200"
+      className="rtl-table mx-0 overflow-hidden rounded-none border-t border-x border-border/40 bg-card shadow-none transition-shadow duration-200 print:border-none"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />

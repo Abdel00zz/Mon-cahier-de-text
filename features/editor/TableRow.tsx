@@ -243,16 +243,16 @@ const TableRowComponent: FC<TableRowProps> = ({
   const datedWash = hasWarning
     ? 'bg-alert/[0.07]'
     : hasAssignedDate
-      ? 'bg-card/70'
+      ? 'bg-transparent'
       : 'bg-transparent';
-  const rowWash = isSelected ? 'bg-muted dark:bg-muted/80' : datedWash;
+  const rowWash = isSelected ? 'bg-muted/40 dark:bg-muted/30' : datedWash;
   const hoverWash = isSelected
     ? ''
     : hasWarning
       ? 'hover:bg-alert/[0.11]'
       : hasAssignedDate
-        ? 'hover:bg-muted/40'
-        : 'hover:bg-muted/50';
+        ? 'hover:bg-muted/20'
+        : 'hover:bg-muted/30';
   // §G tableau serré : AUCUN padding de cadre, les filets verticaux
   // Date|Contenu|Remarque courent jusqu'aux bords ; le padding de lisibilité
   // reste porté par les cellules internes.

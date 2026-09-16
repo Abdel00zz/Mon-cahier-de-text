@@ -155,7 +155,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {/* ── Section 1 : Thème Global (Clair / Sombre / Système) ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="theme-mode-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="theme-mode-section">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -275,7 +275,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 2 : Palette d'Accent & Couleur Principale ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="accent-color-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="accent-color-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Palette className="h-4.5 w-4.5" />
@@ -375,7 +375,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 3 : Rayon de Courbure & Arrondi des Composants ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="border-radius-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="border-radius-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Layout className="h-4.5 w-4.5" />
@@ -425,7 +425,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 4 : Style des Cartes & Surfaces ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="card-style-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="card-style-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Sparkles className="h-4.5 w-4.5" />
@@ -478,7 +478,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 5 : Style du Tableau du Cahier de Textes ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="table-style-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="table-style-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <TableIcon className="h-4.5 w-4.5" />
@@ -525,7 +525,7 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
       </section>
 
       {/* ── Section 6 : Typographie unifiée ── */}
-      <section className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 shadow-2xs" id="typography-section">
+      <section className="rounded-xl border border-border bg-card p-4 sm:p-5" id="typography-section">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
             <Type className="h-4.5 w-4.5" />

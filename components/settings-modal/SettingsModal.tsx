@@ -87,16 +87,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-espresso-900/40 dark:bg-black/60 backdrop-blur-[3px]"
+            className="fixed inset-0 bg-neutral-950/45 dark:bg-black/75 backdrop-blur-md"
           />
 
-          {/* Modal Container (Bottom Sheet on Mobile, Centered Dialog on Desktop) */}
+          {/* Modal Container (Sketch.com design) */}
           <motion.div
             initial={{ y: '100%', opacity: 0.8 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="relative z-10 flex flex-col w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden rounded-t-[20px] sm:rounded-2xl border border-cream-300 dark:border-border/80 bg-cream-50 dark:bg-card text-espresso-900 dark:text-foreground shadow-2xl"
+            className="relative z-10 flex flex-col w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden rounded-t-[24px] sm:rounded-[22px] border border-border/80 dark:border-white/10 bg-card text-foreground shadow-[0_20px_60px_-15px_rgba(0,0,0,0.22),0_0_0_1px_rgba(0,0,0,0.06)] dark:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] sm:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:sm:shadow-[0_28px_75px_-16px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_0_rgba(255,255,255,0.06)]"
           >
             {/* Header */}
             <ModalHeader activeTab={activeTab} onClose={onClose} />
@@ -105,7 +105,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <TabNavigation activeTab={activeTab} onSelectTab={handleTabChange} />
 
             {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3.5 sm:px-5 sm:py-4 [-webkit-overflow-scrolling:touch]">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5 modern-scrollbar [-webkit-overflow-scrolling:touch]">
               {activeTab === 'timetable' && (
                 <TimetableTab />
               )}

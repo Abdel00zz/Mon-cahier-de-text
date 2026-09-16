@@ -32,7 +32,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onSelec
   }, []);
 
   return (
-    <div className="shrink-0 border-b border-cream-300/60 dark:border-border/60 bg-cream-50/70 dark:bg-card/60 px-3 py-2">
+    <div className="shrink-0 border-b border-border/60 bg-muted/20 dark:bg-muted/10 px-4 py-2.5">
       <FluidTabRail<SettingsTabType>
         items={items}
         activeId={activeTab}

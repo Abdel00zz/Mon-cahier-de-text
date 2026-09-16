@@ -119,7 +119,7 @@ const PushActivationCard: React.FC<{
     // Activé : état de succès + test + désactivation.
     if (active) {
         return (
-            <div className="settings-surface p-4 sm:p-5">
+            <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
                 <div className="flex items-start gap-3.5">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <Check className="h-5 w-5 stroke-[2.5]" />
@@ -135,7 +135,7 @@ const PushActivationCard: React.FC<{
                         type="button"
                         onClick={onTest}
                         disabled={busy || checking}
-                        className="h-9.5 flex-1 rounded-md border border-white/[0.12] dark:border-white/[0.08] bg-background/80 text-xs font-bold text-foreground transition-all hover:bg-card disabled:opacity-50 cursor-pointer shadow-xs"
+                        className="h-9.5 flex-1 rounded-md border border-border bg-background text-xs font-bold text-foreground transition-all hover:bg-muted disabled:opacity-50 cursor-pointer shadow-none"
                     >
                         {t('notifications.sendTest')}
                     </button>
@@ -155,7 +155,7 @@ const PushActivationCard: React.FC<{
     // À activer : le vrai CTA (permission + abonnement en un geste).
     const label = permission === 'granted' ? t('notifications.finalizeReminders') : t('notifications.enableReminders');
     return (
-        <div className="settings-surface p-4 sm:p-5">
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <div className="flex items-start gap-3.5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-xs">
                     <Bell className="h-5 w-5" />
@@ -198,7 +198,7 @@ const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label
             ? (locale === 'ar' ? 'مفعّل' : locale === 'en' ? 'On' : 'Activé')
             : (locale === 'ar' ? 'متوقف' : locale === 'en' ? 'Off' : 'Désactivé');
     return (
-    <div className={`flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors motion-reduce:transition-none ${checked && !disabled ? 'border-primary/20 bg-primary/[0.035]' : 'border-border/70 bg-card/40'} ${disabled ? 'opacity-60' : ''}`}>
+    <div className={`flex items-center justify-between gap-4 rounded-2xl border p-4 transition-colors motion-reduce:transition-none ${checked && !disabled ? 'border-primary bg-primary/[0.035]' : 'border-border bg-card'} ${disabled ? 'opacity-60' : ''}`}>
         <div className="min-w-0 flex-1 text-start">
             <Label htmlFor={id} className={`block py-1 text-sm font-semibold text-foreground leading-snug ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>{label}</Label>
             {hint && <span id={`${id}-hint`} className="mt-1 block text-xs text-muted-foreground leading-relaxed">{hint}</span>}

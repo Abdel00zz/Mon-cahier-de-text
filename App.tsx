@@ -17,6 +17,7 @@ import { useClassManager } from './hooks/useClassManager';
 import { useTheme } from './hooks/useTheme';
 import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
+import { CommandPalette } from './components/ui/CommandPalette';
 import { preloadSettingsPage } from './utils/performance';
 import { claimCurrentSessionAutoOpen } from './utils/currentSessionNavigation';
 
@@ -88,6 +89,7 @@ const App: React.FC = () => {
   );
   const [isEvaluationsOpen, setIsEvaluationsOpen] = useState(false);
   const [isGuideOpen, setGuideOpen] = useState(false);
+  const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [isSidebarExpanded, setSidebarExpanded] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('cdt_sidebar_expanded_v1');
@@ -96,6 +98,18 @@ const App: React.FC = () => {
     return false; // Réduite par défaut sur PC
   });
   const [isOnboardingVisible, setOnboardingVisible] = useState(false);
+
+  // Écouteur global de la palette de commandes (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { classes, addClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
@@ -306,6 +320,7 @@ const App: React.FC = () => {
         activeSessionClassIds={currentSession.classIds}
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOnboardingVisibilityChange={setOnboardingVisible}
+        onOpenGuide={() => setGuideOpen(true)}
       />
     );
   };
@@ -382,7 +397,7 @@ const App: React.FC = () => {
   }, [authUser?.phone, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
 
   const appSurface = (
-    <div className="relative min-h-dvh overflow-x-clip text-foreground">
+    <div className="relative min-h-dvh overflow-x-clip text-foreground bg-background">
       {showNavigation && (
         <TabBar
           activeTab={activeTab}
@@ -471,6 +486,29 @@ const App: React.FC = () => {
         <Suspense fallback={null}>
           <GuideModal isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} />
         </Suspense>
+
+        <CommandPalette
+          isOpen={isCommandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          classes={classes}
+          onSelectClass={(classInfo) => {
+            handleSelectClass(classInfo);
+            setCommandPaletteOpen(false);
+          }}
+          onOpenSettings={() => {
+            handleOpenSettings();
+            setCommandPaletteOpen(false);
+          }}
+          onOpenGuide={() => {
+            setGuideOpen(true);
+            setCommandPaletteOpen(false);
+          }}
+          isDarkMode={config.theme === 'dark'}
+          onToggleDarkMode={() => {
+            const nextTheme = config.theme === 'dark' ? 'light' : 'dark';
+            updateConfig({ theme: nextTheme });
+          }}
+        />
 
         {adminMessages[0] && (
           <Suspense fallback={null}>
