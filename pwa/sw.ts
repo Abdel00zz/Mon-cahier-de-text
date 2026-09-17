@@ -67,18 +67,35 @@ registerRoute(
     new StaleWhileRevalidate({ cacheName: 'predefined-contents' })
 );
 
-// ── Web Push ────────────────────────────────────────────────────────────────
-// Persist the runtime, extensions, character data and web fonts actually used.
-// A first online visit is required; previously unseen extensions still need a network.
+// ── Moteur LaTeX (MathJax 4.1.3) ───────────────────────────────────────────
+// Deux caches volontairement distincts :
+//  - l'ENTRÉE du moteur (tex-mml-chtml.js) est épinglée seule. Sa perte rend
+//    toutes les formules illisibles ; elle ne doit jamais être évincée par le
+//    va-et-vient des polices. Cache conservé sous l'ancien nom pour que les
+//    installations déjà hors ligne continuent de compiler après la mise à jour ;
+//  - le reste (composants et polices réellement utilisées) vit dans un cache
+//    plus large : MathJax 4 découpe ses polices en nombreux fichiers, et
+//    160 entrées pouvaient évincer le moteur lui-même sur un usage intensif.
+// Une première visite en ligne reste nécessaire : les extensions jamais
+// téléchargées demandent toujours le réseau.
+registerRoute(
+    ({ url }) => url.origin === 'https://cdn.jsdelivr.net'
+        && /^\/npm\/mathjax@4\.1\.3\/tex-mml-chtml\.js$/.test(url.pathname),
+    new CacheFirst({
+        cacheName: 'mathjax-4.1.3',
+        plugins: [new ExpirationPlugin({ maxEntries: 12, maxAgeSeconds: 365 * 24 * 3600 })],
+    })
+);
 registerRoute(
     ({ url }) => url.origin === 'https://cdn.jsdelivr.net'
         && /^\/npm\/(?:mathjax@4\.1\.3\/|@mathjax\/mathjax-[^/]+\/)/.test(url.pathname),
     new CacheFirst({
-        cacheName: 'mathjax-4.1.3',
-        plugins: [new ExpirationPlugin({ maxEntries: 160, maxAgeSeconds: 365 * 24 * 3600 })],
+        cacheName: 'mathjax-assets-4.1.3',
+        plugins: [new ExpirationPlugin({ maxEntries: 400, maxAgeSeconds: 365 * 24 * 3600 })],
     })
 );
 
+// ── Web Push ────────────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
     let payload: Partial<PushNotificationPayload> = {};
     try {

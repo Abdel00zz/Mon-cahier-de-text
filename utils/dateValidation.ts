@@ -24,7 +24,7 @@ import { translateLocaleMessage } from '../i18n/LocaleProvider.js';
  * séance exceptionnelle...), mais il est prévenu immédiatement.
  */
 
-type DateWarningType = 'invalid' | 'weekly-rest' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year';
+type DateWarningType = 'invalid' | 'weekly-rest' | 'not-scheduled' | 'holiday' | 'vacation' | 'absence' | 'out-of-year' | 'out-of-order';
 
 export interface DateWarning {
     type: DateWarningType;

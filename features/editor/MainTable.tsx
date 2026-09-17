@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { LessonsData, Indices, Separator, ContentDirection } from '@/types';
 import { type LessonRow } from '@/utils/lessonRows';
+import type { ContentDateOrder } from '@/utils/dateOrder';
 import { DateCard, MultiDateCard, TableRow } from './TableRow';
 import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ interface MainTableProps {
   newlyAddedIds: string[];
   /** garde intelligente : alertes live sur la date saisie */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
+  getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
   /** terme de recherche actif (surlignage dans les lignes) */
   searchQuery?: string;
   /** rangée à rejoindre automatiquement après une suggestion de séance */
@@ -85,6 +88,7 @@ interface SessionGroupRowProps {
     descriptionTypes?: string[];
     searchQuery?: string;
     getDateWarnings?: (date: string) => { type: string; message: string }[];
+    getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
@@ -98,6 +102,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     descriptionTypes = [],
     searchQuery,
     getDateWarnings,
+    getDateOrder,
 }) => {
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
     const toggleMerged = () => {
@@ -161,6 +166,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 descriptionTypes={descriptionTypes}
                 searchQuery={searchQuery}
                 getDateWarnings={getDateWarnings}
+                getDateOrder={getDateOrder}
             />
         );
     };
@@ -345,6 +351,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onOpenContentEditor,
   onOpenDateModal,
   getDateWarnings,
+  getDateOrder,
   searchQuery,
   focusKey,
   predefinedProgramTitle,
@@ -474,6 +481,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
                                   getDateWarnings={getDateWarnings}
+                                  getDateOrder={getDateOrder}
                               />
                           </VirtualListRow>
                       );
@@ -516,6 +524,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               descriptionTypes={descriptionTypes}
                               searchQuery={searchQuery}
                               getDateWarnings={getDateWarnings}
+                              getDateOrder={getDateOrder}
                           />
                       </VirtualListRow>
                   );

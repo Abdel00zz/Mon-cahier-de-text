@@ -277,6 +277,14 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
       teacherName: typeof item.teacherName === 'string' ? item.teacherName.slice(0, 120) : '',
       subject: assertStringField(item.subject, 'Matière', 120),
       createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+      // « Dernière ouverture » : la carte de classe affiche « prêt pour votre
+      // première séance » tant que ce champ est absent. Il doit donc survivre
+      // à la synchronisation ; une valeur illisible est simplement ignorée.
+      lastOpenedAt: typeof item.lastOpenedAt === 'string'
+        && item.lastOpenedAt.length <= 40
+        && Number.isFinite(Date.parse(item.lastOpenedAt))
+        ? new Date(item.lastOpenedAt).toISOString()
+        : undefined,
       color: typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color) ? item.color : '#3b82f6',
       cycle: VALID_CYCLES.has(item.cycle as string) ? item.cycle : undefined,
       level: item.level === undefined ? undefined : assertStringField(item.level, 'Niveau', 120),

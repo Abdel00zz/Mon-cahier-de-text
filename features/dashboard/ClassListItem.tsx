@@ -55,7 +55,9 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                     <Users className="h-[15px] w-[15px] sm:h-4 sm:w-4" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-base sm:text-lg" : "text-[15px] sm:text-base")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
+                    {/* Même échelle que la carte en grille, avec un cran de
+                        plus pour l'arabe (lecture plus dense en hauteur). */}
+                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
                     <div className="mt-0.5 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
                             className={cn('truncate', isRtl ? 'text-xs leading-none' : 'text-[10.5px] sm:text-[11.9px] leading-none')}

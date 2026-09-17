@@ -156,14 +156,43 @@ export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
   'sécurité': 'Consigne de sécurité',
 };
 
+/**
+ * Code de matière affiché dans la SECONDE ligne d'une cellule d'emploi du temps.
+ * Le nom complet reste dans l'info-bulle du créneau et dans le menu déroulant ;
+ * ici, seule la lisibilité de la case compte (largeur mobile très contrainte).
+ */
 export const SUBJECT_ABBREV_MAP: Record<string, string> = {
-  'Mathématiques': 'Mathématiques',
-  'Physique': 'Physique',
-  'Économie': 'Économie',
-  'Français': 'Français',
+  'Mathématiques': 'Maths',
+  'Physique': 'PC',
+  'Physique-Chimie': 'PC',
+  'Chimie': 'Chimie',
   'SVT': 'SVT',
   'Sciences de la Vie': 'SVT',
   'Sciences de la Vie et de la Terre': 'SVT',
+  'Sciences de l’Ingénieur': 'SI',
+  'Économie': 'SEG',
+  'Sciences Économiques et Gestion': 'SEG',
+  'Informatique': 'Info',
+  'Français': 'FR',
+  'Arabe': 'AR',
+  'Anglais': 'EN',
+  'Espagnol': 'ES',
+  'Allemand': 'DE',
+  'Italien': 'IT',
+  'Philosophie': 'Philo',
+  'Histoire-Géographie': 'HG',
+  'Éducation Islamique': 'Islam',
+  'Éducation Physique et Sportive': 'EPS',
+  'Traduction': 'Trad.',
+  'Langue Amazighe': 'Amazighe',
+  'Arts Appliqués': 'Arts app.',
+  'Éducation Artistique': 'Arts vis.',
+  'Éducation Musicale': 'Musique',
+  'Sciences Agronomiques': 'Agro',
+  'Sciences et Technologies Électriques': 'STE',
+  'Sciences et Technologies Mécaniques': 'STM',
+  'Droit': 'Droit',
+  'Comptabilité et Mathématiques Financières': 'Compta',
 };
 
 /** Normalise un type importé (alias FR/EN, accents) vers la clé canonique. */

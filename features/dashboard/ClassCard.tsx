@@ -47,7 +47,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             {/* Zone Supérieure : Titre et Métadonnées avec espacement équilibré et hauteur compacte */}
             <div className="flex flex-1 flex-col justify-between p-3 sm:p-4 pb-2 sm:pb-2.5">
                 <div className="flex items-start justify-between gap-2">
-                    <h3 aria-live="polite" aria-atomic="true" className="keep-class-title min-w-0 flex-1 text-[13.5px] sm:text-base font-bold leading-snug">
+                    {/* Échelle proportionnelle du titre : téléphone 12,5 px,
+                        tablette 14 px, ordinateur 15 px. Un cran plus sobre
+                        qu'avant (13,5 / 16) pour laisser respirer la carte. */}
+                    <h3 aria-live="polite" aria-atomic="true" className="keep-class-title min-w-0 flex-1 text-[12.5px] sm:text-[14px] lg:text-[15px] font-bold leading-snug">
                         <button
                             type="button"
                             {...pressHandlers}

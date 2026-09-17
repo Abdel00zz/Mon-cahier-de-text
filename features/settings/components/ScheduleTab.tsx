@@ -4,6 +4,7 @@ import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName, getBaseLevelKey } from '@/constants';
+import { abbreviateClassName } from '@/utils/classAbbreviation';
 import {
     TIMETABLE_DAYS,
     deriveSchedules,
@@ -95,43 +96,6 @@ interface ScheduleTabProps {
  * d'un coup d'œil, chaque classe garde sa teinte dans les cellules ET dans le
  * récapitulatif. Attribution stable par ordre des classes.
  */
-/**
- * Abréviation du nom de classe pour la CELLULE (le menu déroulant garde
- * l'intitulé complet). Le niveau et le numéro/groupe restent toujours
- * visibles : « 2 Bac SM-A » → « 2B·SM-A », « 1ère Bac SE » → « 1B·SE »,
- * « 3AC 2 » → « 3AC·2 ». Les noms arabes sont conservés tels quels
- * (tronqués par la cellule si besoin).
- */
-const abbreviateClassName = (name: string): string => {
-    if (/[؀-ۿ]/.test(name)) {
-        const cleaned = name.replace(/^قسم\s+/, '').trim();
-        const group = cleaned.match(/\d+\s*$/)?.[0].trim();
-        const compactArabicLevels: Array<[RegExp, string]> = [
-            [/الجذع المشترك العلمي/, 'ج.م.ع'],
-            [/الجذع المشترك الأدبي/, 'ج.م.أ'],
-            [/الأولى إعدادي/, '1إ'],
-            [/الثانية إعدادي/, '2إ'],
-            [/الثالثة إعدادي/, '3إ'],
-            [/(الأولى باك|الأولى بكالوريا)/, '1ب'],
-            [/(الثانية باك|الثانية بكالوريا)/, '2ب'],
-        ];
-        const match = compactArabicLevels.find(([pattern]) => pattern.test(cleaned));
-        if (match) return `${match[1]}${group ?? ''}`;
-        return cleaned;
-    }
-    const words = name.trim().split(/\s+/);
-    const parts = words.map(word => {
-        if (/\d/.test(word)) return word.replace(/(ère|ere|ème|eme|er)$/i, ''); // 1ère → 1, 3AC → 3AC
-        if (word === word.toUpperCase() || word.includes('-')) return word;      // SM-A, SE, TC…
-        return word.charAt(0).toUpperCase();                                     // Bac → B
-    });
-    // groupe/numéro final séparé par un point médian pour rester lisible
-    if (parts.length > 1) {
-        const last = parts[parts.length - 1];
-        return parts.slice(0, -1).join('') + '·' + last;
-    }
-    return parts.join('');
-};
 
 type SchedulePeriod = 'all' | 'morning' | 'afternoon';
 
@@ -426,7 +390,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
                                                         >
                                                             <span className="max-w-full truncate text-[11px] sm:text-xs lg:text-sm xl:text-[15px] font-bold tracking-tight leading-snug">
-                                                                {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }))}
+                                                                {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }), locale)}
                                                             </span>
                                                             <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
                                                                 {subjectLabel(classInfo.subject)}

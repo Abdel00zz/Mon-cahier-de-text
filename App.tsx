@@ -19,6 +19,7 @@ import { TabBar, TabType } from './components/navigation/TabBar';
 import { Modal } from './components/ui/modal';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { preloadSettingsPage } from './utils/performance';
+import { latestClassOpening } from './utils/classOpening';
 import { claimCurrentSessionAutoOpen } from './utils/currentSessionNavigation';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -111,7 +112,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { classes, addClass } = useClassManager();
+  const { classes, addClass, updateClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
   useTheme(
     config.theme,
@@ -198,10 +199,18 @@ const App: React.FC = () => {
 
   const handleSelectClass = useCallback((classInfo: ClassInfo) => {
     saveCurrentScroll();
-    setActiveClass(classInfo);
+    /*
+     * « Dernière ouverture » : la carte affiche « prêt pour votre première
+     * séance » tant que la classe n'a jamais été ouverte. La date ne recule
+     * jamais (`latestClassOpening`) : une synchronisation plus ancienne, ou
+     * une horloge décalée, ne peut pas réécrire un passé plus récent.
+     */
+    const openedAt = latestClassOpening(classInfo.lastOpenedAt, new Date().toISOString());
+    if (openedAt && openedAt !== classInfo.lastOpenedAt) updateClass(classInfo.id, { lastOpenedAt: openedAt });
+    setActiveClass(openedAt ? { ...classInfo, lastOpenedAt: openedAt } : classInfo);
     setView('editor');
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
-  }, [saveCurrentScroll]);
+  }, [saveCurrentScroll, updateClass]);
 
   const handleBackToDashboard = useCallback(() => {
     saveCurrentScroll();

@@ -1,4 +1,5 @@
 import type { DateMergeMeta } from '@/utils/tableRows';
+import { dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
 import React, { useCallback, FC, memo } from 'react';
 import { Indices, ElementType } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
@@ -22,6 +23,8 @@ interface TableRowProps {
   /** terme de recherche actif, surligné dans les titres/remarques */
   searchQuery?: string;
   getDateWarnings?: (date: string) => { type: string; message: string }[];
+  /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
+  getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
 }
 
 
@@ -189,8 +192,10 @@ const TableRowComponent: FC<TableRowProps> = ({
   descriptionTypes = [],
   searchQuery,
   getDateWarnings,
+  getDateOrder,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
+  const { locale } = useLocale();
 
   const handleContentDoubleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (elementType !== 'item' || !onDoubleClickEdit) return;
@@ -205,7 +210,9 @@ const TableRowComponent: FC<TableRowProps> = ({
   }, [indices, elementType, onDoubleClickEdit]);
 
   const hasAssignedDate = typeof data.date === 'string' && data.date.trim().length > 0;
-  const warnings = (hasAssignedDate && getDateWarnings) ? getDateWarnings(data.date) : [];
+  const dateWarnings = (hasAssignedDate && getDateWarnings) ? getDateWarnings(data.date) : [];
+  const orderWarnings = hasAssignedDate ? dateOrderWarnings(data.date, getDateOrder?.(indices), locale) : [];
+  const warnings = [...dateWarnings, ...orderWarnings];
   const hasWarning = warnings.length > 0;
 
   /*
@@ -431,7 +438,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
-  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings) return false;
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;

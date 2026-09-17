@@ -11,6 +11,7 @@ import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey } from '@/utils/lessonRows';
+import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
@@ -134,6 +135,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const isPrintingRef = useRef(false);
   const printLaunchTimerRef = useRef<number | null>(null);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
+  /*
+   * Ordre chronologique : chaque contenu daté connaît son plus proche
+   * voisin daté (avant / après). Le contrôle est mémoïsé : passé à
+   * MainTable (React.memo), une lambda par rendu casserait la table.
+   */
+  const contentDateOrder = useMemo(() => buildContentDateOrder(lessonsData), [lessonsData]);
+  const getDateOrder = useCallback(
+    (indices: Indices) => contentDateOrder.get(indicesKey(indices)),
+    [contentDateOrder],
+  );
   const contentDirectionRef = useRef<ContentDirection>(editorState.contentDirection);
   const saveStatusRef = useRef<'saved' | 'saving' | 'unsaved'>(editorState.saveStatus);
 
@@ -316,8 +327,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     [getDateWarnings, today]
   );
 
-  const requestDateCommit = useCallback((date: string, commit: () => void) => {
-    const warnings = date ? getDateWarnings(date) : [];
+  const requestDateCommit = useCallback((date: string, commit: () => void, order?: ContentDateOrder) => {
+    const warnings = date ? [...getDateWarnings(date), ...dateOrderWarnings(date, order, locale)] : [];
     if (warnings.length > 0) {
       setAssignDateInitialDate(date);
       setPendingDateCommit({ date, warnings, commit });
@@ -327,7 +338,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       return;
     }
     commit();
-  }, [getDateWarnings, setEditorState]);
+  }, [getDateWarnings, locale, setEditorState]);
 
   /*
    * Exception de date : « Ignorer » dans la vérification de date enregistre
@@ -604,9 +615,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }, 'cell-edit');
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
     };
-    if (field === 'date' && typeof value === 'string') requestDateCommit(value, commit);
+    if (field === 'date' && typeof value === 'string') requestDateCommit(value, commit, getDateOrder(indices));
     else commit();
-  }, [setState, setEditorState, requestDateCommit]);
+  }, [setState, setEditorState, requestDateCommit, getDateOrder]);
 
   const handleUndo = useCallback(() => {
     if (!canUndo) return;
@@ -1053,9 +1064,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           draft.activeModal = null;
         });
       };
-      if (typeof finalItem.date === 'string') requestDateCommit(finalItem.date, commit);
+      if (typeof finalItem.date === 'string') requestDateCommit(finalItem.date, commit, getDateOrder(indices));
       else commit();
-  }, [setState, showNotification, setEditorState, requestDateCommit, t]);
+  }, [setState, showNotification, setEditorState, requestDateCommit, getDateOrder, t]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       try {
@@ -1216,6 +1227,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               onOpenDateModal={handleOpenDateModal}
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDisplayDateWarnings}
+              getDateOrder={getDateOrder}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}

@@ -5,6 +5,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { produce } from 'immer';
 import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows } from '../utils/lessonRows';
+import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
+import { abbreviateClassName } from '../utils/classAbbreviation';
+import { SUBJECTS } from '../constants/subjects';
+import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
 import { groupLessonRows } from '../utils/tableRows';
 import { findItem, addItem, addSection } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
@@ -320,4 +324,72 @@ test('math et listes : formule et texte restent ensemble dans la puce', () => {
   assert.match(html, /flex-1">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
   assert.ok(html.includes('\\(a*b*c\\)'));
   assert.ok(!html.includes('<em>'));
+});
+
+test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {
+  const lessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Suites',
+    items: [
+      { type: 'cours', title: 'Séance 1', date: '2026-02-12' },
+      { type: 'cours', title: 'Séance 2', date: '2026-02-13' },
+      { type: 'cours', title: 'Séance 3', date: '2026-02-12' },
+    ],
+  }];
+  const order = buildContentDateOrder(lessons);
+  const rows = buildLessonRows(lessons).filter(row => row.elementType === 'item');
+  const third = order.get(rows[2].key);
+  assert.equal(third?.previous, '2026-02-13');
+  const warnings = dateOrderWarnings('2026-02-12', third, 'fr');
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].type, 'out-of-order');
+  assert.ok(!warnings[0].message.includes('dateWarning.'));
+  assert.match(warnings[0].message, /13 février 2026/);
+  assert.equal(dateOrderWarnings('2026-02-13', third, 'fr').length, 0);
+  assert.equal(dateOrderWarnings('2026-02-14', order.get(rows[1].key), 'fr').length, 1);
+  assert.equal(dateOrderWarnings('2026-02-12', order.get(rows[0].key), 'fr').length, 0);
+});
+
+test('ordre chronologique : un contenu sans date ne rompt pas la chaine, un devoir en est exclu', () => {
+  const lessons: LessonsData = [{
+    type: 'chapter',
+    title: 'Suites',
+    items: [
+      { type: 'cours', title: 'Séance 1', date: '2026-02-12' },
+      { type: 'cours', title: 'Séance 2' },
+      { type: 'devoir_maison', title: 'DM', date: '2026-02-20' },
+      { type: 'cours', title: 'Séance 3', date: '2026-02-13' },
+    ],
+  }];
+  const order = buildContentDateOrder(lessons);
+  const rows = buildLessonRows(lessons).filter(row => row.elementType === 'item');
+  assert.equal(order.has(rows[1].key), false);
+  assert.equal(order.get(rows[2].key)?.previous, '2026-02-12');
+  assert.equal(dateOrderWarnings('2026-02-13', order.get(rows[2].key), 'ar').length, 0);
+  assert.equal(dateOrderWarnings('2026-02-10', order.get(rows[2].key), 'en').length, 1);
+  assert.equal(dateOrderWarnings('2026-02-25', { following: '2026-02-20' }, 'en').length, 1);
+  assert.equal(dateOrderWarnings('2026-02-11', undefined, 'fr').length, 0);
+});
+
+test('emploi du temps : le nom de classe est abrégé en niveau · filière · groupe', () => {
+  assert.equal(abbreviateClassName('2Bacpc3', 'fr'), '2B·PC·3');
+  assert.equal(abbreviateClassName('2ème Bac Sciences Physiques 3', 'fr'), '2B·PC·3');
+  assert.equal(abbreviateClassName('2BSMA-A', 'fr'), '2B·SM-A');
+  assert.equal(abbreviateClassName('2ème Bac Sciences Mathématiques A', 'fr'), '2B·SM-A');
+  assert.equal(abbreviateClassName('1AC 1', 'fr'), '1AC·1');
+  assert.equal(abbreviateClassName('3AC 2', 'fr'), '3AC·2');
+  assert.equal(abbreviateClassName('Tronc Commun Scientifique', 'fr'), 'TC·S');
+  assert.equal(abbreviateClassName('1ère Bac Sciences Expérimentales', 'fr'), '1B·SE');
+  assert.equal(abbreviateClassName('2ème Bac Sciences Économiques 1', 'fr'), '2B·SE·1');
+  assert.equal(abbreviateClassName('MPSI', 'fr'), 'MPSI');
+  // Un nom libre n'est jamais perdu : il reste lisible tel quel.
+  assert.equal(abbreviateClassName('Ma classe', 'fr'), 'Ma classe');
+  assert.equal(abbreviateClassName('قسم الثالثة إعدادي 2', 'ar'), '3إ2');
+});
+
+test('codes matières courts : tout le vocabulaire a un sigle lisible', () => {
+  for (const subject of SUBJECTS) assert.ok(SUBJECT_ABBREV_MAP[subject], subject);
+  assert.equal(SUBJECT_ABBREV_MAP['Physique-Chimie'], 'PC');
+  assert.ok(SUBJECT_ABBREV_MAP['Sciences de la Vie et de la Terre'].length <= 4);
+  assert.ok(SUBJECT_ABBREV_MAP['Mathématiques'].length <= 6);
 });
