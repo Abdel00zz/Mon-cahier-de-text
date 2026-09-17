@@ -27,6 +27,8 @@ interface RegisterInput {
 interface AuthContextValue {
   user: AuthUser | null;
   status: AuthStatus;
+  /** Motif d'une session close par la direction : explaine sur l'ecran de connexion. */
+  sessionNotice: 'blocked' | null;
   login: (phone: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   completeWelcome: () => Promise<void>;
@@ -133,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch { return null; }
   });
   const [status, setStatus] = useState<AuthStatus>(() => user ? 'offline' : 'loading');
+  const [sessionNotice, setSessionNotice] = useState<'blocked' | null>(null);
   const requestVersion = useRef(0);
   const initialRequest = useRef<AbortController | null>(null);
   const logoutRequest = useRef<Promise<void> | null>(null);
@@ -183,6 +186,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
           setStatus('anonymous');
           needsValidation = false;
+          // Compte bloque par la direction : la session locale est revoquee et
+          // l'ecran de connexion explique la situation au lieu d'un echec muet.
+          if (error instanceof SyncRequestError && error.code === 'ACCOUNT_BLOCKED') setSessionNotice('blocked');
           if (rejected) cacheUser(null);
         }
       } finally {
@@ -213,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     activateUserWorkspace(loggedUser);
     setUser(loggedUser);
     setStatus('authenticated');
+    setSessionNotice(null);
   }, []);
 
   const completeWelcome = useCallback(async () => {
@@ -260,6 +267,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async () => {
     ++requestVersion.current;
     initialRequest.current?.abort();
+    setSessionNotice(null);
     // Le cookie courant est encore présent : profite de cette fenêtre pour
     // retirer l'appareil du serveur avant de basculer vers l'espace anonyme.
     // Le nettoyage local reste effectué même si le réseau est hors ligne ; un
@@ -312,8 +320,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const value = useMemo(
-    () => ({ user, status, login, register, completeWelcome, logout }),
-    [user, status, login, register, completeWelcome, logout]
+    () => ({ user, status, sessionNotice, login, register, completeWelcome, logout }),
+    [user, status, sessionNotice, login, register, completeWelcome, logout]
   );
 
   const workspaceKey = `${user?.phone ?? 'anonymous'}:${readWorkspaceScope()?.revision ?? 'legacy'}`;

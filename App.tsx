@@ -120,7 +120,7 @@ const App: React.FC = () => {
     (newTheme) => updateConfig({ theme: newTheme }),
     config.themeCustomization
   );
-  const { status: authStatus, user: authUser } = useAuth();
+  const { status: authStatus, user: authUser, sessionNotice } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
@@ -309,7 +309,7 @@ const App: React.FC = () => {
     }
     // Page d'authentification (uniquement si l'auth est activée).
     if (AUTH_REQUIRED && authStatus === 'anonymous') {
-      return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} />;
+      return <AuthPage locale={config.applicationLocale ?? 'ar'} onLocaleChange={(locale) => updateConfig({ applicationLocale: locale as AppLocale })} notice={sessionNotice} />;
     }
     if (backgroundView === 'editor' && backgroundClass) {
       return <Editor classInfo={backgroundClass} onOpenSettings={handleOpenSettings} />;

@@ -120,7 +120,7 @@ const handleLogin = async (body: AuthBody, res: ApiResponse) => {
   await redis.del(rateKey).catch(() => undefined);
 
   if (user.blocked) {
-    throw new HttpError(403, "Ce compte a été bloqué par l'administration. Contactez votre établissement.");
+    throw new HttpError(403, "Ce compte a été bloqué par l'administration. Contactez votre établissement.", 'ACCOUNT_BLOCKED');
   }
   await ensureAdminSnapshot(redis, user);
 
@@ -139,7 +139,7 @@ const handleMe = async (req: ApiRequest, res: ApiResponse) => {
   }
   if (user.blocked) {
     clearCookie(res, SESSION_COOKIE);
-    throw new HttpError(403, "Ce compte a été bloqué par l'administration.");
+    throw new HttpError(403, "Ce compte a été bloqué par l'administration.", 'ACCOUNT_BLOCKED');
   }
   await ensureAdminSnapshot(redis, user);
   res.status(200).json({ user: publicUser(user) });

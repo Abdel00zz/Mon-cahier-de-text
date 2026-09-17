@@ -59,6 +59,8 @@ const AUTH_COPY = {
       "La connexion retrouve vos cahiers existants, sans les remplacer par cette préparation.",
     workspaceError:
       "Changement de compte interrompu pour protéger vos données locales. Libérez de l’espace puis réessayez.",
+    accountBlocked:
+      "Votre accès a été suspendu par votre établissement. Contactez la direction pour le rétablir.",
     welcomeTitle: "Votre cahier de textes numérique vous attend.",
     welcomeDetail: "Votre cahier dans votre téléphone. Élégant, pratique et intelligent.",
     login: "Se connecter",
@@ -99,6 +101,8 @@ const AUTH_COPY = {
       "يفتح تسجيل الدخول دفاترك الحالية دون استبدالها بهذه الإعدادات.",
     workspaceError:
       "أُوقف تغيير الحساب لحماية بياناتك المحلية. وفّر مساحة تخزين ثم أعد المحاولة.",
+    accountBlocked:
+      "تم إيقاف ولوجك من طرف إدارتك. تواصل مع الإدارة لاستعادة الدخول.",
     welcomeTitle: "دفتر نصوصك الرقمي في انتظارك",
     welcomeDetail: "دفتر نصوصك في هاتفك. أنيق، عملي، وذكي",
     login: "تسجيل الدخول",
@@ -205,7 +209,9 @@ const PasswordInput = ({
 export const AuthPage: React.FC<{
   locale: AppLocale;
   onLocaleChange: (locale: AuthLocale) => void;
-}> = ({ locale, onLocaleChange }) => {
+  /** Motif d'une session close par la direction : affiché avant le formulaire. */
+  notice?: "blocked" | null;
+}> = ({ locale, onLocaleChange, notice = null }) => {
   const { login, register } = useAuth();
   const displayLocale: AuthLocale = locale === "ar" ? "ar" : "fr";
   const copy = AUTH_COPY[displayLocale];
@@ -345,12 +351,17 @@ export const AuthPage: React.FC<{
             : {}),
         });
     } catch (err) {
+      // Le compte bloqué par la direction mérite une explication explicite,
+      // quelle que soit la langue de l'interface.
+      const blockedByDirection = (err as { code?: string } | null)?.code === "ACCOUNT_BLOCKED";
       setError(
-        err instanceof WorkspaceSwitchError
-          ? copy.workspaceError
-          : displayLocale === "fr" && err instanceof Error
-            ? err.message
-            : copy.unknownError,
+        blockedByDirection
+          ? copy.accountBlocked
+          : err instanceof WorkspaceSwitchError
+            ? copy.workspaceError
+            : displayLocale === "fr" && err instanceof Error
+              ? err.message
+              : copy.unknownError,
       );
     } finally {
       submittingRef.current = false;
@@ -525,6 +536,14 @@ export const AuthPage: React.FC<{
                 aria-busy={isSubmitting}
               >
                 <fieldset disabled={isSubmitting} className="min-w-0 space-y-4">
+                  {notice === "blocked" && (
+                    <p
+                      role="status"
+                      className="rounded-[8px] border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+                    >
+                      {copy.accountBlocked}
+                    </p>
+                  )}
                   {isRegister && (
                     <div className="grid grid-cols-1 gap-4 min-[390px]:grid-cols-2">
                       <div>

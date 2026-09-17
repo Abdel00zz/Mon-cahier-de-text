@@ -123,7 +123,9 @@ export const requireUser = async (req: ApiRequest): Promise<{ phone: string }> =
     throw new HttpError(401, 'Compte introuvable. Veuillez vous reconnecter.');
   }
   if (user.blocked) {
-    throw new HttpError(401, 'Ce compte est bloqué par la direction.');
+    // Code stable : le client distingue un compte bloqué d'une simple session
+    // expirée, pour expliquer la situation au professeur au lieu d'un échec muet.
+    throw new HttpError(403, 'Ce compte a été bloqué par la direction. Contactez votre établissement.', 'ACCOUNT_BLOCKED');
   }
   return { phone: payload.phone };
 };

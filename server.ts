@@ -50,6 +50,17 @@ export function setupMockApi(app: express.Express) {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(payload));
     };
+    // Meme contrat que l'API reelle : 403 + code stable, pour que l'application
+    // explique le blocage au lieu d'un simple echec de session.
+    const sendBlocked = (res: import('http').ServerResponse) => send(res, 403, {
+        error: 'Ce compte a été bloqué par la direction. Contactez votre établissement.',
+        code: 'ACCOUNT_BLOCKED',
+    });
+    const requireDevSession = (req: import('http').IncomingMessage, res: import('http').ServerResponse): boolean => {
+        if (devTeacherBlocked) { sendBlocked(res); return false; }
+        if (!hasSession(req)) { send(res, 401, { error: 'Non connecté.' }); return false; }
+        return true;
+    };
     const hasSession = (req: import('http').IncomingMessage) =>
         /cdt_dev_session=1/.test(req.headers.cookie ?? '');
     const currentSessionPhone = (): string => {
@@ -75,14 +86,14 @@ export function setupMockApi(app: express.Express) {
             app.use('/api/auth', async (req, res) => {
                 if (req.method === 'GET') {
                     if (hasSession(req) && !devTeacherBlocked) return send(res, 200, { user: sessionUser ?? DEV_USER });
-                    if (devTeacherBlocked) return send(res, 401, { error: 'Ce compte est bloqué par la direction.' });
+                    if (devTeacherBlocked) return send(res, 403, { error: 'Ce compte a été bloqué par la direction. Contactez votre établissement.', code: 'ACCOUNT_BLOCKED' });
                     return send(res, 401, { error: 'Non connecté.' });
                 }
                 if (req.method === 'POST') {
                     let body: Record<string, unknown> = {};
                     try { body = JSON.parse(await readBody(req)); } catch { /* corps vide */ }
                     if (body.action === 'login') {
-                        if (devTeacherBlocked) return send(res, 401, { error: 'Ce compte est bloqué par la direction.' });
+                        if (devTeacherBlocked) return send(res, 403, { error: 'Ce compte a été bloqué par la direction. Contactez votre établissement.', code: 'ACCOUNT_BLOCKED' });
                         if (phoneMatches(body.phone) && body.password === DEV_PASSWORD) {
                             sessionUser = DEV_USER;
                             res.setHeader('Set-Cookie', 'cdt_dev_session=1; Path=/; SameSite=Lax');
@@ -101,7 +112,7 @@ export function setupMockApi(app: express.Express) {
                         return send(res, 200, { user: sessionUser });
                     }
                     if (body.action === 'completeWelcome') {
-                        if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
+                        if (!requireDevSession(req, res)) return;
                         sessionUser = { ...(sessionUser ?? DEV_USER), hasCompletedWelcome: true };
                         return send(res, 200, { user: sessionUser });
                     }
@@ -116,7 +127,7 @@ export function setupMockApi(app: express.Express) {
             });
 
             app.use('/api/sync', async (req, res) => {
-                if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
+                if (!requireDevSession(req, res)) return;
                 const { phone, workspace } = workspaceForCurrentSession();
                 if (req.headers['x-workspace-owner'] !== phone) return send(res, 409, { error: 'Le compte actif a changé. Rechargez la page avant de synchroniser.' });
                 if (req.method === 'GET') {
@@ -250,7 +261,7 @@ export function setupMockApi(app: express.Express) {
             });
 
             app.use('/api/messages', async (req, res) => {
-                if (!hasSession(req) || devTeacherBlocked) return send(res, 401, { error: devTeacherBlocked ? 'Ce compte est bloqué par la direction.' : 'Non connecté.' });
+                if (!requireDevSession(req, res)) return;
                 if (req.method === 'GET') {
                     return send(res, 200, { messages: devAdminMessages.filter(message => !message.acknowledgedAt) });
                 }
