@@ -94,7 +94,7 @@ export const AccountTab: React.FC = () => {
   return (
     <div className="space-y-3 sm:space-y-3.5">
       {/* 1. Zone principale encadrée : Synchronisation */}
-      <section className="rounded-xl border border-border bg-card p-3 sm:p-3.5">
+      <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -125,7 +125,7 @@ export const AccountTab: React.FC = () => {
 
       {/* 2. Session utilisateur & Déconnexion (compact et encadré) */}
       {user && (
-        <section className="rounded-xl border border-border bg-card p-2.5 sm:p-3">
+        <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">

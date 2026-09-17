@@ -290,7 +290,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   };
 
   const languageSection = (
-    <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-3.5 shadow-2xs">
+    <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
       <header className="mb-2.5">
         <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('language.settings.title')}</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">{t('language.settings.description')}</p>
@@ -352,7 +352,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         return (
           <div className="space-y-3 sm:space-y-3.5">
             {/* 1. Profil & Matière */}
-            <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-4 shadow-2xs">
+            <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
               <header className="mb-2.5">
                 <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.profile')}</h3>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{t('settings.subjectsHint')}</p>
@@ -431,7 +431,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </section>
 
             {/* 2. Cycle & Établissement */}
-            <section className="rounded-xl border border-border/80 bg-background/60 p-3 sm:p-4 shadow-2xs">
+            <section className="rounded-lg border border-border/70 p-2.5 sm:p-3">
               <header className="mb-2.5">
                 <h3 className="text-xs sm:text-sm font-bold text-foreground">{t('settings.group.school')}</h3>
               </header>
@@ -920,10 +920,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       maxWidth="5xl"
       swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
-      initialMobileDetent={0.92}
-      className="settings-modal-sheet overflow-hidden sm:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1440px] sm:rounded-2xl"
-      headerClassName="border-b border-border/70 bg-muted/20 lg:px-6 lg:py-4"
-      bodyClassName="p-3.5 sm:p-4.5 lg:p-6 xl:p-8"
+      initialMobileDetent={0.62}
+      className="settings-modal-sheet overflow-hidden sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-[1200px] sm:rounded-2xl"
+      headerClassName="border-b border-border/70 lg:px-5 lg:py-3.5"
+      bodyClassName="p-3 sm:p-3.5 lg:p-4"
     >
       {/* Mobile Horizontal Tabs Selector avec déplacement fluide et centrage dynamique */}
       <div className="flex lg:hidden mb-2.5 -mx-1 px-1">
@@ -937,7 +937,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
         />
       </div>
 
-      <div data-settings-ui className="rtl-config-split flex flex-col lg:flex-row gap-4 lg:gap-6 xl:gap-8 min-h-[460px] lg:min-h-[560px] xl:min-h-[620px]">
+      <div data-settings-ui className="rtl-config-split flex flex-col lg:flex-row gap-3.5 lg:gap-5">
         {/* Desktop Sidebar Rail */}
         <aside
           aria-label={locale === 'ar' ? 'أقسام الإعدادات' : 'Catégories des paramètres'}
@@ -957,7 +957,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
             </section>
           </div>
 
-          <div className="mt-4 pt-1 lg:mt-6 lg:pt-2">
+          <div className="mt-3 pt-1 lg:mt-4">
             {footer}
           </div>
         </main>
