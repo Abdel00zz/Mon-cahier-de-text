@@ -14,6 +14,7 @@ interface TableRowProps {
   lineClassOverride?: string;
   onToggleSelect: (indices: Indices) => void;
   onDoubleClickEdit?: (indices: Indices) => void;
+  onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
   isSelected: boolean;
   isNew?: boolean;
   showDescriptions?: boolean;
@@ -182,6 +183,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   lineClassOverride,
   onToggleSelect,
   onDoubleClickEdit,
+  onOpenDateModal,
   isSelected,
   showDescriptions,
   descriptionTypes = [],
@@ -334,7 +336,18 @@ const TableRowComponent: FC<TableRowProps> = ({
         onDoubleClick={event => event.stopPropagation()}
       >
         {stateRail}
-        <div className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+        <div
+          className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (onOpenDateModal) {
+              onOpenDateModal(indices, typeof data.date === 'string' ? data.date : undefined);
+            } else {
+              handleToggle();
+            }
+          }}
+          title={typeof data.date === 'string' && data.date ? 'Modifier la date' : 'Affecter une date'}
+        >
           <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
         </div>
         {contentCell}
@@ -395,7 +408,18 @@ const TableRowComponent: FC<TableRowProps> = ({
       onDoubleClick={event => event.stopPropagation()}
     >
       {stateRail}
-      <div className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder}`}>
+      <div
+        className={`min-w-0 ${dateCellVisibility} flex-col items-stretch justify-center self-stretch select-none ${dividerClass} ${dateBottomBorder} cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors`}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (onOpenDateModal) {
+            onOpenDateModal(indices, typeof data.date === 'string' ? data.date : undefined);
+          } else {
+            handleToggle();
+          }
+        }}
+        title={typeof data.date === 'string' && data.date ? 'Modifier la date' : 'Affecter une date'}
+      >
         <DateCell dateStr={data.date} merge={dateMerge} hasWarning={hasWarning} isSelected={isSelected} hasAssignedDate={hasAssignedDate} />
       </div>
 
@@ -407,7 +431,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
-  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.getDateWarnings !== next.getDateWarnings) return false;
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;

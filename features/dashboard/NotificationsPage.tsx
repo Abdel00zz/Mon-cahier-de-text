@@ -705,13 +705,8 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         <AlarmBell className="h-4 w-4" />
       </span>
       <span className="min-w-0">
-        <span className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
+        <span className={cn('flex items-center font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
           <span>{t('notifications.centerTitle')}</span>
-          {filteredAttention > 0 && (
-            <span className="rounded-full border border-red-200/80 bg-red-50/80 px-2 py-0.5 text-[10px] font-extrabold leading-4 text-red-600 dark:border-red-900/50 dark:bg-red-950/45 dark:text-red-400">
-              {t('notifications.attentionCount', { count: filteredAttention })}
-            </span>
-          )}
         </span>
         <span className="mt-0.5 block text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
           {t('notifications.allTeachingClasses')}

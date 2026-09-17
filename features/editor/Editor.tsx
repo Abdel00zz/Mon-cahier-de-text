@@ -936,6 +936,18 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       }
   }, [setEditorState, startSelectionTransition]);
 
+  const handleOpenDateModal = useCallback((indices: Indices, currentDate?: string) => {
+    const key = indicesKey(indices);
+    setAssignDateInitialDate(currentDate);
+    setSelectionState({
+      keys: new Set([key]),
+      items: new Map([[key, indices]]),
+    });
+    setEditorState(draft => {
+      draft.activeModal = 'assignDate';
+    });
+  }, [setEditorState]);
+
   const handleDeselectAll = useCallback(() => {
       startSelectionTransition(() => {
         setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
@@ -1202,6 +1214,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               selectedKeys={selectionState.keys}
               onToggleSelect={handleToggleSelectRow}
               onOpenContentEditor={handleOpenContentEditor}
+              onOpenDateModal={handleOpenDateModal}
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDisplayDateWarnings}
               searchQuery={displayedQuery}

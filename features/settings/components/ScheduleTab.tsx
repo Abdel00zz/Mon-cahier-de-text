@@ -32,7 +32,7 @@ export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClas
         bg: 'bg-[#fde68a] dark:bg-[#451a03]/90',
         border: 'border-[#d97706] dark:border-[#b45309]',
         text: 'text-[#78350f] dark:text-[#fef3c7]',
-        subtext: 'text-[#92400e] dark:text-[#fde68a]',
+        subtext: 'text-[#78350f] dark:text-[#fde68a]',
         dot: 'bg-[#d97706]',
     },
     mint: {
@@ -278,7 +278,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                             onChange={e => setSchoolYearStart(e.target.value)}
                             lang={locale === 'ar' ? 'ar-MA-u-nu-latn' : locale === 'en' ? 'en-GB' : 'fr-MA'}
                             dir="ltr"
-                            className={`h-9 lg:h-10 rounded-md border border-border/70 bg-background/80 px-3 text-xs lg:text-sm font-semibold shadow-2xs focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
+                            className={`h-9 lg:h-10 rounded-md border border-border bg-card px-3 text-xs lg:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/25 ${locale === 'ar' ? 'text-transparent' : 'text-foreground'}`}
                         />
                         {locale === 'ar' && (
                             <span
@@ -407,10 +407,10 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         )}
                                                     </select>
 
-                                                    {/* État vide : centré, sobre, sans chevron encombrant */}
+                                                    {/* État vide : centré, sobre, sans chevron encombrant ni bruit textuel */}
                                                     {!classInfo && (
-                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10.5px] sm:text-xs lg:text-[13px] font-normal text-[#9c9389] dark:text-[#787169] tracking-wide">
-                                                            {t('schedule.noClass')}
+                                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-light text-stone-300 dark:text-stone-600 select-none group-hover:text-stone-400">
+                                                            —
                                                         </div>
                                                     )}
 

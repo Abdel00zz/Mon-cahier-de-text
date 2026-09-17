@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
   Pencil, Trash2, X, MoreVertical,
@@ -42,15 +43,24 @@ interface Action {
 const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean }> = ({
   icon: Icon, onClick, title, label, accent = false, disabled = false,
 }) => (
-  <Button
-    variant="ghost" size="icon" onClick={onClick} title={title}
-    aria-label={title} disabled={disabled}
-    className={`selection-action w-auto shrink-0 gap-2 rounded-xl px-3 transition-colors active:scale-95 ${accent
-      ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:text-foreground'}`}
+  <button
+    type="button"
+    onClick={onClick}
+    title={title}
+    aria-label={title}
+    disabled={disabled}
+    className={cn(
+      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation',
+      label ? 'h-9 px-2.5 sm:px-3 gap-1.5 sm:gap-2' : 'h-9 w-9 p-0',
+      accent
+        ? 'bg-primary/10 text-primary hover:bg-primary/15 font-medium'
+        : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
+      disabled && 'opacity-50 pointer-events-none'
+    )}
   >
     <Icon aria-hidden className="size-[18px] shrink-0" />
-    {label && <span className="hidden whitespace-nowrap font-sans text-sm font-semibold sm:inline">{label}</span>}
-  </Button>
+    {label && <span className="hidden whitespace-nowrap font-sans text-xs sm:text-sm font-semibold sm:inline">{label}</span>}
+  </button>
 );
 
 /** Actions fréquentes visibles ; le reste dans un menu accessible, sans rail masqué. */
@@ -92,15 +102,19 @@ export const SelectionBar: FC<SelectionBarProps> = ({
       <div className="selection-bar" role="toolbar" dir={locale === 'ar' ? 'rtl' : 'ltr'}
         aria-label={t('selection.actionsAria')} aria-busy={isPending}
         onClick={event => event.stopPropagation()} onKeyDown={navigateActions}>
-        <Button variant="ghost" size="icon" onClick={onClear}
-          className="selection-action shrink-0 rounded-xl text-muted-foreground"
-          title={t('selection.closeShortcut')} aria-label={t('selection.clearAria')}>
+        <button
+          type="button"
+          onClick={onClear}
+          className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation"
+          title={t('selection.closeShortcut')}
+          aria-label={t('selection.clearAria')}
+        >
           <X aria-hidden className="size-[18px]" />
-        </Button>
-        <span className="selection-count" title={selectedLabel} aria-label={selectedLabel} role="status" aria-atomic="true">
+        </button>
+        <span className="selection-count shrink-0 px-1 font-semibold text-sm tabular-nums text-foreground select-none" title={selectedLabel} aria-label={selectedLabel} role="status" aria-atomic="true">
           {formattedCount}
         </span>
-        <span aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-border" />
+        <span aria-hidden className="mx-0.5 h-5 w-px shrink-0 bg-border/80 select-none" />
         {canAssignDate && onAssignToday && <ActionButton icon={CalendarCheck} onClick={onAssignToday}
           title={t('selection.dateToday')} label={t('selection.today')} accent disabled={isPending} />}
         {canAssignDate && <ActionButton icon={CalendarDays} onClick={onAssignDate}
@@ -109,11 +123,15 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           title={t('selection.edit')} disabled={isPending} />}
         <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={isPending}
-              className="selection-action shrink-0 rounded-xl text-muted-foreground"
-              title={t('selection.moreActions')} aria-label={t('selection.moreActions')}>
+            <button
+              type="button"
+              disabled={isPending}
+              className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation disabled:opacity-50"
+              title={t('selection.moreActions')}
+              aria-label={t('selection.moreActions')}
+            >
               <MoreVertical aria-hidden className="size-[18px]" />
-            </Button>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" sideOffset={10} collisionPadding={12}
             className="w-max max-w-[calc(100vw-1.5rem)]">

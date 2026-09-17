@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GUIDE_AR, GUIDE_FR, searchGuide } from '@/constants/guides';
 import { Modal } from '@/components/ui/modal';
-import { BookOpen, Search, X } from '@/components/ui/icons';
+import { Search, X } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { GuideFigure } from './GuideFigure';
 import { GuideText } from './GuideText';
@@ -49,11 +49,7 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
       headerClassName="learning-guide-header" bodyClassName="learning-guide-body"
       title={
         <div className="guide-heading" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>
-          <span className="guide-mark"><BookOpen size={26} strokeWidth={1.8} aria-hidden="true" /></span>
-          <div className="min-w-0 flex-1">
-            <span className="guide-title">{isAr ? 'دليل دفتر النصوص' : 'Guide du cahier'}</span>
-            <span className="guide-subtitle">{isAr ? 'تعلّم استخدام التطبيق، خطوة بخطوة' : 'Prenez en main l’application, étape par étape'}</span>
-          </div>
+          <span className="guide-title">{isAr ? 'دليل الاستخدام' : 'Guide d’utilisation'}</span>
           <div className="guide-languages" aria-label={isAr ? 'لغة الدليل' : 'Langue du guide'}>
             <button type="button" lang="fr" aria-pressed={!isAr} onClick={() => changeLanguage('fr')}>FR</button>
             <button type="button" lang="ar" aria-pressed={isAr} onClick={() => changeLanguage('ar')}>العربية</button>

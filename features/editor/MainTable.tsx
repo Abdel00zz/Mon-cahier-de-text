@@ -30,6 +30,7 @@ interface MainTableProps {
   selectedKeys: ReadonlySet<string>;
   onToggleSelect: (indices: Indices) => void;
   onOpenContentEditor: (indices: Indices) => void;
+  onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
   newlyAddedIds: string[];
   /** garde intelligente : alertes live sur la date saisie */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
@@ -79,6 +80,7 @@ interface SessionGroupRowProps {
     newlyAddedIds: string[];
     onToggleSelect: (indices: Indices) => void;
     onDoubleClickEdit?: (indices: Indices) => void;
+    onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
     showDescriptions?: boolean;
     descriptionTypes?: string[];
     searchQuery?: string;
@@ -91,6 +93,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     newlyAddedIds,
     onToggleSelect,
     onDoubleClickEdit,
+    onOpenDateModal,
     showDescriptions,
     descriptionTypes = [],
     searchQuery,
@@ -178,8 +181,15 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
         >
             <div
                 data-session-cell="date"
-                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
+                className={`flex min-h-[52px] min-w-0 items-center justify-center self-stretch px-1 py-1 cursor-pointer hover:bg-primary/5 active:bg-primary/10 transition-colors ${dividerClass} ${hasWarning ? 'bg-warning/10' : (hasAssignedDate ? 'bg-muted/10' : 'bg-transparent')}`}
                 style={{ gridColumn: 1, gridRow: `1 / span ${visualRowCount}` }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (onOpenDateModal && items[0]) {
+                        onOpenDateModal(items[0].indices, typeof items[0].data?.date === 'string' ? items[0].data.date : undefined);
+                    }
+                }}
+                title={hasAssignedDate ? 'Modifier la date' : 'Affecter une date'}
             >
                 {uniqueDates.length > 1 ? (
                     <MultiDateCard dates={uniqueDates} hasWarning={hasWarning} />
@@ -333,6 +343,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onCellUpdate,
   onDeleteSeparator,
   onOpenContentEditor,
+  onOpenDateModal,
   getDateWarnings,
   searchQuery,
   focusKey,
@@ -436,7 +447,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-editor-table
       data-content-direction={contentDirection}
       dir={contentDirection}
-      className="rtl-table mx-0 overflow-hidden rounded-none border-t border-x border-border/40 bg-card shadow-none transition-shadow duration-200 print:border-none"
+      className="rtl-table mx-0 overflow-hidden rounded-xl border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
       style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />
@@ -458,6 +469,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   newlyAddedIds={newlyAddedIds}
                                   onToggleSelect={onToggleSelect}
                                   onDoubleClickEdit={onOpenContentEditor}
+                                  onOpenDateModal={onOpenDateModal}
                                   showDescriptions={showDescriptions}
                                   descriptionTypes={descriptionTypes}
                                   searchQuery={searchQuery}
@@ -497,6 +509,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               dateMerge={item.dateMerge}
                               onToggleSelect={onToggleSelect}
                               onDoubleClickEdit={onOpenContentEditor}
+                              onOpenDateModal={onOpenDateModal}
                               isSelected={isSelected}
                               isNew={isNew}
                               showDescriptions={showDescriptions}

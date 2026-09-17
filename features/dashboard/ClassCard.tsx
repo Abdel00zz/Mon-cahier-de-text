@@ -90,9 +90,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                 </div>
             </div>
 
-            {/* Zone Inférieure : Design minimaliste et aérien, couleur unie */}
-            <div className="keep-session-footer w-full bg-black/[0.025] dark:bg-white/[0.03] border-t border-black/[0.06] dark:border-white/[0.06] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.04] dark:group-hover:bg-white/[0.06]">
-                <p className="keep-session-action flex items-center justify-between gap-2 text-[11px] sm:text-xs font-semibold text-foreground/70 group-hover:text-foreground/95 transition-colors" aria-hidden="true">
+            {/* Zone Inférieure : Design minimaliste et aérien, couleur unie style Keep */}
+            <div className="keep-session-footer w-full bg-black/[0.012] dark:bg-white/[0.02] border-t border-black/[0.035] dark:border-white/[0.05] px-3.5 py-2 sm:px-4 sm:py-2.5 transition-colors duration-300 group-hover:bg-black/[0.025] dark:group-hover:bg-white/[0.04]">
+                <p className="keep-session-action flex items-center justify-between gap-2 text-[11px] sm:text-xs font-semibold text-foreground/75 group-hover:text-foreground transition-colors" aria-hidden="true">
                     <span className="tracking-tight">{locale === 'ar' ? 'فتح دفتر النصوص' : locale === 'en' ? 'Open notebook' : 'Ouvrir le cahier'}</span>
                     <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
                 </p>

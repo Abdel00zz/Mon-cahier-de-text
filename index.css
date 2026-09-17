@@ -646,6 +646,11 @@ html[data-keyboard='open'] .fab-safe {
     border-right: 1px solid hsl(var(--border) / 0.7) !important;
   }
 
+  /* Cadre extérieur bien visible du tableau du cahier de textes */
+  [data-editor-table] {
+    border: 2px solid hsl(var(--border) / 0.95) !important;
+  }
+
   [data-table-style="compact"] tbody td {
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
@@ -901,28 +906,28 @@ html[data-keyboard='open'] .fab-safe {
 .selection-bar {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   width: max-content;
-  max-width: 100%;
-  padding: 6px;
+  max-width: calc(100vw - 24px);
+  padding: 4px 6px;
   border: 1px solid hsl(var(--border));
-  border-radius: 20px;
-  background: hsl(var(--card));
+  border-radius: 9999px;
+  background: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: hsl(var(--card-foreground));
   box-shadow: 0 8px 28px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.06);
   pointer-events: auto;
   animation: slide-in-up 180ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-.selection-action { min-width: 44px; min-height: 44px; }
+.selection-action { min-width: 36px; min-height: 36px; }
 .selection-count {
   min-width: 1.5em;
-  max-width: 4.5em;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding-inline: 4px;
   text-align: center;
   font-size: calc(14px * var(--app-text-scale, 1));
-  font-weight: 650;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 @media (min-width: 640px) {
@@ -1224,17 +1229,17 @@ html[data-keyboard='open'] .mobile-tab-bar {
       0 7px 18px -13px color-mix(in srgb, var(--keep-accent, #94a3b8) 36%, transparent);
   }
 
-  /* Palette chromatique des classes : vive mais mate, contrastée et stable dans les deux thèmes. */
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #FFF0C7; --keep-dark: #332A1E; --keep-border: #E8CD91; --keep-accent: #B85C00; --keep-accent-soft: rgb(184 92 0 / 0.13); } /* Ambre solaire */
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #DDF5E9; --keep-dark: #1D3028; --keep-border: #B8DFC9; --keep-accent: #087A55; --keep-accent-soft: rgb(8 122 85 / 0.13); } /* Émeraude fraîche */
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #DDEEFF; --keep-dark: #1D2C3A; --keep-border: #B9D6EF; --keep-accent: #1769AA; --keep-accent-soft: rgb(23 105 170 / 0.13); } /* Azur électrique */
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #EEE4FF; --keep-dark: #2B2538; --keep-border: #D4C0EB; --keep-accent: #7547B8; --keep-accent-soft: rgb(117 71 184 / 0.13); } /* Violet iris */
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #FFE2E8; --keep-dark: #38232A; --keep-border: #ECC0CA; --keep-accent: #B9365A; --keep-accent-soft: rgb(185 54 90 / 0.13); } /* Corail framboise */
-  .dark .keep-surface[data-keep-tone="sand"] { --keep-border: #5B4930; --keep-accent: #F1B95B; --keep-accent-soft: rgb(241 185 91 / 0.15); }
-  .dark .keep-surface[data-keep-tone="mint"] { --keep-border: #315444; --keep-accent: #5ED2A1; --keep-accent-soft: rgb(94 210 161 / 0.15); }
-  .dark .keep-surface[data-keep-tone="sky"] { --keep-border: #304E67; --keep-accent: #69B9F2; --keep-accent-soft: rgb(105 185 242 / 0.15); }
-  .dark .keep-surface[data-keep-tone="lavender"] { --keep-border: #4E3F65; --keep-accent: #BC9AF0; --keep-accent-soft: rgb(188 154 240 / 0.15); }
-  .dark .keep-surface[data-keep-tone="coral"] { --keep-border: #653947; --keep-accent: #F18DAA; --keep-accent-soft: rgb(241 141 170 / 0.15); }
+  /* Palette chromatique des classes : style Google Keep pastel aéré, lumineux et moins foncé. */
+  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E0; --keep-dark: #382F20; --keep-border: #F1E2BC; --keep-accent: #9A5B00; --keep-accent-soft: rgb(154 91 0 / 0.10); } /* Sable doré / Vanille pastel Keep */
+  .keep-surface[data-keep-tone="mint"] { --keep-light: #E6F4EA; --keep-dark: #22382C; --keep-border: #C8E6D0; --keep-accent: #137333; --keep-accent-soft: rgb(19 115 51 / 0.10); } /* Menthe sauge douce Keep */
+  .keep-surface[data-keep-tone="sky"] { --keep-light: #E8F0FE; --keep-dark: #22384C; --keep-border: #CEE0FD; --keep-accent: #1A73E8; --keep-accent-soft: rgb(26 115 232 / 0.10); } /* Ciel azur aérien Keep */
+  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F3E8FD; --keep-dark: #342848; --keep-border: #E3CDFA; --keep-accent: #8430CE; --keep-accent-soft: rgb(132 48 206 / 0.10); } /* Lavande lilas pastel Keep */
+  .keep-surface[data-keep-tone="coral"] { --keep-light: #FCE8E6; --keep-dark: #442630; --keep-border: #F7C7C3; --keep-accent: #C5221F; --keep-accent-soft: rgb(197 34 31 / 0.10); } /* Pétale corail blush Keep */
+  .dark .keep-surface[data-keep-tone="sand"] { --keep-border: #634F30; --keep-accent: #F6C46B; --keep-accent-soft: rgb(246 196 107 / 0.14); }
+  .dark .keep-surface[data-keep-tone="mint"] { --keep-border: #385E49; --keep-accent: #6BDCA9; --keep-accent-soft: rgb(107 220 169 / 0.14); }
+  .dark .keep-surface[data-keep-tone="sky"] { --keep-border: #37597C; --keep-accent: #78C2F8; --keep-accent-soft: rgb(120 194 248 / 0.14); }
+  .dark .keep-surface[data-keep-tone="lavender"] { --keep-border: #564172; --keep-accent: #C9A8F8; --keep-accent-soft: rgb(201 168 248 / 0.14); }
+  .dark .keep-surface[data-keep-tone="coral"] { --keep-border: #6F3847; --keep-accent: #F899B3; --keep-accent-soft: rgb(248 153 179 / 0.14); }
 
   @keyframes keep-session-focus {
     0%, 100% {

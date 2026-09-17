@@ -153,31 +153,32 @@ export function ModalBottomSheet({
   return (
     <DialogPrimitive.Root open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        {/* Material 3 Scrim Overlay */}
+        {/* Backdrop Scrim Overlay with Glass Blur */}
         <DialogPrimitive.Overlay
           className={cn(
-            'fixed inset-0 z-[100] bg-slate-950/45 backdrop-blur-[2px]',
+            'fixed inset-0 z-[100] bg-neutral-950/45 dark:bg-black/75 backdrop-blur-md',
             'data-[state=open]:animate-overlay-in data-[state=closed]:animate-overlay-out motion-reduce:animate-none'
           )}
         />
 
-        {/* Material 3 ModalBottomSheet Container */}
+        {/* Modal Window Container (Sketch.com inspired) */}
         <DialogPrimitive.Content
           dir={effectiveDir}
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
-            'fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[20px] rounded-b-none border border-border/80 bg-background text-foreground shadow-2xl outline-none',
+            'fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[24px] rounded-b-none border border-border bg-card text-foreground outline-none',
+            'shadow-2xl',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
             'motion-reduce:animate-none motion-reduce:transition-none motion-reduce:data-[state=closed]:translate-y-0 motion-reduce:data-[state=closed]:scale-100 motion-reduce:data-[state=closed]:opacity-100',
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-2xl sm:border',
-            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-2xl',
-            'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
+            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[22px] sm:border sm:border-border sm:shadow-2xl',
+            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-[22px]',
+            !footer && 'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
             swipe.isDragging && 'select-none',
             mwClass,
-            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-1.5rem)] rounded-2xl pb-0 data-[state=open]:animate-pop-in data-[state=closed]:translate-y-0 data-[state=closed]:scale-[0.97]',
+            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-1.5rem)] rounded-[22px] pb-0 data-[state=open]:animate-pop-in data-[state=closed]:translate-y-0 data-[state=closed]:scale-[0.97]',
             className,
             isCompactSheet && 'max-h-[var(--sheet-detent-height)] transition-[max-height,transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
             // La position appartient au socle modal. Une classe décorative
@@ -212,10 +213,7 @@ export function ModalBottomSheet({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Material 3 Drag Handle.
-              La zone tactile fait 44px de haut (seuil Fitts/tactile) alors que
-              la pastille visible reste fine ; la poignée n'est rendue que
-              lorsqu'elle a réellement une action (paliers ou repli possible). */}
+          {/* Sketch Drag Handle */}
           {dragHandle && mobilePresentation === 'sheet' && (
             <button
               type="button"
@@ -226,10 +224,10 @@ export function ModalBottomSheet({
                 if (canExpand) expandSheet();
                 else if (canCollapse) collapseSheet();
               }}
-              className="absolute left-1/2 top-1.5 z-20 flex h-7 w-20 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
+              className="absolute left-1/2 top-2 z-20 flex h-6 w-20 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden landscape:hidden"
             >
               {typeof dragHandle === 'boolean'
-                ? <span className="h-1.5 w-9 rounded-full bg-muted-foreground/35 transition-[width,background-color] duration-200 active:w-12 active:bg-muted-foreground/55" />
+                ? <span className="h-1 w-9 rounded-full bg-muted-foreground/30 transition-[width,background-color] duration-200 active:w-12 active:bg-muted-foreground/50" />
                 : dragHandle}
             </button>
           )}
@@ -238,34 +236,34 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 min-h-12 sm:min-h-12 border-b border-border/70 bg-transparent px-4 sm:px-6 py-3 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground flex flex-col justify-center text-start',
-                !hideClose ? 'pe-12 sm:pe-12 ps-4 sm:ps-6' : 'px-4 sm:px-6',
+                'modal-header relative z-10 shrink-0 min-h-13 sm:min-h-14 border-b border-border/60 bg-transparent px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6 text-foreground flex flex-col justify-center text-start',
+                !hideClose ? 'pe-14 sm:pe-14 ps-5 sm:ps-7' : 'px-5 sm:px-7',
                 headerClassName
               )}
             >
               {title && (
-                <DialogPrimitive.Title data-ui-title className="text-sm sm:text-base font-bold leading-snug tracking-tight text-foreground">
+                <DialogPrimitive.Title data-ui-title className="text-[16px] sm:text-[18px] font-semibold leading-snug tracking-[-0.015em] text-foreground">
                   {title}
                 </DialogPrimitive.Title>
               )}
               {description && (
-                <DialogPrimitive.Description className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                <DialogPrimitive.Description className="mt-1 text-xs sm:text-[13px] leading-relaxed text-muted-foreground tracking-normal">
                   {description}
                 </DialogPrimitive.Description>
               )}
             </div>
           )}
 
-          {/* Close button - Calibré avec cibles tactiles Fitts (min 40-44px) et contraste doux */}
+          {/* Close button (Sketch.com circular pill) */}
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute z-30 inline-flex h-9 w-9 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-transparent text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 active:scale-95 active:bg-muted transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer end-2.5 sm:end-3',
-                (title || description) ? 'top-1.5 sm:top-2' : 'top-2 sm:top-2.5'
+                'dialog-close absolute z-30 inline-flex h-8 w-8 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer end-3 sm:end-4',
+                (title || description) ? 'top-3 sm:top-3.5' : 'top-3 sm:top-3.5'
               )}
             >
-              <X className="h-4 w-4 stroke-[1.8] sm:stroke-[1.75]" />
+              <X className="h-4 w-4 stroke-[2]" />
               <span className="sr-only">{closeLabel}</span>
             </DialogPrimitive.Close>
           )}
@@ -274,7 +272,7 @@ export function ModalBottomSheet({
           <div
             data-swipe-scroll-region
             className={cn(
-              'modal-body modern-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-4 py-3.5 sm:px-6 sm:py-4 landscape:py-2.5 landscape:px-5 [overflow-anchor:none] scroll-smooth motion-reduce:scroll-auto [-webkit-overflow-scrolling:touch]',
+              'modal-body modern-scrollbar min-h-0 min-w-0 overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5.5 landscape:py-3 landscape:px-6 [overflow-anchor:none] scroll-smooth motion-reduce:scroll-auto [-webkit-overflow-scrolling:touch]',
               !(title || description) && 'pt-8 sm:pt-6 landscape:pt-4',
               !footer && 'pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
               bodyClassName
@@ -287,7 +285,7 @@ export function ModalBottomSheet({
           {footer && (
             <div
               className={cn(
-                'modal-footer relative z-10 border-t border-border/70 flex shrink-0 flex-col-reverse gap-2 bg-background px-4 py-3 pb-[calc(0.85rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-6 sm:py-3.5 landscape:py-2.5 landscape:px-5 text-foreground',
+                'modal-footer relative z-10 border-t border-border/60 flex shrink-0 flex-col-reverse gap-2 bg-muted/20 dark:bg-muted/10 px-5 py-3.5 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-3 landscape:px-6 text-foreground',
                 footerClassName
               )}
             >
