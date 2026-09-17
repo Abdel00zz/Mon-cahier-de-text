@@ -62,7 +62,7 @@ export const TabBar = React.memo<TabBarProps>(({
   onToggleExpanded,
   teacherName,
 }) => {
-  const { impact } = useHapticFeedback();
+  const { impact, selection } = useHapticFeedback();
   const { locale } = useLocale();
   const { user } = useAuth();
   const copy = NAV_COPY[locale] ?? NAV_COPY.fr;
@@ -72,9 +72,9 @@ export const TabBar = React.memo<TabBarProps>(({
   const isRtl = locale === 'ar';
 
   const goTo = useCallback((tab: TabType) => {
-    impact('light');
+    selection();
     onTabChange(tab);
-  }, [impact, onTabChange]);
+  }, [selection, onTabChange]);
 
   const getMobileLabel = useCallback((id: TabType) => {
     if (id === 'dashboard') return copy.dashboardMobile ?? copy.dashboard;
@@ -173,8 +173,15 @@ export const TabBar = React.memo<TabBarProps>(({
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <div className="relative flex shrink-0 items-center justify-center">
-                  <Icon className={cn('h-5 w-5 shrink-0 stroke-[2]', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+                <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                  <Icon
+                    className={cn(
+                      'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
+                      isActive
+                        ? 'text-primary stroke-[2.5] scale-108'
+                        : 'text-muted-foreground group-hover:text-foreground stroke-[1.8] scale-100'
+                    )}
+                  />
                   {count ? (
                     <span
                       className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
@@ -219,7 +226,16 @@ export const TabBar = React.memo<TabBarProps>(({
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <Settings className={cn('h-5 w-5 shrink-0 stroke-[2]', activeTab === 'settings' ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+              <Settings
+                className={cn(
+                  'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
+                  activeTab === 'settings'
+                    ? 'text-primary stroke-[2.5] scale-108'
+                    : 'text-muted-foreground group-hover:text-foreground stroke-[1.8] scale-100'
+                )}
+              />
+            </div>
             <span
               className={cn(
                 'hidden flex-1 truncate text-start text-[13px] leading-normal ms-3',
@@ -242,7 +258,9 @@ export const TabBar = React.memo<TabBarProps>(({
             )}
             aria-label={copy.help}
           >
-            <CircleHelp className="h-5 w-5 shrink-0 stroke-[2] text-muted-foreground group-hover:text-foreground" />
+            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+              <CircleHelp className="h-5 w-5 shrink-0 stroke-[1.8] text-muted-foreground group-hover:text-foreground group-hover:stroke-[2.2] transition-all" />
+            </div>
             <span
               className={cn(
                 'hidden flex-1 truncate text-start text-[13px] leading-normal font-medium text-muted-foreground group-hover:text-foreground ms-3',
@@ -296,9 +314,14 @@ export const TabBar = React.memo<TabBarProps>(({
                 <motion.div
                   animate={{ scale: isActive ? 1.08 : 1, y: isActive ? -1 : 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="relative z-10 flex items-center justify-center shrink-0"
+                  className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
                 >
-                  <Icon className={cn("h-5 w-5 transition-colors duration-150", isActive ? "text-primary" : "text-muted-foreground")} />
+                  <Icon
+                    className={cn(
+                      "h-5 w-5 transition-all duration-200 ease-out",
+                      isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[1.8]"
+                    )}
+                  />
                   {count ? (
                     <span
                       className="absolute -top-1.5 -end-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-1 ring-card"
@@ -342,9 +365,14 @@ export const TabBar = React.memo<TabBarProps>(({
             <motion.div
               animate={{ scale: activeTab === 'settings' ? 1.08 : 1, y: activeTab === 'settings' ? -1 : 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="relative z-10 flex items-center justify-center shrink-0"
+              className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
             >
-              <Settings className={cn("h-5 w-5 transition-colors duration-150", activeTab === 'settings' ? "text-primary" : "text-muted-foreground")} />
+              <Settings
+                className={cn(
+                  "h-5 w-5 transition-all duration-200 ease-out",
+                  activeTab === 'settings' ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[1.8]"
+                )}
+              />
             </motion.div>
 
             <span className={cn(

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
 
 interface ModalFooterProps {
   onSave: () => void;
@@ -25,25 +25,16 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({
           <span>Annuler (إلغاء)</span>
         </button>
 
-        {/* Save Button */}
-        <button
+        {/* Multi-step Animated Save Button */}
+        <AnimatedSubmitButton
           type="button"
           onClick={onSave}
-          disabled={isSubmitting}
-          className="inline-flex h-10 min-h-[40px] flex-1 sm:flex-initial items-center justify-center gap-2 rounded-[10px] bg-primary hover:brightness-105 active:brightness-95 px-5 text-xs sm:text-sm font-semibold text-primary-foreground shadow-xs shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Enregistrement...</span>
-            </>
-          ) : (
-            <>
-              <Check className="h-4 w-4 stroke-[2.5]" />
-              <span>Enregistrer (حفظ التغييرات)</span>
-            </>
-          )}
-        </button>
+          isSubmitting={isSubmitting}
+          label="Enregistrer (حفظ التغييرات)"
+          loadingLabel="Enregistrement…"
+          successLabel="Enregistré !"
+          className="flex-1 sm:flex-initial"
+        />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, ArrowRight, Check, GraduationCap, Settings, Trash2, Sparkles } from '@/components/ui/icons';
+import { AnimatedSubmitButton } from '@/components/ui/animated-submit-button';
 import { CLASS_LEVELS_BY_CYCLE, SUBJECTS, classLevelGroupsForCycle, formatClassLevelGroupLabel, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import type { ClassLevelGroupKey } from '@/constants';
 import { cn } from '@/lib/utils';

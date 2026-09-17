@@ -27,5 +27,10 @@ export const useHapticFeedback = () => {
     try { navigator.vibrate(notificationPatterns[type] ?? [8]); } catch { /* silencieux */ }
   }, []);
 
-  return { impact, notification };
+  const selection = useCallback(() => {
+    if (!hasVibrate.current) return;
+    try { navigator.vibrate(10); } catch { /* silencieux */ }
+  }, []);
+
+  return { impact, notification, selection };
 };
