@@ -26,10 +26,12 @@ export const useDevice = (): DeviceInfo => {
         const update = () => setInfo(readDevice());
         queries.forEach(q => q.addEventListener('change', update));
         window.addEventListener('resize', update);
+        window.visualViewport?.addEventListener('resize', update);
         window.screen.orientation?.addEventListener('change', update);
         return () => {
             queries.forEach(q => q.removeEventListener('change', update));
             window.removeEventListener('resize', update);
+            window.visualViewport?.removeEventListener('resize', update);
             window.screen.orientation?.removeEventListener('change', update);
         };
     }, []);
@@ -40,7 +42,9 @@ export const useDevice = (): DeviceInfo => {
 const readDevice = (): DeviceInfo => {
     if (typeof window === 'undefined') return { type: 'desktop', isPortrait: false, isLandscape: false, isTouch: false };
     const isTouch = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
-    const w = isTouch ? Math.min(window.screen.width, window.screen.height) || window.innerWidth : window.innerWidth;
+    const visualWidth = window.visualViewport?.width ?? window.innerWidth;
+    const screenMin = Math.min(window.screen?.width || visualWidth, window.screen?.height || visualWidth);
+    const w = isTouch ? Math.min(visualWidth, screenMin) : visualWidth;
     const isPortrait = isTouch && window.screen.orientation?.type
         ? window.screen.orientation.type.startsWith('portrait')
         : window.matchMedia('(orientation: portrait)').matches;

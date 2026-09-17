@@ -8,14 +8,12 @@ import {
   Settings,
   HelpCircle,
   Calendar,
-  Layers,
   ArrowRight,
   Command as CommandIcon,
 } from 'lucide-react';
 import { ClassInfo } from '@/types';
-import { StatusBadge } from './StatusBadge';
 
-export interface CommandItem {
+interface CommandItem {
   id: string;
   title: string;
   subtitle?: string;

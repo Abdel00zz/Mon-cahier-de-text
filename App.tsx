@@ -320,7 +320,6 @@ const App: React.FC = () => {
         activeSessionClassIds={currentSession.classIds}
         accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
         onOnboardingVisibilityChange={setOnboardingVisible}
-        onOpenGuide={() => setGuideOpen(true)}
       />
     );
   };
@@ -399,7 +398,14 @@ const App: React.FC = () => {
   }, [authUser?.phone, classes, currentSession, handleSelectClass, isBooting, isCurrentlyOnboarding, isEvaluationsOpen, isGuideOpen, view]);
 
   const appSurface = (
-    <div className="relative min-h-dvh overflow-x-clip text-foreground bg-background">
+    <div
+      className="relative min-h-dvh overflow-x-clip text-foreground bg-background"
+      /* Le canvas décoratif est porté par la racine du tableau de bord ; cette
+         surface le prolonge sous les gouttières de la coque applicative
+         (barre d'onglets, retraits de la barre latérale) pour éviter toute
+         bande du fond de page. */
+      data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
+    >
       {showNavigation && (
         <TabBar
           activeTab={activeTab}

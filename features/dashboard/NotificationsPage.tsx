@@ -339,7 +339,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
     return days;
   }, [filteredActivity, locale, t]);
 
-  const filteredAttention = feed.attentionCount;
   const unplannedCount = corrections.filter(signal => signal.kind === 'schedule' && signal.id.includes(':empty:')).length;
 
   const menuItems: AxisMenuItem[] = [

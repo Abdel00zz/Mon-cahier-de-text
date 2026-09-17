@@ -194,11 +194,13 @@ const PWA_MANIFEST: LocalizedManifest = {
 };
 
 export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, '.', '');
+    const port = Number(process.env.PORT || env.PORT) || 3000;
     return {
         server: {
-            port: 3000,
-            host: '0.0.0.0',
-            strictPort: true,
+            port,
+            host: true,
+            strictPort: false,
             allowedHosts: true,
             hmr: { },
         },
@@ -219,8 +221,7 @@ export default defineConfig(({ mode }) => {
                 // n'ont pas besoin d'être listés ici.
                 includeAssets: [
                     'icons/*.png',
-                      'icons/favicon.ico',
-                      'guide/current/*.webp',
+                    'icons/favicon.ico',
                     'planning-devoirs.json',
                     'assessment-rules.json',
                     'official-sources.json',

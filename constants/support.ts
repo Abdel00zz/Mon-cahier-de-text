@@ -12,9 +12,9 @@ type SupportLocale = 'fr' | 'ar' | 'en';
 
 /** Message d'accroche prérempli, adapté à la langue de l'interface. */
 const PREFILLED_MESSAGE: Record<SupportLocale, string> = {
-  fr: 'Bonjour, je souhaite préparer mon cahier de textes numérique à partir de mes propres cours avec votre aide.',
-  ar: 'السلام عليكم، أرغب في إعداد وتحرير دفتر النصوص الرقمي انطلاقاً من محتوى دروسي الخاصة بمساعدتكم.',
-  en: 'Hello, I would like to prepare my digital lesson notebook from my own lessons with your assistance.',
+  fr: 'Bonjour, je souhaite créer mes cahiers de textes avec votre aide.',
+  ar: 'السلام عليكم، أرغب في إعداد دفاتر النصوص بمساعدتكم.',
+  en: 'Hello, I would like help creating my lesson notebooks.',
 };
 
 /** Vrai si un numéro exploitable est renseigné (8 à 15 chiffres). */

@@ -3,7 +3,6 @@ import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { School, User, ArrowLeft } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { isArabicText } from '@/utils/textFormat';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface HeaderProps {

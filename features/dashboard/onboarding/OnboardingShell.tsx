@@ -48,9 +48,9 @@ export function OnboardingShell({
   return (
     <div
       dir={rtl ? 'rtl' : 'ltr'}
-      className="onboarding-keep flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#121212] dark:text-[#ededed]"
+      className="onboarding-keep flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#0f1017] dark:text-[#ededed]"
     >
-      <header className="bg-[#fcfcfc] dark:bg-[#121212]">
+      <header className="border-b border-black/[0.04] dark:border-white/[0.06] bg-white/70 dark:bg-[#11121d]/70 backdrop-blur-md sticky top-0 z-20">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-3">
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <img
@@ -58,9 +58,9 @@ export function OnboardingShell({
               width="36"
               height="36"
               alt=""
-              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain"
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain shadow-2xs"
             />
-            <span className="text-sm font-semibold truncate">{copy.brand}</span>
+            <span className="text-sm font-bold tracking-tight truncate">{copy.brand}</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <div
@@ -76,7 +76,9 @@ export function OnboardingShell({
                   disabled={finishing}
                   aria-pressed={value === lang}
                   onClick={() => onLanguageChange(value)}
-                  className="keep-surface keep-choice min-h-10 sm:min-h-11 px-2.5 sm:px-3 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className={`keep-surface keep-choice min-h-9 sm:min-h-10 px-2.5 sm:px-3 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                    value === lang ? 'border-[#7033e3]/50 text-[#7033e3] font-bold dark:text-[#a78bfa]' : ''
+                  }`}
                 >
                   {value === 'fr' ? 'FR' : 'العربية'}
                 </button>
@@ -90,7 +92,7 @@ export function OnboardingShell({
               value={theme}
               disabled={finishing}
               onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
-              className="keep-surface min-h-10 sm:min-h-11 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="keep-surface min-h-9 sm:min-h-10 max-w-28 sm:max-w-32 px-2 text-xs sm:text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <option value="light">{rtl ? 'فاتح' : 'Clair'}</option>
               <option value="dark">{rtl ? 'داكن' : 'Sombre'}</option>
@@ -106,12 +108,12 @@ export function OnboardingShell({
         }
       >
         <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))] sm:mb-5">
-          <span>{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
+          <span className="font-medium">{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
             type="button"
             disabled={finishing}
             onClick={onSkip}
-            className="min-h-9 rounded-lg px-2 text-xs sm:min-h-11 sm:text-sm underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5"
+            className="min-h-9 rounded-lg px-2 text-xs sm:min-h-11 sm:text-sm underline underline-offset-4 hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/5 cursor-pointer"
           >
             {rtl ? 'الإعداد لاحقاً' : 'Configurer plus tard'}
           </button>
@@ -122,15 +124,15 @@ export function OnboardingShell({
           aria-valuemin={1}
           aria-valuemax={ONBOARDING_TOTAL_STEPS}
           aria-valuenow={step}
-          className="mb-3.5 flex gap-1.5 sm:mb-6"
+          className="mb-4 flex gap-1.5 sm:mb-7"
         >
           {Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, index) => (
             <span
               key={index}
               className={
-                'h-1 flex-1 rounded-full transition-all duration-300 ' +
+                'h-1.5 flex-1 rounded-full transition-all duration-300 ' +
                 (index < step
-                  ? 'bg-[#facc15]'
+                  ? 'bg-[#7033e3] shadow-xs shadow-[#7033e3]/40'
                   : 'bg-neutral-200 dark:bg-[#27272a]')
               }
             />
@@ -139,7 +141,7 @@ export function OnboardingShell({
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="mb-2.5 text-lg font-semibold leading-snug tracking-tight outline-none sm:mb-3 sm:text-3xl"
+          className="mb-2.5 font-serif text-2xl font-bold leading-tight tracking-tight text-foreground outline-none sm:mb-3 sm:text-3xl lg:text-4xl"
         >
           {title}
         </h1>
@@ -161,7 +163,7 @@ export function OnboardingShell({
               type="button"
               disabled={step === 1 || finishing}
               onClick={onBack}
-              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-[#eaeaea] bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 focus-visible:outline-2 disabled:invisible dark:border-[#27272a] dark:bg-[#18181b] dark:text-neutral-300 dark:hover:bg-[#222]"
+              className="inline-flex min-h-11 sm:min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
             >
               <ChevronLeft
                 className="h-4 w-4 rtl:rotate-180"
@@ -173,7 +175,7 @@ export function OnboardingShell({
               type="button"
               disabled={!canContinue || finishing}
               onClick={onNext}
-              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-[#facc15] hover:bg-[#eab308] px-6 sm:px-8 py-2.5 text-sm font-bold text-neutral-950 shadow-xs hover:shadow transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#facc15] dark:text-neutral-950 dark:hover:bg-[#eab308]"
+              className="artistic-cta-button inline-flex min-h-11 sm:min-h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-sm font-bold text-white shadow-md shadow-[#7033e3]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
               {finishing && (
                 <Loader2
@@ -183,7 +185,7 @@ export function OnboardingShell({
               )}
               <span>{finishing ? copy.finishing : primaryLabel}</span>
               <ChevronRight
-                className="h-4 w-4 shrink-0 rtl:rotate-180"
+                className="h-4 w-4 shrink-0 rtl:rotate-180 stroke-[2.5]"
                 aria-hidden="true"
               />
             </button>

@@ -3,6 +3,7 @@ export type AccentColorKey =
   | 'warm-sand'
   | 'fly-indigo'
   | 'fly-violet'
+  | 'artistic-violet'
   | 'blue'
   | 'emerald'
   | 'indigo'
@@ -17,7 +18,7 @@ export type AccentColorKey =
 export type BorderRadiusOption = 'sharp' | 'default' | 'soft' | 'pill';
 export type CardStyleOption = 'classic' | 'bordered' | 'elevated' | 'glass';
 export type TableStyleOption = 'clean' | 'striped' | 'bordered' | 'compact';
-export type UIFontOption = 'sketch-marfa' | 'cyber-clean' | 'fly-tech' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
+export type UIFontOption = 'sketch-marfa' | 'editorial-newsreader' | 'cyber-clean' | 'fly-tech' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
 export type BackgroundContrastOption = 'normal' | 'soft' | 'vibrant';
 
 export interface AccentColorPreset {
@@ -120,6 +121,26 @@ export const ACCENT_PALETTES: AccentColorPreset[] = [
       ring: '258 90% 66%',
       accent: '258 90% 20%',
       accentForeground: '258 90% 85%',
+    },
+  },
+  {
+    id: 'artistic-violet',
+    nameFr: 'Violet Artistique Néo-Éditorial (#7033E3)',
+    nameAr: 'بنفسجي فني تحريري (#7033E3)',
+    hex: '#7033E3',
+    light: {
+      primary: '261 77% 55%',
+      primaryForeground: '0 0% 100%',
+      ring: '261 77% 55%',
+      accent: '261 77% 96%',
+      accentForeground: '261 77% 45%',
+    },
+    dark: {
+      primary: '261 77% 64%',
+      primaryForeground: '0 0% 100%',
+      ring: '261 77% 64%',
+      accent: '261 77% 20%',
+      accentForeground: '261 100% 88%',
     },
   },
   {
@@ -353,6 +374,12 @@ export const UI_FONTS_MAP: Record<UIFontOption, { family: string; labelFr: strin
     labelFr: 'Sketch Eina & Néo-Grotesque',
     labelAr: 'سكتش إينا وجروتسك (رسمي)',
     descriptionFr: 'Inspiré de Sketch.com · Eina & SF Pro / Inter, tracking serré, clarté macOS',
+  },
+  'editorial-newsreader': {
+    family: "'Plus Jakarta Sans', 'Newsreader', 'Amiri', 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",
+    labelFr: 'Éditorial Sérif & Tech (Newsreader + Jakarta)',
+    labelAr: 'طباعة تحريرية فنية (Newsreader & Amiri)',
+    descriptionFr: 'Titres en élégante sérif littéraire, sous-titres et données en sans-sérif moderne',
   },
   'cyber-clean': {
     family: "'Space Grotesk', 'Alexandria', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif",

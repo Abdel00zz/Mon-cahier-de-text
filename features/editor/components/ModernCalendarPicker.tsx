@@ -1,4 +1,4 @@
-import React, { FC, useState, useMemo, useCallback } from 'react';
+import { FC, useState, useMemo, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,

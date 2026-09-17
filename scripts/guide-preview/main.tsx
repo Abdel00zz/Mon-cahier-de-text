@@ -1,5 +1,5 @@
 /** Development-only capture entry. Real components, fictitious data, no account provider. */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../../index.css';
 import { LocaleProvider } from '../../i18n/LocaleProvider';

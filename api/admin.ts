@@ -236,6 +236,21 @@ const saveVersionedClock = async (
     await saveVersionedDocument(redis, key, expectedVersion, value);
 };
 
+/** Message unique pour un décalage horaire hors bornes (pas de 5 min, ±120 min). */
+const INVALID_TIMETABLE_CLOCK_OFFSET = 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).';
+
+/**
+ * Renvoie le décalage validé ou lève une 400. Le contrôle est idempotent :
+ * l'appelant peut l'utiliser après un premier garde-fou pour obtenir la valeur
+ * affinée (`number`) sans assertion non nulle.
+ */
+const requireTimetableClockOffset = (value: unknown): number => {
+    if (!isValidTimetableClockOffset(value)) {
+        throw new HttpError(400, INVALID_TIMETABLE_CLOCK_OFFSET);
+    }
+    return value;
+};
+
 /**
  * Publie une translation unique de toute la grille. Les cases des professeurs
  * ne sont jamais réécrites : seul le référentiel horaire global est versionné.
@@ -243,8 +258,9 @@ const saveVersionedClock = async (
 const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
     const isPersonal = typeof body.phone === 'string' && body.phone.length > 0;
     const inheritsGlobal = isPersonal && body.inheritGlobalTimetableClock === true;
-    if (!inheritsGlobal && !isValidTimetableClockOffset(body.timetableClockOffsetMinutes)) {
-        throw new HttpError(400, 'Décalage horaire invalide (pas de 5 min, entre -120 et +120 min).');
+    const requestedOffset = body.timetableClockOffsetMinutes;
+    if (!inheritsGlobal && !isValidTimetableClockOffset(requestedOffset)) {
+        throw new HttpError(400, INVALID_TIMETABLE_CLOCK_OFFSET);
     }
     if (typeof body.expectedTimetableClockVersion !== 'number'
         || !Number.isInteger(body.expectedTimetableClockVersion)
@@ -264,7 +280,7 @@ const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
             throw new HttpError(409, 'Les horaires ont été modifiés par une autre session. Rechargez avant de publier.');
         }
         const assignment: TimetableClockAssignment = {
-            offsetMinutes: inheritsGlobal ? null : body.timetableClockOffsetMinutes!,
+            offsetMinutes: inheritsGlobal ? null : requireTimetableClockOffset(requestedOffset),
             version: current.version + 1,
             updatedAt: new Date().toISOString(),
         };
@@ -284,7 +300,7 @@ const handleSaveTimetableClock = async (body: AdminBody, res: ApiResponse) => {
     }
 
     const timetableClock: TimetableClockPolicy = {
-        offsetMinutes: body.timetableClockOffsetMinutes,
+        offsetMinutes: requireTimetableClockOffset(requestedOffset),
         version: current.version + 1,
         updatedAt: new Date().toISOString(),
     };

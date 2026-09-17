@@ -17,7 +17,6 @@ import { deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
-import { useOrientation } from '@/hooks/useOrientation';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
 
 interface DashboardProps {
@@ -25,7 +24,6 @@ interface DashboardProps {
     activeSessionClassIds?: string[];
     accountTeacherName?: string;
     onOnboardingVisibilityChange?: (visible: boolean) => void;
-    onOpenGuide?: () => void;
 }
 
 type ClassDisplayMode = 'list' | 'single' | 'double';
@@ -46,7 +44,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     activeSessionClassIds = [],
     accountTeacherName = '',
     onOnboardingVisibilityChange,
-    onOpenGuide,
 }) => {
     const { locale, t, isRtl } = useLocale();
     const reduceMotion = useReducedMotion();
@@ -60,7 +57,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const isMobile = deviceType === 'phone';
     const defaultDisplayMode: ClassDisplayMode = isMobile ? 'single' : 'double';
     const { value: selectedCycle, setValue: setSelectedCycle, isLoading: isCycleLoading } = useOptimizedLocalStorage<Cycle>('selected_cycle_v1', 'college', 100);
-    const { isLandscape } = useOrientation();
     const { value: classDisplayMode, setValue: setClassDisplayMode, isLoading: isDisplayModeLoading } = useOptimizedLocalStorage<ClassDisplayMode>('dashboard_class_display_v1', defaultDisplayMode, 100);
     const [subjectFilter, setSubjectFilter] = useState<string>('all');
     const [isDisplayMenuOpen, setDisplayMenuOpen] = useState(false);
@@ -255,7 +251,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-[430px] mx-auto auto-rows-fr items-stretch'
-        : 'grid-cols-[repeat(auto-fill,minmax(280px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(310px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(330px,1fr))] auto-rows-fr items-stretch justify-start';
+        : 'grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -289,6 +285,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
                 <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-0 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
+
                     {classes.length > 0 && (
                         <div className="mb-4">
                             <SectionHeader
@@ -340,45 +337,43 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             <span>{t('dashboard.classShort')}</span>
                                         </Button>
 
-                                        {isLandscape && (
-                                            <div ref={displayMenuRef} className="relative hidden shrink-0 sm:block">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setDisplayMenuOpen(open => !open)}
-                                                    aria-haspopup="menu"
-                                                    aria-expanded={isDisplayMenuOpen}
-                                                    className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground shadow-2xs hover:bg-muted cursor-pointer"
+                                        <div ref={displayMenuRef} className="relative shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => setDisplayMenuOpen(open => !open)}
+                                                aria-haspopup="menu"
+                                                aria-expanded={isDisplayMenuOpen}
+                                                className="flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2 sm:px-2.5 text-xs font-medium text-foreground shadow-2xs hover:bg-muted cursor-pointer"
+                                            >
+                                                <span>{displayCopy(currentDisplay).label}</span>
+                                                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            {isDisplayMenuOpen && (
+                                                <div
+                                                    role="menu"
+                                                    className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-lg"
                                                 >
-                                                    <span>{displayCopy(currentDisplay).label}</span>
-                                                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                                {isDisplayMenuOpen && (
-                                                    <div
-                                                        role="menu"
-                                                        className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-lg"
-                                                    >
-                                                        {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                            const isActive = option === currentDisplay;
-                                                            return (
-                                                                <button
-                                                                    key={option}
-                                                                    type="button"
-                                                                    role="menuitemradio"
-                                                                    aria-checked={isActive}
-                                                                    onClick={() => {
-                                                                        setClassDisplayMode(option);
-                                                                        setDisplayMenuOpen(false);
-                                                                    }}
-                                                                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-muted text-foreground font-bold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
-                                                                >
-                                                                    <span>{displayCopy(option).label}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                    {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                        const isActive = option === currentDisplay;
+                                                        return (
+                                                            <button
+                                                                key={option}
+                                                                type="button"
+                                                                role="menuitemradio"
+                                                                aria-checked={isActive}
+                                                                onClick={() => {
+                                                                    setClassDisplayMode(option);
+                                                                    setDisplayMenuOpen(false);
+                                                                }}
+                                                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-muted text-foreground font-bold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                                                            >
+                                                                <span>{displayCopy(option).label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 }
                             />
@@ -399,7 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         </div>
 
                                         <div className="max-w-md space-y-1.5 px-2">
-                                            <h3 className="font-sans font-bold text-xl sm:text-2xl text-foreground text-balance">
+                                            <h3 className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">
                                                 {t('dashboard.emptyTitle')}
                                             </h3>
                                             <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted-foreground font-sans sm:text-sm text-pretty">
@@ -449,7 +444,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-x-4 gap-y-7 pt-1 sm:gap-x-5 sm:gap-y-8 sm:pt-2 lg:gap-x-6 lg:gap-y-8`}>
+                                    <div className={`grid ${classGridClass} w-full gap-2.5 sm:gap-x-5 sm:gap-y-6 pt-1 sm:pt-2`}>
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (

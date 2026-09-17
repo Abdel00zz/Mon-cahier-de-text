@@ -218,8 +218,8 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setSelectedCycle(cycle)}
                       className={`touch-manipulation rounded-lg px-3 py-1.5 text-xs font-bold transition-all sm:px-4 sm:text-sm ${
                         selectedCycle === cycle
-                          ? 'bg-[#facc15] text-neutral-950 shadow-xs'
-                          : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'
+                          ? 'bg-[#7033e3] text-white shadow-xs font-bold'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       {copy.cycleLabels[cycle]}
@@ -233,7 +233,7 @@ export const ClassesStep = memo<ClassesStepProps>(
             {selectedCycle === 'college' ? (
               /* Collège : 1AC, 2AC, 3AC directement sous forme de cartes */
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-neutral-600 dark:text-neutral-400 sm:text-sm">
+                <label className="block text-xs font-semibold text-muted-foreground sm:text-sm">
                   {isAr ? 'المستوى الدراسي:' : 'Niveau :'}
                 </label>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
@@ -244,14 +244,14 @@ export const ClassesStep = memo<ClassesStepProps>(
                         key={level}
                         type="button"
                         onClick={() => setSelectedLevel(level)}
-                        className={`group relative flex min-h-[64px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2.5 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:min-h-[82px] sm:p-4 ${
+                        className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                           isSelected
-                            ? 'border-2 border-amber-400 bg-amber-400/10 text-neutral-950 shadow-xs dark:border-amber-400 dark:bg-amber-400/20 dark:text-amber-100'
-                            : 'border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
+                            ? 'border-2 border-[#7033e3] bg-[#7033e3]/10 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/20 dark:text-[#c4b5fd]'
+                            : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                         }`}
                       >
                         <span className="text-sm font-bold sm:text-base">{level}</span>
-                        <span className="mt-0.5 text-[11px] opacity-75 sm:text-xs">
+                        <span className="mt-0.5 text-[10.5px] opacity-80 sm:text-xs">
                           {formatLocalizedClassDisplayName(level, lang)}
                         </span>
                       </button>
@@ -285,13 +285,13 @@ export const ClassesStep = memo<ClassesStepProps>(
                           key={group.key}
                           type="button"
                           onClick={() => handleSelectPalier(group.key)}
-                          className={`group relative flex min-h-[64px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:min-h-[82px] sm:p-3.5 ${
+                          className={`group relative flex min-h-[58px] sm:min-h-[76px] touch-manipulation flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 text-center transition-all duration-150 active:scale-95 cursor-pointer sm:p-3.5 ${
                             isSelected
-                              ? 'border-2 border-amber-400 bg-amber-400/10 text-neutral-950 shadow-xs dark:border-amber-400 dark:bg-amber-400/20 dark:text-amber-100'
-                              : 'border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
+                              ? 'border-2 border-[#7033e3] bg-[#7033e3]/10 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/20 dark:text-[#c4b5fd]'
+                              : 'border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted/50'
                           }`}
                         >
-                          <span className="text-[11px] font-semibold tracking-wider text-neutral-500 dark:text-neutral-400 sm:text-xs">
+                          <span className="text-[11px] font-semibold tracking-wider text-muted-foreground sm:text-xs">
                             {shortBadge}
                           </span>
                           <span className="mt-0.5 text-xs font-bold leading-tight sm:text-sm md:text-base">
@@ -305,7 +305,7 @@ export const ClassesStep = memo<ClassesStepProps>(
 
                 {/* Branches / Filières du palier sélectionné */}
                 <div>
-                  <label className="mb-2 block text-xs font-semibold text-neutral-600 dark:text-neutral-400 sm:text-sm">
+                  <label className="mb-2 block text-xs font-semibold text-muted-foreground sm:text-sm">
                     {isAr ? 'الشعبة / المسلك:' : 'Filière :'}
                   </label>
                   <div className="flex flex-wrap gap-2 sm:gap-2.5">
@@ -320,8 +320,8 @@ export const ClassesStep = memo<ClassesStepProps>(
                             onClick={() => setSelectedLevel(level)}
                             className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer sm:px-4 sm:py-2.5 sm:text-sm ${
                               isSelected
-                                ? 'border-2 border-amber-400 bg-amber-400/15 text-neutral-950 font-bold shadow-xs dark:border-amber-400 dark:bg-amber-400/25 dark:text-amber-100'
-                                : 'border border-[hsl(var(--border))] bg-white text-neutral-700 hover:border-neutral-400 hover:text-neutral-950 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:text-white'
+                                ? 'border-2 border-[#7033e3] bg-[#7033e3]/15 text-[#7033e3] font-bold shadow-xs dark:border-[#a855f7] dark:bg-[#7033e3]/25 dark:text-[#c4b5fd]'
+                                : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:text-foreground'
                             }`}
                           >
                             {getShortBranchLabel(level, isAr)}
@@ -335,7 +335,7 @@ export const ClassesStep = memo<ClassesStepProps>(
 
             {/* 3. Numéro de groupe (Fauj) */}
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
-              <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 sm:text-sm">
+              <span className="text-xs font-semibold text-muted-foreground sm:text-sm">
                 {isAr ? 'رقم الفوج:' : 'Groupe :'}
               </span>
               <div className="flex items-center gap-2">
@@ -348,8 +348,8 @@ export const ClassesStep = memo<ClassesStepProps>(
                       onClick={() => setGroupInput(num)}
                       className={`flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 cursor-pointer ${
                         isSelected
-                          ? 'border-2 border-amber-400 bg-[#facc15] text-neutral-950 shadow-xs'
-                          : 'border border-[hsl(var(--border))] bg-white text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-200 dark:hover:border-neutral-600'
+                          ? 'border-2 border-[#7033e3] bg-[#7033e3] text-white shadow-xs'
+                          : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400 hover:bg-muted'
                       }`}
                     >
                       {num}
@@ -362,7 +362,7 @@ export const ClassesStep = memo<ClassesStepProps>(
                   value={groupInput}
                   onChange={(e) => setGroupInput(sanitizeGroupNumberInput(e.target.value))}
                   aria-label={isAr ? 'رقم مخصص' : 'Numéro libre'}
-                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-white text-center text-sm font-bold text-neutral-900 focus:border-amber-400 focus:outline-none dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-100"
+                  className="h-11 w-14 touch-manipulation rounded-xl border border-[hsl(var(--border))] bg-card text-center text-sm font-bold text-foreground focus:border-[#7033e3] focus:outline-none"
                 />
               </div>
             </div>
@@ -370,7 +370,7 @@ export const ClassesStep = memo<ClassesStepProps>(
             {/* 4. Matière (si plusieurs matières) */}
             {subjectsList.length > 1 && (
               <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
-                <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 sm:text-sm">
+                <span className="text-xs font-semibold text-muted-foreground sm:text-sm">
                   {isAr ? 'المادة:' : 'Matière :'}
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -383,8 +383,8 @@ export const ClassesStep = memo<ClassesStepProps>(
                         onClick={() => setSelectedSubject(subject)}
                         className={`min-h-[44px] touch-manipulation rounded-xl px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer sm:px-4 sm:text-sm ${
                           isSelected
-                            ? 'bg-[#facc15] text-neutral-950 font-bold shadow-xs border border-amber-400'
-                            : 'border border-[hsl(var(--border))] bg-white text-neutral-700 hover:border-neutral-400 dark:border-[hsl(var(--border))] dark:bg-[hsl(var(--foreground))] dark:text-neutral-300'
+                            ? 'bg-[#7033e3] text-white font-bold shadow-xs border border-[#7033e3]'
+                            : 'border border-[hsl(var(--border))] bg-card text-foreground hover:border-neutral-400'
                         }`}
                       >
                         {formatLocalizedSubjectDisplayName(subject, lang)}
@@ -396,25 +396,25 @@ export const ClassesStep = memo<ClassesStepProps>(
             )}
           </div>
 
-          {/* Aperçu instantané Vercel Style avec typographie nette - aucun émoji */}
+          {/* Aperçu instantané Style Néo-Éditorial */}
           <div className="mt-5 text-center sm:mt-6">
-            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-xs font-bold text-neutral-900 dark:text-amber-200 sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm">
+            <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-[#7033e3]/30 bg-[#7033e3]/10 px-4 py-2 text-xs font-bold text-[#7033e3] dark:text-[#c4b5fd] sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm shadow-2xs">
               <span className="truncate">{previewClassName}</span>
               <span className="text-neutral-400 dark:text-neutral-500">•</span>
-              <span className="font-semibold text-neutral-700 dark:text-neutral-300 truncate">
+              <span className="font-semibold text-foreground/80 truncate">
                 {formatLocalizedSubjectDisplayName(selectedSubject, lang)}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Barre de navigation directe Vercel avec boutons tactiles ergonomiques */}
+        {/* Barre de navigation directe avec boutons tactiles ergonomiques */}
         <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
           {onBack ? (
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-[hsl(var(--border))] bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 dark:border-[hsl(var(--border))] dark:bg-[#18181b] dark:text-neutral-300 dark:hover:bg-[#222] transition-colors"
+              className="inline-flex min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               <span>{copy.back}</span>
@@ -428,7 +428,7 @@ export const ClassesStep = memo<ClassesStepProps>(
               <button
                 type="button"
                 onClick={onSkip}
-                className="inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors"
+                className="inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <span>{copy.ignoreClass}</span>
               </button>
@@ -438,13 +438,13 @@ export const ClassesStep = memo<ClassesStepProps>(
               type="button"
               disabled={!isFormValid || isSubmitting}
               onClick={handleCreateClass}
-              className="group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl bg-[#facc15] hover:bg-[#eab308] px-6 sm:px-8 py-2.5 text-sm font-bold text-neutral-950 shadow-xs hover:shadow transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#facc15] dark:text-neutral-950 dark:hover:bg-[#eab308]"
+              className="artistic-cta-button group inline-flex min-h-12 flex-1 sm:flex-initial items-center justify-center gap-2 rounded-xl px-6 sm:px-8 py-2.5 text-sm font-bold text-white shadow-md shadow-[#7033e3]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
               <span>{isAr ? 'إنشاء هذا القسم والمتابعة' : 'Créer la classe et continuer'}</span>
               {isAr ? (
-                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5 stroke-[2.5]" />
               ) : (
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 stroke-[2.5]" />
               )}
             </button>
           </div>

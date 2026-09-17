@@ -84,6 +84,7 @@ export const validateSessionDate = (
     const weeklyRest = isWeeklyRestDay(iso);
     if (weeklyRest) warnings.push({ type: 'weekly-rest', message: t('dateWarning.weeklyRest') });
 
+    // 1. Emploi du temps : le prof enseigne-t-il cette classe ce jour-là ?
     // Évite de répéter « pas de cours prévu » pour ce même jour de repos.
     const schedule = config.schedules?.find(s => s.classId === classInfo.id);
     if (!weeklyRest && schedule && schedule.slots.length > 0) {

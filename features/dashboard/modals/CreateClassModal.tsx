@@ -82,7 +82,7 @@ const ChoiceCard: React.FC<{ children: React.ReactNode; onClick: () => void; ton
     onClick={onClick}
     data-keep-tone={tone}
     className={cn(
-      "group flex min-h-[64px] w-full cursor-pointer items-center justify-center rounded-xl border px-5 py-4 text-center text-sm font-semibold shadow-[0_2px_8px_rgba(63,58,52,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.99]",
+      "group flex min-h-[48px] sm:min-h-[58px] w-full cursor-pointer items-center justify-center rounded-xl border px-3.5 py-2.5 sm:px-5 sm:py-3.5 text-center text-sm font-semibold shadow-[0_1px_4px_rgba(63,58,52,0.03)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]",
       tone 
         ? "keep-surface !rounded-xl border-[var(--keep-border)] bg-[var(--keep-light)] dark:bg-[var(--keep-dark)] text-[var(--keep-accent)] hover:border-[var(--keep-accent)] hover:brightness-[0.97] dark:hover:brightness-[1.10]"
         : "border-border bg-background text-card-foreground hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm"
@@ -278,7 +278,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
       } maxWidth="xl" mobileDetents={CLASS_MODAL_DETENTS}
         className="sm:max-w-2xl sm:rounded-2xl"
         headerClassName="border-b border-border/70 bg-background"
-        bodyClassName="bg-muted/20 px-5 py-5 sm:px-7 sm:py-6"
+        bodyClassName="bg-muted/20 px-4 py-4 sm:px-7 sm:py-6"
         footerClassName="border-t border-border/70 bg-background"
         footer={<fieldset disabled={submitting} className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           {(editingClass && onDelete || !editingClass && stepIndex > 0) && <div className="flex min-h-11 items-center gap-2">
@@ -291,7 +291,18 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
             <Button type="button" variant="outline" onClick={onClose} className="h-11 w-full rounded-xl border-border bg-background px-4 text-xs font-semibold shadow-xs sm:w-auto sm:text-sm">{copy.cancel}</Button>
             {step === 'cycle' && <Button type="button" onClick={() => chooseCycle(cycle)} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}<ArrowRight className="h-4 w-4 shrink-0 rtl:rotate-180" /></Button>}
             {step === 'level' && customMode && <Button type="button" onClick={continueCustomLevel} disabled={!customLevel.trim()} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{copy.next}<ArrowRight className="h-4 w-4 shrink-0 rtl:rotate-180" /></Button>}
-            {(editingClass || step === 'details') && <Button type="submit" form={formId} disabled={!isFormValid || submitting} aria-busy={submitting} className="h-11 w-full px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm">{submitting ? copy.saving : editingClass ? copy.save : copy.create}</Button>}
+            {(editingClass || step === 'details') && (
+              <AnimatedSubmitButton
+                type="submit"
+                form={formId}
+                disabled={!isFormValid || submitting}
+                aria-busy={submitting}
+                isSubmitting={submitting}
+                label={editingClass ? copy.save : copy.create}
+                loadingLabel={copy.saving}
+                className="h-11 w-full rounded-[12px] px-5 text-xs font-bold shadow-sm sm:w-auto sm:text-sm"
+              />
+            )}
           </div>
         </fieldset>}
       >

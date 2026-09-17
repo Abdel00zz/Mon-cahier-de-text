@@ -56,9 +56,9 @@ const Chip = ({
     onClick={onClick}
     aria-pressed={active}
     className={cn(
-      "auth-choice inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3 py-2 text-center text-sm font-bold focus-visible:outline-2",
+      "auth-choice inline-flex min-h-11 max-w-full items-center justify-center rounded-md border px-3 py-2 text-center text-sm font-bold focus-visible:outline-2 transition-all duration-150 active:scale-[0.97]",
       active
-        ? "bg-[#fbbc04] border-[#fbbc04] text-black shadow-sm"
+        ? "bg-[#7033e3] border-[#7033e3] text-white shadow-sm"
         : "bg-transparent border-border text-foreground hover:bg-black/5 dark:hover:bg-white/10",
     )}
   >
@@ -296,7 +296,7 @@ export function RegistrationOnboarding({
           <button
             type="submit"
             disabled={!prepared}
-            className="auth-action min-h-11 rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-orange-600 focus-visible:outline-2 disabled:opacity-50"
+            className="auth-action artistic-cta-button min-h-11 w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white shadow-md focus-visible:outline-2 disabled:opacity-50 cursor-pointer"
           >
             {ar ? "متابعة التسجيل" : "Continuer l’inscription"}
           </button>

@@ -41,24 +41,24 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex min-h-[68px] sm:min-h-[72px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
+                "group relative flex min-h-[60px] sm:min-h-[72px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
                 isActiveSession && "keep-session-active z-10"
             )}
         >
             <button
                 type="button"
                 {...pressHandlers}
-                className="flex min-w-0 flex-1 touch-manipulation items-center gap-3 px-4 py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
+                className="flex min-w-0 flex-1 touch-manipulation items-center gap-2.5 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
-                <div className="keep-class-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
-                    <Users className="h-4 w-4" />
+                <div className="keep-class-icon flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
+                    <Users className="h-[15px] w-[15px] sm:h-4 sm:w-4" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-lg" : "text-base")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
-                    <div className="mt-1 flex items-center gap-1.5 truncate text-muted-foreground">
+                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-base sm:text-lg" : "text-[15px] sm:text-base")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
+                    <div className="mt-0.5 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
-                            className={cn('truncate', isRtl ? 'text-sm leading-none' : 'text-[11.9px] leading-none')}
+                            className={cn('truncate', isRtl ? 'text-xs leading-none' : 'text-[10.5px] sm:text-[11.9px] leading-none')}
                             title={lastOpened}
                         >
                             {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{lastOpened}</time> : lastOpened}

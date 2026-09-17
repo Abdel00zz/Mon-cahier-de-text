@@ -107,7 +107,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-inline-end border-border/40',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card/92 dark:bg-card/90 backdrop-blur-md text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-inline-end border-border/60 shadow-[2px_0_12px_rgba(0,0,0,0.02)] dark:shadow-[2px_0_16px_rgba(0,0,0,0.3)]',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
@@ -285,7 +285,7 @@ export const TabBar = React.memo<TabBarProps>(({
         {/* Ligne spéculaire de réfraction de verre */}
         <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" aria-hidden="true" />
 
-        <div className="relative mx-auto flex h-[68px] max-w-md items-center justify-around px-1 pt-1 pb-1.5">
+        <div className="relative mx-auto flex h-[62px] max-w-md items-center justify-around px-1 pt-0.5 pb-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -298,7 +298,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 whileTap={{ scale: 0.90 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => goTo(tab.id)}
-                className="relative flex flex-1 flex-col items-center justify-center pt-1.5 pb-2 px-0.5 rounded-xl min-h-[58px] min-w-0 cursor-pointer select-none"
+                className="relative flex flex-1 flex-col items-center justify-center pt-1 pb-1.5 px-0.5 rounded-xl min-h-[52px] min-w-0 cursor-pointer select-none"
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
@@ -349,7 +349,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onTouchStart={preloadSettingsPage}
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
-            className="relative flex flex-1 flex-col items-center justify-center pt-1.5 pb-2 px-0.5 rounded-xl min-h-[58px] min-w-0 cursor-pointer select-none"
+            className="relative flex flex-1 flex-col items-center justify-center pt-1 pb-1.5 px-0.5 rounded-xl min-h-[52px] min-w-0 cursor-pointer select-none"
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >

@@ -23,8 +23,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <div className="flex items-center gap-2.5">
         <h2
           className={cn(
-            'text-foreground tracking-wide leading-none',
-            isArabic ? 'font-sans text-xl sm:text-2xl font-bold' : 'font-sans text-xl sm:text-2xl font-bold'
+            'text-foreground tracking-tight leading-tight',
+            isArabic ? 'font-serif text-xl sm:text-2xl font-bold' : 'font-serif text-lg sm:text-2xl font-bold'
           )}
         >
           {title}

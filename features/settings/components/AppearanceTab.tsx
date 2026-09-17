@@ -13,6 +13,8 @@ import {
   Sliders,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { AppConfig, ThemeMode, ThemeCustomization } from '@/types';
 import { LATIN_FONTS, ARABIC_FONTS } from '@/constants/typography';
@@ -534,6 +536,61 @@ export const AppearanceTab: React.FC<AppearanceTabProps> = ({ config, onConfigCh
             <h3 className="text-sm sm:text-[14.5px] font-semibold text-foreground">
               {fontCopy.title}
             </h3>
+          </div>
+        </div>
+
+        {/* Carte de Démonstration & Application Directe "Style Éditorial Artistique" inspiré de l'image de référence */}
+        <div className="mb-4 artistic-editorial-banner rounded-2xl p-4 sm:p-5 shadow-xs transition-all">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-md bg-[#7033e3]/10 px-2 py-0.5 text-[10.5px] font-bold text-[#7033e3] dark:text-[#c4b5fd]">
+                  <Sparkles className="h-3 w-3" />
+                  {isRtl ? 'ثنائي الخطوط المستوحى' : 'Duo Typographique Recommandé'}
+                </span>
+              </div>
+              <h4 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
+                {isRtl ? 'دفتر النصوص الأكاديمي والتربوي' : 'Machines that Remember · Cahier de textes'}
+              </h4>
+              <p className="text-xs sm:text-[13px] text-muted-foreground font-sans leading-relaxed">
+                {isRtl
+                  ? 'تناغم فني رفيع: عناوين بنمط خط نوبل وأصيل (Newsreader / Amiri)، مع نصوص فرعية وواجهة عالية الوضوح (Plus Jakarta Sans).'
+                  : 'Harmonie haute-fidélité : Grands titres en sérif littéraire noble (Newsreader / Amiri), et sous-titres/données en sans-sérif moderne (Plus Jakarta Sans / Inter).'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0 self-start md:self-center">
+              <button
+                type="button"
+                onClick={() => {
+                  updateCustomization({ uiFont: 'editorial-newsreader', accentColor: 'artistic-violet' });
+                  onConfigChange({ contentFontLatin: 'newsreader', contentFontArabic: 'amiri' });
+                }}
+                className="artistic-cta-button inline-flex items-center gap-2 px-4 py-2 text-xs font-bold shadow-md cursor-pointer"
+                title={isRtl ? 'تطبيق هذا المظهر بالكامل' : 'Appliquer ce thème typographique et accent violet'}
+              >
+                <span>{isRtl ? 'تطبيق هذا النمط' : 'Appliquer ce style'}</span>
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  className="artistic-nav-circle"
+                  aria-label={isRtl ? 'السابق' : 'Précédent'}
+                  onClick={() => onConfigChange({ contentFontLatin: 'newsreader' })}
+                >
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                </button>
+                <button
+                  type="button"
+                  className="artistic-nav-circle"
+                  aria-label={isRtl ? 'التالي' : 'Suivant'}
+                  onClick={() => onConfigChange({ contentFontArabic: 'amiri' })}
+                >
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { Sparkles, Calendar, Bell, ArrowRight, ArrowLeft, LogIn } from "lucide-react";
 import type { AppLocale } from "@/types";
 

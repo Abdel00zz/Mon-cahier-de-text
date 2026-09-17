@@ -47,16 +47,16 @@ export const ProfileStep = memo<ProfileStepProps>(
                     : [...cycles, key],
                 )
               }
-              className={`group relative flex min-h-[136px] flex-col items-center justify-center rounded-2xl border p-5 text-center transition-all duration-200 cursor-pointer sm:min-h-[150px] sm:p-6 ${
+              className={`group relative flex min-h-[96px] sm:min-h-[140px] flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-3.5 sm:p-5 text-center transition-all duration-200 cursor-pointer active:scale-[0.98] ${
                 isSelected
-                  ? 'border-2 border-amber-400 bg-amber-400/10 shadow-xs dark:border-amber-400 dark:bg-amber-400/20'
-                  : 'border-[hsl(var(--border))] bg-white text-[hsl(var(--foreground))] hover:border-neutral-400 hover:bg-[#fafafa] dark:border-[hsl(var(--border))] dark:bg-[#18181b] dark:text-[hsl(var(--foreground))] dark:hover:border-neutral-600'
+                  ? 'border-2 border-[#7033e3] bg-[#7033e3]/10 shadow-sm shadow-[#7033e3]/20 ring-1 ring-[#7033e3]/30 dark:border-[#8b5cf6] dark:bg-[#7033e3]/20'
+                  : 'border-border bg-card text-foreground hover:border-[#7033e3]/40 hover:bg-muted/60'
               }`}
             >
-              <span className="block text-base font-bold text-[hsl(var(--foreground))] dark:text-[hsl(var(--foreground))] sm:text-lg leading-snug">
+              <span className="block text-sm font-bold text-foreground sm:text-lg leading-snug">
                 {copy.cycleLabels[key]}
               </span>
-              <span className="mt-2 block text-xs leading-relaxed text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))] sm:text-[13px] max-w-[230px]">
+              <span className="mt-1 sm:mt-2 block text-xs leading-relaxed text-muted-foreground sm:text-[13px] max-w-[230px]">
                 {copy.cycleDescriptions[key]}
               </span>
             </button>

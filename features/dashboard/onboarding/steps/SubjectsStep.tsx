@@ -73,19 +73,20 @@ export const SubjectsStep = memo<SubjectsStepProps>(
                 aria-checked={selected}
                 onClick={() => onToggle(subject)}
                 className={cn(
-                  'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base',
+                  'keep-surface keep-interactive keep-choice group flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-start text-sm font-medium sm:text-base transition-all active:scale-[0.98]',
+                  selected && 'border-[#7033e3]/40 bg-[#7033e3]/[0.05] dark:bg-[#7033e3]/[0.12]'
                 )}
               >
                 <span
                   className={cn(
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-200',
                     selected
-                      ? 'border-amber-400 bg-[#facc15]'
-                      : 'border-[hsl(var(--border))] bg-transparent dark:border-[hsl(var(--muted-foreground))]',
+                      ? 'border-[#7033e3] bg-[#7033e3] text-white shadow-xs shadow-[#7033e3]/30'
+                      : 'border-border bg-transparent',
                   )}
                 >
                   {selected && (
-                    <Check className="h-3.5 w-3.5 text-neutral-950 stroke-[3]" aria-hidden="true" />
+                    <Check className="h-3.5 w-3.5 text-white stroke-[3]" aria-hidden="true" />
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
