@@ -9,6 +9,7 @@ import {
   DropdownMenuItem, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { numberFormat } from '@/utils/formatters';
 
 interface SelectionBarProps {
   count: number;
@@ -70,7 +71,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 }) => {
   const { t, locale } = useLocale();
   if (count === 0) return null;
-  const formattedCount = new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(count);
+  const formattedCount = numberFormat(locale).format(count);
   const selectedLabel = t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount });
   const secondary: Action[] = [];
   if (canAdd) secondary.push({ id: 'add', icon: Plus, onClick: onAdd, title: t('selection.addAfter') });

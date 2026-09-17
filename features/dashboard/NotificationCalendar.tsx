@@ -25,6 +25,7 @@ import { collectSessionDates } from '@/utils/printMeta';
 import { readClassLessons } from '@/utils/notificationSignals';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { loadPlanning, resolveClassAssessments, type PlanningFile } from '@/utils/assessments';
+import { dateTimeFormat } from '@/utils/formatters';
 import {
   getOfficialStudentEventsFile,
   getOfficialStudentEventsForClass,
@@ -402,16 +403,15 @@ export const NotificationCalendar: React.FC<NotificationCalendarProps> = ({ clas
   const monthLessonCount = monthEvents.filter(event => event.kind === 'lesson').length;
   const monthMilestoneCount = new Set(monthEvents.filter(event => event.kind !== 'lesson').map(event => event.id)).size;
 
-  const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
-  const monthLabel = new Intl.DateTimeFormat(localeCode, { month: 'long', year: 'numeric' }).format(month);
-  const selectedDateLabel = new Intl.DateTimeFormat(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(fromISO(selectedDate));
+  const monthLabel = dateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(month);
+  const selectedDateLabel = dateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(fromISO(selectedDate));
   
   // Noms des jours de la semaine débutant par le Lundi
   const weekdayLabels = Array.from({ length: 7 }, (_, index) => {
     const d = new Date(2026, 7, 3 + index); // 3 août 2026 est un Lundi
     return {
-      short: new Intl.DateTimeFormat(localeCode, { weekday: 'short' }).format(d).replace('.', ''),
-      full: new Intl.DateTimeFormat(localeCode, { weekday: 'long' }).format(d),
+      short: dateTimeFormat(locale, { weekday: 'short' }).format(d).replace('.', ''),
+      full: dateTimeFormat(locale, { weekday: 'long' }).format(d),
       isWeekend: index === 5 || index === 6,
     };
   });

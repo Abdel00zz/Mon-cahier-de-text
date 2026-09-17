@@ -7,6 +7,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
+import { dateTimeFormat, numberFormat } from '../utils/formatters';
 import { SUBJECTS } from '../constants/subjects';
 import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
 import { groupLessonRows } from '../utils/tableRows';
@@ -392,4 +393,17 @@ test('codes matières courts : tout le vocabulaire a un sigle lisible', () => {
   assert.equal(SUBJECT_ABBREV_MAP['Physique-Chimie'], 'PC');
   assert.ok(SUBJECT_ABBREV_MAP['Sciences de la Vie et de la Terre'].length <= 4);
   assert.ok(SUBJECT_ABBREV_MAP['Mathématiques'].length <= 6);
+});
+
+test('formateurs Intl : une seule instance partagee par locale et options', () => {
+  // Le rendu d'un tableau de seances appelait Intl une fois par ligne ET par
+  // rendu ; l'instance est desormais partagee (cout paye une seule fois).
+  assert.equal(dateTimeFormat('fr', { day: 'numeric' }), dateTimeFormat('fr', { day: 'numeric' }));
+  assert.notEqual(dateTimeFormat('fr'), dateTimeFormat('ar'));
+  assert.equal(numberFormat('ar', { minimumIntegerDigits: 2 }).format(4), '04');
+  assert.equal(
+    dateTimeFormat('fr', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })
+      .format(new Date('2026-02-13T00:00:00Z')),
+    '13/02/2026',
+  );
 });

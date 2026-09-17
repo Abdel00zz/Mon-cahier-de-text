@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
+import { numberFormat } from '@/utils/formatters';
 
 interface DevoirsViewProps {
   classes: ClassInfo[];
@@ -98,7 +99,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
   embedded = false,
 }) => {
   const { t, locale } = useLocale();
-  const number = useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
+  const number = useMemo(() => numberFormat(locale), [locale]);
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
@@ -1099,7 +1100,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             <div className="flex items-center justify-between gap-2 px-1">
               <span className="text-[11px] font-bold text-muted-foreground">
                 {t(names.length === 1 ? 'evaluations.absentOne' : 'evaluations.absentMany', {
-                  count: new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length),
+                  count: numberFormat(locale).format(names.length),
                 })}
               </span>
               <div className="flex items-center gap-1.5">
@@ -1199,7 +1200,7 @@ const AbsencesEditor: React.FC<AbsencesEditorProps> = ({
             onClick={() => onSave(names)}
             className="h-10 px-5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:brightness-110 transition-all shadow-xs cursor-pointer"
           >
-            {t('common.save')} {names.length > 0 ? `(${new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA').format(names.length)})` : ''}
+            {t('common.save')} {names.length > 0 ? `(${numberFormat(locale).format(names.length)})` : ''}
           </button>
         </div>
       </div>

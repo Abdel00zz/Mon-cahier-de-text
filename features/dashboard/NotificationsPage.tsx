@@ -41,6 +41,7 @@ import { NotificationFeed } from '@/hooks/useNotificationFeed';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
+import { dateTimeFormat } from '@/utils/formatters';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -186,7 +187,7 @@ const localeCode = (locale: AppLocale): string => locale === 'ar' ? 'ar-MA' : lo
 const formatLocalizedDate = (iso: string, locale: AppLocale): string => {
   const date = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat(localeCode(locale), { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+  return dateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 };
 
 const dayLabel = (iso: string, locale: AppLocale, t: Translate): string => {
@@ -198,7 +199,7 @@ const dayLabel = (iso: string, locale: AppLocale, t: Translate): string => {
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   if (sameDay(date, today)) return t('notifications.signal.today');
   if (sameDay(date, yesterday)) return t('notifications.signal.yesterday');
-  return date.toLocaleDateString(localeCode(locale), { weekday: 'long', day: 'numeric', month: 'long' });
+  return dateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(date);
 };
 
 const groupActivityEntries = (entries: ActivityEntry[]): GroupedActivityEntry[] => {
@@ -218,9 +219,9 @@ const groupActivityEntries = (entries: ActivityEntry[]): GroupedActivityEntry[] 
 
 const timeRangeLabel = (entry: GroupedActivityEntry, locale: AppLocale): string => {
   const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-  const latest = new Date(entry.at).toLocaleTimeString(localeCode(locale), options);
+  const latest = dateTimeFormat(locale, options).format(new Date(entry.at));
   if (entry.count === 1) return latest;
-  const oldest = new Date(entry.oldestAt).toLocaleTimeString(localeCode(locale), options);
+  const oldest = dateTimeFormat(locale, options).format(new Date(entry.oldestAt));
   return `${oldest}–${latest}`;
 };
 

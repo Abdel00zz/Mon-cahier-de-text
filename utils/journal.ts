@@ -4,6 +4,7 @@
  */
 
 import type { AppLocale } from '../types.js';
+import { dateTimeFormat } from './formatters.js';
 
 export interface JournalEntry {
     op: string;
@@ -123,6 +124,5 @@ export const timeAgo = (iso: string, locale: AppLocale = 'fr'): string => {
     if (hours < 24) return copy.hours(hours);
     const days = Math.floor(hours / 24);
     if (days < 30) return copy.days(days);
-    const localeCode = locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-FR';
-    return new Date(iso).toLocaleDateString(localeCode);
+    return dateTimeFormat(locale).format(new Date(iso));
 };

@@ -5,6 +5,7 @@ import { Indices, ElementType } from '@/types';
 import { ContentRenderer } from './ContentRenderer';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
+import { numberFormat } from '@/utils/formatters';
 
 interface TableRowProps {
   data: any;
@@ -29,7 +30,6 @@ interface TableRowProps {
 
 
 
-const DATE_LOCALES: Record<AppLocale, string> = { fr: 'fr-MA', en: 'en-GB', ar: 'ar-MA' };
 
 const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
   if (!dateStr) return null;
@@ -63,8 +63,7 @@ const parseDate = (dateStr: string | undefined, locale: AppLocale) => {
     
     if (isNaN(dateObj.getTime())) return null;
 
-    const dateLocale = DATE_LOCALES[locale];
-    const numberFormatter = new Intl.NumberFormat(dateLocale, { minimumIntegerDigits: 2, useGrouping: false });
+    const numberFormatter = numberFormat(locale, { minimumIntegerDigits: 2, useGrouping: false });
     return {
       day: numberFormatter.format(dateObj.getDate()),
       numericMonth: numberFormatter.format(dateObj.getMonth() + 1),

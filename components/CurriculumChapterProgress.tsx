@@ -1,4 +1,5 @@
 import { useLocale } from '@/i18n/LocaleProvider';
+import { dateTimeFormat, numberFormat } from '@/utils/formatters';
 import type { computeOfficialProgression } from '@/utils/officialCurriculum';
 
 type Row = ReturnType<typeof computeOfficialProgression>['rows'][number];
@@ -7,12 +8,12 @@ type Row = ReturnType<typeof computeOfficialProgression>['rows'][number];
 export function CurriculumChapterProgress({ row }: { row: Row }) {
   const { locale } = useLocale();
   const l = (fr: string, ar: string, en: string) => locale === 'ar' ? ar : locale === 'en' ? en : fr;
-  const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const number = numberFormat(locale, { maximumFractionDigits: 1 });
   const actual = row.completionRate === null ? null : Math.round(row.completionRate * 100);
   const expected = row.expectedRate === null ? null : Math.round(row.expectedRate * 100);
   const label = l('Avancement estimé', 'التقدم التقديري', 'Estimated progress');
   const target = l('Rythme prévu', 'الوتيرة المتوقعة', 'Expected pace');
-  const date = (value: string) => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`));
+  const date = (value: string) => dateTimeFormat(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${value}T12:00:00Z`));
   return <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-1.5 text-start" data-curriculum-progress={row.officialChapter.id}>
     <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
       <span>{row.status === 'completed' ? l('Terminé', 'مكتمل', 'Completed') : label} <span className="font-medium text-foreground">{actual === null ? '—' : `${row.status === 'completed' ? '' : '≈ '}${number.format(actual)}%`}</span></span>
