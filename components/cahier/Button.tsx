@@ -14,12 +14,12 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 cursor-pointer select-none touch-manipulation rounded-[var(--radius-md,0.625rem)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50 disabled:pointer-events-none';
+  const baseClasses = 'inline-flex items-center justify-center font-sans font-medium transition-all duration-200 cursor-pointer select-none rounded-[var(--radius-md,0.625rem)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50 disabled:pointer-events-none';
 
   const sizeClasses = {
-    sm: 'h-8 min-h-[36px] sm:min-h-0 px-3 text-xs gap-1.5',
-    md: 'h-9 min-h-[44px] sm:min-h-0 px-4 text-sm gap-2',
-    lg: 'h-11 min-h-[48px] sm:min-h-0 px-6 text-base gap-2.5',
+    sm: 'h-8 px-3 text-xs gap-1.5',
+    md: 'h-9 px-4 text-sm gap-2',
+    lg: 'h-11 px-6 text-base gap-2.5',
   }[size];
 
   const variantClasses = {

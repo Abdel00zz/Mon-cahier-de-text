@@ -1,12 +1,11 @@
 import { FC, useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
-import { CalendarX, CalendarPlus } from '@/components/ui/icons';
+import { CalendarX, CalendarPlus, CalendarDays, TriangleAlert } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import { Indices } from '@/types';
 import { todayInMorocco } from '@/utils/calendar';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { ModernCalendarPicker } from '../components/ModernCalendarPicker';
 
 interface SelectedItemPreview {
   indices: Indices;
@@ -40,6 +39,25 @@ const isoFromOffset = (offset: number) => {
   return addDaysISO(todayInMorocco(), offset);
 };
 
+const formatFullDate = (dateStr: string | undefined, localeCode: string, emptyLabel: string) => {
+  if (!dateStr) return emptyLabel;
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const y = Number(parts[0]);
+      const m = Number(parts[1]);
+      const d = Number(parts[2]);
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    const dObj = new Date(dateStr);
+    if (isNaN(dObj.getTime())) return dateStr;
+    return dObj.toLocaleDateString(localeCode, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
 export const AssignDateModal: FC<AssignDateModalProps> = ({
   isOpen,
   onClose,
@@ -60,6 +78,12 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
     setSelectedDate(initialDate || isoFromOffset(0));
   }, [initialDate, isOpen]);
 
+  // Alertes live : recalculées à chaque changement de date choisie.
+  const dateWarnings = useMemo(
+    () => (actionType === 'associate' && getDateWarnings && selectedDate ? getDateWarnings(selectedDate) : []),
+    [actionType, getDateWarnings, selectedDate]
+  );
+
   const handleApply = () => {
     if (actionType === 'associate') {
       onApply(selectedDate);
@@ -67,6 +91,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       onApply(''); // Empty string dissociates the date
     }
   };
+
 
   return (
     <Modal
@@ -85,9 +110,9 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
       description={t(selectedCount === 1 ? 'assignDate.selectedOne' : 'assignDate.selectedMany', { count: number.format(selectedCount) })}
       maxWidth="lg"
       className="sm:max-w-xl sm:rounded-2xl"
-      headerClassName="border-b-0 bg-background pb-2"
-      bodyClassName="px-4 py-3 sm:px-6 sm:py-4"
-      footerClassName="border-t border-border/60 bg-background pt-3"
+      headerClassName="border-b-0 bg-background"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex items-center w-full gap-3">
           <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-11 w-1/3 text-sm font-semibold bg-muted hover:bg-muted/80 text-foreground">
@@ -96,7 +121,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
           <Button
             type="button"
             onClick={handleApply}
-            className={`rounded-xl h-11 flex-1 text-sm font-bold shadow-sm transition-all duration-150 active:scale-98 ${
+            className={`rounded-xl h-11 flex-1 text-sm font-bold shadow-sm transition-all duration-150 ${
               actionType === 'associate'
                 ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 : 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
@@ -111,7 +136,7 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Sleek toggle selector */}
         <Segmented<'associate' | 'dissociate'>
           value={actionType}
@@ -139,15 +164,100 @@ export const AssignDateModal: FC<AssignDateModalProps> = ({
 
         {/* Dynamic Section */}
         {actionType === 'associate' ? (
-          <div className="animate-fade-in duration-200">
-            <ModernCalendarPicker
-              value={selectedDate}
-              onChange={setSelectedDate}
-              getDateWarnings={getDateWarnings}
-            />
+          <div className="space-y-6 animate-fade-in duration-200">
+            {/* 1. Quick Presets */}
+            <div className="grid grid-cols-3 gap-3">
+              <Button
+                type="button"
+                className={`h-11 rounded-xl border py-1 text-sm font-sans font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                  selectedDate === isoFromOffset(-1)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted text-foreground border-border'
+                }`}
+                onClick={() => setSelectedDate(isoFromOffset(-1))}
+              >
+                {t('assignDate.yesterday')}
+              </Button>
+              <Button
+                type="button"
+                className={`h-11 rounded-xl border py-1 text-sm font-sans font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                  selectedDate === isoFromOffset(0)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted text-foreground border-border'
+                }`}
+                onClick={() => setSelectedDate(isoFromOffset(0))}
+              >
+                {t('assignDate.today')}
+              </Button>
+              <Button
+                type="button"
+                className={`h-11 rounded-xl border py-1 text-sm font-sans font-bold shadow-xs transition-all duration-150 active:scale-95 ${
+                  selectedDate === isoFromOffset(1)
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted text-foreground border-border'
+                }`}
+                onClick={() => setSelectedDate(isoFromOffset(1))}
+              >
+                {t('assignDate.tomorrow')}
+              </Button>
+            </div>
+
+            {/* 2. Date Input */}
+            <div className="space-y-2.5">
+              <label className="block text-sm font-medium text-foreground text-start font-sans">
+                {t('assignDate.chooseDate')}
+              </label>
+
+              <div className="relative flex flex-col items-center gap-2">
+                <div className="relative flex items-center justify-between w-full h-12 px-4 rounded-xl border border-border bg-background shadow-sm hover:border-primary/50 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                  <span className="text-[16px] font-bold tracking-[0.02em] text-foreground" dir="ltr">
+                    {selectedDate ? (() => {
+                      const [y, m, d] = selectedDate.split('-');
+                      return y && m && d ? `${d}/${m}/${y}` : 'JJ/MM/AAAA';
+                    })() : 'JJ/MM/AAAA'}
+                  </span>
+                  <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                  <input
+                    id="assign-date-input"
+                    type="date"
+                    value={selectedDate}
+                    onChange={event => setSelectedDate(event.target.value)}
+                    onClick={(e) => {
+                      try {
+                        if (typeof e.currentTarget.showPicker === 'function') {
+                          e.currentTarget.showPicker();
+                        }
+                      } catch (err) {
+                        // fallback if showPicker fails
+                      }
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+                {/* Intelligent date readout */}
+                <span className="text-sm font-medium text-muted-foreground capitalize font-sans">
+                  {formatFullDate(selectedDate, localeCode, t('assignDate.noDateSelected'))}
+                </span>
+              </div>
+            </div>
+
+            {/* 3. Warnings */}
+            {dateWarnings.length > 0 && (
+              <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/[0.08] p-4 text-start animate-fade-in duration-200" role="status">
+                {dateWarnings.map((warning, i) => (
+                  <p key={i} className="flex items-start gap-2.5 text-[13px] font-medium leading-snug text-amber-800 dark:text-amber-300 font-sans">
+                    <TriangleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span>{warning.message}</span>
+                  </p>
+                ))}
+                <p className="ps-6.5 text-[12px] text-amber-700/90 dark:text-amber-400 font-medium font-sans">
+                  {t('assignDate.warningOverride')}
+                </p>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="mx-auto max-w-sm animate-fade-in duration-200 space-y-2 rounded-xl border border-destructive/20 bg-destructive/10 p-5 text-center my-4">
+          <div className="mx-auto max-w-sm animate-fade-in duration-200 space-y-2 rounded-xl border border-destructive/20 bg-destructive/10 p-5 text-center">
             <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-destructive/15 text-destructive mb-1">
               <CalendarX className="h-5 w-5 stroke-[2.2]" />
             </div>
