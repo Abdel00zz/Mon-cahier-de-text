@@ -5,11 +5,12 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { produce } from 'immer';
 import type { AppConfig, ClassInfo, LessonsData } from '../types';
-import { buildLessonRows, filterLessonRows } from '../utils/lessonRows';
+import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
 import { dateTimeFormat, numberFormat } from '../utils/formatters';
 import { buildContentNumbers } from '../utils/contentNumbering';
+import { ContentRenderer } from '../features/editor/ContentRenderer';
 import { contentBadgeClass } from '../constants/type-keys';
 import { SUBJECTS } from '../constants/subjects';
 import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
@@ -488,4 +489,52 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
   assert.equal(contentBadgeClass(undefined).includes('bg-muted'), true);
+});
+
+test('numerotation : la pastille porte le numero calcule, la saisie reste maitresse', () => {
+  const notebook = [
+    {
+      type: 'chapter', title: 'Chapitre 1', sections: [
+        { name: 'Section A', items: [
+          { type: 'définition', title: 'Premiere definition', description: '' },
+          { type: 'définition', title: 'Deuxieme definition', description: '' },
+          { type: 'proposition', title: 'Une proposition', description: '' },
+          { type: 'activité', title: 'Activite decouverte', description: '' },
+          { type: 'exercice', title: 'Exercice', description: '', number: '7' },
+          { type: 'devoir_maison', title: 'Devoir maison 1', description: '' },
+        ] },
+      ],
+    },
+  ] as unknown as LessonsData;
+  const numbers = buildContentNumbers(notebook);
+  const rows = buildLessonRows(notebook).filter(row => row.elementType === 'item');
+  const renderFor = (index: number) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ContentRenderer as never, {
+      data: rows[index].data,
+      indices: rows[index].indices,
+      elementType: 'item',
+      contentNumber: numbers.get(indicesKey(rows[index].indices)),
+    } as never),
+  }));
+  // La pastille rend le sigle ET le numero, sur la meme ligne.
+  assert.match(renderFor(0), /editor-kind-badge[\s\S]*?>Déf\.[\s\S]*?>1</);
+  assert.match(renderFor(1), />2</);
+  // Un compteur par type : la proposition repart a 1.
+  assert.match(renderFor(2), /Prop\.[\s\S]*?>1</);
+  // Activite et exercice sont numerotes comme le reste du manuel.
+  assert.match(renderFor(3), /Act\.[\s\S]*?>1</);
+  // Un numero saisi a la main s'affiche meme sans entree dans la carte.
+  assert.equal(numbers.get(indicesKey(rows[4].indices)), undefined);
+  assert.match(renderFor(4), /editor-kind-badge[\s\S]*?>7</);
+});
+
+test('numerotation : une evaluation garde son numero dans son titre, sans pastille', () => {
+  const devoir = { type: 'devoir_maison', title: 'Devoir maison 1', description: '' };
+  const rows = buildLessonRows([{ type: 'chapter', title: 'C', items: [devoir] }] as unknown as LessonsData);
+  const numbers = buildContentNumbers([{ type: 'chapter', title: 'C', items: [devoir] }] as unknown as LessonsData);
+  assert.equal(numbers.size, 0);
+  const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ContentRenderer as never, { data: rows[1].data, indices: rows[1].indices, elementType: 'devoir_maison' } as never),
+  }));
+  assert.ok(!html.includes('editor-kind-badge'));
 });

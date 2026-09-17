@@ -1,5 +1,4 @@
 import type { LessonsData } from '../types.js';
-import { isNonCourseActivity } from './chapterLifecycle.js';
 import { buildLessonRows, type LessonRow } from './lessonRows.js';
 
 /**
@@ -13,13 +12,27 @@ import { buildLessonRows, type LessonRow } from './lessonRows.js';
  *
  * Sont exclus :
  *  - les structures (chapitre, section, sous-section, séparateur) ;
- *  - les activités non pédagogiques (évaluations, devoirs, corrections), qui
- *    portent déjà leur numéro dans leur titre (voir `autoNumber` dans TYPE_MAP).
+ *  - les évaluations (devoir, contrôle, correction, examen), qui numérotent
+ *    déjà leur titre via `autoNumber` (voir TYPE_MAP).
+ * Tout le reste est numéroté : définitions, propositions, théorèmes, mais
+ * aussi exemples, exercices, activités, conclusions… comme dans un manuel.
  */
 
 
+/** Structures : elles organisent le plan, elles ne reçoivent pas de numéro. */
+const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection', 'separator']);
+
+/** Évaluations : leur numéro est déjà porté par le titre (« Contrôle continu 2 »). */
+const EVALUATION_TYPES = /^(?:evaluation|devoir|controle|correction|examen|diagnostic|assessment|homework|test|exam|dm|ds|cc)(?:_|$)/;
+
+const typeKey = (value: unknown): string => String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+
 const isNumberableRow = (row: LessonRow): boolean =>
-    row.elementType === 'item' && !isNonCourseActivity((row.data as { type?: unknown }).type);
+    !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
 
 const rowType = (row: LessonRow): string => String((row.data as { type?: unknown }).type ?? '');
 
