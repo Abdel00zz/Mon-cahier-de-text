@@ -139,32 +139,6 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
   assert.match(css, /editor-type-separator-date:focus[\s\S]*font-size: 16px/);
 });
 
-test('éditeur : le coach paysage détecte fiablement un téléphone en portrait', () => {
-  const nudge = readFileSync(
-    new URL('../features/editor/OrientationNudge.tsx', import.meta.url),
-    'utf8',
-  );
-  const editor = readFileSync(
-    new URL('../features/editor/Editor.tsx', import.meta.url),
-    'utf8',
-  );
-
-  assert.match(nudge, /orientation: portrait\) and \(pointer: coarse/);
-  assert.match(nudge, /navigator\.maxTouchPoints/);
-  assert.match(nudge, /window\.screen\.orientation/);
-  assert.match(nudge, /window\.visualViewport/);
-  assert.match(nudge, /orientationchange/);
-  assert.match(nudge, /useReducedMotion/);
-  assert.match(nudge, /if \(!matches\) setIsVisible\(false\)/);
-  assert.match(nudge, /wasPortraitPhone\.current && !matches/);
-  assert.match(nudge, /MutationObserver/);
-  assert.match(nudge, /isVisible && isPortraitPhone/);
-  assert.match(nudge, /h-11 w-11/);
-  assert.match(editor, /<OrientationNudge/);
-  assert.match(editor, /selectedCount > 0/);
-  assert.equal(editor.includes('useForceLandscape'), false);
-});
-
 test('modales & sidebar arabe : augmentation de taille (+15%)', () => {
   const css = readFileSync(
     new URL('../index.css', import.meta.url),

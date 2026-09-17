@@ -76,9 +76,9 @@ const shortcutIcon = [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'ima
 
 const PWA_MANIFEST: LocalizedManifest = {
     id: '/',
-    name: 'Mon cahier de textes',
+    name: 'Mon Cahier de Text',
     name_localized: {
-        fr: { value: 'Mon cahier de textes', lang: 'fr-MA', dir: 'ltr' },
+        fr: { value: 'Mon Cahier de Text', lang: 'fr-MA', dir: 'ltr' },
         ar: { value: 'دفتر نصوصي', lang: 'ar-MA', dir: 'rtl' },
         en: { value: 'My lesson notebook', lang: 'en', dir: 'ltr' },
     },
@@ -110,7 +110,9 @@ const PWA_MANIFEST: LocalizedManifest = {
     dir: 'ltr',
     display: 'standalone',
     display_override: ['standalone', 'minimal-ui'],
-    orientation: 'any',
+    // Installation verrouillee en paysage : les tableaux du cahier gardent leurs
+    // colonnes larges, ce qui rend le coach d'orientation portrait inutile.
+    orientation: 'landscape',
     start_url: '/',
     scope: '/',
     launch_handler: { client_mode: 'navigate-existing' },

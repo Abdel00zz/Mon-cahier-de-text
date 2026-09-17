@@ -56,7 +56,7 @@ La grille `timetable` est la source de vérité de l’emploi du temps. Les `sch
 | `pwa/` | Service worker et installation PWA |
 | `public/` | Contenus officiels, calendrier, guide et icônes |
 
-La documentation détaillée se trouve dans [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). La reconstruction HTML statique est décrite dans [maquette.md](maquette.md) et disponible directement dans [maquette/maquette.html](maquette/maquette.html) avec ses fichiers CSS/JS autonomes.
+La documentation détaillée se trouve dans [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Les bancs de prévisualisation (`scripts/guide-preview/`) ne sont pas des entrées de compilation et ne sont jamais publiés.
 
 ## Développement
 
@@ -65,6 +65,12 @@ npm run dev
 npm run lint
 npm run check:architecture
 npm run check:unused
+npm run check:i18n
+npm run test:pilotage
+npm run test:editor
+npm run test:notifications
+npm run test:admin-sync
+npm run test:guide
 npm run build
 npm run check
 ```
@@ -72,12 +78,20 @@ npm run check
 - `lint` vérifie TypeScript.
 - `check:architecture` interdit aussi les variables et paramètres inutilisés.
 - `check:unused` détecte fichiers, exports et dépendances orphelins.
+- `check:i18n` impose la parité FR/EN/AR et l'absence de clé utilisée sans traduction.
+- Les tests unitaires couvrent les moteurs purs (pilotage, éditeur, notifications, synchronisation admin, guide).
 - `build` produit les entrées enseignant et administration ainsi que le service worker.
 - `check` exécute toute la chaîne de qualité.
 
+La publication s'effectue par `./auto_commitv2.ps1` : verrou local récupérable, blocage des secrets,
+vérification des motifs de conflit, message de commit déduit des fichiers, puis push sans force-push.
+Voir `./auto_commitv2.ps1 -Help` pour les modes `-DryRun`, `-Doctor`, `-Recover` et `-NoPush`.
+Son comportement est couvert par `scripts/test-auto-commit.ps1` : synchronisation par rebase avec
+changements locaux, conflit de rebase (abandon propre, aucun marqueur, aucun stash) et diagnostic.
+
 ## Technologies
 
-React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Font Awesome, Immer, MathJax, Vercel Functions, Upstash Redis, Workbox et Capacitor.
+React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, MathJax, Vercel Functions, Upstash Redis, Workbox et Capacitor.
 
 ## Sécurité et robustesse
 
@@ -85,7 +99,7 @@ React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Font Awesome, Immer, MathJax
 - Mots de passe hachés avec `scrypt`.
 - Synchronisation par classe et travail hors ligne.
 - Notifications web push avec validation centralisée des types.
-- Contrôle des dépendances par `npm audit`.
+- Contrôle des motifs de conflit non résolus et des fichiers sensibles par le script de publication (`auto_commitv2.ps1`).
 - Budget de 320 kB par chunk non compressé (`config/optimization.ts`) ; les écrans lourds, les modales et MathJax sont chargés à la demande.
 - `npm run analyze` publie la taille réelle de chaque chunk et **échoue** au-delà du budget : c'est le garde-fou budgétaire du projet.
 - Aucun script analytics tiers n'est embarqué : le premier affichage ne dépend d'aucune mesure réseau externe.

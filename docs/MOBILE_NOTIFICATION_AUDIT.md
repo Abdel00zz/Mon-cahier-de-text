@@ -14,7 +14,7 @@ Cyber Tech & Clean (Space Grotesk avec Alexandria pour les glyphes arabes) est d
 
 - `index.css`, bloc `[data-editor-table]` : tailles fixes en pixels, remplacées aux seuils 640 et 1024 px. Aucun calcul proportionnel à la largeur disponible. La description passe même de 14 à 13 px au premier seuil.
 - Le bloc téléphone portrait/paysage ne définit plus de tailles de lecture : il ne règle que les champs de date/étiquette focalisés à 16 px. Son commentaire annonce donc une stabilité à la rotation que le code n’assure pas.
-- `useDevice` classe l’appareil par largeur du viewport. Un téléphone peut devenir « tablette » en paysage. `useOrientation` utilise aussi le viewport, dont le ratio peut changer avec le clavier. Ces hooks ne pilotent pas les variables typographiques du tableau.
+- `useDevice` classe l’appareil par largeur du viewport. Un téléphone peut devenir « tablette » en paysage. Ce hook ne pilote pas les variables typographiques du tableau. (`useOrientation`, jamais consommé, a été supprimé le 17/09/2026.)
 - `ContentRenderer.tsx` place la ligne en grille avec `items-center` et le badge en `self-center`. Un titre multiligne centre donc le badge sur plusieurs lignes plutôt que sur la première. Le titre combine aussi une hauteur de ligne utilitaire 1.35 et une règle de rôle 1.5.
 
 Correction proposée : échelle bornée et fluide basée sur la largeur disponible, minimum lisible, règle cohérente à la rotation ; alignement de première ligne par baseline de grille en supprimant `self-center`. Vérifier titres longs, arabe, mathématiques et zoom utilisateur. Ces changements de mise en page ne sont pas implémentés dans cette analyse.

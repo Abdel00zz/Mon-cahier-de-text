@@ -5,7 +5,6 @@ import { Header } from './Header';
 import { Toolbar } from './Toolbar';
 import { MainTable } from './MainTable';
 import { SelectionBar } from './SelectionBar';
-import { OrientationNudge } from './OrientationNudge';
 import { AppBootSkeleton, EditorSkeleton } from '@/components/ui/PageSkeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
@@ -1230,17 +1229,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         )}
       </div>
 
-      <OrientationNudge
-        suppressed={Boolean(
-          activeModal
-          || pendingDateCommit
-          || showTimetableNudge
-          || confirmBulkDelete
-          || selectedCount > 0
-          || isPrinting
-          || isNotebookAwaitingContent
-        )}
-      />
 
       {!activeModal && (
         <SelectionBar

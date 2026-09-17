@@ -36,7 +36,7 @@ Résultat de la passe de rectification. Un finding s'est révélé être un **fa
 | **F-07** | `pushEnabled` ambigu | **Clos — documentaire** | Le type `TeacherSnapshot.notifyPrefs` et `assertValidTeacherSnapshot` le prévoient explicitement : c'est une remontée **en lecture seule** vers l'admin. Commentaires clarifiés dans `types.ts` et `utils/syncSettings.ts`. |
 | **F-08** | Budget non bloquant | **Corrigé** | En mode `analyze`, le plugin appelle `this.error` au-delà de 320 kB. |
 | **F-09** | `analyze` sans analyseur | **Corrigé** | En mode `analyze`, rapport trié `[bundle-size]` par chunk, **sans nouvelle dépendance**. |
-| **F-10** | Orientation liée au viewport | **Corrigé** | `useOrientation` s'appuie sur `screen.orientation` (stable sous clavier virtuel) ; la media query ne sert plus que de repli. |
+| **F-10** | Orientation liée au viewport | **Clos** | `useDevice` s'appuie sur `screen.orientation` (stable sous clavier virtuel). `useOrientation`, jamais consommé, a été supprimé le 17/09/2026 : l'orientation n'est plus lue en JavaScript, seules les media queries CSS et `OrientationNudge` la portent. |
 | **F-11** | Haptique vs `sessionVibration` | **Clos — intentionnel** | `sessionVibration` ne régit que les rappels de séance. Les retours de boutons relèvent du confort d'interface ; leur portée est désormais explicitée dans `types.ts`. |
 | **F-12** | `[]` alloué à chaque rendu | **Corrigé** | Constante `NO_DESCRIPTION_TYPES` dans `features/editor/MainTable.tsx`. |
 | **F-13** | `devApiMockPlugin` fantôme | **Corrigé** | `config/features.ts` référence `setupMockApi` (`server.ts`). |
@@ -284,8 +284,8 @@ flowchart LR
 | Tailwind | `sm=640`, `md=768`, `lg=1024` |
 | Media queries CSS custom | **639 px**, **767 px**, **960 px** (`index.css`) |
 | `useDevice` | `PHONE_MAX = 767`, `TABLET_MAX = 1023` ; type calculé sur `min(screen.w, screen.h)` **si tactile** ; écoute `matchMedia` + `resize` + `screen.orientation` ✅ |
-| `useOrientation` | `matchMedia('(orientation: landscape)')` avec fallback `addListener` |
-| `OrientationNudge` | `(max-width:767px) and (orientation:portrait) and (pointer:coarse)`, délai d'ouverture **900 ms** |
+| `useOrientation` | **Supprimé le 17/09/2026** : aucun consommateur ne lisait plus `isLandscape`. L'orientation reste portée par les media queries CSS et `OrientationNudge`. |
+| `OrientationNudge` | **Supprimé le 17/09/2026** : le manifeste verrouille l'installation en paysage (`orientation: landscape`), le coach portrait n'avait plus d'objet. |
 
 ### 4.2 Cibles tactiles, safe-area, clavier
 
@@ -334,7 +334,7 @@ flowchart LR
 
 ### 4.7 Faiblesses
 
-1. **F-10 — Détection basée sur le viewport** ✅ : `useDevice` et `useOrientation` lisent `window.screen`/`innerWidth`. L'ouverture du clavier virtuel peut faire basculer `phone ↔ tablet` ou `portrait ↔ landscape`. Aucun usage de `visualViewport` dans l'éditeur.
+1. **F-10 - Detection basee sur le viewport** ✅ : `useDevice` lit `window.screen`/`innerWidth`. L'ouverture du clavier virtuel peut faire basculer `phone ↔ tablet`. Aucun usage de `visualViewport` dans l'editeur. Le hook `useOrientation` (jamais consomme) a ete supprime le 17/09/2026.
 2. **F-11 — Haptique indépendante de la préférence utilisateur** ✅ : `useHapticFeedback` ne consulte pas `notificationSettings.sessionVibration`. Couper la vibration de séance ne coupe pas la vibration des boutons.
 3. **Détection clavier limitée** 🔎 : tout repose sur l'attribut `html[data-keyboard='open']` posé ailleurs ; la couverture réelle (iOS Safari notamment) n'est pas vérifiée.
 4. **Aucun test matériel** ⚠️ : la documentation l'admet explicitement — « pas de tests Safari/iPhone, Android/Pixel ou iPad », clavier virtuel, VoiceOver et TalkBack non vérifiés.
