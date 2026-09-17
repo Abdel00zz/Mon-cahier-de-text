@@ -888,6 +888,41 @@ html[data-keyboard='open'] .fab-safe {
     --editor-badge-padding-inline: 3px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
     --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
+    /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
+       imbriqué s'enfonce d'un cran régulier (section, sous-section,
+       sous-sous-section). Le filet matérialise le niveau, comme le
+       trait d'un plan de livre. */
+    --editor-indent-1: 4px;
+    --editor-indent-2: 8px;
+    --editor-indent-3: 14px;
+    --editor-indent-rail: color-mix(in srgb, currentColor 14%, transparent);
+  /* Esprit éditeur de livre : la marge raconte la profondeur. */
+  .editor-indent-1 { margin-inline-start: var(--editor-indent-1); }
+  .editor-indent-2 { margin-inline-start: var(--editor-indent-2); }
+  .editor-indent-3 { margin-inline-start: var(--editor-indent-3); }
+  .editor-indent-rail { border-inline-start: 1px solid var(--editor-indent-rail); }
+
+  @media (min-width: 640px) {
+    [data-editor-table] {
+      --editor-indent-1: 16px;
+      --editor-indent-2: 32px;
+      --editor-indent-3: 48px;
+    }
+  }
+
+  /* Téléphone ou tablette tenu à l'horizontale : la largeur est abondante
+     et la hauteur comptée. On creuse donc les niveaux horizontalement
+     pour que la hiérarchie du cahier se lise d'un seul regard. */
+  @media (pointer: coarse) and (orientation: landscape) {
+    [data-editor-table] {
+      --editor-indent-1: 22px;
+      --editor-indent-2: 42px;
+      --editor-indent-3: 62px;
+      --editor-indent-rail: color-mix(in srgb, currentColor 20%, transparent);
+      --editor-lesson-indent: 16px;
+    }
+  }
+
   }
 
   @media (pointer: coarse) {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -406,4 +407,28 @@ test('formateurs Intl : une seule instance partagee par locale et options', () =
       .format(new Date('2026-02-13T00:00:00Z')),
     '13/02/2026',
   );
+});
+
+test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', () => {
+  // Le runner s'execute depuis la racine du depot.
+  const css = readFileSync('index.css', 'utf8');
+  const renderer = readFileSync('features/editor/ContentRenderer.tsx', 'utf8');
+  for (const level of ['1', '2', '3']) {
+    assert.match(css, new RegExp('\\.editor-indent-' + level + ' \\{ margin-inline-start: var\\(--editor-indent-' + level + '\\)'));
+  }
+  assert.match(css, /editor-indent-rail \{ border-inline-start: 1px solid var\(--editor-indent-rail\)/);
+  // Le portrait reste sobre, le paysage tactile creuse davantage.
+  assert.match(css, /--editor-indent-3: 14px/);
+  const landscape = css.slice(css.indexOf('(pointer: coarse) and (orientation: landscape)'));
+  assert.match(landscape, /--editor-indent-1: 22px/);
+  assert.match(landscape, /--editor-indent-3: 62px/);
+  assert.match(landscape, /--editor-lesson-indent: 16px/);
+  // Chaque niveau du plan porte son propre cran.
+  assert.match(renderer, /editor-type-section editor-indent-1 editor-indent-rail/);
+  assert.match(renderer, /editor-type-subsection editor-indent-2 editor-indent-rail/);
+  assert.match(renderer, /editor-type-subsubsection editor-indent-3 editor-indent-rail/);
+  // Les lignes de contenu s'alignent sur le même plan, sans filet.
+  assert.match(renderer, /const lessonIndentClass = indices\.subsubsectionIndex !== undefined/);
+  assert.match(renderer, /\$\{lessonIndentClass\}/);
+  assert.match(renderer, /\$\{lessonIndentClass\}/);
 });

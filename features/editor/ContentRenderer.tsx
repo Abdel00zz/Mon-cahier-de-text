@@ -135,16 +135,17 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     let indentClass = '';
     // Ne pas appliquer d'indentation pour les chapitres et évaluations de premier niveau
     if (indices.itemIndex !== undefined) {
-        if (indices.subsubsectionIndex !== undefined) indentClass = 'md:ps-12';
-        else if (indices.subsectionIndex !== undefined) indentClass = 'md:ps-8';
-        else if (indices.sectionIndex !== undefined) indentClass = 'md:ps-4';
+        // Un cran de marge par niveau : c'est le plan du cahier.
+        if (indices.subsubsectionIndex !== undefined) indentClass = 'editor-indent-3 editor-indent-rail';
+        else if (indices.subsectionIndex !== undefined) indentClass = 'editor-indent-2 editor-indent-rail';
+        else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1 editor-indent-rail';
     }
 
     const isTopLevel = item.type === 'chapter' || isEvaluation;
     const justificationClass = isTopLevel ? 'justify-center' : '';
     
     if (isCorrection) {
-      indentClass = 'md:ps-4';
+      indentClass = 'editor-indent-1 editor-indent-rail';
     }
 
     if (item.type === 'chapter') {
@@ -180,7 +181,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-section font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-section editor-indent-1 editor-indent-rail font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -189,7 +190,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsection font-semibold font-sans text-foreground ps-1 sm:ps-4 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsection editor-indent-2 editor-indent-rail font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -199,7 +200,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsubsection italic font-sans text-muted-foreground ps-2 sm:ps-8 py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsubsection editor-indent-3 editor-indent-rail italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <HighlightedText text={data.name} query={highlight} />
             </div>
@@ -235,8 +236,18 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
 
+      // La ligne de contenu s'aligne sur le plan : chapitre à la marge,
+      // puis un cran par niveau parent (section, sous-section…).
+      const lessonIndentClass = indices.subsubsectionIndex !== undefined
+        ? 'editor-indent-3'
+        : indices.subsectionIndex !== undefined
+          ? 'editor-indent-2'
+          : indices.sectionIndex !== undefined
+            ? 'editor-indent-1'
+            : '';
+
       const content = (
-        <div className="editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground">
+        <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
             className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-baseline lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
