@@ -110,6 +110,8 @@ export interface AppConfig {
     // New flexible description visibility controls
     screenDescriptionMode?: 'all' | 'none' | 'custom';
     screenDescriptionTypes?: string[];
+    /** Numérotation des contenus : « définition 1 », « exemple 2 »… */
+    contentNumbering?: ContentNumbering;
     printDescriptionMode?: 'all' | 'none' | 'custom';
     printDescriptionTypes?: string[];
     // User preferences for display filtering
@@ -414,3 +416,14 @@ export interface TopLevelItem extends BaseTopLevelItem {
 }
 
 export type LessonsData = TopLevelItem[];
+
+
+/**
+ * Portée du compteur de contenus (voir `utils/contentNumbering.ts`).
+ * `chapter` : « définition 1 » repart de 1 dans chaque chapitre.
+ */
+interface ContentNumbering {
+    /** Active la numérotation automatique des contenus pédagogiques. */
+    enabled: boolean;
+    scope: 'chapter' | 'notebook';
+}

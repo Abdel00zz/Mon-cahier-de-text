@@ -79,12 +79,13 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
 // dans la même famille, sans bordure dure. Les valeurs hexadécimales sont
 // explicites pour conserver le rendu souhaité dans l'éditeur, quel que soit
 // le thème Tailwind actif.
-const BADGE_BLUE = 'bg-[#e8f0fe] text-[#1967d2] dark:bg-[#1967d2]/25 dark:text-[#a8c7fa]';
-const BADGE_NEUTRAL = 'bg-[#f1f3f4] text-[#3c4043] dark:bg-[#3c4043] dark:text-[#e8eaed]';
-const BADGE_RED = 'bg-[#fce8e6] text-[#c5221f] dark:bg-[#c5221f]/25 dark:text-[#f28b82]';
-const BADGE_GREEN = 'bg-[#e6f4ea] text-[#137333] dark:bg-[#137333]/25 dark:text-[#81c995]';
+const BADGE_BLUE = 'bg-[#e8f0fe] text-[#185abc] dark:bg-[#1967d2]/22 dark:text-[#a8c7fa]';
+const BADGE_NEUTRAL = 'bg-[#f1f3f4] text-[#3c4043] dark:bg-white/8 dark:text-[#e8eaed]';
+const BADGE_RED = 'bg-[#fce8e6] text-[#b3261e] dark:bg-[#c5221f]/22 dark:text-[#f28b82]';
+const BADGE_GREEN = 'bg-[#e6f4ea] text-[#146c2e] dark:bg-[#137333]/22 dark:text-[#81c995]';
 
-export const BADGE_COLOR_MAP: { [key: string]: string } = {
+/** Interne : les surfaces passent par `contentBadgeClass`, pas par la palette. */
+const BADGE_COLOR_MAP: { [key: string]: string } = {
     // Bleu : notions et repères de départ (Déf.)
     'définition': BADGE_BLUE,
     'introduction': BADGE_BLUE,
@@ -121,6 +122,19 @@ export const BADGE_COLOR_MAP: { [key: string]: string } = {
     'modèle': BADGE_GREEN,
     'grandeur': BADGE_GREEN,
 };
+
+/**
+ * Forme commune des pastilles de type (Déf., Th., Ex.…).
+ *
+ * Le rembourrage vertical, l'arrondi et le filet intérieur sont posés
+ * ici, une fois : les trois surfaces (éditeur, papier, réglages)
+ * affichent ainsi exactement la même pastille, quel que soit le type.
+ * Le rembourrage horizontal et la largeur minimale restent pilotés par
+ * les tokens de l'éditeur (`--editor-badge-*`), pour que le tableau
+ * garde une colonne de badges parfaitement alignée.
+ */
+export const contentBadgeClass = (type?: string): string =>
+  `inline-flex items-center justify-center gap-1 rounded-md border-0 py-[3px] font-bold uppercase tracking-normal shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
   'activité': 'Activité (recherche / découverte)',

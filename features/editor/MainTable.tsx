@@ -37,6 +37,8 @@ interface MainTableProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
   getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
+  /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
+  getContentNumber?: (indices: Indices) => string | undefined;
   /** terme de recherche actif (surlignage dans les lignes) */
   searchQuery?: string;
   /** rangée à rejoindre automatiquement après une suggestion de séance */
@@ -89,6 +91,8 @@ interface SessionGroupRowProps {
     searchQuery?: string;
     getDateWarnings?: (date: string) => { type: string; message: string }[];
     getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
+    /** numéro de série du contenu : « définition 1 », « exemple 2 »… */
+    getContentNumber?: (indices: Indices) => string | undefined;
 }
 
 const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
@@ -103,6 +107,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
     searchQuery,
     getDateWarnings,
     getDateOrder,
+    getContentNumber,
 }) => {
     const mergeContent = items[0].dateMerge?.mergeType === 'content';
     const toggleMerged = () => {
@@ -167,6 +172,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                 searchQuery={searchQuery}
                 getDateWarnings={getDateWarnings}
                 getDateOrder={getDateOrder}
+                getContentNumber={getContentNumber}
             />
         );
     };
@@ -352,6 +358,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onOpenDateModal,
   getDateWarnings,
   getDateOrder,
+  getContentNumber,
   searchQuery,
   focusKey,
   predefinedProgramTitle,
@@ -482,6 +489,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                                   searchQuery={searchQuery}
                                   getDateWarnings={getDateWarnings}
                                   getDateOrder={getDateOrder}
+                                  getContentNumber={getContentNumber}
                               />
                           </VirtualListRow>
                       );
@@ -525,6 +533,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               searchQuery={searchQuery}
                               getDateWarnings={getDateWarnings}
                               getDateOrder={getDateOrder}
+                              getContentNumber={getContentNumber}
                           />
                       </VirtualListRow>
                   );

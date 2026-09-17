@@ -6,8 +6,8 @@
 export {
   TYPE_MAP,
   BADGE_TEXT_MAP,
-  BADGE_COLOR_MAP,
   BADGE_TOOLTIP_MAP,
+  contentBadgeClass,
   SUBJECT_ABBREV_MAP,
 } from './type-keys';
 

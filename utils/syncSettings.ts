@@ -26,6 +26,7 @@ export type SyncableSettings = Pick<
     | 'firstNotebookOpened'
     | 'screenDescriptionMode'
     | 'screenDescriptionTypes'
+    | 'contentNumbering'
     | 'printDescriptionMode'
     | 'printDescriptionTypes'
     | 'schedules'
@@ -62,6 +63,7 @@ export const SYNCABLE_KEYS: (keyof SyncableSettings)[] = [
     'firstNotebookOpened',
     'screenDescriptionMode',
     'screenDescriptionTypes',
+    'contentNumbering',
     'printDescriptionMode',
     'printDescriptionTypes',
     'schedules',

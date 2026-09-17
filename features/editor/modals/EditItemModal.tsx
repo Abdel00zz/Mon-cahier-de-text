@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MathText } from '@/components/ui/math-text';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
 import { ContentDirection, Indices, LessonsData, TopLevelItem } from '@/types';
-import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, BADGE_COLOR_MAP, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
+import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, contentBadgeClass, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
 import { hasMathSyntax } from '@/utils/math';
 import {
@@ -285,7 +285,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                     {lessonTypeOptions.map(type => (
                       <SelectItem key={type} value={type}>
                         <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold border ${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'}`}>
+                          <span className={contentBadgeClass(type)}>
                             {BADGE_TEXT_MAP[type] || type}
                           </span>
                           <span>{tc(`contentType.${type}`)}</span>
@@ -305,8 +305,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   onChange={(e) => setFormData({ ...formData, number: e.target.value })}
                   placeholder={t('addContent.numberPlaceholder')}
                   className="h-10 rounded-lg border-border"
+                  aria-describedby="itemNumberHint"
                 />
               </div>
+              <p id="itemNumberHint" className="text-[11px] font-medium leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
             </div>
             <div className="space-y-1.5">
               <label htmlFor="itemTitle" className={labelClasses}>{t('addContent.itemTitle')}</label>

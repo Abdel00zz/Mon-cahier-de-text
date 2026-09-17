@@ -12,6 +12,7 @@ import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey } from '@/utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
+import { buildContentNumbers, DEFAULT_CONTENT_NUMBERING } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
@@ -144,6 +145,16 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const getDateOrder = useCallback(
     (indices: Indices) => contentDateOrder.get(indicesKey(indices)),
     [contentDateOrder],
+  );
+  // Numérotation par chapitre : « définition 1 », « exemple 2 »… Le
+  // professeur peut toujours saisir un numéro, qui prime sur le calcul.
+  const contentNumbers = useMemo(
+    () => buildContentNumbers(lessonsData, config.contentNumbering ?? DEFAULT_CONTENT_NUMBERING),
+    [lessonsData, config.contentNumbering?.enabled, config.contentNumbering?.scope],
+  );
+  const getContentNumber = useCallback(
+    (indices: Indices) => contentNumbers.get(indicesKey(indices)),
+    [contentNumbers],
   );
   const contentDirectionRef = useRef<ContentDirection>(editorState.contentDirection);
   const saveStatusRef = useRef<'saved' | 'saving' | 'unsaved'>(editorState.saveStatus);
@@ -1228,6 +1239,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               newlyAddedIds={newlyAddedIds}
               getDateWarnings={getDisplayDateWarnings}
               getDateOrder={getDateOrder}
+              getContentNumber={getContentNumber}
               searchQuery={displayedQuery}
               focusKey={sessionFocusKey}
               predefinedProgramTitle={predefinedOffer?.titre}

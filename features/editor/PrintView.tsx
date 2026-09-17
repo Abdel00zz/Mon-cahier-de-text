@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { buildLessonRows } from '@/utils/lessonRows';
 import { ContentRenderer } from './ContentRenderer';
+import { buildContentNumbers, DEFAULT_CONTENT_NUMBERING } from '@/utils/contentNumbering';
+import { indicesKey } from '@/utils/lessonRows';
 import {
     LessonsData,
     ClassInfo,
@@ -148,6 +150,12 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
     const isNewItem = (item: FlatDataItem): boolean =>
         !!(item.data._tempId && newlyAddedIds.includes(item.data._tempId));
 
+    // Le papier porte la même numérotation que l'écran.
+    const contentNumbers = React.useMemo(
+        () => buildContentNumbers(lessonsData, config.contentNumbering ?? DEFAULT_CONTENT_NUMBERING),
+        [lessonsData, config.contentNumbering?.enabled, config.contentNumbering?.scope],
+    );
+
     const renderPrintContent = (item: FlatDataItem) => (
 
             <ContentRenderer
@@ -157,6 +165,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 isPrint={true}
                 showDescriptions={config.printDescriptionMode === 'all' ? true : config.printDescriptionMode === 'none' ? false : undefined}
                 descriptionTypes={config.printDescriptionTypes}
+                contentNumber={contentNumbers.get(indicesKey(item.indices))}
             />
 
     );

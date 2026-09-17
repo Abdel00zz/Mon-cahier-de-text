@@ -9,6 +9,8 @@ import { buildLessonRows, filterLessonRows } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
 import { dateTimeFormat, numberFormat } from '../utils/formatters';
+import { buildContentNumbers, DEFAULT_CONTENT_NUMBERING } from '../utils/contentNumbering';
+import { contentBadgeClass } from '../constants/type-keys';
 import { SUBJECTS } from '../constants/subjects';
 import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
 import { groupLessonRows } from '../utils/tableRows';
@@ -437,4 +439,53 @@ test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', (
   assert.match(print, /--editor-indent-rail: #D8CFBE/);
   assert.match(renderer, /print-lesson-item \$\{lessonIndentClass\}/);
   assert.match(renderer, /\$\{lessonIndentClass\}/);
+});
+
+test('numerotation des contenus : un compteur par type, remis a zero par chapitre', () => {
+  const notebook: LessonsData = [
+    {
+      type: 'chapter', title: 'Chapitre 1', items: [
+        { type: 'définition', title: 'Suite', description: '' },
+        { type: 'définition', title: 'Limite', description: '' },
+        { type: 'exemple', title: 'Calcul', description: '' },
+        { type: 'devoir_maison', title: 'Devoir maison 1', description: '' },
+        { type: 'définition', title: 'Continuité', description: '' },
+      ],
+    },
+    {
+      type: 'chapter', title: 'Chapitre 2', items: [
+        { type: 'définition', title: 'Dérivée', description: '' },
+        { type: 'définition', title: 'Primitive', description: '', number: '7' },
+        { type: 'définition', title: 'Intégrale', description: '' },
+      ],
+    },
+  ] as unknown as LessonsData;
+  const numbers = buildContentNumbers(notebook, DEFAULT_CONTENT_NUMBERING);
+  const values = [...numbers.values()];
+  // Deux définitions du chapitre 1, puis l'exemple, puis la troisième définition ;
+  // le compteur repart à 1 dans le chapitre 2 et le numéro saisi (7) avance le suivant.
+  assert.deepEqual(values, ['1', '2', '1', '3', '1', '8']);
+  assert.equal(values.length, numbers.size);
+  // L'évaluation ne consomme aucun numéro de contenu.
+  assert.ok(!values.includes('Devoir'));
+});
+
+test('numerotation des contenus : desactivee, la carte reste vide', () => {
+  const notebook = [{ type: 'chapter', title: 'C', items: [{ type: 'définition', title: 'D', description: '' }] }] as unknown as LessonsData;
+  assert.equal(buildContentNumbers(notebook, { enabled: false, scope: 'chapter' }).size, 0);
+  assert.equal(buildContentNumbers(notebook, { enabled: true, scope: 'notebook' }).size, 1);
+});
+
+test('pastilles de type : une forme commune, une famille de couleur par nature', () => {
+  const shape = contentBadgeClass('théorème');
+  assert.match(shape, /ring-1 ring-inset ring-current\/15/);
+  assert.match(shape, /rounded-md/);
+  // Théorème : famille rouge rosé ; deux types différents ne partagent pas
+  // la même pastille, mais partagent exactement la même forme.
+  assert.equal(contentBadgeClass('théorème').includes('#fce8e6'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#e6f4ea'), true);
+  assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
+  // Type inconnu : repli neutre, jamais de pastille vide.
+  assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
+  assert.equal(contentBadgeClass(undefined).includes('bg-muted'), true);
 });

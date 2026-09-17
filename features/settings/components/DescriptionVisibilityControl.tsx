@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TYPE_MAP, BADGE_COLOR_MAP } from '@/constants';
+import { TYPE_MAP, contentBadgeClass } from '@/constants';
 import { ChevronUp, ChevronDown } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -104,7 +104,7 @@ export const DescriptionVisibilityControl: React.FC<DescriptionVisibilityControl
                       title={t(`contentType.${type}`)}
                       className={`rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide transition-all ${
                         isSelected
-                          ? `${BADGE_COLOR_MAP[type] || 'bg-muted text-foreground'} ring-1 ring-border`
+                          ? `${contentBadgeClass(type)} ring-1 ring-border`
                           : 'border border-border/60 bg-secondary/40 text-muted-foreground hover:bg-secondary'
                       }`}
                     >

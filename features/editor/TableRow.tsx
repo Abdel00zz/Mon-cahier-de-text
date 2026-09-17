@@ -26,6 +26,8 @@ interface TableRowProps {
   getDateWarnings?: (date: string) => { type: string; message: string }[];
   /** ordre chronologique : voisins datés du contenu (alerte de recul de date) */
   getDateOrder?: (indices: Indices) => ContentDateOrder | undefined;
+  /** numéro de série du contenu, calculé par chapitre */
+  getContentNumber?: (indices: Indices) => string | undefined;
 }
 
 
@@ -192,6 +194,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   searchQuery,
   getDateWarnings,
   getDateOrder,
+  getContentNumber,
 }) => {
   const handleToggle = useCallback(() => onToggleSelect(indices), [indices, onToggleSelect]);
   const { locale } = useLocale();
@@ -311,7 +314,7 @@ const TableRowComponent: FC<TableRowProps> = ({
       >
         <div className="min-w-0 w-full">
           <div className="flex w-full items-center justify-center py-1">
-            <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} />
+            <ContentRenderer data={data} indices={indices} elementType={elementType} highlight={searchQuery} showDescriptions={showDescriptions} descriptionTypes={descriptionTypes} contentNumber={getContentNumber?.(indices)} />
           </div>
         </div>
       </div>
@@ -437,7 +440,7 @@ const TableRowComponent: FC<TableRowProps> = ({
 };
 
 export const TableRow = memo(TableRowComponent, (prev, next) => {
-  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder) return false;
+  if (prev.onToggleSelect !== next.onToggleSelect || prev.onDoubleClickEdit !== next.onDoubleClickEdit || prev.onOpenDateModal !== next.onOpenDateModal || prev.getDateWarnings !== next.getDateWarnings || prev.getDateOrder !== next.getDateOrder || prev.getContentNumber !== next.getContentNumber) return false;
   if (prev.data !== next.data) return false;
   if (prev.isSelected !== next.isSelected) return false;
   if (prev.isNew !== next.isNew) return false;

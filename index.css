@@ -819,8 +819,8 @@ html[data-keyboard='open'] .fab-safe {
     --editor-fs-remark: 12px;
     --editor-fs-separator-date: 11px;
     --editor-fs-separator-label: 10px;
-    --editor-badge-min-width: 32px;
-    --editor-badge-padding-inline: 2px;
+    --editor-badge-min-width: 34px;
+    --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: 6px;
     --editor-lesson-indent: 0px;
     --editor-description-indent: 12px;
@@ -884,8 +884,8 @@ html[data-keyboard='open'] .fab-safe {
     --editor-fs-remark: calc(var(--editor-scale) * 0.88);
     --editor-fs-separator-date: calc(var(--editor-scale) * 0.81);
     --editor-fs-separator-label: calc(var(--editor-scale) * 0.75);
-    --editor-badge-min-width: calc(var(--editor-scale) * 1.9);
-    --editor-badge-padding-inline: 3px;
+    --editor-badge-min-width: calc(var(--editor-scale) * 2.1);
+    --editor-badge-padding-inline: 6px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
     --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
     /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau

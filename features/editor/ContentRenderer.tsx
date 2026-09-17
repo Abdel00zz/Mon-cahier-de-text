@@ -2,7 +2,7 @@ import React from 'react';
 import { hasMathSyntax, splitMathText } from '@/utils/math';
 import { MathText } from '@/components/ui/math-text';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
-import { TYPE_MAP, BADGE_TEXT_MAP, BADGE_COLOR_MAP, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
+import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
@@ -18,6 +18,8 @@ interface ContentRendererProps {
   descriptionTypes?: string[];
   /** terme de recherche à surligner dans les titres */
   highlight?: string;
+  /** numéro affiché : saisi à la main, sinon calculé par chapitre */
+  contentNumber?: string;
 }
 
 const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
@@ -98,7 +100,7 @@ const renderChapterTitleStyled = (text: string) => {
   );
 };
 
-export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight }) => {
+export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ data, indices, elementType, isPrint = false, showDescriptions, descriptionTypes = [], highlight, contentNumber }) => {
   const { t } = useLocale();
   
   if (elementType in TOP_LEVEL_TYPE_CONFIG) {
@@ -221,14 +223,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
-      const badgeColor = BADGE_COLOR_MAP[normalizedType] || 'bg-muted text-muted-foreground';
+      const badgeClass = contentBadgeClass(normalizedType);
+      // Numéro saisi à la main prioritaire, sinon compteur du chapitre.
+      const displayNumber = contentNumber ?? item.number;
 
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
         return (
           <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div className={`print-lesson-item ${lessonIndentClass}`}>
-              <span className="print-item-kind">{badgeText}{item.number ? ` ${item.number}` : ''}</span>
+              <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
               <span className="print-item-title">{item.title || ''}</span>
               {item.page && <span className="print-item-page"> p. {item.page}</span>}
               {allowDescription && (
@@ -242,19 +246,19 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       }
 
       const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
-        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
-        : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
+        ? `${BADGE_TOOLTIP_MAP[normalizedType]}${displayNumber ? ` ${displayNumber}` : ''}`
+        : `${normalizedType}${displayNumber ? ` ${displayNumber}` : ''}`;
 
       const content = (
         <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
           <Badge
             variant="outline"
-            className={`editor-kind-badge editor-type-badge inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-[5px] border-0 py-0.5 px-1 font-bold uppercase tracking-normal transition-colors duration-150 cursor-default self-baseline lg:tracking-wide shadow-none ${badgeColor} ${isPrint ? 'badge-print' : ''}`}
+            className={`editor-kind-badge editor-type-badge shrink-0 select-none whitespace-nowrap px-1 transition-colors duration-150 cursor-default self-baseline lg:tracking-wide ${badgeClass} ${isPrint ? 'badge-print' : ''}`}
             data-tippy-content={fullTooltip}
             title={fullTooltip}
           >
             <span>{badgeText}</span>
-            {item.number ? <span className="ms-px font-bold lg:ms-0.5">{item.number}</span> : null}
+            {displayNumber ? <span className="ms-px font-bold lg:ms-0.5">{displayNumber}</span> : null}
           </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div
