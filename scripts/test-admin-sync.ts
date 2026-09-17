@@ -6,6 +6,7 @@ import { enforceAdminLoginLimit } from '../api/_lib/adminLoginLimit.js';
 import { HttpError, type ApiResponse } from '../api/_lib/http.js';
 import { KEYS, type RedisClient } from '../api/_lib/redis.js';
 import { composeAdminLessonImport, prepareImportedLessons } from '../utils/importPipeline.js';
+import { mergeAdminAssessmentDates } from '../utils/syncSettings.js';
 
 // Redis protocol model, not a Lua interpreter or a production integration test.
 // It checks the revisions, commands, serialization and error contracts supplied
@@ -132,6 +133,25 @@ test('clock starts at zero; official bulletin keeps its own version', async () =
     await saveVersionedDocument(redis.client, 'bulletin', 3, { version: 4 }, 3);
     await assert.rejects(saveVersionedDocument(redis.client, 'bulletin', 3, { version: 4 }, 3), conflict);
     assert.deepEqual(await redis.get('clock'), { version: 1 });
+});
+
+test('dates de devoirs imposées : un appareil hors ligne ne peut pas les écraser', () => {
+    const imposed = '2026-09-17T12:00:00.000Z';
+    const watermarks = { c1: imposed };
+    const server = { c1: { d1: '2026-10-01' } };
+    // L'appareil ignore la date imposée : il pousse ses anciens réglages.
+    const stale = mergeAdminAssessmentDates({ c1: { d2: '2026-11-05' } }, server, watermarks, '2026-09-17T11:00:00.000Z');
+    assert.deepEqual(stale.assessmentDates.c1, { d2: '2026-11-05', d1: '2026-10-01' });
+    assert.deepEqual(stale.watermarks, watermarks);
+    // Une classe non imposée reste intacte.
+    const other = mergeAdminAssessmentDates({ c2: { d3: '2026-10-02' } }, server, watermarks, '2026-09-17T11:00:00.000Z');
+    assert.deepEqual(other.assessmentDates.c2, { d3: '2026-10-02' });
+    // Réglages plus récents que l'imposition : le professeur reprend la main.
+    const later = mergeAdminAssessmentDates({ c1: { d1: '2026-10-03' } }, server, watermarks, '2026-09-18T09:00:00.000Z');
+    assert.deepEqual(later.watermarks, {});
+    assert.deepEqual(later.assessmentDates.c1, { d1: '2026-10-03' });
+    // Sans filigrane ni réglages entrants, rien ne casse.
+    assert.deepEqual(mergeAdminAssessmentDates(undefined, undefined, undefined, '2026-09-18T09:00:00.000Z').assessmentDates, {});
 });
 
 test('admin replacement adds the dedicated diagnostic, without mutating input', () => {

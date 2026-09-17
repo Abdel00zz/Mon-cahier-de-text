@@ -6,6 +6,7 @@ import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../types.js';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
+import { mergeAdminAssessmentDates } from '../utils/syncSettings.js';
 import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../utils/timetable.js';
 
 interface ClassesBlob {
@@ -19,6 +20,8 @@ interface ClassesBlob {
     /** Les champs imposés par la direction ne peuvent pas être écrasés par un appareil non synchronisé. */
     adminClassOverrides?: Record<string, ClassInfo>;
     adminLessonsUpdatedAt?: Record<string, string>;
+    /** Dates de devoirs imposées par la direction, protégées jusqu'à un réglage plus récent du professeur. */
+    adminAssessmentDatesUpdatedAt?: Record<string, string>;
     /** Tombstones durables : un client ancien ne peut pas recréer une classe supprimée. */
     deletedClasses?: Record<string, { deletedAt: string }>;
     updatedAt: string;
@@ -153,6 +156,20 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     const submittedSettings = assertValidSyncSettings(body.settings, requestedClassIds);
     const submittedSettingsAt = isTimestamp(body.settingsUpdatedAt) ? body.settingsUpdatedAt : now;
     const acceptSettings = !!submittedSettings && (!existing.settingsUpdatedAt || submittedSettingsAt >= existing.settingsUpdatedAt);
+    // Les dates de devoirs imposées par la direction survivent à un appareil
+    // resté hors ligne : le filigrane les protège jusqu'à un réglage plus récent.
+    let adminAssessmentDatesUpdatedAt: Record<string, string> = { ...(existing.adminAssessmentDatesUpdatedAt ?? {}) };
+    let acceptedSettings = acceptSettings ? submittedSettings! : (existing.settings ?? {});
+    if (acceptSettings) {
+        const mergedDates = mergeAdminAssessmentDates(
+            submittedSettings!.assessmentDates as Record<string, unknown> | undefined,
+            existing.settings?.assessmentDates as Record<string, unknown> | undefined,
+            adminAssessmentDatesUpdatedAt,
+            submittedSettingsAt,
+        );
+        acceptedSettings = { ...submittedSettings!, assessmentDates: mergedDates.assessmentDates };
+        adminAssessmentDatesUpdatedAt = mergedDates.watermarks;
+    }
     const submittedTimetable = assertValidTimetable(body.timetable, requestedClassIds);
     const acceptLegacySchedule = !existing.settingsUpdatedAt && !submittedSettings;
     const timetable = ((acceptSettings || acceptLegacySchedule ? submittedTimetable : undefined) ?? existing.timetable ?? [])
@@ -177,6 +194,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         delete classMeta[id];
         delete adminClassOverrides[id];
         delete adminLessonsUpdatedAt[id];
+        delete adminAssessmentDatesUpdatedAt[id];
     }
     // purge des métadonnées orphelines (classe absente de la liste poussée)
     for (const id of Object.keys(classMeta)) {
@@ -188,15 +206,13 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
         schedules: ((acceptSettings || acceptLegacySchedule) && Array.isArray(body.schedules) ? body.schedules : existing.schedules)
             .filter(schedule => !deletedClassIds.has(schedule.classId)),
         timetable,
-        settings: sanitizeSettings(
-            acceptSettings ? submittedSettings! : (existing.settings ?? {}),
-            deletedClassIds
-        ),
+        settings: sanitizeSettings(acceptedSettings, deletedClassIds),
         settingsUpdatedAt: acceptSettings
             ? submittedSettingsAt
             : (existing.settingsUpdatedAt ?? ''),
         classMeta,
         adminClassOverrides,
+        adminAssessmentDatesUpdatedAt,
         adminLessonsUpdatedAt,
         deletedClasses,
         updatedAt: now,

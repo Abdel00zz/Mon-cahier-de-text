@@ -58,6 +58,8 @@ interface ClassesBlob {
     deletedClasses?: Record<string, { deletedAt: string }>;
     /** Import admin autoritaire jusqu'à une édition plus récente du professeur. */
     adminLessonsUpdatedAt?: Record<string, string>;
+    /** Dates de devoirs imposées par la direction, protégées jusqu'à un réglage plus récent du professeur. */
+    adminAssessmentDatesUpdatedAt?: Record<string, string>;
     updatedAt: string;
     settings?: Partial<AppConfig>;
     settingsUpdatedAt?: string;
@@ -414,6 +416,9 @@ const handleSaveAssessmentDate = async (body: AdminBody, res: ApiResponse) => {
         ...blob,
         settings: { ...(blob.settings ?? {}), assessmentDates },
         settingsUpdatedAt: now,
+        // Filigrane : la date imposée résiste à un appareil resté hors ligne,
+        // jusqu'à ce que le professeur pousse des réglages plus récents.
+        adminAssessmentDatesUpdatedAt: { ...(blob.adminAssessmentDatesUpdatedAt ?? {}), [body.classId]: now },
         updatedAt: now,
     });
     await write.exec();
@@ -470,6 +475,7 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         settingsUpdatedAt: storedBlob?.settingsUpdatedAt ?? '',
         classMeta,
         adminClassOverrides,
+        adminAssessmentDatesUpdatedAt: storedBlob?.adminAssessmentDatesUpdatedAt ?? {},
         adminLessonsUpdatedAt: storedBlob?.adminLessonsUpdatedAt ?? {},
         deletedClasses,
         updatedAt: now,
@@ -512,6 +518,8 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
     delete adminClassOverrides[classId];
     const adminLessonsUpdatedAt = { ...(storedBlob.adminLessonsUpdatedAt ?? {}) };
     delete adminLessonsUpdatedAt[classId];
+    const adminAssessmentDatesUpdatedAt = { ...(storedBlob.adminAssessmentDatesUpdatedAt ?? {}) };
+    delete adminAssessmentDatesUpdatedAt[classId];
     const deletedClasses = { ...(storedBlob.deletedClasses ?? {}), [classId]: { deletedAt: now } };
     const nextSnapshot = storedSnapshot
         ? { ...storedSnapshot, classes: storedSnapshot.classes.filter(item => item.id !== classId) }
@@ -526,6 +534,7 @@ const handleDeleteTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         settingsUpdatedAt: now,
         classMeta,
         adminClassOverrides,
+        adminAssessmentDatesUpdatedAt,
         adminLessonsUpdatedAt,
         deletedClasses,
         updatedAt: now,

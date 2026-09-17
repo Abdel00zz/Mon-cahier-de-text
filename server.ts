@@ -8,6 +8,7 @@ import {
     validateOfficialStudentEventsFile
 } from './utils/officialStudentEvents';
 import { prepareImportedLessons, summarizeImportedLessons } from './utils/importPipeline';
+import { mergeAdminAssessmentDates } from './utils/syncSettings';
 import { DEFAULT_TIMETABLE_CLOCK, DEFAULT_TIMETABLE_CLOCK_ASSIGNMENT, isValidTimetableClockOffset, normalizeTimetableClock, normalizeTimetableClockAssignment, resolveTimetableClock } from './utils/timetable';
 import type { TimetableClockAssignment, TimetableClockPolicy } from './types';
 import crypto from 'crypto';
@@ -75,6 +76,15 @@ export function setupMockApi(app: express.Express) {
             workspacesByPhone.set(phone, workspace);
         }
         return { phone, workspace };
+    };
+    /**
+     * Reflete une ecriture d'administration dans l'espace de l'enseignant vise.
+     * Sans cela la maquette gardait deux etats distincts (vue direction et
+     * espace de l'enseignant) : le professeur ne voyait jamais la modification.
+     */
+    const publishAdminBlob = (phone: string, blob: Record<string, unknown> | null) => {
+        const target = workspacesByPhone.get(phone);
+        if (target) target.classesBlob = blob;
     };
     // accepte 06000000, 0600000000, +212 6..., etc., tolérant sur la saisie dev
     const phoneMatches = (raw: unknown) => {
@@ -186,6 +196,7 @@ export function setupMockApi(app: express.Express) {
                     const existingClasses = (existingBlob?.classes as Array<{ id?: string }> | undefined) ?? [];
                     const adminClassOverrides = { ...((existingBlob?.adminClassOverrides as Record<string, unknown>) ?? {}) };
                     const adminLessonsUpdatedAt = { ...((existingBlob?.adminLessonsUpdatedAt as Record<string, string>) ?? {}) };
+                    let adminAssessmentDatesUpdatedAt = { ...((existingBlob?.adminAssessmentDatesUpdatedAt as Record<string, string>) ?? {}) };
                     const classesById = new Map<string, unknown>();
                     for (const classInfo of existingClasses) {
                         if (typeof classInfo?.id === 'string') classesById.set(classInfo.id, classInfo);
@@ -217,6 +228,7 @@ export function setupMockApi(app: express.Express) {
                         delete classMeta[id];
                         delete adminClassOverrides[id];
                         delete adminLessonsUpdatedAt[id];
+                        delete adminAssessmentDatesUpdatedAt[id];
                     }
                     if (body.snapshot && typeof body.snapshot === 'object') {
                         devSnapshot = { ...body.snapshot, phone, lastSyncAt: now };
@@ -227,6 +239,18 @@ export function setupMockApi(app: express.Express) {
                         timetable: (body.timetable ?? (existingBlob?.timetable as any) ?? []).filter((entry: any) => !deletedIds.has(entry?.classId)),
                         settings: (() => {
                             const settings = { ...(body.settings ?? (existingBlob?.settings as any) ?? {}) };
+                            if (body.settings) {
+                                // Parite avec l'API reelle : une date de devoir imposee par
+                                // la direction resiste a un appareil reste hors ligne.
+                                const merged = mergeAdminAssessmentDates(
+                                    settings.assessmentDates,
+                                    (existingBlob?.settings as any)?.assessmentDates,
+                                    adminAssessmentDatesUpdatedAt,
+                                    (body.settingsUpdatedAt as string) || now,
+                                );
+                                settings.assessmentDates = merged.assessmentDates;
+                                adminAssessmentDatesUpdatedAt = merged.watermarks;
+                            }
                             if (Array.isArray(settings.dashboardClassOrder)) {
                                 settings.dashboardClassOrder = settings.dashboardClassOrder.filter((id: unknown) => typeof id === 'string' && !deletedIds.has(id));
                             }
@@ -235,6 +259,7 @@ export function setupMockApi(app: express.Express) {
                         settingsUpdatedAt: body.settings ? (body.settingsUpdatedAt || now) : ((existingBlob?.settingsUpdatedAt as any) ?? ''),
                         classMeta,
                         adminClassOverrides,
+                        adminAssessmentDatesUpdatedAt,
                         adminLessonsUpdatedAt,
                         deletedClasses,
                         updatedAt: now,
@@ -343,7 +368,9 @@ export function setupMockApi(app: express.Express) {
                         return send(res, 200, { ok: true, blocked: devTeacherBlocked });
                     }
                     if (body.action === 'deleteTeacher') {
-                        devTimetableClocksByPhone.delete(String(body.phone ?? DEV_PHONE));
+                        const deletedPhone = String(body.phone ?? DEV_PHONE);
+                        devTimetableClocksByPhone.delete(deletedPhone);
+                        workspacesByPhone.delete(deletedPhone);
                         return send(res, 200, { ok: true, deletedClasses: lessonsByClass.size });
                     }
                     if (body.action === 'upsertTeacherClass') {
@@ -381,6 +408,7 @@ export function setupMockApi(app: express.Express) {
                             updatedAt: now,
                         };
                         if (!existing) lessonsByClass.set(classInfo.id, { lessonsData: [], updatedAt: now });
+                        publishAdminBlob(String(body.phone ?? DEV_PHONE), classesBlob);
                         if (devSnapshot) {
                             const snapshot = devSnapshot as any;
                             const prior = (snapshot.classes ?? []).find((item: any) => item.id === classInfo.id);
@@ -423,6 +451,7 @@ export function setupMockApi(app: express.Express) {
                             updatedAt: now,
                         };
                         lessonsByClass.delete(classId);
+                        publishAdminBlob(String(body.phone ?? DEV_PHONE), classesBlob);
                         if (devSnapshot) {
                             devSnapshot = { ...(devSnapshot as any), classes: ((devSnapshot as any).classes ?? []).filter((item: any) => item.id !== classId) };
                         }
@@ -548,6 +577,7 @@ export function setupMockApi(app: express.Express) {
                     if (body.action === 'saveAssessmentDate') {
                         const classId = String(body.classId ?? '');
                         const assessmentId = String(body.assessmentId ?? '');
+                        const stamp = new Date().toISOString();
                         const settings = { ...((classesBlob?.settings as Record<string, any>) ?? {}) };
                         const assessmentDates = { ...(settings.assessmentDates ?? {}) };
                         assessmentDates[classId] = {
@@ -557,8 +587,13 @@ export function setupMockApi(app: express.Express) {
                         classesBlob = {
                             ...(classesBlob ?? {}),
                             settings: { ...settings, assessmentDates },
-                            settingsUpdatedAt: new Date().toISOString(),
+                            settingsUpdatedAt: stamp,
+                            adminAssessmentDatesUpdatedAt: {
+                                ...((classesBlob?.adminAssessmentDatesUpdatedAt as Record<string, string>) ?? {}),
+                                [classId]: stamp,
+                            },
                         };
+                        publishAdminBlob(String(body.phone ?? DEV_PHONE), classesBlob);
                         return send(res, 200, { ok: true, assessmentDates });
                     }
                     return send(res, 400, { error: 'Action inconnue.' });

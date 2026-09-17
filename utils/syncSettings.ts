@@ -91,8 +91,44 @@ export const extractSyncableSettings = (config: Partial<AppConfig>): SyncableSet
     return out as SyncableSettings;
 };
 
-/** Fusionne des réglages venus du cloud dans la config locale (le push local reste prioritaire pour l'état push). */
-export const mergeSyncableSettings = (local: Partial<AppConfig>, remote: SyncableSettings | undefined): Partial<AppConfig> => {
+/**
+ * Dates de devoirs imposées par la direction : une classe protégée garde la
+ * valeur du serveur tant que le professeur n'a pas poussé des réglages plus
+ * récents que le filigrane. Sans cette règle, un appareil resté hors ligne
+ * pouvait écraser silencieusement une date imposée en poussant ses anciens
+ * réglages (les imports de cahier sont déjà protégés de la même manière).
+ *
+ * @param incoming dates reçues de l'appareil
+ * @param server dates actuellement stockées (dont celles de la direction)
+ * @param watermarks date d'imposition par classe (`adminAssessmentDatesUpdatedAt`)
+ * @param submittedAt horodatage du push de réglages
+ * @returns les dates à conserver et les filigranes encore actifs
+ */
+export const mergeAdminAssessmentDates = (
+    incoming: Record<string, unknown> | undefined,
+    server: Record<string, unknown> | undefined,
+    watermarks: Record<string, string> | undefined,
+    submittedAt: string,
+): { assessmentDates: Record<string, unknown>; watermarks: Record<string, string> } => {
+    const assessmentDates: Record<string, unknown> = { ...(incoming ?? {}) };
+    const remaining: Record<string, string> = {};
+    for (const [classId, watermark] of Object.entries(watermarks ?? {})) {
+        // Le professeur a poussé des réglages postérieurs à l'imposition : sa
+        // version fait foi et la protection se libère.
+        if (!watermark || submittedAt > watermark) continue;
+        remaining[classId] = watermark;
+        const imposed = server?.[classId];
+        if (!imposed || typeof imposed !== 'object' || Array.isArray(imposed)) continue;
+        const current = assessmentDates[classId];
+        assessmentDates[classId] = {
+            ...(current && typeof current === 'object' && !Array.isArray(current) ? current as Record<string, unknown> : {}),
+            ...(imposed as Record<string, unknown>),
+        };
+    }
+    return { assessmentDates, watermarks: remaining };
+};
+
+/** Fusionne des réglages venus du cloud dans la config locale (le push local reste prioritaire pour l'état push). */export const mergeSyncableSettings = (local: Partial<AppConfig>, remote: SyncableSettings | undefined): Partial<AppConfig> => {
     if (!remote) return local;
     const merged: Partial<AppConfig> = { ...local };
     for (const key of SYNCABLE_KEYS) {
