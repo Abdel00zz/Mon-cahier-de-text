@@ -465,7 +465,7 @@ test('numerotation des contenus : un compteur par type, remis a zero par chapitr
   const values = [...numbers.values()];
   // Deux définitions du chapitre 1, puis l'exemple, puis la troisième définition ;
   // le compteur repart à 1 dans le chapitre 2 et le numéro saisi (7) avance le suivant.
-  assert.deepEqual(values, ['1', '2', '1', '3', '1', '8']);
+  assert.deepEqual(values, ['1', '2', '1', '3', '1', '7', '8']);
   assert.equal(values.length, numbers.size);
   // L'évaluation ne consomme aucun numéro de contenu.
   assert.ok(!values.includes('Devoir'));
@@ -517,14 +517,14 @@ test('numerotation : la pastille porte le numero calcule, la saisie reste maitre
     } as never),
   }));
   // La pastille rend le sigle ET le numero, sur la meme ligne.
-  assert.match(renderFor(0), /editor-kind-badge[\s\S]*?>Déf\.[\s\S]*?>1</);
+  assert.match(renderFor(0), /editor-kind-badge[\s\S]*?>DÉF<[\s\S]*?>1</);
   assert.match(renderFor(1), />2</);
   // Un compteur par type : la proposition repart a 1.
-  assert.match(renderFor(2), /Prop\.[\s\S]*?>1</);
+  assert.match(renderFor(2), /PROP[\s\S]*?>1</);
   // Activite et exercice sont numerotes comme le reste du manuel.
-  assert.match(renderFor(3), /Act\.[\s\S]*?>1</);
+  assert.match(renderFor(3), /ACT[\s\S]*?>1</);
   // Un numero saisi a la main s'affiche meme sans entree dans la carte.
-  assert.equal(numbers.get(indicesKey(rows[4].indices)), undefined);
+  assert.equal(numbers.get(indicesKey(rows[4].indices)), '7');
   assert.match(renderFor(4), /editor-kind-badge[\s\S]*?>7</);
 });
 

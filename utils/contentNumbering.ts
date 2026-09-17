@@ -62,6 +62,9 @@ export const buildContentNumbers = (lessons: LessonsData, enabled = true): Map<s
         let counter = counters.get(type) ?? 0;
         const declared = explicitNumber(row);
         if (declared) {
+            // Le numéro écrit à la main prime ET fait avancer le compteur, sinon
+            // la suite automatique contredirait la saisie.
+            numbers.set(row.key, declared);
             const parsed = Number.parseInt(declared, 10);
             if (Number.isFinite(parsed) && parsed > counter) counters.set(type, parsed);
             continue;

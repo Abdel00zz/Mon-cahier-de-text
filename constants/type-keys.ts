@@ -41,38 +41,44 @@ export const TYPE_MAP: { [key: string]: string } = {
   'securite': 'sécurité', 'sécurité': 'sécurité', 'safety': 'sécurité', 'sec': 'sécurité', 'séc': 'sécurité'
 };
 
+/**
+ * Sigle affiché dans la pastille. Trois à quatre lettres, sans point final
+ * (invisible à 7 px, mais encombrant), sans ambiguïté entre voisins :
+ * EX = exemple, EXO = exercice. Le nom complet reste dans l'info-bulle,
+ * et la couleur de famille distingue déjà notions / résultats / pratique.
+ */
 export const BADGE_TEXT_MAP: { [key: string]: string } = {
-  'définition': 'Déf.',
-  'théorème': 'Th.',
-  'proposition': 'Prop.',
-  'lemme': 'Lem.',
-  'corollaire': 'Cor.',
-  'remarque': 'Rem.',
-  'preuve': 'Dém.',
-  'exemple': 'Ex.',
-  'exercice': 'Exo.',
-  'activité': 'Act.',
-  'application': 'App.',
-  'introduction': 'Intro.',
-  'observation': 'Obs.',
-  'comparaison': 'Comp.',
-  'classification': 'Classif.',
-  'structure': 'Struct.',
-  'fonction': 'Fonc.',
-  'mécanisme': 'Méc.',
-  'processus': 'Proc.',
-  'méthode': 'Méth.',
-  'expérience': 'Exp.',
-  'interprétation': 'Interp.',
-  'conclusion': 'Concl.',
-  'propriété': 'Propr.',
-  'grandeur': 'Grand.',
-  'relation': 'Rel.',
-  'loi': 'Loi',
-  'principe': 'Princ.',
-  'protocole': 'Proto.',
-  'modèle': 'Mod.',
-  'sécurité': 'Séc.'
+  'définition': 'DÉF',
+  'théorème': 'THM',
+  'proposition': 'PROP',
+  'lemme': 'LEM',
+  'corollaire': 'COR',
+  'remarque': 'REM',
+  'preuve': 'DÉM',
+  'exemple': 'EX',
+  'exercice': 'EXO',
+  'activité': 'ACT',
+  'application': 'APP',
+  'introduction': 'INTRO',
+  'observation': 'OBS',
+  'comparaison': 'COMP',
+  'classification': 'CLASS',
+  'structure': 'STRUCT',
+  'fonction': 'FONC',
+  'mécanisme': 'MÉCA',
+  'processus': 'PROC',
+  'méthode': 'MÉTH',
+  'expérience': 'EXP',
+  'interprétation': 'INTERP',
+  'conclusion': 'CONCL',
+  'propriété': 'PROPR',
+  'grandeur': 'GRAND',
+  'relation': 'REL',
+  'loi': 'LOI',
+  'principe': 'PRINC',
+  'protocole': 'PROTO',
+  'modèle': 'MOD',
+  'sécurité': 'SÉC'
 };
 
 // Palette Material You volontairement courte : le fond et le texte restent
