@@ -386,6 +386,7 @@ const TableRowComponent: FC<TableRowProps> = ({
         showDescriptions={showDescriptions}
         descriptionTypes={descriptionTypes}
         highlight={searchQuery}
+        contentNumber={getContentNumber?.(indices)}
       />
     </div>
   );
