@@ -423,7 +423,6 @@ export type LessonsData = TopLevelItem[];
  * `chapter` : « définition 1 » repart de 1 dans chaque chapitre.
  */
 interface ContentNumbering {
-    /** Active la numérotation automatique des contenus pédagogiques. */
+    /** Affiche « Définition 1 », « Exemple 2 »… (compteur par chapitre). */
     enabled: boolean;
-    scope: 'chapter' | 'notebook';
 }

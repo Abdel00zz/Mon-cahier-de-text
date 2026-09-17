@@ -9,7 +9,7 @@ import { buildLessonRows, filterLessonRows } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
 import { dateTimeFormat, numberFormat } from '../utils/formatters';
-import { buildContentNumbers, DEFAULT_CONTENT_NUMBERING } from '../utils/contentNumbering';
+import { buildContentNumbers } from '../utils/contentNumbering';
 import { contentBadgeClass } from '../constants/type-keys';
 import { SUBJECTS } from '../constants/subjects';
 import { SUBJECT_ABBREV_MAP } from '../constants/type-keys';
@@ -460,7 +460,7 @@ test('numerotation des contenus : un compteur par type, remis a zero par chapitr
       ],
     },
   ] as unknown as LessonsData;
-  const numbers = buildContentNumbers(notebook, DEFAULT_CONTENT_NUMBERING);
+  const numbers = buildContentNumbers(notebook);
   const values = [...numbers.values()];
   // Deux définitions du chapitre 1, puis l'exemple, puis la troisième définition ;
   // le compteur repart à 1 dans le chapitre 2 et le numéro saisi (7) avance le suivant.
@@ -472,8 +472,8 @@ test('numerotation des contenus : un compteur par type, remis a zero par chapitr
 
 test('numerotation des contenus : desactivee, la carte reste vide', () => {
   const notebook = [{ type: 'chapter', title: 'C', items: [{ type: 'définition', title: 'D', description: '' }] }] as unknown as LessonsData;
-  assert.equal(buildContentNumbers(notebook, { enabled: false, scope: 'chapter' }).size, 0);
-  assert.equal(buildContentNumbers(notebook, { enabled: true, scope: 'notebook' }).size, 1);
+  assert.equal(buildContentNumbers(notebook, false).size, 0);
+  assert.equal(buildContentNumbers(notebook, true).size, 1);
 });
 
 test('pastilles de type : une forme commune, une famille de couleur par nature', () => {

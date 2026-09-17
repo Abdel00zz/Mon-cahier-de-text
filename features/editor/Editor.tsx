@@ -12,7 +12,7 @@ import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
 import { indicesKey } from '@/utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
-import { buildContentNumbers, DEFAULT_CONTENT_NUMBERING } from '@/utils/contentNumbering';
+import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
@@ -146,11 +146,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     (indices: Indices) => contentDateOrder.get(indicesKey(indices)),
     [contentDateOrder],
   );
-  // Numérotation par chapitre : « définition 1 », « exemple 2 »… Le
-  // professeur peut toujours saisir un numéro, qui prime sur le calcul.
+  // Numérotation par chapitre : « définition 1 », « exemple 2 »… Un numéro
+  // saisi à la main reste prioritaire sur le calcul (activé par défaut).
   const contentNumbers = useMemo(
-    () => buildContentNumbers(lessonsData, config.contentNumbering ?? DEFAULT_CONTENT_NUMBERING),
-    [lessonsData, config.contentNumbering?.enabled, config.contentNumbering?.scope],
+    () => buildContentNumbers(lessonsData, config.contentNumbering?.enabled !== false),
+    [lessonsData, config.contentNumbering?.enabled],
   );
   const getContentNumber = useCallback(
     (indices: Indices) => contentNumbers.get(indicesKey(indices)),

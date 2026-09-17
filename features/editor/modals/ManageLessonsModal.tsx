@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { MathText } from '@/components/ui/math-text';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { DescriptionVisibilityControl, DescriptionMode } from '@/features/settings/components/DescriptionVisibilityControl';
-import { Segmented } from '@/components/ui/segmented';
+import { Switch } from '@/components/ui/switch';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 interface ManageLessonsModalProps {
@@ -46,7 +46,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const { t } = useLocale();
   const [localLessons, setLocalLessons] = useState<TopLevelItem[]>([]);
   const [localDesc, setLocalDesc] = useState<{ mode: DescriptionMode; types: string[] }>({ mode: 'all', types: [] });
-  const [localNumbering, setLocalNumbering] = useState<{ enabled: boolean; scope: 'chapter' | 'notebook' }>({ enabled: true, scope: 'chapter' });
+  const [localNumbering, setLocalNumbering] = useState(true);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const stableKeys = useRef(new WeakMap<TopLevelItem, string>());
 
@@ -57,7 +57,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       mode: config.screenDescriptionMode ?? 'all',
       types: config.screenDescriptionTypes ?? [],
     });
-    setLocalNumbering(config.contentNumbering ?? { enabled: true, scope: 'chapter' });
+    setLocalNumbering(config.contentNumbering?.enabled !== false);
     setPendingDelete(null);
   }, [isOpen, lessons, config.screenDescriptionMode, config.screenDescriptionTypes, config.contentNumbering]);
 
@@ -66,8 +66,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
   const descriptionsChanged = localDesc.mode !== (config.screenDescriptionMode ?? 'all')
     || localDesc.types.length !== (config.screenDescriptionTypes ?? []).length
     || localDesc.types.some(type => !(config.screenDescriptionTypes ?? []).includes(type));
-  const numberingChanged = localNumbering.enabled !== (config.contentNumbering?.enabled ?? true)
-    || localNumbering.scope !== (config.contentNumbering?.scope ?? 'chapter');
+  const numberingChanged = localNumbering !== (config.contentNumbering?.enabled !== false);
   const hasChanges = lessonsChanged || descriptionsChanged || numberingChanged;
 
   const itemKey = (item: TopLevelItem): string => {
@@ -114,7 +113,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       onConfigChange({ screenDescriptionMode: localDesc.mode, screenDescriptionTypes: localDesc.types });
     }
     if (numberingChanged) {
-      onConfigChange({ contentNumbering: localNumbering });
+      onConfigChange({ contentNumbering: { enabled: localNumbering } });
     }
     if (lessonsChanged) {
       onUpdate(localLessons);
@@ -161,24 +160,18 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
       >
         <div className="space-y-4">
           <section className="overflow-hidden rounded-xl border border-border/70 bg-background shadow-xs">
-            <div className="border-b border-border/60 bg-muted/40 px-4 py-3">
-              <h3 className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.numbering.title')}</h3>
+            <div className="flex items-start justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <label htmlFor="contentNumberingSwitch" className="text-xs font-bold text-foreground sm:text-sm">{t('manageLessons.numbering.title')}</label>
               <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground">
                 {t('manageLessons.numbering.hint')}
               </p>
-            </div>
-            <div className="p-4">
-              <Segmented
-                value={localNumbering.enabled ? localNumbering.scope : 'off'}
-                onChange={value => setLocalNumbering(value === 'off'
-                  ? { enabled: false, scope: localNumbering.scope }
-                  : { enabled: true, scope: value as 'chapter' | 'notebook' })}
-                options={[
-                  { value: 'chapter', label: t('manageLessons.numbering.chapter') },
-                  { value: 'notebook', label: t('manageLessons.numbering.notebook') },
-                  { value: 'off', label: t('manageLessons.numbering.off') },
-                ]}
-                ariaLabel={t('manageLessons.numbering.title')}
+              </div>
+              <Switch
+                id="contentNumberingSwitch"
+                checked={localNumbering}
+                onCheckedChange={setLocalNumbering}
+                aria-label={t('manageLessons.numbering.title')}
               />
             </div>
           </section>

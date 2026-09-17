@@ -48,7 +48,7 @@ const defaultConfig: AppConfig = {
     educationProvince: '',
     printShowDescriptions: true,
     screenDescriptionMode: 'all',
-    contentNumbering: { enabled: true, scope: 'chapter' },
+    contentNumbering: { enabled: true },
     screenDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
     printDescriptionMode: 'all',
     printDescriptionTypes: ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
@@ -101,7 +101,7 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             defaultTeacherName: loadedTeacherName,
             printShowDescriptions: loadedConfig.printShowDescriptions ?? (loadedConfig.printDescriptionMode === 'none' ? false : (loadedConfig.printDescriptionMode === 'all' ? true : true)),
             screenDescriptionMode: loadedConfig.screenDescriptionMode ?? 'all',
-            contentNumbering: loadedConfig.contentNumbering ?? { enabled: true, scope: 'chapter' },
+            contentNumbering: loadedConfig.contentNumbering ?? { enabled: true },
             screenDescriptionTypes: loadedConfig.screenDescriptionTypes && loadedConfig.screenDescriptionTypes.length > 0
                 ? loadedConfig.screenDescriptionTypes
                 : ['définition', 'théorème', 'proposition', 'lemme', 'corollaire', 'remarque', 'preuve', 'exemple', 'exercice', 'activité', 'application'],
