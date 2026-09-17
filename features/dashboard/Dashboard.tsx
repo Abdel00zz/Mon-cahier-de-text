@@ -294,7 +294,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <SectionHeader
                                 title={t('dashboard.classes')}
                                 isArabic={isRtl}
-                                count={classes.length}
                                 actions={
                                     <div className="flex items-center gap-2">
                                         {shouldShowSubjectBadge ? (

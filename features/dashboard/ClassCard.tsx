@@ -21,7 +21,7 @@ interface ClassCardProps {
     isActiveSession?: boolean;
 }
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession }) => {
+const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession, index }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
     const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
@@ -37,7 +37,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
+            data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "keep-surface dashboard-class-surface font-cyber-clean keep-interactive group relative flex h-full min-h-[140px] sm:min-h-[146px] w-full min-w-0 flex-col justify-between overflow-hidden",
