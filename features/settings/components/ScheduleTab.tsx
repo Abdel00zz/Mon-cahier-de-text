@@ -25,11 +25,17 @@ export interface ModernClassColor {
     dot: string;
 }
 
-/** Palette synchronisée avec les cartes de classes - teintes foncées, riches et attractives */
+/**
+ * Palette synchronisee avec les cartes de classes du tableau de bord : memes
+ * familles de teintes (sable, menthe, azur, lavande, corail), une marche plus
+ * foncee pour que la grille se lise au premier coup d'oeil. En mode sombre les
+ * cellules restent volontairement plus profondes que les cartes.
+ * Les libelles conservent un contraste AA sur ces fonds.
+ */
 export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
     sand: {
         key: 'sand',
-        bg: 'bg-[#fde68a] dark:bg-[#451a03]/90',
+        bg: 'bg-[#fcd34d] dark:bg-[#451a03]/90',
         border: 'border-[#d97706] dark:border-[#b45309]',
         text: 'text-[#78350f] dark:text-[#fef3c7]',
         subtext: 'text-[#78350f] dark:text-[#fde68a]',
@@ -37,34 +43,34 @@ export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClas
     },
     mint: {
         key: 'mint',
-        bg: 'bg-[#a7f3d0] dark:bg-[#064e3b]/90',
+        bg: 'bg-[#6ee7b7] dark:bg-[#064e3b]/90',
         border: 'border-[#059669] dark:border-[#10b981]',
         text: 'text-[#064e3b] dark:text-[#ecfdf5]',
-        subtext: 'text-[#047857] dark:text-[#a7f3d0]',
+        subtext: 'text-[#065f46] dark:text-[#a7f3d0]',
         dot: 'bg-[#059669]',
     },
     sky: {
         key: 'sky',
-        bg: 'bg-[#bae6fd] dark:bg-[#0c4a6e]/90',
+        bg: 'bg-[#7dd3fc] dark:bg-[#0c4a6e]/90',
         border: 'border-[#0284c7] dark:border-[#38bdf8]',
         text: 'text-[#082f49] dark:text-[#f0f9ff]',
-        subtext: 'text-[#0369a1] dark:text-[#bae6fd]',
+        subtext: 'text-[#075985] dark:text-[#bae6fd]',
         dot: 'bg-[#0284c7]',
     },
     lavender: {
         key: 'lavender',
-        bg: 'bg-[#ddd6fe] dark:bg-[#3b0764]/90',
+        bg: 'bg-[#c4b5fd] dark:bg-[#3b0764]/90',
         border: 'border-[#7c3aed] dark:border-[#a78bfa]',
         text: 'text-[#3b0764] dark:text-[#f5f3ff]',
-        subtext: 'text-[#6d28d9] dark:text-[#ddd6fe]',
+        subtext: 'text-[#5b21b6] dark:text-[#ddd6fe]',
         dot: 'bg-[#7c3aed]',
     },
     coral: {
         key: 'coral',
-        bg: 'bg-[#fecdd3] dark:bg-[#4c0519]/90',
+        bg: 'bg-[#fda4af] dark:bg-[#4c0519]/90',
         border: 'border-[#e11d48] dark:border-[#fb7185]',
         text: 'text-[#4c0519] dark:text-[#fff1f2]',
-        subtext: 'text-[#be123c] dark:text-[#fecdd3]',
+        subtext: 'text-[#9f1239] dark:text-[#fecdd3]',
         dot: 'bg-[#e11d48]',
     },
 };
