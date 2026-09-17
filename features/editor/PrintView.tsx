@@ -315,6 +315,22 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         }` : ''}
                     }
 
+                    /* Le plan se lit aussi sur le papier : un cran de marge
+                       par niveau, et un filet pour matérialiser la profondeur. */
+                    :root {
+                        --editor-indent-1: 4mm;
+                        --editor-indent-2: 8mm;
+                        --editor-indent-3: 12mm;
+                        --editor-indent-rail: #D8CFBE;
+                    }
+                    /* Le retrait hiérarchique survit aux remises à zéro du
+                       papier (raccourcis « margin: 0 0 2px 0 »). */
+                    .editor-indent-1 { margin-inline-start: var(--editor-indent-1) !important; }
+                    .editor-indent-2 { margin-inline-start: var(--editor-indent-2) !important; }
+                    .editor-indent-3 { margin-inline-start: var(--editor-indent-3) !important; }
+                    .editor-indent-rail { border-inline-start: 0.75pt solid var(--editor-indent-rail); }
+
+
                     .print-hidden { display: none !important; }
                     .print-only { display: block !important; }
                     /* aucune notification (toast) ne doit apparaître sur le papier */

@@ -430,5 +430,11 @@ test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', (
   // Les lignes de contenu s'alignent sur le même plan, sans filet.
   assert.match(renderer, /const lessonIndentClass = indices\.subsubsectionIndex !== undefined/);
   assert.match(renderer, /\$\{lessonIndentClass\}/);
+  // Le papier partage exactement le meme plan, en millimetres.
+  const print = readFileSync('features/editor/PrintView.tsx', 'utf8');
+  assert.match(print, /--editor-indent-1: 4mm/);
+  assert.match(print, /--editor-indent-3: 12mm/);
+  assert.match(print, /--editor-indent-rail: #D8CFBE/);
+  assert.match(renderer, /print-lesson-item \$\{lessonIndentClass\}/);
   assert.match(renderer, /\$\{lessonIndentClass\}/);
 });

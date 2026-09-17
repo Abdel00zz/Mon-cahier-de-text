@@ -208,6 +208,15 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       );
     case 'item':
       const item = data as LessonItem;
+      // Un cran de marge par niveau parent : chapitre à la marge, puis
+      // section, sous-section, sous-sous-section.
+      const lessonIndentClass = indices.subsubsectionIndex !== undefined
+        ? 'editor-indent-3'
+        : indices.subsectionIndex !== undefined
+          ? 'editor-indent-2'
+          : indices.sectionIndex !== undefined
+            ? 'editor-indent-1'
+            : '';
       const normalizedType = TYPE_MAP[(item.type || '').toLowerCase()] || item.type;
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
@@ -218,7 +227,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
         return (
           <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
-            <div className="print-lesson-item">
+            <div className={`print-lesson-item ${lessonIndentClass}`}>
               <span className="print-item-kind">{badgeText}{item.number ? ` ${item.number}` : ''}</span>
               <span className="print-item-title">{item.title || ''}</span>
               {item.page && <span className="print-item-page"> p. {item.page}</span>}
@@ -235,16 +244,6 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const fullTooltip = BADGE_TOOLTIP_MAP[normalizedType] 
         ? `${BADGE_TOOLTIP_MAP[normalizedType]}${item.number ? ` ${item.number}` : ''}`
         : `${normalizedType}${item.number ? ` ${item.number}` : ''}`;
-
-      // La ligne de contenu s'aligne sur le plan : chapitre à la marge,
-      // puis un cran par niveau parent (section, sous-section…).
-      const lessonIndentClass = indices.subsubsectionIndex !== undefined
-        ? 'editor-indent-3'
-        : indices.subsectionIndex !== undefined
-          ? 'editor-indent-2'
-          : indices.sectionIndex !== undefined
-            ? 'editor-indent-1'
-            : '';
 
       const content = (
         <div className={`editor-lesson-row editor-table-content font-editor-system grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline py-0.5 sm:py-1 text-muted-foreground ${lessonIndentClass}`}>
