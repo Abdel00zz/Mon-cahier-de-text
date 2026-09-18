@@ -125,7 +125,7 @@ const PWA_MANIFEST: LocalizedManifest = {
             name: 'Mes classes',
             short_name: 'Classes',
             description: 'Ouvrir la liste des classes et leurs cahiers de textes.',
-            url: '/#/',
+            url: '/',
             icons: shortcutIcon,
             name_localized: {
                 fr: 'Mes classes',
