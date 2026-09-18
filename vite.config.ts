@@ -204,7 +204,7 @@ export default defineConfig(({ mode }) => {
             host: true,
             strictPort: false,
             allowedHosts: true,
-            hmr: { },
+            // Le proxy de preview ne relaie pas toujours le WebSocket Vite.\n            // Désactiver HMR évite que @vite/client tente une connexion fermée\n            // en boucle et laisse le rechargement géré par le runtime de preview.\n            hmr: false,
         },
         plugins: [
                         react(),
