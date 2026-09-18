@@ -8,6 +8,9 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
+import { classIdentityFor } from '../utils/classIdentity';
+import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
+import { ClassCard } from '../features/dashboard/ClassCard';
 import { dateTimeFormat, numberFormat } from '../utils/formatters';
 import { buildContentNumbers } from '../utils/contentNumbering';
 import { ContentRenderer } from '../features/editor/ContentRenderer';
@@ -537,4 +540,84 @@ test('numerotation : une evaluation garde son numero dans son titre, sans pastil
     React.createElement(ContentRenderer as never, { data: rows[1].data, indices: rows[1].indices, elementType: 'devoir_maison' } as never),
   }));
   assert.ok(!html.includes('editor-kind-badge'));
+});
+
+test('identite de classe : palier et filiere deduits du nom, sans jamais rien perdre', () => {
+  const physics = classIdentityFor('2ème Bac Sciences Physiques 3', 'fr');
+  assert.equal(physics.tierLabel, '2e Bac');
+  assert.equal(physics.stream, 'Sciences Physiques');
+  assert.equal(physics.group, '3');
+
+  assert.equal(classIdentityFor('Tronc Commun Scientifique', 'fr').tierLabel, 'Tronc commun');
+  assert.equal(classIdentityFor('Tronc Commun Scientifique', 'fr').stream, 'Scientifique');
+  assert.equal(classIdentityFor('1er Bac Sciences Expérimentales', 'fr').stream, 'Sciences Expérimentales');
+  assert.equal(classIdentityFor('2ème Bac Sciences Mathématiques A', 'fr').stream, 'Sciences Mathématiques A');
+  assert.equal(classIdentityFor('2ème Bac Sciences de la Vie et de la Terre Groupe 2', 'fr').group, '2');
+
+  // Collège et prépa : aucun badge, l'intitulé d'origine reste affiché.
+  assert.equal(classIdentityFor('1AC', 'fr').tierLabel, null);
+  assert.equal(classIdentityFor('1AC', 'fr').stream, null);
+  assert.equal(classIdentityFor('1re année MPSI', 'fr').tierLabel, null);
+  // Le groupe reste extrait, même quand il n'y a pas de badge.
+  assert.equal(classIdentityFor('3AC 2', 'fr').group, '2');
+
+  // Noms compactes : même décomposition que l'emploi du temps.
+  assert.equal(classIdentityFor('2Bacpc3', 'fr').stream, 'Sciences Physiques');
+  assert.equal(classIdentityFor('2Bacpc3', 'fr').group, '3');
+  assert.equal(classIdentityFor('2BSMA-A', 'fr').stream, 'Sciences Mathématiques A');
+
+  // Localisation : le badge suit la langue de l'interface, meme quand le nom
+  // enregistre est l'intitule officiel francais.
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'ar').tierLabel, 'الثانية بكالوريا');
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'ar').stream, 'علوم فيزيائية');
+  assert.equal(classIdentityFor('Tronc Commun Scientifique', 'ar').stream, 'علمي');
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'en').tierLabel, '2nd Bac');
+  assert.equal(classIdentityFor('قسم الثالثة إعدادي 2', 'ar').tierLabel, 'الثالثة إعدادي');
+
+  // Tout niveau du lycée porte un badge et une filière ; le collège et la
+  // prépa gardent leur affichage habituel, sans badge inventé.
+  for (const level of CLASS_LEVELS_BY_CYCLE.lycee) {
+    const identity = classIdentityFor(level, 'fr');
+    assert.ok(identity.tierLabel, level);
+    assert.ok(identity.stream, level);
+  }
+  for (const level of [...CLASS_LEVELS_BY_CYCLE.college, ...CLASS_LEVELS_BY_CYCLE.prepa]) {
+    assert.equal(classIdentityFor(level, 'fr').tierLabel, null, level);
+  }
+
+  // Nom libre : aucun badge invente, et le nom reste intact.
+  const free = classIdentityFor('Ma classe', 'fr');
+  assert.equal(free.tierLabel, null);
+  assert.equal(free.full, 'Ma classe');
+});
+
+test('carte de classe : badge de palier, filiere dessous, nom complet accessible', () => {
+  const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ClassCard as never, {
+      classInfo: { id: 'c1', name: '2ème Bac Sciences Physiques 3', subject: 'Physique-Chimie' },
+      onSelect: () => {},
+      onConfigure: () => {},
+    } as never),
+  }));
+  assert.ok(html.includes('data-level-badge'));
+  assert.ok(html.includes('2e Bac'));
+  assert.ok(html.includes('Sciences Physiques'));
+  assert.ok(html.includes('keep-group-watermark'));
+  // Le nom officiel reste annonce : aucune information n'est perdue a l'ecran.
+  assert.ok(html.includes('2ème Bac Sciences Physiques 3'));
+});
+
+test('carte de classe : le college et la prepa gardent leur affichage d origine', () => {
+  const render = (name: string) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ClassCard as never, {
+      classInfo: { id: 'c2', name },
+      onSelect: () => {},
+      onConfigure: () => {},
+    } as never),
+  }));
+  for (const name of ['1AC 1', '3AC', '1re année MPSI']) {
+    const html = render(name);
+    assert.ok(!html.includes('data-level-badge'), name);
+    assert.ok(!html.includes('keep-group-watermark'), name);
+  }
 });

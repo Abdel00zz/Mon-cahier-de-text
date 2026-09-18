@@ -1413,16 +1413,84 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
 
   /* Palette chromatique des classes : style Google Keep pastel aéré, lumineux et moins foncé. */
-  .keep-surface[data-keep-tone="sand"] { --keep-light: #FEF7E0; --keep-dark: #382F20; --keep-border: #F1E2BC; --keep-accent: #9A5B00; --keep-accent-soft: rgb(154 91 0 / 0.10); } /* Sable doré / Vanille pastel Keep */
-  .keep-surface[data-keep-tone="mint"] { --keep-light: #E6F4EA; --keep-dark: #22382C; --keep-border: #C8E6D0; --keep-accent: #137333; --keep-accent-soft: rgb(19 115 51 / 0.10); } /* Menthe sauge douce Keep */
-  .keep-surface[data-keep-tone="sky"] { --keep-light: #E8F0FE; --keep-dark: #22384C; --keep-border: #CEE0FD; --keep-accent: #1A73E8; --keep-accent-soft: rgb(26 115 232 / 0.10); } /* Ciel azur aérien Keep */
-  .keep-surface[data-keep-tone="lavender"] { --keep-light: #F3E8FD; --keep-dark: #342848; --keep-border: #E3CDFA; --keep-accent: #8430CE; --keep-accent-soft: rgb(132 48 206 / 0.10); } /* Lavande lilas pastel Keep */
-  .keep-surface[data-keep-tone="coral"] { --keep-light: #FCE8E6; --keep-dark: #442630; --keep-border: #F7C7C3; --keep-accent: #C5221F; --keep-accent-soft: rgb(197 34 31 / 0.10); } /* Pétale corail blush Keep */
-  .dark .keep-surface[data-keep-tone="sand"] { --keep-border: #634F30; --keep-accent: #F6C46B; --keep-accent-soft: rgb(246 196 107 / 0.14); }
-  .dark .keep-surface[data-keep-tone="mint"] { --keep-border: #385E49; --keep-accent: #6BDCA9; --keep-accent-soft: rgb(107 220 169 / 0.14); }
-  .dark .keep-surface[data-keep-tone="sky"] { --keep-border: #37597C; --keep-accent: #78C2F8; --keep-accent-soft: rgb(120 194 248 / 0.14); }
-  .dark .keep-surface[data-keep-tone="lavender"] { --keep-border: #564172; --keep-accent: #C9A8F8; --keep-accent-soft: rgb(201 168 248 / 0.14); }
-  .dark .keep-surface[data-keep-tone="coral"] { --keep-border: #6F3847; --keep-accent: #F899B3; --keep-accent-soft: rgb(248 153 179 / 0.14); }
+  .keep-surface[data-keep-tone="sand"],
+  [data-keep-tone="sand"] { --keep-light: #FEF7E0; --keep-dark: #382F20; --keep-border: #F1E2BC; --keep-accent: #9A5B00; --keep-accent-soft: rgb(154 91 0 / 0.10); } /* Sable doré / Vanille pastel Keep */
+  .keep-surface[data-keep-tone="mint"],
+  [data-keep-tone="mint"] { --keep-light: #E6F4EA; --keep-dark: #22382C; --keep-border: #C8E6D0; --keep-accent: #137333; --keep-accent-soft: rgb(19 115 51 / 0.10); } /* Menthe sauge douce Keep */
+  .keep-surface[data-keep-tone="sky"],
+  [data-keep-tone="sky"] { --keep-light: #E8F0FE; --keep-dark: #22384C; --keep-border: #CEE0FD; --keep-accent: #1A73E8; --keep-accent-soft: rgb(26 115 232 / 0.10); } /* Ciel azur aérien Keep */
+  .keep-surface[data-keep-tone="lavender"],
+  [data-keep-tone="lavender"] { --keep-light: #F3E8FD; --keep-dark: #342848; --keep-border: #E3CDFA; --keep-accent: #8430CE; --keep-accent-soft: rgb(132 48 206 / 0.10); } /* Lavande lilas pastel Keep */
+  .keep-surface[data-keep-tone="coral"],
+  [data-keep-tone="coral"] { --keep-light: #FCE8E6; --keep-dark: #442630; --keep-border: #F7C7C3; --keep-accent: #C5221F; --keep-accent-soft: rgb(197 34 31 / 0.10); } /* Pétale corail blush Keep */
+
+  /*
+   * Badge de palier des cartes de classe : le dégradé est construit à partir
+   * des jetons de la carte (`--keep-accent`, `--keep-dark`, `--keep-light`)
+   * hérités de `data-keep-tone`. Chaque badge reprend donc la couleur de sa
+   * propre carte, sans seconde palette à maintenir.
+   *
+   * Mode clair : aplat sombre, texte pastel.
+   * Mode sombre : le fond de carte EST `--keep-dark` ; un badge sombre y
+   * disparaîtrait, l'aplat s'éclaircit donc et le texte s'assombrit.
+   */
+  .keep-level-badge {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background-image: linear-gradient(135deg,
+      color-mix(in oklab, var(--keep-accent, #475569) 66%, var(--keep-dark, #1f2937)),
+      color-mix(in oklab, var(--keep-accent, #475569) 20%, var(--keep-dark, #1f2937)));
+    color: var(--keep-light, #f8fafc);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.55;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.16),
+      0 1px 2px color-mix(in srgb, var(--keep-dark, #1f2937) 42%, transparent);
+  }
+  .keep-level-badge-compact {
+    padding: 0 0.4rem;
+    font-size: 0.625rem;
+  }
+  .dark .keep-level-badge {
+    background-image: linear-gradient(135deg,
+      color-mix(in oklab, var(--keep-accent, #94a3b8) 82%, var(--keep-light, #f8fafc)),
+      var(--keep-accent, #94a3b8));
+    color: color-mix(in oklab, var(--keep-dark, #1f2937) 88%, #000);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28);
+  }
+  /*
+   * Groupe (« 3 », « A ») en filigrane, posé juste après la filière : un
+   * repère discret, jamais un second badge. La valeur seule est affichée,
+   * le libellé complet reste dans l'info-bulle et le nom accessible.
+   */
+  .keep-group-watermark {
+    color: color-mix(in srgb, var(--keep-accent, #64748b) 60%, transparent);
+    font-size: 1.34em;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .dark .keep-surface[data-keep-tone="sand"],
+  .dark [data-keep-tone="sand"] { --keep-border: #634F30; --keep-accent: #F6C46B; --keep-accent-soft: rgb(246 196 107 / 0.14); }
+  .dark .keep-surface[data-keep-tone="mint"],
+  .dark [data-keep-tone="mint"] { --keep-border: #385E49; --keep-accent: #6BDCA9; --keep-accent-soft: rgb(107 220 169 / 0.14); }
+  .dark .keep-surface[data-keep-tone="sky"],
+  .dark [data-keep-tone="sky"] { --keep-border: #37597C; --keep-accent: #78C2F8; --keep-accent-soft: rgb(120 194 248 / 0.14); }
+  .dark .keep-surface[data-keep-tone="lavender"],
+  .dark [data-keep-tone="lavender"] { --keep-border: #564172; --keep-accent: #C9A8F8; --keep-accent-soft: rgb(201 168 248 / 0.14); }
+  .dark .keep-surface[data-keep-tone="coral"],
+  .dark [data-keep-tone="coral"] { --keep-border: #6F3847; --keep-accent: #F899B3; --keep-accent-soft: rgb(248 153 179 / 0.14); }
 
   @keyframes keep-session-focus {
     0%, 100% {

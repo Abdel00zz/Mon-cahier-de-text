@@ -141,6 +141,34 @@ const abbreviateArabic = (name: string): string => {
 };
 
 /**
+ * Découpage structuré d'un nom de classe, en codes stables :
+ *
+ *     { level, stream, group }
+ *
+ * Les codes sont volontairement neutres (indépendants de la langue) : c'est
+ * l'appelant qui les traduit. `abbreviateClassName` s'en sert pour l'emploi du
+ * temps, et l'identité de carte de classe pour composer le badge de palier et
+ * la filière. Un nom non reconnu (« Ma classe ») renvoie trois chaînes vides :
+ * l'appelant choisit alors son repli, sans jamais rien inventer.
+ */
+export interface ParsedClassName {
+    /** Palier : « 1AC », « TC·S », « 1B », « 2B », « MPSI »… */
+    level: string;
+    /** Filière : « SVT », « SM-A », « PC »… chaîne vide si absente. */
+    stream: string;
+    /** Groupe : « 3 », « A »… chaîne vide si absent. */
+    group: string;
+}
+
+export const parseClassName = (name: string): ParsedClassName => {
+    const source = (name || '').trim();
+    if (!source) return { level: '', stream: '', group: '' };
+    const { code: level, rest } = matchLevel(normalize(source));
+    const { stream, group } = splitStreamAndGroup(rest);
+    return { level, stream, group };
+};
+
+/**
  * Abréviation affichée dans la cellule. Le nom complet reste accessible par
  * l'info-bulle et le libellé du créneau, jamais perdu.
  */
@@ -148,9 +176,7 @@ export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): str
     const source = (name || '').trim();
     if (!source) return '';
     if (locale === 'ar' || isArabic(source)) return abbreviateArabic(source);
-    const normalized = normalize(source);
-    const { code: level, rest } = matchLevel(normalized);
-    const { stream, group } = splitStreamAndGroup(rest);
+    const { level, stream, group } = parseClassName(source);
     const segments = [level, stream, group].filter(Boolean);
     if (segments.length === 0) {
         // Nom libre (ex. « Ma classe ») : on garde le libellé compacté tel quel.

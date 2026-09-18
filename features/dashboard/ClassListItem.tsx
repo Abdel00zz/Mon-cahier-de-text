@@ -1,8 +1,9 @@
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
-import { getBaseLevelKey } from '@/constants/class-levels';
+import { getBaseLevelKey, formatClassGroupLabel } from '@/constants/class-levels';
 import { keepToneForClass } from '@/utils/keepTheme';
+import { classIdentityFor } from '@/utils/classIdentity';
 import { ChevronRight, Settings, Users } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { ClassCardTitle } from './ClassCardTitle';
+import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -29,6 +31,10 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
     const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
+
+    /** Même identité que la carte en grille : palier puis filière. */
+    const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
+    const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -57,7 +63,20 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 <div className="min-w-0 flex-1 py-0.5">
                     {/* Même échelle que la carte en grille, avec un cran de
                         plus pour l'arabe (lecture plus dense en hauteur). */}
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}><ClassCardTitle name={displayName} compact={!isActiveSession} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} /></h3>
+                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}>
+                        {identity.tierLabel ? (
+                            <span className="inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                                {intro && <span className="keep-session-intro">{intro}</span>}
+                                <ClassLevelBadge label={identity.tierLabel} compact />
+                                {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
+                                {identity.group && (
+                                    <ClassGroupWatermark group={identity.group} label={formatClassGroupLabel(identity.group, locale)} />
+                                )}
+                            </span>
+                        ) : (
+                            <ClassCardTitle name={displayName} compact={!isActiveSession} intro={intro} />
+                        )}
+                    </h3>
                     <div className="mt-0.5 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
                             className={cn('truncate', isRtl ? 'text-xs leading-none' : 'text-[10.5px] sm:text-[11.9px] leading-none')}

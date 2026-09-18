@@ -292,3 +292,255 @@ export const normalizeOfficialClassName = (name: string): string => {
   }
   return trimmed;
 };
+
+/* ── Identité de classe : palier (badge) et filière ───────────────────────── */
+
+/**
+ * Palier pédagogique porté par le badge des cartes de classe.
+ *
+ * Plus précis que `ClassLevelGroupKey` : au collège, deux classes ne doivent
+ * pas afficher le même badge, sinon les cartes deviennent indiscernables.
+ */
+export type ClassTierKey =
+  | 'college1' | 'college2' | 'college3'
+  | 'common' | 'firstBac' | 'secondBac'
+  | 'prepa' | 'prepa1' | 'prepa2';
+
+/** Réutilise le vocabulaire déjà employé par les sélecteurs de cycle (loi de Jakob). */
+const CLASS_TIER_LABELS: Record<AppLocale, Record<ClassTierKey, string>> = {
+  fr: {
+    college1: '1re Collège',
+    college2: '2e Collège',
+    college3: '3e Collège',
+    common: CLASS_LEVEL_GROUP_LABELS.fr.common,
+    firstBac: CLASS_LEVEL_GROUP_LABELS.fr.firstBac,
+    secondBac: CLASS_LEVEL_GROUP_LABELS.fr.secondBac,
+    prepa: CLASS_LEVEL_GROUP_LABELS.fr.prepa,
+    prepa1: '1re année',
+    prepa2: '2e année',
+  },
+  ar: {
+    college1: 'الأولى إعدادي',
+    college2: 'الثانية إعدادي',
+    college3: 'الثالثة إعدادي',
+    common: CLASS_LEVEL_GROUP_LABELS.ar.common,
+    firstBac: CLASS_LEVEL_GROUP_LABELS.ar.firstBac,
+    secondBac: CLASS_LEVEL_GROUP_LABELS.ar.secondBac,
+    prepa: CLASS_LEVEL_GROUP_LABELS.ar.prepa,
+    prepa1: 'السنة الأولى',
+    prepa2: 'السنة الثانية',
+  },
+  en: {
+    college1: 'Middle School 1',
+    college2: 'Middle School 2',
+    college3: 'Middle School 3',
+    common: CLASS_LEVEL_GROUP_LABELS.en.common,
+    firstBac: CLASS_LEVEL_GROUP_LABELS.en.firstBac,
+    secondBac: CLASS_LEVEL_GROUP_LABELS.en.secondBac,
+    prepa: CLASS_LEVEL_GROUP_LABELS.en.prepa,
+    prepa1: 'Year 1',
+    prepa2: 'Year 2',
+  },
+};
+
+export const formatClassTierLabel = (key: ClassTierKey, locale: AppLocale): string =>
+  CLASS_TIER_LABELS[locale][key];
+
+/**
+ * Libellé accessible du groupe (« Groupe 3 »), employé en info-bulle et pour
+ * les lecteurs d'écran : à l'écran, seule la valeur du groupe est affichée.
+ */
+const CLASS_GROUP_LABELS: Record<AppLocale, string> = {
+  fr: 'Groupe {group}',
+  ar: 'الفوج {group}',
+  en: 'Group {group}',
+};
+
+export const formatClassGroupLabel = (group: string, locale: AppLocale): string =>
+  CLASS_GROUP_LABELS[locale].replace('{group}', group);
+
+/**
+ * Libellés de filières, indexés par code neutre — ceux produits par
+ * `parseClassName` et `CLASS_LEVEL_IDENTITY`. L'anglais est fourni bien que les
+ * intitulés officiels des classes restent en français : le badge est un élément
+ * d'interface, au même titre que les onglets de cycle.
+ */
+const CLASS_STREAM_LABELS: Record<AppLocale, Record<string, string>> = {
+  fr: {
+    'SVT': 'Sciences de la Vie et de la Terre',
+    'SM': 'Sciences Mathématiques',
+    'SM-A': 'Sciences Mathématiques A',
+    'SM-B': 'Sciences Mathématiques B',
+    'PC': 'Sciences Physiques',
+    'SEXP': 'Sciences Expérimentales',
+    'SECO': 'Sciences Économiques',
+    'SEG': 'Sciences Économiques et Gestion',
+    'SGC': 'Sciences de Gestion Comptable',
+    'SH': 'Sciences Humaines',
+    'L': 'Lettres',
+    'LSH': 'Lettres et Sciences Humaines',
+    'SI': 'Sciences de l’ingénieur',
+    'TC-S': 'Scientifique',
+    'TC-L': 'Lettres et Sciences Humaines',
+    'TC-T': 'Technologique',
+    // Sigles des classes préparatoires : identiques dans les trois langues.
+    'MPSI': 'MPSI',
+    'PCSI': 'PCSI',
+    'TSI': 'TSI',
+    'ECS': 'ECS',
+    'ECT': 'ECT',
+    'MP': 'MP',
+    'PSI': 'PSI',
+  },
+  ar: {
+    'SVT': 'علوم الحياة والأرض',
+    'SM': 'علوم رياضية',
+    'SM-A': 'علوم رياضية أ',
+    'SM-B': 'علوم رياضية ب',
+    'PC': 'علوم فيزيائية',
+    'SEXP': 'علوم تجريبية',
+    'SECO': 'علوم اقتصادية',
+    'SEG': 'علوم اقتصادية وتدبير',
+    'SGC': 'علوم التدبير المحاسباتي',
+    'SH': 'علوم إنسانية',
+    'L': 'آداب',
+    'LSH': 'آداب وعلوم إنسانية',
+    'SI': 'علوم المهندس',
+    'TC-S': 'علمي',
+    'TC-L': 'الآداب والعلوم الإنسانية',
+    'TC-T': 'تكنولوجي',
+    'MPSI': 'MPSI',
+    'PCSI': 'PCSI',
+    'TSI': 'TSI',
+    'ECS': 'ECS',
+    'ECT': 'ECT',
+    'MP': 'MP',
+    'PSI': 'PSI',
+  },
+  en: {
+    'SVT': 'Life and Earth Sciences',
+    'SM': 'Mathematical Sciences',
+    'SM-A': 'Mathematical Sciences A',
+    'SM-B': 'Mathematical Sciences B',
+    'PC': 'Physics and Chemistry',
+    'SEXP': 'Experimental Sciences',
+    'SECO': 'Economic Sciences',
+    'SEG': 'Economics and Management',
+    'SGC': 'Accounting Management',
+    'SH': 'Humanities',
+    'L': 'Literature',
+    'LSH': 'Literature and Humanities',
+    'SI': 'Engineering Sciences',
+    'TC-S': 'Science',
+    'TC-L': 'Literature and Humanities',
+    'TC-T': 'Technology',
+    'MPSI': 'MPSI',
+    'PCSI': 'PCSI',
+    'TSI': 'TSI',
+    'ECS': 'ECS',
+    'ECT': 'ECT',
+    'MP': 'MP',
+    'PSI': 'PSI',
+  },
+};
+
+/** Ramène un code de filière à sa forme canonique (« sm-a » → « SM-A »). */
+const normalizeStreamCode = (code: string): string => code.replace(/[·\s_]/g, '-').toUpperCase();
+
+export const formatClassStreamLabel = (code: string, locale: AppLocale): string | null => {
+  if (!code) return null;
+  return CLASS_STREAM_LABELS[locale][normalizeStreamCode(code)] ?? null;
+};
+
+export interface ClassLevelIdentity {
+  tier: ClassTierKey;
+  /** Code de filière, vide pour les niveaux qui n'en portent pas (collège). */
+  stream: string;
+}
+
+/**
+ * Niveaux officiels → palier et filière. Les clés sont **canoniques** : tout nom
+ * saisi par le professeur passe d'abord par `normalizeOfficialClassName`, qui
+ * ramène « 2BAC PC », « 2ème bac svt biof »… sur ces intitulés.
+ */
+const CLASS_LEVEL_IDENTITY: Readonly<Record<string, ClassLevelIdentity>> = {
+  '1AC': { tier: 'college1', stream: '' },
+  '2AC': { tier: 'college2', stream: '' },
+  '3AC': { tier: 'college3', stream: '' },
+
+  'Tronc Commun Scientifique': { tier: 'common', stream: 'TC-S' },
+  'Tronc Commun Lettres et Sciences Humaines': { tier: 'common', stream: 'TC-L' },
+  'Tronc Commun Technologique': { tier: 'common', stream: 'TC-T' },
+
+  '1er Bac Sciences Expérimentales': { tier: 'firstBac', stream: 'SEXP' },
+  '1er Bac Sciences Mathématiques': { tier: 'firstBac', stream: 'SM' },
+  '1er Bac Lettres et Sciences Humaines': { tier: 'firstBac', stream: 'LSH' },
+  '1er Bac Sciences Économiques et Gestion': { tier: 'firstBac', stream: 'SEG' },
+
+  '2ème Bac Sciences Physiques': { tier: 'secondBac', stream: 'PC' },
+  '2ème Bac Sciences de la Vie et de la Terre': { tier: 'secondBac', stream: 'SVT' },
+  '2ème Bac Sciences Mathématiques A': { tier: 'secondBac', stream: 'SM-A' },
+  '2ème Bac Sciences Mathématiques B': { tier: 'secondBac', stream: 'SM-B' },
+  '2ème Bac Sciences Économiques': { tier: 'secondBac', stream: 'SECO' },
+  '2ème Bac Sciences de Gestion Comptable': { tier: 'secondBac', stream: 'SGC' },
+  '2ème Bac Lettres': { tier: 'secondBac', stream: 'L' },
+  '2ème Bac Sciences Humaines': { tier: 'secondBac', stream: 'SH' },
+
+  'MPSI': { tier: 'prepa', stream: 'MPSI' },
+  'PCSI': { tier: 'prepa', stream: 'PCSI' },
+  'TSI': { tier: 'prepa', stream: 'TSI' },
+  'ECS': { tier: 'prepa', stream: 'ECS' },
+  'ECT': { tier: 'prepa', stream: 'ECT' },
+  'MP': { tier: 'prepa', stream: 'MP' },
+  'PSI': { tier: 'prepa', stream: 'PSI' },
+  '1re année MPSI': { tier: 'prepa1', stream: 'MPSI' },
+  '1re année PCSI': { tier: 'prepa1', stream: 'PCSI' },
+  '1re année TSI': { tier: 'prepa1', stream: 'TSI' },
+  '1re année ECS': { tier: 'prepa1', stream: 'ECS' },
+  '1re année ECT': { tier: 'prepa1', stream: 'ECT' },
+  '2e année MP': { tier: 'prepa2', stream: 'MP' },
+  '2e année PSI': { tier: 'prepa2', stream: 'PSI' },
+  '2e année TSI': { tier: 'prepa2', stream: 'TSI' },
+  '2e année ECS': { tier: 'prepa2', stream: 'ECS' },
+  '2e année ECT': { tier: 'prepa2', stream: 'ECT' },
+};
+
+/** Plus long d'abord : « MP » ne doit jamais masquer « MPSI ». */
+const LEVEL_IDENTITY_KEYS = Object.keys(CLASS_LEVEL_IDENTITY)
+  .sort((left, right) => right.length - left.length);
+
+/**
+ * Identité d'un nom de classe **canonique**. Retourne `null` quand le nom ne
+ * correspond à aucun niveau officiel : l'appelant conserve alors son rendu
+ * habituel plutôt que d'inventer un badge.
+ *
+ * Le suffixe (groupe, mention libre) est renvoyé tel quel, sans être interprété.
+ */
+export const lookupClassLevelIdentity = (
+  name: string,
+): { identity: ClassLevelIdentity; suffix: string } | null => {
+  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
+  const key = LEVEL_IDENTITY_KEYS.find(candidate =>
+    normalized === candidate || normalized.startsWith(`${candidate} `)
+  );
+  if (!key) return null;
+  return { identity: CLASS_LEVEL_IDENTITY[key], suffix: normalized.slice(key.length).trim() };
+};
+
+const PREPA_LEVEL_CODES = new Set(['MPSI', 'PCSI', 'TSI', 'ECS', 'ECT', 'MP', 'PSI', 'BTS', 'CPGE']);
+
+/**
+ * Palier déduit d'un code de niveau produit par `parseClassName` — utile pour
+ * les noms compactés (« 2Bacpc3 », « 2BSMA-A ») que la table canonique ignore.
+ */
+export const tierForLevelCode = (code: string): ClassTierKey | null => {
+  if (!code) return null;
+  const key = normalizeStreamCode(code);
+  if (key.startsWith('TC')) return 'common';
+  if (key === '1AC' || key === '2AC' || key === '3AC') {
+    return `college${key[0]}` as ClassTierKey;
+  }
+  if (key === '1B') return 'firstBac';
+  if (key === '2B') return 'secondBac';
+  return PREPA_LEVEL_CODES.has(key) ? 'prepa' : null;
+};

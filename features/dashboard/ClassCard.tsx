@@ -1,4 +1,4 @@
-import { memo, type FC } from 'react';
+import { memo, useMemo, type FC } from 'react';
 import type { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -6,10 +6,12 @@ import { useLocale } from '@/i18n/LocaleProvider';
 import { ArrowRight, Settings } from '@/components/ui/icons';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
+import { classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
-import { getBaseLevelKey } from '@/constants/class-levels';
+import { formatClassGroupLabel, getBaseLevelKey } from '@/constants/class-levels';
 import { ClassCardTitle } from './ClassCardTitle';
+import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -28,6 +30,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
     const subject = classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : null;
     const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
+
+    /** Palier (« 2e Bac ») et filière (« Sciences Physiques »), déduits du nom. */
+    const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
+    const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -58,7 +64,24 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                             title={displayName}
                             className="block w-full text-start outline-none after:absolute after:inset-0 after:rounded-[12px] focus-visible:after:outline-2 focus-visible:after:outline-offset-2 cursor-pointer"
                         >
-                            <ClassCardTitle name={displayName} intro={isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined} />
+                            {intro && <span className="keep-session-intro block">{intro}</span>}
+                            {identity.tierLabel ? (
+                                <>
+                                    {/* Palier en badge, filière en dessous : la hiérarchie du
+                                        bulletin officiel, lisible d'un seul regard. */}
+                                    <ClassLevelBadge label={identity.tierLabel} className="mb-1" />
+                                    {identity.stream && (
+                                        <span className="flex flex-wrap items-baseline gap-x-1.5">
+                                            <span className="break-words text-balance text-start">{identity.stream}</span>
+                                            {identity.group && (
+                                                <ClassGroupWatermark group={identity.group} label={formatClassGroupLabel(identity.group, locale)} />
+                                            )}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <ClassCardTitle name={displayName} intro={intro} />
+                            )}
                         </button>
                     </h3>
                     {/* Style Google Keep PC : bouton paramètre discret affiché au survol sur ordinateur */}
