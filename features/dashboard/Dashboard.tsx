@@ -298,8 +298,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {classes.length > 0 && (
                         <div className="mb-6 sm:mb-8">
-                            <div className="flex flex-wrap items-end justify-between gap-4">
-                                <div className="space-y-1">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                                <div className="min-w-0 space-y-1">
                                     <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-[1.15]">
                                         {t('dashboard.classes')}
                                     </h1>
@@ -312,7 +312,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-2.5 sm:gap-3 ms-auto pb-0.5">
+                                <div className="flex shrink-0 items-center gap-2.5 sm:pt-1 sm:gap-3">
                                     {/* Bouton blanc élégant « 2 par ligne » avec petite flèche, hauteur 40px et coins rounded-lg */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button

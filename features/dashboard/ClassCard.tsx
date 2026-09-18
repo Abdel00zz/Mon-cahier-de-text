@@ -239,6 +239,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         {identity.tierLabel ? (
                             <ClassLevelBadge
                                 label={identity.tierLabel}
+                                compact
                                 style={theme.badgeStyle}
                                 textStyle={theme.badgeTextStyle}
                             />
