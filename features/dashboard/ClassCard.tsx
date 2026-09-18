@@ -3,7 +3,14 @@ import type { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { Settings } from '@/components/ui/icons';
+import { MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classIdentityFor } from '@/utils/classIdentity';
@@ -16,6 +23,8 @@ interface ClassCardProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
+    /** Suppression depuis le menu de la carte ; le parent confirme l'action. */
+    onDelete?: () => void;
     showSubjectBadge?: boolean;
     allClasses?: ClassInfo[];
     index?: number;
@@ -142,6 +151,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     classInfo,
     onSelect,
     onConfigure,
+    onDelete,
     isActiveSession,
     index = 0,
     isDoubleColumn = false,
@@ -167,12 +177,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         : null;
 
     /**
-     * Titre de filière sans numéro de groupe dupliqué pour les paliers avec badge.
-     * Pour les classes sans palier déduit (collège/prépa), on conserve displayName.
+     * Titre de filière, sans numéro de groupe dupliqué, pour les paliers qui
+     * portent un badge. Sans badge (collège et prépa), l'intitulé d'origine est
+     * conservé tel quel : c'est lui qui porte l'information de niveau.
      */
     const cardTitle = useMemo(() => {
+        if (!identity.tierLabel) return displayName;
         if (!identity.stream) return displayName;
-        if (identity.tierLabel && groupNumber) {
+        if (groupNumber) {
             return identity.stream.replace(new RegExp(`\\s+${groupNumber}$`), '').trim();
         }
         return identity.stream;
@@ -226,19 +238,37 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            impact('light');
-                            onConfigure();
-                        }}
-                        className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-md bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
-                        title={t('dashboard.classSettings')}
-                        aria-label={t('dashboard.edit') + ' ' + displayName}
-                    >
-                        <Settings className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
+                    {/* Menu de la classe : réglages et suppression au même endroit.
+                        Le contenu est rendu dans un portail, donc jamais rogné
+                        par le `overflow-hidden` de la carte. */}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                type="button"
+                                onClick={(event) => event.stopPropagation()}
+                                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-md bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+                                title={t('dashboard.classActions', { className: displayName })}
+                                aria-label={t('dashboard.classActions', { className: displayName })}
+                            >
+                                <MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[10.5rem]">
+                            <DropdownMenuItem onSelect={() => { impact('light'); onConfigure(); }}>
+                                <Settings aria-hidden="true" />
+                                {t('dashboard.classSettings')}
+                            </DropdownMenuItem>
+                            {onDelete && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}>
+                                        <Trash2 aria-hidden="true" />
+                                        {t('dashboard.delete')}
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 {/* Titre remonté vers le haut, plus serré et compact */}

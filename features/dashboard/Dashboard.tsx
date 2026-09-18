@@ -6,13 +6,13 @@ import { useOptimizedLocalStorage } from '@/hooks/useOptimizedLocalStorage';
 import { useDevice } from '@/hooks/useDevice';
 import { DashboardSkeleton } from '@/components/ui/PageSkeleton';
 import { Button } from '@/components/cahier/Button';
-import { SectionHeader } from '@/components/cahier/SectionHeader';
 import { ClassCard } from './ClassCard';
 import { ClassListItem } from './ClassListItem';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { ClassInfo, Cycle } from '@/types';
-import { formatLocalizedSubjectDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -45,13 +45,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     accountTeacherName = '',
     onOnboardingVisibilityChange,
 }) => {
-    const { locale, t, isRtl } = useLocale();
+    const { locale, t } = useLocale();
     const reduceMotion = useReducedMotion();
     const { user: accountUser, completeWelcome } = useAuth();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
     const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editingClass, setEditingClass] = useState<ClassInfo | null>(null);
+    /** Classe dont la suppression est demandée depuis le menu d'une carte. */
+    const [classPendingDelete, setClassPendingDelete] = useState<ClassInfo | null>(null);
     const [isOnboardingOpen, setOnboardingOpen] = useState(false);
     const { type: deviceType } = useDevice();
     const isMobile = deviceType === 'phone';
@@ -263,6 +265,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         return { label: t(labelKey), description: t(descriptionKey) };
     };
 
+    /*
+     * Suppression d'une classe : même garde-fou que depuis la fenêtre de
+     * réglages (saisie du nom), car l'action emporte tout le cahier.
+     */
+    const pendingDeleteName = classPendingDelete
+        ? formatLocalizedClassDisplayName(classPendingDelete.name, locale)
+        : '';
+
     // Page de démarrage immersive (première connexion, aucun cahier)
     if (isOnboardingOpen && !welcomeCompleted) {
         return (
@@ -416,6 +426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onDelete={() => setClassPendingDelete(classInfo)}
                                                     isActiveSession={isActiveSession}
                                                 />
                                             </motion.div>
@@ -439,6 +450,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     classInfo={classInfo}
                                                     onSelect={() => openNotebook(classInfo)}
                                                     onConfigure={() => setEditingClass(classInfo)}
+                                                    onDelete={() => setClassPendingDelete(classInfo)}
                                                     showSubjectBadge={shouldShowSubjectBadge}
                                                     allClasses={classes}
                                                     index={index}
@@ -453,6 +465,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </main>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={Boolean(classPendingDelete)}
+                onOpenChange={(open) => { if (!open) setClassPendingDelete(null); }}
+                title={t('dashboard.deleteNotebookTitle', { name: pendingDeleteName })}
+                description={t('dashboard.deleteNotebookDescription')}
+                confirmLabel={t('dashboard.delete')}
+                confirmationPhrase={pendingDeleteName || undefined}
+                confirmationHint={t('dashboard.deleteNotebookConfirmHint', { name: pendingDeleteName })}
+                onConfirm={() => {
+                    if (!classPendingDelete) return;
+                    handleDeleteClass(classPendingDelete.id);
+                    setClassPendingDelete(null);
+                }}
+            />
 
             <CreateClassModal
                 isOpen={isCreateModalOpen || !!editingClass}

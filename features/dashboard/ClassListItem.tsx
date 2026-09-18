@@ -4,7 +4,14 @@ import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } fr
 import { getBaseLevelKey, formatClassGroupLabel } from '@/constants/class-levels';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { classIdentityFor } from '@/utils/classIdentity';
-import { ChevronRight, Settings, Users } from '@/components/ui/icons';
+import { ChevronRight, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -12,12 +19,13 @@ import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { ClassCardTitle } from './ClassCardTitle';
 import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
-import { getIllustrationForClass } from './classIllustration';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
     onSelect: () => void;
     onConfigure: () => void;
+    /** Suppression depuis le menu de la ligne ; le parent confirme l'action. */
+    onDelete?: () => void;
     isActiveSession?: boolean;
 }
 
@@ -25,6 +33,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     classInfo,
     onSelect,
     onConfigure,
+    onDelete,
     isActiveSession,
 }) => {
     const { locale, t, isRtl } = useLocale();
@@ -36,7 +45,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     /** Même identité que la carte en grille : palier puis filière. */
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
-    const illustration = useMemo(() => getIllustrationForClass(classInfo), [classInfo]);
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -59,9 +67,6 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-2.5 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
-                <div className="keep-class-icon flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 overflow-hidden rounded-lg border border-black/10 dark:border-white/10 bg-muted" aria-hidden>
-                    <img src={illustration.src} alt="" className="h-full w-full object-cover" />
-                </div>
                 <div className="min-w-0 flex-1 py-0.5">
                     {/* Même échelle que la carte en grille, avec un cran de
                         plus pour l'arabe (lecture plus dense en hauteur). */}
@@ -101,21 +106,36 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             <div
                 role="group"
                 aria-label={t('dashboard.classActions', { className: displayName })}
-                className="hidden md:flex shrink-0 items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 border-inline-start border-border"
+                className="flex shrink-0 items-center opacity-100 md:opacity-0 transition-opacity duration-200 md:group-hover:opacity-100 md:focus-within:opacity-100"
             >
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        impact('light');
-                        onConfigure();
-                    }}
-                    className="flex h-full w-12 sm:w-14 touch-manipulation items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
-                    aria-label={`${t('dashboard.edit')} ${displayName}`}
-                    title={t('dashboard.classSettings')}
-                >
-                    <Settings className="h-4 w-4 stroke-[2]" />
-                </button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            type="button"
+                            onClick={(event) => event.stopPropagation()}
+                            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                            title={t('dashboard.classActions', { className: displayName })}
+                            aria-label={t('dashboard.classActions', { className: displayName })}
+                        >
+                            <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[10.5rem]">
+                        <DropdownMenuItem onSelect={() => { impact('light'); onConfigure(); }}>
+                            <Settings aria-hidden="true" />
+                            {t('dashboard.classSettings')}
+                        </DropdownMenuItem>
+                        {onDelete && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem destructive onSelect={() => { impact('medium'); onDelete(); }}>
+                                    <Trash2 aria-hidden="true" />
+                                    {t('dashboard.delete')}
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </article>
     );
