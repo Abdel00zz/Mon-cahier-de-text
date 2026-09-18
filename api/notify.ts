@@ -264,7 +264,7 @@ const handleTest = async (res: ApiResponse, phone: string) => {
     const { survivingSubs, sent } = await sendToEntry(entry, {
         title: copy.title,
         body: copy.body,
-        url: '/#/notifications',
+        url: '/#notifications',
         kind: 'test',
         tag: 'cdt-test',
         timestamp: Date.now(),
@@ -396,7 +396,7 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
                 const result = await sendToEntry(candidate.entry, {
                     title: candidate.title,
                     body: candidate.body,
-                    url: '/#/notifications',
+                    url: '/#notifications',
                     kind: 'lateness',
                     // Un seul emplacement pour le rappel quotidien : un
                     // nouvel envoi remplace le précédent au lieu d'empiler les
