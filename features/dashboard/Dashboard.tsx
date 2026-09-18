@@ -250,8 +250,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1 max-w-[430px] mx-auto auto-rows-fr items-stretch'
-        : 'grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] auto-rows-fr items-stretch justify-start';
+        ? 'grid-cols-1 max-w-[540px] mx-auto auto-rows-fr items-stretch'
+        : 'grid-cols-1 sm:grid-cols-2 auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -280,103 +280,81 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4"
+            className="min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-3.5 pt-0 pb-3 sm:px-6 lg:px-8 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-4">
-                            <SectionHeader
-                                title={t('dashboard.classes')}
-                                isArabic={isRtl}
-                                actions={
-                                    <div className="flex items-center gap-2">
-                                        {shouldShowSubjectBadge ? (
-                                            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('dashboard.filterAll')}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSubjectFilter('all')}
-                                                    className={`h-8 shrink-0 rounded-lg px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
-                                                        subjectFilter === 'all'
-                                                            ? 'bg-primary/10 text-primary font-bold shadow-xs'
-                                                            : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
-                                                    }`}
-                                                >
-                                                    {t('dashboard.filterAll')}
-                                                </button>
-                                                {teacherSubjects.map(subject => {
-                                                    const isActive = subjectFilter === subject;
+                        <div className="mb-6 sm:mb-8">
+                            <div className="flex flex-wrap items-end justify-between gap-4">
+                                <div className="space-y-1">
+                                    <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-[1.15]">
+                                        {t('dashboard.classes')}
+                                    </h1>
+                                    <p className="font-sans text-sm sm:text-base text-stone-600 dark:text-stone-300 font-normal leading-relaxed max-w-xl">
+                                        {locale === 'ar'
+                                            ? 'دفاتر النصوص، التدرج البيداغوجي وحصصك اليومية.'
+                                            : locale === 'en'
+                                                ? 'Notebooks, curriculum tracking, and your daily sessions.'
+                                                : 'Cahiers de textes, suivi de progression et vos séances.'}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2.5 sm:gap-3 ms-auto pb-0.5">
+                                    {/* Bouton blanc élégant « 2 par ligne » avec petite flèche, hauteur 40px et coins rounded-lg */}
+                                    <div ref={displayMenuRef} className="relative shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDisplayMenuOpen(open => !open)}
+                                            aria-haspopup="menu"
+                                            aria-expanded={isDisplayMenuOpen}
+                                            className="flex h-10 items-center gap-1.5 rounded-lg border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-4 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 shadow-xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all"
+                                        >
+                                            <span>{displayCopy(currentDisplay).label}</span>
+                                            <ChevronDown className={`h-3.5 w-3.5 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        {isDisplayMenuOpen && (
+                                            <div
+                                                role="menu"
+                                                className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-44 overflow-hidden rounded-lg border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1.5 shadow-lg"
+                                            >
+                                                {CLASS_DISPLAY_OPTIONS.map(option => {
+                                                    const isActive = option === currentDisplay;
                                                     return (
                                                         <button
-                                                            key={subject}
+                                                            key={option}
                                                             type="button"
-                                                            onClick={() => setSubjectFilter(isActive ? 'all' : subject)}
-                                                            className={`h-8 shrink-0 rounded-lg px-3 text-xs font-medium font-sans transition-all cursor-pointer active:scale-95 ${
-                                                                isActive
-                                                                    ? 'bg-primary/10 text-primary font-bold shadow-xs'
-                                                                    : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
-                                                            }`}
+                                                            role="menuitemradio"
+                                                            aria-checked={isActive}
+                                                            onClick={() => {
+                                                                setClassDisplayMode(option);
+                                                                setDisplayMenuOpen(false);
+                                                            }}
+                                                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-start text-xs sm:text-sm font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
                                                         >
-                                                            {formatLocalizedSubjectDisplayName(subject, locale)}
+                                                            <span>{displayCopy(option).label}</span>
                                                         </button>
                                                     );
                                                 })}
                                             </div>
-                                        ) : null}
-
-                                        <Button
-                                            variant="primary"
-                                            size="sm"
-                                            onClick={() => setCreateModalOpen(true)}
-                                            aria-label={t('dashboard.addClass')}
-                                            title={t('dashboard.addClass')}
-                                        >
-                                            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                                            <span>{t('dashboard.classShort')}</span>
-                                        </Button>
-
-                                        <div ref={displayMenuRef} className="relative shrink-0">
-                                            <button
-                                                type="button"
-                                                onClick={() => setDisplayMenuOpen(open => !open)}
-                                                aria-haspopup="menu"
-                                                aria-expanded={isDisplayMenuOpen}
-                                                className="flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2 sm:px-2.5 text-xs font-medium text-foreground shadow-2xs hover:bg-muted cursor-pointer"
-                                            >
-                                                <span>{displayCopy(currentDisplay).label}</span>
-                                                <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
-                                            </button>
-                                            {isDisplayMenuOpen && (
-                                                <div
-                                                    role="menu"
-                                                    className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-40 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-lg"
-                                                >
-                                                    {CLASS_DISPLAY_OPTIONS.map(option => {
-                                                        const isActive = option === currentDisplay;
-                                                        return (
-                                                            <button
-                                                                key={option}
-                                                                type="button"
-                                                                role="menuitemradio"
-                                                                aria-checked={isActive}
-                                                                onClick={() => {
-                                                                    setClassDisplayMode(option);
-                                                                    setDisplayMenuOpen(false);
-                                                                }}
-                                                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer ${isActive ? 'bg-muted text-foreground font-bold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
-                                                            >
-                                                                <span>{displayCopy(option).label}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
-                                }
-                            />
+
+                                    {/* Bouton attractif « + Classe » inspiré de l'image (violet vif ou noir premium, hauteur 40px, rounded-lg, padding 20px) */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setCreateModalOpen(true)}
+                                        aria-label={t('dashboard.addClass')}
+                                        title={t('dashboard.addClass')}
+                                        className="flex h-10 items-center gap-2 rounded-lg bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
+                                    >
+                                        <Plus className="h-4 w-4 stroke-[2.5]" />
+                                        <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                     <main>
@@ -444,7 +422,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-2.5 sm:gap-x-5 sm:gap-y-6 pt-1 sm:pt-2`}>
+                                    <div className={`grid ${classGridClass} w-full gap-5 sm:gap-6 lg:gap-7`}>
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (

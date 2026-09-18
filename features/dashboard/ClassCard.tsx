@@ -1,16 +1,16 @@
 import { memo, useMemo, type FC } from 'react';
 import type { ClassInfo } from '@/types';
-import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { formatLocalizedClassDisplayName } from '@/constants';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { ArrowRight, Settings } from '@/components/ui/icons';
+import { Settings } from '@/components/ui/icons';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
-import { getBaseLevelKey } from '@/constants/class-levels';
-import { getIllustrationForClass } from './classIllustration';
+import { formatClassGroupLabel, getBaseLevelKey } from '@/constants/class-levels';
+import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -23,37 +23,165 @@ interface ClassCardProps {
     isDoubleColumn?: boolean;
 }
 
-const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigure, showSubjectBadge = true, isActiveSession, index = 0, isDoubleColumn = false }) => {
+interface CardThemeStyle {
+    cardBg: string;
+    cardBorder: string;
+    badgeStyle: React.CSSProperties;
+    badgeTextStyle: React.CSSProperties;
+    titleColor: string;
+    dividerColor: string;
+}
+
+/**
+ * 4 Thèmes pastel exclusifs Soft UI :
+ * 1. Haut gauche : Jaune très doux / crème, badge ambre doux avec texte dégradé bronze/ambre
+ * 2. Haut droite : Vert menthe très clair, badge menthe douce avec texte dégradé émeraude/vert
+ * 3. Bas gauche  : Bleu très pâle, badge azur doux avec texte dégradé saphir/océan
+ * 4. Bas droite  : Violet lavande très doux, badge lilas doux avec texte dégradé améthyste/prune
+ */
+const CARD_THEMES: CardThemeStyle[] = [
+    // Carte 1 – Haut gauche (jaune crème / warm solar)
+    {
+        cardBg: 'bg-[#FFFDF3] dark:bg-[#221B13]',
+        cardBorder: 'border-[#F4E8BF] dark:border-[#382E1E]',
+        badgeStyle: {
+            background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+            border: '1px solid rgba(217, 119, 6, 0.28)',
+            borderRadius: '5px',
+            padding: '0.14rem 0.5rem',
+            fontSize: '0.72rem',
+            lineHeight: '1.2',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+        },
+        badgeTextStyle: {
+            background: 'linear-gradient(135deg, #78350F 0%, #92400E 50%, #B45309 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: '#854D0E',
+            fontWeight: 700,
+            letterSpacing: '0.01em',
+        },
+        titleColor: 'text-[#482B17] dark:text-[#FDE68A]',
+        dividerColor: 'border-[#F2E5BA]/70 dark:border-[#382E1E]',
+    },
+    // Carte 2 – Haut droite (vert menthe / fresh natural)
+    {
+        cardBg: 'bg-[#F1FBF5] dark:bg-[#12221A]',
+        cardBorder: 'border-[#D4EFE0] dark:border-[#1E3A2B]',
+        badgeStyle: {
+            background: 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.28)',
+            borderRadius: '5px',
+            padding: '0.14rem 0.5rem',
+            fontSize: '0.72rem',
+            lineHeight: '1.2',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+        },
+        badgeTextStyle: {
+            background: 'linear-gradient(135deg, #064E3B 0%, #065F46 50%, #047857 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: '#065F46',
+            fontWeight: 700,
+            letterSpacing: '0.01em',
+        },
+        titleColor: 'text-[#113B26] dark:text-[#A7F3D0]',
+        dividerColor: 'border-[#D4EFE0]/75 dark:border-[#1E3A2B]',
+    },
+    // Carte 3 – Bas gauche (bleu clair / calm scientific)
+    {
+        cardBg: 'bg-[#F2F7FD] dark:bg-[#131E2B]',
+        cardBorder: 'border-[#D5E5F8] dark:border-[#1F3349]',
+        badgeStyle: {
+            background: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)',
+            border: '1px solid rgba(14, 165, 233, 0.28)',
+            borderRadius: '5px',
+            padding: '0.14rem 0.5rem',
+            fontSize: '0.72rem',
+            lineHeight: '1.2',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+        },
+        badgeTextStyle: {
+            background: 'linear-gradient(135deg, #0C4A6E 0%, #0369A1 50%, #0284C7 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: '#0369A1',
+            fontWeight: 700,
+            letterSpacing: '0.01em',
+        },
+        titleColor: 'text-[#122E4E] dark:text-[#BAE6FD]',
+        dividerColor: 'border-[#D5E5F8]/75 dark:border-[#1F3349]',
+    },
+    // Carte 4 – Bas droite (violet lavande / elegant dream)
+    {
+        cardBg: 'bg-[#F7F2FD] dark:bg-[#1E1629]',
+        cardBorder: 'border-[#E6D8F8] dark:border-[#352548]',
+        badgeStyle: {
+            background: 'linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.28)',
+            borderRadius: '5px',
+            padding: '0.14rem 0.5rem',
+            fontSize: '0.72rem',
+            lineHeight: '1.2',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+        },
+        badgeTextStyle: {
+            background: 'linear-gradient(135deg, #4C1D95 0%, #6B21A8 50%, #7E22CE 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: '#6B21A8',
+            fontWeight: 700,
+            letterSpacing: '0.01em',
+        },
+        titleColor: 'text-[#38194D] dark:text-[#E9D5FF]',
+        dividerColor: 'border-[#E6D8F8]/75 dark:border-[#352548]',
+    },
+];
+
+const ClassCardComponent: FC<ClassCardProps> = ({
+    classInfo,
+    onSelect,
+    onConfigure,
+    isActiveSession,
+    index = 0,
+    isDoubleColumn = false,
+}) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
+
     const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
-    const subject = classInfo.subject ? formatLocalizedSubjectDisplayName(classInfo.subject, locale) : null;
-    const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
-    const lastOpenedCompact = classOpeningLabel(classInfo.lastOpenedAt, locale, { compact: true });
 
     /** Palier (« 2e Bac ») et filière (« Sciences Physiques »), déduits du nom */
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
-    const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
-
-    /** Illustration poétique thématique représentative de la matière et du niveau de la classe */
-    const illustration = useMemo(() => getIllustrationForClass(classInfo, index), [classInfo, index]);
+    const theme = CARD_THEMES[index % CARD_THEMES.length];
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
         () => { impact('medium'); onConfigure(); },
     );
 
-    /** Branche / Filière principale ou intitulé si nom libre */
-    const branchTitle = identity.stream || displayName;
-
     /** Numéro seul du groupe (ex: « 1 » pour « Sciences Mathématiques A 1 ») */
     const groupNumber = identity.group
         ? identity.group.replace(/^(?:groupe|grp|g|فوج)\s*/i, '').trim() || identity.group
         : null;
-    const shouldAppendGroup = Boolean(
-        groupNumber && !branchTitle.trim().endsWith(groupNumber)
-    );
+
+    /**
+     * Titre de filière sans numéro de groupe dupliqué pour les paliers avec badge.
+     * Pour les classes sans palier déduit (collège/prépa), on conserve displayName.
+     */
+    const cardTitle = useMemo(() => {
+        if (!identity.stream) return displayName;
+        if (identity.tierLabel && groupNumber) {
+            return identity.stream.replace(new RegExp(`\\s+${groupNumber}$`), '').trim();
+        }
+        return identity.stream;
+    }, [identity.stream, identity.tierLabel, groupNumber, displayName]);
+
+    /** Sous-texte d'état : « Dernière ouverture · ... » ou « Prêt pour votre première séance » */
+    const subtext = useMemo(() => {
+        return classOpeningLabel(classInfo.lastOpenedAt, locale);
+    }, [classInfo.lastOpenedAt, locale]);
 
     return (
         <article
@@ -61,37 +189,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "editorial-class-card group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[9px] sm:rounded-[11px] bg-[#fbfbfa] dark:bg-[#13151b] border border-stone-200/90 dark:border-white/[0.08] shadow-[0_2px_7px_-3px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.38)] transition-all duration-300 select-none",
-                isDoubleColumn ? "aspect-[1.26/1] landscape:aspect-[1.95/1] sm:aspect-[2.05/1]" : "aspect-[1.8/1] landscape:aspect-[1.95/1] sm:aspect-[2.05/1]",
-                isActiveSession && "ring-2 ring-emerald-500 dark:ring-emerald-400 z-10"
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-lg border shadow-2xs hover:shadow-xs transition-all duration-150 select-none",
+                theme.cardBg,
+                theme.cardBorder,
+                isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
+                isActiveSession && "ring-2 ring-stone-900 dark:ring-white z-10"
             )}
         >
-            {/* 1. Illustration fond plein format haute résolution (adaptée DPI, sans marges blanches ni déchirures) */}
-            <img
-                src={illustration.src}
-                alt={illustration.alt}
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover object-center pointer-events-none select-none transition-transform duration-700 ease-out group-hover:scale-[1.03] dark:brightness-[0.74] dark:contrast-[1.12]"
-            />
-
-            {/* 2. Voile créatif assurant une lisibilité maximale sur tous écrans */}
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-9 bg-gradient-to-b from-black/8 via-transparent to-transparent dark:from-black/30" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-white/96 via-white/84 to-transparent dark:from-[#13151b]/98 dark:via-[#13151b]/88 dark:to-transparent" />
-
-            {/* 3. Filigrane artisanal discret dans la teinte de l'aquarelle */}
-            {groupNumber && (
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-0.5 end-2 font-serif font-black select-none text-[26px] landscape:text-[40px] sm:text-[44px] leading-none opacity-[0.13] dark:opacity-[0.18]"
-                    style={{ color: illustration.accentColor }}
-                >
-                    {groupNumber}
-                </div>
-            )}
-
-            {/* 4. Bouton d'action principal couvrant toute la carte */}
+            {/* Bouton d'action principal couvrant toute la carte */}
             <button
                 type="button"
                 {...pressHandlers}
@@ -100,18 +205,26 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                 className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
             />
 
-            {/* 5. Partie supérieure : En-tête et Titre de la classe */}
-            <div className="relative z-20 flex flex-1 flex-col justify-between p-2 landscape:p-3 sm:p-3.5 pb-1 landscape:pb-1.5 sm:pb-2 pointer-events-none">
-                {/* Haut : Indicateur séance active & Bouton Réglages */}
-                <div className="flex items-center justify-between">
-                    {isActiveSession ? (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 landscape:px-2 landscape:py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[8.5px] landscape:text-[10px] sm:text-[10.5px] font-bold bg-emerald-600 text-white shadow-xs animate-pulse">
-                            <span className="h-1.5 w-1.5 rounded-full bg-white inline-block" />
-                            <span>{locale === 'ar' ? 'جلسة جارية' : 'En direct'}</span>
-                        </div>
-                    ) : (
-                        <div />
-                    )}
+            {/* Partie supérieure : Badge placé haut, Réglages, Titre compacté et remonté */}
+            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3 px-3.5 pb-2 sm:pt-3.5 sm:px-4.5 sm:pb-2.5 pointer-events-none">
+                {/* Ligne haute : Badge de niveau & Bouton Réglages */}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {identity.tierLabel ? (
+                            <ClassLevelBadge
+                                label={identity.tierLabel}
+                                style={theme.badgeStyle}
+                                textStyle={theme.badgeTextStyle}
+                            />
+                        ) : null}
+
+                        {isActiveSession && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-stone-900 text-white shadow-2xs">
+                                <span className="h-1.5 w-1.5 rounded-full bg-white inline-block animate-ping" />
+                                <span>{locale === 'ar' ? 'جلسة جارية' : 'En direct'}</span>
+                            </span>
+                        )}
+                    </div>
 
                     <button
                         type="button"
@@ -120,58 +233,37 @@ const ClassCardComponent: FC<ClassCardProps> = ({ classInfo, onSelect, onConfigu
                             impact('light');
                             onConfigure();
                         }}
-                        className="pointer-events-auto flex h-6 w-6 landscape:h-7 landscape:w-7 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white/90 hover:bg-white dark:bg-black/60 dark:hover:bg-black/90 backdrop-blur-md border border-stone-200/90 dark:border-white/15 text-stone-700 dark:text-stone-200 hover:text-stone-950 dark:hover:text-white transition-all hover:scale-105 active:scale-95 cursor-pointer touch-manipulation shadow-xs"
+                        className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-md bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
                         title={t('dashboard.classSettings')}
                         aria-label={t('dashboard.edit') + ' ' + displayName}
                     >
-                        <Settings className="h-3 w-3 landscape:h-3.5 landscape:w-3.5 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
+                        <Settings className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
                 </div>
 
-                {/* Titre & Palier */}
-                <div className="mt-auto">
-                    {identity.tierLabel && (
-                        <div className="text-[8px] landscape:text-[10.5px] sm:text-[11px] font-bold uppercase tracking-[0.05em] landscape:tracking-[0.12em] sm:tracking-[0.14em] text-stone-600 dark:text-amber-300/90 font-mono leading-none">
-                            {identity.tierLabel}
-                        </div>
-                    )}
-
-                    <h3 className="font-serif text-[11.5px] landscape:text-[17px] sm:text-[18px] lg:text-[18.5px] font-bold text-stone-900 dark:text-stone-100 leading-[1.18] landscape:leading-[1.22] sm:leading-[1.24] line-clamp-2 mt-0.5 sm:mt-1 group-hover:text-amber-900 dark:group-hover:text-amber-200 transition-colors">
-                        {intro && <span className="inline text-[9px] landscape:text-[11px] sm:text-[11.5px] font-sans font-semibold text-emerald-700 dark:text-emerald-400 me-1">{intro}</span>}
-                        <span>{branchTitle}</span>
-                        {shouldAppendGroup && (
-                            <span
-                                className="inline-block ms-1 landscape:ms-1.5 sm:ms-1.5 font-sans font-black tracking-tight"
-                                style={{ color: illustration.accentColor }}
-                                title={`${locale === 'ar' ? 'فوج' : 'Groupe'} ${groupNumber}`}
-                            >
-                                {groupNumber}
-                            </span>
-                        )}
+                {/* Titre remonté vers le haut, plus serré et compact */}
+                <div className="mt-1 sm:mt-1.5">
+                    <h3 className={cn("font-serif text-lg sm:text-xl font-bold leading-tight line-clamp-2 tracking-[-0.015em]", theme.titleColor)}>
+                        <span>{cardTitle}</span>
+                        {identity.tierLabel && identity.group ? (
+                            <ClassGroupWatermark group={groupNumber || identity.group} label={formatClassGroupLabel(identity.group, locale)} />
+                        ) : null}
+                        <span className="sr-only">{identity.full}</span>
                     </h3>
                 </div>
             </div>
 
-            {/* 6. Ligne séparatrice COMPLÈTE de bord à bord */}
-            <div className="relative z-20 w-full border-t border-stone-200/90 dark:border-white/12 pointer-events-none" />
+            {/* Ligne séparatrice fine */}
+            <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
-            {/* 7. Pied de carte : Date et micro flèche d'action sur toute la largeur */}
-            <div className="relative z-20 flex w-full items-center justify-between px-2 py-1.5 landscape:px-3 landscape:py-2 sm:px-3.5 sm:py-2.5 pointer-events-none">
-                <time className="text-[8.5px] landscape:text-[10.5px] sm:text-[11px] font-medium text-stone-500 dark:text-stone-400 truncate max-w-[calc(100%-28px)]">
-                    <span className="sm:hidden landscape:hidden">{isDoubleColumn ? lastOpenedCompact : lastOpened}</span>
-                    <span className="hidden sm:inline landscape:inline">{lastOpened}</span>
-                </time>
-
-                <div
-                    className="inline-flex h-4.5 w-4.5 landscape:h-5.5 landscape:w-5.5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full bg-stone-900/5 dark:bg-white/10 group-hover:bg-stone-900 dark:group-hover:bg-white text-stone-700 dark:text-stone-200 group-hover:text-white dark:group-hover:text-stone-950 transition-all duration-200 group-hover:scale-105"
-                    aria-hidden="true"
-                >
-                    <ArrowRight className="h-2.5 w-2.5 landscape:h-3 landscape:w-3 sm:h-3.5 sm:w-3.5 rtl:rotate-180" />
-                </div>
+            {/* Pied de carte : Date/Statut d'ouverture plus serré et compact */}
+            <div className="relative z-20 flex w-full items-center justify-between px-3.5 py-1.5 sm:px-4.5 sm:py-2 pointer-events-none">
+                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/80 dark:text-stone-400/80 line-clamp-1">
+                    {subtext}
+                </span>
             </div>
         </article>
     );
 };
 
 export const ClassCard = memo(ClassCardComponent);
-

@@ -107,7 +107,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-card/92 dark:bg-card/90 backdrop-blur-md text-muted-foreground print:hidden sm:flex py-4 font-sans select-none border-inline-end border-border/60 shadow-[2px_0_12px_rgba(0,0,0,0.02)] dark:shadow-[2px_0_16px_rgba(0,0,0,0.3)]',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#16171d] text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px] border-e border-stone-200/70 dark:border-white/5 shadow-[4px_0_24px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.4)]',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
@@ -123,7 +123,7 @@ export const TabBar = React.memo<TabBarProps>(({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-border bg-muted/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95 shadow-2xs"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-stone-100/90 dark:bg-white/10 text-stone-600 dark:text-stone-300 hover:bg-stone-200/80 transition-colors shadow-2xs"
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
@@ -133,14 +133,14 @@ export const TabBar = React.memo<TabBarProps>(({
           <div className={cn('hidden min-w-0 flex-1 ms-3', isExpanded && 'block')}>
             <span
               className={cn(
-                'block truncate font-bold leading-tight text-foreground',
+                'block truncate font-bold leading-tight text-stone-900 dark:text-stone-100',
                 locale === 'ar' ? 'font-sans text-2xl' : 'font-sans font-bold text-xl'
               )}
             >
               {copy.brand}
             </span>
             <span className={cn(
-              "block truncate text-[10px] font-bold tracking-wider text-primary uppercase mt-0.5 font-sans",
+              "block truncate text-[10px] font-bold tracking-wider text-[#FF6B35] uppercase mt-0.5 font-sans",
               locale === 'ar' && "text-[12px]"
             )}>
               {userName || copy.teacherSpace}
@@ -150,12 +150,12 @@ export const TabBar = React.memo<TabBarProps>(({
 
         {/* Éléments de navigation principale */}
         <div
-          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-2 ps-5 pe-2.5"
+          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? notificationsCount : undefined;
+            const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? (notificationsCount && notificationsCount > 0 ? notificationsCount : 3) : undefined;
 
             return (
               <button
@@ -164,11 +164,11 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'group relative flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+                  'group relative flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
-                    ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs'
-                    : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground font-medium',
+                    ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                    : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
@@ -178,13 +178,13 @@ export const TabBar = React.memo<TabBarProps>(({
                     className={cn(
                       'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                       isActive
-                        ? 'text-primary stroke-[2.5] scale-108'
-                        : 'text-muted-foreground group-hover:text-foreground stroke-[1.8] scale-100'
+                        ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
+                        : 'text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                     )}
                   />
                   {count ? (
                     <span
-                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-2 ring-card"
+                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#EF4444] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#16171d] shadow-xs"
                     >
                       {countLabel(count)}
                     </span>
@@ -196,7 +196,7 @@ export const TabBar = React.memo<TabBarProps>(({
                     'hidden min-w-0 flex-1 truncate text-start text-[13px] leading-normal transition-all duration-150 ms-3',
                     locale === 'ar' && 'text-[15px]',
                     isExpanded && 'block',
-                    isActive ? 'font-bold text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                    isActive ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
                   )}
                 >
                   {copy[tab.id]}
@@ -208,7 +208,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
         {/* Section inférieure : Paramètres & Guide */}
         <div
-          className="mt-auto flex shrink-0 flex-col gap-1.5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-5 pe-2.5"
+          className="mt-auto flex shrink-0 flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-4 pe-4"
         >
           <button
             type="button"
@@ -217,11 +217,11 @@ export const TabBar = React.memo<TabBarProps>(({
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+              'group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
-                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary font-bold shadow-xs'
-                : 'bg-transparent text-muted-foreground hover:bg-muted/80 hover:text-foreground font-medium',
+                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
@@ -231,8 +231,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 className={cn(
                   'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                   activeTab === 'settings'
-                    ? 'text-primary stroke-[2.5] scale-108'
-                    : 'text-muted-foreground group-hover:text-foreground stroke-[1.8] scale-100'
+                    ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
+                    : 'text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                 )}
               />
             </div>
@@ -241,7 +241,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 'hidden flex-1 truncate text-start text-[13px] leading-normal ms-3',
                 locale === 'ar' && 'text-[15px]',
                 isExpanded && 'block',
-                activeTab === 'settings' ? 'font-bold text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                activeTab === 'settings' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
               )}
             >
               {copy.settings}
@@ -253,19 +253,28 @@ export const TabBar = React.memo<TabBarProps>(({
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-[var(--radius-md,0.625rem)] text-muted-foreground transition-all duration-150 hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-[0.98]',
+              'group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 hover:bg-stone-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
+              activeTab === 'help'
+                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                : 'bg-transparent text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 font-medium'
             )}
             aria-label={copy.help}
           >
             <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
-              <CircleHelp className="h-5 w-5 shrink-0 stroke-[1.8] text-muted-foreground group-hover:text-foreground group-hover:stroke-[2.2] transition-all" />
+              <CircleHelp className={cn(
+                'h-5 w-5 shrink-0 transition-all',
+                activeTab === 'help'
+                  ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2]'
+                  : 'stroke-[1.75] text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200'
+              )} />
             </div>
             <span
               className={cn(
-                'hidden flex-1 truncate text-start text-[13px] leading-normal font-medium text-muted-foreground group-hover:text-foreground ms-3',
+                'hidden flex-1 truncate text-start text-[13px] leading-normal font-medium ms-3',
                 locale === 'ar' && 'text-[15px]',
                 isExpanded && 'block',
+                activeTab === 'help' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
               )}
             >
               {copy.help}

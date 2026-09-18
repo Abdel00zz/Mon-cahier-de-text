@@ -3,14 +3,22 @@ import { ClassInfo } from '../types';
 import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
-import { CLASS_STORAGE_KEY, readStoredClasses } from '../utils/localClassStorage';
+import { CLASS_STORAGE_KEY, DEFAULT_STARTER_CLASSES, readStoredClasses } from '../utils/localClassStorage';
 
 const DATA_PREFIX = 'classData_v1_';
 
 export const useClassManager = () => {
     const [workspaceIsActive] = useState(() => captureWorkspaceLease());
     const [classes, setClasses] = useState<ClassInfo[]>(() => {
-        try { return readStoredClasses(); }
+        try {
+            const stored = readStoredClasses();
+            if (stored.length > 0) return stored;
+            if (typeof window !== 'undefined' && localStorage.getItem(CLASS_STORAGE_KEY) === null) {
+                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(DEFAULT_STARTER_CLASSES));
+                return DEFAULT_STARTER_CLASSES;
+            }
+            return stored;
+        }
         catch (error) { logger.error('Failed to read local classes', error); return []; }
     });
 
@@ -19,9 +27,12 @@ export const useClassManager = () => {
     useEffect(() => {
         if (!workspaceIsActive()) return;
         try {
-            const normalized = readStoredClasses();
+            let normalized = readStoredClasses();
             const raw = localStorage.getItem(CLASS_STORAGE_KEY);
-            if (raw !== null && raw !== JSON.stringify(normalized)) {
+            if (raw === null && normalized.length === 0) {
+                localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(DEFAULT_STARTER_CLASSES));
+                normalized = DEFAULT_STARTER_CLASSES;
+            } else if (raw !== null && raw !== JSON.stringify(normalized)) {
                 localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(normalized));
                 markClassesListDirty();
             }

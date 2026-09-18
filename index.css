@@ -1091,24 +1091,24 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
   letter-spacing: -0.012em;
 }
 
-/* ── Neo-Editorial Canvas: porte par la racine du tableau de bord, et prolonge sous les gouttieres de la coque applicative (data-dashboard-surface) pour eviter toute bande du fond de page. ── */
+/* ── Soft UI Canvas: fond dégradé menthe claire / rose lavande très pâle vers bleu ciel doux avec motif petits points blancs style papier pointillé (inspiré de l'image) ── */
 :is([data-dashboard-root], [data-dashboard-surface]) {
   position: relative;
   min-height: 100dvh;
-  background-color: hsl(var(--background, 330 14% 97.6%));
+  background-color: #f6faf8;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.88) 1.5px, transparent 1.5px),
-    linear-gradient(135deg, rgba(218, 248, 242, 0.75) 0%, rgba(253, 236, 246, 0.65) 46%, rgba(224, 242, 254, 0.75) 100%);
-  background-size: 12px 12px, 100% 100%;
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 1.2px, transparent 1.2px),
+    linear-gradient(135deg, #d8f5ee 0%, #fdf2f8 48%, #e0f2fe 100%);
+  background-size: 13px 13px, 100% 100%;
   background-attachment: fixed;
 }
 
 .dark :is([data-dashboard-root], [data-dashboard-surface]) {
-  background-color: hsl(var(--background, 240 6% 8.5%));
+  background-color: #12141a;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.05) 1.2px, transparent 1.2px),
-    linear-gradient(135deg, rgba(16, 32, 38, 0.65) 0%, rgba(32, 18, 36, 0.5) 46%, rgba(18, 24, 46, 0.65) 100%);
-  background-size: 12px 12px, 100% 100%;
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1.2px, transparent 1.2px),
+    linear-gradient(135deg, #12201d 0%, #1f1624 48%, #141b2b 100%);
+  background-size: 13px 13px, 100% 100%;
   background-attachment: fixed;
 }
 

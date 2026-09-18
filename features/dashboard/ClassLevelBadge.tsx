@@ -7,6 +7,8 @@ interface ClassLevelBadgeProps {
     /** Variante dense, alignée sur la hauteur des lignes de liste. */
     compact?: boolean;
     className?: string;
+    style?: React.CSSProperties;
+    textStyle?: React.CSSProperties;
 }
 
 /**
@@ -17,12 +19,15 @@ interface ClassLevelBadgeProps {
  * `data-keep-tone`. Chaque badge reprend donc la couleur de sa propre carte,
  * dans les deux thèmes, sans seconde palette à maintenir.
  */
-export const ClassLevelBadge = memo(({ label, compact = false, className }: ClassLevelBadgeProps) => (
+export const ClassLevelBadge = memo(({ label, compact = false, className, style, textStyle }: ClassLevelBadgeProps) => (
     <span
         className={cn('keep-level-badge shrink-0', compact && 'keep-level-badge-compact', className)}
+        style={style}
         data-level-badge=""
     >
-        {label}
+        <span style={textStyle} className={textStyle ? 'inline-block' : undefined}>
+            {label}
+        </span>
     </span>
 ));
 
