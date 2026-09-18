@@ -212,7 +212,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-lg border shadow-2xs hover:shadow-xs transition-all duration-150 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
@@ -232,7 +232,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <span className="card-texture" data-texture={theme.texture} aria-hidden="true" />
 
             {/* Partie supérieure : Badge placé haut, Réglages, Titre compacté et remonté */}
-            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3 px-3.5 pb-2 sm:pt-3.5 sm:px-4.5 sm:pb-2.5 pointer-events-none">
+            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-2.5 sm:pt-4 sm:px-5 sm:pb-3 pointer-events-none">
                 {/* Ligne haute : Badge de niveau & Bouton Réglages */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -260,7 +260,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-md bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+                                className="pointer-events-auto flex size-9 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
@@ -287,7 +287,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre remonté vers le haut, plus serré et compact */}
                 <div className="mt-1 sm:mt-1.5">
-                    <h3 className={cn("font-serif text-lg sm:text-xl font-bold leading-tight line-clamp-2 tracking-[-0.015em]", theme.titleColor)}>
+                    <h3 className={cn("text-fluid-lg font-sans font-semibold leading-snug line-clamp-2 tracking-[-0.01em]", theme.titleColor)}>
                         <span>{cardTitle}</span>
                         {identity.tierLabel && identity.group ? (
                             <ClassGroupWatermark group={groupNumber || identity.group} label={formatClassGroupLabel(identity.group, locale)} />
@@ -301,8 +301,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
             {/* Pied de carte : Date/Statut d'ouverture plus serré et compact */}
-            <div className="relative z-20 flex w-full items-center justify-between px-3.5 py-1.5 sm:px-4.5 sm:py-2 pointer-events-none">
-                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/80 dark:text-stone-400/80 line-clamp-1">
+            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-5 sm:py-2.5 pointer-events-none">
+                <span className="text-fluid-xs font-medium tracking-wide text-stone-500/80 dark:text-stone-400/80 line-clamp-1">
                     {subtext}
                 </span>
             </div>
