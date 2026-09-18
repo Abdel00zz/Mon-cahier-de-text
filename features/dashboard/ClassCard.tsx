@@ -212,7 +212,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[14px] border shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_rgb(15_23_42/0.04)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgb(15_23_42/0.08)] transition-[transform,box-shadow] duration-200 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
@@ -260,7 +260,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="pointer-events-auto flex size-9 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+                                className="pointer-events-auto flex size-9 items-center justify-center rounded-[10px] bg-black/[0.045] hover:bg-black/[0.09] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-stone-600 dark:text-stone-300 transition-colors duration-150 active:scale-95 cursor-pointer"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
@@ -287,7 +287,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre remonté vers le haut, plus serré et compact */}
                 <div className="mt-1 sm:mt-1.5">
-                    <h3 className={cn("text-fluid-lg font-sans font-semibold leading-snug line-clamp-2 tracking-[-0.01em]", theme.titleColor)}>
+                    <h3 className={cn("text-[clamp(1rem,0.92rem+0.35vw,1.18rem)] font-sans font-semibold leading-[1.3] line-clamp-2 tracking-[-0.012em]", theme.titleColor)}>
                         <span>{cardTitle}</span>
                         {identity.tierLabel && identity.group ? (
                             <ClassGroupWatermark group={groupNumber || identity.group} label={formatClassGroupLabel(identity.group, locale)} />
