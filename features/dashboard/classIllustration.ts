@@ -8,33 +8,34 @@ export interface ClassIllustrationMetadata {
 }
 
 /**
- * Fonds de carte artisanaux haute résolution et plein format inspirés des teintes Google Keep
- * (Sable, Menthe, Ciel, Lavande, Corail) avec lavis d'aquarelle plein cadre sans marges blanches.
+ * Fonds de carte artistiques haute résolution inspirés de l'univers onirique et poétique
+ * (nuages bienveillants, rayons solaires rayonnants, dégradés ciel azur, aube dorée, menthe, lavande et corail)
+ * harmonisés avec les teintes du tableau de bord et de la barre latérale.
  */
 export const KEEP_ARTISANAL_ILLUSTRATIONS: Record<typeof KEEP_TONES[number], ClassIllustrationMetadata> = {
     sand: {
-        src: '/images/illustrations/keep_sand_bleed_1789727470609.jpg',
-        alt: 'Lavis d’aquarelle artisanale sable et ambre Google Keep',
-        accentColor: '#c26e06',
+        src: '/images/illustrations/whimsical_sand_clouds_1789728397038.jpg',
+        alt: 'Illustration poétique ciel ambre doré, aurore et nuages bienveillants',
+        accentColor: '#c25e2e',
     },
     mint: {
-        src: '/images/illustrations/keep_mint_bleed_1789727484114.jpg',
-        alt: 'Lavis d’aquarelle artisanale menthe et sauge Google Keep',
+        src: '/images/illustrations/whimsical_mint_clouds_1789728408468.jpg',
+        alt: 'Illustration poétique ciel menthe céladon et nuages flottants',
         accentColor: '#0d8249',
     },
     sky: {
-        src: '/images/illustrations/keep_sky_bleed_1789727512014.jpg',
-        alt: 'Lavis d’aquarelle artisanale azur et ciel Google Keep',
-        accentColor: '#1d6be6',
+        src: '/images/illustrations/whimsical_sky_clouds_1789728385377.jpg',
+        alt: 'Illustration poétique ciel azur, soleil rayonnant et nuages souriants',
+        accentColor: '#2563eb',
     },
     lavender: {
-        src: '/images/illustrations/keep_lavender_bleed_1789727526453.jpg',
-        alt: 'Lavis d’aquarelle artisanale lavande et lilas Google Keep',
+        src: '/images/illustrations/whimsical_lavender_clouds_1789728420491.jpg',
+        alt: 'Illustration poétique crépuscule lavande lilas et nuages poétiques',
         accentColor: '#7c3aed',
     },
     coral: {
-        src: '/images/illustrations/keep_coral_bleed_1789727546391.jpg',
-        alt: 'Lavis d’aquarelle artisanale corail et pêche Google Keep',
+        src: '/images/illustrations/whimsical_coral_clouds_1789728433347.jpg',
+        alt: 'Illustration poétique coucher de soleil corail pêche et nuages chaleureux',
         accentColor: '#d94826',
     },
 };
