@@ -212,7 +212,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[10px] border shadow-[0_1px_2px_rgb(15_23_42/0.04),0_5px_16px_rgb(15_23_42/0.035)] hover:-translate-y-0.5 hover:shadow-[0_5px_16px_rgb(15_23_42/0.08)] transition-[transform,box-shadow] duration-200 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[12px] border shadow-[0_1px_2px_rgb(15_23_42/0.04),0_3px_10px_rgb(15_23_42/0.035)] hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgb(15_23_42/0.09)] transition-[transform,box-shadow,border-color] duration-200 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
@@ -225,14 +225,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 {...pressHandlers}
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
                 title={displayName}
-                className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                className="absolute inset-0 z-10 size-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2"
             />
 
             {/* Tache de peinture : décor de fond, jamais cliquable ni annoncé. */}
             <span className="card-texture" data-texture={theme.texture} aria-hidden="true" />
 
             {/* Partie supérieure : Badge placé haut, Réglages, Titre compacté et remonté */}
-            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-2.5 sm:pt-4 sm:px-5 sm:pb-3 pointer-events-none">
+            <div className="relative z-20 flex flex-1 flex-col justify-start gap-1 pt-3 px-4 pb-2.5 sm:pt-3.5 sm:px-5 sm:pb-3 pointer-events-none">
                 {/* Ligne haute : Badge de niveau & Bouton Réglages */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -261,7 +261,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="pointer-events-auto flex size-9 items-center justify-center rounded-[10px] bg-black/[0.045] hover:bg-black/[0.09] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-stone-600 dark:text-stone-300 transition-colors duration-150 active:scale-95 cursor-pointer"
+                                className="pointer-events-auto flex size-8 items-center justify-center rounded-[8px] bg-black/[0.045] hover:bg-black/[0.09] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-stone-600 dark:text-stone-300 transition-colors duration-150 active:scale-95 cursor-pointer"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
@@ -288,7 +288,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre remonté vers le haut, plus serré et compact */}
                 <div className="mt-1 sm:mt-1.5">
-                    <h3 className={cn("text-[clamp(1rem,0.92rem+0.35vw,1.18rem)] font-sans font-semibold leading-[1.3] line-clamp-2 tracking-[-0.012em]", theme.titleColor)}>
+                    <h3 className={cn("text-[clamp(1rem,0.92rem+0.3vw,1.12rem)] font-sans font-semibold leading-[1.25] line-clamp-2 tracking-[-0.014em]", theme.titleColor)}>
                         <span>{cardTitle}</span>
                         {identity.tierLabel && identity.group ? (
                             <ClassGroupWatermark group={groupNumber || identity.group} label={formatClassGroupLabel(identity.group, locale)} />
@@ -302,7 +302,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
             {/* Pied de carte : Date/Statut d'ouverture plus serré et compact */}
-            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-5 sm:py-2.5 pointer-events-none">
+            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-5 sm:py-2.25 pointer-events-none">
                 <span className="text-fluid-xs font-medium tracking-wide text-stone-500/80 dark:text-stone-400/80 line-clamp-1">
                     {subtext}
                 </span>
