@@ -107,7 +107,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#16171d] text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px] border-e border-stone-200/70 dark:border-white/5 shadow-[4px_0_24px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.4)]',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white/65 dark:bg-[#16171d]/70 text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px] border border-white/60 dark:border-white/10 shadow-[4px_0_28px_rgba(39,35,31,0.08)] dark:shadow-[4px_0_28px_rgba(0,0,0,0.42)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/50 supports-[backdrop-filter]:dark:bg-[#16171d]/60',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
@@ -164,7 +164,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'group relative flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+                  'sidebar-stagger-item group relative flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
                     ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
@@ -217,7 +217,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+              'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
                 ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
@@ -253,7 +253,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 hover:bg-stone-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+              'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 hover:bg-stone-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'help'
                 ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
