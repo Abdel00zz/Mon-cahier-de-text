@@ -1,0 +1,6 @@
+{
+  "name": "Mon Cahier de Text",
+  "description": "Cahier de textes enseignant avec progression, emploi du temps, évaluations et accès hors connexion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

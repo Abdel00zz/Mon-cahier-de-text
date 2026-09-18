@@ -465,6 +465,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                     allClasses={classes}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
+                                                    isDoubleColumn={currentDisplay === 'double'}
                                                 />
                                             </motion.div>
                                         )})}

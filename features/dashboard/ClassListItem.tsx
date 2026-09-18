@@ -12,6 +12,7 @@ import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { ClassCardTitle } from './ClassCardTitle';
 import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
+import { getIllustrationForClass } from './classIllustration';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -35,6 +36,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     /** Même identité que la carte en grille : palier puis filière. */
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
+    const illustration = useMemo(() => getIllustrationForClass(classInfo), [classInfo]);
 
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -57,15 +59,15 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 className="flex min-w-0 flex-1 touch-manipulation items-center gap-2.5 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 text-start outline-none transition-colors hover:bg-muted/60 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary cursor-pointer"
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
-                <div className="keep-class-icon flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
-                    <Users className="h-[15px] w-[15px] sm:h-4 sm:w-4" />
+                <div className="keep-class-icon flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 overflow-hidden rounded-lg border border-black/10 dark:border-white/10 bg-muted" aria-hidden>
+                    <img src={illustration.src} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div className="min-w-0 flex-1 py-0.5">
                     {/* Même échelle que la carte en grille, avec un cran de
                         plus pour l'arabe (lecture plus dense en hauteur). */}
                     <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}>
                         {identity.tierLabel ? (
-                            <span className="inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                            <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
                                 <ClassLevelBadge label={identity.tierLabel} compact />
                                 {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
