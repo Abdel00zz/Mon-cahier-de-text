@@ -298,7 +298,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {classes.length > 0 && (
                         <div className="mb-6 sm:mb-8">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                                 <div className="min-w-0 space-y-1">
                                     <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-[1.15]">
                                         {t('dashboard.classes')}
@@ -320,7 +320,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="flex h-10 items-center gap-1.5 rounded-lg border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-4 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 shadow-xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all"
+                                            className="flex h-11 items-center gap-1.5 rounded-md border border-stone-200/90 dark:border-white/10 bg-white/90 dark:bg-[#1a1b22] px-4 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-stone-300 hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
                                             <ChevronDown className={`h-3.5 w-3.5 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -358,7 +358,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="flex h-10 items-center gap-2 rounded-lg bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
+                                        className="flex h-11 items-center gap-2 rounded-md bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-[0_3px_10px_rgb(112_51_245/0.22)] hover:shadow-[0_5px_14px_rgb(112_51_245/0.28)] hover:-translate-y-px active:translate-y-0 active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
                                     >
                                         <Plus className="h-4 w-4 stroke-[2.5]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>

@@ -212,7 +212,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[14px] border shadow-[0_1px_2px_rgb(15_23_42/0.04),0_8px_24px_rgb(15_23_42/0.04)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgb(15_23_42/0.08)] transition-[transform,box-shadow] duration-200 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-[10px] border shadow-[0_1px_2px_rgb(15_23_42/0.04),0_5px_16px_rgb(15_23_42/0.035)] hover:-translate-y-0.5 hover:shadow-[0_5px_16px_rgb(15_23_42/0.08)] transition-[transform,box-shadow] duration-200 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
