@@ -35,7 +35,8 @@ interface ClassCardProps {
 interface CardThemeStyle {
     cardBg: string;
     cardBorder: string;
-    badgeStyle: React.CSSProperties;
+    /** Palette du badge : la pastille reste toujours plus claire que la carte. */
+    badgeStyle: React.CSSProperties & Record<`--${string}`, string>;
     badgeTextStyle: React.CSSProperties;
     titleColor: string;
     dividerColor: string;
@@ -56,8 +57,9 @@ const CARD_THEMES: CardThemeStyle[] = [
         cardBg: 'bg-[#FFFDF3] dark:bg-[#221B13]',
         cardBorder: 'border-[#F4E8BF] dark:border-[#382E1E]',
         badgeStyle: {
-            background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
-            border: '1px solid rgba(217, 119, 6, 0.28)',
+            '--badge-from': '#FFFFFF',
+            '--badge-to': '#FEF8E7',
+            border: '1px solid rgba(217, 119, 6, 0.22)',
             borderRadius: '5px',
             padding: '0.14rem 0.5rem',
             fontSize: '0.72rem',
@@ -81,8 +83,9 @@ const CARD_THEMES: CardThemeStyle[] = [
         cardBg: 'bg-[#F1FBF5] dark:bg-[#12221A]',
         cardBorder: 'border-[#D4EFE0] dark:border-[#1E3A2B]',
         badgeStyle: {
-            background: 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)',
-            border: '1px solid rgba(16, 185, 129, 0.28)',
+            '--badge-from': '#FFFFFF',
+            '--badge-to': '#EDFAF3',
+            border: '1px solid rgba(16, 185, 129, 0.22)',
             borderRadius: '5px',
             padding: '0.14rem 0.5rem',
             fontSize: '0.72rem',
@@ -106,8 +109,9 @@ const CARD_THEMES: CardThemeStyle[] = [
         cardBg: 'bg-[#F2F7FD] dark:bg-[#131E2B]',
         cardBorder: 'border-[#D5E5F8] dark:border-[#1F3349]',
         badgeStyle: {
-            background: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)',
-            border: '1px solid rgba(14, 165, 233, 0.28)',
+            '--badge-from': '#FFFFFF',
+            '--badge-to': '#EFF6FE',
+            border: '1px solid rgba(14, 165, 233, 0.22)',
             borderRadius: '5px',
             padding: '0.14rem 0.5rem',
             fontSize: '0.72rem',
@@ -131,8 +135,9 @@ const CARD_THEMES: CardThemeStyle[] = [
         cardBg: 'bg-[#F7F2FD] dark:bg-[#1E1629]',
         cardBorder: 'border-[#E6D8F8] dark:border-[#352548]',
         badgeStyle: {
-            background: 'linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)',
-            border: '1px solid rgba(168, 85, 247, 0.28)',
+            '--badge-from': '#FFFFFF',
+            '--badge-to': '#F5F0FE',
+            border: '1px solid rgba(168, 85, 247, 0.22)',
             borderRadius: '5px',
             padding: '0.14rem 0.5rem',
             fontSize: '0.72rem',

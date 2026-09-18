@@ -1545,8 +1545,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
     border-radius: 5px;
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--keep-accent) 14%, #ffffff) 0%,
-      color-mix(in srgb, var(--keep-accent) 8%, #ffffff) 100%
+      var(--badge-from, #ffffff) 0%,
+      var(--badge-to, color-mix(in srgb, var(--keep-accent) 9%, #ffffff)) 100%
     );
     border: 1px solid color-mix(in srgb, var(--keep-accent) 28%, transparent);
     color: color-mix(in srgb, var(--keep-accent) 95%, #0f172a);
@@ -1571,14 +1571,14 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dark .keep-level-badge {
     background: linear-gradient(
       140deg,
-      color-mix(in srgb, var(--keep-accent) 28%, rgba(30, 32, 40, 0.95)) 0%,
-      color-mix(in srgb, var(--keep-accent) 18%, rgba(20, 22, 30, 0.9)) 100%
+      color-mix(in srgb, var(--badge-to, #e8edf5) 86%, #ffffff) 0%,
+      color-mix(in srgb, var(--badge-to, #e8edf5) 58%, #ffffff) 100%
     );
-    border: 1px solid color-mix(in srgb, var(--keep-accent) 38%, transparent);
-    color: color-mix(in srgb, var(--keep-accent) 90%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--keep-accent) 30%, transparent);
+    color: color-mix(in srgb, var(--keep-accent) 40%, #0b0e14);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 1px 3px rgba(0, 0, 0, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      0 1px 2px -1px rgba(0, 0, 0, 0.5);
   }
 
   .dark .keep-surface[data-keep-tone="sand"],
