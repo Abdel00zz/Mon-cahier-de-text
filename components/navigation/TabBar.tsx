@@ -107,7 +107,7 @@ export const TabBar = React.memo<TabBarProps>(({
       {/* Barre latérale classeur / cahier de textes */}
       <nav
         className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white/65 dark:bg-[#16171d]/70 text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px] border border-white/60 dark:border-white/10 shadow-[4px_0_28px_rgba(39,35,31,0.08)] dark:shadow-[4px_0_28px_rgba(0,0,0,0.42)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/50 supports-[backdrop-filter]:dark:bg-[#16171d]/60',
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white/72 dark:bg-[#16171d]/76 text-stone-600 print:hidden sm:flex py-5 font-sans select-none rounded-e-[30px] border border-white/75 dark:border-white/12 shadow-[6px_0_30px_rgba(39,35,31,0.09)] dark:shadow-[6px_0_30px_rgba(0,0,0,0.45)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/55 supports-[backdrop-filter]:dark:bg-[#16171d]/64',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-200 ease-out',
         )}
@@ -123,7 +123,7 @@ export const TabBar = React.memo<TabBarProps>(({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-stone-100/90 dark:bg-white/10 text-stone-600 dark:text-stone-300 hover:bg-stone-200/80 transition-colors shadow-2xs"
+            className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-white/80 bg-white/55 text-stone-600 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/80 active:translate-y-0 dark:border-white/10 dark:bg-white/10 dark:text-stone-300 dark:hover:bg-white/15"
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
@@ -150,7 +150,7 @@ export const TabBar = React.memo<TabBarProps>(({
 
         {/* Éléments de navigation principale */}
         <div
-          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
+          className="modern-scrollbar mt-8 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -164,10 +164,10 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'sidebar-stagger-item group relative flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+                  'sidebar-stagger-item group relative flex h-12 w-full cursor-pointer items-center rounded-[17px] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
-                    ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                    ? 'bg-[#FFF0EB]/90 text-[#D95735] ring-1 ring-[#FF6B35]/15 shadow-sm dark:bg-[#38221D]/90 dark:text-[#F87171] font-bold'
                     : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
                 )}
                 aria-label={copy[tab.id]}
@@ -220,7 +220,7 @@ export const TabBar = React.memo<TabBarProps>(({
               'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
-                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                ? 'bg-[#FFF0EB]/90 text-[#D95735] ring-1 ring-[#FF6B35]/15 shadow-sm dark:bg-[#38221D]/90 dark:text-[#F87171] font-bold'
                 : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
             )}
             aria-label={copy.settings}
@@ -256,7 +256,7 @@ export const TabBar = React.memo<TabBarProps>(({
               'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 hover:bg-stone-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'help'
-                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
+                ? 'bg-[#FFF0EB]/90 text-[#D95735] ring-1 ring-[#FF6B35]/15 shadow-sm dark:bg-[#38221D]/90 dark:text-[#F87171] font-bold'
                 : 'bg-transparent text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 font-medium'
             )}
             aria-label={copy.help}
