@@ -39,6 +39,8 @@ interface CardThemeStyle {
     badgeTextStyle: React.CSSProperties;
     titleColor: string;
     dividerColor: string;
+    /** Variante de tache de peinture, accordée à la palette de cette carte. */
+    texture: 'sand' | 'mint' | 'sky' | 'lavender';
 }
 
 /**
@@ -72,6 +74,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         },
         titleColor: 'text-[#482B17] dark:text-[#FDE68A]',
         dividerColor: 'border-[#F2E5BA]/70 dark:border-[#382E1E]',
+        texture: 'sand',
     },
     // Carte 2 – Haut droite (vert menthe / fresh natural)
     {
@@ -96,6 +99,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         },
         titleColor: 'text-[#113B26] dark:text-[#A7F3D0]',
         dividerColor: 'border-[#D4EFE0]/75 dark:border-[#1E3A2B]',
+        texture: 'mint',
     },
     // Carte 3 – Bas gauche (bleu clair / calm scientific)
     {
@@ -120,6 +124,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         },
         titleColor: 'text-[#122E4E] dark:text-[#BAE6FD]',
         dividerColor: 'border-[#D5E5F8]/75 dark:border-[#1F3349]',
+        texture: 'sky',
     },
     // Carte 4 – Bas droite (violet lavande / elegant dream)
     {
@@ -144,6 +149,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         },
         titleColor: 'text-[#38194D] dark:text-[#E9D5FF]',
         dividerColor: 'border-[#E6D8F8]/75 dark:border-[#352548]',
+        texture: 'lavender',
     },
 ];
 
@@ -216,6 +222,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 title={displayName}
                 className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
             />
+
+            {/* Tache de peinture : décor de fond, jamais cliquable ni annoncé. */}
+            <span className="card-texture" data-texture={theme.texture} aria-hidden="true" />
 
             {/* Partie supérieure : Badge placé haut, Réglages, Titre compacté et remonté */}
             <div className="relative z-20 flex flex-1 flex-col justify-start pt-3 px-3.5 pb-2 sm:pt-3.5 sm:px-4.5 sm:pb-2.5 pointer-events-none">

@@ -1434,6 +1434,64 @@ html[data-keyboard='open'] .mobile-tab-bar {
     user-select: none;
     white-space: nowrap;
   }
+
+  /*
+   * Taches de peinture des cartes de classe.
+   *
+   * Le motif suit la palette de la carte : trois nappes composées en
+   * dégradés radiaux, sans aucune image — donc zéro octet à télécharger, un
+   * rendu net à toute densité d'écran et une teinte cohérente par
+   * construction. Décor pur : jamais cliquable, jamais porteur d'information.
+   */
+  .card-texture {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    opacity: 0.9;
+  }
+  .dark .card-texture { opacity: 0.66; }
+
+  /* Crème dorée : deux éclaboussures au coin haut-droite, une traînée en bas. */
+  .card-texture[data-texture="sand"] {
+    background-image:
+      radial-gradient(58% 46% at 50% 50%, rgb(180 83 9 / 0.32), transparent 63%),
+      radial-gradient(52% 44% at 50% 50%, rgb(253 230 138 / 0.74), transparent 72%),
+      radial-gradient(60% 48% at 50% 50%, rgb(180 83 9 / 0.10), transparent 74%);
+    background-position: 104% -20%, 78% -30%, -14% 124%;
+    background-size: 46% 68%, 38% 54%, 44% 60%;
+  }
+
+  /* Menthe : large lavis en haut à gauche, goutte franche à mi-hauteur. */
+  .card-texture[data-texture="mint"] {
+    background-image:
+      radial-gradient(60% 44% at 50% 50%, rgb(167 243 208 / 0.72), transparent 72%),
+      radial-gradient(56% 50% at 50% 50%, rgb(4 120 87 / 0.30), transparent 63%),
+      radial-gradient(50% 42% at 50% 50%, rgb(4 120 87 / 0.09), transparent 74%);
+    background-position: -12% -24%, 96% 46%, 58% 128%;
+    background-size: 50% 70%, 40% 60%, 34% 46%;
+  }
+
+  /* Azur : traînée verticale haute, éclaboussure bas-droite. */
+  .card-texture[data-texture="sky"] {
+    background-image:
+      radial-gradient(48% 62% at 50% 50%, rgb(186 230 253 / 0.70), transparent 72%),
+      radial-gradient(58% 46% at 50% 50%, rgb(2 132 199 / 0.30), transparent 63%),
+      radial-gradient(52% 44% at 50% 50%, rgb(2 132 199 / 0.09), transparent 76%);
+    background-position: 88% -28%, -18% 116%, 62% 132%;
+    background-size: 40% 74%, 48% 62%, 32% 44%;
+  }
+
+  /* Lilas : deux nappes superposées en bas à gauche, touche discrète en haut. */
+  .card-texture[data-texture="lavender"] {
+    background-image:
+      radial-gradient(56% 48% at 50% 50%, rgb(233 213 255 / 0.70), transparent 72%),
+      radial-gradient(62% 52% at 50% 50%, rgb(126 34 206 / 0.29), transparent 63%),
+      radial-gradient(48% 40% at 50% 50%, rgb(126 34 206 / 0.10), transparent 74%);
+    background-position: -16% 118%, 14% 132%, 108% -26%;
+    background-size: 44% 62%, 50% 66%, 30% 44%;
+  }
   .dark .keep-surface {
     --keep-border: #3f4348;
     background-color: var(--keep-dark, #202124);
