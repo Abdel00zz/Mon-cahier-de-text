@@ -147,7 +147,7 @@ const PWA_MANIFEST: LocalizedManifest = {
             name: 'Pilotage',
             short_name: 'Pilotage',
             description: 'Consulter les repères, la progression et les informations globales.',
-            url: '/#/notifications',
+            url: '#notifications',
             icons: shortcutIcon,
             name_localized: {
                 fr: 'Pilotage',
@@ -169,7 +169,7 @@ const PWA_MANIFEST: LocalizedManifest = {
             name: 'Paramètres',
             short_name: 'Paramètres',
             description: 'Configurer le profil, les classes, l’emploi du temps et la synchronisation.',
-            url: '/#/parametres',
+            url: '#parametres',
             icons: shortcutIcon,
             name_localized: {
                 fr: 'Paramètres',
