@@ -42,6 +42,7 @@ interface CardThemeStyle {
     dividerColor: string;
     /** Variante de tache de peinture, accordée à la palette de cette carte. */
     texture: 'sand' | 'mint' | 'sky' | 'lavender';
+    referenceImage: string;
 }
 
 /**
@@ -77,6 +78,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         titleColor: 'text-[#482B17] dark:text-[#FDE68A]',
         dividerColor: 'border-[#F2E5BA]/70 dark:border-[#382E1E]',
         texture: 'sand',
+        referenceImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IOGUOJn9iJOhSg9sBuAAPFy1vS2nd1.png',
     },
     // Carte 2 – Haut droite (vert menthe / fresh natural)
     {
@@ -103,6 +105,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         titleColor: 'text-[#113B26] dark:text-[#A7F3D0]',
         dividerColor: 'border-[#D4EFE0]/75 dark:border-[#1E3A2B]',
         texture: 'mint',
+        referenceImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-pFWImqqZ8ScBvbM9u4ec7EpER18RmF.png',
     },
     // Carte 3 – Bas gauche (bleu clair / calm scientific)
     {
@@ -129,6 +132,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         titleColor: 'text-[#122E4E] dark:text-[#BAE6FD]',
         dividerColor: 'border-[#D5E5F8]/75 dark:border-[#1F3349]',
         texture: 'sky',
+        referenceImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-IOGUOJn9iJOhSg9sBuAAPFy1vS2nd1.png',
     },
     // Carte 4 – Bas droite (violet lavande / elegant dream)
     {
@@ -155,6 +159,7 @@ const CARD_THEMES: CardThemeStyle[] = [
         titleColor: 'text-[#38194D] dark:text-[#E9D5FF]',
         dividerColor: 'border-[#E6D8F8]/75 dark:border-[#352548]',
         texture: 'lavender',
+        referenceImage: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-pFWImqqZ8ScBvbM9u4ec7EpER18RmF.png',
     },
 ];
 
@@ -237,6 +242,13 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
             />
 
+            {/* Motif calligraphique inspiré des références fournies, traité comme un filigrane décoratif. */}
+            <img
+                src={theme.referenceImage}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-4 -right-10 z-0 h-24 w-[230px] max-w-none rotate-[-3deg] object-cover object-center opacity-[0.13] mix-blend-multiply grayscale-[15%] transition-transform duration-300 group-hover:scale-105 dark:opacity-[0.12] dark:mix-blend-screen"
+            />
             {/* Tache de peinture : décor de fond très doux, jamais cliquable ni annoncé. */}
             <span className="card-texture opacity-30 dark:opacity-20" data-texture={theme.texture} aria-hidden="true" />
 
