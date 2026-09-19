@@ -19,7 +19,6 @@ export type BorderRadiusOption = 'sharp' | 'default' | 'soft' | 'pill';
 export type CardStyleOption = 'classic' | 'bordered' | 'elevated' | 'glass';
 export type TableStyleOption = 'clean' | 'striped' | 'bordered' | 'compact';
 export type UIFontOption = 'sketch-marfa' | 'editorial-newsreader' | 'cyber-clean' | 'fly-tech' | 'jakarta' | 'outfit' | 'lexend' | 'inter' | 'fira' | 'system';
-export type BackgroundContrastOption = 'normal' | 'soft' | 'vibrant';
 
 export interface AccentColorPreset {
   id: AccentColorKey;

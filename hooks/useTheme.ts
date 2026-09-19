@@ -147,8 +147,6 @@ export function useTheme(
     // 5. Data Attributes on root for CSS targeting
     root.setAttribute('data-card-style', cardStyleKey);
     root.setAttribute('data-table-style', tableStyleKey);
-    root.setAttribute('data-radius', borderRadiusKey);
-    root.setAttribute('data-ui-font', uiFontKey);
   }, [isDark, themeCustomization]);
 
   // Update dynamic content fonts on CSS variables

@@ -63,7 +63,7 @@ export interface OfficialCurriculumPlan {
   assessmentWindows?: { type: 'DM' | 'DS'; semester: 1 | 2; num: number; start: string; end: string; hours: number | null }[];
 }
 
-import type { AccentColorKey, BorderRadiusOption, CardStyleOption, TableStyleOption, UIFontOption, BackgroundContrastOption } from '@/constants/themePresets';
+import type { AccentColorKey, BorderRadiusOption, CardStyleOption, TableStyleOption, UIFontOption } from '@/constants/themePresets';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -80,8 +80,6 @@ export interface ThemeCustomization {
   tableStyle?: TableStyleOption;
   /** Police de l'interface utilisateur */
   uiFont?: UIFontOption;
-  /** Contraste et niveau de gris d'arrière-plan */
-  backgroundContrast?: BackgroundContrastOption;
   /** Couleur personnalisée de fond (optionnelle) */
   customBackgroundColor?: string;
   /** Couleur personnalisée de texte principal (optionnelle) */
