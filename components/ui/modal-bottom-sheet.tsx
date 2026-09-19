@@ -166,7 +166,7 @@ export function ModalBottomSheet({
           dir={effectiveDir}
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
-            'fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[24px] rounded-b-none border border-border bg-card text-foreground outline-none',
+            'modal-pro-surface fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[24px] rounded-b-none border border-border bg-card text-foreground outline-none',
             'shadow-2xl',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
@@ -236,7 +236,7 @@ export function ModalBottomSheet({
           {(title || description) && (
             <div
               className={cn(
-                'modal-header relative z-10 shrink-0 min-h-13 sm:min-h-14 border-b border-border/60 bg-transparent px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6 text-foreground flex flex-col justify-center text-start',
+                'modal-header modal-pro-header relative z-10 shrink-0 min-h-13 sm:min-h-14 bg-transparent px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6 text-foreground flex flex-col justify-center text-start',
                 !hideClose ? 'pe-14 sm:pe-14 ps-5 sm:ps-7' : 'px-5 sm:px-7',
                 headerClassName
               )}
@@ -285,7 +285,7 @@ export function ModalBottomSheet({
           {footer && (
             <div
               className={cn(
-                'modal-footer relative z-10 border-t border-border/60 flex shrink-0 flex-col-reverse gap-2 bg-muted/20 dark:bg-muted/10 px-5 py-3.5 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-3 landscape:px-6 text-foreground',
+                'modal-footer modal-pro-footer relative z-10 flex shrink-0 flex-col-reverse gap-2 bg-muted/20 dark:bg-muted/10 px-5 py-3.5 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-3 landscape:px-6 text-foreground',
                 footerClassName
               )}
             >
