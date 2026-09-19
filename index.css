@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────�����������������������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�������������������������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1310,7 +1310,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Présentation native des Paramètres ────���────────��─��─────��─────���────── */
+/* ── Présentation native des Paramètres ───������────────��─��─────��─────���────── */
 
 .app-settings-parent {
   transform-origin: 50% 0;
@@ -1545,6 +1545,48 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
 
   /* Cadre inspiré des zelliges andalous : double liseré, rosace très subtile et tons terre/vert. */
+  /* Alerte date : information prioritaire, futuriste et minimaliste. */
+  .date-review-icon {
+  background: linear-gradient(145deg, hsl(39 92% 95%), hsl(38 92% 86%));
+  border: 1px solid hsl(38 90% 58% / 0.36);
+  box-shadow: 0 12px 24px -16px hsl(34 88% 42% / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  }
+  .date-review-title { text-wrap: balance; }
+  .date-review-alert {
+  position: relative;
+  overflow: hidden;
+  border-color: hsl(38 90% 58% / 0.35);
+  background: linear-gradient(135deg, hsl(42 100% 97% / 0.9), hsl(34 100% 94% / 0.62));
+  box-shadow: 0 16px 34px -28px hsl(34 88% 42% / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.8);
+  }
+  .date-review-alert::before {
+  content: "";
+  position: absolute;
+  inset-inline-end: -2.5rem;
+  top: -3rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  background: hsl(38 90% 58% / 0.12);
+  box-shadow: 0 0 0 1px hsl(38 90% 58% / 0.08), 0 0 0 14px hsl(38 90% 58% / 0.04);
+  pointer-events: none;
+  }
+  .date-review-alert [role="status"] { position: relative; z-index: 1; }
+  .date-review-alert ul { list-style: none; }
+  .date-review-alert li { min-height: 2.8rem; }
+  .date-review-alert li + li { border-top: 1px solid hsl(38 90% 58% / 0.14); }
+  .date-review-alert li > span:last-child { font-size: 0.86rem; line-height: 1.75; }
+  .date-review-alert label { position: relative; z-index: 1; border-top: 1px solid hsl(38 90% 58% / 0.14); padding-top: 0.75rem; }
+  @media (max-width: 639px) {
+    .date-review-icon { width: 3rem; height: 3rem; border-radius: 0.95rem; }
+    .date-review-icon svg { width: 1.7rem; height: 1.7rem; }
+    .date-review-title { max-width: 12rem; }
+    .date-review-alert { padding: 1rem; }
+    .date-review-alert li > span:last-child { font-size: 0.8rem; }
+  }
+  .dark .date-review-icon { background: linear-gradient(145deg, hsl(38 65% 25%), hsl(35 55% 19%)); border-color: hsl(38 90% 58% / 0.38); }
+  .dark .date-review-alert { background: linear-gradient(135deg, hsl(35 32% 18% / 0.95), hsl(35 28% 14% / 0.85)); border-color: hsl(38 90% 58% / 0.32); }
+
   /* En-tête et navigation : même langage artisanal que les cartes. */
   .dashboard-artisan-shell {
   background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 52% / 0.13) 0 1px, transparent 1.5px);
