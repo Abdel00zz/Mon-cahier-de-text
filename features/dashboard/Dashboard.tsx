@@ -300,7 +300,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div className="mb-3 sm:mb-4">
                             <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
                                 <div>
-                                    <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
+                                    <h1 className="font-maghribi text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>

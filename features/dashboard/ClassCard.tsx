@@ -188,18 +188,27 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         : null;
 
     /**
-     * Titre de filière, sans numéro de groupe dupliqué, pour les paliers qui
-     * portent un badge. Sans badge (collège et prépa), l'intitulé d'origine est
-     * conservé tel quel : c'est lui qui porte l'information de niveau.
+     * Titre complet combinant le niveau et la filière (sans badge séparé)
+     * Ex: "2ème Bac Sciences Physiques 3" ou "Tronc Commun Sciences 2"
      */
-    const cardTitle = useMemo(() => {
+    const fullTitle = useMemo(() => {
+        // Si pas de label de niveau (collège sans distinction), retourner le nom complet
         if (!identity.tierLabel) return displayName;
-        if (!identity.stream) return displayName;
-        if (groupNumber) {
-            return identity.stream.replace(new RegExp(`\\s+${groupNumber}$`), '').trim();
+        
+        // Combiner niveau + filière
+        const parts = [];
+        
+        // Ajouter le niveau (ex: "2ème Bac", "Tronc Commun")
+        parts.push(identity.tierLabel);
+        
+        // Ajouter la filière si elle existe
+        if (identity.stream) {
+            parts.push(identity.stream);
         }
-        return identity.stream;
-    }, [identity.stream, identity.tierLabel, groupNumber, displayName]);
+        
+        // Joindre avec un espace
+        return parts.join(' ');
+    }, [identity.tierLabel, identity.stream, displayName]);
 
     /** Sous-texte d'état : « Dernière ouverture · ... » ou « Prêt pour votre première séance » */
     const subtext = useMemo(() => {
@@ -215,7 +224,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
-                isDoubleColumn ? "min-h-[132px] sm:min-h-[144px]" : "min-h-[126px] sm:min-h-[136px]",
+                isDoubleColumn ? "min-h-[145px] sm:min-h-[160px]" : "min-h-[140px] sm:min-h-[152px]",
                 isActiveSession && "ring-2 ring-stone-900 dark:ring-white z-10"
             )}
         >
@@ -231,19 +240,11 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Tache de peinture : décor de fond très doux, jamais cliquable ni annoncé. */}
             <span className="card-texture opacity-30 dark:opacity-20" data-texture={theme.texture} aria-hidden="true" />
 
-            {/* Partie supérieure : Badge placé haut, Réglages, Titre harmonieux */}
-            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-2.5 sm:pt-4 sm:px-4.5 sm:pb-3 pointer-events-none">
-                {/* Ligne haute : Badge de niveau standardisé & Bouton Réglages */}
+            {/* Partie supérieure : Titre combiné (niveau + filière), Réglages */}
+            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-3 sm:pt-4 sm:px-4.5 sm:pb-3.5 pointer-events-none">
+                {/* Ligne haute : Badge session active (si applicable) & Bouton Réglages */}
                 <div className="flex items-center justify-between gap-2 min-h-[26px]">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        {identity.tierLabel ? (
-                            <ClassLevelBadge
-                                label={identity.tierLabel}
-                                tierKey={identity.tierKey}
-                                themeTone={theme.texture}
-                            />
-                        ) : null}
-
                         {isActiveSession && (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-2xs">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
@@ -283,18 +284,18 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </DropdownMenu>
                 </div>
 
-                {/* Titre de la classe : aligné, avec filigrane noble à côté du titre */}
+                {/* Titre complet de la classe : niveau + filière + groupe combinés */}
                 <div className="mt-2.5 sm:mt-3">
-                    <h3 className={cn("font-sans text-[15px] sm:text-lg font-bold leading-snug line-clamp-2 tracking-tight flex items-baseline flex-wrap", theme.titleColor)}>
-                        <span>{cardTitle}</span>
-                        {identity.tierLabel && identity.group ? (
+                    <h3 className={cn("font-sans text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.4] line-clamp-2 flex items-baseline flex-wrap gap-1", theme.titleColor)}>
+                        <span>{fullTitle}</span>
+                        {identity.group && groupNumber && (
                             <ClassGroupWatermark
-                                group={groupNumber || identity.group}
+                                group={groupNumber}
                                 label={formatClassGroupLabel(identity.group, locale)}
                                 themeTone={theme.texture}
                                 tierKey={identity.tierKey}
                             />
-                        ) : null}
+                        )}
                         <span className="sr-only">{identity.full}</span>
                     </h3>
                 </div>

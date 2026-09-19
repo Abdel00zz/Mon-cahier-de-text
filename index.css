@@ -51,6 +51,8 @@
   --font-serif: 'Newsreader', 'Lateef', 'Amiri', Georgia, Cambria, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-itim: 'Itim', cursive, sans-serif;
+  --font-maghribi: 'Bouazzi Maghribi', 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
+  --font-maghribi-ar: 'Maghribi Font 3', 'Marhey', 'Reem Kufi', 'Bouazzi Maghribi', 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
 
   /* La densité de texte ne redimensionne jamais les espacements ou les cibles. */
   --text-xs: calc(0.75rem * var(--app-text-scale, 1));
@@ -226,6 +228,26 @@ html[data-keyboard='open'] .fab-safe {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+@utility font-maghribi {
+  font-family: var(--font-maghribi, 'Bouazzi Maghribi'), 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.font-maghribi {
+  font-family: var(--font-maghribi, 'Bouazzi Maghribi'), 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Police Marhey exclusivement pour l'arabe (style Hudhud-like : Naskh + Maghribi) */
+html[lang="ar"] .font-maghribi,
+html[lang="ar"] .keep-class-title {
+  font-family: var(--font-maghribi-ar, 'Maghribi Font 3'), 'Marhey', 'Reem Kufi', 'Bouazzi Maghribi', 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
+  font-weight: 600;
+  letter-spacing: 0.015em;
 }
 
 @utility font-itim {
@@ -537,10 +559,19 @@ html[data-keyboard='open'] .fab-safe {
     line-height: 1.35;
   }
 
-  html[lang="ar"] .keep-class-title {
-    font-family: 'Lateef', 'Amiri', serif;
+  /* Titres de classe : Police Maghribi par défaut pour tous les contextes */
+  .keep-class-title {
+    font-family: var(--font-maghribi, 'Bouazzi Maghribi'), 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
     font-size: 1.25em;
     line-height: 1.22;
+  }
+
+  /* Marhey exclusivement pour l'arabe (style élégant Naskh + Maghribi) */
+  html[lang="ar"] .keep-class-title {
+    font-family: var(--font-maghribi-ar, 'Maghribi Font 3'), 'Marhey', 'Reem Kufi', 'Bouazzi Maghribi', 'Aref Ruqaa', 'Lateef', 'Amiri', serif;
+    font-size: 1.3em;
+    line-height: 1.25;
+    font-weight: 600;
   }
 
   html {
@@ -1852,3 +1883,49 @@ html[data-keyboard='open'] .mobile-tab-bar {
 }
 
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   POLICE MAGHRIBI - FALLBACK LOCAL
+   ═══════════════════════════════════════════════════════════════════════
+   
+   Police locale "maghribi-font 3" (المغربي المبسوط) disponible dans /public
+   
+   Cascade de fallback (Latin / par défaut) :
+   1. Bouazzi Maghribi (CDN jsDelivr)
+   2. Aref Ruqaa (Google Fonts) ← élégante, style Ruqaa
+   3. Lateef (Google Fonts) ← serif arabe moderne
+   4. Amiri (Google Fonts) ← serif classique
+   5. Serif système
+   
+   Cascade de fallback (Arabe exclusif) :
+   1. Maghribi Font 3 (Local - المغربي المبسوط الأصيل)
+   2. Marhey (Google Fonts) ← style Naskh + Maghribi
+   3. Reem Kufi (Google Fonts) ← Kufic élégant
+   4. Bouazzi Maghribi (CDN jsDelivr)
+   5. Aref Ruqaa (Google Fonts)
+   6. Lateef (Google Fonts)
+   7. Amiri (Google Fonts)
+   8. Serif système
+   
+   Cette cascade garantit un affichage élégant dans tous les cas.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Déclaration @font-face pour la police locale Maghribi Font 3 */
+@font-face {
+  font-family: 'Maghribi Font 3';
+  src: url('/maghribi-font 3.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Poids supplémentaires (si plusieurs fichiers disponibles) */
+/*
+@font-face {
+  font-family: 'Maghribi Font 3';
+  src: url('/maghribi-font-3-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/

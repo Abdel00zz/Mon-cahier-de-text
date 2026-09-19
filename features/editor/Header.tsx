@@ -49,7 +49,7 @@ const EditableHeader: React.FC<{
       onFocus={handleFocus}
       onKeyDown={handleKeyDown}
       dir={isArabic ? 'rtl' : 'ltr'}
-      className={`inline-block -mx-1.5 rounded-[var(--radius-sm,0.375rem)] px-1.5 py-1 text-primary hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 ${isArabic ? 'font-sans' : 'font-semibold tracking-tight'}`}
+      className={`inline-block -mx-1.5 rounded-[var(--radius-sm,0.375rem)] px-1.5 py-1 text-primary hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary/40 font-sans ${isArabic ? '' : 'tracking-tight'}`}
     >
       {displayValue}
     </span>

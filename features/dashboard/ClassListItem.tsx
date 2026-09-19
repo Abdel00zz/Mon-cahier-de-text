@@ -68,14 +68,15 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
                 <div className="min-w-0 flex-1 py-0.5">
-                    {/* Même échelle que la carte en grille, avec un cran de
-                        plus pour l'arabe (lecture plus dense en hauteur). */}
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}>
+                    {/* Titre complet : niveau + filière + groupe combinés (sans badge séparé) */}
+                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug font-sans", isRtl ? "text-[17.25px] sm:text-[17.83px] lg:text-[18.4px]" : "text-[16.1px] sm:text-[16.68px] lg:text-[17.25px]")}>
                         {identity.tierLabel ? (
                             <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
-                                <ClassLevelBadge label={identity.tierLabel} tierKey={identity.tierKey} />
-                                {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
+                                <span className="min-w-0 truncate">
+                                    {identity.tierLabel}
+                                    {identity.stream && ` ${identity.stream}`}
+                                </span>
                                 {identity.group && (
                                      <ClassGroupWatermark
                                          group={identity.group}
