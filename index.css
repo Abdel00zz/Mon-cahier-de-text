@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────���������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�����������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1545,6 +1545,55 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
 
   /* Cadre inspiré des zelliges andalous : double liseré, rosace très subtile et tons terre/vert. */
+  /* En-tête et navigation : même langage artisanal que les cartes. */
+  .dashboard-artisan-shell {
+  background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 52% / 0.13) 0 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  }
+  .dashboard-artisan-header {
+  position: relative;
+  padding: 0.65rem 0.75rem 0.8rem;
+  border-bottom: 1px solid hsl(42 52% 52% / 0.2);
+  }
+  .dashboard-artisan-header::after {
+  content: "۞";
+  position: absolute;
+  inset-inline-start: 0.15rem;
+  bottom: -0.5rem;
+  color: hsl(42 52% 52% / 0.48);
+  font-size: 0.85rem;
+  background: hsl(var(--background));
+  padding: 0 0.35rem;
+  }
+  .dashboard-artisan-header h1 {
+  font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), var(--font-serif), serif;
+  letter-spacing: -0.02em;
+  }
+  .artisan-display-trigger {
+  background: hsl(var(--card) / 0.82);
+  border-color: hsl(42 52% 52% / 0.28);
+  color: hsl(var(--foreground));
+  box-shadow: 0 5px 14px -12px hsl(30 25% 20% / 0.7), inset 0 0 0 1px hsl(42 52% 52% / 0.08);
+  }
+  .artisan-display-trigger:hover { border-color: hsl(42 52% 52% / 0.52); background: hsl(var(--card)); }
+  .artisan-add-class {
+  color: hsl(42 42% 96%);
+  background: linear-gradient(135deg, hsl(155 45% 28%), hsl(159 55% 22%));
+  border: 1px solid hsl(42 52% 52% / 0.48);
+  box-shadow: 0 8px 18px -12px hsl(155 45% 20% / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.2);
+  }
+  .artisan-add-class:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 60% / 0.1) 0 1px, transparent 1.5px); }
+  .dark .dashboard-artisan-header::after { background: hsl(var(--background)); }
+  .dashboard-artisan-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0.75rem 0.55rem;
+  border: 1px solid hsl(42 52% 52% / 0.14);
+  border-radius: 1.2rem;
+  pointer-events: none;
+  }
+
   /* Système d'actions partagé : artisanat discret, lisibilité d'abord. */
   .artisanal-button {
   position: relative;
