@@ -1,5 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Settings, CircleHelp, AlarmBell, CalendarCheck, Menu } from '@/components/ui/icons';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
@@ -71,6 +71,11 @@ export const TabBar = React.memo<TabBarProps>(({
 
   const isRtl = locale === 'ar';
 
+  // Référence du menu et gestion gestuelle (On Drag / Swipe pour refermer)
+  const navRef = useRef<HTMLElement>(null);
+  const dragStartXRef = useRef<number | null>(null);
+  const [dragDelta, setDragDelta] = useState<number>(0);
+
   const goTo = useCallback((tab: TabType) => {
     selection();
     onTabChange(tab);
@@ -83,6 +88,47 @@ export const TabBar = React.memo<TabBarProps>(({
     if (id === 'settings') return copy.settingsMobile ?? copy.settings;
     return copy[id];
   }, [copy]);
+
+  // Fermeture au clic à l'extérieur (Close when clicking outside)
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        onToggleExpanded();
+      }
+    };
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [isExpanded, onToggleExpanded]);
+
+  // Gestion gestuelle tactile du menu latéral (On Drag to Close)
+  const handleSidebarTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isExpanded) return;
+    dragStartXRef.current = e.touches[0].clientX;
+  }, [isExpanded]);
+
+  const handleSidebarTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isExpanded || dragStartXRef.current === null) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - dragStartXRef.current;
+    // En LTR, glissement vers la gauche (diff < 0). En RTL, glissement vers la droite (diff > 0).
+    const closingDelta = isRtl ? Math.max(0, diff) : Math.min(0, diff);
+    // Limite l'effet visuel élastique
+    const clamped = isRtl ? Math.min(closingDelta, 100) : Math.max(closingDelta, -100);
+    setDragDelta(clamped);
+  }, [isExpanded, isRtl]);
+
+  const handleSidebarTouchEnd = useCallback(() => {
+    if (!isExpanded) return;
+    const threshold = 40;
+    const shouldClose = isRtl ? dragDelta > threshold : dragDelta < -threshold;
+    if (shouldClose) {
+      impact('medium');
+      onToggleExpanded();
+    }
+    dragStartXRef.current = null;
+    setDragDelta(0);
+  }, [dragDelta, impact, isExpanded, isRtl, onToggleExpanded]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -104,15 +150,49 @@ export const TabBar = React.memo<TabBarProps>(({
 
   return (
     <>
-      {/* Barre latérale classeur / cahier de textes */}
-      <nav
-        className={cn(
-          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-white/65 dark:bg-[#16171d]/70 text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px] border border-white/60 dark:border-white/10 shadow-[4px_0_28px_rgba(39,35,31,0.08)] dark:shadow-[4px_0_28px_rgba(0,0,0,0.42)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/50 supports-[backdrop-filter]:dark:bg-[#16171d]/60',
-          isExpanded ? 'w-[252px]' : 'w-[84px]',
-          'transition-[width] duration-200 ease-out',
+      {/* 2. Arrière-plan assombri derrière l'overlay (Add background behind overlay) */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            onClick={() => {
+              impact('light');
+              onToggleExpanded();
+            }}
+            className="fixed inset-0 z-30 bg-stone-950/20 dark:bg-black/55 backdrop-blur-[2.5px] sm:block hidden cursor-pointer select-none"
+            aria-hidden="true"
+          />
         )}
+      </AnimatePresence>
+
+      {/* 1. Barre latérale avec Glassmorphism & Position Top Left / Start */}
+      <nav
+        ref={navRef}
+        className={cn(
+          'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden',
+          // Glassmorphism translucide avec background blur et fine bordure intérieure (1px)
+          'bg-white/75 dark:bg-[#16171d]/80 backdrop-blur-[28px] backdrop-saturate-150',
+          'border-e border-stone-200/60 dark:border-white/10 ring-1 ring-inset ring-white/50 dark:ring-white/5',
+          'shadow-[6px_0_32px_rgba(0,0,0,0.06)] dark:shadow-[6px_0_32px_rgba(0,0,0,0.5)]',
+          'text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px]',
+          isExpanded ? 'w-[252px]' : 'w-[84px]',
+          'transition-[width] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        )}
+        style={{
+          transform: dragDelta ? `translateX(${dragDelta}px)` : undefined,
+          transition: dragDelta ? 'none' : 'transform 200ms ease, width 250ms cubic-bezier(0.16,1,0.3,1)',
+        }}
+        onTouchStart={handleSidebarTouchStart}
+        onTouchMove={handleSidebarTouchMove}
+        onTouchEnd={handleSidebarTouchEnd}
         aria-label={copy.mainNav}
       >
+        {/* Ligne spéculaire de réfraction de verre latérale */}
+        <div className="pointer-events-none absolute inset-y-8 end-0 w-[1px] bg-gradient-to-b from-transparent via-stone-300/40 dark:via-white/10 to-transparent" aria-hidden="true" />
+
         {/* En-tête */}
         <div
           className={cn(
@@ -120,60 +200,85 @@ export const TabBar = React.memo<TabBarProps>(({
             isExpanded ? 'justify-start' : 'justify-center'
           )}
         >
-          <button
+          <motion.button
             type="button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-stone-100/90 dark:bg-white/10 text-stone-600 dark:text-stone-300 hover:bg-stone-200/80 transition-colors shadow-2xs"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-stone-100/90 hover:bg-stone-200/80 dark:bg-white/10 dark:hover:bg-white/15 text-stone-700 dark:text-stone-200 transition-colors shadow-2xs ring-1 ring-black/5 dark:ring-white/10"
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
-            <Menu className="h-5 w-5" />
-          </button>
+            <Menu className="h-5 w-5 stroke-[2]" />
+          </motion.button>
 
-          <div className={cn('hidden min-w-0 flex-1 ms-3', isExpanded && 'block')}>
-            <span
-              className={cn(
-                'block truncate font-bold leading-tight text-stone-900 dark:text-stone-100',
-                locale === 'ar' ? 'font-sans text-2xl' : 'font-sans font-bold text-xl'
-              )}
-            >
-              {copy.brand}
-            </span>
-            <span className={cn(
-              "block truncate text-[10px] font-bold tracking-wider text-[#FF6B35] uppercase mt-0.5 font-sans",
-              locale === 'ar' && "text-[12px]"
-            )}>
-              {userName || copy.teacherSpace}
-            </span>
-          </div>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                transition={{ delay: 0.03, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="min-w-0 flex-1 ms-3"
+              >
+                <span
+                  className={cn(
+                    'block truncate font-bold tracking-tight text-stone-900 dark:text-stone-100',
+                    locale === 'ar' ? 'font-sans text-2xl' : 'font-sans font-bold text-xl'
+                  )}
+                >
+                  {copy.brand}
+                </span>
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 truncate text-[10px] font-bold tracking-wider text-[#FF6B35] dark:text-[#FF8252] uppercase mt-1 font-sans bg-[#FF6B35]/10 dark:bg-[#FF6B35]/15 px-2 py-0.5 rounded-md",
+                  locale === 'ar' && "text-[12px]"
+                )}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B35] animate-pulse" aria-hidden="true" />
+                  {userName || copy.teacherSpace}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Éléments de navigation principale */}
+        {/* 4. Apparition en cascade (Staggered Animation) des liens principaux */}
         <div
-          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
+          className="modern-scrollbar mt-6 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-2 ps-4 pe-4"
         >
-          {tabs.map((tab) => {
+          {tabs.map((tab, idx) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const count = tab.id === 'evaluations' ? badgeCount : tab.id === 'notifications' ? (notificationsCount && notificationsCount > 0 ? notificationsCount : 3) : undefined;
+            const staggerDelay = 0.04 * (idx + 1);
 
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 type="button"
+                whileTap={{ scale: 0.98 }}
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'sidebar-stagger-item group relative flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+                  'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
-                    ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
-                    : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
+                    ? 'font-bold'
+                    : 'text-stone-400 hover:text-stone-700 hover:bg-stone-100/60 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
                 )}
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                {/* Pastille dynamique animée */}
+                {isActive && (
+                  <motion.div
+                    layoutId="desktop-sidebar-active-pill"
+                    className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
+                  />
+                )}
+
+                <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
                   <Icon
                     className={cn(
                       'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
@@ -183,50 +288,71 @@ export const TabBar = React.memo<TabBarProps>(({
                     )}
                   />
                   {count ? (
-                    <span
-                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#EF4444] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#16171d] shadow-xs"
+                    <motion.span
+                      initial={{ scale: 0.7, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-rose-600 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#16171d] shadow-[0_2px_8px_rgba(239,68,68,0.35)] tabular-nums"
                     >
                       {countLabel(count)}
-                    </span>
+                    </motion.span>
                   ) : null}
                 </div>
 
-                <span
-                  className={cn(
-                    'hidden min-w-0 flex-1 truncate text-start text-[13px] leading-normal transition-all duration-150 ms-3',
-                    locale === 'ar' && 'text-[15px]',
-                    isExpanded && 'block',
-                    isActive ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.span
+                      initial={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                      transition={{ delay: staggerDelay, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                      className={cn(
+                        'relative z-10 min-w-0 flex-1 truncate text-start text-[13px] leading-normal ms-3',
+                        locale === 'ar' && 'text-[15px]',
+                        isActive ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                      )}
+                    >
+                      {copy[tab.id]}
+                    </motion.span>
                   )}
-                >
-                  {copy[tab.id]}
-                </span>
-              </button>
+                </AnimatePresence>
+              </motion.button>
             );
           })}
         </div>
 
-        {/* Section inférieure : Paramètres & Guide */}
+        {/* Section inférieure : Paramètres & Guide en cascade */}
         <div
           className="mt-auto flex shrink-0 flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom,1rem))] ps-4 pe-4"
         >
-          <button
+          {/* Ligne de séparation subtile */}
+          <div className="mx-2 mb-1 h-px bg-gradient-to-r from-transparent via-stone-200/70 dark:via-white/10 to-transparent" aria-hidden="true" />
+
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.98 }}
             onClick={() => goTo('settings')}
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
-                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
-                : 'bg-transparent text-stone-400 hover:text-stone-700 hover:bg-stone-50 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
+                ? 'font-bold'
+                : 'text-stone-400 hover:text-stone-700 hover:bg-stone-100/60 dark:text-stone-500 dark:hover:text-stone-200 dark:hover:bg-white/5 font-medium',
             )}
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
-            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+            {activeTab === 'settings' && (
+              <motion.div
+                layoutId="desktop-sidebar-active-pill"
+                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
+              />
+            )}
+
+            <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
               <Settings
                 className={cn(
                   'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
@@ -236,32 +362,48 @@ export const TabBar = React.memo<TabBarProps>(({
                 )}
               />
             </div>
-            <span
-              className={cn(
-                'hidden flex-1 truncate text-start text-[13px] leading-normal ms-3',
-                locale === 'ar' && 'text-[15px]',
-                isExpanded && 'block',
-                activeTab === 'settings' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.span
+                  initial={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                  transition={{ delay: 0.04 * 4, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className={cn(
+                    'relative z-10 flex-1 truncate text-start text-[13px] leading-normal ms-3',
+                    locale === 'ar' && 'text-[15px]',
+                    activeTab === 'settings' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                  )}
+                >
+                  {copy.settings}
+                </motion.span>
               )}
-            >
-              {copy.settings}
-            </span>
-          </button>
+            </AnimatePresence>
+          </motion.button>
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.98 }}
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'sidebar-stagger-item group flex h-11 w-full cursor-pointer items-center rounded-2xl transition-all duration-150 hover:bg-stone-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40 active:scale-[0.98]',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-stone-100/60 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'help'
-                ? 'bg-[#FEECE7] text-[#DE5B38] dark:bg-[#38221D] dark:text-[#F87171] font-bold shadow-xs'
-                : 'bg-transparent text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 font-medium'
+                ? 'font-bold'
+                : 'text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 font-medium'
             )}
             aria-label={copy.help}
           >
-            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+            {activeTab === 'help' && (
+              <motion.div
+                layoutId="desktop-sidebar-active-pill"
+                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
+              />
+            )}
+
+            <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center">
               <CircleHelp className={cn(
                 'h-5 w-5 shrink-0 transition-all',
                 activeTab === 'help'
@@ -269,17 +411,24 @@ export const TabBar = React.memo<TabBarProps>(({
                   : 'stroke-[1.75] text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200'
               )} />
             </div>
-            <span
-              className={cn(
-                'hidden flex-1 truncate text-start text-[13px] leading-normal font-medium ms-3',
-                locale === 'ar' && 'text-[15px]',
-                isExpanded && 'block',
-                activeTab === 'help' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.span
+                  initial={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: isRtl ? 15 : -15 }}
+                  transition={{ delay: 0.04 * 5, duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className={cn(
+                    'relative z-10 flex-1 truncate text-start text-[13px] leading-normal font-medium ms-3',
+                    locale === 'ar' && 'text-[15px]',
+                    activeTab === 'help' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                  )}
+                >
+                  {copy.help}
+                </motion.span>
               )}
-            >
-              {copy.help}
-            </span>
-          </button>
+            </AnimatePresence>
+          </motion.button>
         </div>
       </nav>
 
@@ -315,8 +464,8 @@ export const TabBar = React.memo<TabBarProps>(({
                 {isActive && (
                   <motion.div
                     layoutId="mobile-tab-active-pill"
-                    className="absolute inset-x-0.5 inset-y-1 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
-                    transition={{ type: 'spring', stiffness: 450, damping: 32, mass: 0.8 }}
+                    className="absolute inset-x-0.5 inset-y-1 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
                   />
                 )}
 
@@ -366,8 +515,8 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'settings' && (
               <motion.div
                 layoutId="mobile-tab-active-pill"
-                className="absolute inset-x-0.5 inset-y-1 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
-                transition={{ type: 'spring', stiffness: 450, damping: 32, mass: 0.8 }}
+                className="absolute inset-x-0.5 inset-y-1 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}
 

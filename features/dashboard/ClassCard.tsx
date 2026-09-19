@@ -212,10 +212,10 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
-                isDoubleColumn ? "min-h-[118px] sm:min-h-[126px]" : "min-h-[110px] sm:min-h-[118px]",
+                isDoubleColumn ? "min-h-[132px] sm:min-h-[144px]" : "min-h-[126px] sm:min-h-[136px]",
                 isActiveSession && "ring-2 ring-stone-900 dark:ring-white z-10"
             )}
         >
@@ -228,43 +228,41 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
             />
 
-            {/* Tache de peinture : décor de fond, jamais cliquable ni annoncé. */}
-            <span className="card-texture" data-texture={theme.texture} aria-hidden="true" />
+            {/* Tache de peinture : décor de fond très doux, jamais cliquable ni annoncé. */}
+            <span className="card-texture opacity-30 dark:opacity-20" data-texture={theme.texture} aria-hidden="true" />
 
-            {/* Partie supérieure : Badge placé haut, Réglages, Titre compacté et remonté */}
-            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-2.5 sm:pt-4 sm:px-5 sm:pb-3 pointer-events-none">
-                {/* Ligne haute : Badge de niveau & Bouton Réglages */}
-                <div className="flex items-center justify-between gap-2">
+            {/* Partie supérieure : Badge placé haut, Réglages, Titre harmonieux */}
+            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-2.5 sm:pt-4 sm:px-4.5 sm:pb-3 pointer-events-none">
+                {/* Ligne haute : Badge de niveau standardisé & Bouton Réglages */}
+                <div className="flex items-center justify-between gap-2 min-h-[26px]">
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {identity.tierLabel ? (
                             <ClassLevelBadge
                                 label={identity.tierLabel}
-                                style={theme.badgeStyle}
-                                textStyle={theme.badgeTextStyle}
+                                tierKey={identity.tierKey}
+                                themeTone={theme.texture}
                             />
                         ) : null}
 
                         {isActiveSession && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-stone-900 text-white shadow-2xs">
-                                <span className="h-1.5 w-1.5 rounded-full bg-white inline-block animate-ping" />
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-2xs">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
                                 <span>{locale === 'ar' ? 'جلسة جارية' : 'En direct'}</span>
                             </span>
                         )}
                     </div>
 
-                    {/* Menu de la classe : réglages et suppression au même endroit.
-                        Le contenu est rendu dans un portail, donc jamais rogné
-                        par le `overflow-hidden` de la carte. */}
+                    {/* Menu de la classe : réglages et suppression au même endroit. */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="pointer-events-auto flex size-9 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-600 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+                                className="pointer-events-auto flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
-                                <MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                                <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-[10.5rem]">
@@ -285,12 +283,15 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </DropdownMenu>
                 </div>
 
-                {/* Titre remonté vers le haut, plus serré et compact */}
-                <div className="mt-1 sm:mt-1.5">
-                    <h3 className={cn("text-fluid-lg font-sans font-semibold leading-snug line-clamp-2 tracking-[-0.01em]", theme.titleColor)}>
+                {/* Titre de la classe : aligné, avec filigrane noble à côté du titre */}
+                <div className="mt-2.5 sm:mt-3">
+                    <h3 className={cn("font-sans text-[15px] sm:text-lg font-bold leading-snug line-clamp-2 tracking-tight flex items-baseline flex-wrap", theme.titleColor)}>
                         <span>{cardTitle}</span>
                         {identity.tierLabel && identity.group ? (
-                            <ClassGroupWatermark group={groupNumber || identity.group} label={formatClassGroupLabel(identity.group, locale)} />
+                            <ClassGroupWatermark
+                                group={groupNumber || identity.group}
+                                label={formatClassGroupLabel(identity.group, locale)}
+                            />
                         ) : null}
                         <span className="sr-only">{identity.full}</span>
                     </h3>
@@ -301,8 +302,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
             {/* Pied de carte : Date/Statut d'ouverture plus serré et compact */}
-            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-5 sm:py-2.5 pointer-events-none">
-                <span className="text-fluid-xs font-medium tracking-wide text-stone-500/80 dark:text-stone-400/80 line-clamp-1">
+            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-4.5 sm:py-2.5 pointer-events-none">
+                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/90 dark:text-stone-400/90 line-clamp-1">
                     {subtext}
                 </span>
             </div>

@@ -69,7 +69,7 @@ const TEXTS: Record<ModalLang, OnboardingCopy> = {
         step: (current, total) => `Étape ${current} sur ${total}`,
         cycleLabels: { college: 'Collège', lycee: 'Lycée qualifiant', prepa: 'Prépa' },
         cycleDescriptions: { college: '1AC à 3AC', lycee: 'TC, 1BAC, 2BAC', prepa: 'CPGE (1ère & 2ème année)' },
-        levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1re Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires', prepaFirst: '1re année CPGE', prepaSecond: '2e année CPGE' },
+        levelGroupLabels: { college: 'Collège', common: 'Tronc commun', firstBac: '1er Bac', secondBac: '2e Bac', prepa: 'Classes préparatoires', prepaFirst: '1re année CPGE', prepaSecond: '2e année CPGE' },
         selectBranchesHint: 'Cochez vos filières et cliquez sur vos groupes pour ajouter vos classes instantanément.',
         prepaPathHint: 'Parcours : MPSI → MP · PCSI → PSI · TSI, ECS et ECT sur deux années.',
         noClassSelectedYet: 'Aucune classe configurée pour le moment.',

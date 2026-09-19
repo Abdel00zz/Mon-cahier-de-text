@@ -2,7 +2,7 @@ import { AppLocale, ScheduleSlot } from '../types.js';
 // Attribut d'import obligatoire côté Node/ESM (fonctions Vercel) : sans lui,
 // le runtime lève ERR_IMPORT_ATTRIBUTE_MISSING et la fonction plante au
 // chargement. Vite inline le JSON côté navigateur en le respectant aussi.
-import calendarJson from '../data/vacances-jourferie.json' with { type: 'json' };
+import calendarJson from '../public/vacances-jourferie.json' with { type: 'json' };
 
 export interface FerieEntry {
     date: string;

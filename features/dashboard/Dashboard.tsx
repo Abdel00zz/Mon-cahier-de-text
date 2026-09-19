@@ -253,7 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-[540px] mx-auto auto-rows-fr items-stretch'
-        : 'grid-cols-1 sm:grid-cols-2 auto-rows-fr items-stretch justify-start';
+        : 'grid-cols-1 min-[360px]:grid-cols-2 auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -297,22 +297,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-6 sm:mb-8">
-                            <div className="flex flex-wrap items-end justify-between gap-4">
-                                <div className="space-y-1">
-                                    <h1 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-[1.15]">
+                        <div className="mb-4 sm:mb-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                                <div>
+                                    <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
                                         {t('dashboard.classes')}
                                     </h1>
-                                    <p className="font-sans text-sm sm:text-base text-stone-600 dark:text-stone-300 font-normal leading-relaxed max-w-xl">
-                                        {locale === 'ar'
-                                            ? 'دفاتر النصوص، التدرج البيداغوجي وحصصك اليومية.'
-                                            : locale === 'en'
-                                                ? 'Notebooks, curriculum tracking, and your daily sessions.'
-                                                : 'Cahiers de textes, suivi de progression et vos séances.'}
-                                    </p>
                                 </div>
 
-                                <div className="flex items-center gap-2.5 sm:gap-3 ms-auto pb-0.5">
+                                <div className="flex items-center gap-2 sm:gap-3 ms-auto">
                                     {/* Bouton blanc élégant « 2 par ligne » avec petite flèche, hauteur 40px et coins rounded-lg */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button
@@ -433,7 +426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-5 sm:gap-6 lg:gap-7`}>
+                                    <div className={`grid ${classGridClass} w-full gap-2.5 sm:gap-4 lg:gap-5`}>
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (

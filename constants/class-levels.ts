@@ -69,7 +69,7 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
   fr: {
     college: 'Collège',
     common: 'Tronc commun',
-    firstBac: '1re Bac',
+    firstBac: '1er Bac',
     secondBac: '2e Bac',
     prepa: 'Prépa',
     prepaFirst: '1re année CPGE',

@@ -433,7 +433,7 @@ const App: React.FC = () => {
       )}
       <div
         data-settings-sheet-open={view === 'settings' || view === 'notifications' ? 'true' : 'false'}
-        className={`app-settings-parent relative min-h-dvh overflow-x-clip transition-all ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
+        className={`app-settings-parent relative min-h-dvh overflow-x-clip transition-[padding] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${showNavigation ? 'pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] sm:pb-10' : ''} ${showNavigation ? (isRtl ? (isSidebarExpanded ? 'sm:pr-[252px]' : 'sm:pr-[84px]') : (isSidebarExpanded ? 'sm:pl-[252px]' : 'sm:pl-[84px]')) : ''}`}
       >
         <div key={routeKey} className="relative z-10 min-h-dvh">
           <Suspense fallback={routeFallback}>

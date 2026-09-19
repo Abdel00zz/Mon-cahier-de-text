@@ -92,10 +92,7 @@ export function useSessionAlerts(enabled = true) {
         const names = event.classIds.map(id => classes.find(item => item.id === id)?.name ?? '').join(', ');
         const message = event.kind === 'end' ? t('sessionAlert.endSoonBody', { classes: names }) : t('sessionAlert.missingDateMany', { count: event.classIds.length, classes: names });
         const title = t(event.kind === 'end' ? 'sessionAlert.endSoonTitle' : 'sessionAlert.missingDateTitle');
-        const hash = event.classIds.length === 1
-          ? `#/classe/${encodeURIComponent(event.classIds[0])}`
-          : '#/notifications';
-        const url = `/${hash}`;
+        const url = event.classIds.length === 1 ? `/#/classe/${encodeURIComponent(event.classIds[0])}` : '/#/notifications';
         if (document.visibilityState === 'visible') {
           toast(title, {
             id: event.id, description: message, duration: 10000,
