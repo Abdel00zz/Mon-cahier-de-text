@@ -29,7 +29,7 @@ const FEATURE_ICONS = [PenLine, CalendarDays, Cloud];
 export const AuthShowcase = memo(({ locale }: { locale: 'fr' | 'ar' }) => {
   const copy = COPY[locale];
   return (
-    <aside className="hidden min-w-0 flex-col justify-center border-e border-border bg-muted/40 p-8 lg:flex xl:p-12">
+    <aside className="auth-artisan-showcase hidden min-w-0 flex-col justify-center border-e border-border bg-muted/40 p-8 lg:flex xl:p-12">
       <div className="mx-auto w-full max-w-xl space-y-7">
         <span className="inline-flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-300">
           <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />{copy.badge}
