@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────�����������������������������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�������������������������������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1553,7 +1553,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .modal-pro-header { gap: 0.35rem; }
   .modal-pro-header [data-ui-title] { font-family: 'IBM Plex Sans Arabic', var(--font-sans), sans-serif; font-size: clamp(1rem, 1.6vw, 1.18rem); font-weight: 700; line-height: 1.45; }
-  .modal-pro-header [data-ui-title]::before { content: ""; display: inline-block; width: 0.35rem; height: 1.05em; margin-inline-end: 0.55rem; vertical-align: -0.12em; border-radius: 999px; background: hsl(155 45% 32%); }
   .modal-pro-header [data-description] { max-width: 42rem; }
   .modal-pro-footer { gap: 0.75rem; background: hsl(var(--muted) / 0.22); }
   .modal-pro-footer > * { min-height: 2.75rem; }
@@ -1567,13 +1566,11 @@ html[data-keyboard='open'] .mobile-tab-bar {
     .modal-pro-surface { width: calc(100vw - 1rem); max-height: calc(100dvh - 0.5rem); margin-inline: 0.5rem; border-radius: 1.25rem 1.25rem 0 0; }
     .modal-pro-header { padding-inline: 1rem; padding-block: 1rem 0.75rem; }
     .modal-pro-header [data-ui-title] { font-size: 1rem; }
-    .modal-pro-header [data-ui-title]::before { margin-inline-end: 0.4rem; }
     .modal-body { padding-inline: 1rem; padding-block: 1rem; }
     .modal-pro-footer { padding-inline: 1rem; }
     .modal-pro-footer > * { min-height: 2.75rem; width: 100%; }
   }
   .dark .modal-pro-surface { box-shadow: 0 32px 80px -32px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.06); }
-  .dark .modal-pro-header [data-ui-title]::before { background: hsl(155 45% 55%); }
 
   /* Zones d'information : deux lignes lisibles, icône forte, décor minimal. */
   .info-alert-futuristic {
