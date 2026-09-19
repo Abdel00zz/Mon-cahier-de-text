@@ -552,9 +552,9 @@ html[lang="ar"] .keep-class-title {
   html[lang="ar"] [data-dashboard-root] h2,
   html[lang="ar"] [data-pilotage-root] h1,
   html[lang="ar"] [data-pilotage-root] h2,
-  html[lang="ar"] .modal-header h2,
+html[lang="ar"] .modal-header h2,
   html[lang="ar"] .modal-header h3 {
-    font-family: 'Lateef', 'Amiri', serif;
+  font-family: 'Lateef', 'IBM Plex Sans Arabic', serif;
     letter-spacing: normal;
     line-height: 1.35;
   }
@@ -1310,7 +1310,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Présentation native des Paramètres ─────────────��─��─────��─────���────── */
+/* ── Présentation native des Paramètres ────���────────��─��─────��─────���────── */
 
 .app-settings-parent {
   transform-origin: 50% 0;
@@ -1555,8 +1555,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   padding: 0.65rem 0.75rem 0.8rem;
   }
   .dashboard-artisan-header h1 {
-  font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), var(--font-serif), serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-maghribi-ar, 'Maghribi Font 3'), 'Lateef', serif;
+  letter-spacing: 0.01em;
   }
   .artisan-display-trigger {
   background: hsl(var(--card) / 0.82);
@@ -1628,7 +1628,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   pointer-events: none;
   }
   .artisanal-button:hover::after { opacity: 0.18; }
-  html[lang="ar"] .artisanal-button { font-family: var(--font-maghribi-ar), var(--font-sans); line-height: 1.5; }
+  html[lang="ar"] .artisanal-button { font-family: 'IBM Plex Sans Arabic', var(--font-sans); line-height: 1.5; }
 
   /* Les surfaces modales partagent le même cadre ivoire et liseré zellige. */
   [role="dialog"],
@@ -1655,7 +1655,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .modal-header, .modal-footer { position: relative; }
   .modal-header, .modal-footer { border: 0; }
-  html[lang="ar"] [role="dialog"] { font-family: var(--font-maghribi-ar), var(--font-sans); line-height: 1.7; }
+  html[lang="ar"] [role="dialog"] { font-family: 'IBM Plex Sans Arabic', var(--font-sans); line-height: 1.7; }
   html[lang="ar"] [role="dialog"] button { letter-spacing: 0; }
   .dark [role="dialog"] { box-shadow: 0 24px 70px -28px hsl(0 0% 0% / 0.6), inset 0 0 0 1px hsl(42 52% 60% / 0.08); }
 
@@ -1716,8 +1716,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .class-title-artisan {
   position: relative;
   z-index: 3;
-  font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), var(--font-sans), sans-serif;
-  letter-spacing: -0.015em;
+  font-family: var(--font-maghribi-ar, 'Maghribi Font 3'), 'Lateef', serif;
+  letter-spacing: 0.01em;
   text-wrap: balance;
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.48);
   }
@@ -1761,7 +1761,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   border-radius: 0.75rem;
   }
   body:has(.card-andalusian[dir="rtl"]) .keep-class-title {
-  font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), sans-serif;
+  font-family: var(--font-maghribi-ar, 'Maghribi Font 3'), 'Lateef', serif;
   font-weight: 600;
   line-height: 1.65;
   letter-spacing: 0;
@@ -2122,7 +2122,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
 /* ══════════════════════════════════════════════════════════════���════════
    POLICE MAGHRIBI - FALLBACK LOCAL
-   ═══════════════════════════════════════════════════════════════════════
+   ══════════════════════════════════════════════════════���════════════════
    
    Police locale "maghribi-font 3" (المغربي المبسوط) disponible dans /public
    
