@@ -221,7 +221,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
+                "group card-andalusian relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[145px] sm:min-h-[160px]" : "min-h-[140px] sm:min-h-[152px]",
@@ -237,8 +237,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 className="absolute inset-0 z-10 w-full h-full cursor-pointer rounded-[inherit] outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
             />
 
-            {/* Filigrane typographique original : une touche de calligraphie, sans image importée. */}
-            <span className="card-script-mark font-maghribi" aria-hidden="true">اقرأ · اكتب · تعلّم</span>
             {/* Tache de peinture : décor de fond très doux, jamais cliquable ni annoncé. */}
             <span className="card-texture opacity-30 dark:opacity-20" data-texture={theme.texture} aria-hidden="true" />
 
@@ -288,7 +286,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre complet de la classe : niveau + filière + groupe combinés */}
                 <div className="mt-2.5 sm:mt-3">
-                    <h3 className={cn("keep-class-title font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.4] line-clamp-2 flex items-baseline flex-wrap gap-1", theme.titleColor)}>
+                    <h3 className={cn("keep-class-title min-w-0 break-words whitespace-normal font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.35] flex items-baseline flex-wrap gap-x-1 gap-y-0.5", theme.titleColor)}>
                         <span>{fullTitle}</span>
                         {identity.group && groupNumber && (
                             <ClassGroupWatermark

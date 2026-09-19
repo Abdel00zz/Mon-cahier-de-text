@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────���─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�����─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1544,28 +1544,41 @@ html[data-keyboard='open'] .mobile-tab-bar {
   background-size: 44% 62%, 50% 66%, 30% 44%;
   }
 
-  /* Signature calligraphique légère : l'identité vient du texte et de la matière, pas d'une image. */
-  .card-script-mark {
+  /* Cadre inspiré des zelliges andalous : double liseré, rosace très subtile et tons terre/vert. */
+  .card-andalusian {
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--keep-accent, #0f766e) 24%, var(--keep-border, #d6d0c7));
+  background-image:
+    linear-gradient(135deg, color-mix(in srgb, var(--keep-accent, #0f766e) 5%, transparent) 25%, transparent 25%),
+    linear-gradient(225deg, color-mix(in srgb, var(--keep-accent, #0f766e) 5%, transparent) 25%, transparent 25%);
+  background-size: 18px 18px;
+  background-position: 0 0, 9px 9px;
+  }
+  .card-andalusian::before {
+  content: "";
   position: absolute;
-  right: -0.45rem;
-  bottom: 1.9rem;
+  inset: 6px;
   z-index: 1;
   pointer-events: none;
-  white-space: nowrap;
-  font-size: clamp(1.25rem, 3vw, 1.9rem);
-  line-height: 1;
-  letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--keep-accent, #0f766e) 42%, transparent);
-  opacity: 0.22;
-  transform: rotate(-7deg);
-  transition: transform 220ms ease, opacity 220ms ease;
+  border: 1px solid color-mix(in srgb, var(--keep-accent, #0f766e) 14%, transparent);
+  border-radius: inherit;
+  opacity: 0.8;
   }
-  .group:hover .card-script-mark { opacity: 0.34; transform: rotate(-4deg) translateX(-0.2rem); }
-  .dark .card-script-mark { opacity: 0.18; color: color-mix(in srgb, var(--keep-accent, #99f6e4) 48%, transparent); }
-  .dark .group:hover .card-script-mark { opacity: 0.28; }
+  .card-andalusian::after {
+  content: "✦";
+  position: absolute;
+  top: 0.45rem;
+  left: 0.7rem;
+  z-index: 2;
+  color: color-mix(in srgb, var(--keep-accent, #0f766e) 42%, transparent);
+  font-size: 0.7rem;
+  pointer-events: none;
+  }
+  [dir="rtl"] .card-andalusian::after { left: auto; right: 0.7rem; }
+  .dark .card-andalusian::before { border-color: color-mix(in srgb, var(--keep-accent, #99f6e4) 20%, transparent); }
 
-  [dir="rtl"] .card-script-mark { right: auto; left: -0.45rem; transform: rotate(7deg); }
-  [dir="rtl"] .group:hover .card-script-mark { transform: rotate(4deg) translateX(0.2rem); }
+  /* Les noms longs restent entièrement lisibles, notamment en arabe. */
+  .keep-class-title { overflow-wrap: anywhere; hyphens: auto; }
 
   .dark .keep-surface {
     --keep-border: #3f4348;
