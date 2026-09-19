@@ -252,7 +252,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
-        ? 'grid-cols-1 max-w-[540px] mx-auto auto-rows-fr items-stretch'
+        ? 'grid-cols-1 max-w-[500px] mx-auto auto-rows-fr items-stretch'
         : 'grid-cols-1 min-[360px]:grid-cols-2 auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
@@ -297,31 +297,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-4 sm:mb-6">
-                            <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                        <div className="mb-3 sm:mb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
                                 <div>
-                                    <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
+                                    <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>
 
-                                <div className="flex items-center gap-2 sm:gap-3 ms-auto">
-                                    {/* Bouton blanc élégant « 2 par ligne » avec petite flèche, hauteur 40px et coins rounded-lg */}
+                                <div className="flex items-center gap-1.5 sm:gap-2 ms-auto">
+                                    {/* Bouton « 2 par ligne » compact, serré et moins arrondi (rounded-md) */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="flex h-10 items-center gap-1.5 rounded-lg border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-4 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 shadow-xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all"
+                                            className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-2.5 sm:px-3 text-xs font-medium text-stone-700 dark:text-stone-200 shadow-2xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all active:scale-[0.98]"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-3.5 w-3.5 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                            <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isDisplayMenuOpen && (
                                             <div
                                                 role="menu"
-                                                className="absolute top-[calc(100%+0.35rem)] end-0 z-30 w-44 overflow-hidden rounded-lg border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1.5 shadow-lg"
+                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-38 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
                                             >
                                                 {CLASS_DISPLAY_OPTIONS.map(option => {
                                                     const isActive = option === currentDisplay;
@@ -335,7 +335,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 setClassDisplayMode(option);
                                                                 setDisplayMenuOpen(false);
                                                             }}
-                                                            className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-start text-xs sm:text-sm font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
+                                                            className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
                                                         >
                                                             <span>{displayCopy(option).label}</span>
                                                         </button>
@@ -345,15 +345,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )}
                                     </div>
 
-                                    {/* Bouton attractif « + Classe » inspiré de l'image (violet vif ou noir premium, hauteur 40px, rounded-lg, padding 20px) */}
+                                    {/* Bouton attractif « + Classe » compact, serré et moins arrondi (rounded-md) */}
                                     <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="flex h-10 items-center gap-2 rounded-lg bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
+                                        className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold text-white shadow-2xs hover:shadow-xs hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
                                     >
-                                        <Plus className="h-4 w-4 stroke-[2.5]" />
+                                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
                                     </button>
                                 </div>
@@ -426,7 +426,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-2.5 sm:gap-4 lg:gap-5`}>
+                                    <div className={`grid ${classGridClass} w-full gap-2 sm:gap-2.5 lg:gap-3`}>
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (

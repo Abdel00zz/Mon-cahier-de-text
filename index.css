@@ -1415,6 +1415,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   /*
    * Numéro de classe moderne et élégant à côté du titre.
    * Typographie contemporaine géométrique, proportionnée, chic et sans boîte.
+   * Couleur cohérente avec le badge/thème de la carte.
    */
   .keep-group-watermark {
     display: inline-flex;
@@ -1429,14 +1430,33 @@ html[data-keyboard='open'] .mobile-tab-bar {
     margin-inline-start: 0.4rem;
     user-select: none;
     white-space: nowrap;
-    color: currentColor;
-    opacity: 0.82;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0.92;
+    transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
   }
 
-  .dark .keep-group-watermark {
-    color: currentColor;
-    opacity: 0.88;
+  .keep-group-watermark[data-tone="sand"] {
+    color: #b45309;
+  }
+  .dark .keep-group-watermark[data-tone="sand"] {
+    color: #fcd34d;
+  }
+  .keep-group-watermark[data-tone="mint"] {
+    color: #047857;
+  }
+  .dark .keep-group-watermark[data-tone="mint"] {
+    color: #6ee7b7;
+  }
+  .keep-group-watermark[data-tone="sky"] {
+    color: #0369a1;
+  }
+  .dark .keep-group-watermark[data-tone="sky"] {
+    color: #7dd3fc;
+  }
+  .keep-group-watermark[data-tone="lavender"] {
+    color: #7e22ce;
+  }
+  .dark .keep-group-watermark[data-tone="lavender"] {
+    color: #d8b4fe;
   }
 
   /*
@@ -1538,7 +1558,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
    * police créative géométrique (Outfit / Alexandria), proportions serrées et harmonieuses.
    */
   /*
-   * Badge de palier raffiné et compact : hauteur réduite, texte plus fin et proportionné.
+   * Badge de palier raffiné, translucide et compact : hauteur réduite, coins sobres et moins arrondis (3px).
    */
   .keep-level-badge {
     display: inline-flex;
@@ -1547,7 +1567,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     max-width: 100%;
     min-height: 1.3rem;
     padding: 0.06rem 0.45rem 0.12rem;
-    border-radius: 4px;
+    border-radius: 3px;
     font-family: 'Space Grotesk', 'Outfit', 'Alexandria', var(--font-sans);
     font-size: 0.6875rem;
     font-weight: 600;
@@ -1562,7 +1582,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
     padding: 0.04rem 0.35rem 0.08rem;
     font-size: 0.625rem;
     line-height: 1.25;
-    border-radius: 3px;
+    border-radius: 2px;
     overflow: visible;
   }
 

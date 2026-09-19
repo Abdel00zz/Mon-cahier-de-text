@@ -291,6 +291,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <ClassGroupWatermark
                                 group={groupNumber || identity.group}
                                 label={formatClassGroupLabel(identity.group, locale)}
+                                themeTone={theme.texture}
+                                tierKey={identity.tierKey}
                             />
                         ) : null}
                         <span className="sr-only">{identity.full}</span>
@@ -301,7 +303,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Ligne séparatrice fine */}
             <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
-            {/* Pied de carte : Date/Statut d'ouverture plus serré et compact */}
+            {/* Pied de carte : Date/Statut d'ouverture */}
             <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-4.5 sm:py-2.5 pointer-events-none">
                 <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/90 dark:text-stone-400/90 line-clamp-1">
                     {subtext}

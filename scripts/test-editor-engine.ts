@@ -544,7 +544,7 @@ test('numerotation : une evaluation garde son numero dans son titre, sans pastil
 
 test('identite de classe : palier et filiere deduits du nom, sans jamais rien perdre', () => {
   const physics = classIdentityFor('2ème Bac Sciences Physiques 3', 'fr');
-  assert.equal(physics.tierLabel, '2e Bac');
+  assert.equal(physics.tierLabel, '2éme Bac');
   assert.equal(physics.stream, 'Sciences Physiques');
   assert.equal(physics.group, '3');
 
@@ -600,7 +600,7 @@ test('carte de classe : badge de palier, filiere dessous, nom complet accessible
     } as never),
   }));
   assert.ok(html.includes('data-level-badge'));
-  assert.ok(html.includes('2e Bac'));
+  assert.ok(html.includes('2éme Bac'));
   assert.ok(html.includes('Sciences Physiques'));
   assert.ok(html.includes('keep-group-watermark'));
   // Le nom officiel reste annonce : aucune information n'est perdue a l'ecran.

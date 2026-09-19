@@ -74,11 +74,15 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         {identity.tierLabel ? (
                             <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
-                                <ClassLevelBadge label={identity.tierLabel} compact />
+                                <ClassLevelBadge label={identity.tierLabel} tierKey={identity.tierKey} />
                                 {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
                                 {identity.group && (
-                                    <ClassGroupWatermark group={identity.group} label={formatClassGroupLabel(identity.group, locale)} />
-                                )}
+                                     <ClassGroupWatermark
+                                         group={identity.group}
+                                         label={formatClassGroupLabel(identity.group, locale)}
+                                         tierKey={identity.tierKey}
+                                     />
+                                 )}
                             </span>
                         ) : (
                             <ClassCardTitle name={displayName} compact={!isActiveSession} intro={intro} />

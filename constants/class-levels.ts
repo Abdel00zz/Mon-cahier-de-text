@@ -70,10 +70,10 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
     college: 'Collège',
     common: 'Tronc commun',
     firstBac: '1er Bac',
-    secondBac: '2e Bac',
+    secondBac: '2éme Bac',
     prepa: 'Prépa',
-    prepaFirst: '1re année CPGE',
-    prepaSecond: '2e année CPGE',
+    prepaFirst: '1ère année CPGE',
+    prepaSecond: '2éme année CPGE',
   },
   ar: {
     college: 'الإعدادي',
@@ -265,21 +265,21 @@ const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
   [/^(?:tct|tc\s*technologique|tronc\s+commun\s+technologique)(?![\p{L}\p{N}_])/iu, 'Tronc Commun Technologique'],
 
   // 1er Bac / 1BAC
-  [/^(?:1bac\s*(?:se|sef|biof)|1er\s*bac\s*(?:se|sef|biof)|(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Expérimentales'],
-  [/^(?:1bac\s*(?:sm|smf)|1er\s*bac\s*(?:sm|smf)|(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
-  [/^(?:1bac\s*lsh|1bac\s*l|(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
-  [/^(?:1bac\s*(?:eco|seg|seco)|(?:1bac|1er\s*bac|1ère\s*bac|1re\s*bac|1e\s*bac|1ère\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
+  [/^(?:1bac+?\s*(?:se|sef|biof)|1[eé]r\s*bac+?\s*(?:se|sef|biof)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Expérimentales'],
+  [/^(?:1bac+?\s*(?:sm|smf)|1[eé]r\s*bac+?\s*(?:sm|smf)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
+  [/^(?:1bac+?\s*lsh|1bac+?\s*l|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
+  [/^(?:1bac+?\s*(?:eco|seg|seco)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
 
   // 2ème Bac / 2BAC
-  [/^(?:2bac\s*(?:pc|physique)\s*biof|2bac\s*pc|2ème\s*bac\s*pc|2e\s*bac\s*pc|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
-  [/^(?:2bac\s*svt\s*biof|2bac\s*svt|2ème\s*bac\s*svt|2e\s*bac\s*svt|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
-  [/^(?:2bac\s*sm\s*a|2bac\s*sma|2bac\s*sc\.?\s*maths?\s*a|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac\s*sm\s*b|2bac\s*smb|2bac\s*sc\.?\s*maths?\s*b|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
-  [/^(?:2bac\s*sm|2bac\s*sc\.?\s*maths?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac\s*(?:eco|seco)|2bac\s*sc\.?\s*éco\.?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*économiques?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Économiques'],
-  [/^(?:2bac\s*sgc|2bac\s*sc\.?\s*gestion\s*comptable|2ème\s*bac\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
-  [/^(?:2bac\s*l|2bac\s*lettres?|2ème\s*bac\s*lettres?)(?![\p{L}\p{N}_])/iu, '2ème Bac Lettres'],
-  [/^(?:2bac\s*(?:sh|lsh)|2bac\s*sc\.?\s*humaines?|2ème\s*bac\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
+  [/^(?:2bac+?\s*(?:pc|physique)\s*biof|2bac+?\s*pc|2[èeé]me\s*bac+?\s*pc|2e\s*bac+?\s*pc|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
+  [/^(?:2bac+?\s*svt\s*biof|2bac+?\s*svt|2[èeé]me\s*bac+?\s*svt|2e\s*bac+?\s*svt|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
+  [/^(?:2bac+?\s*sm\s*a|2bac+?\s*sma|2bac+?\s*sc\.?\s*maths?\s*a|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*sm\s*b|2bac+?\s*smb|2bac+?\s*sc\.?\s*maths?\s*b|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
+  [/^(?:2bac+?\s*sm|2bac+?\s*sc\.?\s*maths?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*(?:eco|seco)|2bac+?\s*sc\.?\s*éco\.?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*économiques?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Économiques'],
+  [/^(?:2bac+?\s*sgc|2bac+?\s*sc\.?\s*gestion\s*comptable|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
+  [/^(?:2bac+?\s*l|2bac+?\s*lettres?|2[èeé]me\s*bac+?\s*lettres?)(?![\p{L}\p{N}_])/iu, '2ème Bac Lettres'],
+  [/^(?:2bac+?\s*(?:sh|lsh)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
 ];
 
 export const normalizeOfficialClassName = (name: string): string => {
@@ -309,15 +309,15 @@ export type ClassTierKey =
 /** Réutilise le vocabulaire déjà employé par les sélecteurs de cycle (loi de Jakob). */
 const CLASS_TIER_LABELS: Record<AppLocale, Record<ClassTierKey, string>> = {
   fr: {
-    college1: '1re Collège',
-    college2: '2e Collège',
-    college3: '3e Collège',
+    college1: '1er Collège',
+    college2: '2éme Collège',
+    college3: '3éme Collège',
     common: CLASS_LEVEL_GROUP_LABELS.fr.common,
     firstBac: CLASS_LEVEL_GROUP_LABELS.fr.firstBac,
     secondBac: CLASS_LEVEL_GROUP_LABELS.fr.secondBac,
     prepa: CLASS_LEVEL_GROUP_LABELS.fr.prepa,
-    prepa1: '1re année',
-    prepa2: '2e année',
+    prepa1: '1ère année',
+    prepa2: '2éme année',
   },
   ar: {
     college1: 'الأولى إعدادي',

@@ -393,7 +393,7 @@
         "1BAC LSH",
         "الأولى بكالوريا آداب وعلوم إنسانية"
       ],
-      "libelle": "1re Bac lettres et sciences humaines",
+      "libelle": "1er Bac lettres et sciences humaines",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -486,7 +486,7 @@
         "1ère Bac Sciences Expérimentales",
         "الأولى بكالوريا علوم تجريبية"
       ],
-      "libelle": "1re Bac sciences expérimentales et technologies",
+      "libelle": "1er Bac sciences expérimentales et technologies",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -600,7 +600,7 @@
         "1ère Bac Sciences Mathématiques",
         "الأولى بكالوريا علوم رياضية"
       ],
-      "libelle": "1re Bac sciences mathématiques",
+      "libelle": "1er Bac sciences mathématiques",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -742,7 +742,7 @@
         "الثانية بكالوريا علوم فيزيائية",
         "الثانية بكالوريا علوم الحياة والأرض"
       ],
-      "libelle": "2e Bac sciences expérimentales, branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
+      "libelle": "2éme Bac sciences expérimentales, branches PC et SVT (مذكرة 08-142 : le plan « sciences expérimentales » s'applique aux deux branches issues de la scission ministérielle)",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -861,7 +861,7 @@
         "الثانية بكالوريا علوم رياضية أ",
         "الثانية بكالوريا علوم رياضية ب"
       ],
-      "libelle": "2e Bac sciences mathématiques (A et B)",
+      "libelle": "2éme Bac sciences mathématiques (A et B)",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -999,7 +999,7 @@
         "الثانية بكالوريا علوم اقتصادية",
         "الثانية بكالوريا علوم التدبير المحاسباتي"
       ],
-      "libelle": "2e Bac sciences économiques et gestion",
+      "libelle": "2éme Bac sciences économiques et gestion",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -1115,7 +1115,7 @@
         "الثانية بكالوريا آداب",
         "الثانية بكالوريا علوم إنسانية"
       ],
-      "libelle": "2e Bac lettres et sciences humaines",
+      "libelle": "2éme Bac lettres et sciences humaines",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
@@ -1207,7 +1207,7 @@
         "1BAC SEG",
         "الأولى بكالوريا علوم اقتصادية وتدبير"
       ],
-      "libelle": "1re Bac sciences économiques et gestion",
+      "libelle": "1er Bac sciences économiques et gestion",
       "sourceRef": "ma-men-note-142-08",
       "semestres": [
         {
