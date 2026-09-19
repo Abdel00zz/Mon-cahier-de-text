@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ───────────────────────────────────────────
+/* ── Cibles tactiles des menus ─────────���─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1536,13 +1536,37 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   /* Lilas : deux nappes superposées en bas à gauche, touche discrète en haut. */
   .card-texture[data-texture="lavender"] {
-    background-image:
-      radial-gradient(56% 48% at 50% 50%, rgb(233 213 255 / 0.70), transparent 72%),
-      radial-gradient(62% 52% at 50% 50%, rgb(126 34 206 / 0.29), transparent 63%),
-      radial-gradient(48% 40% at 50% 50%, rgb(126 34 206 / 0.10), transparent 74%);
-    background-position: -16% 118%, 14% 132%, 108% -26%;
-    background-size: 44% 62%, 50% 66%, 30% 44%;
+  background-image:
+  radial-gradient(56% 48% at 50% 50%, rgb(233 213 255 / 0.70), transparent 72%),
+  radial-gradient(62% 52% at 50% 50%, rgb(126 34 206 / 0.29), transparent 63%),
+  radial-gradient(48% 40% at 50% 50%, rgb(126 34 206 / 0.10), transparent 74%);
+  background-position: -16% 118%, 14% 132%, 108% -26%;
+  background-size: 44% 62%, 50% 66%, 30% 44%;
   }
+
+  /* Signature calligraphique légère : l'identité vient du texte et de la matière, pas d'une image. */
+  .card-script-mark {
+  position: absolute;
+  right: -0.45rem;
+  bottom: 1.9rem;
+  z-index: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: clamp(1.25rem, 3vw, 1.9rem);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--keep-accent, #0f766e) 42%, transparent);
+  opacity: 0.22;
+  transform: rotate(-7deg);
+  transition: transform 220ms ease, opacity 220ms ease;
+  }
+  .group:hover .card-script-mark { opacity: 0.34; transform: rotate(-4deg) translateX(-0.2rem); }
+  .dark .card-script-mark { opacity: 0.18; color: color-mix(in srgb, var(--keep-accent, #99f6e4) 48%, transparent); }
+  .dark .group:hover .card-script-mark { opacity: 0.28; }
+
+  [dir="rtl"] .card-script-mark { right: auto; left: -0.45rem; transform: rotate(7deg); }
+  [dir="rtl"] .group:hover .card-script-mark { transform: rotate(4deg) translateX(0.2rem); }
+
   .dark .keep-surface {
     --keep-border: #3f4348;
     background-color: var(--keep-dark, #202124);
