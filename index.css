@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────���������������������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�����������������������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1686,21 +1686,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   border-radius: inherit;
   opacity: 0;
   }
-  .card-andalusian::after {
-  content: "";
-  position: absolute;
-  top: 0.8rem;
-  left: 0.8rem;
-  z-index: 2;
-  width: 0.35rem;
-  height: 0.35rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, #b78943 62%, var(--keep-accent, #0f766e));
-  font-size: 0;
-  line-height: 1;
-  pointer-events: none;
-  }
-  [dir="rtl"] .card-andalusian::after { left: auto; right: 0.7rem; }
   .dark .card-andalusian::before { border-color: color-mix(in srgb, var(--keep-accent, #99f6e4) 20%, transparent); }
 
   /* Les noms longs restent entièrement lisibles, notamment en arabe. */
@@ -1774,11 +1759,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   inset: 7px;
   border-color: rgb(184 135 62 / 0.28);
   border-radius: 0.75rem;
-  }
-  body:has(.card-andalusian[dir="rtl"]) .card-andalusian::after {
-  content: "۞";
-  color: rgb(184 135 62 / 0.65);
-  font-size: 0.9rem;
   }
   body:has(.card-andalusian[dir="rtl"]) .keep-class-title {
   font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), sans-serif;
@@ -2140,7 +2120,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
 
 
-/* ═══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════���════════
    POLICE MAGHRIBI - FALLBACK LOCAL
    ═══════════════════════════════════════════════════════════════════════
    
