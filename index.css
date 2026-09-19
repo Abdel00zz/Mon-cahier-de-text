@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────�����������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────�������������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1310,7 +1310,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Présentation native des Paramètres ───────────────────────────���────── */
+/* ── Présentation native des Paramètres ─────────────────────��─────���────── */
 
 .app-settings-parent {
   transform-origin: 50% 0;
@@ -1553,7 +1553,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dashboard-artisan-header {
   position: relative;
   padding: 0.65rem 0.75rem 0.8rem;
-  border-bottom: 1px solid hsl(42 52% 52% / 0.2);
   }
   .dashboard-artisan-header::after {
   content: "۞";
@@ -1636,8 +1635,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   pointer-events: none;
   }
   .modal-header, .modal-footer { position: relative; }
-  .modal-header { border-bottom: 1px solid hsl(42 52% 52% / 0.16); }
-  .modal-footer { border-top: 1px solid hsl(42 52% 52% / 0.16); }
+  .modal-header, .modal-footer { border: 0; }
   html[lang="ar"] [role="dialog"] { font-family: var(--font-maghribi-ar), var(--font-sans); line-height: 1.7; }
   html[lang="ar"] [role="dialog"] button { letter-spacing: 0; }
   .dark [role="dialog"] { box-shadow: 0 24px 70px -28px hsl(0 0% 0% / 0.6), inset 0 0 0 1px hsl(42 52% 60% / 0.08); }
