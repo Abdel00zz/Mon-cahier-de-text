@@ -174,7 +174,7 @@ export const TabBar = React.memo<TabBarProps>(({
         className={cn(
           'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden',
           // Glassmorphism translucide avec background blur et fine bordure intérieure (1px)
-          'bg-white/75 dark:bg-[#16171d]/80 backdrop-blur-[28px] backdrop-saturate-150',
+'dashboard-artisan-nav bg-white/82 dark:bg-[#16171d]/88 backdrop-blur-[28px] backdrop-saturate-150',
           'border-e border-stone-200/60 dark:border-white/10 ring-1 ring-inset ring-white/50 dark:ring-white/5',
           'shadow-[6px_0_32px_rgba(0,0,0,0.06)] dark:shadow-[6px_0_32px_rgba(0,0,0,0.5)]',
           'text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px]',

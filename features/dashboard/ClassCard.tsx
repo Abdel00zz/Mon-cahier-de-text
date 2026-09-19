@@ -74,7 +74,7 @@ const CARD_THEMES: CardThemeStyle[] = [
             fontWeight: 700,
             letterSpacing: '0.01em',
         },
-        titleColor: 'text-[#482B17] dark:text-[#FDE68A]',
+        titleColor: 'text-[#5A351B] dark:text-[#F9D98B]',
         dividerColor: 'border-[#F2E5BA]/70 dark:border-[#382E1E]',
         texture: 'sand',
     },
@@ -100,7 +100,7 @@ const CARD_THEMES: CardThemeStyle[] = [
             fontWeight: 700,
             letterSpacing: '0.01em',
         },
-        titleColor: 'text-[#113B26] dark:text-[#A7F3D0]',
+        titleColor: 'text-[#14513A] dark:text-[#A8E5C2]',
         dividerColor: 'border-[#D4EFE0]/75 dark:border-[#1E3A2B]',
         texture: 'mint',
     },
@@ -126,7 +126,7 @@ const CARD_THEMES: CardThemeStyle[] = [
             fontWeight: 700,
             letterSpacing: '0.01em',
         },
-        titleColor: 'text-[#122E4E] dark:text-[#BAE6FD]',
+        titleColor: 'text-[#16456B] dark:text-[#B5DDF3]',
         dividerColor: 'border-[#D5E5F8]/75 dark:border-[#1F3349]',
         texture: 'sky',
     },
@@ -152,7 +152,7 @@ const CARD_THEMES: CardThemeStyle[] = [
             fontWeight: 700,
             letterSpacing: '0.01em',
         },
-        titleColor: 'text-[#38194D] dark:text-[#E9D5FF]',
+        titleColor: 'text-[#56316D] dark:text-[#E2C8F4]',
         dividerColor: 'border-[#E6D8F8]/75 dark:border-[#352548]',
         texture: 'lavender',
     },
@@ -221,7 +221,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
+                "group card-andalusian relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[145px] sm:min-h-[160px]" : "min-h-[140px] sm:min-h-[152px]",
@@ -286,7 +286,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre complet de la classe : niveau + filière + groupe combinés */}
                 <div className="mt-2.5 sm:mt-3">
-                    <h3 className={cn("font-sans text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.4] line-clamp-2 flex items-baseline flex-wrap gap-1", theme.titleColor)}>
+                    <h3 className={cn("class-title-artisan keep-class-title min-w-0 break-words whitespace-normal font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.35] flex items-baseline flex-wrap gap-x-1 gap-y-0.5", theme.titleColor)}>
                         <span>{fullTitle}</span>
                         {identity.group && groupNumber && (
                             <ClassGroupWatermark
