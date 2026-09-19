@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────�������������������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────���������������������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1310,7 +1310,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Présentation native des Paramètres ───────────────��─────��─────���────── */
+/* ── Présentation native des Paramètres ─────────────��─��─────��─────���────── */
 
 .app-settings-parent {
   transform-origin: 50% 0;
@@ -1554,16 +1554,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   position: relative;
   padding: 0.65rem 0.75rem 0.8rem;
   }
-  .dashboard-artisan-header::after {
-  content: "۞";
-  position: absolute;
-  inset-inline-start: 0.15rem;
-  bottom: -0.5rem;
-  color: hsl(42 52% 52% / 0.48);
-  font-size: 0.85rem;
-  background: hsl(var(--background));
-  padding: 0 0.35rem;
-  }
   .dashboard-artisan-header h1 {
   font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), var(--font-serif), serif;
   letter-spacing: -0.02em;
@@ -1583,7 +1573,6 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .artisan-add-class:hover { transform: translateY(-1px); filter: brightness(1.08); }
   .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 60% / 0.1) 0 1px, transparent 1.5px); }
-  .dark .dashboard-artisan-header::after { background: hsl(var(--background)); }
   /* Mobile premium : Pixel, Galaxy S24 et iPhone 16 — safe areas, densité et tactile. */
   @media (max-width: 639px) {
     :root { --radius-md: 10px; --radius-lg: 16px; --radius-xl: 20px; }
