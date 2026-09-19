@@ -411,7 +411,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="flex shrink-0 gap-1 rounded-xl border border-border p-0.5"
+          className="auth-language-switcher flex shrink-0 gap-1 rounded-xl p-1"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
@@ -425,7 +425,7 @@ export const AuthPage: React.FC<{
               }}
               aria-pressed={displayLocale === value}
               className={
-                "flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
+                "auth-language-option flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
                 (displayLocale === value
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted/80")
