@@ -71,6 +71,45 @@
   .auth-artisan-showcase { background: linear-gradient(145deg, #19332a, #302d23 52%, #1d3040); }
 }
 
+/* Accueil : hiérarchie premium, couleurs cohérentes et lecture immédiate. */
+.landing-artisan-shell {
+  position: relative;
+  isolation: isolate;
+  background: #f7f4ed !important;
+  background-image: radial-gradient(circle at 1px 1px, rgb(43 93 75 / 0.07) 1px, transparent 0) !important;
+  background-size: 22px 22px !important;
+}
+.landing-artisan-title {
+  color: #173f32;
+  font-family: var(--font-serif), Georgia, serif;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.landing-primary-cta {
+  color: #fffaf0;
+  background: linear-gradient(135deg, #1b6a4d, #124d3a);
+  box-shadow: 0 12px 26px -14px rgb(18 77 58 / 0.75), inset 0 1px 0 rgb(255 255 255 / 0.2);
+}
+.landing-primary-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.landing-secondary-cta {
+  color: #173f32;
+  background: rgb(255 255 255 / 0.78);
+  border: 1px solid rgb(39 96 73 / 0.18);
+  box-shadow: 0 8px 20px -18px rgb(40 31 22 / 0.8);
+}
+.landing-secondary-cta:hover { background: #fffdf8; border-color: rgb(39 96 73 / 0.36); }
+.landing-artisan-shell .auth-action { border-radius: 0.9rem; }
+.landing-artisan-shell img { filter: saturate(0.92) contrast(1.02); }
+@media (max-width: 639px) {
+  .landing-artisan-shell { padding-top: max(1rem, env(safe-area-inset-top)); background-size: 20px 20px !important; }
+  .landing-artisan-title { font-size: clamp(1.7rem, 8vw, 2.35rem); }
+}
+@media (prefers-color-scheme: dark) {
+  .landing-artisan-shell { background: #111d19 !important; background-image: radial-gradient(circle at 1px 1px, rgb(167 220 188 / 0.08) 1px, transparent 0) !important; }
+  .landing-artisan-title { color: #c5ead2; }
+  .landing-secondary-cta { color: #c5ead2; background: rgb(24 39 34 / 0.88); border-color: rgb(167 220 188 / 0.18); }
+}
+
 /* Onboarding : rythme éditorial, surfaces claires et accents zellige discrets. */
 .onboarding-artisan-shell {
   position: relative;

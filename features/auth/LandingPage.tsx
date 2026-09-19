@@ -50,14 +50,14 @@ export function LandingPage({
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
-      className="flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
+      className="landing-artisan-shell flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
     >
       <div className="auth-view-enter w-full max-w-4xl flex flex-col items-center text-center gap-4 sm:gap-6">
         {/* Title and Subtitle with breathable, balanced spacing */}
         <div className="space-y-2.5 sm:space-y-3.5 max-w-2xl mx-auto pt-1">
           <h1
             tabIndex={-1}
-            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
+            className="landing-artisan-title whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
           >
             {copy.title}
           </h1>
@@ -73,7 +73,7 @@ export function LandingPage({
             <button
               type="button"
               onClick={onRegister}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-4 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+              className="landing-primary-cta group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-4 sm:px-6 text-xs sm:text-base font-bold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
               <span>{copy.register}</span>
               {ar ? (
@@ -85,7 +85,7 @@ export function LandingPage({
             <button
               type="button"
               onClick={onLogin}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-stone-100/90 dark:bg-stone-900/90 border border-stone-300/80 dark:border-stone-700/80 text-stone-900 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 px-4 sm:px-6 text-xs sm:text-base font-semibold shadow-xs hover:border-stone-400 dark:hover:border-stone-600 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+              className="landing-secondary-cta group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-4 sm:px-6 text-xs sm:text-base font-semibold active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
               <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors" />
               <span>{copy.login}</span>
