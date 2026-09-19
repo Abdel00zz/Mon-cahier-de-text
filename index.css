@@ -170,7 +170,7 @@ html[data-keyboard='open'] .fab-safe {
   }
 }
 
-/* ── Cibles tactiles des menus ─────────�������─────────────────────────────────
+/* ── Cibles tactiles des menus ─────────���������─────────────────────────────────
    Les entrées Radix (DropdownMenu, Select) mesurent ~36px : sous le seuil de
    44px recommandé par la ligne directrice iOS/Android. */
 @media (pointer: coarse) {
@@ -1636,6 +1636,30 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   /* Les noms longs restent entièrement lisibles, notamment en arabe. */
   .keep-class-title { overflow-wrap: anywhere; hyphens: auto; }
+  .class-title-artisan {
+  position: relative;
+  z-index: 3;
+  font-family: var(--content-font-arabic, 'IBM Plex Sans Arabic'), var(--font-sans), sans-serif;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.48);
+  }
+  html[lang="fr"] .class-title-artisan {
+  font-family: var(--font-serif, Georgia), var(--font-sans), serif;
+  letter-spacing: -0.025em;
+  }
+  body:has(.card-andalusian[dir="rtl"]) .class-title-artisan {
+  font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+  }
+
+  /* Accent artisanal sur les actions : relief léger et ligne intérieure. */
+  .artisanal-button[data-variant="default"],
+  .artisanal-button[data-variant="accent"] {
+  border: 1px solid color-mix(in srgb, hsl(var(--primary)) 30%, transparent);
+  }
+  .artisanal-button[data-variant="outline"] {
+  background-image: linear-gradient(135deg, hsl(var(--primary) / 0.06), transparent 58%);
+  }
 
   /* Direction arabe : palette fès/vert zellige et géométrie andalouse plus calme. */
   body:has(.card-andalusian[dir="rtl"]) {

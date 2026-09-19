@@ -286,7 +286,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
                 {/* Titre complet de la classe : niveau + filière + groupe combinés */}
                 <div className="mt-2.5 sm:mt-3">
-                    <h3 className={cn("keep-class-title min-w-0 break-words whitespace-normal font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.35] flex items-baseline flex-wrap gap-x-1 gap-y-0.5", theme.titleColor)}>
+                    <h3 className={cn("class-title-artisan keep-class-title min-w-0 break-words whitespace-normal font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.35] flex items-baseline flex-wrap gap-x-1 gap-y-0.5", theme.titleColor)}>
                         <span>{fullTitle}</span>
                         {identity.group && groupNumber && (
                             <ClassGroupWatermark
