@@ -156,7 +156,7 @@ export function ModalBottomSheet({
         {/* Backdrop Scrim Overlay with Glass Blur */}
         <DialogPrimitive.Overlay
           className={cn(
-            'fixed inset-0 z-[100] bg-neutral-950/45 dark:bg-black/75 backdrop-blur-md',
+            'fixed inset-0 z-[100] bg-neutral-950/42 dark:bg-black/72 backdrop-blur-[2px]',
             'data-[state=open]:animate-overlay-in data-[state=closed]:animate-overlay-out motion-reduce:animate-none'
           )}
         />
@@ -167,7 +167,6 @@ export function ModalBottomSheet({
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
             'modal-pro-surface fixed inset-x-0 bottom-0 top-auto z-[110] grid h-fit min-h-0 max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-0.75rem))] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden overscroll-contain rounded-t-[24px] rounded-b-none border border-border bg-card text-foreground outline-none',
-            'shadow-2xl',
             'will-change-transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)]',
             'data-[state=open]:animate-sheet-in-bottom sm:data-[state=open]:animate-pop-in',
             'data-[state=closed]:translate-y-full data-[state=closed]:opacity-0 sm:data-[state=closed]:translate-y-0 sm:data-[state=closed]:scale-[0.97]',
