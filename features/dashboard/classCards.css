@@ -2,14 +2,15 @@
 .class-card {
   /* Palette pilotée par le ton de la classe : les valeurs vivent dans
      `index.css` (`[data-keep-tone]`) — une seule source pour les cartes, les
-     surfaces et les filigranes. `--class-vivid` est la teinte vive décorative
-     (filet, halo), `--class-accent` sa déclinaison lisible (texte, icônes). */
+     surfaces et les filigranes. `--class-accent` porte la déclinaison lisible
+     (textes, icônes, bordures, filets) ; `--class-vivid` reste la teinte vive
+     de référence du ton (badges, emploi du temps). */
   --class-vivid: var(--keep-vivid, #ffc701);
   --class-accent: var(--keep-accent, #8a5a00);
   --class-surface: var(--keep-light, #fcfaf6);
   --class-border: color-mix(in srgb, var(--class-accent) 26%, var(--class-surface));
   --class-ink: #343a40;
-  --class-muted: #646b72;
+  --class-muted: #5f666d;
   position: relative;
   isolation: isolate;
   display: flex;
@@ -26,18 +27,8 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / .75), 0 2px 4px rgb(40 48 58 / .025), 0 8px 24px -20px rgb(40 48 58 / .18);
   transition: transform 250ms var(--ease-spring), box-shadow 250ms ease, border-color 200ms ease;
 }
-/* Filet de couleur vive en tête de carte : le ton de la classe se lit d'un
-   coup d'œil sans colorer les aplats (charte : accent réservé, 10 %). */
-.class-card::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  z-index: 3;
-  height: 3px;
-  pointer-events: none;
-  background: linear-gradient(90deg, var(--class-accent), color-mix(in srgb, var(--class-vivid) 58%, var(--class-accent)));
-}
+/* Filet de couleur en tête de carte : supprimé sur demande — la teinte se lit
+   désormais dans la texture tissée et les taches (aucun dégradé). */
 .dark .class-card {
   --class-surface: var(--keep-dark, #252729);
   --class-ink: #e3e6e8;
@@ -45,13 +36,23 @@
   --class-border: color-mix(in srgb, var(--class-accent) 32%, var(--class-surface));
   box-shadow: inset 0 1px 0 rgb(240 244 248 / .06), 0 8px 24px -20px rgb(5 10 18 / .5);
 }
-.class-card__light {
+/* Texture « toile + taches » : un masque SVG (trame tissée de 3 px et taches
+   d'ellipses superposées, **sans aucun dégradé**) rempli de la teinte de la
+   classe — donc subtilement coloré, en clair comme en sombre. */
+.class-card__texture {
+  --class-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cdefs%3E%3Cpattern id='w' width='3' height='3' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 .5H3' stroke='%23fff' stroke-opacity='.45' stroke-width='1'/%3E%3Cpath d='M.5 0V3' stroke='%23fff' stroke-opacity='.3' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='300' height='300' fill='url(%23w)'/%3E%3Cg fill='%23fff'%3E%3Cg fill-opacity='.4'%3E%3Cellipse cx='72' cy='66' rx='42' ry='32'/%3E%3Cellipse cx='98' cy='84' rx='24' ry='18'/%3E%3C/g%3E%3Cg fill-opacity='.32'%3E%3Cellipse cx='228' cy='140' rx='34' ry='26'/%3E%3Cellipse cx='206' cy='158' rx='18' ry='14'/%3E%3C/g%3E%3Cg fill-opacity='.28'%3E%3Cellipse cx='142' cy='248' rx='36' ry='24'/%3E%3Cellipse cx='168' cy='270' rx='20' ry='14'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 95% 0%, color-mix(in srgb, var(--class-vivid) 20%, transparent), transparent 62%);
-  opacity: .7;
-  transition: opacity 250ms ease, transform 300ms ease;
+  background-color: var(--class-accent);
+  opacity: .095;
+  -webkit-mask-image: var(--class-texture);
+  mask-image: var(--class-texture);
+  -webkit-mask-size: 300px 300px;
+  mask-size: 300px 300px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  transition: opacity 250ms ease;
 }
 .class-card__open {
   position: absolute;
@@ -91,8 +92,22 @@
 .class-card__title { flex: 1; min-width: 0; margin: 0; font-size: 21px; line-height: 1.34; color: var(--class-ink); overflow-wrap: anywhere; text-wrap: pretty; font-synthesis: none; }
 .class-card[dir="rtl"] .class-card__title { line-height: 1.55; }
 .class-card__title-end { white-space: nowrap; }
-/* Numéro de groupe : Lato, compagnon sans-serif moderne du titre. */
-.class-card .class-card__group { margin-inline-start: .45em; transform: none; font-family: var(--font-lato); font-size: 1.22em; font-style: normal; font-weight: 600; letter-spacing: -.01em; color: var(--class-accent); }
+/* Numéro de groupe : même corps et même ligne de base que le nom de la classe
+   (jamais plus grand, jamais décalé) — il se lit comme la fin du nom, un cran
+   de graisse et la teinte du ton en plus. */
+.class-card .class-card__group {
+  margin-inline-start: .45em;
+  transform: none;
+  translate: none;
+  font-family: var(--font-lato);
+  font-size: 1em;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  line-height: 1;
+  vertical-align: baseline;
+  color: var(--class-accent);
+}
 .class-card__footer { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 10px 20px; border-top: 1px solid color-mix(in srgb, var(--class-accent) 18%, transparent); color: var(--class-muted); }
 .class-card__status { min-width: 0; flex: 1; font-family: var(--font-sans); font-size: 11px; line-height: 1.5; }
 /* Compagnon sans-serif moderne demandé pour les cartes : Lato, mais seulement
@@ -108,7 +123,7 @@
 .class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
 @media (hover: hover) and (pointer: fine) {
   .class-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--class-accent) 52%, var(--class-surface)); box-shadow: inset 0 1px 0 rgb(245 248 252 / .4), 0 16px 32px -22px color-mix(in srgb, var(--class-vivid) 55%, transparent), 0 4px 12px -8px rgb(40 48 58 / .15); }
-  .class-card:hover .class-card__light { opacity: 1; transform: scale(1.06); }
+  .class-card:hover .class-card__texture { opacity: .15; }
 .class-card:hover .class-card__arrow { transform: translateX(3px); }
   .class-card[dir="rtl"]:hover .class-card__arrow { transform: scaleX(-1) translateX(3px); }
 }

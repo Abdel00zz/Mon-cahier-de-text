@@ -61,7 +61,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                 title={displayName}
                 className="class-card__open"
             />
-            <span className="class-card__light" aria-hidden="true" />
+            <span className="class-card__texture" aria-hidden="true" />
             <div className="class-card__body">
                 <div className="class-card__header">
                     {isActiveSession && (
