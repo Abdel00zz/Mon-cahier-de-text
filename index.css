@@ -1579,11 +1579,16 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .pilotage-modal-header { background: var(--app-surface); border-bottom: 1px solid var(--app-line); }
   .pilotage-modal-title { font-family: var(--ui-font-ar); }
   .pilotage-title-icon { color: var(--app-accent); background: var(--app-accent-soft); border: 1px solid var(--app-line); }
-  .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; color: var(--app-ink); }
+  .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; color: var(--app-ink); padding: 0.5rem; gap: 0.35rem; }
+  .pilotage-sidebar > * { min-width: 0; }
+  .pilotage-sidebar nav, .pilotage-sidebar [role="navigation"] { gap: 0.2rem; }
+  .pilotage-sidebar button { width: 100%; justify-content: flex-start; text-align: start; }
   .pilotage-sidebar-active { color: var(--app-accent) !important; background: var(--app-accent-soft) !important; border: 1px solid var(--app-line); }
   .pilotage-sidebar-text { color: var(--app-ink-muted) !important; }
   .pilotage-sidebar-active-text { color: var(--app-accent) !important; }
   .pilotage-sidebar button:hover { color: var(--app-ink) !important; background: var(--app-accent-soft); }
+  .pilotage-sidebar button:focus-visible { outline: 0; box-shadow: var(--ui-focus-ring); }
+  .pilotage-sidebar button > span, .pilotage-sidebar button p { color: inherit; }
   .pilotage-sidebar button > div { background: transparent !important; color: currentColor !important; }
   .pilotage-sidebar .pilotage-sidebar-count { background: var(--app-accent-soft) !important; color: var(--app-accent) !important; border: 0; }
   .pilotage-sidebar button > svg { color: var(--app-ink-muted); }
