@@ -118,7 +118,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         <button
                             type="button"
                             onClick={(event) => event.stopPropagation()}
-                            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title={t('dashboard.classActions', { className: displayName })}
                             aria-label={t('dashboard.classActions', { className: displayName })}
                         >
