@@ -34,10 +34,15 @@
   cursor: pointer;
   transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
-.workspace-nav-item-desktop { width: 100%; gap: 12px; padding: 10px 12px; text-align: start; }
-.workspace-nav-item-collapsed { justify-content: center; padding-inline: 4px; }
+.workspace-nav-item-desktop { width: 100%; min-height: 48px; gap: 12px; padding: 10px 12px; text-align: start; }
+.workspace-nav-item-collapsed { width: 48px; justify-content: center; padding-inline: 0; margin-inline: auto; }
+.workspace-nav-collapsed > div:first-child { justify-content: center; padding-inline: 0; }
+.workspace-nav-collapsed > div:first-child .workspace-nav-toggle { width: 44px; height: 44px; }
+.workspace-nav-collapsed > .modern-scrollbar,
+.workspace-nav-collapsed > div:last-child { padding-inline: 0; margin-inline: 0; }
 .workspace-nav-item-mobile { flex: 1; min-width: 0; flex-direction: column; justify-content: center; gap: 4px; padding: 5px 2px; }
-.workspace-nav-toggle { justify-content: center; flex-shrink: 0; background: hsl(var(--muted) / 0.65); border: 1px solid hsl(var(--border) / 0.65); }
+ .workspace-nav-toggle { width: 44px; height: 44px; justify-content: center; flex-shrink: 0; border: 1px solid hsl(var(--border) / 0.72); border-radius: 14px; background: hsl(var(--card) / 0.72); color: hsl(var(--muted-foreground)); box-shadow: 0 5px 14px -10px hsl(var(--foreground) / 0.45); transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+
 .workspace-nav-icon { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; }
 .workspace-nav-label { position: relative; z-index: 1; font-size: 13px; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
 .workspace-nav-item-mobile .workspace-nav-label { font-size: 10px; text-align: center; }
@@ -60,6 +65,8 @@
 .content-kind-number { border-inline-start: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 22%, transparent); padding-inline-start: 0.45em; margin-inline-start: 0.1em; min-width: 1.25em; font-weight: 700; }
 @media (hover: hover) {
   .workspace-nav-item:hover, .workspace-nav-toggle:hover { background: hsl(var(--muted) / 0.75); color: hsl(var(--foreground)); }
+.workspace-nav-toggle:hover { border-color: hsl(var(--primary) / 0.28); box-shadow: 0 8px 18px -12px hsl(var(--primary) / 0.55); }
+.workspace-nav-toggle:active { transform: scale(0.96); }
   .workspace-nav-item[aria-current="page"]:hover { color: var(--workspace-active-ink); }
 }
 .workspace-nav-item:active, .workspace-nav-toggle:active { background: hsl(var(--muted)); transform: scale(0.98); }

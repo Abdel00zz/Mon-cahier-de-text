@@ -152,7 +152,7 @@ export const TabBar = React.memo<TabBarProps>(({
         )}
       </AnimatePresence>
       <nav ref={navRef} aria-label={copy.mainNav} dir={isRtl ? 'rtl' : 'ltr'}
-        className={cn('workspace-nav dashboard-artisan-nav fixed inset-y-0 start-0 z-40 hidden h-dvh flex-col sm:flex print:hidden', isExpanded ? 'w-[252px]' : 'w-[84px]')}
+        className={cn('workspace-nav dashboard-artisan-nav fixed inset-y-0 start-0 z-40 hidden h-dvh flex-col sm:flex print:hidden', isExpanded ? 'workspace-nav-expanded w-[252px]' : 'workspace-nav-collapsed w-[84px]')}
         style={{ transform: dragDelta ? `translateX(${dragDelta}px)` : undefined, transition: dragDelta || reducedMotion ? 'none' : undefined }}
         onTouchStart={event => { if (isExpanded) dragStartXRef.current = event.touches[0].clientX; }}
         onTouchMove={event => {
