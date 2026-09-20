@@ -1575,6 +1575,17 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .modal-pro-header, .modal-pro-footer { font-family: var(--ui-font-ar); }
   .modal-pro-footer { box-shadow: inset 0 1px 0 hsl(var(--border) / 0.35); }
 
+  /* Centre de pilotage : autorité calme, navigation lisible, aucune surcharge. */
+  .pilotage-modal-header { background: var(--app-surface); border-bottom: 1px solid var(--app-line); }
+  .pilotage-modal-title { font-family: var(--ui-font-ar); }
+  .pilotage-title-icon { color: var(--app-accent); background: var(--app-accent-soft); border: 1px solid var(--app-line); }
+  .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; }
+  .pilotage-sidebar button { min-height: 2.75rem; border-radius: var(--ui-radius-control); }
+  .pilotage-sidebar button[aria-current="true"], .pilotage-sidebar button[data-active="true"], .pilotage-sidebar button:has(.text-primary) { background: var(--app-surface); box-shadow: 0 4px 12px -12px rgb(24 53 43 / 0.5); }
+  [data-pilotage-root] { font-family: var(--ui-font-ar); }
+  [data-pilotage-root] :is(h1, h2, h3) { letter-spacing: -0.015em; text-wrap: balance; }
+  [data-pilotage-root] .rounded-2xl, [data-pilotage-root] .rounded-\[16px\] { border-radius: var(--ui-radius-surface); }
+
   /* Fondation Swiss mobile : hiérarchie stricte, surfaces calmes et densité maîtrisée. */
   :root {
     --app-ink: #18352b;
