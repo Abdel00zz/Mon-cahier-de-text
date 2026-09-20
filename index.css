@@ -12,11 +12,11 @@
   --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 13%, hsl(var(--card)));
 }
 .workspace-nav {
-  background: hsl(var(--card) / 0.96);
+  background: hsl(var(--card) / 0.92);
   color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border) / 0.75);
-  box-shadow: 0 8px 28px -18px hsl(var(--foreground) / 0.15);
-  backdrop-filter: blur(18px);
+  border: 1px solid hsl(var(--border) / 0.8);
+  box-shadow: 0 18px 42px -30px hsl(160 20% 18% / 0.42);
+  backdrop-filter: blur(22px);
   font-family: var(--font-sans);
   transition: width 200ms ease, transform 200ms ease;
 }
@@ -29,7 +29,7 @@
   align-items: center;
   min-height: 44px;
   min-width: 44px;
-  border-radius: 12px;
+  border-radius: 14px;
   color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
@@ -429,24 +429,24 @@ html[lang="ar"] .keep-class-title {
     /* Le thème est piloté par l'application. `only` empêche les navigateurs
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
-    /* Mode Clair Fondé sur l'ADN Sketch.com ("Shark + Hint of Red" & "Selective Yellow") */
-    --background: 330 14% 97.6%; /* #FAF8F9 ("Hint of Red" Blanc cassé officiel Sketch) */
-    --foreground: 240 3% 13.3%; /* #212123 ("Shark" Charbon profond) */
-    --card: 0 0% 100%; /* #FFFFFF (Surfaces & fenêtres épurées) */
-    --card-foreground: 240 3% 13.3%; /* #212123 */
-    --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 240 3% 13.3%;
-    --primary: 42.5 100% 49.6%; /* #FDB300 (Sketch Selective Yellow) */
-    --primary-foreground: 240 3% 13.3%; /* #212123 (Texte charbon contrasté ~9.4:1 WCAG AAA) */
-    --secondary: 240 5% 95.5%; /* #F3F3F6 (Gris interface macOS/Sketch) */
-    --secondary-foreground: 240 3% 13.3%;
-    --muted: 240 5% 95%; /* #F3F3F5 */
-    --muted-foreground: 240 3% 46%; /* #73737C (Texte secondaire neutre et lisible) */
-    --accent: 42.5 100% 94%; /* #FFF8E6 (Teinte douce jaune) */
-    --accent-foreground: 240 3% 13.3%;
-    --border: 240 5% 89.5%; /* #E4E4EB (Bordure 1px ultra-fine et discrète) */
-    --input: 240 5% 95%; /* #F3F3F6 */
-    --ring: 42.5 100% 49.6%;
+    /* Palette calme et contemporaine : ivoire chaud, graphite doux, vert sauge. */
+    --background: 150 18% 97%;
+    --foreground: 160 16% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 16% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 16% 16%;
+    --primary: 155 45% 32%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 150 14% 94%;
+    --secondary-foreground: 160 16% 20%;
+    --muted: 150 12% 94%;
+    --muted-foreground: 160 8% 43%;
+    --accent: 148 35% 91%;
+    --accent-foreground: 155 45% 24%;
+    --border: 155 13% 87%;
+    --input: 150 12% 95%;
+    --ring: 155 45% 32%;
     --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge doux) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
@@ -482,24 +482,24 @@ html[lang="ar"] .keep-class-title {
 
   .dark {
     color-scheme: only dark;
-    /* Mode Sombre Inspiré de Sketch.com (Obsidian Charbon #141416 & Shark #212123) */
-    --background: 240 6% 8.5%; /* #141416 (Fond de page sombre aéré) */
-    --foreground: 330 10% 96%; /* #FAF8F9 (Texte principal) */
-    --card: 240 3% 13.3%; /* #212123 (Surfaces "Shark" surélevées) */
-    --card-foreground: 330 10% 96%; /* #FAF8F9 */
-    --popover: 240 3% 13.3%; /* #212123 */
-    --popover-foreground: 330 10% 96%;
-    --primary: 42.5 100% 50%; /* #FDB300 (Sketch Selective Yellow vif) */
-    --primary-foreground: 240 3% 13.3%; /* #212123 (Texte sombre lisible) */
-    --secondary: 240 4% 18%; /* #2A2A2E (Hover gris foncé) */
-    --secondary-foreground: 330 10% 96%;
-    --muted: 240 4% 18%; /* #2A2A2E */
-    --muted-foreground: 240 4% 65%; /* #9E9EA8 (Texte secondaire neutre) */
-    --accent: 42.5 50% 18%; /* #4A3A05 */
-    --accent-foreground: 42.5 100% 85%;
-    --border: 240 4% 20%; /* #313136 (Bordures fines graphite 1px) */
-    --input: 240 4% 18%; /* #2A2A2E */
-    --ring: 42.5 100% 50%;
+    /* Mode sombre : profondeur graphite et accent sauge désaturé. */
+    --background: 160 14% 9%;
+    --foreground: 150 18% 94%;
+    --card: 160 12% 13%;
+    --card-foreground: 150 18% 94%;
+    --popover: 160 12% 14%;
+    --popover-foreground: 150 18% 94%;
+    --primary: 155 42% 58%;
+    --primary-foreground: 160 16% 12%;
+    --secondary: 160 10% 19%;
+    --secondary-foreground: 150 18% 94%;
+    --muted: 160 10% 18%;
+    --muted-foreground: 150 8% 68%;
+    --accent: 155 28% 20%;
+    --accent-foreground: 155 42% 78%;
+    --border: 160 10% 23%;
+    --input: 160 10% 18%;
+    --ring: 155 42% 58%;
     --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge vif) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 70.6% 45.3%;
@@ -546,6 +546,7 @@ html[lang="ar"] .keep-class-title {
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-image: radial-gradient(circle at 12% 0%, hsl(155 35% 92% / 0.42), transparent 32rem);
     min-width: 0;
     min-height: 100dvh;
     scroll-behavior: smooth;
