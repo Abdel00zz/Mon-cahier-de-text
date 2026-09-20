@@ -760,6 +760,10 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
             onChange={handleSelectAxis}
             layoutId="notifications-mobile-tab-pill"
             size="md"
+            className="pilotage-mobile-rail"
+            activeTabClassName="pilotage-mobile-tab-active"
+            inactiveTabClassName="pilotage-mobile-tab-inactive"
+            tabClassName="pilotage-mobile-tab"
             ariaLabel={t('notifications.sidebarLabel')}
           />
         </div>
