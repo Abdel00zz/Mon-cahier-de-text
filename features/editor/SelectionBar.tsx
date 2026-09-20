@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
   ArrowUp, ArrowDown, Plus, CalendarDays, CalendarCheck, CalendarX,
@@ -43,24 +44,27 @@ interface Action {
 const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean }> = ({
   icon: Icon, onClick, title, label, accent = false, disabled = false,
 }) => (
-  <button
+  <motion.button
     type="button"
     onClick={onClick}
     title={title}
     aria-label={title}
     disabled={disabled}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.90 }}
+    transition={{ type: 'spring', stiffness: 500, damping: 28 }}
     className={cn(
-      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation',
+      'selection-action shrink-0 inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer touch-manipulation',
       label ? 'h-9 px-2.5 sm:px-3 gap-1.5 sm:gap-2' : 'h-9 w-9 p-0',
       accent
-        ? 'bg-primary/10 text-primary hover:bg-primary/15 font-medium'
+        ? 'bg-primary/15 text-primary hover:bg-primary/25 font-semibold'
         : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
       disabled && 'opacity-50 pointer-events-none'
     )}
   >
     <Icon aria-hidden className="size-[18px] shrink-0" />
     {label && <span className="hidden whitespace-nowrap font-sans text-xs sm:text-sm font-semibold sm:inline">{label}</span>}
-  </button>
+  </motion.button>
 );
 
 /** Actions fréquentes visibles ; le reste dans un menu accessible, sans rail masqué. */
@@ -99,18 +103,37 @@ export const SelectionBar: FC<SelectionBarProps> = ({
 
   return (
     <div className="selection-bar-anchor print:hidden">
-      <div className="selection-bar" role="toolbar" dir={locale === 'ar' ? 'rtl' : 'ltr'}
-        aria-label={t('selection.actionsAria')} aria-busy={isPending}
-        onClick={event => event.stopPropagation()} onKeyDown={navigateActions}>
-        <button
+      <motion.div
+        initial={{ y: 24, opacity: 0, scale: 0.94 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 20, opacity: 0, scale: 0.94 }}
+        transition={{ type: 'spring', stiffness: 480, damping: 30 }}
+        className="selection-bar"
+        role="toolbar"
+        dir={locale === 'ar' ? 'rtl' : 'ltr'}
+        aria-label={t('selection.actionsAria')}
+        aria-busy={isPending}
+        onClick={event => event.stopPropagation()}
+        onKeyDown={navigateActions}
+      >
+        {/* Ligne spéculaire de réfraction de verre liquide */}
+        <div
+          className="pointer-events-none absolute inset-x-5 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent"
+          aria-hidden="true"
+        />
+
+        <motion.button
           type="button"
           onClick={onClear}
-          className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation"
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.88 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+          className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation"
           title={t('selection.closeShortcut')}
           aria-label={t('selection.clearAria')}
         >
           <X aria-hidden className="size-[18px]" />
-        </button>
+        </motion.button>
         <span className="selection-count shrink-0 px-1 font-semibold text-sm tabular-nums text-foreground select-none" title={selectedLabel} aria-label={selectedLabel} role="status" aria-atomic="true">
           {formattedCount}
         </span>
@@ -123,15 +146,18 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           title={t('selection.edit')} disabled={isPending} />}
         <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
-            <button
+            <motion.button
               type="button"
               disabled={isPending}
-              className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all duration-150 active:scale-95 cursor-pointer touch-manipulation disabled:opacity-50"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+              className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation disabled:opacity-50"
               title={t('selection.moreActions')}
               aria-label={t('selection.moreActions')}
             >
               <MoreVertical aria-hidden className="size-[18px]" />
-            </button>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" sideOffset={10} collisionPadding={12}
             className="w-max max-w-[calc(100vw-1.5rem)]">
@@ -146,7 +172,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </motion.div>
     </div>
   );
 };

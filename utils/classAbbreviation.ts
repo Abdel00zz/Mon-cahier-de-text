@@ -44,7 +44,7 @@ const STREAM_SHORTHANDS: ReadonlyArray<readonly [RegExp, string]> = [
     [/^(?:svt|svi)$/, 'SVT'],
     [/^(?:se|ses|eco)$/, 'SE'],
     [/^sgc$/, 'SGC'],
-    [/^(?:sh|shs)$/, 'SH'],
+    [/^(?:sh|shs|lsh)$/, 'LSH'],
     [/^si$/, 'SI'],
     [/^l$/, 'L'],
 ];
@@ -56,6 +56,15 @@ const normalize = (name: string): string => name
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[()\[\]]/g, ' ')
+    // normalise les abréviations officielles avec points (S.VT, P.C, S.M, L.S.H...)
+    .replace(/\bs\s*\.\s*v\s*\.\s*t\b/gi, 'svt')
+    .replace(/\bs\s*\.\s*vt\b/gi, 'svt')
+    .replace(/\bp\s*\.\s*c\b/gi, 'pc')
+    .replace(/\bs\s*\.\s*m\b/gi, 'sm')
+    .replace(/\bl\s*\.\s*s\s*\.\s*h\b/gi, 'lsh')
+    .replace(/\bsc\s*\.\s*exp\b/gi, 'se')
+    .replace(/\bsc\s*\.\s*maths?\b/gi, 'sm')
+    .replace(/\bsc\s*\.\s*[eé]co\b/gi, 'se')
     // découpe les écritures compactées : 2Bac → 2 Bac, BacPc → Bac Pc, PC3 → PC 3
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/([a-zA-Z])(\d)/g, '$1 $2')
@@ -82,7 +91,7 @@ const matchLevel = (value: string): { code: string; rest: string } => {
     if (match) return { code: `${match[1]}B`, rest: value.slice(match[0].length) };
     // « 2BSMA-A » : le niveau est porté par le seul chiffre, devant un sigle connu
     // (le « b » de « Bac » peut être collé au sigle).
-    match = value.match(/^([12])\s*b?(sma|smb|sm|sp|spc|pc|svt|svi|se|ses|eco|sgc|sh|shs|si|l)\b/);
+    match = value.match(/^([12])\s*b?(sma|smb|sm|sp|spc|pc|svt|svi|se|ses|eco|sgc|sh|shs|lsh|si|l)\b/);
     if (match) return { code: `${match[1]}B`, rest: `${match[2]}${value.slice(match[0].length)}` };
     match = value.match(/^(mpsi|pcsi|tsi|ecs|ect|mp|psi|bts|cpge)\b/);
     if (match) return { code: match[1].toUpperCase(), rest: value.slice(match[0].length) };
@@ -99,7 +108,7 @@ const collectGroup = (tokens: string[], stream: string): string => {
 
 /** La variante A/B d'une filière se rattache à la filière : « SM » + « A » → « SM-A ». */
 const mergeVariant = (stream: string, group: string): { stream: string; group: string } =>
-    /^(?:SM|SVT|SE|SH|SGC|SI)$/.test(stream) && /^[AB]$/.test(group)
+    /^(?:SM|SVT|SE|SH|LSH|SGC|SI)$/.test(stream) && /^[AB]$/.test(group)
         ? { stream: `${stream}-${group}`, group: '' }
         : { stream, group };
 

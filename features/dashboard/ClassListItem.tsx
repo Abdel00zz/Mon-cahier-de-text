@@ -1,10 +1,10 @@
 import { memo, useMemo, type FC } from 'react';
 import { ClassInfo } from '@/types';
-import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
-import { getBaseLevelKey, formatClassGroupLabel } from '@/constants/class-levels';
+import { formatLocalizedSubjectDisplayName } from '@/constants';
+import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { keepToneForClass } from '@/utils/keepTheme';
-import { classIdentityFor } from '@/utils/classIdentity';
+import { classCardLabelFor, classIdentityFor } from '@/utils/classIdentity';
 import { ChevronRight, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
 import {
     DropdownMenu,
@@ -18,8 +18,9 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
-import { ClassCardTitle } from './ClassCardTitle';
 import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
+import { ClassCardTitle } from './ClassCardTitle';
+import { formatWithOrdinals } from '@/utils/ordinalTypography';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -39,7 +40,9 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
-    const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
+    const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
+    const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
+    const className = label.fullName;
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
     // Le libellé passe par Intl.DateTimeFormat : une seule fois par valeur,
     // jamais à chaque rendu de la liste.
@@ -49,7 +52,6 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     );
 
     /** Même identité que la carte en grille : palier puis filière. */
-    const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const intro = isActiveSession ? t('dashboard.session.teaching', { className: '' }).trimEnd() : undefined;
 
     const pressHandlers = useClassPress(
@@ -60,7 +62,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
+            data-keep-tone={keepToneForClass(classInfo.id || classInfo.name)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 // Même principe que la carte en grille : hauteur fixe, calculée
@@ -85,24 +87,21 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         style={classTitleStyle(isRtl, 'list')}
                         className={cn("keep-class-title min-w-0 text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}
                     >
-                        {identity.tierLabel ? (
-                            <span className="inline-flex min-w-0 max-w-full flex-nowrap items-center gap-x-1.5">
+                        <span className="sr-only">{displayName}</span>
+                            <span aria-hidden="true" className="inline-flex min-w-0 max-w-full flex-nowrap items-center gap-x-2">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
-                                <ClassLevelBadge label={identity.tierLabel} tierKey={identity.tierKey} />
-                                {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
-                                {identity.group && (
+                                {label.tier && <ClassLevelBadge label={label.tier} tierKey={identity.tierKey} />}
+                                    <span className="min-w-0 truncate" title={label.fullName}>
+                                        {label.tier ? formatWithOrdinals(label.title) : <ClassCardTitle name={label.title} compact />}
+                                    </span>
+                                {label.group && (
                                      <ClassGroupWatermark
-                                         group={identity.group}
-                                         label={formatClassGroupLabel(identity.group, locale)}
+                                         group={label.group}
+                                         label={formatClassGroupLabel(label.group, locale)}
                                          tierKey={identity.tierKey}
                                      />
                                  )}
                             </span>
-                        ) : (
-                            <span className="block truncate">
-                                <ClassCardTitle name={displayName} compact={!isActiveSession} intro={intro} />
-                            </span>
-                        )}
                     </h3>
                     <div className="mt-0.5 flex items-center gap-1.5 truncate text-muted-foreground">
                         <span
@@ -133,7 +132,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         <button
                             type="button"
                             onClick={(event) => event.stopPropagation()}
-                            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title={t('dashboard.classActions', { className: displayName })}
                             aria-label={t('dashboard.classActions', { className: displayName })}
                         >

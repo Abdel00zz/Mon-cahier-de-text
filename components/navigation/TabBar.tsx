@@ -434,14 +434,14 @@ export const TabBar = React.memo<TabBarProps>(({
 
       {/* Barre mobile compacte - Ergonomie avancée style iPhone 17 sans coupure de texte ni écrasement */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border bg-background/95 backdrop-blur-md text-muted-foreground shadow-lg print:hidden sm:hidden will-change-transform font-sans"
+        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border/80 bg-card/90 dark:bg-card/85 backdrop-blur-xl saturate-150 text-muted-foreground shadow-xl shadow-black/8 dark:shadow-black/35 print:hidden sm:hidden will-change-transform font-sans"
         style={{ bottom: 'max(0.65rem, env(safe-area-inset-bottom, 0.65rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Ligne spéculaire de réfraction de verre */}
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" aria-hidden="true" />
+        {/* Ligne spéculaire de réfraction de verre liquide */}
+        <div className="pointer-events-none absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/60 dark:via-white/20 to-transparent" aria-hidden="true" />
 
         <div className="relative mx-auto flex h-[62px] max-w-md items-center justify-around px-1 pt-0.5 pb-1">
           {tabs.map((tab) => {

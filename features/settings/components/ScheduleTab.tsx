@@ -28,51 +28,76 @@ export interface ModernClassColor {
 
 /**
  * Palette synchronisee avec les cartes de classes du tableau de bord : memes
- * familles de teintes (sable, menthe, azur, lavande, corail), une marche plus
- * foncee pour que la grille se lise au premier coup d'oeil. En mode sombre les
- * cellules restent volontairement plus profondes que les cartes.
+ * familles de teintes (ambre, orange, lime, emeraude, azur, indigo, orchidee,
+ * framboise) avec les teintes vives des cartes, une marche plus foncee pour
+ * que la grille se lise au premier coup d'oeil. En mode sombre les cellules
+ * restent volontairement plus profondes que les cartes.
  * Les libelles conservent un contraste AA sur ces fonds.
  */
 export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
     sand: {
         key: 'sand',
-        bg: 'bg-[#fcd34d] dark:bg-[#451a03]/90',
-        border: 'border-[#d97706] dark:border-[#b45309]',
-        text: 'text-[#78350f] dark:text-[#fef3c7]',
-        subtext: 'text-[#78350f] dark:text-[#fde68a]',
-        dot: 'bg-[#d97706]',
-    },
-    mint: {
-        key: 'mint',
-        bg: 'bg-[#6ee7b7] dark:bg-[#064e3b]/90',
-        border: 'border-[#059669] dark:border-[#10b981]',
-        text: 'text-[#064e3b] dark:text-[#ecfdf5]',
-        subtext: 'text-[#065f46] dark:text-[#a7f3d0]',
-        dot: 'bg-[#059669]',
-    },
-    sky: {
-        key: 'sky',
-        bg: 'bg-[#7dd3fc] dark:bg-[#0c4a6e]/90',
-        border: 'border-[#0284c7] dark:border-[#38bdf8]',
-        text: 'text-[#082f49] dark:text-[#f0f9ff]',
-        subtext: 'text-[#075985] dark:text-[#bae6fd]',
-        dot: 'bg-[#0284c7]',
-    },
-    lavender: {
-        key: 'lavender',
-        bg: 'bg-[#c4b5fd] dark:bg-[#3b0764]/90',
-        border: 'border-[#7c3aed] dark:border-[#a78bfa]',
-        text: 'text-[#3b0764] dark:text-[#f5f3ff]',
-        subtext: 'text-[#5b21b6] dark:text-[#ddd6fe]',
-        dot: 'bg-[#7c3aed]',
+        bg: 'bg-[#FFC701] dark:bg-[#3A2E0C]/90',
+        border: 'border-[#8A5A00] dark:border-[#C9A23A]',
+        text: 'text-[#3F2A00] dark:text-[#FFE9A8]',
+        subtext: 'text-[#5A3D00] dark:text-[#FFD86B]',
+        dot: 'bg-[#8A5A00]',
     },
     coral: {
         key: 'coral',
-        bg: 'bg-[#fda4af] dark:bg-[#4c0519]/90',
-        border: 'border-[#e11d48] dark:border-[#fb7185]',
-        text: 'text-[#4c0519] dark:text-[#fff1f2]',
-        subtext: 'text-[#9f1239] dark:text-[#fecdd3]',
-        dot: 'bg-[#e11d48]',
+        bg: 'bg-[#FE7235] dark:bg-[#3A1F12]/90',
+        border: 'border-[#A43E10] dark:border-[#FFAB7E]',
+        text: 'text-[#401300] dark:text-[#FFD3BC]',
+        subtext: 'text-[#5A1D02] dark:text-[#FFAB7E]',
+        dot: 'bg-[#A43E10]',
+    },
+    lime: {
+        key: 'lime',
+        bg: 'bg-[#E5FE96] dark:bg-[#26300F]/90',
+        border: 'border-[#4A6A00] dark:border-[#9BBF3A]',
+        text: 'text-[#2B3A00] dark:text-[#E4FBB0]',
+        subtext: 'text-[#3B4E00] dark:text-[#CDF55E]',
+        dot: 'bg-[#4A6A00]',
+    },
+    mint: {
+        key: 'mint',
+        bg: 'bg-[#6EE7B7] dark:bg-[#0E3A2C]/90',
+        border: 'border-[#0B6B4F] dark:border-[#3FBF92]',
+        text: 'text-[#04372A] dark:text-[#D3FBEA]',
+        subtext: 'text-[#065544] dark:text-[#6EDCAB]',
+        dot: 'bg-[#0B6B4F]',
+    },
+    sky: {
+        key: 'sky',
+        bg: 'bg-[#7DD3FC] dark:bg-[#0C3450]/90',
+        border: 'border-[#0A5E9E] dark:border-[#4FB4E8]',
+        text: 'text-[#04283D] dark:text-[#DCEEFF]',
+        subtext: 'text-[#063F63] dark:text-[#7DC7F7]',
+        dot: 'bg-[#0A5E9E]',
+    },
+    indigo: {
+        key: 'indigo',
+        bg: 'bg-[#4D4AFD] dark:bg-[#24244F]/90',
+        border: 'border-[#3431D2] dark:border-[#8C8AFF]',
+        text: 'text-[#F5F5FF] dark:text-[#E4E3FF]',
+        subtext: 'text-[#DCDBFF] dark:text-[#A5A3FF]',
+        dot: 'bg-[#E4E3FF]',
+    },
+    lavender: {
+        key: 'lavender',
+        bg: 'bg-[#E28CF8] dark:bg-[#38194A]/90',
+        border: 'border-[#8C2BA8] dark:border-[#D78BEC]',
+        text: 'text-[#3B0947] dark:text-[#F6DDFF]',
+        subtext: 'text-[#540F66] dark:text-[#E4A9F8]',
+        dot: 'bg-[#8C2BA8]',
+    },
+    rose: {
+        key: 'rose',
+        bg: 'bg-[#FB7185] dark:bg-[#3D1520]/90',
+        border: 'border-[#B01B3C] dark:border-[#F79FB0]',
+        text: 'text-[#42000E] dark:text-[#FFDCE3]',
+        subtext: 'text-[#5C0A20] dark:text-[#F79FB0]',
+        dot: 'bg-[#B01B3C]',
     },
 };
 

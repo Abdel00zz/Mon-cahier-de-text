@@ -8,7 +8,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName } from '../utils/classAbbreviation';
-import { classIdentityFor } from '../utils/classIdentity';
+import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
 import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
 import { ClassCard } from '../features/dashboard/ClassCard';
 import { dateTimeFormat, numberFormat } from '../utils/formatters';
@@ -545,15 +545,18 @@ test('numerotation : une evaluation garde son numero dans son titre, sans pastil
 
 test('identite de classe : palier et filiere deduits du nom, sans jamais rien perdre', () => {
   const physics = classIdentityFor('2ème Bac Sciences Physiques 3', 'fr');
-  assert.equal(physics.tierLabel, '2éme Bac');
+  assert.equal(physics.tierLabel, '2ème Bac');
   assert.equal(physics.stream, 'Sciences Physiques');
+  assert.equal(physics.streamFullName, 'Sciences Physiques');
   assert.equal(physics.group, '3');
 
   assert.equal(classIdentityFor('Tronc Commun Scientifique', 'fr').tierLabel, 'Tronc commun');
   assert.equal(classIdentityFor('Tronc Commun Scientifique', 'fr').stream, 'Scientifique');
   assert.equal(classIdentityFor('1er Bac Sciences Expérimentales', 'fr').stream, 'Sciences Expérimentales');
   assert.equal(classIdentityFor('2ème Bac Sciences Mathématiques A', 'fr').stream, 'Sciences Mathématiques A');
+  assert.equal(classIdentityFor('2ème Bac Sciences de la Vie et de la Terre Groupe 2', 'fr').stream, 'Sciences de la Vie et de la Terre');
   assert.equal(classIdentityFor('2ème Bac Sciences de la Vie et de la Terre Groupe 2', 'fr').group, '2');
+  assert.equal(classIdentityFor('1er Bac Lettres et Sciences Humaines', 'fr').stream, 'Lettres et Sciences Humaines');
 
   // Collège et prépa : aucun badge, l'intitulé d'origine reste affiché.
   assert.equal(classIdentityFor('1AC', 'fr').tierLabel, null);
@@ -571,7 +574,7 @@ test('identite de classe : palier et filiere deduits du nom, sans jamais rien pe
   // enregistre est l'intitule officiel francais.
   assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'ar').tierLabel, 'الثانية بكالوريا');
   assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'ar').stream, 'علوم فيزيائية');
-  assert.equal(classIdentityFor('Tronc Commun Scientifique', 'ar').stream, 'علمي');
+  assert.equal(classIdentityFor('Tronc Commun Scientifique', 'ar').stream, 'العلمي');
   assert.equal(classIdentityFor('2ème Bac Sciences Physiques', 'en').tierLabel, '2nd Bac');
   assert.equal(classIdentityFor('قسم الثالثة إعدادي 2', 'ar').tierLabel, 'الثالثة إعدادي');
 
@@ -603,14 +606,14 @@ test('carte de classe : palier et filiere dans le titre, numero de groupe a part
   // La carte n'affiche plus de pastille de palier : le titre porte le niveau,
   // la filière ET le tout reste aligné quelle que soit la longueur du libellé.
   assert.ok(!html.includes('data-level-badge'));
-  assert.ok(html.includes('2éme Bac'));
+  assert.ok(html.includes('2ème Bac'));
   assert.ok(html.includes('Sciences Physiques'));
   assert.ok(html.includes('keep-group-watermark'));
   // Le nom officiel reste annonce : aucune information n'est perdue a l'ecran.
   assert.ok(html.includes('2ème Bac Sciences Physiques 3'));
 });
 
-test('carte de classe : le college et la prepa gardent leur affichage d origine', () => {
+test('carte de classe : college et prepa gardent leur nom, avec le groupe separe une fois', () => {
   const render = (name: string) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(ClassCard as never, {
       classInfo: { id: 'c2', name },
@@ -621,6 +624,40 @@ test('carte de classe : le college et la prepa gardent leur affichage d origine'
   for (const name of ['1AC 1', '3AC', '1re année MPSI']) {
     const html = render(name);
     assert.ok(!html.includes('data-level-badge'), name);
-    assert.ok(!html.includes('keep-group-watermark'), name);
+    assert.equal(html.includes('keep-group-watermark'), name === '1AC 1', name);
+  }
+});
+
+test('noms de cartes : niveau, filiere et groupe apparaissent chacun une seule fois', () => {
+  const cases = [
+    ['1er Bac 3', 'fr', { tier: null, title: '1er Bac', group: '3', fullName: '1er Bac 3' }],
+    ['Tronc Commun Scientifique 2', 'ar', { tier: 'الجذع المشترك', title: 'العلمي', group: '2', fullName: 'الجذع المشترك العلمي 2' }],
+    ['Tronc Commun Scientifique 2', 'en', { tier: 'Common Core', title: 'Science', group: '2', fullName: 'Common Core Science 2' }],
+    ['2ème Bac Sciences Physiques Sciences Physiques 3', 'fr', { tier: '2ème Bac', title: 'Sciences Physiques', group: '3', fullName: '2ème Bac Sciences Physiques 3' }],
+    ['1AC1', 'fr', { tier: null, title: '1ère Année Collégiale', group: '1', fullName: '1ère Année Collégiale 1' }],
+    ['Ma classe', 'fr', { tier: null, title: 'Ma classe', group: null, fullName: 'Ma classe' }],
+  ] as const;
+  for (const [name, locale, expected] of cases) {
+    assert.deepEqual(classCardLabelFor(classIdentityFor(name, locale), locale), expected, name);
+  }
+  assert.equal(classCardLabelFor(classIdentityFor('قسم الجذع المشترك العلمي ٢', 'ar'), 'ar').fullName, 'الجذع المشترك العلمي ٢');
+  assert.equal(classIdentityFor('TCS2', 'fr').stream, 'Scientifique');
+  assert.equal(classIdentityFor('2ème Bac Sciences Mathématiques A 2').stream, 'Sciences Mathématiques A');
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques Sciences Physiques BIOF 3').stream, 'Sciences Physiques BIOF');
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques Option 12 bilingue').stream, 'Sciences Physiques Option 12 bilingue');
+  assert.equal(classIdentityFor('2ème Bac Sciences Physiques groupe A').stream, 'Sciences Physiques');
+});
+
+test('titres accessibles : un seul nom par titre, sans perdre le groupe', () => {
+  for (const name of ['1er Bac 3', '2ème Bac Sciences Physiques Sciences Physiques 3', '1AC1']) {
+    const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+      React.createElement(ClassCard as never, { classInfo: { id: 'unique-title', name }, onSelect: () => {}, onConfigure: () => {} } as never),
+    }));
+    const heading = html.match(/<h3\b[^>]*>([\s\S]*?)<\/h3>/)?.[1] ?? '';
+    assert.equal((heading.match(/class="sr-only"/g) ?? []).length, 1, name);
+    assert.ok(!heading.includes('Sciences Physiques Sciences Physiques'), name);
+    const label = classCardLabelFor(classIdentityFor(name, 'fr'), 'fr');
+    assert.ok(html.includes(`aria-label="Ouvrir ${label.fullName}"`), name);
+    assert.ok(!label.title.endsWith(` ${label.group}`), name);
   }
 });

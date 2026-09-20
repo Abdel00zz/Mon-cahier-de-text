@@ -70,7 +70,7 @@ const CLASS_LEVEL_GROUP_LABELS: Record<AppLocale, Record<ClassLevelGroupKey, str
     college: 'Collège',
     common: 'Tronc commun',
     firstBac: '1er Bac',
-    secondBac: '2éme Bac',
+    secondBac: '2ème Bac',
     prepa: 'Prépa',
     prepaFirst: '1ère année CPGE',
     prepaSecond: '2éme année CPGE',
@@ -266,20 +266,20 @@ const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
 
   // 1er Bac / 1BAC
   [/^(?:1bac+?\s*(?:se|sef|biof)|1[eé]r\s*bac+?\s*(?:se|sef|biof)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:exp\.?|expérimentales?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Expérimentales'],
-  [/^(?:1bac+?\s*(?:sm|smf)|1[eé]r\s*bac+?\s*(?:sm|smf)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
-  [/^(?:1bac+?\s*lsh|1bac+?\s*l|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
-  [/^(?:1bac+?\s*(?:eco|seg|seco)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
+  [/^(?:1bac+?\s*(?:sm|smf|s\.?m\.?)|1[eé]r\s*bac+?\s*(?:sm|smf|s\.?m\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Mathématiques'],
+  [/^(?:1bac+?\s*(?:lsh|l\.?s\.?h\.?)|1bac+?\s*l|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:lettres?(?:\s+et\s+sciences?\s+humaines?)?))(?![\p{L}\p{N}_])/iu, '1er Bac Lettres et Sciences Humaines'],
+  [/^(?:1bac+?\s*(?:eco|seg|seco|s\.?e\.?g\.?)|(?:1bac+?|1[eé]r\s*bac+?|1[èeé]re?\s*bac+?|1e\s*bac+?|1[èeé]re?\s*année\s*bac(?:calauréat)?)\s*(?:sc\.?|sciences?)\s*(?:éco\.?|économiques?(?:\s+et\s+gestion)?))(?![\p{L}\p{N}_])/iu, '1er Bac Sciences Économiques et Gestion'],
 
   // 2ème Bac / 2BAC
-  [/^(?:2bac+?\s*(?:pc|physique)\s*biof|2bac+?\s*pc|2[èeé]me\s*bac+?\s*pc|2e\s*bac+?\s*pc|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
-  [/^(?:2bac+?\s*svt\s*biof|2bac+?\s*svt|2[èeé]me\s*bac+?\s*svt|2e\s*bac+?\s*svt|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
-  [/^(?:2bac+?\s*sm\s*a|2bac+?\s*sma|2bac+?\s*sc\.?\s*maths?\s*a|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
-  [/^(?:2bac+?\s*sm\s*b|2bac+?\s*smb|2bac+?\s*sc\.?\s*maths?\s*b|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
-  [/^(?:2bac+?\s*sm|2bac+?\s*sc\.?\s*maths?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*(?:pc|p\.?c\.?|physique)\s*biof|2bac+?\s*(?:pc|p\.?c\.?)|2[èeé]me\s*bac+?\s*(?:pc|p\.?c\.?)|2e\s*bac+?\s*(?:pc|p\.?c\.?)|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:physiques?|pc|p\.?c\.?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Physiques'],
+  [/^(?:2bac+?\s*(?:svt|s\.?v\.?t\.?)\s*biof|2bac+?\s*(?:svt|s\.?v\.?t\.?)|2[èeé]me\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|2e\s*bac+?\s*(?:svt|s\.?v\.?t\.?)|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+la\s+vie\s+et\s+de\s+la\s+terre|svt|s\.?v\.?t\.?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de la Vie et de la Terre'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*a|2bac+?\s*sma|2bac+?\s*sc\.?\s*maths?\s*a|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*a)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)\s*b|2bac+?\s*smb|2bac+?\s*sc\.?\s*maths?\s*b|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?)\s*b)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques B'],
+  [/^(?:2bac+?\s*(?:sm|s\.?m\.?)|2bac+?\s*sc\.?\s*maths?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:maths?|mathématiques?))(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Mathématiques A'],
   [/^(?:2bac+?\s*(?:eco|seco)|2bac+?\s*sc\.?\s*éco\.?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*économiques?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Économiques'],
-  [/^(?:2bac+?\s*sgc|2bac+?\s*sc\.?\s*gestion\s*comptable|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
+  [/^(?:2bac+?\s*(?:sgc|s\.?g\.?c\.?)|2bac+?\s*sc\.?\s*gestion\s*comptable|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*(?:de\s+)?gestion\s+comptable)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences de Gestion Comptable'],
   [/^(?:2bac+?\s*l|2bac+?\s*lettres?|2[èeé]me\s*bac+?\s*lettres?)(?![\p{L}\p{N}_])/iu, '2ème Bac Lettres'],
-  [/^(?:2bac+?\s*(?:sh|lsh)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
+  [/^(?:2bac+?\s*(?:sh|lsh|s\.?h\.?|l\.?s\.?h\.?)|2bac+?\s*sc\.?\s*humaines?|2[èeé]me\s*bac+?\s*(?:sc\.?|sciences?)\s*humaines?)(?![\p{L}\p{N}_])/iu, '2ème Bac Sciences Humaines'],
 ];
 
 export const normalizeOfficialClassName = (name: string): string => {
@@ -365,6 +365,91 @@ export const formatClassGroupLabel = (group: string, locale: AppLocale): string 
  * intitulés officiels des classes restent en français : le badge est un élément
  * d'interface, au même titre que les onglets de cycle.
  */
+/**
+ * Libellés complets officiels des filières (info-bulles, accessibilité).
+ */
+const CLASS_STREAM_FULL_NAMES: Record<AppLocale, Record<string, string>> = {
+  fr: {
+    'SVT': 'Sciences de la Vie et de la Terre',
+    'SM': 'Sciences Mathématiques',
+    'SM-A': 'Sciences Mathématiques A',
+    'SM-B': 'Sciences Mathématiques B',
+    'PC': 'Sciences Physiques',
+    'SEXP': 'Sciences Expérimentales',
+    'SECO': 'Sciences Économiques',
+    'SEG': 'Sciences Économiques et Gestion',
+    'SGC': 'Sciences de Gestion Comptable',
+    'SH': 'Sciences Humaines',
+    'L': 'Lettres',
+    'LSH': 'Lettres et Sciences Humaines',
+    'SI': 'Sciences de l’ingénieur',
+    'TC-S': 'Scientifique',
+    'TC-L': 'Lettres et Sciences Humaines',
+    'TC-T': 'Technologique',
+    'MPSI': 'Mathématiques, physique et sciences de l’ingénieur',
+    'PCSI': 'Physique, chimie et sciences de l’ingénieur',
+    'TSI': 'Technologie et sciences industrielles',
+    'ECS': 'Économie et commerce, option scientifique',
+    'ECT': 'Économie et commerce, option technologique',
+    'MP': 'Mathématiques et physique',
+    'PSI': 'Physique et sciences de l’ingénieur',
+  },
+  ar: {
+    'SVT': 'علوم الحياة والأرض',
+    'SM': 'علوم رياضية',
+    'SM-A': 'علوم رياضية أ',
+    'SM-B': 'علوم رياضية ب',
+    'PC': 'علوم فيزيائية',
+    'SEXP': 'علوم تجريبية',
+    'SECO': 'علوم اقتصادية',
+    'SEG': 'علوم اقتصادية وتدبير',
+    'SGC': 'علوم التدبير المحاسباتي',
+    'SH': 'علوم إنسانية',
+    'L': 'آداب',
+    'LSH': 'آداب وعلوم إنسانية',
+    'SI': 'علوم المهندس',
+    'TC-S': 'جذع مشترك علمي',
+    'TC-L': 'جذع مشترك آداب وعلوم إنسانية',
+    'TC-T': 'جذع مشترك تكنولوجي',
+    'MPSI': 'رياضيات وفيزياء وعلوم المهندس',
+    'PCSI': 'فيزياء وكيمياء وعلوم المهندس',
+    'TSI': 'تكنولوجيا وعلوم صناعية',
+    'ECS': 'اقتصاد وتجارة خيار علمي',
+    'ECT': 'اقتصاد وتجارة خيار تكنولوجي',
+    'MP': 'رياضيات وفيزياء',
+    'PSI': 'فيزياء وعلوم المهندس',
+  },
+  en: {
+    'SVT': 'Life and Earth Sciences',
+    'SM': 'Mathematical Sciences',
+    'SM-A': 'Mathematical Sciences A',
+    'SM-B': 'Mathematical Sciences B',
+    'PC': 'Physics and Chemistry',
+    'SEXP': 'Experimental Sciences',
+    'SECO': 'Economic Sciences',
+    'SEG': 'Economics and Management',
+    'SGC': 'Accounting Management',
+    'SH': 'Humanities',
+    'L': 'Literature',
+    'LSH': 'Literature and Humanities',
+    'SI': 'Engineering Sciences',
+    'TC-S': 'Science Common Core',
+    'TC-L': 'Literature and Humanities Common Core',
+    'TC-T': 'Technology Common Core',
+    'MPSI': 'Mathematics, Physics & Engineering Sciences',
+    'PCSI': 'Physics, Chemistry & Engineering Sciences',
+    'TSI': 'Technology & Industrial Sciences',
+    'ECS': 'Economy & Commerce (Scientific)',
+    'ECT': 'Economy & Commerce (Technological)',
+    'MP': 'Mathematics & Physics',
+    'PSI': 'Physics & Engineering Sciences',
+  },
+};
+
+/**
+ * Intitulés complets officiels des filières (Sciences de la Vie et de la Terre,
+ * Sciences Physiques, Sciences Mathématiques, Lettres et Sciences Humaines...).
+ */
 const CLASS_STREAM_LABELS: Record<AppLocale, Record<string, string>> = {
   fr: {
     'SVT': 'Sciences de la Vie et de la Terre',
@@ -406,9 +491,9 @@ const CLASS_STREAM_LABELS: Record<AppLocale, Record<string, string>> = {
     'L': 'آداب',
     'LSH': 'آداب وعلوم إنسانية',
     'SI': 'علوم المهندس',
-    'TC-S': 'علمي',
+    'TC-S': 'العلمي',
     'TC-L': 'الآداب والعلوم الإنسانية',
-    'TC-T': 'تكنولوجي',
+    'TC-T': 'التكنولوجي',
     'MPSI': 'MPSI',
     'PCSI': 'PCSI',
     'TSI': 'TSI',
@@ -450,6 +535,11 @@ const normalizeStreamCode = (code: string): string => code.replace(/[·\s_]/g, '
 export const formatClassStreamLabel = (code: string, locale: AppLocale): string | null => {
   if (!code) return null;
   return CLASS_STREAM_LABELS[locale][normalizeStreamCode(code)] ?? null;
+};
+
+export const formatClassStreamFullName = (code: string, locale: AppLocale): string | null => {
+  if (!code) return null;
+  return CLASS_STREAM_FULL_NAMES[locale][normalizeStreamCode(code)] ?? null;
 };
 
 export interface ClassLevelIdentity {

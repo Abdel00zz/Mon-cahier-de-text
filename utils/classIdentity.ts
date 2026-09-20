@@ -1,7 +1,9 @@
 import type { AppLocale } from '../types';
 import {
     formatClassStreamLabel,
+    formatClassStreamFullName,
     formatClassTierLabel,
+    formatLocalizedClassDisplayName,
     lookupClassLevelIdentity,
     tierForLevelCode,
     type ClassTierKey,
@@ -24,8 +26,10 @@ export interface ClassIdentity {
     tierKey: ClassTierKey | null;
     /** Libellé localisé du palier, prêt pour le badge. */
     tierLabel: string | null;
-    /** Filière localisée ; `null` quand le niveau n'en porte pas (collège). */
+    /** Filière abrégée (sigle officiel : « S.VT », « P.C », « SM », « LSH »...) ; `null` si non applicable. */
     stream: string | null;
+    /** Nom complet officiel de la filière (« Sciences de la Vie et de la Terre », etc.) pour info-bulle. */
+    streamFullName?: string | null;
     /** Groupe (« 3 », « A »), `null` si absent. */
     group: string | null;
     /** Nom complet d'origine : jamais perdu (info-bulle, lecteurs d'écran). */
@@ -36,6 +40,7 @@ const EMPTY_IDENTITY: Omit<ClassIdentity, 'full'> = {
     tierKey: null,
     tierLabel: null,
     stream: null,
+    streamFullName: null,
     group: null,
 };
 
@@ -51,7 +56,7 @@ const BADGE_TIERS: ReadonlySet<ClassTierKey> = new Set<ClassTierKey>(['common', 
 const tierLabelFor = (tier: ClassTierKey, locale: AppLocale): string | null =>
     BADGE_TIERS.has(tier) ? formatClassTierLabel(tier, locale) : null;
 
-const LAST_NUMBER = /\b\d{1,2}\b/g;
+const LAST_NUMBER = /(?:^|\s)([0-9٠-٩۰-۹]{1,2})\s*$/;
 const TRAILING_LETTER = /(?:^|[\s·\-–])([A-Za-z])$/;
 /** Mot annonçant le groupe : il décrit le numéro, il ne fait pas partie de la filière. */
 const GROUP_WORD = /(?:^|\s)(?:groupe|grp|group|section|classe|فوج|الفوج)\s*$/iu;
@@ -65,19 +70,17 @@ const splitGroup = (mention: string): { group: string | null; rest: string } => 
     const trimmed = mention.trim();
     if (!trimmed) return { group: null, rest: '' };
 
-    const numbers = [...trimmed.matchAll(LAST_NUMBER)];
-    if (numbers.length > 0) {
-        const last = numbers[numbers.length - 1];
-        const start = last.index ?? 0;
-        const rest = `${trimmed.slice(0, start)} ${trimmed.slice(start + last[0].length)}`
+    const last = trimmed.match(LAST_NUMBER);
+    if (last) {
+        const rest = trimmed.slice(0, last.index)
             .replace(GROUP_WORD, ' ')
             .replace(/\s+/g, ' ')
             .trim();
-        return { group: last[0], rest };
+        return { group: last[1], rest };
     }
 
     const letter = trimmed.match(TRAILING_LETTER);
-    if (letter) return { group: letter[1].toUpperCase(), rest: trimmed.slice(0, letter.index).trim() };
+    if (letter) return { group: letter[1].toUpperCase(), rest: trimmed.slice(0, letter.index).replace(GROUP_WORD, '').trim() };
 
     return { group: null, rest: trimmed };
 };
@@ -90,7 +93,20 @@ const splitGroup = (mention: string): { group: string | null; rest: string } => 
 const composeStream = (code: string, mention: string, locale: AppLocale): string | null => {
     const label = formatClassStreamLabel(code, locale);
     if (!label) return mention || null;
-    return mention ? `${label} ${mention}` : label;
+    // Certains anciens noms contiennent la filière deux fois. Ne retirer que
+    // des libellés connus, en conservant les mentions libres (BIOF, option…).
+    const labels = (['fr', 'ar', 'en'] as const)
+        .flatMap(language => [formatClassStreamLabel(code, language), formatClassStreamFullName(code, language)])
+        .filter((value): value is string => Boolean(value))
+        .sort((left, right) => right.length - left.length);
+    let rest = mention;
+    while (rest) {
+        const duplicate = labels.find(value => rest.toLocaleLowerCase().startsWith(value.toLocaleLowerCase())
+            && (rest.length === value.length || /\s/.test(rest[value.length])));
+        if (!duplicate) break;
+        rest = rest.slice(duplicate.length).trim();
+    }
+    return rest ? `${label} ${rest}` : label;
 };
 
 /**
@@ -118,7 +134,7 @@ const ARABIC_STREAM_CODES = [
 ];
 
 const arabicStreamCodes = [...ARABIC_STREAM_CODES].sort((left, right) =>
-    (formatClassStreamLabel(right, 'ar')?.length ?? 0) - (formatClassStreamLabel(left, 'ar')?.length ?? 0)
+    (formatClassStreamFullName(right, 'ar')?.length ?? 0) - (formatClassStreamFullName(left, 'ar')?.length ?? 0)
 );
 
 const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 'full'> | null => {
@@ -128,17 +144,18 @@ const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 
     const [, tierKey] = matchedTier;
 
     const streamCode = arabicStreamCodes.find(code => {
+        const full = formatClassStreamFullName(code, 'ar');
         const label = formatClassStreamLabel(code, 'ar');
-        return label !== null && source.includes(label);
+        return (full !== null && source.includes(full)) || (label !== null && source.includes(label));
     }) ?? '';
 
     // Ce qui reste après le palier et le groupe : filière non répertoriée, que
     // l'on affiche telle quelle plutôt que de la perdre.
-    const group = source.match(/(?:^|\s)(\d{1,2})\s*$/)?.[1] ?? null;
+    const group = source.match(LAST_NUMBER)?.[1] ?? null;
     const leftover = source
         .replace(/^\s*قسم\s*/, '')
         .replace(matchedTier[0], '')
-        .replace(/(?:^|\s)\d{1,2}\s*$/, '')
+        .replace(LAST_NUMBER, '')
         .replace(/\s+/g, ' ')
         .trim();
 
@@ -146,6 +163,7 @@ const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 
         tierKey,
         tierLabel: formatClassTierLabel(tierKey, locale),
         stream: composeStream(streamCode, streamCode ? '' : leftover, locale),
+        streamFullName: formatClassStreamFullName(streamCode, locale),
         group,
     };
 };
@@ -162,10 +180,12 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
     const canonical = lookupClassLevelIdentity(full);
     if (canonical) {
         const { group, rest } = splitGroup(canonical.suffix);
+        const streamCode = canonical.identity.stream;
         return {
             tierKey: canonical.identity.tier,
             tierLabel: tierLabelFor(canonical.identity.tier, locale),
-            stream: composeStream(canonical.identity.stream, rest, locale),
+            stream: composeStream(streamCode, rest, locale),
+            streamFullName: formatClassStreamFullName(streamCode, locale),
             group,
             full,
         };
@@ -174,14 +194,31 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
     const parsed = parseClassName(full);
     const parsedTier = tierForLevelCode(parsed.level);
     if (parsedTier) {
+        const streamCode = disambiguateStream(parsed.stream || (parsed.level.startsWith('TC·') ? parsed.level.replace('·', '-') : ''), full);
         return {
             tierKey: parsedTier,
             tierLabel: tierLabelFor(parsedTier, locale),
-            stream: composeStream(disambiguateStream(parsed.stream, full), '', locale),
+            stream: composeStream(streamCode, '', locale),
+            streamFullName: formatClassStreamFullName(streamCode, locale),
             group: parsed.group || null,
             full,
         };
     }
 
     return { ...(arabicIdentity(full, locale) ?? EMPTY_IDENTITY), full };
+};
+
+/** Une seule composition partagée par la grille, la liste et leurs libellés accessibles. */
+export const classCardLabelFor = (identity: ClassIdentity, locale: AppLocale) => {
+    const tier = identity.tierLabel && identity.stream ? identity.tierLabel : null;
+    let title = identity.tierLabel
+        ? identity.stream || identity.tierLabel
+        : formatLocalizedClassDisplayName(identity.full, locale, { includeClassPrefix: false });
+    const group = identity.group;
+    // Pour le collège/prépa, le nom localisé comprend encore le groupe.
+    if (!identity.tierLabel && group && title.endsWith(group)) {
+        const base = title.slice(0, -group.length).replace(GROUP_WORD, '').trim();
+        title = formatLocalizedClassDisplayName(base, locale, { includeClassPrefix: false });
+    }
+    return { tier, title, group, fullName: [tier, title, group].filter(Boolean).join(' ') };
 };

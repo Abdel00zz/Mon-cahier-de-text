@@ -27,22 +27,23 @@ export type TitleFontRole = 'card' | 'list' | 'page';
 /** Piles de caractères. Les replis évitent tout rendu cassé si la police
  *  principale n'est pas encore chargée (`display=swap`). */
 const TITLE_FAMILIES: Record<TitleScript, string> = {
-    latin: "'Newsreader', 'Rubik', 'DM Sans', serif",
+    latin: "'Roboto Slab', 'Lato', 'DM Sans', ui-sans-serif, sans-serif",
     arabic: "'Maghribi Font 3', 'Rubik', 'DM Sans', serif",
 };
 
-/** Graisse et interlettrage par rôle et par écriture. */
+/** Titres : demi-gras moderne en latin (Roboto Slab est plus large que Lora,
+ *  d'où un interlettrage un peu plus serré) ; pas de gras synthétique en arabe. */
 const TITLE_RECIPES: Record<TitleFontRole, Record<TitleScript, { weight: number; tracking: string }>> = {
     card: {
-        latin: { weight: 400, tracking: '-0.01em' },
-        arabic: { weight: 600, tracking: '0.015em' },
+        latin: { weight: 500, tracking: '-0.012em' },
+        arabic: { weight: 400, tracking: '0' },
     },
     list: {
-        latin: { weight: 400, tracking: '-0.01em' },
-        arabic: { weight: 600, tracking: '0.015em' },
+        latin: { weight: 400, tracking: '-0.008em' },
+        arabic: { weight: 400, tracking: '0' },
     },
     page: {
-        latin: { weight: 500, tracking: '-0.02em' },
+        latin: { weight: 600, tracking: '-0.022em' },
         arabic: { weight: 700, tracking: '0.015em' },
     },
 };

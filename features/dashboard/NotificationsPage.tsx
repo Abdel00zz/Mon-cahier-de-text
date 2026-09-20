@@ -42,6 +42,7 @@ import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { Modal } from '@/components/ui/modal';
 import { CurriculumProgressLabel } from '@/components/CurriculumProgressLabel';
 import { dateTimeFormat } from '@/utils/formatters';
+import { SereneStudyIllustration } from '@/components/ui/DynamicIllustration';
 
 const SIGNAL_FALLBACK_ICON: Record<ClassSignal['kind'], React.ComponentType<{ className?: string }>> = {
   'date': CalendarCheck,
@@ -124,12 +125,14 @@ const SignalCard: React.FC<{
 };
 
 const EmptyState: React.FC<{ title: string; description: string }> = ({ title, description }) => (
-  <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary/65">
-      <Check className="h-6 w-6" />
+  <div className="flex flex-col items-center justify-center px-4 py-12 text-center select-none">
+    <SereneStudyIllustration size={120} className="mb-2" />
+    <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold mb-2">
+      <Check className="h-3.5 w-3.5 stroke-[2.5]" />
+      <span>Sérénité pédagogique</span>
     </div>
-    <h3 className="text-sm font-bold text-foreground">{title}</h3>
-    <p className="mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">{description}</p>
+    <h3 className="text-base font-bold text-foreground">{title}</h3>
+    <p className="mt-1.5 max-w-sm text-xs sm:text-sm leading-relaxed text-muted-foreground text-pretty">{description}</p>
   </div>
 );
 

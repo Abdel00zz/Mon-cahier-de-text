@@ -13,6 +13,8 @@ import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/compon
 import { useLocale } from '@/i18n/LocaleProvider';
 import { hasOnlyPristineStarterDiagnostic } from '@/utils/starterDiagnostic';
 import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
+import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
+import { motion } from 'framer-motion';
 
 const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
 const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
@@ -259,7 +261,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
 
 SessionGroupRow.displayName = 'SessionGroupRow';
 
-/* État vide réinventé selon le design system éditorial chaud & épuré. */
+/* État vide réinventé selon le design system éditorial chaud & épuré avec illustration dynamique. */
 const EmptyState: React.FC<{
   onOpenAddContentModal: (indices?: Indices) => void;
   predefinedProgramTitle?: string;
@@ -270,63 +272,52 @@ const EmptyState: React.FC<{
 
     return (
         <section className="flex justify-center py-6 sm:py-10">
-            <div className="w-full max-w-[460px] overflow-hidden rounded-[16px] border border-border bg-card shadow-none transition-all">
+            <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-border bg-card shadow-sm transition-all">
                 {/* Surface principale */}
-                <div className="flex flex-col items-center px-7 pt-9 pb-8 text-center sm:px-9 sm:pt-10 sm:pb-9">
-                    {/* Conteneur d'icône 56x56 */}
-                    <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-muted text-muted-foreground">
-                        <svg
-                            viewBox="0 0 24 24"
-                            width="28"
-                            height="28"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                        >
-                            <rect x="4" y="3" width="16" height="18" rx="2.5" />
-                            <line x1="8" y1="8" x2="16" y2="8" />
-                            <line x1="8" y1="12" x2="16" y2="12" />
-                            <line x1="8" y1="16" x2="12" y2="16" />
-                        </svg>
-                    </div>
+                <div className="flex flex-col items-center px-7 pt-7 pb-8 text-center sm:px-9 sm:pt-9 sm:pb-9">
+                    {/* Illustration vectorielle vivante avec micro-mouvement de respiration */}
+                    <NotebookOpeningIllustration size={130} className="mb-3" />
 
                     {/* Titre 21px bold */}
-                    <h2 className="mt-5 text-[21px] font-bold tracking-tight text-foreground">
+                    <h2 className="mt-2 text-[21px] font-bold tracking-tight text-foreground">
                         {t('emptyNotebook.label')}
                     </h2>
 
                     {/* Description 14.5px (uniquement si programme officiel disponible) */}
                     {canLoadPredefined && (
-                        <p className="mt-3 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-muted-foreground">
+                        <p className="mt-2.5 max-w-[380px] text-[14.5px] font-normal leading-[1.65] text-muted-foreground">
                             {t('emptyNotebook.programAvailable')}
                         </p>
                     )}
 
-                    {/* Boutons d'action */}
+                    {/* Boutons d'action avec physique de ressort (Spring physics) */}
                     <div className="mt-6 flex w-full flex-col gap-2.5">
                         {canLoadPredefined && (
-                            <button
+                            <motion.button
                                 type="button"
+                                whileHover={{ scale: 1.015 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                                 onClick={onLoadPredefined}
-                                className="flex h-12 w-full items-center justify-center rounded-[10px] bg-primary px-5 text-[14.5px] font-semibold text-primary-foreground transition-all duration-150 hover:-translate-y-px hover:brightness-110 active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                                className="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-5 text-[14.5px] font-semibold text-primary-foreground shadow-xs transition-colors hover:brightness-110 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
                             >
                                 {t('emptyNotebook.importProgram')}
-                            </button>
+                            </motion.button>
                         )}
-                        <button
+                        <motion.button
                             type="button"
+                            whileHover={{ scale: 1.015 }}
+                            whileTap={{ scale: 0.97 }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                             onClick={() => onOpenAddContentModal()}
-                            className={`flex h-12 w-full items-center justify-center rounded-[10px] text-[14.5px] font-semibold transition-all duration-150 hover:-translate-y-px active:translate-y-0 active:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                            className={`flex h-12 w-full items-center justify-center rounded-xl text-[14.5px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer ${
                                 canLoadPredefined
                                     ? 'border border-border bg-transparent text-foreground hover:bg-muted'
-                                    : 'bg-primary text-primary-foreground hover:brightness-110'
+                                    : 'bg-primary text-primary-foreground hover:brightness-110 shadow-xs'
                             }`}
                         >
                             {t('emptyNotebook.createChapter')}
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
 

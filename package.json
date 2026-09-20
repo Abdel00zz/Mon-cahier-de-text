@@ -21,6 +21,7 @@
     "test:notifications": "tsx scripts/test-notification-mechanisms.ts",
     "test:admin-sync": "tsx scripts/test-admin-sync.ts",
     "test:editor": "node scripts/run-editor-tests.mjs",
+    "test:modals": "tsx scripts/test-modal-motion.ts",
     "test:guide": "tsx scripts/test-guide.ts"
   },
   "dependencies": {

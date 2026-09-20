@@ -918,7 +918,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       onClose={() => requestExit()}
       title={t('settings.title')}
       maxWidth="5xl"
-      swipeFromBody
       mobileDetents={SETTINGS_MOBILE_DETENTS}
       initialMobileDetent={0.62}
       className="settings-modal-sheet overflow-hidden sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-[1200px] sm:rounded-2xl"

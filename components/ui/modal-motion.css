@@ -1,0 +1,83 @@
+/* One motion owner: Radix retains both layers until their CSS exits finish. */
+.modal-motion-overlay {
+  background: linear-gradient(180deg, rgb(23 30 37 / .24), rgb(23 30 37 / .44));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.dark .modal-motion-overlay { background: rgb(8 13 20 / .64); }
+.modal-motion-overlay[data-state="open"] { animation: modal-scrim-in 220ms ease-out both; }
+.modal-motion-overlay[data-state="closed"] { animation: modal-scrim-out 200ms ease-in both; }
+.modal-motion-surface {
+  --modal-visible-height: var(--app-viewport-height, 100dvh);
+  --modal-visible-top: var(--app-viewport-offset-top, 0px);
+  --modal-keyboard-inset: max(0px, calc(100dvh - var(--modal-visible-height) - var(--modal-visible-top)));
+  border-color: hsl(var(--border) / .8);
+  background: hsl(var(--card));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .58), 0 24px 70px -24px rgb(15 25 38 / .3);
+  transform: translate3d(0, var(--sheet-drag-y, 0px), 0);
+}
+.dark .modal-motion-surface { box-shadow: inset 0 1px 0 rgb(240 245 255 / .07), 0 24px 70px -24px rgb(4 9 16 / .65); }
+.modal-motion-surface[data-state="open"] { animation: modal-dialog-in 260ms cubic-bezier(.22, 1, .36, 1) backwards; }
+.modal-motion-surface[data-state="closed"] { animation: modal-dialog-out 200ms cubic-bezier(.4, 0, 1, 1) both; pointer-events: none; }
+.modal-motion-surface .modal-pro-header { border-bottom: 1px solid hsl(var(--border) / .6); }
+.modal-motion-surface .modal-pro-header [data-ui-title] { font-weight: 600; }
+.modal-motion-surface .modal-body { scroll-padding-block: 20px; touch-action: pan-y pinch-zoom; }
+.modal-motion-surface .modal-pro-footer { background: hsl(var(--card)); border-top: 1px solid hsl(var(--border) / .65); box-shadow: 0 -10px 24px -20px rgb(28 42 56 / .2); }
+.modal-motion-surface .dialog-close { width: 44px; height: 44px; touch-action: manipulation; }
+.modal-motion-surface .modal-drag-handle { touch-action: none; }
+.modal-drag-handle:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: -6px; border-radius: 12px; }
+.modal-drag-indicator { display: block; width: 36px; height: 4px; border-radius: 10px; background: hsl(var(--muted-foreground) / .36); transition: transform 180ms ease, background-color 180ms ease; }
+.modal-drag-handle:active .modal-drag-indicator,
+.modal-motion-surface[data-drag-state="dragging"] .modal-drag-indicator { transform: scaleX(1.25); background: hsl(var(--muted-foreground) / .65); }
+.modal-motion-surface[data-swipe-enabled="true"] .modal-header { touch-action: none; }
+.modal-motion-surface[data-drag-state="dragging"][data-state="open"] { animation: none; transition: none; user-select: none; will-change: transform; }
+.modal-motion-surface[data-drag-state="settling"][data-state="open"] { animation: none; transition: transform 240ms cubic-bezier(.22, 1, .36, 1), max-height 260ms cubic-bezier(.22, 1, .36, 1); }
+
+@media (max-width: 639px) {
+  .modal-motion-surface {
+    width: auto;
+    margin: 0;
+    inset-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px));
+    top: auto;
+    bottom: var(--modal-keyboard-inset);
+    max-height: min(calc(var(--modal-visible-height) * var(--sheet-detent, .94)), calc(var(--modal-visible-height) - max(12px, env(safe-area-inset-top, 0px))));
+    border-radius: 26px 26px 0 0;
+    padding: 0;
+  }
+  .modal-motion-surface[data-mobile-presentation="sheet"][data-state="open"] { animation-name: modal-sheet-in; animation-duration: 280ms; }
+  .modal-motion-surface[data-mobile-presentation="sheet"][data-state="closed"] { animation-name: modal-sheet-out; }
+  .modal-motion-surface[data-sheet-resizable="true"] { transition: max-height 260ms cubic-bezier(.22, 1, .36, 1); }
+  .modal-motion-surface[data-mobile-presentation="dialog"] {
+    top: calc(var(--modal-visible-top) + max(12px, env(safe-area-inset-top, 0px)));
+    bottom: calc(var(--modal-keyboard-inset) + max(12px, env(safe-area-inset-bottom, 0px)));
+    margin-block: auto;
+    max-height: calc(var(--modal-visible-height) - max(24px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
+    border-radius: 24px;
+  }
+  .modal-motion-surface.settings-modal-sheet { bottom: calc(var(--modal-keyboard-inset) + 8px); border-radius: 26px; }
+  .modal-motion-surface .modal-pro-header { padding: 18px 20px 16px; padding-inline-end: 64px; gap: 5px; }
+  .modal-motion-surface[data-has-handle="true"] .modal-pro-header { padding-top: 44px; }
+  .modal-motion-surface[data-has-handle="true"] .dialog-close { top: 36px; }
+  .modal-motion-surface .dialog-close { top: 10px; inset-inline-end: 10px; background: hsl(var(--muted) / .6); }
+  .modal-motion-surface .modal-body { padding: 20px; }
+  .modal-motion-surface[data-has-handle="true"] > .modal-body:first-of-type { padding-top: 48px; }
+  .modal-motion-surface .modal-pro-footer { padding: 14px 20px max(14px, env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  .modal-motion-surface .modal-pro-footer :is(button, [role="button"]) { min-height: 44px; }
+  /* Avoid Safari's automatic zoom when editing a phone form. */
+  .modal-motion-surface :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { font-size: 16px; }
+  html[data-keyboard="open"] .modal-motion-surface { max-height: calc(var(--modal-visible-height) - 12px); transition: none; }
+  html[data-keyboard="open"] .modal-motion-surface .modal-pro-footer { padding-block: 10px; }
+}
+
+@keyframes modal-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-scrim-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modal-dialog-in { from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.975); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes modal-dialog-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, 8px, 0) scale(.985); } }
+@keyframes modal-sheet-in { from { transform: translate3d(0, calc(100% + 16px), 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes modal-sheet-out { from { transform: translate3d(0, var(--sheet-release-y, 0px), 0); } to { transform: translate3d(0, calc(100% + 16px), 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-motion-surface[data-state], .modal-motion-overlay[data-state], .modal-motion-surface[data-drag-state][data-state="open"] { animation: none; transition: none; }
+  .modal-motion-surface .modal-drag-indicator { transition: none; }
+  .modal-motion-surface { scroll-behavior: auto; }
+}

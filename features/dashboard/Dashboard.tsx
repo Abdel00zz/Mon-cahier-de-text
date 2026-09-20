@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
 import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
 import './dashboardCanvas.css';
+import { ClassroomWelcomeIllustration } from '@/components/ui/DynamicIllustration';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -259,7 +260,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const currentDisplay = CLASS_DISPLAY_OPTIONS.includes(classDisplayMode) ? classDisplayMode : 'double';
     const classGridClass = currentDisplay === 'single'
         ? 'grid-cols-1 max-w-[500px] mx-auto auto-rows-fr items-stretch'
-        : 'grid-cols-1 min-[360px]:grid-cols-2 auto-rows-fr items-stretch justify-start';
+        : 'grid-cols-1 sm:grid-cols-2 auto-rows-fr items-stretch justify-start';
 
     const displayCopy = (value: ClassDisplayMode) => {
         const keys: Record<ClassDisplayMode, [string, string]> = {
@@ -306,20 +307,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-3 sm:mb-4">
-                            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
-                                <div>
-                                    {/* Même typographie de référence que les titres de
-                                        classe (module unique), rôle « page ». */}
+                        <div className="mb-4 sm:mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+                                <div className="max-w-xl">
+                                    {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1
                                         style={classTitleStyle(isRtl, 'page')}
-                                        className="text-xl sm:text-2xl lg:text-3xl text-stone-950 dark:text-stone-50 leading-tight"
+                                        className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 font-lora leading-[1.18] tracking-tight"
                                     >
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 sm:gap-2 ms-auto">
+                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 self-start sm:self-end">
                                     {/* Bouton « 2 par ligne » compact, serré et moins arrondi (rounded-md) */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button
@@ -414,6 +414,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             </Button>
                                         </div>
                                     </div>
+                                ) : filteredClasses.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card/90 backdrop-blur-md px-4 py-12 text-center shadow-xs">
+                                        <ClassroomWelcomeIllustration size={110} className="mb-2" />
+                                        <h3 className="font-serif font-bold text-lg text-foreground mt-2">
+                                            {locale === 'ar' ? 'لا توجد أقسام مطابقة' : 'Aucune classe correspondante'}
+                                        </h3>
+                                        <p className="mt-1 text-xs text-muted-foreground max-w-xs">
+                                            {locale === 'ar' ? 'يمكنك عرض كل المواد أو إنشاء قسم جديد' : 'Sélectionnez « Toutes » les matières ou ajoutez une nouvelle classe.'}
+                                        </p>
+                                        <motion.button
+                                            type="button"
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.96 }}
+                                            transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                                            onClick={() => setSubjectFilter('all')}
+                                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:brightness-110 active:brightness-95 transition-colors cursor-pointer shadow-xs"
+                                        >
+                                            {locale === 'ar' ? 'عرض كل الأقسام' : 'Afficher toutes les classes'}
+                                        </motion.button>
+                                    </div>
                                 ) : currentDisplay === 'list' ? (
                                     <div className="overflow-hidden rounded-[var(--radius-xl,0.875rem)] border border-border bg-card shadow-none" role="list" aria-label={t('dashboard.classList')}>
                                         {filteredClasses.map((classInfo) => {
@@ -440,7 +460,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )})}
                                     </div>
                                 ) : (
-                                    <div className={`grid ${classGridClass} w-full gap-2 sm:gap-2.5 lg:gap-3`}>
+                                    <div className={`grid ${classGridClass} w-full gap-3 sm:gap-4 lg:gap-5`}>
                                         {filteredClasses.map((classInfo, index) => {
                                             const isActiveSession = activeSessionIds.has(classInfo.id);
                                             return (
