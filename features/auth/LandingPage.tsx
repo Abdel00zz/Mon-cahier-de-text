@@ -1,4 +1,4 @@
-import { Sparkles, Calendar, Bell, ArrowRight, ArrowLeft, LogIn } from "lucide-react";
+import { Sparkles, Calendar, Bell } from "lucide-react";
 import type { AppLocale } from "@/types";
 
 const COPY = {
@@ -76,18 +76,12 @@ export function LandingPage({
               className="landing-primary-cta group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-4 sm:px-6 text-xs sm:text-base font-bold shadow-md active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
               <span>{copy.register}</span>
-              {ar ? (
-                <ArrowLeft className="w-4 h-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
-              ) : (
-                <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
-              )}
             </button>
             <button
               type="button"
               onClick={onLogin}
               className="landing-secondary-cta group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl px-4 sm:px-6 text-xs sm:text-base font-semibold active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
             >
-              <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors" />
               <span>{copy.login}</span>
             </button>
           </div>
