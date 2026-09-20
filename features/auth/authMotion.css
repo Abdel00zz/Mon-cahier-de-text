@@ -74,6 +74,25 @@
   border-radius: 0.85rem;
   border-color: rgb(39 96 73 / 0.12);
 }
+.auth-artisan-form > .auth-login-layout {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.auth-login-intro { margin-bottom: 1.25rem; text-align: center; }
+.auth-login-intro .auth-artisan-title { text-wrap: balance; }
+.auth-login-detail { max-width: 29rem; margin-inline: auto; }
+.auth-login-card {
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  border: 1px solid rgb(42 100 78 / 0.13);
+  border-radius: 1.35rem;
+  background: rgb(255 255 255 / 0.82);
+  box-shadow: 0 22px 55px -38px rgb(48 35 22 / 0.62), inset 0 1px 0 rgb(255 255 255 / 0.85);
+}
+.auth-login-card > [role="group"] { margin-top: 0; }
 @media (max-width: 639px) {
   .auth-artisan-shell { background-size: 20px 20px; }
   .auth-artisan-header { min-height: 3.75rem; padding-top: max(0.5rem, env(safe-area-inset-top)); gap: 0.75rem; }

@@ -1581,7 +1581,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .pilotage-title-icon { color: var(--app-accent); background: var(--app-accent-soft); border: 1px solid var(--app-line); }
   .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; }
   .pilotage-sidebar button { min-height: 2.75rem; border-radius: var(--ui-radius-control); }
-  .pilotage-mobile-rail { margin-inline: -0.25rem; padding: 0.25rem; border: 1px solid var(--app-line); border-radius: 1rem; background: linear-gradient(120deg, var(--app-surface-soft), var(--app-surface)); }
+  .pilotage-mobile-rail { margin-inline: -0.25rem; padding: 0.25rem; border: 1px solid var(--app-line); border-radius: 1rem; background: linear-gradient(120deg, var(--app-surface-soft), var(--app-surface)); box-shadow: 0 8px 20px -18px rgb(24 53 43 / 0.42); }
+  .pilotage-mobile-rail::before { content: ""; display: block; width: 2.25rem; height: 0.18rem; margin: 0.15rem auto 0.2rem; border-radius: 999px; background: var(--app-accent); opacity: 0.28; }
   .pilotage-mobile-rail > div[role="tablist"] { gap: 0.35rem; padding: 0.25rem; }
   .pilotage-mobile-tab { min-height: 2.75rem; border: 0 !important; border-radius: 0.75rem !important; font-size: 0.72rem; font-weight: 650; letter-spacing: -0.01em; }
   .pilotage-mobile-tab-active { color: var(--app-ink) !important; background: var(--app-surface) !important; border: 1px solid var(--app-line) !important; box-shadow: 0 5px 14px -12px rgb(24 53 43 / 0.65) !important; }

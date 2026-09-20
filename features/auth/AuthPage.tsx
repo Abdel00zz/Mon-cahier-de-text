@@ -469,7 +469,8 @@ export const AuthPage: React.FC<{
         <div className="auth-view-enter grid flex-1 lg:grid-cols-2">
           <AuthShowcase locale={displayLocale} />
           <main className="auth-artisan-form flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
-            <div className="mx-auto w-full max-w-[400px]">
+            <div className="auth-login-layout mx-auto w-full max-w-[400px]">
+              <div className="auth-login-intro">
               <h1
                 tabIndex={-1}
                 id={id + "-title"}
@@ -477,13 +478,15 @@ export const AuthPage: React.FC<{
               >
                 {isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+              <p className="auth-login-detail mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
                 {isRegister
                   ? copy.savePreparationDetail
                   : setup
                     ? copy.existingAccountHint
                     : copy.welcomeDetail}
               </p>
+              </div>
+              <div className="auth-login-card mx-auto w-full max-w-[400px]">
               {setup && (
                 <button
                   type="button"
@@ -730,6 +733,7 @@ export const AuthPage: React.FC<{
                 />
                 {copy.secure}
               </p>
+              </div>
             </div>
           </main>
         </div>
