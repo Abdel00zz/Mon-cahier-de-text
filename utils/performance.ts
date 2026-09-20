@@ -62,17 +62,30 @@ export function useDebouncedCallback<T extends (...args: any[]) => void>(
   return debounced;
 }
 
-let settingsPreloadPromise: Promise<unknown> | null = null;
+/** A failed speculative load must remain retryable and never reject an event handler. */
+const preload = (load: () => Promise<unknown>) => {
+  let pending: Promise<unknown> | null = null;
+  return () => {
+    if (typeof window === 'undefined') return null;
+    pending ??= load().catch(() => { pending = null; });
+    return pending;
+  };
+};
 
 /**
  * Préchargement de la page de paramètres pour éliminer la latence au clic.
  */
-export const preloadSettingsPage = () => {
-  if (!settingsPreloadPromise && typeof window !== 'undefined') {
-    settingsPreloadPromise = Promise.all([
-      import('@/features/settings/SettingsPage'),
-      import('@/features/settings/components/AppearanceTab'),
-    ]);
-  }
-  return settingsPreloadPromise;
+export const preloadSettingsPage = preload(() => Promise.all([
+  import('@/features/settings/SettingsPage'),
+  import('@/features/settings/components/ScheduleTab'),
+]));
+
+const navigationPreloads = {
+  settings: preloadSettingsPage,
+  evaluations: preload(() => import('@/features/evaluations/DevoirsView')),
+  notifications: preload(() => import('@/features/dashboard/NotificationsPage')),
+  help: preload(() => import('@/features/guide/GuideModal')),
 };
+
+export const preloadNavigation = (destination: string) =>
+  navigationPreloads[destination as keyof typeof navigationPreloads]?.();

@@ -11,13 +11,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
-import { formatClassGroupLabel, getBaseLevelKey } from '@/constants/class-levels';
-import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
+import { formatClassGroupLabel } from '@/constants/class-levels';
+import { ClassGroupWatermark } from './ClassLevelBadge';
 
 interface ClassCardProps {
     classInfo: ClassInfo;
@@ -218,14 +217,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
+            data-keep-tone={theme.texture}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 "group card-andalusian relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
                 isDoubleColumn ? "min-h-[145px] sm:min-h-[160px]" : "min-h-[140px] sm:min-h-[152px]",
-                isActiveSession && "ring-2 ring-stone-900 dark:ring-white z-10"
+                isActiveSession && "ring-2 ring-[var(--workspace-focus)] z-10"
             )}
         >
             {/* Bouton d'action principal couvrant toute la carte */}
@@ -259,7 +258,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="pointer-events-auto flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+                                className="class-card-menu pointer-events-auto flex h-11 w-11 items-center justify-center rounded-xl border border-current/10 bg-transparent hover:bg-current/5 transition-colors duration-200 active:scale-95 cursor-pointer"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
@@ -306,7 +305,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
             {/* Pied de carte : Date/Statut d'ouverture */}
             <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-4.5 sm:py-2.5 pointer-events-none">
-                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/90 dark:text-stone-400/90 line-clamp-1">
+                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-600 dark:text-stone-300 line-clamp-1">
                     {subtext}
                 </span>
             </div>

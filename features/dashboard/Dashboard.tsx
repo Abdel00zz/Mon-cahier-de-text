@@ -31,6 +31,24 @@ type ClassDisplayMode = 'list' | 'single' | 'double';
 const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
 
+// Stable entry props isolate the collection from modal/menu state changes.
+const ClassEntry = React.memo(({ classInfo, mode, index, isActiveSession, onOpen, onConfigure, onDelete }: {
+    classInfo: ClassInfo;
+    mode: ClassDisplayMode;
+    index: number;
+    isActiveSession: boolean;
+    onOpen: (value: ClassInfo) => void;
+    onConfigure: (value: ClassInfo) => void;
+    onDelete: (value: ClassInfo) => void;
+}) => {
+    const select = useCallback(() => onOpen(classInfo), [onOpen, classInfo]);
+    const configure = useCallback(() => onConfigure(classInfo), [onConfigure, classInfo]);
+    const remove = useCallback(() => onDelete(classInfo), [onDelete, classInfo]);
+    const props = { classInfo, onSelect: select, onConfigure: configure, onDelete: remove, isActiveSession };
+    return mode === 'list' ? <ClassListItem {...props} /> : <ClassCard {...props} index={index} isDoubleColumn={mode === 'double'} />;
+});
+ClassEntry.displayName = 'ClassEntry';
+
 const subjectKey = (value: string) => value
     .trim()
     .normalize('NFD')
@@ -290,17 +308,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="dashboard-artisan-shell min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4 sm:pt-6"
+            className="dashboard-artisan-shell min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-1 sm:pt-2"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-5xl px-3 pb-4 sm:px-5 lg:px-6 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-3 sm:mb-4">
+                        <div className="mb-1.5 sm:mb-2">
                             <div className="dashboard-artisan-header flex flex-wrap items-center justify-between gap-2 sm:gap-2.5">
                                 <div>
-                                    <h1 className="font-arabswell text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
+                                    <h1 id="classes-heading" className="font-arabswell text-xl sm:text-2xl font-bold tracking-[-0.02em] text-foreground leading-tight">
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>
@@ -415,11 +433,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 className="relative"
                                                 style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
-                                                <ClassListItem
+                                                <ClassEntry
                                                     classInfo={classInfo}
-                                                    onSelect={() => openNotebook(classInfo)}
-                                                    onConfigure={() => setEditingClass(classInfo)}
-                                                    onDelete={() => setClassPendingDelete(classInfo)}
+                                                    mode="list"
+                                                    index={0}
+                                                    onOpen={openNotebook}
+                                                    onConfigure={setEditingClass}
+                                                    onDelete={setClassPendingDelete}
                                                     isActiveSession={isActiveSession}
                                                 />
                                             </motion.div>
@@ -439,16 +459,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 className="relative h-full w-full flex flex-col"
                                                 style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
-                                                <ClassCard
+                                                <ClassEntry
                                                     classInfo={classInfo}
-                                                    onSelect={() => openNotebook(classInfo)}
-                                                    onConfigure={() => setEditingClass(classInfo)}
-                                                    onDelete={() => setClassPendingDelete(classInfo)}
-                                                    showSubjectBadge={shouldShowSubjectBadge}
-                                                    allClasses={classes}
+                                                    mode={currentDisplay}
+                                                    onOpen={openNotebook}
+                                                    onConfigure={setEditingClass}
+                                                    onDelete={setClassPendingDelete}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
-                                                    isDoubleColumn={currentDisplay === 'double'}
                                                 />
                                             </motion.div>
                                         )})}

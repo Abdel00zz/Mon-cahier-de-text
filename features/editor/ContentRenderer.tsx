@@ -2,7 +2,8 @@ import React from 'react';
 import { hasMathSyntax, splitMathText } from '@/utils/math';
 import { MathText } from '@/components/ui/math-text';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
-import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
+import { BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
+import { normalizeContentType } from '@/constants/type-keys';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
@@ -219,13 +220,13 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           : indices.sectionIndex !== undefined
             ? 'editor-indent-1'
             : '';
-      const normalizedType = TYPE_MAP[(item.type || '').toLowerCase()] || item.type;
+      const normalizedType = normalizeContentType((item.type || '').trim());
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
       const badgeClass = contentBadgeClass(normalizedType);
       // Numéro saisi à la main prioritaire, sinon compteur du chapitre.
-      const displayNumber = contentNumber ?? item.number;
+      const displayNumber = String(item.number ?? '').trim() || contentNumber;
 
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
@@ -259,7 +260,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             title={fullTooltip}
           >
             <span>{badgeText}</span>
-            {displayNumber ? <span className="ms-px font-bold lg:ms-0.5">{displayNumber}</span> : null}
+            {displayNumber ? <bdi dir="ltr" className="content-kind-number">{displayNumber}</bdi> : null}
           </Badge>
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div

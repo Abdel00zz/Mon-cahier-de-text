@@ -60,7 +60,7 @@ export function classOpeningLabel(
   }
   return (
     (locale === 'ar'
-      ? 'آخر فتح · '
+      ? 'فتح اخر مرة بتاريخ '
       : locale === 'en'
         ? 'Last opened · '
         : 'Dernière ouverture · ') + formatter.format(date)

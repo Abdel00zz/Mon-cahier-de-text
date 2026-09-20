@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { ClassCardTitle } from './ClassCardTitle';
-import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
+import { ClassGroupWatermark } from './ClassLevelBadge';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -57,7 +57,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex min-h-[60px] sm:min-h-[72px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
+                "group relative flex min-h-[56px] sm:min-h-[60px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
                 isActiveSession && "keep-session-active z-10"
             )}
         >
@@ -118,7 +118,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         <button
                             type="button"
                             onClick={(event) => event.stopPropagation()}
-                            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title={t('dashboard.classActions', { className: displayName })}
                             aria-label={t('dashboard.classActions', { className: displayName })}
                         >

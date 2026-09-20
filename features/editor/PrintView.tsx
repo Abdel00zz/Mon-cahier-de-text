@@ -646,12 +646,12 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     .print-item-kind {
                         display: inline-block;
                         min-width: 4.5em;
-                        margin-right: 0.6em;
+                        margin-inline-end: 0.6em;
                         padding: 0.15em 0.4em;
-                        border: 1pt solid #7a5e35;
-                        border-radius: 0;
-                        color: #7a5e35;
-                        background-color: #fdfbf7;
+                        border: 0.5pt solid #c4bdb1;
+                        border-radius: 3pt;
+                        color: #514b42;
+                        background-color: #f7f5f0;
                         font-size: 7pt;
                         font-weight: 700;
                         text-transform: uppercase;

@@ -81,14 +81,14 @@ export const BADGE_TEXT_MAP: { [key: string]: string } = {
   'sécurité': 'SÉC'
 };
 
-// Palette Material You volontairement courte : le fond et le texte restent
-// dans la même famille, sans bordure dure. Les valeurs hexadécimales sont
+// Palette éditoriale désaturée : le fond et le texte restent
+// dans la même famille, avec un filet discret. Les valeurs hexadécimales sont
 // explicites pour conserver le rendu souhaité dans l'éditeur, quel que soit
 // le thème Tailwind actif.
-const BADGE_BLUE = 'bg-[#e8f0fe] text-[#185abc] dark:bg-[#1967d2]/22 dark:text-[#a8c7fa]';
-const BADGE_NEUTRAL = 'bg-[#f1f3f4] text-[#3c4043] dark:bg-white/8 dark:text-[#e8eaed]';
-const BADGE_RED = 'bg-[#fce8e6] text-[#b3261e] dark:bg-[#c5221f]/22 dark:text-[#f28b82]';
-const BADGE_GREEN = 'bg-[#e6f4ea] text-[#146c2e] dark:bg-[#137333]/22 dark:text-[#81c995]';
+const BADGE_BLUE = 'bg-[#f0f4f8] text-[#365574] dark:bg-[#243342] dark:text-[#bfd4e8]';
+const BADGE_NEUTRAL = 'bg-[#f3f1ed] text-[#605a50] dark:bg-[#302e2a] dark:text-[#d8d2c6]';
+const BADGE_RESULT = 'bg-[#f3eff7] text-[#665078] dark:bg-[#342b3c] dark:text-[#d6c5e4]';
+const BADGE_GREEN = 'bg-[#edf4f0] text-[#375f4c] dark:bg-[#25372e] dark:text-[#bed8ca]';
 
 /** Interne : les surfaces passent par `contentBadgeClass`, pas par la palette. */
 const BADGE_COLOR_MAP: { [key: string]: string } = {
@@ -100,16 +100,16 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
     'remarque': BADGE_NEUTRAL,
     'méthode': BADGE_NEUTRAL,
     'protocole': BADGE_NEUTRAL,
-    // Rouge rosé : résultats, propriétés et relations
-    'théorème': BADGE_RED,
-    'proposition': BADGE_RED,
-    'lemme': BADGE_RED,
-    'corollaire': BADGE_RED,
-    'propriété': BADGE_RED,
-    'relation': BADGE_RED,
-    'loi': BADGE_RED,
-    'principe': BADGE_RED,
-    'sécurité': BADGE_RED,
+    // Encre prune : résultats ; ambre sémantique pour les consignes de sécurité.
+    'théorème': BADGE_RESULT,
+    'proposition': BADGE_RESULT,
+    'lemme': BADGE_RESULT,
+    'corollaire': BADGE_RESULT,
+    'propriété': BADGE_RESULT,
+    'relation': BADGE_RESULT,
+    'loi': BADGE_RESULT,
+    'principe': BADGE_RESULT,
+    'sécurité': 'bg-[#faf2e2] text-[#795717] dark:bg-[#3b3222] dark:text-[#e5cc98]',
     // Vert menthe : exemples, activité et mise en pratique (Act./App.)
     'activité': BADGE_GREEN,
     'application': BADGE_GREEN,
@@ -140,7 +140,7 @@ const BADGE_COLOR_MAP: { [key: string]: string } = {
  * garde une colonne de badges parfaitement alignée.
  */
 export const contentBadgeClass = (type?: string): string =>
-  `inline-flex items-center justify-center gap-1 rounded-md border-0 py-[3px] font-bold uppercase tracking-normal shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[type]) || 'bg-muted text-muted-foreground'}`;
+  `content-kind-badge inline-flex items-center justify-center gap-1 rounded-md border-0 px-1.5 py-[3px] font-semibold uppercase tracking-normal shadow-none ring-1 ring-inset ring-current/15 ${(type && BADGE_COLOR_MAP[normalizeContentType(type.trim())]) || 'bg-muted text-muted-foreground'}`;
 
 export const BADGE_TOOLTIP_MAP: { [key: string]: string } = {
   'activité': 'Activité (recherche / découverte)',

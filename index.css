@@ -1,5 +1,74 @@
 @import "tailwindcss";
 
+/* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
+   Mixing with foreground keeps even yellow custom accents legible as text. */
+:root {
+  --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 28%, hsl(var(--foreground)));
+  --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 11%, hsl(var(--card)));
+  --workspace-focus: color-mix(in srgb, hsl(var(--primary)) 55%, hsl(var(--foreground)));
+}
+.dark {
+  --workspace-active-ink: color-mix(in srgb, hsl(var(--primary)) 24%, hsl(var(--foreground)));
+  --workspace-active-fill: color-mix(in srgb, hsl(var(--primary)) 13%, hsl(var(--card)));
+}
+.workspace-nav {
+  background: hsl(var(--card) / 0.96);
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border) / 0.75);
+  box-shadow: 0 8px 28px -18px hsl(var(--foreground) / 0.15);
+  backdrop-filter: blur(18px);
+  font-family: var(--font-sans);
+  transition: width 200ms ease, transform 200ms ease;
+}
+.workspace-nav.dashboard-artisan-nav { border-start-end-radius: 24px; border-end-end-radius: 24px; }
+.workspace-nav.dashboard-artisan-nav::before { display: none; }
+.workspace-nav-scrim { background: hsl(var(--foreground) / 0.14); backdrop-filter: blur(2px); }
+.workspace-nav-item, .workspace-nav-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+.workspace-nav-item-desktop { width: 100%; gap: 12px; padding: 10px 12px; text-align: start; }
+.workspace-nav-item-collapsed { justify-content: center; padding-inline: 4px; }
+.workspace-nav-item-mobile { flex: 1; min-width: 0; flex-direction: column; justify-content: center; gap: 4px; padding: 5px 2px; }
+.workspace-nav-toggle { justify-content: center; flex-shrink: 0; background: hsl(var(--muted) / 0.65); border: 1px solid hsl(var(--border) / 0.65); }
+.workspace-nav-icon { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; }
+.workspace-nav-label { position: relative; z-index: 1; font-size: 13px; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+.workspace-nav-item-mobile .workspace-nav-label { font-size: 10px; text-align: center; }
+[dir="rtl"] .workspace-nav-label { letter-spacing: normal; }
+.workspace-nav-active { position: absolute; inset: 0; border: 1px solid hsl(var(--primary) / 0.2); border-radius: inherit; background: var(--workspace-active-fill); }
+.workspace-nav-item[aria-current="page"] { color: var(--workspace-active-ink); }
+.workspace-nav-item[aria-current="page"] .workspace-nav-label { font-weight: 650; }
+.workspace-nav-item-desktop[aria-current="page"]::after { content: ''; position: absolute; inset-inline-start: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: var(--workspace-active-ink); }
+.workspace-nav-count { position: absolute; top: -7px; inset-inline-end: -8px; display: flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding-inline: 4px; border-radius: 6px; background: hsl(var(--foreground)); color: hsl(var(--background)); border: 1px solid hsl(var(--card)); font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.workspace-nav :is(button):focus-visible,
+.card-andalusian > button:focus-visible,
+.card-andalusian button[data-state]:focus-visible {
+  outline: 2px solid var(--workspace-focus);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.card-andalusian > button:focus-visible { outline-offset: -3px; }
+.artisanal-button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; box-shadow: none; }
+.class-card-menu { color: var(--keep-accent); }
+.content-kind-badge { font-variant-numeric: tabular-nums; }
+.content-kind-number { border-inline-start: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 22%, transparent); padding-inline-start: 0.45em; margin-inline-start: 0.1em; min-width: 1.25em; font-weight: 700; }
+@media (hover: hover) {
+  .workspace-nav-item:hover, .workspace-nav-toggle:hover { background: hsl(var(--muted) / 0.75); color: hsl(var(--foreground)); }
+  .workspace-nav-item[aria-current="page"]:hover { color: var(--workspace-active-ink); }
+}
+.workspace-nav-item:active, .workspace-nav-toggle:active { background: hsl(var(--muted)); transform: scale(0.98); }
+@media (prefers-reduced-motion: reduce) {
+  .workspace-nav, .workspace-nav-item, .workspace-nav-toggle { transition: none; }
+  .workspace-nav-item:active, .workspace-nav-toggle:active { transform: none; }
+}
+
 /* The application theme controller owns .dark (including system mode). */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -1149,20 +1218,20 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
 :is([data-dashboard-root], [data-dashboard-surface]) {
   position: relative;
   min-height: 100dvh;
-  background-color: #f6faf8;
+  background-color: hsl(var(--background));
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 1.2px, transparent 1.2px),
-    linear-gradient(135deg, #d8f5ee 0%, #fdf2f8 48%, #e0f2fe 100%);
-  background-size: 13px 13px, 100% 100%;
+    radial-gradient(circle, hsl(var(--foreground) / 0.045) 0.7px, transparent 0.8px),
+    linear-gradient(135deg, hsl(var(--primary) / 0.035), transparent 48%, hsl(var(--primary) / 0.025));
+  background-size: 24px 24px, 100% 100%;
   background-attachment: fixed;
 }
 
 .dark :is([data-dashboard-root], [data-dashboard-surface]) {
-  background-color: #12141a;
+  background-color: hsl(var(--background));
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1.2px, transparent 1.2px),
-    linear-gradient(135deg, #12201d 0%, #1f1624 48%, #141b2b 100%);
-  background-size: 13px 13px, 100% 100%;
+    radial-gradient(circle, hsl(var(--foreground) / 0.04) 0.7px, transparent 0.8px),
+    linear-gradient(135deg, hsl(var(--primary) / 0.025), transparent 48%, hsl(var(--primary) / 0.02));
+  background-size: 24px 24px, 100% 100%;
   background-attachment: fixed;
 }
 
@@ -1808,16 +1877,16 @@ html[data-keyboard='open'] .mobile-tab-bar {
   }
   .artisan-display-trigger {
   background: hsl(var(--card) / 0.82);
-  border-color: hsl(42 52% 52% / 0.28);
+  border-color: hsl(var(--border));
   color: hsl(var(--foreground));
   box-shadow: 0 5px 14px -12px hsl(30 25% 20% / 0.7), inset 0 0 0 1px hsl(42 52% 52% / 0.08);
   }
-  .artisan-display-trigger:hover { border-color: hsl(42 52% 52% / 0.52); background: hsl(var(--card)); }
+  .artisan-display-trigger:hover { border-color: hsl(var(--primary) / 0.45); background: hsl(var(--card)); }
   .artisan-add-class {
-  color: hsl(42 42% 96%);
-  background: linear-gradient(135deg, hsl(155 45% 28%), hsl(159 55% 22%));
-  border: 1px solid hsl(42 52% 52% / 0.48);
-  box-shadow: 0 8px 18px -12px hsl(155 45% 20% / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.2);
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border: 1px solid hsl(var(--primary) / 0.5);
+  box-shadow: 0 4px 12px -8px hsl(var(--primary) / 0.4);
   }
   .artisan-add-class:hover { transform: translateY(-1px); filter: brightness(1.08); }
   .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 60% / 0.1) 0 1px, transparent 1.5px); }
@@ -1855,7 +1924,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   content: "";
   position: absolute;
   inset: 0.75rem 0.55rem;
-  border: 1px solid hsl(42 52% 52% / 0.14);
+  border: 1px solid hsl(var(--border) / 0.5);
   border-radius: 1.2rem;
   pointer-events: none;
   }

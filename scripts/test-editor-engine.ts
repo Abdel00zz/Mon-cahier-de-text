@@ -474,6 +474,18 @@ test('numerotation des contenus : un compteur par type, remis a zero par chapitr
   assert.ok(!values.includes('Devoir'));
 });
 
+test('numérotation : alias communs, chiffres arabes et références composées', () => {
+  const notebook = [{ type: 'chapter', title: 'C', items: [
+    { type: 'definition', title: 'A' },
+    { type: ' DÉFINITION ', title: 'B' },
+    { type: 'def', title: 'C', number: '٧' },
+    { type: 'définition', title: 'D' },
+    { type: 'definition', title: 'E', number: '12bis' },
+    { type: 'definition', title: 'F' },
+  ] }] as LessonsData;
+  assert.deepEqual([...buildContentNumbers(notebook).values()], ['1', '2', '٧', '8', '12bis', '9']);
+});
+
 test('numerotation des contenus : desactivee, la carte reste vide', () => {
   const notebook = [{ type: 'chapter', title: 'C', items: [{ type: 'définition', title: 'D', description: '' }] }] as unknown as LessonsData;
   assert.equal(buildContentNumbers(notebook, false).size, 0);
@@ -484,10 +496,10 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   const shape = contentBadgeClass('théorème');
   assert.match(shape, /ring-1 ring-inset ring-current\/15/);
   assert.match(shape, /rounded-md/);
-  // Théorème : famille rouge rosé ; deux types différents ne partagent pas
+  // Théorème : famille prune ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
-  assert.equal(contentBadgeClass('théorème').includes('#fce8e6'), true);
-  assert.equal(contentBadgeClass('exemple').includes('#e6f4ea'), true);
+  assert.equal(contentBadgeClass('théorème').includes('#f3eff7'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#edf4f0'), true);
   assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
