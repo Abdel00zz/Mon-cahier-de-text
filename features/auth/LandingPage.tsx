@@ -30,9 +30,9 @@ const COPY = {
 } as const;
 
 const BADGE_STYLES = {
-  sand: "bg-amber-500/10 text-amber-900 dark:text-amber-200 border-amber-500/30 hover:bg-amber-500/15",
-  mint: "bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 border-emerald-500/30 hover:bg-emerald-500/15",
-  sky: "bg-sky-500/10 text-sky-900 dark:text-sky-200 border-sky-500/30 hover:bg-sky-500/15",
+  sand: "border-border bg-card text-muted-foreground hover:bg-muted",
+  mint: "border-border bg-card text-muted-foreground hover:bg-muted",
+  sky: "border-border bg-card text-muted-foreground hover:bg-muted",
 } as const;
 
 export function LandingPage({
@@ -50,19 +50,19 @@ export function LandingPage({
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
-      className="flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
+      className="flex min-h-[calc(100dvh-56px)] w-full flex-1 flex-col items-center overflow-y-auto bg-background px-4 py-5 sm:px-6 sm:py-8"
     >
-      <div className="auth-view-enter w-full max-w-4xl flex flex-col items-center text-center gap-4 sm:gap-6">
+      <div className="auth-view-enter flex w-full max-w-3xl flex-col items-center gap-6 text-center sm:gap-8">
         {/* Title and Subtitle with breathable, balanced spacing */}
         <div className="space-y-2.5 sm:space-y-3.5 max-w-2xl mx-auto pt-1">
           <h1
             tabIndex={-1}
-            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
+            className="whitespace-pre-line text-[2rem] font-bold leading-[1.12] tracking-[-0.035em] text-foreground sm:text-5xl sm:leading-[1.08]"
           >
             {copy.title}
           </h1>
 
-          <p className="text-xs sm:text-base md:text-lg text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl mx-auto font-normal">
+          <p className="mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             {copy.subtitle}
           </p>
         </div>
@@ -73,7 +73,7 @@ export function LandingPage({
             <button
               type="button"
               onClick={onRegister}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-4 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+              className="group auth-action flex-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-transform hover:brightness-105 active:scale-[0.98] sm:px-6 sm:text-base"
             >
               <span>{copy.register}</span>
               {ar ? (
@@ -85,7 +85,7 @@ export function LandingPage({
             <button
               type="button"
               onClick={onLogin}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-stone-100/90 dark:bg-stone-900/90 border border-stone-300/80 dark:border-stone-700/80 text-stone-900 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 px-4 sm:px-6 text-xs sm:text-base font-semibold shadow-xs hover:border-stone-400 dark:hover:border-stone-600 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+              className="group auth-action flex-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-none transition-colors hover:bg-muted active:scale-[0.98] sm:px-6 sm:text-base"
             >
               <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors" />
               <span>{copy.login}</span>
@@ -99,13 +99,13 @@ export function LandingPage({
           {/* Subtle warm ambient glow behind the device chassis */}
           <div
             aria-hidden="true"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-[32rem] h-60 sm:h-80 bg-gradient-to-tr from-amber-500/15 via-orange-500/10 to-transparent rounded-full blur-3xl -z-10 pointer-events-none"
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 hidden h-60 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl sm:block sm:h-80 sm:w-[32rem]"
           />
 
           {/* Device Chassis (Graphite & subtle specular border) */}
-          <div className="relative w-full max-w-[340px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl h-[42vh] sm:h-[50vh] md:h-[54vh] max-h-[500px] min-h-[260px] rounded-[28px] sm:rounded-[36px] md:rounded-[40px] p-2 sm:p-2.5 md:p-3 bg-stone-900 dark:bg-stone-950 border-[3.5px] sm:border-[5px] border-stone-700/90 dark:border-stone-700 shadow-2xl ring-1 ring-black/40 flex flex-col justify-between overflow-hidden">
+          <div className="relative flex min-h-[260px] w-full max-w-[340px] flex-col justify-between overflow-hidden rounded-[24px] border border-border bg-muted p-1.5 shadow-sm sm:h-[50vh] sm:max-w-xl sm:rounded-[28px] sm:p-2.5 md:max-w-2xl">
             {/* Screen Inner Wrapper (Outer - Padding = 20px / 26px / 28px) */}
-            <div className="relative w-full h-full rounded-[20px] sm:rounded-[26px] md:rounded-[28px] overflow-hidden bg-stone-950 flex flex-col">
+            <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[18px] bg-background sm:rounded-[22px]">
               {/* Dynamic Island / Modern Camera Bar */}
               <div
                 aria-hidden="true"
