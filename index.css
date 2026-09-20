@@ -45,7 +45,6 @@
 .workspace-nav-active { position: absolute; inset: 0; border: 1px solid hsl(var(--primary) / 0.2); border-radius: inherit; background: var(--workspace-active-fill); }
 .workspace-nav-item[aria-current="page"] { color: var(--workspace-active-ink); }
 .workspace-nav-item[aria-current="page"] .workspace-nav-label { font-weight: 650; }
-.workspace-nav-item-desktop[aria-current="page"]::after { content: ''; position: absolute; inset-inline-start: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: var(--workspace-active-ink); }
 .workspace-nav-count { position: absolute; top: -7px; inset-inline-end: -8px; display: flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding-inline: 4px; border-radius: 6px; background: hsl(var(--foreground)); color: hsl(var(--background)); border: 1px solid hsl(var(--card)); font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .workspace-nav :is(button):focus-visible,
 .card-andalusian > button:focus-visible,
@@ -135,7 +134,7 @@
   --text-4xl: calc(2.25rem * var(--app-text-scale, 1));
   --text-5xl: calc(3rem * var(--app-text-scale, 1));
 
-  /* ── 1. Dynamic Fluid Typography Tokens (clamp) ─────────────────────── */
+  /* ── 1. Dynamic Fluid Typography Tokens (clamp) ──────────────────���──── */
   --text-fluid-xs: clamp(0.6875rem, 0.64rem + 0.2vw, 0.75rem);
   --text-fluid-sm: clamp(0.8125rem, 0.76rem + 0.25vw, 0.875rem);
   --text-fluid-base: clamp(0.9375rem, 0.88rem + 0.3vw, 1rem);
