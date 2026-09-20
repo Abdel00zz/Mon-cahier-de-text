@@ -505,7 +505,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'pilotage-sidebar-active font-bold'
+                    ? 'bg-primary/10 text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -535,13 +535,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
                           <span
                             className={cn(
-                              'pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
+                              'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
                               item.emphasize
                                 ? 'bg-red-500 text-white'
                                 : isActive
@@ -588,7 +588,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'pilotage-sidebar-active font-bold'
+                    ? 'bg-primary/10 text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -611,11 +611,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
+                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -655,7 +655,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'pilotage-sidebar-active font-bold'
+                    ? 'bg-primary/10 text-primary font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -678,11 +678,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
+                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -700,13 +700,16 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
   );
 
   const modalTitle = (
-    <div className="pilotage-modal-title flex min-w-0 items-center gap-3 pe-1">
-      <span className="pilotage-title-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-        <AlarmBell className="h-5 w-5" strokeWidth={1.8} />
+    <div className="flex min-w-0 items-center gap-2.5 pe-1">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <AlarmBell className="h-4 w-4" />
       </span>
       <span className="min-w-0">
-        <span className={cn('block text-[15px] font-bold leading-tight text-foreground sm:text-lg', isRtl && 'text-[17px] sm:text-xl')}>
-          {t('notifications.centerTitle')}
+        <span className={cn('flex items-center font-extrabold text-foreground', isRtl && 'text-lg leading-tight')}>
+          <span>{t('notifications.centerTitle')}</span>
+        </span>
+        <span className="mt-0.5 block text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
+          {t('notifications.allTeachingClasses')}
         </span>
       </span>
     </div>
@@ -719,7 +722,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       icon: item.icon,
       badge: item.count > 0 ? (
         <span className={cn(
-          'pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
+          'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
           item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
         )}>
           {item.count}
@@ -748,7 +751,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         'pilotage-modal-sheet overflow-hidden transition-[width,max-width,transform,opacity] duration-300 sm:rounded-2xl',
         AXIS_MODAL_WIDTH[activeAxis],
       )}
-      headerClassName="pilotage-modal-header"
+      headerClassName="border-b border-border/70 bg-muted/20"
       bodyClassName="p-3.5 sm:p-4.5"
     >
       <div data-pilotage-root className="min-w-0 text-foreground">
@@ -760,10 +763,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
             onChange={handleSelectAxis}
             layoutId="notifications-mobile-tab-pill"
             size="md"
-            className="pilotage-mobile-rail"
-            activeTabClassName="pilotage-mobile-tab-active"
-            inactiveTabClassName="pilotage-mobile-tab-inactive"
-            tabClassName="pilotage-mobile-tab"
             ariaLabel={t('notifications.sidebarLabel')}
           />
         </div>
@@ -772,7 +771,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
           {/* Navigation master/detail conservée sur grand écran. */}
           <aside
             className={cn(
-              'pilotage-sidebar hidden overflow-hidden rounded-xl border p-2.5 transition-all duration-300 lg:flex lg:flex-col',
+              'hidden overflow-hidden rounded-[16px] border border-border/70 bg-muted/20 p-3 transition-all duration-300 lg:flex lg:flex-col',
               isEffectiveCollapsed ? 'lg:col-span-1' : 'lg:col-span-3',
             )}
           >

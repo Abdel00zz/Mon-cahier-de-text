@@ -821,16 +821,16 @@ const chapters = [
 
   chapter('appearance', ['profile', 'math', 'print'], {
     title: 'Personnaliser l’apparence',
-    summary: 'Choisissez un thème, des couleurs et des polices confortables pour votre écran.',
-    image: { key: 'appearance', caption: 'Les réglages d’apparence permettent de choisir le thème et la palette de couleurs.' },
-    keywords: 'apparence thème sombre clair police arabe latin contraste lisibilité vidéoprojecteur Cyber Tech Clean',
+    summary: 'Choisissez un thème et une taille de texte confortables pour votre écran.',
+    image: { key: 'appearance', caption: 'Les réglages d’apparence permettent de choisir le thème et la taille du texte.' },
+    keywords: 'apparence thème sombre clair taille du texte contraste lisibilité vidéoprojecteur police arabe latin',
     sections: [
       {
         title: 'Configuration de l’environnement de lecture',
         steps: [
           'Dans Paramètres → Apparence, choisissez entre le thème Clair, le thème Sombre (recommandé pour limiter la fatigue oculaire) ou l’adaptation automatique au Système.',
-          'Ajustez la couleur d’accentuation, le rayon des bordures et la densité d’affichage du tableau des séances.',
-          'Sélectionnez la typographie de l’interface ainsi que les polices dédiées aux contenus en français et en arabe pour une lecture fluide en classe.',
+          'Ajustez la taille du texte pour une densité de lecture confortable en classe comme à la maison.',
+          'La police n’est plus un réglage : l’interface arabe utilise Arabswell 3 et Maghribi Font 3, l’interface française DM Sans et Rubik. Le contenu du cahier suit toujours la langue de la classe.',
           'Consultez immédiatement le rendu dans un vrai cahier de textes. Toute modification esthétique s’applique instantanément.',
         ],
       },

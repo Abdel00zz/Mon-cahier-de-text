@@ -38,9 +38,7 @@ const normalizeNotificationSettings = (value: unknown): NotificationSettings => 
 
 const defaultConfig: AppConfig = {
     theme: 'light',
-    contentFontLatin: 'space-grotesk',
-    contentFontArabic: 'alexandria',
-    themeCustomization: { accentColor: 'warm-sand', uiFont: 'cyber-clean' },
+    appTextSize: 'md',
     applicationLocale: 'ar',
     establishmentName: '',
     defaultTeacherName: '',
@@ -90,6 +88,13 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
     }
     try {
         const loadedConfig = JSON.parse(storedConfig);
+        // Migration : les réglages d'apparence libres (thème personnalisé,
+        // polices au choix) ont été supprimés au profit du thème clair/sombre/
+        // système et d'une densité de texte. On purge les clés héritées pour
+        // qu'elles ne réapparaissent jamais dans la configuration courante.
+        delete loadedConfig.themeCustomization;
+        delete loadedConfig.contentFontLatin;
+        delete loadedConfig.contentFontArabic;
         const loadedPrintDescriptionMode: AppConfig['printDescriptionMode'] =
             loadedConfig.printDescriptionMode === 'all' || loadedConfig.printDescriptionMode === 'none' || loadedConfig.printDescriptionMode === 'custom'
                 ? loadedConfig.printDescriptionMode
@@ -131,13 +136,9 @@ const parseStoredConfig = (storedConfig: string | null): AppConfig => {
             assessmentOrder: loadedConfig.assessmentOrder ?? {},
             schoolYearStart: loadedConfig.schoolYearStart,
             theme: loadedConfig.theme ?? 'light',
-            themeCustomization: {
-                ...defaultConfig.themeCustomization,
-                ...(loadedConfig.themeCustomization || {}),
-                accentColor: loadedConfig.themeCustomization?.accentColor || 'warm-sand',
-            },
-            contentFontLatin: loadedConfig.contentFontLatin ?? 'space-grotesk',
-            contentFontArabic: loadedConfig.contentFontArabic ?? 'alexandria',
+            appTextSize: loadedConfig.appTextSize === 'sm' || loadedConfig.appTextSize === 'lg' || loadedConfig.appTextSize === 'xl'
+                ? loadedConfig.appTextSize
+                : 'md',
             applicationLocale: normalizeApplicationLocale(loadedConfig.applicationLocale),
         };
     } catch (error) {

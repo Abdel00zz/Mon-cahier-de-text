@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ClassInfo } from '../types';
+import { ClassDraft, ClassInfo } from '../types';
 import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
@@ -73,7 +73,7 @@ export const useClassManager = () => {
         return () => { offPull(); offClasses(); window.removeEventListener('storage', onStorage); };
     }, [workspaceIsActive]);
 
-    const addClass = useCallback((details: Omit<ClassInfo, 'id' | 'createdAt' | 'color'>) => {
+    const addClass = useCallback((details: ClassDraft) => {
         if (!workspaceIsActive()) throw new Error('Le compte actif a changé.');
         const newClass: ClassInfo = {
             ...details, cycle: details.cycle ?? 'college', id: crypto.randomUUID(),

@@ -104,7 +104,7 @@ export const restoreBackup = (data: any): number => {
     localStorage.setItem('appConfig_v1', JSON.stringify(data.config));
 
     // 2) Liste des classes
-    const allClassInfo = classes.map((c: any) => c.classInfo).filter(Boolean);
+    const allClassInfo: ClassInfo[] = classes.map((c: any) => c.classInfo).filter(Boolean);
     localStorage.setItem('classManager_v1', JSON.stringify(allClassInfo));
     localStorage.setItem('app_first_launch_v1', 'true');
 

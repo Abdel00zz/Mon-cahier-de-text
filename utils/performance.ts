@@ -79,13 +79,3 @@ export const preloadSettingsPage = preload(() => Promise.all([
   import('@/features/settings/SettingsPage'),
   import('@/features/settings/components/ScheduleTab'),
 ]));
-
-const navigationPreloads = {
-  settings: preloadSettingsPage,
-  evaluations: preload(() => import('@/features/evaluations/DevoirsView')),
-  notifications: preload(() => import('@/features/dashboard/NotificationsPage')),
-  help: preload(() => import('@/features/guide/GuideModal')),
-};
-
-export const preloadNavigation = (destination: string) =>
-  navigationPreloads[destination as keyof typeof navigationPreloads]?.();

@@ -1,7 +1,8 @@
-import { FC, useMemo } from 'react';
+import { memo, useMemo, type FC } from 'react';
 import { ClassInfo } from '@/types';
 import { formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { getBaseLevelKey, formatClassGroupLabel } from '@/constants/class-levels';
+import { classTitleStyle } from '@/constants/classTitleTypography';
 import { keepToneForClass } from '@/utils/keepTheme';
 import { classIdentityFor } from '@/utils/classIdentity';
 import { ChevronRight, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
@@ -18,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { useClassPress } from '@/hooks/useClassPress';
 import { ClassCardTitle } from './ClassCardTitle';
-import { ClassGroupWatermark } from './ClassLevelBadge';
+import { ClassGroupWatermark, ClassLevelBadge } from './ClassLevelBadge';
 
 interface ClassListItemProps {
     classInfo: ClassInfo;
@@ -29,7 +30,7 @@ interface ClassListItemProps {
     isActiveSession?: boolean;
 }
 
-export const ClassListItem: FC<ClassListItemProps> = ({
+const ClassListItemComponent: FC<ClassListItemProps> = ({
     classInfo,
     onSelect,
     onConfigure,
@@ -40,7 +41,12 @@ export const ClassListItem: FC<ClassListItemProps> = ({
     const { impact } = useHapticFeedback();
     const className = formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: !isActiveSession });
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className }) : className;
-    const lastOpened = classOpeningLabel(classInfo.lastOpenedAt, locale);
+    // Le libellé passe par Intl.DateTimeFormat : une seule fois par valeur,
+    // jamais à chaque rendu de la liste.
+    const lastOpened = useMemo(
+        () => classOpeningLabel(classInfo.lastOpenedAt, locale),
+        [classInfo.lastOpenedAt, locale],
+    );
 
     /** Même identité que la carte en grille : palier puis filière. */
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
@@ -57,7 +63,10 @@ export const ClassListItem: FC<ClassListItemProps> = ({
             data-keep-tone={keepToneForClass(getBaseLevelKey(classInfo.name))}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group relative flex min-h-[56px] sm:min-h-[60px] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
+                // Même principe que la carte en grille : hauteur fixe, calculée
+                // dans index.css, pour que toutes les lignes de la liste aient
+                // exactement la même hauteur.
+                "group relative flex h-[var(--class-list-row-h)] items-center overflow-hidden border-b border-border/40 bg-card last:border-b-0",
                 isActiveSession && "keep-session-active z-10"
             )}
         >
@@ -68,15 +77,19 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                 aria-label={isActiveSession ? displayName : t('dashboard.openClass', { className: displayName })}
             >
                 <div className="min-w-0 flex-1 py-0.5">
-                    {/* Titre complet : niveau + filière + groupe combinés (sans badge séparé) */}
-                    <h3 aria-live="polite" aria-atomic="true" className={cn("keep-class-title min-w-0 font-semibold text-foreground leading-snug font-sans", isRtl ? "text-[17.25px] sm:text-[17.83px] lg:text-[18.4px]" : "text-[16.1px] sm:text-[16.68px] lg:text-[17.25px]")}>
+                    {/* Même échelle que la carte en grille, avec un cran de
+                        plus pour l'arabe (lecture plus dense en hauteur). */}
+                    <h3
+                        aria-live="polite"
+                        aria-atomic="true"
+                        style={classTitleStyle(isRtl, 'list')}
+                        className={cn("keep-class-title min-w-0 text-foreground leading-snug", isRtl ? "text-[15px] sm:text-[15.5px] lg:text-[16px]" : "text-[14px] sm:text-[14.5px] lg:text-[15px]")}
+                    >
                         {identity.tierLabel ? (
-                            <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                            <span className="inline-flex min-w-0 max-w-full flex-nowrap items-center gap-x-1.5">
                                 {intro && <span className="keep-session-intro">{intro}</span>}
-                                <span className="min-w-0 truncate">
-                                    {identity.tierLabel}
-                                    {identity.stream && ` ${identity.stream}`}
-                                </span>
+                                <ClassLevelBadge label={identity.tierLabel} tierKey={identity.tierKey} />
+                                {identity.stream && <span className="min-w-0 truncate">{identity.stream}</span>}
                                 {identity.group && (
                                      <ClassGroupWatermark
                                          group={identity.group}
@@ -86,7 +99,9 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                                  )}
                             </span>
                         ) : (
-                            <ClassCardTitle name={displayName} compact={!isActiveSession} intro={intro} />
+                            <span className="block truncate">
+                                <ClassCardTitle name={displayName} compact={!isActiveSession} intro={intro} />
+                            </span>
                         )}
                     </h3>
                     <div className="mt-0.5 flex items-center gap-1.5 truncate text-muted-foreground">
@@ -118,7 +133,7 @@ export const ClassListItem: FC<ClassListItemProps> = ({
                         <button
                             type="button"
                             onClick={(event) => event.stopPropagation()}
-                            className="flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                            className="flex h-9 w-9 touch-manipulation items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                             title={t('dashboard.classActions', { className: displayName })}
                             aria-label={t('dashboard.classActions', { className: displayName })}
                         >
@@ -145,3 +160,15 @@ export const ClassListItem: FC<ClassListItemProps> = ({
         </article>
     );
 };
+
+/** Comparateur : la ligne ne se re-rend que si ses données changent. */
+const areEqual = (previous: ClassListItemProps, next: ClassListItemProps) =>
+    previous.classInfo.id === next.classInfo.id
+    && previous.classInfo.name === next.classInfo.name
+    && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
+    && previous.classInfo.subject === next.classInfo.subject
+    && previous.isActiveSession === next.isActiveSession;
+
+ClassListItemComponent.displayName = 'ClassListItem';
+
+export const ClassListItem = memo(ClassListItemComponent, areEqual);

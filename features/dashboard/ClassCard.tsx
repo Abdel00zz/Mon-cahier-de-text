@@ -11,11 +11,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { keepToneForClass } from '@/utils/keepTheme';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
 import { cn } from '@/lib/utils';
-import { formatClassGroupLabel } from '@/constants/class-levels';
+import { formatClassGroupLabel, getBaseLevelKey } from '@/constants/class-levels';
+import { classTitleStyle } from '@/constants/classTitleTypography';
 import { ClassGroupWatermark } from './ClassLevelBadge';
 
 interface ClassCardProps {
@@ -24,19 +26,13 @@ interface ClassCardProps {
     onConfigure: () => void;
     /** Suppression depuis le menu de la carte ; le parent confirme l'action. */
     onDelete?: () => void;
-    showSubjectBadge?: boolean;
-    allClasses?: ClassInfo[];
     index?: number;
     isActiveSession?: boolean;
-    isDoubleColumn?: boolean;
 }
 
 interface CardThemeStyle {
     cardBg: string;
     cardBorder: string;
-    /** Palette du badge : la pastille reste toujours plus claire que la carte. */
-    badgeStyle: React.CSSProperties & Record<`--${string}`, string>;
-    badgeTextStyle: React.CSSProperties;
     titleColor: string;
     dividerColor: string;
     /** Variante de tache de peinture, accordée à la palette de cette carte. */
@@ -44,36 +40,17 @@ interface CardThemeStyle {
 }
 
 /**
- * 4 Thèmes pastel exclusifs Soft UI :
- * 1. Haut gauche : Jaune très doux / crème, badge ambre doux avec texte dégradé bronze/ambre
- * 2. Haut droite : Vert menthe très clair, badge menthe douce avec texte dégradé émeraude/vert
- * 3. Bas gauche  : Bleu très pâle, badge azur doux avec texte dégradé saphir/océan
- * 4. Bas droite  : Violet lavande très doux, badge lilas doux avec texte dégradé améthyste/prune
+ * 4 thèmes pastel Soft UI, un par position dans la grille (index % 4) :
+ * 1. Jaune crème, 2. Vert menthe, 3. Bleu pâle, 4. Violet lavande.
+ * Chaque thème porte un fond, une bordure, une couleur de titre, un filet et
+ * une texture ; les pastilles empruntent la palette sémantique de leur palier.
  */
 const CARD_THEMES: CardThemeStyle[] = [
     // Carte 1 – Haut gauche (jaune crème / warm solar)
     {
         cardBg: 'bg-[#FFFDF3] dark:bg-[#221B13]',
         cardBorder: 'border-[#F4E8BF] dark:border-[#382E1E]',
-        badgeStyle: {
-            '--badge-from': '#FFFFFF',
-            '--badge-to': '#FEF8E7',
-            border: '1px solid rgba(217, 119, 6, 0.22)',
-            borderRadius: '5px',
-            padding: '0.14rem 0.5rem',
-            fontSize: '0.72rem',
-            lineHeight: '1.2',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        },
-        badgeTextStyle: {
-            background: 'linear-gradient(135deg, #78350F 0%, #92400E 50%, #B45309 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: '#854D0E',
-            fontWeight: 700,
-            letterSpacing: '0.01em',
-        },
-        titleColor: 'text-[#5A351B] dark:text-[#F9D98B]',
+        titleColor: 'text-[#482B17] dark:text-[#FDE68A]',
         dividerColor: 'border-[#F2E5BA]/70 dark:border-[#382E1E]',
         texture: 'sand',
     },
@@ -81,25 +58,7 @@ const CARD_THEMES: CardThemeStyle[] = [
     {
         cardBg: 'bg-[#F1FBF5] dark:bg-[#12221A]',
         cardBorder: 'border-[#D4EFE0] dark:border-[#1E3A2B]',
-        badgeStyle: {
-            '--badge-from': '#FFFFFF',
-            '--badge-to': '#EDFAF3',
-            border: '1px solid rgba(16, 185, 129, 0.22)',
-            borderRadius: '5px',
-            padding: '0.14rem 0.5rem',
-            fontSize: '0.72rem',
-            lineHeight: '1.2',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        },
-        badgeTextStyle: {
-            background: 'linear-gradient(135deg, #064E3B 0%, #065F46 50%, #047857 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: '#065F46',
-            fontWeight: 700,
-            letterSpacing: '0.01em',
-        },
-        titleColor: 'text-[#14513A] dark:text-[#A8E5C2]',
+        titleColor: 'text-[#113B26] dark:text-[#A7F3D0]',
         dividerColor: 'border-[#D4EFE0]/75 dark:border-[#1E3A2B]',
         texture: 'mint',
     },
@@ -107,25 +66,7 @@ const CARD_THEMES: CardThemeStyle[] = [
     {
         cardBg: 'bg-[#F2F7FD] dark:bg-[#131E2B]',
         cardBorder: 'border-[#D5E5F8] dark:border-[#1F3349]',
-        badgeStyle: {
-            '--badge-from': '#FFFFFF',
-            '--badge-to': '#EFF6FE',
-            border: '1px solid rgba(14, 165, 233, 0.22)',
-            borderRadius: '5px',
-            padding: '0.14rem 0.5rem',
-            fontSize: '0.72rem',
-            lineHeight: '1.2',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        },
-        badgeTextStyle: {
-            background: 'linear-gradient(135deg, #0C4A6E 0%, #0369A1 50%, #0284C7 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: '#0369A1',
-            fontWeight: 700,
-            letterSpacing: '0.01em',
-        },
-        titleColor: 'text-[#16456B] dark:text-[#B5DDF3]',
+        titleColor: 'text-[#122E4E] dark:text-[#BAE6FD]',
         dividerColor: 'border-[#D5E5F8]/75 dark:border-[#1F3349]',
         texture: 'sky',
     },
@@ -133,25 +74,7 @@ const CARD_THEMES: CardThemeStyle[] = [
     {
         cardBg: 'bg-[#F7F2FD] dark:bg-[#1E1629]',
         cardBorder: 'border-[#E6D8F8] dark:border-[#352548]',
-        badgeStyle: {
-            '--badge-from': '#FFFFFF',
-            '--badge-to': '#F5F0FE',
-            border: '1px solid rgba(168, 85, 247, 0.22)',
-            borderRadius: '5px',
-            padding: '0.14rem 0.5rem',
-            fontSize: '0.72rem',
-            lineHeight: '1.2',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        },
-        badgeTextStyle: {
-            background: 'linear-gradient(135deg, #4C1D95 0%, #6B21A8 50%, #7E22CE 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: '#6B21A8',
-            fontWeight: 700,
-            letterSpacing: '0.01em',
-        },
-        titleColor: 'text-[#56316D] dark:text-[#E2C8F4]',
+        titleColor: 'text-[#38194D] dark:text-[#E9D5FF]',
         dividerColor: 'border-[#E6D8F8]/75 dark:border-[#352548]',
         texture: 'lavender',
     },
@@ -164,7 +87,6 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     onDelete,
     isActiveSession,
     index = 0,
-    isDoubleColumn = false,
 }) => {
     const { impact } = useHapticFeedback();
     const { locale, t, isRtl } = useLocale();
@@ -187,27 +109,19 @@ const ClassCardComponent: FC<ClassCardProps> = ({
         : null;
 
     /**
-     * Titre complet combinant le niveau et la filière (sans badge séparé)
-     * Ex: "2ème Bac Sciences Physiques 3" ou "Tronc Commun Sciences 2"
+     * Titre complet de la carte : « palier + filière » (« 2ème Bac Sciences
+     * Physiques »). Le numéro de groupe n'y figure pas : il a sa propre place
+     * (ligne de tête, ou ligne dédiée sur téléphone). Sans palier identifié
+     * (collège, prépa), l'intitulé localisé est conservé tel quel.
      */
     const fullTitle = useMemo(() => {
-        // Si pas de label de niveau (collège sans distinction), retourner le nom complet
         if (!identity.tierLabel) return displayName;
-        
-        // Combiner niveau + filière
-        const parts = [];
-        
-        // Ajouter le niveau (ex: "2ème Bac", "Tronc Commun")
-        parts.push(identity.tierLabel);
-        
-        // Ajouter la filière si elle existe
-        if (identity.stream) {
-            parts.push(identity.stream);
-        }
-        
-        // Joindre avec un espace
-        return parts.join(' ');
-    }, [identity.tierLabel, identity.stream, displayName]);
+        const stream = identity.stream ?? '';
+        const withoutGroup = groupNumber && stream.endsWith(groupNumber)
+            ? stream.slice(0, -groupNumber.length).trim()
+            : stream;
+        return withoutGroup ? `${identity.tierLabel} ${withoutGroup}`.trim() : displayName;
+    }, [identity.tierLabel, identity.stream, groupNumber, displayName]);
 
     /** Sous-texte d'état : « Dernière ouverture · ... » ou « Prêt pour votre première séance » */
     const subtext = useMemo(() => {
@@ -217,14 +131,17 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={theme.texture}
+            data-keep-tone={keepToneForClass(classInfo.id || getBaseLevelKey(classInfo.name), index)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
-                "group card-andalusian relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
+                "group relative flex w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border shadow-2xs hover:shadow-xs active:scale-[0.985] transition-all duration-150 select-none",
                 theme.cardBg,
                 theme.cardBorder,
-                isDoubleColumn ? "min-h-[145px] sm:min-h-[160px]" : "min-h-[140px] sm:min-h-[152px]",
-                isActiveSession && "ring-2 ring-[var(--workspace-focus)] z-10"
+                // Hauteur unique, calculée dans index.css à partir des parties de
+                // la carte (--class-card-h) : aucune carte ne peut dépasser ni
+                // rester plus courte que ses voisines, quel que soit le contenu.
+                "h-[var(--class-card-h)]",
+                isActiveSession && "ring-2 ring-stone-900 dark:ring-white z-10"
             )}
         >
             {/* Bouton d'action principal couvrant toute la carte */}
@@ -239,13 +156,14 @@ const ClassCardComponent: FC<ClassCardProps> = ({
             {/* Tache de peinture : décor de fond très doux, jamais cliquable ni annoncé. */}
             <span className="card-texture opacity-30 dark:opacity-20" data-texture={theme.texture} aria-hidden="true" />
 
-            {/* Partie supérieure : Titre combiné (niveau + filière), Réglages */}
-            <div className="relative z-20 flex flex-1 flex-col justify-start pt-3.5 px-4 pb-3 sm:pt-4 sm:px-4.5 sm:pb-3.5 pointer-events-none">
-                {/* Ligne haute : Badge session active (si applicable) & Bouton Réglages */}
-                <div className="flex items-center justify-between gap-2 min-h-[26px]">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Corps de la carte : menu, titre + numéro */}
+            <div className="relative z-20 flex flex-1 flex-col justify-start px-4 pt-[var(--class-card-pad-top)] pb-[var(--class-card-pad-bottom)] sm:px-4.5 pointer-events-none">
+                {/* Ligne de tête : état de séance et menu. Hauteur fixe et non
+                    extensible : elle ne peut pas repousser le titre ni le pied. */}
+                <div className="flex h-[var(--class-card-top-row-h)] items-center justify-between gap-2 overflow-hidden flex-nowrap">
+                    <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
                         {isActiveSession && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-2xs">
+                            <span className="inline-flex shrink-0 items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-900 shadow-2xs">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
                                 <span>{locale === 'ar' ? 'جلسة جارية' : 'En direct'}</span>
                             </span>
@@ -258,7 +176,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                             <button
                                 type="button"
                                 onClick={(event) => event.stopPropagation()}
-                                className="class-card-menu pointer-events-auto flex h-11 w-11 items-center justify-center rounded-xl border border-current/10 bg-transparent hover:bg-current/5 transition-colors duration-200 active:scale-95 cursor-pointer"
+                                className="pointer-events-auto flex h-7.5 w-7.5 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 text-stone-700 dark:text-stone-300 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
                                 title={t('dashboard.classActions', { className: displayName })}
                                 aria-label={t('dashboard.classActions', { className: displayName })}
                             >
@@ -283,29 +201,45 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     </DropdownMenu>
                 </div>
 
-                {/* Titre complet de la classe : niveau + filière + groupe combinés */}
-                <div className="mt-2.5 sm:mt-3">
-                    <h3 className={cn("class-title-artisan keep-class-title min-w-0 break-words whitespace-normal font-cyber-clean text-[18.4px] sm:text-[21.85px] font-semibold leading-[1.35] flex items-baseline flex-wrap gap-x-1 gap-y-0.5", theme.titleColor)}>
-                        <span>{fullTitle}</span>
-                        {identity.group && groupNumber && (
-                            <ClassGroupWatermark
-                                group={groupNumber}
-                                label={formatClassGroupLabel(identity.group, locale)}
-                                themeTone={theme.texture}
-                                tierKey={identity.tierKey}
-                            />
-                        )}
-                        <span className="sr-only">{identity.full}</span>
+                {/* Titre puis numéro de groupe : le numéro suit immédiatement le nom
+                    (« Sciences Physiques 3 »). Le titre n'est pas étiré : il prend la
+                    largeur de son texte, donc le numéro reste collé au nom ; quand le
+                    nom occupe les deux lignes, le numéro se cale en fin de première
+                    ligne sans jamais être rogné. Le flux suit la direction du document
+                    (à droite du nom en français, à gauche en arabe) et le nom complet
+                    reste annoncé en entier (sr-only). */}
+                <div className="mt-[var(--class-card-title-gap)] flex min-w-0 items-start gap-1">
+                    {/* Typographie du titre : famille, graisse et interlettrage
+                        viennent exclusivement de `constants/classTitleTypography`.
+                        Ne jamais écrire de police ici. */}
+                    <h3
+                        style={classTitleStyle(isRtl)}
+                        className={cn("h-[var(--class-card-title-box)] min-w-0 text-[16px] sm:text-[19px] leading-[1.3] line-clamp-2", theme.titleColor)}
+                    >
+                        {fullTitle}
                     </h3>
+                    {identity.tierLabel && identity.group ? (
+                        <ClassGroupWatermark
+                            group={groupNumber || identity.group}
+                            label={formatClassGroupLabel(identity.group, locale)}
+                            themeTone={theme.texture}
+                            tierKey={identity.tierKey}
+                            variant="end"
+                            className="shrink-0"
+                        />
+                    ) : null}
+                    <span className="sr-only">{identity.full}</span>
                 </div>
             </div>
 
             {/* Ligne séparatrice fine */}
             <div className={cn("relative z-20 w-full border-t pointer-events-none", theme.dividerColor)} />
 
-            {/* Pied de carte : Date/Statut d'ouverture */}
-            <div className="relative z-20 flex w-full items-center justify-between px-4 py-2 sm:px-4.5 sm:py-2.5 pointer-events-none">
-                <span className="text-[11px] sm:text-xs font-normal tracking-normal text-stone-600 dark:text-stone-300 line-clamp-1">
+            {/* Pied de carte : Date/Statut d'ouverture. Hauteur fixe (--class-card-footer-h)
+                pour que le filet séparateur et la ligne d'état soient alignés d'une
+                carte à l'autre. */}
+            <div className="relative z-20 flex h-[var(--class-card-footer-h)] w-full items-center justify-between px-4 sm:px-4.5 pointer-events-none">
+                <span className="truncate text-[11px] sm:text-xs font-normal tracking-normal text-stone-500/90 dark:text-stone-400/90">
                     {subtext}
                 </span>
             </div>
@@ -313,4 +247,23 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     );
 };
 
-export const ClassCard = memo(ClassCardComponent);
+/**
+ * Comparateur de la carte.
+ *
+ * Les rappels (`onSelect`, `onConfigure`, `onDelete`) sont recréés à chaque
+ * rendu du tableau de bord : les comparer par identité annulait la mémoïsation
+ * et re-rendait les 25 cartes à chaque synchronisation (≈ 450 ms de tâche
+ * longue mesurée). On compare donc les données réellement affichées.
+ */
+const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
+    previous.classInfo.id === next.classInfo.id
+    && previous.classInfo.name === next.classInfo.name
+    && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
+    && previous.classInfo.subject === next.classInfo.subject
+    && previous.index === next.index
+    && previous.isActiveSession === next.isActiveSession
+    && Boolean(previous.onDelete) === Boolean(next.onDelete);
+
+ClassCardComponent.displayName = 'ClassCard';
+
+export const ClassCard = memo(ClassCardComponent, areCardPropsEqual);

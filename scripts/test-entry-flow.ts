@@ -7,7 +7,6 @@ import {
 import { createLongPress, type PressClock } from "../utils/longPress";
 import { classOpeningLabel, latestClassOpening } from "../utils/classOpening";
 import { assertValidClasses } from "../api/_lib/validate";
-import * as typography from "../constants/typography";
 import {
   applyRegistrationSetup,
   registrationSetupFromDraft,
@@ -232,14 +231,6 @@ test("date réelle, état jamais ouvert et invalides sans date inventée", () =>
     /Dernière ouverture/,
   );
   assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /آخر فتح/);
-});
-test("Lateef par défaut ; choix explicite IBM conservé", () => {
-  assert.equal(Reflect.get(typography, "DEFAULT_ARABIC_FONT"), "lateef");
-  assert.equal(typography.getArabicFontFamily(), "'Lateef', serif");
-  assert.equal(
-    typography.getArabicFontFamily("ibm-plex"),
-    "'IBM Plex Sans Arabic', sans-serif",
-  );
 });
 test("préparation terminée : cahier et checklist, pas de deuxième onboarding", () => {
   const values = new Map<string, string>();

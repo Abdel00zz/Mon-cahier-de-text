@@ -6,7 +6,7 @@ import { withCurriculumSettings } from '../utils/classCurriculumSettings';
 import { detectSessionAlerts, moroccoClockMinutes } from '../utils/sessionAlertEngine';
 import { getHourSlots, normalizeTimetableClock, resolveTimetableClock } from '../utils/timetable';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '../utils/classOrder';
-import type { AppConfig, ClassInfo, LessonsData, OfficialCurriculumPlan } from '../types';
+import type { AppConfig, ClassInfo, LessonsData, NotificationSettings, OfficialCurriculumPlan } from '../types';
 import type { HolidayCalendar } from '../utils/calendar';
 
 const classInfo: ClassInfo = { id: 'c1', name: '1AC 1', level: '1AC', cycle: 'college', subject: 'Mathématiques', teacherName: '', color: '', createdAt: '2026-09-01', curriculumChapterMatches: { a: [{ index: 1, title: 'A' }], b: [{ index: 2, title: 'B' }] } };
@@ -79,7 +79,7 @@ test('one reminder at 09:59 for a continuous 08–10 session, independent of vib
   assert.equal(detect('10:00:00').events.length, 0);
 });
 test('legacy profiles enable omitted session alert options by default', () => {
-  const legacySettings = { ...config.notificationSettings };
+  const legacySettings: NotificationSettings = { ...config.notificationSettings! };
   delete legacySettings.sessionEndReminderEnabled;
   delete legacySettings.missingDateReminderEnabled;
   delete legacySettings.sessionReminderMinutes;

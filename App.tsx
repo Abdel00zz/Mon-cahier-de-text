@@ -114,13 +114,7 @@ const App: React.FC = () => {
 
   const { classes, addClass, updateClass } = useClassManager();
   const { config, updateConfig, isLoading: isConfigLoading } = useConfigManager();
-  useTheme(
-    config.theme,
-    config.contentFontLatin,
-    config.contentFontArabic,
-    (newTheme) => updateConfig({ theme: newTheme }),
-    config.themeCustomization
-  );
+  useTheme(config.theme, config.appTextSize);
   const { status: authStatus, user: authUser, sessionNotice } = useAuth();
   const { messages: adminMessages, acknowledge: acknowledgeAdminMessage } = useAdminMessages(authStatus === 'authenticated');
   const previousAuthStatusRef = useRef(authStatus);

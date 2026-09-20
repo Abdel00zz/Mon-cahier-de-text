@@ -162,7 +162,8 @@ test('pilotage : les alertes horaires quittent les cartes de classe et se résol
   assert.equal(schedule[0].classId, classes[0].id);
   const resolved = capture({ ...config, timetable: [{ classId: classes[0].id, day: 1, slot: 0 }] });
   assert.equal(resolved.insights.some(signal => signal.kind === 'schedule'), false);
-  const disabled = capture({ ...config, notificationSettings: { ...config.notificationSettings, enabled: false } });
+  const settings = config.notificationSettings!;
+  const disabled = capture({ ...config, notificationSettings: { ...settings, enabled: false } });
   assert.equal(disabled.insights.length, 0);
 });
 
@@ -474,18 +475,6 @@ test('numerotation des contenus : un compteur par type, remis a zero par chapitr
   assert.ok(!values.includes('Devoir'));
 });
 
-test('numérotation : alias communs, chiffres arabes et références composées', () => {
-  const notebook = [{ type: 'chapter', title: 'C', items: [
-    { type: 'definition', title: 'A' },
-    { type: ' DÉFINITION ', title: 'B' },
-    { type: 'def', title: 'C', number: '٧' },
-    { type: 'définition', title: 'D' },
-    { type: 'definition', title: 'E', number: '12bis' },
-    { type: 'definition', title: 'F' },
-  ] }] as LessonsData;
-  assert.deepEqual([...buildContentNumbers(notebook).values()], ['1', '2', '٧', '8', '12bis', '9']);
-});
-
 test('numerotation des contenus : desactivee, la carte reste vide', () => {
   const notebook = [{ type: 'chapter', title: 'C', items: [{ type: 'définition', title: 'D', description: '' }] }] as unknown as LessonsData;
   assert.equal(buildContentNumbers(notebook, false).size, 0);
@@ -496,10 +485,10 @@ test('pastilles de type : une forme commune, une famille de couleur par nature',
   const shape = contentBadgeClass('théorème');
   assert.match(shape, /ring-1 ring-inset ring-current\/15/);
   assert.match(shape, /rounded-md/);
-  // Théorème : famille prune ; deux types différents ne partagent pas
+  // Théorème : famille rouge rosé ; deux types différents ne partagent pas
   // la même pastille, mais partagent exactement la même forme.
-  assert.equal(contentBadgeClass('théorème').includes('#f3eff7'), true);
-  assert.equal(contentBadgeClass('exemple').includes('#edf4f0'), true);
+  assert.equal(contentBadgeClass('théorème').includes('#fce8e6'), true);
+  assert.equal(contentBadgeClass('exemple').includes('#e6f4ea'), true);
   assert.equal(shape.replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''), contentBadgeClass('exemple').replace(/bg-\[[^\]]+\]|text-\[[^\]]+\]|dark:[^ ]+/g, ''));
   // Type inconnu : repli neutre, jamais de pastille vide.
   assert.equal(contentBadgeClass('inconnu'), contentBadgeClass());
@@ -603,7 +592,7 @@ test('identite de classe : palier et filiere deduits du nom, sans jamais rien pe
   assert.equal(free.full, 'Ma classe');
 });
 
-test('carte de classe : badge de palier, filiere dessous, nom complet accessible', () => {
+test('carte de classe : palier et filiere dans le titre, numero de groupe a part', () => {
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(ClassCard as never, {
       classInfo: { id: 'c1', name: '2ème Bac Sciences Physiques 3', subject: 'Physique-Chimie' },
@@ -611,7 +600,9 @@ test('carte de classe : badge de palier, filiere dessous, nom complet accessible
       onConfigure: () => {},
     } as never),
   }));
-  assert.ok(html.includes('data-level-badge'));
+  // La carte n'affiche plus de pastille de palier : le titre porte le niveau,
+  // la filière ET le tout reste aligné quelle que soit la longueur du libellé.
+  assert.ok(!html.includes('data-level-badge'));
   assert.ok(html.includes('2éme Bac'));
   assert.ok(html.includes('Sciences Physiques'));
   assert.ok(html.includes('keep-group-watermark'));

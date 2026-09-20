@@ -1,32 +1,31 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ThemeMode, ThemeCustomization } from '@/types';
-import { getLatinFontFamily, getArabicFontFamily } from '@/constants/typography';
-import {
-  ACCENT_PALETTES,
-  BORDER_RADIUS_MAP,
-  UI_FONTS_MAP,
-  hexToHslString,
-} from '@/constants/themePresets';
+import { useEffect, useMemo, useState } from 'react';
+import { AppTextSize, ThemeMode } from '@/types';
 
-const THEME_STORAGE_KEY = 'app_theme_mode_v1';
+/**
+ * Crans de densité de texte.
+ *
+ * Ces multiplicateurs alimentent `--app-text-scale` (voir index.css) : toute
+ * l'échelle typographique — interface, cahier, modales — en dépend. Les
+ * espacements, rayons et cibles tactiles restent en pixels : agrandir le texte
+ * ne casse donc jamais la mise en page ni les zones de 44 px.
+ */
+const TEXT_SIZE_SCALE: Record<AppTextSize, number> = {
+  sm: 0.9,
+  md: 1,
+  lg: 1.12,
+  xl: 1.25,
+};
 
-export function useTheme(
-  configTheme?: ThemeMode,
-  contentFontLatin?: string,
-  contentFontArabic?: string,
-  onThemeChange?: (theme: ThemeMode) => void,
-  themeCustomization?: ThemeCustomization
-) {
-  const [themeState, setThemeState] = useState<ThemeMode>(() => {
-    if (configTheme) return configTheme;
-    try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-      if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
-    } catch {}
-    return 'light';
-  });
-
-  const activeTheme = configTheme || themeState;
+/**
+ * Contrôleur d'apparence : mode clair/sombre/système et densité de texte.
+ *
+ * Tous les autres réglages visuels (couleurs, rayons, styles de cartes, choix
+ * de polices) ont été supprimés : la charte les fixe dans index.css et la
+ * police est déterminée par la langue (DM Sans/Rubik, Arabswell 3/Maghribi
+ * Font 3). Aucun réglage utilisateur ne peut donc plus les contredire.
+ */
+export function useTheme(configTheme?: ThemeMode, appTextSize?: AppTextSize) {
+  const activeTheme: ThemeMode = configTheme ?? 'light';
 
   const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -41,10 +40,9 @@ export function useTheme(
     if (media.addEventListener) {
       media.addEventListener('change', handler);
       return () => media.removeEventListener('change', handler);
-    } else if (media.addListener) {
-      media.addListener(handler);
-      return () => media.removeListener(handler);
     }
+    media.addListener(handler);
+    return () => media.removeListener(handler);
   }, []);
 
   const isDark = useMemo(() => {
@@ -53,7 +51,7 @@ export function useTheme(
     return systemIsDark;
   }, [activeTheme, systemIsDark]);
 
-  // Apply dark/light class and color-scheme
+  // Classe .dark + barre d'état des navigateurs mobiles / PWA.
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
@@ -66,7 +64,6 @@ export function useTheme(
       root.style.colorScheme = 'only light';
     }
 
-    // Update theme-color meta tag for PWA and mobile status bar
     document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
       meta.setAttribute('content', isDark ? '#121214' : '#faf9f9');
     });
@@ -77,103 +74,18 @@ export function useTheme(
     }
   }, [isDark]);
 
-  // Apply Centralized Theme Customization Variables
+  // Densité de texte : une seule variable CSS, lue par toute l'échelle.
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-
-    const accentKey = themeCustomization?.accentColor || 'sketch';
-    const borderRadiusKey = themeCustomization?.borderRadius || 'default';
-    const uiFontKey = themeCustomization?.uiFont || 'sketch-marfa';
-    const cardStyleKey = themeCustomization?.cardStyle || 'classic';
-    const tableStyleKey = themeCustomization?.tableStyle || 'clean';
-
-    // 1. Accent & Primary Colors
-    if (accentKey === 'custom' && themeCustomization?.customPrimaryColor) {
-      const hsl = hexToHslString(themeCustomization.customPrimaryColor);
-      root.style.setProperty('--primary', hsl);
-      root.style.setProperty('--primary-foreground', '0 0% 100%');
-      root.style.setProperty('--ring', hsl);
-      root.style.setProperty('--accent', isDark ? `${hsl} / 0.15` : `${hsl} / 0.08`);
-      root.style.setProperty('--accent-foreground', isDark ? '210 40% 98%' : hsl);
-    } else {
-      const palette = ACCENT_PALETTES.find(p => p.id === accentKey) || ACCENT_PALETTES[0];
-      const palTheme = isDark ? palette.dark : palette.light;
-      root.style.setProperty('--primary', palTheme.primary);
-      root.style.setProperty('--primary-foreground', palTheme.primaryForeground);
-      root.style.setProperty('--ring', palTheme.ring);
-      root.style.setProperty('--accent', palTheme.accent);
-      root.style.setProperty('--accent-foreground', palTheme.accentForeground);
-    }
-
-    // 2. Border Radius Variables
-    const radiusTokens = BORDER_RADIUS_MAP[borderRadiusKey] || BORDER_RADIUS_MAP.default;
-    root.style.setProperty('--radius', radiusTokens.md);
-    root.style.setProperty('--radius-sm', radiusTokens.sm);
-    root.style.setProperty('--radius-md', radiusTokens.md);
-    root.style.setProperty('--radius-lg', radiusTokens.lg);
-    root.style.setProperty('--radius-xl', radiusTokens.xl);
-    root.style.setProperty('--radius-2xl', radiusTokens['2xl']);
-    root.style.setProperty('--radius-3xl', radiusTokens['3xl']);
-
-    // 3. UI Font Family
-    const uiFont = UI_FONTS_MAP[uiFontKey] || UI_FONTS_MAP['cyber-clean'];
-    root.style.setProperty('--font-sans', uiFont.family);
-
-    // 4. Custom Direct Colors if set
-    if (themeCustomization?.customBackgroundColor) {
-      const bgHsl = hexToHslString(themeCustomization.customBackgroundColor);
-      root.style.setProperty('--background', bgHsl);
-    } else {
-      root.style.removeProperty('--background');
-    }
-
-    if (themeCustomization?.customTextColor) {
-      const textHsl = hexToHslString(themeCustomization.customTextColor);
-      root.style.setProperty('--foreground', textHsl);
-    } else {
-      root.style.removeProperty('--foreground');
-    }
-
-    if (themeCustomization?.customCardColor) {
-      const cardHsl = hexToHslString(themeCustomization.customCardColor);
-      root.style.setProperty('--card', cardHsl);
-      root.style.setProperty('--popover', cardHsl);
-    } else {
-      root.style.removeProperty('--card');
-      root.style.removeProperty('--popover');
-    }
-
-    // 5. Data Attributes on root for CSS targeting
-    root.setAttribute('data-card-style', cardStyleKey);
-    root.setAttribute('data-table-style', tableStyleKey);
-  }, [isDark, themeCustomization]);
-
-  // Update dynamic content fonts on CSS variables
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    const latinFamily = getLatinFontFamily(contentFontLatin);
-    const arabicFamily = getArabicFontFamily(contentFontArabic);
-
-    root.style.setProperty('--content-font-latin', latinFamily);
-    root.style.setProperty('--content-font-arabic', arabicFamily);
-  }, [contentFontLatin, contentFontArabic]);
-
-  const setTheme = useCallback((newTheme: ThemeMode) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-    } catch {}
-    if (onThemeChange) {
-      onThemeChange(newTheme);
-    }
-  }, [onThemeChange]);
+    document.documentElement.style.setProperty(
+      '--app-text-density',
+      String(TEXT_SIZE_SCALE[appTextSize ?? 'md'])
+    );
+  }, [appTextSize]);
 
   return {
     theme: activeTheme,
     isDark,
     resolvedTheme: isDark ? 'dark' : 'light',
-    setTheme,
   };
 }

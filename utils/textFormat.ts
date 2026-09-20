@@ -13,7 +13,7 @@ import { splitMathText } from './math';
  */
 
 // Protect formulas before line layout, so math remains inside its list item.
-export function renderDescriptionWithBold(text: string): React.ReactNode[] {
+export function renderDescriptionWithBold(text: string | undefined): React.ReactNode[] {
   if (!text) return [];
   let prefix = '\uE000';
   while (text.includes(prefix)) prefix += '\uE000';
@@ -85,49 +85,57 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
 
 const INLINE_MARKERS = ['***', '**', '++', '*'] as const;
 
+/** Marqueur d'ouverture le plus proche de `from` ; à position égale, le plus
+    long gagne (« *** » avant « ** » et « * »). */
+function findOpeningMarker(
+  segment: string,
+  from: number,
+): { index: number; marker: typeof INLINE_MARKERS[number] } | null {
+  let best: { index: number; marker: typeof INLINE_MARKERS[number] } | null = null;
+  for (const marker of INLINE_MARKERS) {
+    const index = segment.indexOf(marker, from);
+    if (index < 0) continue;
+    if (!best || index < best.index || (index === best.index && marker.length > best.marker.length)) {
+      best = { index, marker };
+    }
+  }
+  return best;
+}
+
 function applyInlineFormatting(segment: string, keyBase: string): React.ReactNode[] {
   if (!segment) return [];
   const out: React.ReactNode[] = [];
   let cursor = 0;
 
   while (cursor < segment.length) {
-    let openingIndex = -1;
-    let marker: typeof INLINE_MARKERS[number] | null = null;
-    INLINE_MARKERS.forEach(candidate => {
-      const index = segment.indexOf(candidate, cursor);
-      if (index < 0) return;
-      if (openingIndex < 0 || index < openingIndex || (index === openingIndex && candidate.length > (marker?.length ?? 0))) {
-        openingIndex = index;
-        marker = candidate;
-      }
-    });
+    const opening = findOpeningMarker(segment, cursor);
 
-    if (openingIndex < 0 || !marker) {
+    if (!opening) {
       out.push(segment.slice(cursor));
       break;
     }
 
-    const closingIndex = segment.indexOf(marker, openingIndex + marker.length);
+    const closingIndex = segment.indexOf(opening.marker, opening.index + opening.marker.length);
     if (closingIndex < 0) {
       out.push(segment.slice(cursor));
       break;
     }
 
-    if (openingIndex > cursor) out.push(segment.slice(cursor, openingIndex));
-    const inner = segment.slice(openingIndex + marker.length, closingIndex);
-    const children = applyInlineFormatting(inner, `${keyBase}-${openingIndex}`);
-    const key = `${keyBase}-${openingIndex}-${closingIndex}`;
+    if (opening.index > cursor) out.push(segment.slice(cursor, opening.index));
+    const inner = segment.slice(opening.index + opening.marker.length, closingIndex);
+    const children = applyInlineFormatting(inner, `${keyBase}-${opening.index}`);
+    const key = `${keyBase}-${opening.index}-${closingIndex}`;
 
-    if (marker === '***') {
+    if (opening.marker === '***') {
       out.push(React.createElement('strong', { key }, React.createElement('em', null, ...children)));
-    } else if (marker === '**') {
+    } else if (opening.marker === '**') {
       out.push(React.createElement('strong', { key }, ...children));
-    } else if (marker === '++') {
+    } else if (opening.marker === '++') {
       out.push(React.createElement('u', { key, className: 'decoration-current underline-offset-2' }, ...children));
     } else {
       out.push(React.createElement('em', { key }, ...children));
     }
-    cursor = closingIndex + marker.length;
+    cursor = closingIndex + opening.marker.length;
   }
 
   return out;

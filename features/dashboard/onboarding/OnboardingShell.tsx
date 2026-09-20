@@ -49,9 +49,9 @@ export function OnboardingShell({
   return (
     <div
       dir={rtl ? 'rtl' : 'ltr'}
-      className="onboarding-keep onboarding-artisan-shell flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#0f1017] dark:text-[#ededed]"
+      className="onboarding-keep onboarding-artisan-shell flex min-h-dvh flex-col bg-background text-foreground"
     >
-      <header className="onboarding-artisan-header border-b border-black/[0.04] dark:border-white/[0.06] bg-white/70 dark:bg-[#11121d]/70 backdrop-blur-md sticky top-0 z-20">
+      <header className="onboarding-artisan-header sticky top-0 z-20 border-b border-border/70 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-3">
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <img
@@ -77,9 +77,9 @@ export function OnboardingShell({
                   disabled={finishing}
                   aria-pressed={value === lang}
                   onClick={() => onLanguageChange(value)}
-                  className={`keep-surface keep-choice min-h-9 sm:min-h-10 px-2.5 sm:px-3 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                    value === lang ? 'border-[#7033e3]/50 text-[#7033e3] font-bold dark:text-[#a78bfa]' : ''
-                  }`}
+className={`keep-surface keep-choice min-h-10 sm:min-h-11 px-3 sm:px-3.5 text-xs sm:text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                  value === lang ? 'border-primary/40 text-primary font-bold' : ''
+                }`}
                 >
                   {value === 'fr' ? 'FR' : 'العربية'}
                 </button>
@@ -108,7 +108,7 @@ export function OnboardingShell({
           (step === 4 ? 'max-w-5xl' : 'max-w-3xl')
         }
       >
-        <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--muted-foreground))] sm:mb-5">
+        <div className="mb-4 flex items-center justify-between gap-3 text-sm text-muted-foreground sm:mb-6">
           <span className="font-medium">{copy.step(step, ONBOARDING_TOTAL_STEPS)}</span>
           <button
             type="button"
@@ -125,7 +125,7 @@ export function OnboardingShell({
           aria-valuemin={1}
           aria-valuemax={ONBOARDING_TOTAL_STEPS}
           aria-valuenow={step}
-          className="onboarding-artisan-progress mb-4 flex gap-1.5 sm:mb-7"
+          className="onboarding-artisan-progress mb-5 flex gap-2 sm:mb-8"
         >
           {Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, index) => (
             <span
@@ -164,7 +164,7 @@ export function OnboardingShell({
               type="button"
               disabled={step === 1 || finishing}
               onClick={onBack}
-              className="inline-flex min-h-11 sm:min-h-12 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
+              className="inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-card px-5 py-3 text-sm font-semibold text-foreground/80 shadow-sm hover:bg-muted hover:text-foreground focus-visible:outline-2 disabled:invisible cursor-pointer"
             >
               <ChevronLeft
                 className="h-4 w-4 rtl:rotate-180"
@@ -176,7 +176,7 @@ export function OnboardingShell({
               type="button"
               disabled={!canContinue || finishing}
               onClick={onNext}
-              className="artistic-cta-button inline-flex min-h-11 sm:min-h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-sm font-bold text-white shadow-md shadow-[#7033e3]/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
+              className="artistic-cta-button inline-flex min-h-12 sm:min-h-13 w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-7 py-3 text-sm font-bold active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none cursor-pointer"
             >
               {finishing && (
                 <Loader2

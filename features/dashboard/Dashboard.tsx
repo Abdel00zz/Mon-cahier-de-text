@@ -13,11 +13,14 @@ import { CreateClassModal } from './modals/CreateClassModal';
 import { OnboardingPage } from './OnboardingPage';
 import { ClassInfo, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
+import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/utils/timetable';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/classOrder';
+import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
+import './dashboardCanvas.css';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -30,24 +33,6 @@ type ClassDisplayMode = 'list' | 'single' | 'double';
 
 const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
-
-// Stable entry props isolate the collection from modal/menu state changes.
-const ClassEntry = React.memo(({ classInfo, mode, index, isActiveSession, onOpen, onConfigure, onDelete }: {
-    classInfo: ClassInfo;
-    mode: ClassDisplayMode;
-    index: number;
-    isActiveSession: boolean;
-    onOpen: (value: ClassInfo) => void;
-    onConfigure: (value: ClassInfo) => void;
-    onDelete: (value: ClassInfo) => void;
-}) => {
-    const select = useCallback(() => onOpen(classInfo), [onOpen, classInfo]);
-    const configure = useCallback(() => onConfigure(classInfo), [onConfigure, classInfo]);
-    const remove = useCallback(() => onDelete(classInfo), [onDelete, classInfo]);
-    const props = { classInfo, onSelect: select, onConfigure: configure, onDelete: remove, isActiveSession };
-    return mode === 'list' ? <ClassListItem {...props} /> : <ClassCard {...props} index={index} isDoubleColumn={mode === 'double'} />;
-});
-ClassEntry.displayName = 'ClassEntry';
 
 const subjectKey = (value: string) => value
     .trim()
@@ -63,7 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     accountTeacherName = '',
     onOnboardingVisibilityChange,
 }) => {
-    const { locale, t } = useLocale();
+    const { locale, t, isRtl } = useLocale();
     const reduceMotion = useReducedMotion();
     const { user: accountUser, completeWelcome } = useAuth();
     const { classes, addClass, deleteClass, updateClass, isLoading: isClassesLoading } = useClassManager();
@@ -262,7 +247,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     ), [persistedClassOrder, classById, subjectFilter, activeSessionIds]);
     // Measure only when order, session title or display mode changes, not on
     // unrelated sync/config renders. Position-only animation keeps text crisp.
-    const classLayoutKey = JSON.stringify([classDisplayMode, filteredClasses.map(c => [c.id, activeSessionIds.has(c.id)])]);
+    const classLayoutKey = useMemo(
+        () => JSON.stringify([classDisplayMode, filteredClasses.map(c => [c.id, activeSessionIds.has(c.id)])]),
+        [classDisplayMode, filteredClasses, activeSessionIds],
+    );
 
     if (isLoading) {
         return <DashboardSkeleton />;
@@ -308,38 +296,46 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div
-            className="dashboard-artisan-shell min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-1 sm:pt-2"
+            /* Fond du tableau de bord : les valeurs vivent dans
+               `dashboardCanvas.ts`, la structure dans `dashboardCanvas.css`. */
+            style={DASHBOARD_CANVAS_STYLE}
+            className="keep-dashboard-canvas min-h-dvh bg-background text-foreground font-sans antialiased pb-20 sm:pb-8 pt-4 sm:pt-6"
             data-dashboard-root
         >
             <div className="relative min-w-0 overflow-x-clip" data-dashboard-main>
-                <div className="relative z-10 mx-auto max-w-5xl px-3 pb-4 sm:px-5 lg:px-6 pl-safe pr-safe">
+                <div className="relative z-10 mx-auto max-w-5xl px-4 pt-1 pb-6 sm:px-6 lg:px-8 pl-safe pr-safe">
 
                     {classes.length > 0 && (
-                        <div className="mb-1.5 sm:mb-2">
-                            <div className="dashboard-artisan-header flex flex-wrap items-center justify-between gap-2 sm:gap-2.5">
+                        <div className="mb-3 sm:mb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
                                 <div>
-                                    <h1 id="classes-heading" className="font-arabswell text-xl sm:text-2xl font-bold tracking-[-0.02em] text-foreground leading-tight">
+                                    {/* Même typographie de référence que les titres de
+                                        classe (module unique), rôle « page ». */}
+                                    <h1
+                                        style={classTitleStyle(isRtl, 'page')}
+                                        className="text-xl sm:text-2xl lg:text-3xl text-stone-950 dark:text-stone-50 leading-tight"
+                                    >
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 ms-auto">
-                                    {/* Bouton « 2 par ligne » ultra-compact */}
+                                <div className="flex items-center gap-1.5 sm:gap-2 ms-auto">
+                                    {/* Bouton « 2 par ligne » compact, serré et moins arrondi (rounded-md) */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="artisan-display-trigger flex h-7 sm:h-7.5 items-center gap-1 rounded-md border px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium cursor-pointer transition-all active:scale-[0.98]"
+                                            className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-2.5 sm:px-3 text-xs font-medium text-stone-700 dark:text-stone-200 shadow-2xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all active:scale-[0.98]"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-2.5 w-2.5 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                            <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isDisplayMenuOpen && (
                                             <div
                                                 role="menu"
-                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-36 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
+                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-38 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
                                             >
                                                 {CLASS_DISPLAY_OPTIONS.map(option => {
                                                     const isActive = option === currentDisplay;
@@ -353,7 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 setClassDisplayMode(option);
                                                                 setDisplayMenuOpen(false);
                                                             }}
-                                                            className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-start text-[11px] sm:text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
+                                                            className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
                                                         >
                                                             <span>{displayCopy(option).label}</span>
                                                         </button>
@@ -363,15 +359,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )}
                                     </div>
 
-                                    {/* Bouton attractif « + Classe » ultra-compact */}
+                                    {/* Bouton attractif « + Classe » compact, serré et moins arrondi (rounded-md) */}
                                     <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="artisan-add-class flex h-7 sm:h-7.5 items-center gap-1 rounded-md px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
+                                        className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md bg-[#7033f5] hover:bg-[#5e22e2] active:bg-[#521bcf] dark:bg-[#7c3aed] dark:hover:bg-[#6d28d9] px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold text-white shadow-2xs hover:shadow-xs hover:scale-[1.01] active:scale-[0.98] cursor-pointer transition-all whitespace-nowrap"
                                     >
-                                        <Plus className="h-3 w-3 stroke-[2.5]" />
+                                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
                                     </button>
                                 </div>
@@ -433,13 +429,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 className="relative"
                                                 style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
-                                                <ClassEntry
+                                                <ClassListItem
                                                     classInfo={classInfo}
-                                                    mode="list"
-                                                    index={0}
-                                                    onOpen={openNotebook}
-                                                    onConfigure={setEditingClass}
-                                                    onDelete={setClassPendingDelete}
+                                                    onSelect={() => openNotebook(classInfo)}
+                                                    onConfigure={() => setEditingClass(classInfo)}
+                                                    onDelete={() => setClassPendingDelete(classInfo)}
                                                     isActiveSession={isActiveSession}
                                                 />
                                             </motion.div>
@@ -459,12 +453,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 className="relative h-full w-full flex flex-col"
                                                 style={{ zIndex: isActiveSession ? 2 : 0 }}
                                             >
-                                                <ClassEntry
+                                                <ClassCard
                                                     classInfo={classInfo}
-                                                    mode={currentDisplay}
-                                                    onOpen={openNotebook}
-                                                    onConfigure={setEditingClass}
-                                                    onDelete={setClassPendingDelete}
+                                                    onSelect={() => openNotebook(classInfo)}
+                                                    onConfigure={() => setEditingClass(classInfo)}
+                                                    onDelete={() => setClassPendingDelete(classInfo)}
                                                     index={index}
                                                     isActiveSession={isActiveSession}
                                                 />

@@ -191,14 +191,14 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
 
         // 2. Recherche dans les devoirs du cahier
         try {
-            const visitItemForDate = (type: string, title: string, date?: string) => {
+            const visitItemForDate = (type: string, title: string | undefined, date?: string) => {
                 if (!date || dateMap.has(date)) return;
                 const isAssessment = ['controle_continu', 'controle_court', 'controle_global', 'devoir_maison'].includes(type);
                 if (!isAssessment) return;
 
                 for (const [assessmentId, record] of Object.entries(classAbsences)) {
                     if (!record?.names || record.names.length === 0) continue;
-                    const matchNum = title.match(/(\d+)/);
+                    const matchNum = title?.match(/(\d+)/);
                     if (matchNum && assessmentId.includes(matchNum[1])) {
                         dateMap.set(date, record.names);
                         break;
@@ -276,8 +276,8 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
                     <strong className={`print-field-value text-[#0056D2] font-bold ${
                         isArabicText(classInfo.teacherName || config.defaultTeacherName)
-                            ? 'font-sans text-[1.15em]'
-                            : 'font-itim'
+                            ? 'print-field-value-ar text-[1.15em]'
+                            : 'print-field-value-la'
                     }`}>
                         {classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}
                     </strong>
@@ -416,7 +416,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     }
 
                     .print-table th {
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-weight: 700;
                         font-size: 8.5pt;
                         text-transform: uppercase;
@@ -572,7 +572,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     }
                     .print-government {
                         color: #526a8c;
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-size: 8.2pt;
                         font-weight: 800;
                         letter-spacing: 0.07em;
@@ -581,21 +581,21 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                     .print-academy {
                         margin-top: 2px;
                         color: #162033;
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-size: 10.2pt;
                         font-weight: 800;
                     }
                     .print-province {
                         margin-top: 1px;
                         color: #405579;
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-size: 8.8pt;
                         font-weight: 700;
                     }
                     .print-header .print-header-title {
                         margin-top: 5px;
                         color: #101b32;
-                        font-family: 'Roboto Slab', Georgia, serif;
+                        font-family: var(--font-display), Georgia, serif;
                         font-size: 18pt;
                         font-weight: 800;
                         line-height: 1.12;
@@ -615,7 +615,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         min-width: 0;
                         padding: 3px 0;
                         border-bottom: 0.6pt dotted #b8c2d0;
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-size: 8.5pt;
                     }
                     .print-institution-field .print-field-label {
@@ -628,6 +628,22 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         color: #101b32;
                         font-weight: 800;
                         text-align: right;
+                    }
+                    /* Le nom imprime suit la langue du NOM, jamais celle de l'interface. */
+                    .print-institution-field .print-field-value-la {
+                        font-family: var(--content-font-latin), Arial, sans-serif;
+                    }
+                    .print-institution-field .print-field-value-ar {
+                        font-family: var(--content-font-arabic), serif;
+                    }
+                    /* Un document arabe imprime en arabe, un document latin en latin. */
+                    .print-table[dir="rtl"] th,
+                    .print-table[dir="rtl"] td {
+                        font-family: var(--content-font-arabic), serif;
+                    }
+                    .print-table[dir="ltr"] th,
+                    .print-table[dir="ltr"] td {
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                     }
                     /* Tighten content spacing inside content column */
                     .print-col-content p { margin: 0 0 2px 0; line-height: 1.18; }
@@ -696,7 +712,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                         padding-top: 4px;
                     }
                     .print-signature-label {
-                        font-family: 'Fira Sans', Arial, sans-serif;
+                        font-family: var(--content-font-latin), Arial, sans-serif;
                         font-size: 7.2pt;
                         font-weight: 700;
                         letter-spacing: 0.08em;

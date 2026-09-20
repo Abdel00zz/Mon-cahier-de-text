@@ -1,0 +1,78 @@
+/* ───────────────────────────────────────────────────────────────────────────
+ *  Fond du tableau de bord — STRUCTURE uniquement.
+ *
+ *  Aucune couleur, aucune intensité, aucune taille n'est écrite ici : tout
+ *  vient des variables posées par `dashboardCanvas.ts` sur la racine du
+ *  tableau de bord. Pour changer l'ambiance, modifier ce module TS.
+ *
+ *  Les dégradés sont des `radial-gradient` teintés (color-mix en oklab sur le
+ *  neutre de l'application) et les arcs sont deux cercles en bordure seule,
+ *  purement décoratifs. Rien n'est animé.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.keep-dashboard-canvas {
+    position: relative;
+    /* Relais du mode : les valeurs de base arrivent en style en ligne depuis
+       `dashboardCanvas.ts`, et une déclaration en ligne l'emporte sur toute
+       règle de feuille. Ces variables intermédiaires, que la feuille seule
+       écrit, permettent donc à `.dark` de basculer réellement les intensités. */
+    --canvas-left-active: var(--canvas-left-strength);
+    --canvas-right-active: var(--canvas-right-strength);
+    --canvas-end-active: var(--canvas-end-strength);
+    --canvas-arc-near-opacity-active: var(--canvas-arc-near-opacity);
+    --canvas-arc-far-opacity-active: var(--canvas-arc-far-opacity);
+    background-image:
+        radial-gradient(
+            120% 90% at 0% 0%,
+            color-mix(in oklab, var(--canvas-left) var(--canvas-left-active), transparent) 0%,
+            transparent 66%
+        ),
+        radial-gradient(
+            115% 88% at 100% 0%,
+            color-mix(in oklab, var(--canvas-right) var(--canvas-right-active), transparent) 0%,
+            transparent 64%
+        ),
+        radial-gradient(
+            100% 75% at 88% 100%,
+            color-mix(in oklab, var(--canvas-right) var(--canvas-end-active), transparent) 0%,
+            transparent 60%
+        );
+}
+
+.keep-dashboard-canvas::before,
+.keep-dashboard-canvas::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    border-radius: 50%;
+    border: var(--canvas-arc-border) solid color-mix(in oklab, var(--canvas-arc-color) var(--canvas-arc-tint), transparent);
+    pointer-events: none;
+}
+
+/* Arc d'attaque : haut du bord de départ, suit la direction (RTL compris). */
+.keep-dashboard-canvas::before {
+    inset-inline-start: var(--canvas-arc-near-start);
+    top: var(--canvas-arc-near-top);
+    width: var(--canvas-arc-near-size);
+    aspect-ratio: 1 / 1;
+    opacity: var(--canvas-arc-near-opacity-active);
+}
+
+/* Arc de fin : déborde volontairement du bas, classe par l'overflow-x-clip
+   des ancêtres de l'application (jamais de barre de défilement). */
+.keep-dashboard-canvas::after {
+    inset-inline-end: var(--canvas-arc-far-end);
+    bottom: var(--canvas-arc-far-bottom);
+    width: var(--canvas-arc-far-size);
+    aspect-ratio: 1 / 1;
+    border-color: color-mix(in oklab, var(--canvas-right) var(--canvas-arc-tint-end), transparent);
+    opacity: var(--canvas-arc-far-opacity-active);
+}
+
+/* Mode sombre : les mêmes dégradés, atténués. Ce n'est pas une inversion. */
+.dark .keep-dashboard-canvas {
+    --canvas-left-active: var(--canvas-left-strength-dark);
+    --canvas-right-active: var(--canvas-right-strength-dark);
+    --canvas-arc-near-opacity-active: var(--canvas-arc-near-opacity-dark);
+    --canvas-arc-far-opacity-active: var(--canvas-arc-far-opacity-dark);
+}

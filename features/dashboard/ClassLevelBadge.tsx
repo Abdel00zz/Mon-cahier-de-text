@@ -158,6 +158,13 @@ export interface ClassGroupWatermarkProps {
     themeTone?: string;
     tierKey?: string | null;
     className?: string;
+    /**
+     * Emplacement du numéro :
+     * - `inline` : à côté d'un titre (liste des classes) ;
+     * - `end`    : juste après le nom, comme un filigrane accolé au titre
+     *              (plus grand, teinté par la palette du thème).
+     */
+    variant?: 'inline' | 'end';
 }
 
 /**
@@ -170,6 +177,7 @@ export const ClassGroupWatermark = memo(({
     themeTone,
     tierKey,
     className,
+    variant = 'inline',
 }: ClassGroupWatermarkProps) => {
     const numberColorClasses = themeTone
         ? getToneGroupNumberClasses(themeTone)
@@ -177,8 +185,11 @@ export const ClassGroupWatermark = memo(({
 
     return (
         <span
+            data-variant={variant}
             className={cn(
-                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-maghribi font-bold tabular-nums leading-none ms-1.5',
+                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-maghribi font-bold tabular-nums leading-none',
+                variant === 'end' && 'ms-1 text-[1.4em]',
+                variant === 'inline' && 'ms-1.5',
                 numberColorClasses,
                 className
             )}

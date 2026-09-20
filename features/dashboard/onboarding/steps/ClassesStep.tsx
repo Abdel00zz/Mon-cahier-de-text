@@ -148,7 +148,7 @@ export const ClassesStep = memo<ClassesStepProps>(
 
     // Validation du formulaire
     const isFormValid = useMemo(() => {
-      return selectedLevel.trim().length > 0 && normalizeGroupNumber(groupInput).length > 0;
+      return selectedLevel.trim().length > 0 && Boolean(normalizeGroupNumber(groupInput));
     }, [selectedLevel, groupInput]);
 
     // Nom final en aperçu

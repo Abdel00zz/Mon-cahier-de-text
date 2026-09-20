@@ -6,9 +6,9 @@ Les constats ci-dessous décrivent l’état avant correction. Le tableau utilis
 
 La suspension complète de la page ne devient pas un ordonnanceur fiable : les rappels de séance restent locaux, avec leur fenêtre de fraîcheur pour éviter les alertes périmées. La réception et la vibration matérielles nécessitent encore une vérification sur téléphone.
 
-## Typographie configurable
+## Typographie fixe, séparée par langue
 
-Cyber Tech & Clean (Space Grotesk avec Alexandria pour les glyphes arabes) est disponible dans Apparence > Typographie > Interface. Space Grotesk est également disponible pour le contenu latin, et Alexandria était déjà proposée pour le contenu arabe. Les valeurs absentes et la réinitialisation adoptent ces choix. Les choix explicitement enregistrés restent prioritaires. Les cartes suivent désormais la police d’interface au lieu d’imposer une famille fixe. Les réglages passent par les champs de configuration existants et leur synchronisation.
+Le choix de police a été supprimé : l’onglet Apparence ne propose plus que le mode clair/sombre/système et la taille du texte. Deux paires fixes assurent la séparation des langues — DM Sans (texte) et Rubik (titres) pour le latin, Arabswell 3 (texte) et Maghribi Font 3 (titres) pour l’arabe, ces deux dernières embarquées dans public/. Le contenu du cahier suit la direction du tableau (data-content-direction), l’impression suit la direction du document, et la taille du texte passe par --app-text-density (quatre crans) sans toucher aux espacements ni aux cibles tactiles.
 
 ## Tailles mobiles : causes constatées
 

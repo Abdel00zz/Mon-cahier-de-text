@@ -3,7 +3,7 @@ import { ConfigModal } from './ConfigModal';
 import { downloadBackup, restoreBackup } from '@/utils/backup';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
-import type { AppConfig, ClassInfo, Cycle } from '@/types';
+import type { AppConfig, ClassDraft, ClassInfo, Cycle } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
 
 const ImportPlatformModal = lazy(() => import('./ImportPlatformModal').then(m => ({ default: m.ImportPlatformModal })));
@@ -14,7 +14,7 @@ interface SettingsPageProps {
     config: AppConfig;
     onConfigChange: (config: Partial<AppConfig>) => void;
     classes: ClassInfo[];
-    addClass: (details: { name: string; subject: string; cycle?: Cycle; teacherName?: string }) => ClassInfo;
+    addClass: (details: ClassDraft) => ClassInfo;
 }
 
 /** Paramètres présentés comme une sheet modale au-dessus de la vue d'origine. */

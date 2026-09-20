@@ -169,8 +169,8 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
   assert.match(list, /useClassPress/);
   assert.match(card, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
   assert.match(list, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
-  assert.match(card, /font-cyber-clean/);
-  assert.match(list, /font-cyber-clean/);
+  assert.match(card, /font-maghribi/);
+  assert.match(list, /keep-class-title/);
 });
 
 test('sidebar : le nom de l’enseignant reflète la configuration active', () => {

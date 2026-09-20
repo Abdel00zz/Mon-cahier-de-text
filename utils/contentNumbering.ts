@@ -1,6 +1,5 @@
 import type { LessonsData } from '../types.js';
 import { buildLessonRows, type LessonRow } from './lessonRows.js';
-import { normalizeContentType } from '../constants/type-keys.js';
 
 /**
  * Numérotation des contenus pédagogiques : « Définition 1 », « Exemple 2 »,
@@ -8,8 +7,8 @@ import { normalizeContentType } from '../constants/type-keys.js';
  * repart de 1 à chaque chapitre, comme dans un manuel scolaire.
  *
  * Le professeur garde toujours le dernier mot : un numéro saisi à la main
- * (`item.number`) prime sur le calcul. Un entier fait avancer le compteur ;
- * une référence libre (« 2bis », « A ») reste affichée telle quelle.
+ * (`item.number`) prime sur le calcul, et fait repartir le compteur juste après
+ * lui — sans quoi la suite automatique contredirait la saisie.
  *
  * Sont exclus :
  *  - les structures (chapitre, section, sous-section, séparateur) ;
@@ -39,14 +38,14 @@ const rowType = (row: LessonRow): string => String((row.data as { type?: unknown
 
 const explicitNumber = (row: LessonRow): string | undefined => {
     const value = (row.data as { number?: unknown }).number;
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
     return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
 };
 
 /**
  * Numéro à afficher pour chaque ligne de contenu, indexé par la clé canonique
  * de ligne (`indicesKey`) — la même que celle du rendu à l'écran et du papier.
- * Les numéros saisis sont conservés ; les alias d'un type partagent le compteur.
+ * Un numéro saisi à la main n'apparaît pas dans la carte : l'appelant garde la
+ * priorité sur la saisie.
  */
 export const buildContentNumbers = (lessons: LessonsData, enabled = true): Map<string, string> => {
     const numbers = new Map<string, string>();
@@ -59,16 +58,15 @@ export const buildContentNumbers = (lessons: LessonsData, enabled = true): Map<s
             chapterIndex = row.indices.chapterIndex ?? -1;
             counters.clear();
         }
-        const type = normalizeContentType(rowType(row).trim().toLowerCase());
+        const type = rowType(row);
         let counter = counters.get(type) ?? 0;
         const declared = explicitNumber(row);
         if (declared) {
             // Le numéro écrit à la main prime ET fait avancer le compteur, sinon
             // la suite automatique contredirait la saisie.
             numbers.set(row.key, declared);
-            const digits = declared.replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) - (digit <= '٩' ? 0x660 : 0x6f0)));
-            const parsed = /^\d+$/.test(digits) ? Number(digits) : NaN;
-            if (Number.isSafeInteger(parsed) && parsed > counter) counters.set(type, parsed);
+            const parsed = Number.parseInt(declared, 10);
+            if (Number.isFinite(parsed) && parsed > counter) counters.set(type, parsed);
             continue;
         }
         counter += 1;

@@ -38,7 +38,8 @@ registerRoute(
 );
 
 /*
- * Polices Google (Fira Sans, Roboto Slab, IBM Plex Arabic) : indispensables au rendu
+ * Polices : duo latin (DM Sans, Rubik) et polices arabes embarquées
+ * (Arabswell 3, Maghribi Font 3) : indispensables au rendu
  * hors ligne sur mobile/tablette. La feuille CSS est revalidée en arrière-plan,
  * les fichiers de police (immuables) sont servis cache-first un an.
  */

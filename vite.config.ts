@@ -228,9 +228,13 @@ export default defineConfig(({ mode }) => {
                     'assessment-rules.json',
                     'official-sources.json',
                     'contenus/manifest.json',
+                    // Polices arabes embarquées : sans elles, l'interface arabe
+                    // retombe sur le repli système lorsque l'appareil est hors ligne.
+                    'arabswell-3.ttf',
+                    'maghribi-font-3.ttf',
                 ],
                 injectManifest: {
-                    globPatterns: ['**/*.{js,css,html,woff2}'],
+                    globPatterns: ['**/*.{js,css,html,woff2,ttf}'],
                     globIgnores: ['**/admin*'],
                 },
                 devOptions: {

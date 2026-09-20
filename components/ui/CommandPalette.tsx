@@ -117,7 +117,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       list.push({
         id: 'nav-settings',
         title: 'Réglages & Personnalisation',
-        subtitle: 'Apparence, thèmes, polices et export de données',
+        subtitle: 'Apparence, thème clair/sombre, taille du texte et export de données',
         category: 'navigation',
         icon: Settings,
         onSelect: () => {

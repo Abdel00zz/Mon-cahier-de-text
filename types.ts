@@ -22,6 +22,10 @@ export interface ClassInfo {
   curriculumChapterMatches?: Record<string, { index: number; title: string }[]>;
 }
 
+/** Classe en cours de création : le gestionnaire complète l'identifiant, la
+    date de création et la couleur. Source unique du contrat `addClass`. */
+export type ClassDraft = Omit<ClassInfo, 'id' | 'createdAt' | 'color'>;
+
 interface OfficialChapter {
   id: string;
   order: number;
@@ -63,40 +67,22 @@ export interface OfficialCurriculumPlan {
   assessmentWindows?: { type: 'DM' | 'DS'; semester: 1 | 2; num: number; start: string; end: string; hours: number | null }[];
 }
 
-import type { AccentColorKey, BorderRadiusOption, CardStyleOption, TableStyleOption, UIFontOption } from '@/constants/themePresets';
-
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export interface ThemeCustomization {
-  /** Palette d'accent de l'application */
-  accentColor?: AccentColorKey;
-  /** Code couleur hexadécimal si accentColor === 'custom' */
-  customPrimaryColor?: string;
-  /** Rayon de courbure / arrondi des angles */
-  borderRadius?: BorderRadiusOption;
-  /** Style visuel des cartes et surfaces */
-  cardStyle?: CardStyleOption;
-  /** Style d'affichage du tableau du cahier de textes */
-  tableStyle?: TableStyleOption;
-  /** Police de l'interface utilisateur */
-  uiFont?: UIFontOption;
-  /** Couleur personnalisée de fond (optionnelle) */
-  customBackgroundColor?: string;
-  /** Couleur personnalisée de texte principal (optionnelle) */
-  customTextColor?: string;
-  /** Couleur personnalisée de carte/surface (optionnelle) */
-  customCardColor?: string;
-}
+/**
+ * Densité de texte de l'interface.
+ *
+ * C'est le SEUL réglage typographique exposé au professeur : la police est
+ * déterminée par la langue (DM Sans / Rubik en latin, Arabswell 3 / Maghribi
+ * Font 3 en arabe) et n'est plus un choix utilisateur.
+ */
+export type AppTextSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface AppConfig {
   /** Mode d'affichage (Clair / Sombre / Système). */
   theme?: ThemeMode;
-  /** Personnalisation centralisée du style et des couleurs */
-  themeCustomization?: ThemeCustomization;
-  /** Police d'écriture pour les contenus latins/français. */
-  contentFontLatin?: string;
-  /** Police d'écriture pour les contenus arabes. */
-  contentFontArabic?: string;
+  /** Densité du texte de l'interface (petit, normal, grand, très grand). */
+  appTextSize?: AppTextSize;
   /** Langue de l'interface, partagée avec le compte enseignant. */
   applicationLocale?: AppLocale;
   establishmentName: string;

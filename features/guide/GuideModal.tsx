@@ -41,10 +41,10 @@ export const GuideModal = ({ isOpen, onClose }: GuideModalProps) => {
   const toc = isAr ? 'فهرس الدليل' : 'Sommaire du guide';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="3xl"
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="4xl"
       dir={isAr ? 'rtl' : 'ltr'}
       mobileDetents={[0.94]} initialMobileDetent={0.94}
-      className="learning-guide h-[84dvh] sm:rounded-2xl"
+      className="learning-guide h-[90dvh] sm:rounded-[24px]"
       headerClassName="learning-guide-header" bodyClassName="learning-guide-body"
       title={
         <div className="guide-heading" dir={isAr ? 'rtl' : 'ltr'} lang={lang}>

@@ -364,7 +364,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             />
           </label>
 
-          <div className="space-y-2 rounded-2xl border border-border/70 bg-background p-4 shadow-xs">
+          <div className="space-y-2 rounded-xl border border-border/70 bg-background/75 p-4 shadow-xs">
             <span className="block text-xs font-bold text-foreground">{t('print.header')}</span>
             <Segmented<PrintHeaderMode>
               value={headerMode}
