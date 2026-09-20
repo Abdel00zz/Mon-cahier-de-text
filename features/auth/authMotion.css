@@ -1,9 +1,9 @@
 /* Premium auth surface: editorial, calm and distinctly Andalusian without decorative overload. */
-.auth-artisan-shell {
+  .auth-artisan-shell {
   background: #f7f4ed;
-  background-image: radial-gradient(circle at 1px 1px, rgb(43 93 75 / 0.08) 1px, transparent 0);
-  background-size: 22px 22px;
-}
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.72), transparent 38%);
+  background-size: 100% 100%;
+  }
 .auth-artisan-header {
   position: relative;
   z-index: 1;
@@ -132,19 +132,18 @@
   .landing-artisan-title { font-size: clamp(1.7rem, 8vw, 2.35rem); }
 }
 @media (prefers-color-scheme: dark) {
-  .landing-artisan-shell { background: #111d19 !important; background-image: radial-gradient(circle at 1px 1px, rgb(167 220 188 / 0.08) 1px, transparent 0) !important; }
+  .landing-artisan-shell { background: #111d19 !important; background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 38%) !important; }
   .landing-artisan-title { color: #c5ead2; }
   .landing-secondary-cta { color: #c5ead2; background: rgb(24 39 34 / 0.88); border-color: rgb(167 220 188 / 0.18); }
 }
 
 /* Onboarding : rythme éditorial, surfaces claires et accents zellige discrets. */
-.onboarding-artisan-shell {
-  position: relative;
+  .onboarding-artisan-shell {
   overflow-x: hidden;
   background: #f7f4ed !important;
-  background-image: radial-gradient(circle at 1px 1px, rgb(43 93 75 / 0.07) 1px, transparent 0) !important;
-  background-size: 22px 22px !important;
-}
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.72), transparent 38%) !important;
+  background-size: 100% 100% !important;
+  }
 .onboarding-artisan-header {
   border-bottom: 0 !important;
   background: rgb(255 255 255 / 0.82) !important;
