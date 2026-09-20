@@ -708,9 +708,6 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
         <span className={cn('block text-[15px] font-bold leading-tight text-foreground sm:text-lg', isRtl && 'text-[17px] sm:text-xl')}>
           {t('notifications.centerTitle')}
         </span>
-        <span className="mt-1 block truncate text-[11px] font-normal leading-snug text-muted-foreground sm:text-xs">
-          {t('notifications.allTeachingClasses')}
-        </span>
       </span>
     </div>
   );
