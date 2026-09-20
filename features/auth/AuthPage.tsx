@@ -426,9 +426,11 @@ export const AuthPage: React.FC<{
               aria-pressed={displayLocale === value}
               className={
                 "auth-language-option flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
-                (displayLocale === value
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/80")
+(displayLocale === value
+  ? value === "fr"
+    ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+    : "bg-muted text-foreground"
+  : "text-muted-foreground hover:bg-muted/80")
               }
             >
               <CountryFlag code={value} className="h-3 w-4.5" />

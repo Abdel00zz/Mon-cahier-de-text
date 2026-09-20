@@ -1894,8 +1894,8 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
   /* En-tête et navigation : même langage artisanal que les cartes. */
   .dashboard-artisan-shell {
-  background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 52% / 0.13) 0 1px, transparent 1.5px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle at 12px 12px, hsl(174 62% 72% / 0.16) 0 1px, transparent 1.5px), radial-gradient(circle at 8% 0%, hsl(174 62% 88% / 0.32), transparent 30rem), radial-gradient(circle at 92% 0%, hsl(205 72% 89% / 0.28), transparent 34rem), radial-gradient(circle at 50% 100%, hsl(325 45% 93% / 0.2), transparent 32rem);
+  background-size: 24px 24px, auto, auto, auto;
   }
   .dashboard-artisan-header {
   position: relative;
@@ -1919,7 +1919,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
   box-shadow: 0 4px 12px -8px hsl(var(--primary) / 0.4);
   }
   .artisan-add-class:hover { transform: translateY(-1px); filter: brightness(1.08); }
-  .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(42 52% 60% / 0.1) 0 1px, transparent 1.5px); }
+  .dark .dashboard-artisan-shell { background-image: radial-gradient(circle at 12px 12px, hsl(174 42% 62% / 0.1) 0 1px, transparent 1.5px), radial-gradient(circle at 8% 0%, hsl(174 42% 30% / 0.22), transparent 30rem), radial-gradient(circle at 92% 0%, hsl(205 45% 28% / 0.18), transparent 34rem); }
   /* Mobile premium : Pixel, Galaxy S24 et iPhone 16 — safe areas, densité et tactile. */
   @media (max-width: 639px) {
     :root { --radius-md: 10px; --radius-lg: 16px; --radius-xl: 20px; }
