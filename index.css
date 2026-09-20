@@ -143,7 +143,7 @@
   --text-4xl: calc(2.25rem * var(--app-text-scale, 1));
   --text-5xl: calc(3rem * var(--app-text-scale, 1));
 
-  /* ── 1. Dynamic Fluid Typography Tokens (clamp) ──────────────────���──── */
+  /* ── 1. Dynamic Fluid Typography Tokens (clamp) ──────────────────���──���─ */
   --text-fluid-xs: clamp(0.6875rem, 0.64rem + 0.2vw, 0.75rem);
   --text-fluid-sm: clamp(0.8125rem, 0.76rem + 0.25vw, 0.875rem);
   --text-fluid-base: clamp(0.9375rem, 0.88rem + 0.3vw, 1rem);
@@ -580,6 +580,7 @@ html[lang="ar"] .keep-class-title {
     font-variant-numeric: proportional-nums;
   }
   html[lang="fr"] :is(h1, h2, h3, h4, h5, h6, button, [role="button"], .workspace-nav-label, .keep-class-title, [data-ui-title]) {
+    /* Rubik apporte une forme plus nette aux repères et titres d’interface. */
     font-family: var(--font-french-display);
   }
   html[lang="fr"] .workspace-nav,
