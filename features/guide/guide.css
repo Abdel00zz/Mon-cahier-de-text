@@ -30,7 +30,10 @@
 .learning-guide .learning-guide-header {
   background: var(--guide-surface);
   border-bottom: 1px solid var(--guide-border);
-  padding: 6px 12px;
+  padding: 14px 22px;
+}
+.learning-guide .learning-guide-body {
+  background: hsl(var(--background) / 0.42);
 }
 .learning-guide .learning-guide-body {
   display: flex;
@@ -60,7 +63,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 12px;
   border: 1px solid var(--guide-border);
   background: var(--guide-soft);
   color: var(--guide-muted);
@@ -132,7 +135,7 @@
 /* Disposition dynamique et réactive du sommaire */
 .guide-layout {
   display: grid;
-  grid-template-columns: clamp(210px, 25vw, 260px) minmax(0, 1fr);
+  grid-template-columns: clamp(240px, 26vw, 320px) minmax(0, 1fr);
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -146,7 +149,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 8px 8px 6px;
+  padding: 16px 14px 12px;
   background: hsl(var(--muted) / 0.18);
   border-inline-end: 1px solid var(--guide-border);
 }
@@ -243,9 +246,9 @@
   scrollbar-gutter: stable;
 }
 .guide-article {
-  max-width: 740px;
+  max-width: 860px;
   margin-inline: auto;
-  padding: 14px 20px 12px;
+  padding: 30px clamp(28px, 5vw, 72px) 36px;
   overflow-wrap: anywhere;
 }
 .guide-eyebrow {
