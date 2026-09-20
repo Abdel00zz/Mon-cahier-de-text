@@ -505,7 +505,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold'
+                    ? 'pilotage-sidebar-active font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -535,13 +535,13 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
                           <span
                             className={cn(
-                              'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
+                              'pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold',
                               item.emphasize
                                 ? 'bg-red-500 text-white'
                                 : isActive
@@ -588,7 +588,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold'
+                    ? 'pilotage-sidebar-active font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -611,11 +611,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
+                          <span className={cn('pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -655,7 +655,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                     ? 'justify-center p-2 relative'
                     : 'gap-2.5 px-2.5 py-2 text-start',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold'
+                    ? 'pilotage-sidebar-active font-bold'
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
@@ -678,11 +678,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
                   <>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={cn('block text-xs truncate', isActive ? 'font-extrabold text-primary' : 'font-bold text-foreground')}>
+                        <span className={cn('block text-xs truncate', isActive ? 'font-bold pilotage-sidebar-active-text' : 'font-medium pilotage-sidebar-text')}>
                           {item.label}
                         </span>
                         {item.count > 0 && (
-                          <span className={cn('flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
+                          <span className={cn('pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold', isActive ? 'bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200' : 'bg-muted dark:bg-zinc-800 text-muted-foreground dark:text-muted-foreground')}>
                             {item.count}
                           </span>
                         )}
@@ -719,7 +719,7 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({
       icon: item.icon,
       badge: item.count > 0 ? (
         <span className={cn(
-          'flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
+          'pilotage-sidebar-count flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold',
           item.emphasize ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
         )}>
           {item.count}

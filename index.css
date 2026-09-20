@@ -1579,7 +1579,20 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .pilotage-modal-header { background: var(--app-surface); border-bottom: 1px solid var(--app-line); }
   .pilotage-modal-title { font-family: var(--ui-font-ar); }
   .pilotage-title-icon { color: var(--app-accent); background: var(--app-accent-soft); border: 1px solid var(--app-line); }
-  .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; }
+  .pilotage-sidebar { border-color: var(--app-line); background: var(--app-surface-soft); box-shadow: none; color: var(--app-ink); }
+  .pilotage-sidebar-active { color: var(--app-accent) !important; background: var(--app-accent-soft) !important; border: 1px solid var(--app-line); }
+  .pilotage-sidebar-text { color: var(--app-ink-muted) !important; }
+  .pilotage-sidebar-active-text { color: var(--app-accent) !important; }
+  .pilotage-sidebar button:hover { color: var(--app-ink) !important; background: var(--app-accent-soft); }
+  .pilotage-sidebar button > div { background: transparent !important; color: currentColor !important; }
+  .pilotage-sidebar .pilotage-sidebar-count { background: var(--app-accent-soft) !important; color: var(--app-accent) !important; border: 0; }
+  .pilotage-sidebar button > svg { color: var(--app-ink-muted); }
+  .pilotage-sidebar button:hover > svg, .pilotage-sidebar-active > svg { color: var(--app-accent); }
+  .pilotage-sidebar .absolute.-top-1 { border: 0; background: var(--app-accent-soft) !important; color: var(--app-accent) !important; }
+  .pilotage-sidebar::before, .pilotage-sidebar::after { display: none; }
+  .pilotage-sidebar [class*="rounded-full"] { box-shadow: none; }
+  .pilotage-sidebar [class*="h-1.5"] { display: none; }
+  .pilotage-sidebar .pilotage-sidebar-profile { margin-block-start: auto; }
   .pilotage-sidebar button { min-height: 2.75rem; border-radius: var(--ui-radius-control); }
   .pilotage-mobile-rail { margin-inline: -0.125rem; padding: 0.2rem; border: 1px solid var(--app-line); border-radius: 0.85rem; background: var(--app-surface-soft); box-shadow: 0 7px 18px -18px rgb(24 53 43 / 0.48); }
   .pilotage-mobile-rail::before { display: none; }
@@ -2333,7 +2346,7 @@ html[data-keyboard='open'] .mobile-tab-bar {
 
 
 
-/* ══════════════════════════════════════════════════════════════���════════
+/* ���═════════════════════════════════════════════════════════════���════════
    POLICE MAGHRIBI - FALLBACK LOCAL
    ══════════════════════════════════════════════════════���════════════════
    
