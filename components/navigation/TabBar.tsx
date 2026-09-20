@@ -231,10 +231,9 @@ export const TabBar = React.memo<TabBarProps>(({
                   {copy.brand}
                 </span>
                 <span className={cn(
-                  "inline-flex items-center gap-1.5 truncate text-[10px] font-bold tracking-wider text-[#FF6B35] dark:text-[#FF8252] uppercase mt-1 font-sans bg-[#FF6B35]/10 dark:bg-[#FF6B35]/15 px-2 py-0.5 rounded-md",
-                  locale === 'ar' && "text-[12px]"
+                  "inline-flex items-center gap-1 truncate text-[10px] font-bold tracking-wider text-[#1B6A4D] dark:text-[#FF8252] uppercase mt-0.5 font-sans px-1.5 py-0.5 rounded-md",
+                  locale === 'ar' && "text-[11px]"
                 )}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B35] animate-pulse" aria-hidden="true" />
                   {userName || copy.teacherSpace}
                 </span>
               </motion.div>
@@ -260,7 +259,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+                  'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B6A4D]/40',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
                     ? 'font-bold'
@@ -273,7 +272,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 {isActive && (
                   <motion.div
                     layoutId="desktop-sidebar-active-pill"
-                    className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                    className="absolute inset-0 rounded-xl bg-[#1B6A4D]/12 dark:bg-[#1B6A4D]/20 border border-[#1B6A4D]/25 dark:border-[#1B6A4D]/30 shadow-xs"
                     transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
                   />
                 )}
@@ -335,7 +334,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B6A4D]/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
                 ? 'font-bold'
@@ -347,7 +346,7 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'settings' && (
               <motion.div
                 layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                className="absolute inset-0 rounded-xl bg-[#1B6A4D]/12 dark:bg-[#1B6A4D]/20 border border-[#1B6A4D]/25 dark:border-[#1B6A4D]/30 shadow-xs"
                 transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}
@@ -387,7 +386,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-stone-100/60 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-stone-100/60 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B6A4D]/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'help'
                 ? 'font-bold'
@@ -398,7 +397,7 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'help' && (
               <motion.div
                 layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                className="absolute inset-0 rounded-xl bg-[#1B6A4D]/12 dark:bg-[#1B6A4D]/20 border border-[#1B6A4D]/25 dark:border-[#1B6A4D]/30 shadow-xs"
                 transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}

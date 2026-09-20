@@ -42,10 +42,10 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       onClose={onModify}
       title={
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-xs">
-            <TriangleAlert className="h-5 w-5 stroke-[2.2]" />
+          <span className="date-review-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-amber-600 dark:text-amber-300">
+            <TriangleAlert className="h-8 w-8 stroke-[1.8]" />
           </span>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+          <span className="date-review-title max-w-[15rem] text-base sm:text-xl font-bold leading-tight tracking-tight text-foreground">
             {t('dateReview.title')}
           </span>
         </div>
@@ -59,7 +59,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
       bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
       footerClassName="border-t-0 bg-background/85 backdrop-blur-md"
       footer={
-        <div className="flex w-full items-center justify-end gap-2.5">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2.5">
           <Button type="button" variant="secondary" onClick={onModify} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
             {t('dateReview.modify')}
           </Button>
@@ -69,7 +69,7 @@ export const DateReviewModal: React.FC<DateReviewModalProps> = ({ isOpen, date, 
         </div>
       }
     >
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.07] p-4">
+      <div className="date-review-alert rounded-2xl border p-4 sm:p-5">
         <div role="status" aria-live="polite">
           <p className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">{t('dateReview.check')}</p>
           <ul className="mt-2.5 divide-y divide-amber-500/15">

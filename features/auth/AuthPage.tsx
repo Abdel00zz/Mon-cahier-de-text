@@ -374,9 +374,9 @@ export const AuthPage: React.FC<{
       ref={pageRef}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
-      className="auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100"
+      className="auth-page-shell auth-artisan-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100"
     >
-      <header className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
+      <header className="auth-artisan-header flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
           <button
             type="button"
@@ -411,7 +411,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="flex shrink-0 gap-1 rounded-xl border border-border p-0.5"
+          className="auth-language-switcher flex shrink-0 gap-1 rounded-xl p-1"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
@@ -425,7 +425,7 @@ export const AuthPage: React.FC<{
               }}
               aria-pressed={displayLocale === value}
               className={
-                "flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
+                "auth-language-option flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-all motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
                 (displayLocale === value
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted/80")
@@ -468,22 +468,25 @@ export const AuthPage: React.FC<{
       {view === "auth" && (
         <div className="auth-view-enter grid flex-1 lg:grid-cols-2">
           <AuthShowcase locale={displayLocale} />
-          <main className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
-            <div className="mx-auto w-full max-w-[400px]">
+          <main className="auth-artisan-form flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
+            <div className="auth-login-layout mx-auto w-full max-w-[400px]">
+              <div className="auth-login-intro">
               <h1
                 tabIndex={-1}
                 id={id + "-title"}
-                className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl"
+                className="auth-artisan-title text-2xl font-semibold leading-tight tracking-tight sm:text-3xl"
               >
                 {isRegister ? copy.savePreparation : copy.welcomeTitle}
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+              <p className="auth-login-detail mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
                 {isRegister
                   ? copy.savePreparationDetail
                   : setup
                     ? copy.existingAccountHint
                     : copy.welcomeDetail}
               </p>
+              </div>
+              <div className="auth-login-card mx-auto w-full max-w-[400px]">
               {setup && (
                 <button
                   type="button"
@@ -730,6 +733,7 @@ export const AuthPage: React.FC<{
                 />
                 {copy.secure}
               </p>
+              </div>
             </div>
           </main>
         </div>

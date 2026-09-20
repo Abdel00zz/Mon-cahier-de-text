@@ -93,9 +93,9 @@ const PushActivationCard: React.FC<{
     // Bloqué par le navigateur : ré-autorisation impossible par API.
     if (permission === 'denied' && !active) {
         return (
-            <div className="flex items-start gap-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-xs backdrop-blur-xl">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                    <TriangleAlert className="h-5 w-5" />
+<div className="info-alert-futuristic flex items-start gap-3.5 rounded-2xl border p-4 shadow-xs backdrop-blur-xl">
+  <span className="info-alert-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl">
+  <TriangleAlert className="h-8 w-8 stroke-[1.8]" />
                 </span>
                 <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-foreground">{t('notifications.remindersTitle')}</p>

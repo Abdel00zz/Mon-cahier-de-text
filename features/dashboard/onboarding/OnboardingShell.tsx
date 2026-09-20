@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from '@/components/ui/icons';
 import type { ThemeMode } from '@/types';
 import type { ModalLang, OnboardingCopy, OnboardingStep } from './types';
 import { ONBOARDING_TOTAL_STEPS } from './types';
+import '../../auth/authMotion.css';
 
 interface OnboardingShellProps {
   lang: ModalLang;
@@ -48,9 +49,9 @@ export function OnboardingShell({
   return (
     <div
       dir={rtl ? 'rtl' : 'ltr'}
-      className="onboarding-keep flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#0f1017] dark:text-[#ededed]"
+      className="onboarding-keep onboarding-artisan-shell flex min-h-dvh flex-col bg-[#fcfcfc] text-[#18181b] dark:bg-[#0f1017] dark:text-[#ededed]"
     >
-      <header className="border-b border-black/[0.04] dark:border-white/[0.06] bg-white/70 dark:bg-[#11121d]/70 backdrop-blur-md sticky top-0 z-20">
+      <header className="onboarding-artisan-header border-b border-black/[0.04] dark:border-white/[0.06] bg-white/70 dark:bg-[#11121d]/70 backdrop-blur-md sticky top-0 z-20">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-3">
           <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <img
@@ -124,7 +125,7 @@ export function OnboardingShell({
           aria-valuemin={1}
           aria-valuemax={ONBOARDING_TOTAL_STEPS}
           aria-valuenow={step}
-          className="mb-4 flex gap-1.5 sm:mb-7"
+          className="onboarding-artisan-progress mb-4 flex gap-1.5 sm:mb-7"
         >
           {Array.from({ length: ONBOARDING_TOTAL_STEPS }, (_, index) => (
             <span

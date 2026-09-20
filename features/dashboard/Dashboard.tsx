@@ -298,30 +298,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {classes.length > 0 && (
                         <div className="mb-3 sm:mb-4">
-                            <div className="dashboard-artisan-header flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+                            <div className="dashboard-artisan-header flex flex-wrap items-center justify-between gap-2 sm:gap-2.5">
                                 <div>
-                                    <h1 className="font-maghribi text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
+                                    <h1 className="font-arabswell text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] text-stone-950 dark:text-stone-50 leading-tight">
                                         {t('dashboard.classes')}
                                     </h1>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 sm:gap-2 ms-auto">
-                                    {/* Bouton « 2 par ligne » compact, serré et moins arrondi (rounded-md) */}
+                                <div className="flex items-center gap-1.5 ms-auto">
+                                    {/* Bouton « 2 par ligne » ultra-compact */}
                                     <div ref={displayMenuRef} className="relative shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="artisan-display-trigger flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md border px-2.5 sm:px-3 text-xs font-medium cursor-pointer transition-all active:scale-[0.98]"
+                                            className="artisan-display-trigger flex h-7 sm:h-7.5 items-center gap-1 rounded-md border px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium cursor-pointer transition-all active:scale-[0.98]"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                            <ChevronDown className={`h-2.5 w-2.5 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isDisplayMenuOpen && (
                                             <div
                                                 role="menu"
-                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-38 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
+                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-36 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
                                             >
                                                 {CLASS_DISPLAY_OPTIONS.map(option => {
                                                     const isActive = option === currentDisplay;
@@ -335,7 +335,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 setClassDisplayMode(option);
                                                                 setDisplayMenuOpen(false);
                                                             }}
-                                                            className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
+                                                            className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-start text-[11px] sm:text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
                                                         >
                                                             <span>{displayCopy(option).label}</span>
                                                         </button>
@@ -345,15 +345,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         )}
                                     </div>
 
-                                    {/* Bouton attractif « + Classe » compact, serré et moins arrondi (rounded-md) */}
+                                    {/* Bouton attractif « + Classe » ultra-compact */}
                                     <button
                                         type="button"
                                         onClick={() => setCreateModalOpen(true)}
                                         aria-label={t('dashboard.addClass')}
                                         title={t('dashboard.addClass')}
-                                        className="artisan-add-class flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md px-2.5 sm:px-3 text-xs sm:text-[13px] font-semibold cursor-pointer transition-all whitespace-nowrap"
+                                        className="artisan-add-class flex h-7 sm:h-7.5 items-center gap-1 rounded-md px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold cursor-pointer transition-all whitespace-nowrap"
                                     >
-                                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                                        <Plus className="h-3 w-3 stroke-[2.5]" />
                                         <span>{locale === 'ar' ? 'قسم' : locale === 'en' ? 'Class' : 'Classe'}</span>
                                     </button>
                                 </div>

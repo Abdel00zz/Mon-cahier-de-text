@@ -178,7 +178,7 @@ export const ClassGroupWatermark = memo(({
     return (
         <span
             className={cn(
-                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-serif font-bold tabular-nums leading-none ms-1.5',
+                'keep-group-watermark inline-flex items-baseline align-baseline select-none font-maghribi font-bold tabular-nums leading-none ms-1.5',
                 numberColorClasses,
                 className
             )}
