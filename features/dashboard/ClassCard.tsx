@@ -7,7 +7,7 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { keepToneForClass } from '@/utils/keepTheme';
+import { classBranchToneFor } from '@/utils/classBranchTone';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classCardLabelFor, classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
@@ -39,8 +39,9 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const titleStart = label.group && lastSpace >= 0 ? title.slice(0, lastSpace + 1) : '';
     const titleEnd = titleStart ? title.slice(lastSpace + 1) : title;
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
-    // La couleur suit la classe, même après un tri ou un filtre.
-    const tone = keepToneForClass(classInfo.id || classInfo.name);
+    // Même teinte que la liste : elle suit la branche de la classe (et non le
+    // hachage de l'identifiant), donc elle ne change ni de vue ni de langue.
+    const tone = classBranchToneFor(identity);
     const subtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale), [classInfo.lastOpenedAt, locale]);
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
