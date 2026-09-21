@@ -68,7 +68,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
                     {isActiveSession && (
                         <span className="class-card__live">
                             <span aria-hidden="true" />
-                            {locale === 'ar' ? 'جلسة جارية' : locale === 'en' ? 'Live' : 'En cours'}
+                            {locale === 'ar' ? 'لديك حصة الآن' : locale === 'en' ? 'Live' : 'En cours'}
                         </span>
                     )}
                     <DropdownMenu>
