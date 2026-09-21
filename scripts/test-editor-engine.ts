@@ -7,7 +7,7 @@ import { produce } from 'immer';
 import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
-import { abbreviateClassName } from '../utils/classAbbreviation';
+import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
 import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
 import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
 import { ClassCard } from '../features/dashboard/ClassCard';
@@ -394,6 +394,22 @@ test('emploi du temps : le nom de classe est abrégé en niveau · filière · g
   // Un nom libre n'est jamais perdu : il reste lisible tel quel.
   assert.equal(abbreviateClassName('Ma classe', 'fr'), 'Ma classe');
   assert.equal(abbreviateClassName('قسم الثالثة إعدادي 2', 'ar'), '3إ2');
+});
+
+test('emploi du temps : libellé riche sur une ligne (palier + filière + groupe)', () => {
+  const label = (name: string, locale: 'fr' | 'ar') => scheduleClassLabel(classIdentityFor(name, locale), locale);
+  assert.equal(label('2ème Bac Sciences Physiques 3', 'fr'), '2ème Bac PC 3');
+  assert.equal(label('2ème Bac Sciences Mathématiques A 1', 'fr'), '2ème Bac SM-A 1');
+  assert.equal(label('1AC 2', 'fr'), '1er Collège 2');
+  // Le palier porte déjà « Tronc commun » : pas de redondance « TC-S ».
+  assert.equal(label('Tronc Commun Scientifique', 'fr'), 'Tronc commun S');
+  // Arabe : ordinal chiffré (« 2 باك ») et initiales à points de l'intitulé officiel
+  // (article « ال » et conjonction « و » ignorés : علوم الحياة والأرض → ع.ح.ا).
+  assert.equal(label('قسم الثانية باك علوم فيزيائية 3', 'ar'), '2 باك ع.ف 3');
+  assert.equal(label('قسم الثانية باك علوم الحياة والأرض 1', 'ar'), '2 باك ع.ح.ا 1');
+  assert.equal(label('قسم الثالثة إعدادي 2', 'ar'), '3 إع 2');
+  // Nom libre : repli sur l'abréviation compacte, jamais vide.
+  assert.equal(label('Ma classe', 'fr'), 'Ma classe');
 });
 
 test('codes matières courts : tout le vocabulaire a un sigle lisible', () => {

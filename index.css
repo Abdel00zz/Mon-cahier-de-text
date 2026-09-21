@@ -73,9 +73,7 @@
   --font-latin-display: 'Rubik', 'DM Sans', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
   --font-arabic-body: 'Arabswell 3', 'DM Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --font-arabic-display: 'Maghribi Font 3', 'Rubik', 'DM Sans', serif;
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-lato: 'Lato', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-lora: 'Lora', 'Newsreader', Georgia, serif;
   --font-sans: var(--font-latin-body);
   --font-display: var(--font-latin-display);
   --content-font-latin: var(--font-latin-body);
@@ -153,58 +151,15 @@ html[lang='ar'],
   --font-sans: var(--font-arabic-body);
   --font-display: var(--font-arabic-display);
 }
-/* ── Géométrie des cartes de classe (tableau de bord) ────────────────────
-   Toutes les cartes ont LA MÊME hauteur, au pixel : la somme de leurs
-   parties est calculée ici, jamais déduite du contenu. Repère mesuré sur
-   l'interface (390 px et 1232 px de large) :
-
-     bordure haute            1 px
-   + rembourrage haut        14 px (mobile) | 16 px (>= 640 px)
-   + ligne de tête           30 px (mobile) | 32 px (>= 640 px)  badge (+ n° dès 640 px)
-   + écart titre             10 px (mobile) | 12 px (>= 640 px)
-   + zone de titre           2 lignes × interligne (20.8 px | 24.7 px)
-     (le numéro de groupe tient dans cette zone, en filigrane)
-   + rembourrage bas         10 px (mobile) | 12 px (>= 640 px)
-   + filet séparateur        1 px
-   + pied (statut)           33 px (mobile) | 36 px (>= 640 px)
-   + bordure basse           1 px
-   = 141.6 px (mobile)        | 160.4 px (>= 640 px)
-
-   Modifier une seule de ces valeurs suffit : `--class-card-h` se recalcule. */
+/* Hauteur de ligne de la liste des classes (3e affichage) : une seule valeur,
+   partagée, pour que les lignes restent alignées entre elles. La géométrie
+   des CARTES, elle, vit dans `features/dashboard/classCards.css`. */
 :root {
-  --class-card-border-w: 1px;
-  --class-card-pad-top: 10px;
-  --class-card-top-row-h: 24px;
-  --class-card-title-gap: 5px;
-  --class-card-title-lh: 25px;   /* ~20 px × 1.25 pour texte agrandi */
-  --class-card-title-lines: 2;
-  --class-card-pad-bottom: 10px;
-  --class-card-divider-h: 1px;
-  --class-card-footer-h: 32px;
-  /* Ligne de la liste des classes (3e affichage) : une seule hauteur, elle
-     aussi calculée, pour que les lignes restent alignées entre elles. */
   --class-list-row-h: 60px;
-  --class-card-title-box: calc(var(--class-card-title-lines) * var(--class-card-title-lh));
-  --class-card-h: calc(
-    2 * var(--class-card-border-w)
-    + var(--class-card-pad-top)
-    + var(--class-card-top-row-h)
-    + var(--class-card-title-gap)
-    + var(--class-card-title-box)
-    + var(--class-card-pad-bottom)
-    + var(--class-card-divider-h)
-    + var(--class-card-footer-h)
-  );
 }
 
 @media (min-width: 640px) {
   :root {
-    --class-card-pad-top: 12px;
-    --class-card-top-row-h: 26px;
-    --class-card-title-gap: 6px;
-    --class-card-title-lh: 29px; /* ~23.5 px × 1.25 */
-    --class-card-pad-bottom: 12px;
-    --class-card-footer-h: 36px;
     --class-list-row-h: 72px;
   }
 }
@@ -321,10 +276,6 @@ html[lang='ar'],
 
 .font-lato {
   font-family: var(--font-lato);
-}
-
-.font-lora {
-  font-family: var(--font-lora);
 }
 
 /* Titres arabes : Maghribi Font 3 (embarquée), sans repli distant. */
@@ -1768,6 +1719,17 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .dark [data-keep-tone="lavender"] { --keep-vivid: #D18FE4; --keep-border: #583E69; --keep-accent: #E4A9F8; --keep-accent-soft: rgb(228 169 248 / 0.14); }
   .dark .keep-surface[data-keep-tone="rose"],
   .dark [data-keep-tone="rose"] { --keep-vivid: #EE5A76; --keep-border: #6A3543; --keep-accent: #F79FB0; --keep-accent-soft: rgb(247 159 176 / 0.14); }
+
+  /* Cellules d'emploi du temps : même teinte que la carte de classe, un cran
+     plus soutenue (25 % de la teinte vive dans la surface claire, 22 % dans la
+     surface sombre). Le texte garde l'accent lisible AA du ton. */
+  [data-keep-tone] {
+    --keep-cell: color-mix(in srgb, var(--keep-vivid) 25%, var(--keep-light));
+    --keep-cell-ink: var(--keep-accent);
+  }
+  .dark [data-keep-tone] {
+    --keep-cell: color-mix(in srgb, var(--keep-vivid) 22%, var(--keep-dark));
+  }
 
   @keyframes keep-session-focus {
     0%, 100% {

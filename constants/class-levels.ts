@@ -213,12 +213,6 @@ const CLASS_LEVEL_DISPLAY_NAMES_AR: Readonly<Record<string, string>> = {
 const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
   .sort((left, right) => right.length - left.length);
 
-export const getBaseLevelKey = (name: string): string => {
-  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
-  const level = DISPLAY_LEVEL_KEYS.find(key => normalized === key || normalized.startsWith(`${key} `));
-  return level || normalized;
-};
-
 export const formatClassDisplayName = (name: string): string => {
   const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
   const level = DISPLAY_LEVEL_KEYS.find(key =>
@@ -345,6 +339,51 @@ const CLASS_TIER_LABELS: Record<AppLocale, Record<ClassTierKey, string>> = {
 
 export const formatClassTierLabel = (key: ClassTierKey, locale: AppLocale): string =>
   CLASS_TIER_LABELS[locale][key];
+
+/**
+ * Palier compact pour une cellule d'emploi du temps : une seule ligne doit
+ * tenir dans une case étroite. En arabe, l'ordinal est chiffré (« 2 باك ») et
+ * le tronc commun s'écrit « جذع » ; en latin, l'intitulé officiel fait office de
+ * forme compacte (« 2éme Bac »).
+ */
+const COMPACT_TIER_LABELS_AR: Record<ClassTierKey, string> = {
+  college1: '1 إع',
+  college2: '2 إع',
+  college3: '3 إع',
+  common: 'جذع',
+  firstBac: '1 باك',
+  secondBac: '2 باك',
+  prepa: 'تحضيري',
+  prepa1: '1 تحضيري',
+  prepa2: '2 تحضيري',
+};
+
+export const formatCompactTierLabel = (key: ClassTierKey, locale: AppLocale): string =>
+  locale === 'ar' ? COMPACT_TIER_LABELS_AR[key] : CLASS_TIER_LABELS[locale][key];
+
+/**
+ * Sigle de filière pour une cellule : code latin (« PC », « SM-A », « SVT »)
+ * hors arabe, et **initiales à points de l'intitulé officiel arabe** en arabe :
+ *
+ *   علوم فيزيائية        → ع.ف
+ *   علوم الحياة والأرض   → ع.ح.أ   (article « ال » et conjonction « و » ignorés)
+ *   العلوم الرياضية أ    → ع.ر.أ
+ *
+ * Un intitulé déjà latin (MPSI, PCSI…) est rendu tel quel, sans être réduit à
+ * son initiale.
+ */
+export const formatStreamSigla = (code: string, locale: AppLocale): string => {
+  const canonical = normalizeStreamCode(code);
+  if (locale !== 'ar') return canonical;
+  const label = CLASS_STREAM_LABELS.ar[canonical] ?? canonical;
+  if (!/[\u0600-\u06FF]/.test(label)) return label;
+  const letters = label
+    .split(/\s+/)
+    .map(word => word.replace(/^(?:ال|و)/, ''))
+    .filter(Boolean)
+    .map(word => word[0]);
+  return letters.length > 1 ? letters.join('.') : label.replace(/^(?:ال|و)/, '');
+};
 
 /**
  * Libellé accessible du groupe (« Groupe 3 »), employé en info-bulle et pour

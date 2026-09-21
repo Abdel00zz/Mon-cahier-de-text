@@ -20,7 +20,6 @@ export {
   formatClassLevelGroupLabel,
   formatLocalizedClassDisplayName,
   normalizeOfficialClassName,
-  getBaseLevelKey,
 } from './constants/class-levels';
 export type { ClassLevelGroupKey } from './constants/class-levels';
 

@@ -31,3 +31,18 @@ export const claimCurrentSessionAutoOpen = (
     memoryClaims.add(claim);
     return true;
 };
+
+/**
+ * Marque la séance courante comme déjà traitée — à appeler dès qu'une classe
+ * est ouverte, **quelle que soit la voie** (ouverture automatique ou clic de
+ * l'enseignant). C'est ce qui garantit qu'un retour arrière natif ne renvoie
+ * jamais l'enseignant dans la classe qu'il vient de quitter, même séance en
+ * cours.
+ */
+export const markCurrentSessionHandled = (
+    scope: string,
+    sessionKey: string,
+    storage?: SessionClaimStorage,
+): void => {
+    claimCurrentSessionAutoOpen(scope, sessionKey, storage);
+};

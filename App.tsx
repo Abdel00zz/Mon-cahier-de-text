@@ -20,7 +20,7 @@ import { Modal } from './components/ui/modal';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { preloadSettingsPage } from './utils/performance';
 import { latestClassOpening } from './utils/classOpening';
-import { claimCurrentSessionAutoOpen } from './utils/currentSessionNavigation';
+import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from './utils/currentSessionNavigation';
 import { DASHBOARD_CANVAS_STYLE } from './features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -121,6 +121,16 @@ const App: React.FC = () => {
   const previousAuthStatusRef = useRef(authStatus);
   // Un moteur unique pilote les rappels système et l'état visuel des cartes.
   const { current: currentSession } = useSessionAlerts(!AUTH_REQUIRED || authStatus === 'authenticated');
+  /*
+   * Réclamation de la séance courante : elle est consommée dès qu'une classe
+   * est ouverte (clic de l'enseignant **ou** ouverture automatique) et dès
+   * qu'on quitte l'éditeur. Le bouton « retour » natif du navigateur ramène
+   * donc toujours au tableau de bord, sans rouvrir la classe de force.
+   */
+  const sessionClaimRef = useRef<{ scope: string; key: string }>({ scope: 'local', key: '' });
+  useEffect(() => {
+    sessionClaimRef.current = { scope: authUser?.phone ?? 'local', key: currentSession.key };
+  }, [authUser?.phone, currentSession.key]);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
@@ -203,11 +213,15 @@ const App: React.FC = () => {
     const openedAt = latestClassOpening(classInfo.lastOpenedAt, new Date().toISOString());
     if (openedAt && openedAt !== classInfo.lastOpenedAt) updateClass(classInfo.id, { lastOpenedAt: openedAt });
     setActiveClass(openedAt ? { ...classInfo, lastOpenedAt: openedAt } : classInfo);
+    markCurrentSessionHandled(sessionClaimRef.current.scope, sessionClaimRef.current.key);
     setView('editor');
     window.history.pushState({ route: 'editor', classId: classInfo.id }, '', getClassRoute(classInfo.id));
   }, [saveCurrentScroll, updateClass]);
 
   const handleBackToDashboard = useCallback(() => {
+    // Quitter l'éditeur vaut pour la séance entière : un retour natif
+    // supplémentaire ne doit pas renvoyer dans la classe.
+    markCurrentSessionHandled(sessionClaimRef.current.scope, sessionClaimRef.current.key);
     saveCurrentScroll();
     setActiveClass(null);
     setView('dashboard');

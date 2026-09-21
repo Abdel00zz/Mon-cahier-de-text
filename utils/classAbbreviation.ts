@@ -1,4 +1,6 @@
 import type { AppLocale } from '../types.js';
+import type { ClassIdentity } from './classIdentity';
+import { formatCompactTierLabel, formatStreamSigla } from '../constants/class-levels';
 
 /**
  * Abréviation LISIBLE du nom d'une classe dans une cellule d'emploi du temps.
@@ -192,4 +194,29 @@ export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): str
         return source;
     }
     return segments.join('·');
+};
+
+/**
+ * Libellé **riche et clair** d'une cellule d'emploi du temps, sur une ligne :
+ * palier, filière et groupe, séparés par des espaces.
+ *
+ *     2ème Bac Sciences Physiques 3  → « 2éme Bac PC 3 »   (fr)
+ *     قسم الثانية باك علوم فيزيائية 3 → « 2 باك ع.ف 3 »     (ar)
+ *
+ * Le sigle de filière dépend de la langue : code latin enseigné (PC, SM-A,
+ * SVT) hors arabe, initiales à points de l'intitulé officiel en arabe. Un nom
+ * libre (« Ma classe ») garde sa forme compactée d'origine.
+ */
+export const scheduleClassLabel = (identity: ClassIdentity, locale: AppLocale = 'fr'): string => {
+    const tier = identity.tierKey ? formatCompactTierLabel(identity.tierKey, locale) : '';
+    let stream = identity.streamCode
+        ? formatStreamSigla(identity.streamCode, locale)
+        : (identity.stream ?? '');
+    // « Tronc commun TC-S » serait redondant : le palier porte déjà le sigle.
+    if (locale !== 'ar' && identity.tierKey === 'common' && stream.startsWith('TC-')) {
+        stream = stream.slice(3);
+    }
+    const segments = [tier, stream, identity.group ?? ''].filter(Boolean);
+    if (segments.length === 0) return abbreviateClassName(identity.full, locale);
+    return segments.join(' ');
 };

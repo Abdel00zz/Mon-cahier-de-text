@@ -3,8 +3,10 @@ import { toast } from 'sonner';
 import { AppConfig, ClassInfo, Cycle } from '@/types';
 import { CreateClassModal } from '@/features/dashboard/modals/CreateClassModal';
 import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/utils/calendar';
-import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName, getBaseLevelKey } from '@/constants';
-import { abbreviateClassName } from '@/utils/classAbbreviation';
+import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
+import { scheduleClassLabel } from '@/utils/classAbbreviation';
+import { classIdentityFor } from '@/utils/classIdentity';
+import { classBranchToneFor } from '@/utils/classBranchTone';
 import {
     TIMETABLE_DAYS,
     deriveSchedules,
@@ -14,7 +16,7 @@ import {
     setTimetableEntry,
 } from '@/utils/timetable';
 import { useLocale } from '@/i18n/LocaleProvider';
-import { keepToneForClass, KEEP_TONES } from '@/utils/keepTheme';
+import { KEEP_TONES } from '@/utils/keepTheme';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 
 export interface ModernClassColor {
@@ -27,81 +29,23 @@ export interface ModernClassColor {
 }
 
 /**
- * Palette synchronisee avec les cartes de classes du tableau de bord : memes
- * familles de teintes (ambre, orange, lime, emeraude, azur, indigo, orchidee,
- * framboise) avec les teintes vives des cartes, une marche plus foncee pour
- * que la grille se lise au premier coup d'oeil. En mode sombre les cellules
- * restent volontairement plus profondes que les cartes.
- * Les libelles conservent un contraste AA sur ces fonds.
+ * Cellules d'emploi du temps : la **même teinte que la carte de classe**, un
+ * cran plus soutenue. Les couleurs viennent des jetons du ton (`index.css` :
+ * `--keep-cell`, `--keep-cell-ink`, `--keep-accent`), donc une carte et sa case
+ * d'emploi du temps ne peuvent plus diverger — et le mode sombre suit seul.
+ * Le contraste des libellés est celui de l'accent AA du ton.
  */
-export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = {
-    sand: {
-        key: 'sand',
-        bg: 'bg-[#FFC701] dark:bg-[#3A2E0C]/90',
-        border: 'border-[#8A5A00] dark:border-[#C9A23A]',
-        text: 'text-[#3F2A00] dark:text-[#FFE9A8]',
-        subtext: 'text-[#5A3D00] dark:text-[#FFD86B]',
-        dot: 'bg-[#8A5A00]',
-    },
-    coral: {
-        key: 'coral',
-        bg: 'bg-[#FE7235] dark:bg-[#3A1F12]/90',
-        border: 'border-[#A43E10] dark:border-[#FFAB7E]',
-        text: 'text-[#401300] dark:text-[#FFD3BC]',
-        subtext: 'text-[#5A1D02] dark:text-[#FFAB7E]',
-        dot: 'bg-[#A43E10]',
-    },
-    lime: {
-        key: 'lime',
-        bg: 'bg-[#E5FE96] dark:bg-[#26300F]/90',
-        border: 'border-[#4A6A00] dark:border-[#9BBF3A]',
-        text: 'text-[#2B3A00] dark:text-[#E4FBB0]',
-        subtext: 'text-[#3B4E00] dark:text-[#CDF55E]',
-        dot: 'bg-[#4A6A00]',
-    },
-    mint: {
-        key: 'mint',
-        bg: 'bg-[#6EE7B7] dark:bg-[#0E3A2C]/90',
-        border: 'border-[#0B6B4F] dark:border-[#3FBF92]',
-        text: 'text-[#04372A] dark:text-[#D3FBEA]',
-        subtext: 'text-[#065544] dark:text-[#6EDCAB]',
-        dot: 'bg-[#0B6B4F]',
-    },
-    sky: {
-        key: 'sky',
-        bg: 'bg-[#7DD3FC] dark:bg-[#0C3450]/90',
-        border: 'border-[#0A5E9E] dark:border-[#4FB4E8]',
-        text: 'text-[#04283D] dark:text-[#DCEEFF]',
-        subtext: 'text-[#063F63] dark:text-[#7DC7F7]',
-        dot: 'bg-[#0A5E9E]',
-    },
-    indigo: {
-        key: 'indigo',
-        bg: 'bg-[#4D4AFD] dark:bg-[#24244F]/90',
-        border: 'border-[#3431D2] dark:border-[#8C8AFF]',
-        text: 'text-[#F5F5FF] dark:text-[#E4E3FF]',
-        subtext: 'text-[#DCDBFF] dark:text-[#A5A3FF]',
-        dot: 'bg-[#E4E3FF]',
-    },
-    lavender: {
-        key: 'lavender',
-        bg: 'bg-[#E28CF8] dark:bg-[#38194A]/90',
-        border: 'border-[#8C2BA8] dark:border-[#D78BEC]',
-        text: 'text-[#3B0947] dark:text-[#F6DDFF]',
-        subtext: 'text-[#540F66] dark:text-[#E4A9F8]',
-        dot: 'bg-[#8C2BA8]',
-    },
-    rose: {
-        key: 'rose',
-        bg: 'bg-[#FB7185] dark:bg-[#3D1520]/90',
-        border: 'border-[#B01B3C] dark:border-[#F79FB0]',
-        text: 'text-[#42000E] dark:text-[#FFDCE3]',
-        subtext: 'text-[#5C0A20] dark:text-[#F79FB0]',
-        dot: 'bg-[#B01B3C]',
-    },
+const SCHEDULE_CELL_CLASSES: Omit<ModernClassColor, 'key'> = {
+    bg: 'bg-[var(--keep-cell)]',
+    border: 'border-[var(--keep-accent)]',
+    text: 'text-[var(--keep-cell-ink)]',
+    subtext: 'text-[var(--keep-cell-ink)]',
+    dot: 'bg-[var(--keep-accent)]',
 };
 
-export const MODERN_SCHEDULE_PALETTE: ModernClassColor[] = Object.values(KEEP_SCHEDULE_PALETTE);
+export const KEEP_SCHEDULE_PALETTE: Record<typeof KEEP_TONES[number], ModernClassColor> = Object.fromEntries(
+    KEEP_TONES.map(tone => [tone, { ...SCHEDULE_CELL_CLASSES, key: tone }]),
+) as Record<typeof KEEP_TONES[number], ModernClassColor>;
 
 interface ScheduleTabProps {
     classes: ClassInfo[];
@@ -170,14 +114,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     }, [classes]);
 
     /**
-     * Attribution de la couleur synchronisée avec la carte de classe (Google Keep tone).
+     * Teinte du ton : **la même que la carte de classe** (`classBranchToneFor`),
+     * pour qu'une classe ne change jamais de couleur d'une vue à l'autre.
      */
-    const colorFor = React.useCallback((classId: string): ModernClassColor => {
+    const toneFor = React.useCallback((classId: string): typeof KEEP_TONES[number] => {
         const classInfo = classById.get(classId);
-        const toneKey = classInfo ? getBaseLevelKey(classInfo.name) : classId;
-        const tone = keepToneForClass(toneKey);
+        return classBranchToneFor(classIdentityFor(classInfo?.name ?? classId, locale));
+    }, [classById, locale]);
+
+    const colorFor = React.useCallback((classId: string): ModernClassColor => {
+        const tone = toneFor(classId);
         return KEEP_SCHEDULE_PALETTE[tone] || KEEP_SCHEDULE_PALETTE.sand;
-    }, [classById]);
+    }, [toneFor]);
 
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
@@ -351,12 +299,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         const entry = getTimetableEntry(timetable, day.value, hour.index);
                                         const classInfo = entry ? classById.get(entry.classId) : undefined;
                                         const color = entry ? colorFor(entry.classId) : null;
+                                        const tone = entry ? toneFor(entry.classId) : null;
                                         const isLastCol = idx + span - 1 >= visibleHourSlots.length - 1;
 
                                         return (
                                             <td
                                                 key={hour.index}
                                                 colSpan={span}
+                                                data-keep-tone={tone ?? undefined}
                                                 className={`relative p-0 align-middle ${
                                                     isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
                                                 } ${
@@ -415,7 +365,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
                                                         >
                                                             <span className="max-w-full truncate text-[11px] sm:text-xs lg:text-sm xl:text-[15px] font-bold tracking-tight leading-snug">
-                                                                {abbreviateClassName(formatLocalizedClassDisplayName(classInfo.name, locale, { includeClassPrefix: false }), locale)}
+                                                                {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale)}
                                                             </span>
                                                             <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
                                                                 {subjectLabel(classInfo.subject)}
