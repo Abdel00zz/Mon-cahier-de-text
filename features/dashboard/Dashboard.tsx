@@ -313,7 +313,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     {/* Titre éditorial : Roboto Slab, posée par `constants/classTitleTypography.ts` (rôle « page »). */}
                                     <h1
                                         style={classTitleStyle(isRtl, 'page')}
-                                        className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 font-lora leading-[1.18] tracking-tight"
+                                        className="text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-[1.18] tracking-tight"
                                     >
                                         {t('dashboard.classes')}
                                     </h1>

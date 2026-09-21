@@ -14,8 +14,9 @@ import type { CSSProperties } from 'react';
  *  Les composants (`ClassCard`, `ClassListItem`, `Dashboard`) n'écrivent JAMAIS
  *  de famille, de graisse ni d'interlettrage de titre : ils appellent
  *  `classTitleStyle(...)`. La taille, elle, reste au composant : elle est liée
- *  aux jetons de hauteur des cartes (`--class-card-title-box`,
- *  `--class-list-row-h`) et ne doit pas bouger sans recalculer la géométrie.
+ *  aux hauteurs posées dans `features/dashboard/classCards.css` (carte) et au
+ *  jeton `--class-list-row-h` (liste) : ne pas les changer sans recalculer la
+ *  géométrie.
  * ────────────────────────────────────────────────────────────────────────── */
 
 /** Écriture du titre : interface arabe, sinon interface latine. */
