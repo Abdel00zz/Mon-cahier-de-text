@@ -117,78 +117,35 @@
 .class-card__clock { width: 13px; height: 13px; flex-shrink: 0; }
 .class-card__arrow { width: 16px; height: 16px; flex-shrink: 0; color: var(--class-accent); transition: transform 250ms var(--ease-spring); }
 .class-card[dir="rtl"] .class-card__arrow { transform: scaleX(-1); }
-/* Badge « séance en cours » : pastille de verre teintée (aplat, aucun dégradé),
-   point de vie à double anneau pulsé et halo respirant. Animations GPU
-   uniquement (transform / opacity), coupées si `prefers-reduced-motion`. */
+/* Étiquette « séance en cours » : **sans pastille ni cadre**, dans l'esprit doux
+   de Google Keep — un point discret et un texte sobre, en vert sémantique.
+   Seule animation : une respiration d'opacité (GPU), coupée si
+   `prefers-reduced-motion`. */
 .class-card__live {
-  position: relative;
-  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   margin-inline-end: auto;
-  min-height: 24px;
-  padding: 2px 10px 2px 9px;
-  border: 1px solid rgb(20 122 84 / .22);
-  border-radius: 999px;
-  background-color: #e8f7ef;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .8), 0 1px 2px rgb(12 74 51 / .1);
-  color: #116b49;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: .045em;
-  line-height: 1.35;
+  color: #327253;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .005em;
+  line-height: 1.4;
   white-space: nowrap;
-  transition: transform 200ms var(--ease-spring);
 }
-.dark .class-card__live {
-  border-color: rgb(110 220 171 / .28);
-  background-color: rgb(110 220 171 / .14);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .08), 0 1px 2px rgb(0 0 0 / .3);
-  color: #a7e5c8;
-}
-/* Halo respirant : ombre projetée par un calque placé derrière la pastille. */
-.class-card__live::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  border-radius: 999px;
-  box-shadow: 0 6px 16px -8px rgb(16 185 129 / .6), 0 0 0 3px rgb(16 185 129 / .1);
-  opacity: .45;
-  animation: class-live-glow 3.6s ease-in-out infinite;
-}
+.dark .class-card__live { color: #9ed8ba; }
 .class-card__live > span {
-  position: relative;
   flex: 0 0 auto;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 0 2.5px color-mix(in srgb, currentColor 16%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 12%, transparent);
+  animation: class-live-breathe 2.6s ease-in-out infinite;
 }
-.class-card__live > span::before,
-.class-card__live > span::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  opacity: 0;
-  animation: class-live-ring 2.8s cubic-bezier(.22, 1, .36, 1) infinite;
-  will-change: transform, opacity;
-}
-.class-card__live > span::after { animation-delay: 1.4s; }
-@keyframes class-live-ring {
-  0% { transform: scale(.55); opacity: .6; }
-  65%, 100% { transform: scale(2.5); opacity: 0; }
-}
-@keyframes class-live-glow {
-  0%, 100% { opacity: .32; }
-  50% { opacity: .78; }
-}
-@media (hover: hover) and (pointer: fine) {
-  .class-card:hover .class-card__live { transform: translateY(-1px); }
+@keyframes class-live-breathe {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
 }
 .class-card--active { border-color: color-mix(in srgb, var(--class-accent) 70%, var(--class-vivid)); }
 @media (hover: hover) and (pointer: fine) {
@@ -209,8 +166,6 @@
 @media (prefers-reduced-motion: reduce) {
   .class-card, .class-card *, .class-card:hover, .class-card:has(.class-card__open:active) { transition: none; transform: none; }
   .class-card:hover .class-card__arrow { transform: none; }
-  .class-card__live, .class-card__live::before,
-  .class-card__live > span::before, .class-card__live > span::after { animation: none; }
-  .class-card__live::before { opacity: .45; }
+  .class-card__live, .class-card__live > span { animation: none; }
   .class-card[dir="rtl"] .class-card__arrow, .class-card[dir="rtl"]:hover .class-card__arrow { transform: scaleX(-1); }
 }
