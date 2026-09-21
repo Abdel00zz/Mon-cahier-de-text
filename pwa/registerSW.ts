@@ -1,5 +1,21 @@
 import { registerSW } from 'virtual:pwa-register';
 import { toast } from 'sonner';
+import { translateLocaleMessage } from '@/i18n/LocaleProvider';
+
+/**
+ * Langue enregistrée par l'enseignant, lue hors React : l'enregistrement du
+ * service worker a lieu avant le premier rendu. Par défaut l'arabe, comme
+ * `App` (`config.applicationLocale ?? 'ar'`).
+ */
+const readRegisteredLocale = (): 'fr' | 'en' | 'ar' => {
+    try {
+        const raw = localStorage.getItem('appConfig_v1');
+        const value = raw ? (JSON.parse(raw) as { applicationLocale?: unknown }).applicationLocale : null;
+        return value === 'fr' || value === 'en' ? value : 'ar';
+    } catch {
+        return 'ar';
+    }
+};
 
 /**
  * Service worker, mise à jour AUTOMATIQUE et silencieuse (esprit application
@@ -30,7 +46,7 @@ export const initPwa = (): void => {
     registerSW({
         immediate: true,
         onOfflineReady() {
-            toast.success('Le Cahier fonctionne désormais entièrement hors connexion.', {
+            toast.success(translateLocaleMessage(readRegisteredLocale(), 'pwa.offlineReady'), {
                 id: 'pwa-offline-ready',
                 duration: 4_000,
             });

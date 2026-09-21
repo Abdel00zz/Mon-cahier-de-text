@@ -29,11 +29,19 @@ cleanupOutdatedCaches();
 self.skipWaiting();
 clientsClaim();
 
+/*
+ * PAS de préchargement de navigation (« navigation preload »), volontairement :
+ * il ne sert qu'aux stratégies qui vont AU RÉSEAU d'abord. Ici la navigation est
+ * servie depuis le précache (createHandlerBoundToURL), donc la requête réseau
+ * lancée en parallèle serait jetée — c'est-à-dire des données mobiles gaspillées
+ * à chaque changement d'écran, sans aucun gain de vitesse.
+ */
+
 // SPA : toute navigation retombe sur index.html, SAUF /admin et /api.
 const navigationHandler = createHandlerBoundToURL('/index.html');
 registerRoute(
     new NavigationRoute(navigationHandler, {
-        denylist: [/^\/admin/, /^\/api\//],
+        denylist: [/^\/admin/, /^\/api(?:\/|$)/],
     })
 );
 
@@ -66,6 +74,53 @@ registerRoute(
         && url.pathname.startsWith('/contenus/')
         && request.destination !== 'document',
     new StaleWhileRevalidate({ cacheName: 'predefined-contents' })
+);
+
+/*
+ * Catalogue officiel des progressions : `utils/officialCurriculum.ts` le
+ * demande en `cache: 'no-store'` (donc toujours au réseau, jamais servi par le
+ * cache HTTP) ; sans route dédiée il était indisponible hors connexion, alors
+ * que l'application sait déjà s'en servir. Stale-while-revalidate : la version
+ * connue répond immédiatement, la mise à jour arrive au chargement suivant.
+ */
+registerRoute(
+    ({ url }) => url.origin === self.location.origin
+        && url.pathname === '/doc_officiel/curriculum.json',
+    new StaleWhileRevalidate({ cacheName: 'official-curriculum' })
+);
+
+/*
+ * Illustrations de l'application (accueil, authentification, tableau de bord,
+ * captures du guide) : ≈ 1 Mo pour `icone.png` et `dashboard.png`, ≈ 770 Ko par
+ * GIF d'accueil, ≈ 380 Ko de captures. Elles sont volontairement HORS précache
+ * pour ne pas alourdir l'installation, mais sans cache à l'usage elles
+ * manquaient hors connexion sur les tout premiers écrans (connexion, accueil) —
+ * exactement ceux qu'un professeur ouvre avec un réseau incertain.
+ *
+ * Stale-while-revalidate plutôt que cache-first : ces URL ne changent jamais de
+ * nom, donc une illustration remplacée resterait sinon servie indéfiniment depuis
+ * le cache. Ici la version connue répond immédiatement (instantané hors
+ * connexion) et la revalidation — un simple 304 — corrige le fichier en
+ * arrière-plan, sans jamais bloquer l'affichage.
+ */
+registerRoute(
+    ({ url, request }) => url.origin === self.location.origin
+        && (request.destination === 'image' || /\.(?:png|gif|webp|jpg|jpeg)$/.test(url.pathname))
+        && /^\/(?:icone\.png|dashboard\.png|(?:portrait|landscape)\.gif|guide\/)/.test(url.pathname),
+    new StaleWhileRevalidate({
+        cacheName: 'app-illustrations-v1',
+        plugins: [
+            new ExpirationPlugin({ maxEntries: 40, maxAgeSeconds: 180 * 24 * 3600, purgeOnQuotaError: true }),
+            /*
+             * Les captures du guide sont demandées avec `?retry=n` : sans
+             * normalisation, chaque tentative créerait une entrée de cache de
+             * plus pour la même image.
+             */
+            {
+                cacheKeyWillBeUsed: async ({ request: incoming }) => incoming.url.replace(/\?retry=\d+$/, ''),
+            },
+        ],
+    })
 );
 
 // ── Moteur LaTeX (MathJax 4.1.3) ───────────────────────────────────────────

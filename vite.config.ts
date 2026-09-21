@@ -110,9 +110,12 @@ const PWA_MANIFEST: LocalizedManifest = {
     dir: 'ltr',
     display: 'standalone',
     display_override: ['standalone', 'minimal-ui'],
-    // Installation verrouillee en paysage : les tableaux du cahier gardent leurs
-    // colonnes larges, ce qui rend le coach d'orientation portrait inutile.
-    orientation: 'landscape',
+    /*
+     * Aucune orientation imposée : le cahier se consulte au bureau en paysage
+     * (colonnes larges) et se saisit au téléphone en portrait (une main).
+     * L'application installée pivote donc librement, comme le reste de l'OS.
+     */
+    orientation: 'any',
     start_url: '/',
     scope: '/',
     launch_handler: { client_mode: 'navigate-existing' },
@@ -222,20 +225,45 @@ export default defineConfig(({ mode }) => {
                 // `official-student-events.json` sont importés (donc déjà bundlés) et
                 // n'ont pas besoin d'être listés ici.
                 includeAssets: [
-                    'icons/*.png',
+                    /*
+                     * Icônes ÉNUMÉRÉES, jamais un joker : `icons/*.png` embarquait
+                     * un apple-touch-icon de 1254 px (858 Ko, 36 % de
+                     * l'installation) qu'aucune page ne référençait. Un actif
+                     * déposé dans `public/icons` ne doit pas entrer dans le
+                     * précache sans décision explicite.
+                     */
+                    'icons/icon-192.png',
+                    'icons/icon-512.png',
+                    'icons/icon-maskable-512.png',
+                    'icons/apple-touch-icon-180.png',
+                    'icons/favicon-16.png',
+                    'icons/favicon-32.png',
                     'icons/favicon.ico',
                     'planning-devoirs.json',
                     'assessment-rules.json',
                     'official-sources.json',
                     'contenus/manifest.json',
-                    // Polices arabes embarquées : sans elles, l'interface arabe
-                    // retombe sur le repli système lorsque l'appareil est hors ligne.
-                    'arabswell-3.ttf',
-                    'maghribi-font-3.ttf',
+                    /*
+                     * Les polices arabes embarquées (arabswell-3.ttf,
+                     * maghribi-font-3.ttf) n'ont PAS à être listées ici : elles
+                     * sont déjà couvertes par `globPatterns` (`**\/*.ttf`). Les
+                     * répéter ajoutait deux entrées en double au manifeste
+                     * d'installation (Workbox dédoublonne à l'usage, mais le
+                     * manifeste restait ambigu).
+                     */
                 ],
                 injectManifest: {
                     globPatterns: ['**/*.{js,css,html,woff2,ttf}'],
                     globIgnores: ['**/admin*'],
+                    /*
+                     * Workbox ÉCARTE SILENCIEUSEMENT tout fichier au-delà de cette
+                     * limite (2 Mo par défaut) : un lot trop gros disparaîtrait du
+                     * précache sans le moindre avertissement, et l'application
+                     * cesserait de fonctionner hors connexion sans raison visible.
+                     * Les illustrations lourdes (≈ 1 Mo) ne sont volontairement pas
+                     * précachées : elles sont mises en cache à l'usage par `pwa/sw.ts`.
+                     */
+                    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
                 },
                 devOptions: {
                     enabled: true,
