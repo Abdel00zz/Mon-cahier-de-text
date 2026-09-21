@@ -1,6 +1,8 @@
 // Helpers d'abonnement Web Push côté client.
 
 import type { PushNotificationKind } from './notificationTypes';
+import type { AppLocale } from '../types';
+import { notificationPresentation } from './notificationPresentation';
 import { isSuccessfulTestResponse } from './pushResponse';
 
 const VAPID_PUBLIC_KEY = import.meta.env?.VITE_VAPID_PUBLIC_KEY as string | undefined;
@@ -317,21 +319,15 @@ export const showLocalNotification = async (
     kind: PushNotificationKind = tag.includes('missing') ? 'missing-date' : 'session-reminder',
     vibration = true,
     isCurrent: () => boolean = () => true,
+    locale?: AppLocale,
 ): Promise<boolean> => {
     try {
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
         if (!('serviceWorker' in navigator)) return false;
         const registration = await currentServiceWorkerRegistration();
         if (!registration || !isCurrent()) return false;
-        const options = {
-            body,
-            tag, // remplace une notification du même créneau au lieu d'empiler
-            icon: '/icons/icon-192.png',
-            badge: '/icons/icon-192.png',
-            vibrate: vibration ? (kind === 'missing-date' ? [280, 120, 280] : [180, 90, 180]) : [],
-            data: { url, kind, timestamp: Date.now() },
-        } as NotificationOptions & { vibrate: number[] };
-        await registration.showNotification(title, options);
+        const presentation = notificationPresentation({ title, body, tag, url, kind, locale }, vibration);
+        await registration.showNotification(presentation.title, presentation.options);
         return true;
     } catch {
         return false;
@@ -339,12 +335,15 @@ export const showLocalNotification = async (
 };
 
 export const sendTestNotification = async (): Promise<PushTestResult> => {
+    const registration = await currentServiceWorkerRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return { ok: false, sent: 0, error: 'Aucun abonnement sur cet appareil.' };
     const response = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         signal: requestSignal(),
-        body: JSON.stringify({ action: 'test' }),
+        body: JSON.stringify({ action: 'test', endpoint: subscription.endpoint }),
     });
     const payload = await readJson(response);
     const sent = typeof payload?.sent === 'number' ? payload.sent : 0;

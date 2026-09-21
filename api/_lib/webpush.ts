@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import webpush from 'web-push';
 import type { PushNotificationPayload } from '../../utils/notificationTypes.js';
+import { conciseNotificationText } from '../../utils/notificationPresentation.js';
 
 /** Helper Web Push partagé entre le cron (notify) et les actions admin. */
 
@@ -36,17 +37,22 @@ export const sendToEntry = async (
     entry: PushEntry,
     payload: PushNotificationPayload
 ): Promise<{ survivingSubs: PushEntry['subs']; sent: number }> => {
+    // Push services cap encrypted payload size; full admin messages remain in the inbox.
+    const message = JSON.stringify({ ...payload, title: conciseNotificationText(payload.title, 72), body: conciseNotificationText(payload.body, 180) });
     const results = await Promise.all(
         entry.subs.map(async sub => {
             try {
                 await webpush.sendNotification(
                     { endpoint: sub.endpoint, keys: sub.keys },
-                    JSON.stringify(payload),
+                    message,
                     {
                         // Une alerte de retard perd son utilité après un jour;
                         // un test ne doit pas arriver plusieurs heures plus
                         // tard après une réinstallation ou un mode avion.
-                        TTL: payload.kind === 'test' ? 3_600 : 86_400,
+                        TTL: payload.kind === 'test' ? 300 : 86_400,
+                        // Collapse queued reminders with the same semantic tag while offline.
+                        ...(payload.tag ? { topic: createHash('sha256').update(payload.tag).digest('base64url').slice(0, 32) } : {}),
+                        timeout: 10_000,
                         urgency: payload.kind === 'admin' ? 'high' : 'normal',
                     }
                 );

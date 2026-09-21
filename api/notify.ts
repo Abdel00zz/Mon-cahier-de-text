@@ -20,9 +20,9 @@ const MAX_ENDPOINT_LENGTH = 2_048;
 const MAX_PUSH_KEY_LENGTH = 512;
 const DEFAULT_QUIET_DURING_VACATIONS = true;
 const TEST_NOTIFICATION_COPY: Record<AppLocale, { title: string; body: string }> = {
-    fr: { title: 'Cahier de textes', body: 'Notification de test : tout fonctionne correctement.' },
-    en: { title: 'Lesson notebook', body: 'Test notification: everything is working correctly.' },
-    ar: { title: 'دفتر النصوص', body: 'إشعار تجريبي: تعمل الخدمة بشكل سليم.' },
+    fr: { title: 'Notifications activées', body: 'Ce téléphone reçoit les rappels de votre cahier.' },
+    en: { title: 'Notifications enabled', body: 'This phone receives your notebook reminders.' },
+    ar: { title: 'الإشعارات مفعّلة', body: 'هذا الهاتف يستقبل تذكيرات دفتر النصوص.' },
 };
 
 /*
@@ -45,6 +45,8 @@ interface CronCandidate {
     gap: number;
     title: string;
     body: string;
+    url: string;
+    locale: AppLocale;
     wouldSend: boolean;
 }
 
@@ -254,23 +256,29 @@ const handleStatus = async (body: NotifyBody, res: ApiResponse, phone: string) =
     res.status(200).json({ ok: true, registered: owner === phone || !owner });
 };
 
-const handleTest = async (res: ApiResponse, phone: string) => {
+const handleTest = async (body: NotifyBody, res: ApiResponse, phone: string) => {
     if (!configureVapid()) throw new HttpError(500, 'Clés VAPID non configurées sur le serveur.');
     const redis = await getRedis();
     const entry = normalizeEntry(await redis.hget<PushEntry>(KEYS.pushSubs, phone));
     if (entry.subs.length === 0) throw new HttpError(400, 'Aucun appareil abonné.');
+    // Recent clients test only the current phone; old clients retain their existing behavior.
+    const endpoint = body.endpoint === undefined ? undefined : validateEndpoint(body.endpoint);
+    const targetSubs = endpoint ? entry.subs.filter(sub => sub.endpoint === endpoint) : entry.subs;
+    if (targetSubs.length === 0) throw new HttpError(400, 'Cet appareil n’est pas abonné.');
     const snapshot = await redis.hget<TeacherSnapshot>(KEYS.adminSnapshots, phone);
     const copy = TEST_NOTIFICATION_COPY[snapshot?.applicationLocale ?? 'ar'];
-    const { survivingSubs, sent } = await sendToEntry(entry, {
+    const { survivingSubs, sent } = await sendToEntry({ ...entry, subs: targetSubs }, {
         title: copy.title,
         body: copy.body,
         url: '/#/notifications',
         kind: 'test',
+        locale: snapshot?.applicationLocale ?? 'ar',
         tag: 'cdt-test',
         timestamp: Date.now(),
     });
-    await persistEntry(redis, phone, { ...entry, subs: survivingSubs });
-    await releaseEndpointOwners(redis, phone, entry.subs
+    const untouched = entry.subs.filter(sub => !targetSubs.some(target => target.endpoint === sub.endpoint));
+    await persistEntry(redis, phone, { ...entry, subs: [...untouched, ...survivingSubs] });
+    await releaseEndpointOwners(redis, phone, targetSubs
         .filter(sub => !survivingSubs.some(next => next.endpoint === sub.endpoint))
         .map(sub => sub.endpoint));
     // HTTP 200 signifie « requête traitée », pas « notification livrée » : le
@@ -283,7 +291,7 @@ const handleTest = async (res: ApiResponse, phone: string) => {
  * Séparer la décision de l'envoi permet de renvoyer un rapport complet même
  * lorsque la phase d'envoi est écourtée par le budget de temps.
  */
-const collectCronCandidates = (
+export const collectCronCandidates = (
     snapshots: Record<string, unknown>,
     subsMap: Record<string, unknown>,
     today: string,
@@ -311,6 +319,7 @@ const collectCronCandidates = (
         if (snapshot.absences?.some(a => today >= a.debut && today <= a.fin)) continue;
 
         const prefs = snapshot.notifyPrefs;
+        if (prefs?.enabled === false) continue;
         const quietDuringVacations = prefs?.quietDuringVacations ?? DEFAULT_QUIET_DURING_VACATIONS;
         if (quietDuringVacations && (isHoliday(today, calendar) || isVacation(today, calendar))) continue;
 
@@ -351,6 +360,8 @@ const collectCronCandidates = (
             gap: perClass.reduce((m, c) => Math.max(m, c.gapSessions), 0),
             title: summary.title,
             body: summary.body,
+            url: summary.url,
+            locale: snapshot.applicationLocale ?? 'ar',
             wouldSend: !recentlyNotified || severityIncreased,
         });
     }
@@ -396,7 +407,8 @@ const runCron = async (req: ApiRequest, res: ApiResponse) => {
                 const result = await sendToEntry(candidate.entry, {
                     title: candidate.title,
                     body: candidate.body,
-                    url: '/#/notifications',
+                    url: candidate.url,
+                    locale: candidate.locale,
                     kind: 'lateness',
                     // Un seul emplacement pour le rappel quotidien : un
                     // nouvel envoi remplace le précédent au lieu d'empiler les
@@ -465,7 +477,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
             if (body.action === 'subscribe') return await handleSubscribe(body, res, phone);
             if (body.action === 'unsubscribe') return await handleUnsubscribe(body, res, phone);
             if (body.action === 'status') return await handleStatus(body, res, phone);
-            if (body.action === 'test') return await handleTest(res, phone);
+            if (body.action === 'test') return await handleTest(body, res, phone);
             throw new HttpError(400, 'Action inconnue.');
         }
         throw new HttpError(405, 'Méthode non autorisée.');

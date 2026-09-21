@@ -2,7 +2,7 @@ import type { AppConfig, ClassInfo } from '../types.js';
 import { getDaySessionBlocks, type SessionBlock } from './timetable.js';
 import { getEffectiveSchoolYear, isHoliday, isVacation, isWeeklyRestDay, todayInMorocco, type HolidayCalendar } from './calendar.js';
 
-interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number }
+interface SessionAlert { id: string; kind: 'end' | 'missing'; classIds: string[]; date: string; minute: number; remainingMinutes?: number }
 const reminderMinutes = (value: number | undefined, fallback: number, max = 30): number =>
   Number.isFinite(value) ? Math.min(max, Math.max(1, Math.round(value!))) : fallback;
 export const moroccoClockMinutes = (now: Date, zone = 'Africa/Casablanca'): number => {
@@ -37,7 +37,7 @@ export function detectSessionAlerts(config: Partial<AppConfig>, classes: ClassIn
     const due = end - lead;
     if ((settings?.sessionEndReminderEnabled ?? true) && minute >= due && minute < Math.min(due + 1, end)) {
       const active = group.filter(block => minute >= block.startMin);
-      if (active.length) events.push({ id: `cdt-session-end-${today}-${end}`, kind: 'end', classIds: active.map(block => block.classId).sort(), date: today, minute: due });
+      if (active.length) events.push({ id: `cdt-session-end-${today}-${end}`, kind: 'end', classIds: active.map(block => block.classId).sort(), date: today, minute: due, remainingMinutes: Math.ceil(end - minute) });
     }
     if ((settings?.missingDateReminderEnabled ?? true) && minute >= end + grace && minute < end + grace + 1) {
       const missing = group.filter(block => !hasDate(block.classId, today));

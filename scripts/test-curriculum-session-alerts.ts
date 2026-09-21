@@ -89,7 +89,8 @@ test('legacy profiles enable omitted session alert options by default', () => {
 });
 test('configurable lead and grace, missing dates checked before generating events', () => {
   const notificationSettings = { ...config.notificationSettings!, sessionReminderMinutes: 5, missingDateReminderMinutes: 10 };
-  assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.kind, 'end');
+    assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.kind, 'end');
+    assert.equal(detect('09:55:00', { notificationSettings }).events[0]?.remainingMinutes, 5);
   assert.equal(detect('10:10:00', { notificationSettings }).events[0]?.kind, 'missing');
   assert.equal(detect('10:10:00', { notificationSettings }, true).events.length, 0);
   assert.equal(detect('11:10:00', { notificationSettings }).events.length, 0);

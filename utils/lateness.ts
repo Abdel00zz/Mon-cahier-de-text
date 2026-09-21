@@ -1,4 +1,7 @@
 import { AbsencePeriod, AppLocale, NotificationSettings, ScheduleSlot } from '../types.js';
+import { scheduleClassLabel } from './classAbbreviation.js';
+import { classIdentityFor } from './classIdentity.js';
+import { conciseNotificationText } from './notificationPresentation.js';
 import {
     HolidayCalendar,
     countExpectedSessions,
@@ -85,54 +88,6 @@ export const computeLateness = (input: LatenessInput): LatenessResult => {
     return { expectedSessions, actualSessions: sessionsCount, gapSessions, daysSinceLastEntry, severity };
 };
 
-const formatLatenessMessage = (result: LatenessResult, className: string, locale: AppLocale): string => {
-    if (locale === 'ar') {
-        if (result.severity === 'critical') {
-            return `يبدو أن دفتر قسم ${className} يحتاج إلى استكمال نحو ${result.gapSessions} حصص مقارنة باستعمال الزمن. يمكنكم تحيينه تدريجياً.`;
-        }
-        if (result.severity === 'warning') {
-            if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
-                return `آخر تدوين في قسم ${className} كان قبل ${result.daysSinceLastEntry} من أيام الدراسة. يمكنكم استكمال الحصص غير المدونة عند التفرغ.`;
-            }
-            return `يبدو أن دفتر قسم ${className} يحتاج إلى استكمال نحو ${result.gapSessions} حصص. يمكنكم تحيينه وفق وتيرتكم.`;
-        }
-        if (result.severity === 'notice') {
-            return `دفتر قسم ${className} يحتاج إلى استكمال ${result.gapSessions} حصص عند التفرغ.`;
-        }
-        return `دفتر قسم ${className} محيَّن.`;
-    }
-
-    if (locale === 'en') {
-        if (result.severity === 'critical') {
-            return `${className}: about ${result.gapSessions} sessions may need completing compared with the timetable. You can update them progressively.`;
-        }
-        if (result.severity === 'warning') {
-            if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
-                return `The last entry for ${className} was ${result.daysSinceLastEntry} school day(s) ago. Complete the missing sessions when convenient.`;
-            }
-            return `${className}: about ${result.gapSessions} sessions may need completing. Update them at your pace.`;
-        }
-        if (result.severity === 'notice') {
-            return `${className}: ${result.gapSessions} session(s) can be completed when convenient.`;
-        }
-        return `${className} is up to date.`;
-    }
-
-    if (result.severity === 'critical') {
-        return `${className} : environ ${result.gapSessions} séances semblent à compléter par rapport à l'emploi du temps. Vous avancez à votre rythme.`;
-    }
-    if (result.severity === 'warning') {
-        if (result.daysSinceLastEntry !== null && result.daysSinceLastEntry >= 1) {
-            return `Dernière saisie il y a ${result.daysSinceLastEntry} jour(s) de classe en ${className}. Un petit rattrapage quand vous avez le temps ?`;
-        }
-        return `${className} : environ ${result.gapSessions} séances semblent à compléter. Vous décidez du rythme.`;
-    }
-    if (result.severity === 'notice') {
-        return `${className} : ${result.gapSessions} séance(s) à compléter lorsque vous le souhaitez.`;
-    }
-    return `${className} est à jour. Continuez ainsi !`;
-};
-
 export interface ClassLateness extends LatenessResult {
     classId: string;
     className: string;
@@ -146,35 +101,50 @@ export const worstSeverity = (results: ClassLateness[]): LatenessSeverity =>
 export const summarizeForTeacher = (
     results: ClassLateness[],
     locale: AppLocale = 'fr',
-): { title: string; body: string; severity: LatenessSeverity } | null => {
+): { title: string; body: string; severity: LatenessSeverity; url: string } | null => {
     const flagged = results.filter(r => r.severity !== 'ok');
     if (flagged.length === 0) return null;
 
     flagged.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] || b.gapSessions - a.gapSessions);
     const severity = flagged[0].severity;
+    const label = (item: ClassLateness) => conciseNotificationText(scheduleClassLabel(classIdentityFor(item.className, locale), locale, true), 38);
 
     if (flagged.length === 1) {
-        const title = locale === 'ar' ? 'دفتر النصوص' : locale === 'en' ? 'Lesson notebook' : 'Cahier de textes';
-        return { title, body: formatLatenessMessage(flagged[0], flagged[0].className, locale), severity };
+        const item = flagged[0];
+        const title = `${label(item)} — ${locale === 'ar' ? 'مراجعة الدفتر' : locale === 'en' ? 'Check notebook' : 'Cahier à vérifier'}`;
+        const gap = item.gapSessions;
+        const body = gap > 0
+            ? locale === 'ar' ? `نحو ${gap} حصص قد تحتاج إلى التدوين. افتح الدفتر للتحقق.`
+                : locale === 'en' ? `About ${gap} session(s) may need entering. Open the notebook to check.`
+                : `Environ ${gap} séance${gap > 1 ? 's' : ''} à renseigner. Ouvrez le cahier pour vérifier.`
+            : locale === 'ar' ? 'لم يُسجَّل تدوين حديث. افتح الدفتر للتحقق.'
+                : locale === 'en' ? 'No recent entry. Open the notebook to check.'
+                : 'Aucune saisie récente. Ouvrez le cahier pour vérifier.';
+        return { title, body, severity, url: `/#/classe/${encodeURIComponent(item.classId)}` };
     }
-    const names = flagged.slice(0, 3).map(r => r.className).join(', ');
+    const names = flagged.slice(0, 2).map(label).join(locale === 'ar' ? '، ' : ', ');
+    const suffix = flagged.length > 2 ? ` (+${flagged.length - 2})` : '';
+    const url = '/#/notifications';
     if (locale === 'ar') {
         return {
             title: `${flagged.length} أقسام تحتاج إلى التحيين`,
-            body: `بعض حصص الأقسام ${names}${flagged.length > 3 ? '…' : ''} لم تُدوَّن بعد. يمكنكم استكمالها وفق وتيرتكم.`,
+            body: `${names}${suffix}. افتح القائمة لمراجعة الحصص.`,
             severity,
+            url,
         };
     }
     if (locale === 'en') {
         return {
             title: `${flagged.length} classes need updating`,
-            body: `Some sessions for ${names}${flagged.length > 3 ? '…' : ''} have not been entered yet. Update them at your pace.`,
+            body: `${names}${suffix}. Open the list to review sessions.`,
             severity,
+            url,
         };
     }
     return {
         title: `${flagged.length} classes à compléter`,
-        body: `Certaines séances de ${names}${flagged.length > 3 ? '…' : ''} ne sont pas encore renseignées. Vous avancez à votre rythme.`,
+        body: `${names}${suffix}. Consultez les séances à vérifier.`,
         severity,
+        url,
     };
 };

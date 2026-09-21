@@ -11,6 +11,7 @@ import {
   CheckSquare as LucideCheckSquare,
   Settings as LucideSettings,
   Trash2 as LucideTrash2,
+  LayoutGrid as LucideLayoutGrid,
   CalendarDays as LucideCalendarDays,
   CalendarRange as LucideCalendarRange,
   CalendarCheck as LucideCalendarCheck,
@@ -119,6 +120,7 @@ export const CheckCheck = createIcon(LucideCheckCheck);
 export const CheckSquare = createIcon(LucideCheckSquare);
 export const Settings = createIcon(LucideSettings);
 export const Trash2 = createIcon(LucideTrash2);
+export const LayoutGrid = createIcon(LucideLayoutGrid);
 export const CalendarDays = createIcon(LucideCalendarDays);
 export const CalendarRange = createIcon(LucideCalendarRange);
 export const CalendarCheck = createIcon(LucideCalendarCheck);

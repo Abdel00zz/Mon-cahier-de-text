@@ -10,6 +10,7 @@ const PUSH_NOTIFICATION_KINDS = [
 export type PushNotificationKind = (typeof PUSH_NOTIFICATION_KINDS)[number];
 
 export interface PushNotificationPayload {
+  locale?: import('../types.js').AppLocale;
   title: string;
   body: string;
   url: string;

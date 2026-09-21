@@ -364,7 +364,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                         <div
                                                             className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
                                                         >
-                                                            <span className="max-w-full truncate text-[11px] sm:text-xs lg:text-sm xl:text-[15px] font-bold tracking-tight leading-snug">
+                                                            <span className="max-w-full break-words whitespace-normal text-balance text-[10px] sm:text-xs lg:text-sm xl:text-[15px] font-semibold tracking-tight leading-tight">
                                                                 {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
                                                             {showSubjectLabels && (

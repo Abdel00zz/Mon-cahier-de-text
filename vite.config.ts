@@ -233,6 +233,7 @@ export default defineConfig(({ mode }) => {
                      * précache sans décision explicite.
                      */
                     'icons/icon-192.png',
+                    'icons/notification-badge-96.png',
                     'icons/icon-512.png',
                     'icons/icon-maskable-512.png',
                     'icons/apple-touch-icon-180.png',

@@ -5,8 +5,8 @@ import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { clientsClaim } from 'workbox-core';
 import { readNotificationVibration } from '../utils/notificationDevicePreferences';
+import { notificationPresentation } from '../utils/notificationPresentation';
 import {
-    defaultNotificationTag,
     isPushNotificationKind,
     type PushNotificationKind,
     type PushNotificationPayload,
@@ -155,21 +155,16 @@ registerRoute(
 self.addEventListener('push', event => {
     let payload: Partial<PushNotificationPayload> = {};
     try {
-        payload = event.data?.json() ?? {};
+        const parsed = event.data?.json();
+        payload = parsed && typeof parsed === 'object' ? parsed : {};
     } catch {
         payload = { body: event.data?.text() };
     }
-    const title = payload.title || 'Cahier de textes';
     const kind: PushNotificationKind = isPushNotificationKind(payload.kind) ? payload.kind : 'lateness';
-    const targetUrl = payload.url || '/';
-    const showNotification = readNotificationVibration().then(vibration => self.registration.showNotification(title, {
-            body: payload.body || 'Vous avez une mise à jour à faire.',
-            icon: '/icons/icon-192.png',
-            badge: '/icons/icon-192.png',
-            tag: payload.tag || defaultNotificationTag(kind),
-            vibrate: vibration ? (kind === 'admin' ? [220, 100, 220] : [180, 90, 180]) : [],
-            data: { url: targetUrl, kind, timestamp: payload.timestamp || Date.now() },
-        } as NotificationOptions & { vibrate: number[] }));
+    const showNotification = readNotificationVibration().then(vibration => {
+        const presentation = notificationPresentation(payload, vibration);
+        return self.registration.showNotification(presentation.title, presentation.options);
+    });
     const notifyOpenClients = kind === 'admin' && typeof payload.messageId === 'string'
         ? self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
             windows.forEach(client => client.postMessage({ type: 'admin-message', messageId: payload.messageId }));

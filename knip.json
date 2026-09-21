@@ -11,7 +11,8 @@
     "api/send-email.ts",
     "api/sync.ts",
     "scripts/test-*.ts",
-    "scripts/guide-preview/main.tsx"
+    "scripts/guide-preview/main.tsx",
+    "scripts/showcase-preview/main.tsx"
   ],
   "ignoreDependencies": [
     "@capacitor/android",

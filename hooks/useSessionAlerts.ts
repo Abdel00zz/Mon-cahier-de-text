@@ -11,6 +11,9 @@ import { collectSessionDates } from '../utils/printMeta';
 import { showLocalNotification } from '../utils/push';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import type { ClassInfo } from '../types';
+import { scheduleClassLabel } from '../utils/classAbbreviation';
+import { classIdentityFor } from '../utils/classIdentity';
+import { conciseNotificationText } from '../utils/notificationPresentation';
 
 const claimsKey = 'session_alert_claims_v2';
 const memoryClaims = new Set<string>();
@@ -85,12 +88,19 @@ export function useSessionAlerts(enabled = true) {
       for (const event of snapshot.events) {
         await claimAlert(`${scope}:${event.id}`, fresh, async () => {
         // Locks/network may have delayed dispatch: recheck both the time and the date evidence.
-        const stillDue = detectSessionAlerts(readCachedConfig(), classes, calendar, new Date(), (id, date) => collectSessionDates(readClassLessons(id)).includes(date)).events.some(candidate => candidate.id === event.id);
+        const stillDue = detectSessionAlerts(readCachedConfig(), classes, calendar, new Date(), (id, date) => collectSessionDates(readClassLessons(id)).includes(date)).events.find(candidate => candidate.id === event.id);
         if (!stillDue || !fresh()) return false;
         const latestConfig = readCachedConfig();
         const t = (key: string, values: Record<string, string | number> = {}) => translateLocaleMessage(latestConfig.applicationLocale ?? 'ar', key, values);
-        const names = event.classIds.map(id => classes.find(item => item.id === id)?.name ?? '').join(', ');
-        const message = event.kind === 'end' ? t('sessionAlert.endSoonBody', { classes: names }) : t('sessionAlert.missingDateMany', { count: event.classIds.length, classes: names });
+        const locale = latestConfig.applicationLocale ?? 'ar';
+        const names = event.classIds.slice(0, 2).map(id => {
+          const name = classes.find(item => item.id === id)?.name ?? t('sessionAlert.classFallback');
+          return conciseNotificationText(scheduleClassLabel(classIdentityFor(name, locale), locale, true), 38);
+        }).join(locale === 'ar' ? '، ' : ', ') + (event.classIds.length > 2 ? ` (+${event.classIds.length - 2})` : '');
+        const message = event.kind === 'end'
+          ? t('sessionAlert.endSoonBody', { classes: names, minutes: stillDue.remainingMinutes ?? 1 })
+          : event.classIds.length === 1 ? t('sessionAlert.missingDateOne', { className: names })
+          : t('sessionAlert.missingDateMany', { count: event.classIds.length, classes: names });
         const title = t(event.kind === 'end' ? 'sessionAlert.endSoonTitle' : 'sessionAlert.missingDateTitle');
         const url = event.classIds.length === 1 ? `/#/classe/${encodeURIComponent(event.classIds[0])}` : '/#/notifications';
         if (document.visibilityState === 'visible') {
@@ -104,7 +114,7 @@ export function useSessionAlerts(enabled = true) {
           if (latestConfig.notificationSettings?.sessionVibration) { try { navigator.vibrate?.(event.kind === 'end' ? [160, 80, 160] : [240, 100, 240]); } catch { /* Unsupported device. */ } }
           return true;
         } else if (latestConfig.notificationSettings?.pushEnabled) {
-          return showLocalNotification(title, message, event.id, url, undefined, latestConfig.notificationSettings.sessionVibration ?? false, fresh);
+          return showLocalNotification(title, message, event.id, url, event.kind === 'end' ? 'session-reminder' : 'missing-date', latestConfig.notificationSettings.sessionVibration ?? false, fresh, locale);
         }
         return false;
         });

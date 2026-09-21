@@ -44,8 +44,34 @@ Le cron `GET /api/notify` est protégé par `CRON_SECRET`. Il :
 - ne met à jour `lastNotifiedAt` que si au moins un appareil a été livré.
 
 Le tag `cdt-lateness` remplace l’alerte quotidienne précédente dans le centre
-de notifications. Le TTL serveur est de 24 h (1 h pour un test), afin qu’une
+de notifications. Le TTL serveur est de 24 h (5 min pour un test), afin qu’une
 alerte périmée ne surgisse pas après un long mode avion.
+
+## Présentation mobile et ciblage
+
+`notificationPresentation` est partagé entre les rappels locaux et le service
+worker : texte limité à 72 caractères pour le titre, 180 pour le corps,
+direction et langue explicites, actions Ouvrir/Fermer selon le support système.
+Le logo couleur reste l’icône principale. Le badge Android utilise un pictogramme
+96 × 96 sur fond transparent, généré par `scripts/generate-notification-badge.ps1` :
+le masque Android appliqué à l’ancien carré opaque produisait un carré blanc.
+Le badge fait partie du précache pour rester disponible hors connexion.
+
+Le domaine et la couleur du petit pictogramme sont affichés par le navigateur
+et le système ; l’application ne peut pas imposer leur masquage. Le rendu exact
+doit être contrôlé sur le téléphone, séparément du rendu de l’interface web.
+
+Un rappel portant sur une seule classe ouvre directement son cahier. Plusieurs
+classes ouvrent la liste des notifications. Les textes conservent une formulation
+prudente : l’écart avec l’emploi du temps reste une estimation. Le rappel local
+affiche le délai réellement configuré, et une absence de date n’est pas présentée
+comme une preuve que la séance n’a pas eu lieu.
+
+Le cron respecte `notifyPrefs.enabled === false`. Les tags limitent l’empilement
+à l’écran, et le `topic` Web Push remplace les messages équivalents encore en
+attente de livraison. Les tests demandés depuis les clients récents ciblent
+uniquement leur propre abonnement. Aucun envoi réel n’est nécessaire aux tests
+automatisés.
 
 ## Lecture Node / Edge / State / LangGraph
 

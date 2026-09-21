@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import webpush from 'web-push';
+import { notificationPresentation, NOTIFICATION_BADGE } from '../utils/notificationPresentation';
+import { collectCronCandidates } from '../api/notify';
 import type {
   ClassInfo,
   ClassSchedule,
@@ -18,7 +22,7 @@ import {
   computeTeacherSnapshot,
 } from '../utils/progression';
 import { isSuccessfulTestResponse } from '../utils/pushResponse';
-import { pushEndpointField } from '../api/_lib/webpush.js';
+import { pushEndpointField, sendToEntry } from '../api/_lib/webpush.js';
 import { assertValidTeacherSnapshot } from '../api/_lib/validate.js';
 import { isHoliday, isVacation } from '../utils/calendar.js';
 
@@ -117,8 +121,54 @@ test('agrégation : la pire sévérité pilote le résumé enseignant', () => {
   assert.ok(summary);
   assert.equal(summary.severity, 'warning');
   assert.match(summary.title, /^2 classes/);
-  assert.match(summary.body, /1AC 1/);
-  assert.match(summary.body, /2AC 2/);
+  assert.match(summary.body, /1AC·1/);
+  assert.match(summary.body, /2AC·2/);
+});
+
+test('notification mobile : badge distinct, texte borné, langue, actions et destination ciblée', () => {
+  const payload = { title: 'عنوان', body: ' نص '.repeat(100), kind: 'missing-date', url: '/#/classe/c1', timestamp: 100 };
+  const view = notificationPresentation(payload, false, 200);
+  assert.equal(view.options.badge, NOTIFICATION_BADGE);
+  assert.notEqual(view.options.badge, view.options.icon);
+  assert.equal(view.options.dir, 'rtl');
+  assert.equal(view.options.lang, 'ar');
+  assert.ok(Array.from(view.options.body!).length <= 180);
+  assert.deepEqual(view.options.vibrate, []);
+  assert.equal(view.options.actions[0].title, 'فتح الدفتر');
+  assert.equal(view.options.actions[1].action, 'dismiss');
+  assert.equal(view.options.data.url, payload.url);
+  assert.equal(view.options.timestamp, 100);
+  assert.equal(notificationPresentation({ url: 'https://external.test', timestamp: Infinity }, false, 200).options.data.url, '/#/notifications');
+  assert.equal(notificationPresentation(null).options.tag, 'cdt-lateness');
+  assert.ok(notificationPresentation(payload, true).options.vibrate.length > 0);
+  const badge = readFileSync(`public${NOTIFICATION_BADGE}`);
+  assert.equal(badge.readUInt32BE(16), 96);
+  assert.equal(badge.readUInt32BE(20), 96);
+  assert.equal(badge[25], 6, 'PNG RGBA: transparence du badge');
+});
+
+test('rappel ciblé : une classe ouvre son cahier, estimation prudente, aucun faux zéro', () => {
+  const item: ClassLateness = { classId: 'class/1', className: '2ème Bac Sciences Physiques 3', expectedSessions: 8, actualSessions: 5, gapSessions: 3, daysSinceLastEntry: 5, severity: 'warning' };
+  for (const locale of ['fr', 'ar', 'en'] as const) {
+    const summary = summarizeForTeacher([item], locale)!;
+    assert.equal(summary.url, '/#/classe/class%2F1');
+    assert.ok(summary.body.length < 140);
+    assert.ok(summary.body.includes('3'));
+    assert.equal(summarizeForTeacher([{ ...item, severity: 'ok' }], locale), null);
+    assert.ok(!summarizeForTeacher([{ ...item, gapSessions: 0 }], locale)!.body.includes('0'));
+  }
+});
+
+test('cron : désactivation respectée, ciblage unique, anti-spam et absences', () => {
+  const snapshot = computeTeacherSnapshot({ phone: '0612345678', nom: 'Test', prenom: 'Prof' }, [classInfo], [schedule], notificationSettings, () => [], undefined, '2025-09-08', 'fr');
+  const entry = { subs: [{ endpoint: 'https://push.example.test/a', keys: { auth: 'a'.repeat(20), p256dh: 'b'.repeat(20) } }] };
+  const candidates = (value = snapshot, push = entry) => collectCronCandidates({ [snapshot.phone]: value }, { [snapshot.phone]: push }, '2026-02-09', calendar());
+  assert.equal(candidates().length, 1);
+  assert.equal(candidates()[0].url, '/#/classe/class-a');
+  assert.equal(candidates()[0].locale, 'fr');
+  assert.equal(candidates({ ...snapshot, notifyPrefs: { ...snapshot.notifyPrefs!, enabled: false } }).length, 0);
+  assert.equal(candidates({ ...snapshot, absences: [{ debut: '2026-02-09', fin: '2026-02-10' }] }).length, 0);
+  assert.equal(candidates(snapshot, { ...entry, lastNotifiedAt: new Date().toISOString(), lastSeverity: 'critical' } as typeof entry)[0].wouldSend, false);
 });
 
 test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
@@ -128,6 +178,25 @@ test('test Push : un HTTP 2xx sans livraison reste un échec métier', () => {
   assert.equal(isSuccessfulTestResponse(true, null), false);
   assert.equal(isSuccessfulTestResponse(false, { ok: true, sent: 1 }), false);
   assert.equal(isSuccessfulTestResponse(true, { ok: true, sent: 1 }), true);
+});
+
+test('transport Push : message borné, file regroupée, délai limité et abonnements morts nettoyés', async context => {
+  const calls: { body: string; options: webpush.RequestOptions }[] = [];
+  context.mock.method(webpush, 'sendNotification', async (sub: webpush.PushSubscription, body: string, options: webpush.RequestOptions) => {
+    calls.push({ body, options });
+    if (sub.endpoint.endsWith('dead')) throw Object.assign(new Error('gone'), { statusCode: 410 });
+    if (sub.endpoint.endsWith('retry')) throw Object.assign(new Error('timeout'), { statusCode: 503 });
+    return { statusCode: 201, headers: {}, body: '' };
+  });
+  const subs = ['ok', 'dead', 'retry'].map(id => ({ endpoint: `https://push.example.test/${id}`, keys: { auth: 'a', p256dh: 'b' } }));
+  const result = await sendToEntry({ subs }, { title: 'T'.repeat(200), body: 'نص '.repeat(2000), kind: 'test', tag: 'cdt-test', url: '/#/notifications' });
+  assert.equal(result.sent, 1);
+  assert.deepEqual(result.survivingSubs, [subs[0], subs[2]]);
+  assert.ok(Buffer.byteLength(calls[0].body) < 2000);
+  assert.equal(calls[0].options.TTL, 300);
+  assert.equal(calls[0].options.timeout, 10000);
+  assert.match(calls[0].options.topic!, /^[A-Za-z0-9_-]{32}$/);
+  assert.equal(calls[0].options.topic, calls[1].options.topic);
 });
 
 const classInfo: ClassInfo = {
