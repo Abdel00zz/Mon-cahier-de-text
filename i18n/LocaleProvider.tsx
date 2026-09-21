@@ -21,7 +21,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'language.settings.description': 'Choisissez la langue de l’interface. L’arabe active automatiquement une lecture de droite à gauche.',
     'language.settings.active': 'Langue active',
     'dashboard.ready': 'Cahiers prêts.',
-    'dashboard.classes': 'Mes classes',
+    'dashboard.classes': 'Mes classes :',
     'dashboard.notebook': 'Cahier de textes',
     'dashboard.welcome.greeting': 'Bienvenue{teacher}',
     'dashboard.welcome.startTitle': 'Votre premier cahier commence ici',

@@ -22,6 +22,8 @@ import { parseClassName } from './classAbbreviation';
  *   3. nom écrit directement en arabe  (« قسم الثانية بكالوريا علوم فيزيائية 3 »)
  */
 export interface ClassIdentity {
+    /** Code stable de la branche, indépendant de la traduction et du groupe. */
+    streamCode: string | null;
     /** Palier reconnu, `null` si le nom est libre (« Ma classe »). */
     tierKey: ClassTierKey | null;
     /** Libellé localisé du palier, prêt pour le badge. */
@@ -37,6 +39,7 @@ export interface ClassIdentity {
 }
 
 const EMPTY_IDENTITY: Omit<ClassIdentity, 'full'> = {
+    streamCode: null,
     tierKey: null,
     tierLabel: null,
     stream: null,
@@ -160,6 +163,7 @@ const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 
         .trim();
 
     return {
+        streamCode: streamCode || null,
         tierKey,
         tierLabel: formatClassTierLabel(tierKey, locale),
         stream: composeStream(streamCode, streamCode ? '' : leftover, locale),
@@ -182,6 +186,7 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
         const { group, rest } = splitGroup(canonical.suffix);
         const streamCode = canonical.identity.stream;
         return {
+            streamCode: streamCode || null,
             tierKey: canonical.identity.tier,
             tierLabel: tierLabelFor(canonical.identity.tier, locale),
             stream: composeStream(streamCode, rest, locale),
@@ -196,6 +201,7 @@ export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassI
     if (parsedTier) {
         const streamCode = disambiguateStream(parsed.stream || (parsed.level.startsWith('TC·') ? parsed.level.replace('·', '-') : ''), full);
         return {
+            streamCode: streamCode || null,
             tierKey: parsedTier,
             tierLabel: tierLabelFor(parsedTier, locale),
             stream: composeStream(streamCode, '', locale),

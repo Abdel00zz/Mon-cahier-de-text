@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./components/ui/modal-motion.css";
 @import "./features/dashboard/classCards.css";
+@import "./features/dashboard/dashboardCanvas.css";
 
 /* Shared navigation palette: readable ink, a quiet accent wash, one focus ring.
    Mixing with foreground keeps even yellow custom accents legible as text. */
@@ -1068,25 +1069,34 @@ html[data-keyboard='open'] .selection-bar-anchor { visibility: hidden; }
     radial-gradient(at 50% 6%, rgba(60, 120, 220, 0.08) 0px, transparent 50%);
 }
 
-/* ── Soft UI Canvas: fond dégradé menthe claire / rose lavande très pâle vers bleu ciel doux avec motif petits points blancs style papier pointillé (inspiré de l'image) ── */
-:is([data-dashboard-root], [data-dashboard-surface]) {
-  position: relative;
-  min-height: 100dvh;
-  background-color: hsl(var(--background));
-  background-image:
-    radial-gradient(circle, hsl(var(--foreground) / 0.045) 0.7px, transparent 0.8px),
-    linear-gradient(135deg, hsl(var(--primary) / 0.035), transparent 48%, hsl(var(--primary) / 0.025));
-  background-size: 24px 24px, 100% 100%;
-  background-attachment: fixed;
+[data-dashboard-surface] [data-dashboard-root] {
+  background: transparent;
 }
 
-.dark :is([data-dashboard-root], [data-dashboard-surface]) {
-  background-color: hsl(var(--background));
-  background-image:
-    radial-gradient(circle, hsl(var(--foreground) / 0.04) 0.7px, transparent 0.8px),
-    linear-gradient(135deg, hsl(var(--primary) / 0.025), transparent 48%, hsl(var(--primary) / 0.02));
-  background-size: 24px 24px, 100% 100%;
-  background-attachment: fixed;
+/* Surface satinée presque opaque : le canvas reste continu derrière la coque. */
+[data-app-sidebar] {
+  background: linear-gradient(165deg, rgb(250 250 248 / .98), rgb(239 245 243 / .96));
+  border-inline-end: 1px solid rgb(72 91 83 / .12);
+  box-shadow: 4px 0 24px -16px rgb(32 51 43 / .16), inset 0 1px 0 rgb(255 255 255 / .65);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.dark [data-app-sidebar] {
+  background: linear-gradient(165deg, rgb(30 35 36 / .98), rgb(24 30 31 / .97));
+  border-inline-end-color: rgb(194 212 205 / .1);
+  box-shadow: 4px 0 24px -16px rgb(0 0 0 / .3), inset 0 1px 0 rgb(225 237 232 / .05);
+}
+.mobile-tab-bar {
+  background: hsl(var(--card) / .97);
+  border-color: hsl(var(--foreground) / .12);
+  box-shadow: 0 8px 24px -10px rgb(30 47 40 / .2), inset 0 1px 0 rgb(255 255 255 / .65);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.dark .mobile-tab-bar {
+  background: hsl(var(--card) / .97);
+  border-color: hsl(var(--foreground) / .14);
+  box-shadow: 0 8px 24px -10px rgb(0 0 0 / .45), inset 0 1px 0 rgb(225 237 232 / .05);
 }
 
 /* ── Neo-Editorial Artistic Canvas & Banner ────────────────────────────── */

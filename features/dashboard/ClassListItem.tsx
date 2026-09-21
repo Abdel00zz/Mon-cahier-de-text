@@ -3,7 +3,7 @@ import { ClassInfo } from '@/types';
 import { formatLocalizedSubjectDisplayName } from '@/constants';
 import { formatClassGroupLabel } from '@/constants/class-levels';
 import { classTitleStyle } from '@/constants/classTitleTypography';
-import { keepToneForClass } from '@/utils/keepTheme';
+import { classBranchToneFor } from '@/utils/classBranchTone';
 import { classCardLabelFor, classIdentityFor } from '@/utils/classIdentity';
 import { ChevronRight, MoreVertical, Settings, Trash2 } from '@/components/ui/icons';
 import {
@@ -62,7 +62,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={keepToneForClass(classInfo.id || classInfo.name)}
+            data-keep-tone={classBranchToneFor(identity)}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn(
                 // Même principe que la carte en grille : hauteur fixe, calculée

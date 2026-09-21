@@ -11,24 +11,25 @@
  *    (environ 10-15% plus clairs que le fond, effet section hero SaaS moderne).
  * ────────────────────────────────────────────────────────────────────────── */
 
-.keep-dashboard-canvas {
+[data-dashboard-surface] {
     position: relative;
+    min-height: 100dvh;
     background-color: var(--canvas-rose, #fee3ec);
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.16' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.12'/%3E%3C/svg%3E"),
         linear-gradient(to right, var(--canvas-mint, #d3fffb) 0%, var(--canvas-rose, #fee3ec) 45%, var(--canvas-sky, #bde7ff) 80%);
     background-repeat: repeat, no-repeat;
     background-size: 24px 24px, 100% 100%;
-    background-attachment: fixed;
+
 }
 
 /* Mode sombre : dégradé étagé profond, grille carrée discrète */
-.dark .keep-dashboard-canvas {
+.dark [data-dashboard-surface] {
     background-color: #0d1117;
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='2.5' fill='%23ffffff' fill-opacity='0.035' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.025'/%3E%3C/svg%3E"),
         linear-gradient(to right, var(--canvas-mint-dark, #081d1c) 0%, var(--canvas-rose-dark, #20111a) 45%, var(--canvas-sky-dark, #0d1a27) 80%);
     background-repeat: repeat, no-repeat;
     background-size: 24px 24px, 100% 100%;
-    background-attachment: fixed;
+
 }

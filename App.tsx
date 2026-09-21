@@ -21,6 +21,7 @@ import { CommandPalette } from './components/ui/CommandPalette';
 import { preloadSettingsPage } from './utils/performance';
 import { latestClassOpening } from './utils/classOpening';
 import { claimCurrentSessionAutoOpen } from './utils/currentSessionNavigation';
+import { DASHBOARD_CANVAS_STYLE } from './features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const Editor = lazy(() => import('./features/editor/Editor').then(module => ({ default: module.Editor })));
@@ -403,10 +404,8 @@ const App: React.FC = () => {
   const appSurface = (
     <div
       className="relative min-h-dvh overflow-x-clip text-foreground bg-background"
-      /* Le canvas décoratif est porté par la racine du tableau de bord ; cette
-         surface le prolonge sous les gouttières de la coque applicative
-         (barre d'onglets, retraits de la barre latérale) pour éviter toute
-         bande du fond de page. */
+      style={backgroundView === 'dashboard' ? DASHBOARD_CANVAS_STYLE : undefined}
+      /* Un seul canvas couvre le contenu, la navigation et les gouttières. */
       data-dashboard-surface={backgroundView === 'dashboard' && !isAuthView && !isBooting ? 'true' : undefined}
     >
       {showNavigation && (

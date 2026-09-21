@@ -150,34 +150,13 @@ export const TabBar = React.memo<TabBarProps>(({
 
   return (
     <>
-      {/* 2. Arrière-plan assombri derrière l'overlay (Add background behind overlay) */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            onClick={() => {
-              impact('light');
-              onToggleExpanded();
-            }}
-            className="fixed inset-0 z-30 bg-stone-950/20 dark:bg-black/55 backdrop-blur-[2.5px] sm:block hidden cursor-pointer select-none"
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* 1. Barre latérale avec Glassmorphism & Position Top Left / Start */}
+      {/* Navigation persistante : le contenu est décalé, sans voile modal. */}
       <nav
         ref={navRef}
+        data-app-sidebar
         className={cn(
           'fixed inset-y-0 start-0 z-40 hidden h-[100dvh] max-h-[100dvh] flex-col overflow-hidden',
-          // Glassmorphism translucide avec background blur et fine bordure intérieure (1px)
-          'bg-white/75 dark:bg-[#16171d]/80 backdrop-blur-[28px] backdrop-saturate-150',
-          'border-e border-stone-200/60 dark:border-white/10 ring-1 ring-inset ring-white/50 dark:ring-white/5',
-          'shadow-[6px_0_32px_rgba(0,0,0,0.06)] dark:shadow-[6px_0_32px_rgba(0,0,0,0.5)]',
-          'text-stone-500 print:hidden sm:flex py-5 font-sans select-none rounded-e-[28px]',
+          'text-stone-500 print:hidden sm:flex py-5 font-sans select-none',
           isExpanded ? 'w-[252px]' : 'w-[84px]',
           'transition-[width] duration-250 ease-[cubic-bezier(0.16,1,0.3,1)]',
         )}
@@ -190,13 +169,10 @@ export const TabBar = React.memo<TabBarProps>(({
         onTouchEnd={handleSidebarTouchEnd}
         aria-label={copy.mainNav}
       >
-        {/* Ligne spéculaire de réfraction de verre latérale */}
-        <div className="pointer-events-none absolute inset-y-8 end-0 w-[1px] bg-gradient-to-b from-transparent via-stone-300/40 dark:via-white/10 to-transparent" aria-hidden="true" />
-
         {/* En-tête */}
         <div
           className={cn(
-            'flex shrink-0 items-center transition-all ps-5 pe-4',
+            'flex shrink-0 items-center transition-all px-4',
             isExpanded ? 'justify-start' : 'justify-center'
           )}
         >
@@ -206,7 +182,7 @@ export const TabBar = React.memo<TabBarProps>(({
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={onToggleExpanded}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-stone-100/90 hover:bg-stone-200/80 dark:bg-white/10 dark:hover:bg-white/15 text-stone-700 dark:text-stone-200 transition-colors shadow-2xs ring-1 ring-black/5 dark:ring-white/10"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-stone-100/90 hover:bg-stone-200/80 dark:bg-white/10 dark:hover:bg-white/15 text-stone-700 dark:text-stone-200 transition-colors shadow-2xs ring-1 ring-black/5 dark:ring-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label={isExpanded ? copy.collapse : copy.expand}
             title={isExpanded ? copy.collapse : copy.expand}
           >
@@ -284,7 +260,7 @@ export const TabBar = React.memo<TabBarProps>(({
                       'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                       isActive
                         ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
-                        : 'text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
+                        : 'text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                     )}
                   />
                   {count ? (
@@ -358,7 +334,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                   activeTab === 'settings'
                     ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
-                    : 'text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
+                    : 'text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                 )}
               />
             </div>
@@ -408,7 +384,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 'h-5 w-5 shrink-0 transition-all',
                 activeTab === 'help'
                   ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2]'
-                  : 'stroke-[1.75] text-stone-400 group-hover:text-stone-700 dark:text-stone-500 dark:group-hover:text-stone-200'
+                  : 'stroke-[1.75] text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200'
               )} />
             </div>
             <AnimatePresence>
@@ -432,18 +408,15 @@ export const TabBar = React.memo<TabBarProps>(({
         </div>
       </nav>
 
-      {/* Barre mobile compacte - Ergonomie avancée style iPhone 17 sans coupure de texte ni écrasement */}
+      {/* Quatre cibles égales, icônes stables et rayons imbriqués 12 / 8 px. */}
       <nav
-        className="mobile-tab-bar fixed inset-x-3 z-40 overflow-hidden rounded-2xl border border-border/80 bg-card/90 dark:bg-card/85 backdrop-blur-xl saturate-150 text-muted-foreground shadow-xl shadow-black/8 dark:shadow-black/35 print:hidden sm:hidden will-change-transform font-sans"
+        className="mobile-tab-bar fixed inset-x-2 z-40 overflow-hidden rounded-xl border text-muted-foreground print:hidden sm:hidden font-sans"
         style={{ bottom: 'max(0.65rem, env(safe-area-inset-bottom, 0.65rem))' }}
         aria-label={copy.mobileNav}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Ligne spéculaire de réfraction de verre liquide */}
-        <div className="pointer-events-none absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/60 dark:via-white/20 to-transparent" aria-hidden="true" />
-
-        <div className="relative mx-auto flex h-[62px] max-w-md items-center justify-around px-1 pt-0.5 pb-1">
+        <div className="relative mx-auto grid h-16 max-w-md grid-cols-4 items-center px-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -453,10 +426,10 @@ export const TabBar = React.memo<TabBarProps>(({
               <motion.button
                 key={tab.id}
                 type="button"
-                whileTap={{ scale: 0.90 }}
+                whileTap={{ scale: 0.96 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                 onClick={() => goTo(tab.id)}
-                className="relative flex flex-1 flex-col items-center justify-center pt-1 pb-1.5 px-0.5 rounded-xl min-h-[52px] min-w-0 cursor-pointer select-none"
+                className="relative flex h-[54px] min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
                 aria-label={copy[tab.id]}
                 aria-current={isActive ? 'page' : undefined}
               >
@@ -464,20 +437,20 @@ export const TabBar = React.memo<TabBarProps>(({
                 {isActive && (
                   <motion.div
                     layoutId="mobile-tab-active-pill"
-                    className="absolute inset-x-0.5 inset-y-1 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                    className="absolute inset-0 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
                     transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
                   />
                 )}
 
                 <motion.div
-                  animate={{ scale: isActive ? 1.08 : 1, y: isActive ? -1 : 0 }}
+                  animate={{ y: 0 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
                 >
                   <Icon
                     className={cn(
-                      "h-5 w-5 transition-all duration-200 ease-out",
-                      isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[1.8]"
+                      "h-[22px] w-[22px] transition-colors duration-200 ease-out",
+                      isActive ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
                     )}
                   />
                   {count ? (
@@ -490,7 +463,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 </motion.div>
 
                 <span className={cn(
-                  "mobile-tab-label relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible pb-0.5 transition-colors duration-150",
+                  "mobile-tab-label relative z-10 block max-w-full text-center whitespace-nowrap transition-colors duration-150",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {getMobileLabel(tab.id)}
@@ -501,13 +474,13 @@ export const TabBar = React.memo<TabBarProps>(({
 
           <motion.button
             type="button"
-            whileTap={{ scale: 0.90 }}
+            whileTap={{ scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 500, damping: 28 }}
             onClick={() => goTo('settings')}
             onTouchStart={preloadSettingsPage}
             onPointerEnter={preloadSettingsPage}
             onFocus={preloadSettingsPage}
-            className="relative flex flex-1 flex-col items-center justify-center pt-1 pb-1.5 px-0.5 rounded-xl min-h-[52px] min-w-0 cursor-pointer select-none"
+            className="relative flex h-[54px] min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0.5 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
             aria-label={copy.settings}
             aria-current={activeTab === 'settings' ? 'page' : undefined}
           >
@@ -515,26 +488,26 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'settings' && (
               <motion.div
                 layoutId="mobile-tab-active-pill"
-                className="absolute inset-x-0.5 inset-y-1 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
+                className="absolute inset-0 rounded-lg bg-primary/12 dark:bg-primary/20 border border-primary/25 shadow-xs"
                 transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}
 
             <motion.div
-              animate={{ scale: activeTab === 'settings' ? 1.08 : 1, y: activeTab === 'settings' ? -1 : 0 }}
+              animate={{ y: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               className="relative z-10 flex h-6 w-6 items-center justify-center shrink-0"
             >
               <Settings
                 className={cn(
-                  "h-5 w-5 transition-all duration-200 ease-out",
-                  activeTab === 'settings' ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[1.8]"
+                  "h-[22px] w-[22px] transition-colors duration-200 ease-out",
+                  activeTab === 'settings' ? "text-primary stroke-[2.2]" : "text-muted-foreground stroke-[1.8]"
                 )}
               />
             </motion.div>
 
             <span className={cn(
-              "mobile-tab-label relative z-10 mt-1 block max-w-full text-center whitespace-nowrap overflow-visible pb-0.5 transition-colors duration-150",
+              "mobile-tab-label relative z-10 block max-w-full text-center whitespace-nowrap transition-colors duration-150",
               activeTab === 'settings' ? "text-primary" : "text-muted-foreground"
             )}>
               {getMobileLabel('settings')}
