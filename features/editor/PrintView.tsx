@@ -275,11 +275,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 <div className="print-institution-field">
                     <span className="print-field-label">{isRtlPrint ? 'الأستاذ(ة)' : 'Enseignant'}</span>
                     <strong className={`print-field-value text-[#0056D2] font-bold ${
-                        isArabicText(classInfo.teacherName || config.defaultTeacherName)
+                        isArabicText(config.defaultTeacherName || classInfo.teacherName)
                             ? 'print-field-value-ar text-[1.15em]'
                             : 'print-field-value-la'
                     }`}>
-                        {classInfo.teacherName || config.defaultTeacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}
+                        {config.defaultTeacherName || classInfo.teacherName || (isRtlPrint ? 'غير محدد' : 'Non renseigné')}
                     </strong>
                 </div>
                 <div className="print-institution-field">

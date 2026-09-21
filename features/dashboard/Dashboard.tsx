@@ -15,6 +15,7 @@ import { ClassInfo, Cycle } from '@/types';
 import { formatLocalizedClassDisplayName } from '@/constants';
 import { classTitleStyle } from '@/constants/classTitleTypography';
 import { deriveSchedules } from '@/utils/timetable';
+import { collectTeacherSubjects, subjectKey } from '@/utils/subjectScope';
 import { ChevronDown, Plus } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,14 +35,6 @@ type ClassDisplayMode = 'list' | 'single' | 'double';
 
 const CLASS_DISPLAY_OPTIONS: ClassDisplayMode[] = ['list', 'single', 'double'];
 const CLASS_MOVE_TRANSITION = { type: 'spring', stiffness: 310, damping: 32, mass: 0.85 } as const;
-
-const subjectKey = (value: string) => value
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLocaleLowerCase('fr');
-
-const teacherKey = (value: string) => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('fr');
 
 export const Dashboard: React.FC<DashboardProps> = ({
     onSelectClass,
@@ -198,31 +191,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
         if (Object.keys(patch).length > 0) updateConfig(patch);
     }, [deleteClass, config.assessmentDates, config.assessmentAbsences, config.pedagogicalEvents, config.manualAssessments, config.removedAssessments, config.assessmentOrder, config.notificationDismissals, config.timetable, config.dashboardClassOrder, updateConfig]);
 
+    /*
+     * Matières réellement portées par les classes de cet enseignant : elles
+     * décident du filtre affiché, et de la visibilité des libellés de matière
+     * dans le reste de l'application (`teachesSeveralSubjects`).
+     */
+    const taughtSubjects = useMemo(
+        () => collectTeacherSubjects(classes, teacherName),
+        [classes, teacherName],
+    );
+    // Le filtre ne propose que les matières déclarées par l'enseignant ; une
+    // configuration devenue obsolète ne doit jamais masquer tous les cahiers.
     const teacherSubjects = useMemo(() => {
-        const currentTeacher = teacherKey(teacherName);
-        const matchingClasses = currentTeacher
-            ? classes.filter(classInfo => teacherKey(classInfo.teacherName) === currentTeacher)
-            : [];
-        // Les anciennes classes sans nom d'enseignant restent visibles : elles
-        // constituent le repli, sans faire apparaître de filtre fantôme.
-        const currentClasses = matchingClasses.length > 0 ? matchingClasses : classes;
-        const activeSubjects = new Map<string, string>();
-        currentClasses.forEach(classInfo => {
-            if (classInfo.subject?.trim()) activeSubjects.set(subjectKey(classInfo.subject), classInfo.subject.trim());
-        });
-        const configuredSubjects = new Set(
+        const configured = new Set(
             (config.selectedSubjects ?? [])
                 .filter((subject): subject is string => Boolean(subject?.trim()))
                 .map(subjectKey),
         );
-        const subjects = Array.from(activeSubjects.entries())
-            .filter(([key]) => configuredSubjects.size === 0 || configuredSubjects.has(key))
-            .map(([, subject]) => subject);
-        // Une configuration devenue obsolète ne doit pas masquer toutes les
-        // matières réellement présentes dans les cahiers actifs.
-        return (subjects.length > 0 ? subjects : Array.from(activeSubjects.values()))
-            .sort((a, b) => a.localeCompare(b, 'fr'));
-    }, [classes, config.selectedSubjects, teacherName]);
+        const declared = configured.size === 0
+            ? taughtSubjects
+            : taughtSubjects.filter(subject => configured.has(subjectKey(subject)));
+        return declared.length > 0 ? declared : taughtSubjects;
+    }, [taughtSubjects, config.selectedSubjects]);
     const shouldShowSubjectBadge = teacherSubjects.length > 1;
 
     // Un filtre devenu invisible (après le passage à une seule matière) ne

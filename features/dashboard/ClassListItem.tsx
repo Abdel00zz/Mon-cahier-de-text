@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { cn } from '@/lib/utils';
 import { classOpeningLabel } from '@/utils/classOpening';
@@ -40,6 +41,8 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
 }) => {
     const { locale, t, isRtl } = useLocale();
     const { impact } = useHapticFeedback();
+    /* Une seule matière ne se distingue de rien : ligne masquée (règle partagée). */
+    const showsSubjectLabels = useShowsSubjectLabels();
     const identity = useMemo(() => classIdentityFor(classInfo.name, locale), [classInfo.name, locale]);
     const label = useMemo(() => classCardLabelFor(identity, locale), [identity, locale]);
     const className = label.fullName;
@@ -110,7 +113,7 @@ const ClassListItemComponent: FC<ClassListItemProps> = ({
                         >
                             {classInfo.lastOpenedAt ? <time dateTime={classInfo.lastOpenedAt}>{lastOpened}</time> : lastOpened}
                         </span>
-                        {classInfo.subject && (
+                        {showsSubjectLabels && classInfo.subject && (
                             <>
                                 <span className="text-[10px] opacity-60 shrink-0" aria-hidden="true">•</span>
                                 <span className="truncate text-xs font-medium" title={formatLocalizedSubjectDisplayName(classInfo.subject, locale)}>

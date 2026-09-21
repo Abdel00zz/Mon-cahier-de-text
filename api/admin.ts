@@ -331,11 +331,11 @@ const handleSaveOfficialEvents = async (body: AdminBody, res: ApiResponse) => {
 };
 
 /** Sous-ensemble des réglages nécessaires à l'impression d'un cahier par la direction. */
-const pickPrintSettings = (settings: Partial<AppConfig> | undefined) => {
+const pickPrintSettings = (settings: Partial<AppConfig> | undefined, displayName?: string) => {
     if (!settings) return null;
     return {
         establishmentName: settings.establishmentName ?? '',
-        defaultTeacherName: settings.defaultTeacherName ?? '',
+        defaultTeacherName: settings.defaultTeacherName?.trim() || displayName?.trim() || '',
         academyRegion: settings.academyRegion,
         educationProvince: settings.educationProvince,
         schoolYearStart: settings.schoolYearStart,
@@ -380,7 +380,7 @@ const handleTeacherDetail = async (req: ApiRequest, res: ApiResponse) => {
         classMeta: classesBlob?.classMeta ?? {},
         snapshot: snapshot ?? null,
         assessmentDates: classesBlob?.settings?.assessmentDates ?? {},
-        printSettings: pickPrintSettings(classesBlob?.settings),
+        printSettings: pickPrintSettings(classesBlob?.settings, snapshot?.displayName),
         adminMessages: recentAdminMessages(messages),
     });
 };
@@ -455,7 +455,9 @@ const handleUpsertTeacherClass = async (body: AdminBody, res: ApiResponse) => {
         name: requiredText(input.name, 'Nom de classe'),
         subject: requiredText(input.subject, 'Matière'),
         cycle: VALID_CYCLES.has(input.cycle as Cycle) ? input.cycle as Cycle : (existing?.cycle ?? 'college'),
-        teacherName: `${user.prenom} ${user.nom}`.trim(),
+        // Nom d'usage du profil s'il existe : la classe créée par la direction
+        // doit porter le même nom que celui affiché partout pour ce professeur.
+        teacherName: storedBlob?.settings?.defaultTeacherName?.trim() || `${user.prenom} ${user.nom}`.trim(),
         createdAt: existing?.createdAt ?? now,
         color: '',
     };

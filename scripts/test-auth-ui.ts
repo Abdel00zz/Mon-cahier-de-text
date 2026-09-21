@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { formatMoroccanPhone, isCompleteMoroccanPhone, passwordScore } from '../features/auth/authForm';
+import { teacherDeclaredSubjects, teacherDisplayName } from '../utils/teacherIdentity';
 import { keepToneForClass, KEEP_TONES } from '../utils/keepTheme';
 import { translateLocaleMessage } from '../i18n/LocaleProvider';
 
@@ -190,15 +191,41 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
   assert.match(list, /keep-class-title/);
 });
 
-test('sidebar : le nom de l’enseignant reflète la configuration active', () => {
-  const app = readFileSync(
-    new URL('../App.tsx', import.meta.url),
-    'utf8',
-  );
-  const tabBar = readFileSync(
-    new URL('../components/navigation/TabBar.tsx', import.meta.url),
-    'utf8',
-  );
-  assert.match(app, /teacherName=\{config\.defaultTeacherName/);
+test('nom d’usage : le profil fait foi, le compte ne sert que de repli', () => {
+  assert.equal(teacherDisplayName('Amina Berrada', { prenom: 'Amina', nom: 'Berrada' }), 'Amina Berrada');
+  assert.equal(teacherDisplayName('  Prof Amina  ', null), 'Prof Amina');
+  // Profil vide ou absent : repli sur l'identité de l'inscription, jamais vide.
+  assert.equal(teacherDisplayName('', { prenom: 'Amina', nom: 'Berrada' }), 'Amina Berrada');
+  assert.equal(teacherDisplayName(undefined, { prenom: 'Amina' }), 'Amina');
+  assert.equal(teacherDisplayName(null, null), '');
+  // Matières déclarées : normalisées, dédoublonnées, triées, jamais de vide.
+  assert.deepEqual(teacherDeclaredSubjects([' MATHEMATIQUES ', 'mathematiques', 'svt']), ['MATHEMATIQUES', 'svt']);
+  assert.deepEqual(teacherDeclaredSubjects(null), []);
+});
+
+test('l’identité du profil se propage partout : sidebar, déconnexion, cahier, impression, direction', () => {
+  const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
+  const app = read('../App.tsx');
+  const tabBar = read('../components/navigation/TabBar.tsx');
+  const accountTab = read('../features/settings/components/AccountTab.tsx');
+  const header = read('../features/editor/Header.tsx');
+  const printView = read('../features/editor/PrintView.tsx');
+  const list = read('../admin/components/TeacherList.tsx');
+  const detail = read('../admin/components/TeacherDetail.tsx');
+  // Nom dérivé une seule fois, par la fonction partagée (profil, repli compte).
+  assert.match(app, /const teacherName = useMemo\(\s*\n\s*\(\) => teacherDisplayName\(config\.defaultTeacherName, authUser\)/);
+  assert.match(app, /teacherName=\{teacherName\}/);
+  // Accueil du tableau de bord : même nom que la sidebar.
+  assert.match(app, /accountTeacherName=\{teacherName\}/);
   assert.match(tabBar, /userName = teacherName\?\.trim\(\)/);
+  // Zone de déconnexion : le nom du profil, jamais l'identité d'inscription seule.
+  assert.match(accountTab, /teacherDisplayName\(config\.defaultTeacherName, user\)/);
+  // Cahier et impression : le profil prime sur le nom figé dans la classe.
+  assert.match(header, /teacherName\?\.trim\(\) \|\| classInfo\.teacherName/);
+  assert.match(printView, /config\.defaultTeacherName \|\| classInfo\.teacherName/);
+  // Direction : liste et fiche affichent le nom d'usage, jamais le seul compte.
+  assert.match(list, /teacher\.displayName\?\.trim\(\)/);
+  assert.match(list, /const teacherNameOf = \(teacher: AdminTeacherSummary\)/);
+  assert.match(detail, /data\.snapshot\?\.displayName\?\.trim\(\)/);
+  assert.match(detail, /data\.snapshot\?\.subjects/);
 });

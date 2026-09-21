@@ -35,6 +35,7 @@ import {
   BookOpen,
 } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { FluidTabRail, FluidTabItem } from '@/components/ui/FluidTabRail';
 import { numberFormat } from '@/utils/formatters';
 
@@ -100,6 +101,8 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
 }) => {
   const { t, locale } = useLocale();
   const number = useMemo(() => numberFormat(locale), [locale]);
+  /* Le nom de la matière n'est utile que si l'enseignant en a plusieurs. */
+  const showsSubjectLabels = useShowsSubjectLabels();
   const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '');
   const selectedClass = classes.find((c) => c.id === selectedClassId) ?? classes[0] ?? null;
   const selectedClassDisplayName = selectedClass ? formatClassDisplayName(selectedClass.name) : '';
@@ -309,7 +312,7 @@ export const DevoirsView: React.FC<DevoirsViewProps> = ({
                       const displayName = formatClassDisplayName(classInfo.name);
                       return (
                         <SelectItem key={classInfo.id} value={classInfo.id} className="text-xs font-semibold">
-                          {classInfo.subject ? `${displayName} · ${classInfo.subject}` : displayName}
+                          {showsSubjectLabels && classInfo.subject ? `${displayName} · ${classInfo.subject}` : displayName}
                         </SelectItem>
                       );
                     })}

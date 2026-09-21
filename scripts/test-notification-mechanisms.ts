@@ -193,10 +193,17 @@ test('snapshot : progression, emploi du temps et préférences sont projetés', 
     [{ debut: '2026-01-19', fin: '2026-01-20', motif: 'Certificat' }],
     '2025-09-08',
     'fr',
+    { displayName: '  Prof Amina  ', subjects: ['Mathématiques', 'Physique-Chimie'] },
   );
 
   assert.equal(snapshot.applicationLocale, 'fr');
   assert.equal(snapshot.schoolYearStart, '2025-09-08');
+  /*
+   * Le nom d'usage et les matières déclarées suivent le compte : la fiche de la
+   * direction affiche le même nom que l'application, sans champ figé.
+   */
+  assert.equal(snapshot.displayName, 'Prof Amina');
+  assert.deepEqual(snapshot.subjects, ['Mathématiques', 'Physique-Chimie']);
   assert.deepEqual(snapshot.notifyPrefs, {
     enabled: true,
     gapThreshold: 3,
@@ -236,6 +243,18 @@ test('snapshot : une projection mal formée est rejetée à la frontière serveu
   );
   assert.throws(() => assertValidTeacherSnapshot({ ...snapshot, classes: [{ ...snapshot.classes[0], sessionsCount: -1 }] }, snapshot.phone));
   assert.throws(() => assertValidTeacherSnapshot({ ...snapshot, classes: [{ ...snapshot.classes[0], scheduleSlots: [{ weekday: 9 }] }] }, snapshot.phone));
+  // Identité affichée : champs de présentation, donc tolérants (un client plus
+  // ancien ne doit jamais perdre toute sa synchronisation à cause d'un libellé).
+  const identity = assertValidTeacherSnapshot(
+    { ...snapshot, displayName: `  ${'N'.repeat(200)}  `, subjects: ['Maths', 'Maths', 42, '', '  SVT  '] },
+    snapshot.phone,
+  );
+  assert.equal(identity.displayName?.length, 80);
+  assert.deepEqual(identity.subjects, ['Maths', 'SVT']);
+  // Un envoi sans identité reste valide et ne fabrique aucun champ vide.
+  const bare = assertValidTeacherSnapshot({ ...snapshot, displayName: '   ', subjects: 'Maths' }, snapshot.phone);
+  assert.equal(bare.displayName, undefined);
+  assert.equal(bare.subjects, undefined);
 });
 
 test('séances doubles : les créneaux multiples sont fidèlement pris en compte dans le retard', () => {

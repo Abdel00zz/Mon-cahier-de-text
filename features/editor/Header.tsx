@@ -8,6 +8,8 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 interface HeaderProps {
   classInfo: ClassInfo;
   establishmentName?: string;
+  /** Nom d'usage du profil : prime sur le nom enregistré dans la classe. */
+  teacherName?: string;
   onClassInfoChange: (newInfo: Partial<ClassInfo>) => void;
   onBack?: () => void;
 }
@@ -56,7 +58,7 @@ const EditableHeader: React.FC<{
   );
 };
 
-export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, onClassInfoChange, onBack }) => {
+export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishmentName, teacherName, onClassInfoChange, onBack }) => {
   const { t, locale } = useLocale();
   const { impact } = useHapticFeedback();
 
@@ -94,7 +96,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ classInfo, establishm
               <User className="h-3.5 w-3.5 shrink-0 text-primary/80 stroke-[2.2]" aria-hidden />
               <span className="font-medium text-foreground/70">{t('editor.teacher')} :</span>
               <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
-                {classInfo.teacherName || t('editor.notProvided')}
+                {teacherName?.trim() || classInfo.teacherName || t('editor.notProvided')}
               </span>
             </div>
             <span className="hidden sm:inline-block text-border/80 select-none" aria-hidden>|</span>

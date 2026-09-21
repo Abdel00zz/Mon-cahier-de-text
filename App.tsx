@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useCallback, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Toaster } from './components/ui/sonner';
 import { GlobalTooltip } from './components/ui/GlobalTooltip';
 import { AppBootSkeleton, DashboardSkeleton } from './components/ui/PageSkeleton';
@@ -21,6 +21,9 @@ import { CommandPalette } from './components/ui/CommandPalette';
 import { preloadSettingsPage } from './utils/performance';
 import { latestClassOpening } from './utils/classOpening';
 import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from './utils/currentSessionNavigation';
+import { teachesSeveralSubjects } from './utils/subjectScope';
+import { teacherDisplayName } from './utils/teacherIdentity';
+import { SubjectScopeProvider } from './contexts/SubjectScopeContext';
 import { DASHBOARD_CANVAS_STYLE } from './features/dashboard/dashboardCanvas';
 
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -132,7 +135,22 @@ const App: React.FC = () => {
     sessionClaimRef.current = { scope: authUser?.phone ?? 'local', key: currentSession.key };
   }, [authUser?.phone, currentSession.key]);
   const scrollPositionsRef = useRef<Record<string, number>>({});
-  
+  /*
+   * Une seule matière ne se distingue de rien : ses libellés et badges sont
+   * masqués dans toute l'application (emploi du temps, liste, évaluations,
+   * devoirs, filtre du tableau de bord). La décision est prise ici, une fois,
+   * dans le même périmètre (les classes de cet enseignant) que le filtre du
+   * tableau de bord, puis lue partout via `useShowsSubjectLabels`.
+   */
+  const teacherName = useMemo(
+    () => teacherDisplayName(config.defaultTeacherName, authUser),
+    [config.defaultTeacherName, authUser],
+  );
+  const showsSubjectLabels = useMemo(
+    () => teachesSeveralSubjects(classes, teacherName),
+    [classes, teacherName],
+  );
+
   const notificationFeed = useNotificationFeed(classes, config, config.applicationLocale ?? 'ar');
 
   useEffect(() => {
@@ -336,7 +354,7 @@ const App: React.FC = () => {
       <Dashboard
         onSelectClass={handleSelectClass}
         activeSessionClassIds={currentSession.classIds}
-        accountTeacherName={`${authUser?.prenom ?? ''} ${authUser?.nom ?? ''}`.trim()}
+          accountTeacherName={teacherName}
         onOnboardingVisibilityChange={setOnboardingVisible}
       />
     );
@@ -435,7 +453,7 @@ const App: React.FC = () => {
             } catch {}
             return next;
           })}
-          teacherName={config.defaultTeacherName || (authUser ? `${authUser.prenom || ''} ${authUser.nom || ''}`.trim() : '')}
+          teacherName={teacherName}
         />
       )}
       <div
@@ -480,6 +498,7 @@ const App: React.FC = () => {
   return (
     <>
       <LocaleProvider locale={config.applicationLocale ?? 'ar'}>
+        <SubjectScopeProvider showsSubjectLabels={showsSubjectLabels}>
         {/*
           Les aperçus de séance du tableau de bord affichent eux aussi des
           titres saisis en LaTeX. Le contexte doit donc couvrir toute
@@ -556,6 +575,7 @@ const App: React.FC = () => {
           mobileOffset={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 76px)', left: 16, right: 16 }}
           className="print:hidden"
         />
+        </SubjectScopeProvider>
       </LocaleProvider>
     </>
   );

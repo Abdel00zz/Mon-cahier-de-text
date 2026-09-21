@@ -342,7 +342,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
       case 'compte':
         return (
           <div className="space-y-3 sm:space-y-3.5">
-            <AccountTab />
+            <AccountTab config={config} />
             {languageSection}
             {liveChangesHintNode}
           </div>

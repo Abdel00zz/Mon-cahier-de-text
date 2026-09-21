@@ -3,6 +3,7 @@ import { AppConfig, ClassInfo } from '@/types';
 import { formatClassDisplayName } from '@/constants';
 import { CalendarCheck, GraduationCap } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import { Modal } from '@/components/ui/modal';
 import { DevoirsView } from './DevoirsView';
 
@@ -26,6 +27,8 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
 }) => {
     const className = formatClassDisplayName(classInfo.name);
     const { t } = useLocale();
+    /* Une seule matière ne se distingue de rien : pas de pastille redondante. */
+    const showsSubjectLabels = useShowsSubjectLabels();
 
     return (
         <Modal
@@ -45,7 +48,7 @@ export const ClassEvaluationsSheet: React.FC<ClassEvaluationsSheetProps> = ({
                             <span className="block truncate text-lg sm:text-xl font-bold tracking-tight text-foreground">
                                 {t('evaluationsSheet.title', { className })}
                             </span>
-                            {classInfo.subject && (
+                            {showsSubjectLabels && classInfo.subject && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
                                     <GraduationCap className="h-3.5 w-3.5 stroke-[2.2]" />
                                     {classInfo.subject}

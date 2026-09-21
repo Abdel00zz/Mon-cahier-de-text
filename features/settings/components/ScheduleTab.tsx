@@ -7,7 +7,7 @@ import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSub
 import { scheduleClassLabel } from '@/utils/classAbbreviation';
 import { classIdentityFor } from '@/utils/classIdentity';
 import { assignClassColors, classColorAttributes } from '@/utils/classColors';
-import { teachesSeveralSubjects } from '@/utils/subjectScope';
+import { useShowsSubjectLabels } from '@/contexts/SubjectScopeContext';
 import {
     TIMETABLE_DAYS,
     deriveSchedules,
@@ -121,14 +121,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     };
     /**
      * Libellé de matière : affiché **seulement** si l'enseignant couvre
-     * plusieurs matières. Avec une seule, il répéterait la même ligne dans
-     * toutes les cases et volerait la hauteur du nom de classe — l'information
-     * reste disponible dans l'info-bulle et le libellé accessible du créneau.
+     * plusieurs matières (règle partagée, calculée dans `App`). Avec une seule,
+     * il répéterait la même ligne dans toutes les cases et volerait la hauteur
+     * du nom de classe — l'information reste disponible dans l'info-bulle et le
+     * libellé accessible du créneau.
      */
-    const showSubjectLabels = React.useMemo(
-        () => teachesSeveralSubjects(classes, config.selectedSubjects),
-        [classes, config.selectedSubjects],
-    );
+    const showSubjectLabels = useShowsSubjectLabels();
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });

@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, ContentDirection, LessonsData, TimetableClockPolicy } from '../types';
 import { computeTeacherSnapshot } from '../utils/progression';
+import { teacherDeclaredSubjects, teacherDisplayName } from '../utils/teacherIdentity';
 import { migrateLessonsData } from '../utils/dataUtils';
 import { toast } from 'sonner';
 import {
@@ -301,6 +302,15 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 config.absences,
                 config.schoolYearStart,
                 config.applicationLocale ?? 'ar',
+                /*
+                 * Le nom d'usage et les matières déclarées suivent le compte :
+                 * une modification du profil se retrouve donc dans la fiche de
+                 * la direction au prochain envoi, sans écran intermédiaire.
+                 */
+                {
+                    displayName: teacherDisplayName(config.defaultTeacherName, currentUser),
+                    subjects: teacherDeclaredSubjects(config.selectedSubjects),
+                },
             );
 
             const pushedIds: string[] = [];

@@ -116,10 +116,14 @@ export const computeTeacherSnapshot = (
     absences?: AbsencePeriod[],
     schoolYearStart?: string,
     applicationLocale: AppLocale = 'ar',
+    /** Identité affichée (nom d'usage, matières déclarées) telle que la voit la direction. */
+    identity?: { displayName?: string; subjects?: string[] },
 ): TeacherSnapshot => ({
     phone: user.phone,
     nom: user.nom,
     prenom: user.prenom,
+    ...(identity?.displayName?.trim() ? { displayName: identity.displayName.trim() } : {}),
+    ...(identity?.subjects?.length ? { subjects: [...identity.subjects] } : {}),
     applicationLocale,
     lastSyncAt: new Date().toISOString(),
     absences: absences && absences.length > 0 ? absences : undefined,

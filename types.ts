@@ -272,6 +272,14 @@ export interface TeacherSnapshot {
     phone: string;
     nom: string;
     prenom: string;
+    /**
+     * Nom d'usage choisi dans le profil. La direction l'affiche à la place de
+     * l'identité du compte : c'est le nom que l'enseignant utilise en classe,
+     * et il doit rester le même partout (app, documents, fiche direction).
+     */
+    displayName?: string;
+    /** Matières déclarées dans le profil, même sans classe encore rattachée. */
+    subjects?: string[];
     /** Langue de l'interface utilisée aussi pour les notifications système. */
     applicationLocale?: AppLocale;
     lastSyncAt: string | null;

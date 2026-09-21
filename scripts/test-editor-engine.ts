@@ -8,7 +8,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
-import { teachesSeveralSubjects } from '../utils/subjectScope';
+import { teachesSeveralSubjects, collectTeacherSubjects } from '../utils/subjectScope';
 import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
 import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
 import { ClassCard } from '../features/dashboard/ClassCard';
@@ -481,17 +481,39 @@ test('emploi du temps : libellé riche sur une ligne (palier + filière + groupe
   assert.equal(label('Ma classe', 'fr'), 'Ma classe');
 });
 
-test('emploi du temps : libellé de matière seulement si plusieurs matières', () => {
+test('libellés de matière : masqués tant que l enseignant n en a qu une', () => {
   const maths = { subject: 'Mathématiques' };
   // Une seule matière : la ligne répéterait la même chose dans toute la grille.
-  assert.equal(teachesSeveralSubjects([maths, maths], ['Mathématiques']), false);
-  assert.equal(teachesSeveralSubjects([maths], []), false);
-  assert.equal(teachesSeveralSubjects([], undefined), false);
-  // Dès deux matières, la ligne redevient utile — classes ou matières déclarées.
+  assert.equal(teachesSeveralSubjects([maths, maths]), false);
+  assert.equal(teachesSeveralSubjects([maths]), false);
+  assert.equal(teachesSeveralSubjects([]), false);
+  assert.equal(teachesSeveralSubjects([], 'Amina'), false);
+  // La casse, les accents et les espaces ne créent pas une fausse deuxième matière.
+  assert.equal(teachesSeveralSubjects([maths, { subject: ' mathematiques ' }]), false);
+  // Dès deux matières réellement portées par les cahiers, les libellés reviennent.
   assert.equal(teachesSeveralSubjects([maths, { subject: 'Physique-Chimie' }]), true);
-  assert.equal(teachesSeveralSubjects([maths], ['Mathématiques', 'SVT']), true);
-  // Une matière déclarée mais pas encore planifiée compte quand même.
-  assert.equal(teachesSeveralSubjects([], ['Mathématiques', 'SVT']), true);
+  assert.equal(teachesSeveralSubjects([maths, { subject: 'SVT' }]), true);
+});
+
+test('collectTeacherSubjects : périmètre de l enseignant, déduplication, tri', () => {
+  const classes = [
+    { subject: 'Physique-Chimie', teacherName: 'Amina Berrada' },
+    { subject: 'Mathématiques', teacherName: 'Amina  BERRADA' },
+    { subject: 'Mathématiques', teacherName: 'Amina Berrada' },
+    { subject: 'SVT', teacherName: 'Youssef Alami' },
+  ];
+  // Même enseignant (espaces multiples et casse neutralisés) : deux matières.
+  assert.deepEqual(collectTeacherSubjects(classes, 'Amina Berrada'), ['Mathématiques', 'Physique-Chimie']);
+  assert.deepEqual(collectTeacherSubjects(classes, 'Youssef Alami'), ['SVT']);
+  assert.equal(teachesSeveralSubjects(classes, 'Amina Berrada'), true);
+  assert.equal(teachesSeveralSubjects(classes, 'Youssef Alami'), false);
+  // Nom inconnu : repli sur toutes les classes, comme sur un appareil partagé.
+  assert.deepEqual(collectTeacherSubjects(classes, 'Inconnu'), ['Mathématiques', 'Physique-Chimie', 'SVT']);
+  // Sans nom, le périmètre reste l'ensemble des classes.
+  assert.equal(collectTeacherSubjects(classes).length, 3);
+  // Doublons (casse/accents) dédupliqués — la première graphie rencontrée est
+  // retenue — et tri alphabétique stable.
+  assert.deepEqual(collectTeacherSubjects([{ subject: 'svt' }, { subject: 'SVT' }, { subject: ' mathématiques ' }]), ['mathématiques', 'svt']);
 });
 
 test('codes matières courts : tout le vocabulaire a un sigle lisible', () => {

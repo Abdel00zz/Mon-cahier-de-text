@@ -29,6 +29,14 @@ const SEVERITY_META: Record<LatenessSeverity, { label: string; chip: string; dot
 const SEVERITY_RANK: Record<LatenessSeverity, number> = { ok: 0, notice: 1, warning: 2, critical: 3 };
 
 /**
+ * Nom affiché d'un enseignant : le nom d'usage de son profil (celui qu'il a
+ * choisi dans les paramètres) prime sur l'identité de l'inscription, pour que
+ * la direction voie le même nom que lui partout ailleurs.
+ */
+const teacherNameOf = (teacher: AdminTeacherSummary): string =>
+    teacher.displayName?.trim() || `${teacher.prenom ?? ''} ${teacher.nom ?? ''}`.trim();
+
+/**
  * Sévérité de retard globale d'un enseignant, mêmes modules purs que le
  * client et le cron (aucune règle dupliquée), en tenant compte de ses
  * absences justifiées et de ses seuils personnels.
@@ -126,6 +134,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
         const list = enriched.filter(({ teacher, severity, inactive }) => {
             const matchesQuery =
                 !q ||
+                teacherNameOf(teacher).toLowerCase().includes(q) ||
                 `${teacher.prenom} ${teacher.nom}`.toLowerCase().includes(q) ||
                 teacher.phone.includes(q);
             const matchesCycle = cycleFilter === 'all' || (teacher.classes ?? []).some(c => c.cycle === cycleFilter);
@@ -153,7 +162,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                 );
                 break;
             case 'name':
-                sorted.sort((a, b) => `${a.teacher.nom} ${a.teacher.prenom}`.localeCompare(`${b.teacher.nom} ${b.teacher.prenom}`, 'fr'));
+                sorted.sort((a, b) => teacherNameOf(a.teacher).localeCompare(teacherNameOf(b.teacher), 'fr'));
                 break;
         }
         return sorted;
@@ -250,7 +259,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                 className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5 text-left transition-colors hover:border-primary/35 hover:bg-primary/5"
                             >
                                 <span className="min-w-0">
-                                    <span className="block truncate text-xs font-bold text-foreground">{teacher.prenom} {teacher.nom}</span>
+                                    <span className="block truncate text-xs font-bold text-foreground">{teacherNameOf(teacher)}</span>
                                     <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
                                         {teacher.blocked ? 'Compte bloqué' : teacher.pendingMessages > 0 ? `${teacher.pendingMessages} accusé(s) attendu(s)` : inactive ? 'Aucune synchronisation récente' : SEVERITY_META[severity].label}
                                     </span>
@@ -376,7 +385,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers: teachersProp
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-1.5 font-semibold text-foreground">
                                         <span className={`h-2 w-2 shrink-0 rounded-full ${teacher.blocked ? 'bg-foreground' : SEVERITY_META[severity].dot}`} title={teacher.blocked ? 'Compte bloqué' : SEVERITY_META[severity].label} />
-                                        <span className="truncate">{teacher.prenom} {teacher.nom}</span>
+                                        <span className="truncate">{teacherNameOf(teacher)}</span>
                                     </div>
                                     <div className="text-xs text-muted-foreground">{teacher.phone}</div>
                                 </div>

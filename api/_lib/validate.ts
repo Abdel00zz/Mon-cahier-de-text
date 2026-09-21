@@ -183,10 +183,26 @@ export const assertValidTeacherSnapshot = (
       ? value.schoolYearStart
       : (() => { throw new HttpError(400, 'Rentrée du snapshot invalide.'); })();
 
+  /*
+   * Identité affichée : champs de présentation, donc tolérants. Un client plus
+   * ancien ou plus récent ne doit pas se voir refuser toute sa synchronisation
+   * à cause d'un libellé trop long — on borne et on ignore le reste.
+   */
+  const displayName = typeof value.displayName === 'string' && value.displayName.trim()
+    ? value.displayName.trim().slice(0, 80)
+    : undefined;
+  const subjects = Array.isArray(value.subjects) && value.subjects.length <= 30
+    ? [...new Set(value.subjects.flatMap(raw => (
+        typeof raw === 'string' && raw.trim() ? [raw.trim().slice(0, 60)] : []
+      )))]
+    : undefined;
+
   return {
     phone,
     nom: snapshotText(value.nom, 'Nom du snapshot', 60),
     prenom: snapshotText(value.prenom, 'Prénom du snapshot', 60),
+    ...(displayName ? { displayName } : {}),
+    ...(subjects?.length ? { subjects } : {}),
     ...(locale ? { applicationLocale: locale } : {}),
     lastSyncAt,
     ...(notifyPrefs ? { notifyPrefs } : {}),

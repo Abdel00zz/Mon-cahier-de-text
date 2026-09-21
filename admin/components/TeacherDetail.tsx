@@ -604,7 +604,8 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                 <>
                     <header className="mb-5 rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
                         <h1 className="text-2xl font-bold text-foreground tracking-tight">
-                            {data.user?.prenom ?? data.snapshot?.prenom} {data.user?.nom ?? data.snapshot?.nom}
+                            {data.snapshot?.displayName?.trim()
+                                || `${data.user?.prenom ?? data.snapshot?.prenom ?? ''} ${data.user?.nom ?? data.snapshot?.nom ?? ''}`.trim()}
                             {isBlocked && (
                                 <span className="ml-2 rounded-full bg-destructive/15 px-2 py-0.5 align-middle text-[10px] font-bold uppercase text-destructive">
                                     Bloqué
@@ -614,6 +615,21 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
                         <p className="text-sm text-muted-foreground">
                             {phone} · dernière synchro {timeAgo(data.user?.lastSyncAt ?? data.snapshot?.lastSyncAt ?? null)}
                         </p>
+                        {/*
+                         * Matières déclarées dans le profil : la direction voit ce
+                         * que l'enseignant enseigne, y compris une matière encore
+                         * sans classe — et le changement de matière du profil suit.
+                         */}
+                        {(data.snapshot?.subjects ?? []).length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <span className="text-[11px] font-semibold text-muted-foreground">Matières déclarées :</span>
+                                {(data.snapshot?.subjects ?? []).map(subject => (
+                                    <span key={subject} className="rounded-full border border-primary/25 bg-primary/5 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                                        {subject}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Actions d'administration */}
                         <div className="mt-3 flex flex-wrap gap-2">

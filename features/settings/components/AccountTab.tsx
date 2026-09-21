@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import type { AppConfig } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSync } from '@/contexts/SyncContext';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { teacherDisplayName } from '@/utils/teacherIdentity';
 import { RefreshCw, TriangleAlert, CircleCheck, Clock, CircleAlert, LogOut, User } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -18,7 +20,12 @@ const timeAgo = (iso: string, locale: string, unknownDate: string): string => {
   return new Date(iso).toLocaleDateString(locale);
 };
 
-export const AccountTab: React.FC = () => {
+interface AccountTabProps {
+  /** Configuration enregistrée : le nom d'usage affiché vient du profil. */
+  config: AppConfig;
+}
+
+export const AccountTab: React.FC<AccountTabProps> = ({ config }) => {
   const { locale, t } = useLocale();
   const { user, logout } = useAuth();
   const { syncStatus, lastSyncAt, syncNow } = useSync();
@@ -133,7 +140,9 @@ export const AccountTab: React.FC = () => {
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-foreground truncate font-mono">{user.phone}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{user.prenom} {user.nom}</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {teacherDisplayName(config.defaultTeacherName, user)}
+                </p>
               </div>
             </div>
 
