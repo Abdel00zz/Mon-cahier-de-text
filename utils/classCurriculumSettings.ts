@@ -4,6 +4,7 @@ import type { ClassInfo } from '../types.js';
 export function withCurriculumSettings(base: ClassInfo, settings: ClassInfo): ClassInfo {
   return {
     ...base,
+    color: settings.color || base.color,
     courseStartDate: settings.courseStartDate,
     curriculumSourceId: settings.curriculumSourceId,
     curriculumChapterMatches: settings.curriculumChapterMatches,

@@ -1,4 +1,5 @@
 import { HttpError } from './http.js';
+import { isClassColor } from '../../utils/classColors.js';
 import type {
   AppConfig,
   AppLocale,
@@ -285,7 +286,7 @@ export const assertValidClasses = (classes: unknown): ClassInfo[] => {
         && Number.isFinite(Date.parse(item.lastOpenedAt))
         ? new Date(item.lastOpenedAt).toISOString()
         : undefined,
-      color: typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color) ? item.color : '#3b82f6',
+      color: isClassColor(item.color) || (typeof item.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(item.color)) ? item.color : '',
       cycle: VALID_CYCLES.has(item.cycle as string) ? item.cycle : undefined,
       level: item.level === undefined ? undefined : assertStringField(item.level, 'Niveau', 120),
       branch: item.branch ? assertStringField(item.branch, 'Filière', 120) : undefined,

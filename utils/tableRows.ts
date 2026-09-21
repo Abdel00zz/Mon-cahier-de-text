@@ -44,6 +44,8 @@ const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
     if (item.elementType !== 'item' && ['chapter', 'section', 'subsection', 'subsubsection', 'separator'].includes(item.elementType)) return null;
     const data = item.data as any;
     const normType = (data.type || '').toString().trim().toLowerCase();
+    // Deux lignes libres identiques restent deux espaces de saisie distincts.
+    if (normType === 'free') return null;
     const normNumber = (data.number ?? '').toString().trim();
     const normTitle = (data.title || '').toString().normalize('NFC').trim().replace(/\s+/g, ' ');
     if (!normType && !normTitle) return null;

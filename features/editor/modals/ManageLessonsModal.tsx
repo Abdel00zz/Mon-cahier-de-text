@@ -209,7 +209,9 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
             {localLessons.length > 0 ? (
               <ul className="space-y-2 p-3">
                 {localLessons.map((item, index) => {
-                  const itemConfig = TOP_LEVEL_TYPE_CONFIG[item.type];
+                  const itemConfig = item.type === 'free'
+                    ? { icon: FolderOpen, color: 'text-muted-foreground' }
+                    : TOP_LEVEL_TYPE_CONFIG[item.type];
                   const nestedCount = countNestedContents(item);
 
                   if (!itemConfig) {
@@ -239,7 +241,7 @@ export const ManageLessonsModal: React.FC<ManageLessonsModalProps> = ({
                           <MathText source={item.title} inline>{item.title || t('manageLessons.untitled')}</MathText>
                         </span>
                         <span className="mt-0.5 block truncate text-[11px] font-medium text-muted-foreground">
-                          {t(`manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
+                          {t(item.type === 'free' ? 'addContent.free' : `manageLessons.type.${item.type}`)}{nestedCount > 0 ? ` · ${t('manageLessons.nestedCount', { count: nestedCount })}` : ''}
                         </span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5">

@@ -8,6 +8,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
+import { teachesSeveralSubjects } from '../utils/subjectScope';
 import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
 import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
 import { ClassCard } from '../features/dashboard/ClassCard';
@@ -31,6 +32,74 @@ import { validateSessionDate, toDisplayWarnings } from '../utils/dateValidation'
 import { countExpectedSessions, countSchoolDaysBetween, isWeeklyRestDay, type HolidayCalendar } from '../utils/calendar';
 import { collectClassSignals, dateActionId } from '../utils/notificationSignals';
 import { SelectionBar } from '../features/editor/SelectionBar';
+import { assignClassColors, classColorAttributes, isClassColor } from '../utils/classColors';
+import { insertFreeContent } from '../utils/freeContent';
+import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
+import { filterLessonsByDates } from '../utils/printMeta';
+
+test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-retour serveur', () => {
+  const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
+  const assigned = assignClassColors(source);
+  assert.equal(new Set(assigned.map(c => c.color)).size, 120);
+  assert.ok(assigned.every(c => isClassColor(c.color)));
+  assert.deepEqual(assignClassColors([...source].reverse()).reverse(), assigned);
+  const roundtrip = assignClassColors(assertValidClasses(JSON.parse(JSON.stringify(assigned))));
+  assert.deepEqual(roundtrip.map(c => c.color), assigned.map(c => c.color));
+  const renamed = assigned.slice(1).map(c => ({ ...c, name: 'Nouveau nom' }));
+  assert.deepEqual(assignClassColors(renamed).map(c => c.color), renamed.map(c => c.color));
+  const added = assignClassColors([...renamed, { ...dateClass, id: 'new', color: '' }]);
+  assert.deepEqual(added.slice(0, -1), renamed);
+  assert.equal(new Set(added.map(c => c.color)).size, added.length);
+  assert.ok(classColorAttributes(assigned.find(c => c.color.startsWith('class-hue:'))!).style);
+  assert.equal(isClassColor('url(javascript:alert(1))'), false);
+  assert.ok(source.some(c => c.color === ''));
+});
+
+test('ligne libre : création vide, insertion imbriquée et aucune fusion ou numérotation', () => {
+  let data = produce([] as LessonsData, draft => insertFreeContent(draft, undefined, {}, 'one'));
+  data = produce(data, draft => insertFreeContent(draft, { chapterIndex: 0 }, {}, 'two'));
+  assert.equal(data.length, 2);
+  assert.ok(data.every(row => row.type === 'free' && row.title === '' && row.description === ''));
+  assert.equal(groupLessonRows(buildLessonRows(data)).renderRows.length, 2);
+  assert.equal(buildContentNumbers(data).size, 0);
+  const tree: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'Avant', description: '' }] }] }];
+  const nested = produce(tree, draft => insertFreeContent(draft, { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 }, { description: '$x^2$' }, 'nested'));
+  assert.equal(nested[0].sections![0].items![1].type, 'free');
+  assert.equal(tree[0].sections![0].items!.length, 1);
+});
+
+test('ligne libre : texte, LaTeX et retour au vide survivent à la synchronisation, import et filtre impression', () => {
+  for (const description of ['', 'Texte du professeur\n\\(x^2 + \\frac{1}{2}\\)\nنص حر']) {
+    const data: LessonsData = [{ type: 'free', title: '', description, date: '2026-09-21' }, { type: 'free', title: '', description: '' }];
+    const before = JSON.stringify(data);
+    const payload = assertValidLessonsPayload(JSON.parse(JSON.stringify([{ classId: 'test', lessonsData: data, contentDirection: 'rtl' }])), new Set(['test']));
+    assert.deepEqual(payload[0].lessonsData, data);
+    const imported = prepareImportedLessons(payload[0].lessonsData).lessonsData.filter(item => item.type === 'free');
+    assert.equal(imported.length, 2);
+    assert.equal(imported[0].description, description);
+    assert.equal(imported[1].title, '');
+    assert.equal(filterLessonsByDates(data, ['2026-09-21'])[0].description, description);
+    assert.equal(JSON.stringify(data), before);
+  }
+});
+
+test('ligne libre : repère écran seulement, contenu imprimé même si les descriptions sont masquées', () => {
+  const render = (description: string, isPrint: boolean) => renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ContentRenderer, { data: { type: 'free', title: '', description }, indices: { chapterIndex: 0 }, elementType: 'item', isPrint, showDescriptions: false }),
+  }));
+  assert.match(render('', false), /à remplir/);
+  assert.doesNotMatch(render('', true), /à remplir|editor-kind-badge/);
+  assert.match(render('Texte libre $x^2$', true), /Texte libre \$x\^2\$/);
+  assert.match(render('', true), /editor-free-content/);
+});
+
+test('emploi du temps : abréviations compactes sans niveau dupliqué ni confusion de filière', () => {
+  const label = (name: string) => scheduleClassLabel(classIdentityFor(name), 'fr', true);
+  assert.equal(label('2ème Bac Sciences Physiques 3'), '2B·PC·3');
+  assert.equal(label('Tronc Commun Scientifique 2'), 'TC·S·2');
+  assert.equal(label('1er Bac Sciences Expérimentales 1'), '1B·SEXP·1');
+  assert.equal(label('2ème Bac Sciences Économiques 1'), '2B·SECO·1');
+});
 
 const dateCalendar: HolidayCalendar = {
   version: 1, pays: 'MA', fuseau: 'Africa/Casablanca',
@@ -410,6 +479,19 @@ test('emploi du temps : libellé riche sur une ligne (palier + filière + groupe
   assert.equal(label('قسم الثالثة إعدادي 2', 'ar'), '3 إع 2');
   // Nom libre : repli sur l'abréviation compacte, jamais vide.
   assert.equal(label('Ma classe', 'fr'), 'Ma classe');
+});
+
+test('emploi du temps : libellé de matière seulement si plusieurs matières', () => {
+  const maths = { subject: 'Mathématiques' };
+  // Une seule matière : la ligne répéterait la même chose dans toute la grille.
+  assert.equal(teachesSeveralSubjects([maths, maths], ['Mathématiques']), false);
+  assert.equal(teachesSeveralSubjects([maths], []), false);
+  assert.equal(teachesSeveralSubjects([], undefined), false);
+  // Dès deux matières, la ligne redevient utile — classes ou matières déclarées.
+  assert.equal(teachesSeveralSubjects([maths, { subject: 'Physique-Chimie' }]), true);
+  assert.equal(teachesSeveralSubjects([maths], ['Mathématiques', 'SVT']), true);
+  // Une matière déclarée mais pas encore planifiée compte quand même.
+  assert.equal(teachesSeveralSubjects([], ['Mathématiques', 'SVT']), true);
 });
 
 test('codes matières courts : tout le vocabulaire a un sigle lisible', () => {

@@ -393,7 +393,9 @@ export interface Section {
 
 
 export interface TopLevelItem extends BaseTopLevelItem {
-    type: 'chapter' | EmbeddableTopLevelType;
+    type: 'chapter' | EmbeddableTopLevelType | 'free';
+    /** Texte libre, conservé même si le titre est vide. */
+    description?: string;
     sections?: Section[];
     /** items (types de contenu) directement sous le chapitre, sans section */
     items?: (LessonItem | EmbeddableTopLevelItem)[];

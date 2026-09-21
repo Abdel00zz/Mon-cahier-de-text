@@ -67,12 +67,14 @@ test('emploi du temps : la case suit la teinte de la carte, jamais une palette p
     new URL('../features/settings/components/ScheduleTab.tsx', import.meta.url),
     'utf8',
   );
-  // Même fonction de teinte que la carte en grille et que la liste.
-  assert.match(source, /classBranchToneFor\(classIdentityFor\(/);
-  // La case porte le ton, les couleurs viennent des jetons partagés.
-  assert.match(source, /data-keep-tone=\{tone \?\? undefined\}/);
+  // Même source de teinte que la carte en grille et que la liste.
+  assert.match(source, /classColorAttributes\(classInfo\)/);
+  assert.match(source, /\{\.\.\.appearance\}/);
+  // Couleurs des cases : jetons partagés du ton.
   assert.match(source, /bg-\[var\(--keep-cell\)\]/);
   assert.match(source, /text-\[var\(--keep-cell-ink\)\]/);
+  // Libellé de matière conditionnel : une seule matière → ligne masquée.
+  assert.match(source, /\{showSubjectLabels && \(/);
   // Plus aucune teinte de ton codée en dur : une seule source, les jetons partagés
   // (les fonds neutres des cases vides restent, eux, légitimes).
   for (const vivid of ['#FFC701', '#FE7235', '#E5FE96', '#21C08B', '#38BDF8', '#4D4AFD', '#E28CF8', '#F43F5E']) {

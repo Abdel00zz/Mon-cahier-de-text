@@ -6,7 +6,8 @@ import { getBundledCalendar, getEffectiveSchoolYear, todayInMorocco } from '@/ut
 import { SUBJECT_ABBREV_MAP, formatLocalizedClassDisplayName, formatLocalizedSubjectDisplayName } from '@/constants';
 import { scheduleClassLabel } from '@/utils/classAbbreviation';
 import { classIdentityFor } from '@/utils/classIdentity';
-import { classBranchToneFor } from '@/utils/classBranchTone';
+import { assignClassColors, classColorAttributes } from '@/utils/classColors';
+import { teachesSeveralSubjects } from '@/utils/subjectScope';
 import {
     TIMETABLE_DAYS,
     deriveSchedules,
@@ -109,24 +110,25 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
 
     const classById = React.useMemo(() => {
         const map = new Map<string, ClassInfo>();
-        classes.forEach(c => map.set(c.id, c));
+        assignClassColors(classes).forEach(c => map.set(c.id, c));
         return map;
     }, [classes]);
 
+    const colorFor = (classId: string): ModernClassColor => {
+        const item = classById.get(classId);
+        const tone = item ? classColorAttributes(item)['data-keep-tone'] : 'sand';
+        return KEEP_SCHEDULE_PALETTE[tone as typeof KEEP_TONES[number]];
+    };
     /**
-     * Teinte du ton : **la même que la carte de classe** (`classBranchToneFor`),
-     * pour qu'une classe ne change jamais de couleur d'une vue à l'autre.
+     * Libellé de matière : affiché **seulement** si l'enseignant couvre
+     * plusieurs matières. Avec une seule, il répéterait la même ligne dans
+     * toutes les cases et volerait la hauteur du nom de classe — l'information
+     * reste disponible dans l'info-bulle et le libellé accessible du créneau.
      */
-    const toneFor = React.useCallback((classId: string): typeof KEEP_TONES[number] => {
-        const classInfo = classById.get(classId);
-        return classBranchToneFor(classIdentityFor(classInfo?.name ?? classId, locale));
-    }, [classById, locale]);
-
-    const colorFor = React.useCallback((classId: string): ModernClassColor => {
-        const tone = toneFor(classId);
-        return KEEP_SCHEDULE_PALETTE[tone] || KEEP_SCHEDULE_PALETTE.sand;
-    }, [toneFor]);
-
+    const showSubjectLabels = React.useMemo(
+        () => teachesSeveralSubjects(classes, config.selectedSubjects),
+        [classes, config.selectedSubjects],
+    );
     const assign = (day: number, slot: number, classId: string | null) => {
         const nextTimetable = setTimetableEntry(timetable, day, slot, classId);
         onChange({ timetable: nextTimetable, schedules: deriveSchedules(nextTimetable) });
@@ -195,6 +197,12 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
     // Dès qu'une classe existe, la grille sert à FINIR sa configuration : on
     // évite de répéter « créer une classe » dans chacune des 48 cases.
     const canCreateFromSchedule = !!onCreateClass && noClassesYet;
+    const periodTabItems: FluidTabItem<SchedulePeriod>[] = React.useMemo(() => [
+        { id: 'morning', label: t('schedule.viewMorning') },
+        { id: 'afternoon', label: t('schedule.viewAfternoon') },
+        { id: 'all', label: t('schedule.viewAll') },
+    ], [t]);
+
     if (noClassesYet && !onCreateClass) {
         return (
             <p className="px-1 py-2 text-center text-sm text-muted-foreground">
@@ -202,12 +210,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
             </p>
         );
     }
-
-    const periodTabItems: FluidTabItem<SchedulePeriod>[] = React.useMemo(() => [
-        { id: 'morning', label: t('schedule.viewMorning') },
-        { id: 'afternoon', label: t('schedule.viewAfternoon') },
-        { id: 'all', label: t('schedule.viewAll') },
-    ], [t]);
 
     return (
         <div className="space-y-4">
@@ -299,14 +301,14 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                         const entry = getTimetableEntry(timetable, day.value, hour.index);
                                         const classInfo = entry ? classById.get(entry.classId) : undefined;
                                         const color = entry ? colorFor(entry.classId) : null;
-                                        const tone = entry ? toneFor(entry.classId) : null;
+                                        const appearance = classInfo ? classColorAttributes(classInfo) : {};
                                         const isLastCol = idx + span - 1 >= visibleHourSlots.length - 1;
 
                                         return (
                                             <td
                                                 key={hour.index}
                                                 colSpan={span}
-                                                data-keep-tone={tone ?? undefined}
+                                                {...appearance}
                                                 className={`relative p-0 align-middle ${
                                                     isLastRow ? '' : 'border-b border-[#c4bcaf] dark:border-[#38332c]'
                                                 } ${
@@ -365,11 +367,13 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ classes, config, onCha
                                                             className={`pointer-events-none absolute inset-0 flex min-w-0 flex-col items-center justify-center px-1 text-center ${color.text}`}
                                                         >
                                                             <span className="max-w-full truncate text-[11px] sm:text-xs lg:text-sm xl:text-[15px] font-bold tracking-tight leading-snug">
-                                                                {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale)}
+                                                                {scheduleClassLabel(classIdentityFor(classInfo.name, locale), locale, true)}
                                                             </span>
-                                                            <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
-                                                                {subjectLabel(classInfo.subject)}
-                                                            </span>
+                                                            {showSubjectLabels && (
+                                                                <span className={`mt-0.5 max-w-full truncate text-[8px] sm:text-[9px] lg:text-[10px] xl:text-[11px] font-semibold uppercase tracking-wider ${color.subtext}`}>
+                                                                    {subjectLabel(classInfo.subject)}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>

@@ -7,7 +7,7 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { classBranchToneFor } from '@/utils/classBranchTone';
+import { classColorAttributes } from '@/utils/classColors';
 import { classOpeningLabel } from '@/utils/classOpening';
 import { classCardLabelFor, classIdentityFor } from '@/utils/classIdentity';
 import { useClassPress } from '@/hooks/useClassPress';
@@ -39,9 +39,8 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     const titleStart = label.group && lastSpace >= 0 ? title.slice(0, lastSpace + 1) : '';
     const titleEnd = titleStart ? title.slice(lastSpace + 1) : title;
     const displayName = isActiveSession ? t('dashboard.session.teaching', { className: label.fullName }) : label.fullName;
-    // Même teinte que la liste : elle suit la branche de la classe (et non le
-    // hachage de l'identifiant), donc elle ne change ni de vue ni de langue.
-    const tone = classBranchToneFor(identity);
+    const color = classColorAttributes(classInfo);
+    const tone = color['data-keep-tone'];
     const subtext = useMemo(() => classOpeningLabel(classInfo.lastOpenedAt, locale), [classInfo.lastOpenedAt, locale]);
     const pressHandlers = useClassPress(
         () => { impact('light'); onSelect(); },
@@ -51,7 +50,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
     return (
         <article
             dir={isRtl ? 'rtl' : 'ltr'}
-            data-keep-tone={tone}
+            {...color}
             data-session-active={isActiveSession ? 'true' : undefined}
             className={cn('class-card group', isActiveSession && 'class-card--active')}
         >
@@ -134,6 +133,7 @@ const ClassCardComponent: FC<ClassCardProps> = ({
 
 const areCardPropsEqual = (previous: ClassCardProps, next: ClassCardProps) =>
     previous.classInfo.id === next.classInfo.id
+    && previous.classInfo.color === next.classInfo.color
     && previous.classInfo.name === next.classInfo.name
     && previous.classInfo.lastOpenedAt === next.classInfo.lastOpenedAt
     && previous.classInfo.subject === next.classInfo.subject

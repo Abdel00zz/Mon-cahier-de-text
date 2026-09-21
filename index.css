@@ -1727,6 +1727,20 @@ html[data-keyboard='open'] .mobile-tab-bar {
     --keep-cell: color-mix(in srgb, var(--keep-vivid) 25%, var(--keep-light));
     --keep-cell-ink: var(--keep-accent);
   }
+  [data-class-color] {
+    --keep-vivid: hsl(var(--class-hue) 65% 58%);
+    --keep-light: hsl(var(--class-hue) 60% 97%);
+    --keep-dark: hsl(var(--class-hue) 22% 15%);
+    --keep-accent: hsl(var(--class-hue) 60% 28%);
+    --keep-border: hsl(var(--class-hue) 30% 80%);
+    --keep-accent-soft: hsl(var(--class-hue) 60% 40% / .1);
+  }
+  .dark [data-class-color] {
+    --keep-vivid: hsl(var(--class-hue) 50% 65%);
+    --keep-accent: hsl(var(--class-hue) 60% 78%);
+    --keep-border: hsl(var(--class-hue) 25% 32%);
+    --keep-accent-soft: hsl(var(--class-hue) 60% 78% / .14);
+  }
   .dark [data-keep-tone] {
     --keep-cell: color-mix(in srgb, var(--keep-vivid) 22%, var(--keep-dark));
   }

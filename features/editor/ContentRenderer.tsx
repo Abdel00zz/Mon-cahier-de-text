@@ -220,6 +220,20 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
             ? 'editor-indent-1'
             : '';
       const normalizedType = TYPE_MAP[(item.type || '').toLowerCase()] || item.type;
+      if (normalizedType === 'free') {
+        const source = `${item.title ?? ''}\n${item.description ?? ''}`;
+        const empty = !source.trim();
+        return (
+          <MaybeMathJax mathSource={source} cacheKey={`free-${source}`}>
+            <div className={`editor-free-content min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
+              {item.title && <div><HighlightedText text={item.title} query={highlight} /></div>}
+              {item.description && <div>{renderDescriptionWithBold(item.description)}</div>}
+              {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
+              {empty && isPrint && <span aria-hidden="true">{'\u00a0'}</span>}
+            </div>
+          </MaybeMathJax>
+        );
+      }
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
       const allowDescription = hasDescription && (showDescriptions === true || (showDescriptions === undefined && descriptionTypes.includes(normalizedType)));
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;

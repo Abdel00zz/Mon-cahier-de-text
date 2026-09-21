@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { MathText } from '@/components/ui/math-text';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
-import { ContentDirection, Indices, LessonsData, TopLevelItem } from '@/types';
+import { ContentDirection, Indices, LessonsData, TopLevelType } from '@/types';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, contentBadgeClass, BADGE_TEXT_MAP, getContentTypesForSubject } from '@/constants';
 import { countOccurrencesOfType, findItem } from '@/utils/dataUtils';
 import { hasMathSyntax } from '@/utils/math';
@@ -154,7 +154,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   let modalTitle = t('addContent.title');
   if (stage !== 'select' && selectedType) {
-    const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
+    const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType];
     if (config) {
       modalTitle = t('addContent.addType', { type: tc(`manageLessons.type.${selectedType}`) });
     } else if (selectedType === 'section') {
@@ -165,6 +165,8 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       modalTitle = t('addContent.addType', { type: t('addContent.subsubsection') });
     } else if (selectedType === 'item') {
       modalTitle = t('addContent.addType', { type: t('addContent.item') });
+    } else if (selectedType === 'free') {
+      modalTitle = t('addContent.free');
     } else if (selectedType === 'separator') {
       modalTitle = t('addContent.addType', { type: t('addContent.separator') });
     }
@@ -172,7 +174,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   const handleSelectType = (type: string) => {
     setSelectedType(type);
-    const config = TOP_LEVEL_TYPE_CONFIG[type as TopLevelItem['type']];
+    const config = TOP_LEVEL_TYPE_CONFIG[type as TopLevelType];
     let initialData: any = {};
 
     if (config) {
@@ -217,7 +219,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   const renderForm = () => {
     if (!selectedType) return null;
-    const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelItem['type']];
+    const config = TOP_LEVEL_TYPE_CONFIG[selectedType as TopLevelType];
     if (config) {
       const localizedName = tc(`manageLessons.type.${selectedType}`);
       return (
@@ -336,6 +338,16 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             </div>
           </div>
         );
+      case 'free':
+        return (
+          <div className="space-y-2 py-1">
+            <label htmlFor="freeContent" className={labelClasses}>{t('addContent.free')}</label>
+            <Textarea id="freeContent" rows={4} value={formData.description ?? ''} dir={contentDirection}
+              onChange={event => setFormData({ ...formData, description: event.target.value })}
+              placeholder={t('addContent.freeHint')} />
+            <p className="text-xs text-muted-foreground">{t('addContent.freeHelp')}</p>
+          </div>
+        );
       case 'separator':
         return (
           <div className="space-y-4 py-1">
@@ -452,7 +464,9 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-bold text-foreground text-xs">{t('addContent.insertionPoint')}</div>
-          <div className="truncate mt-0.5 text-muted-foreground font-medium text-[11px]">{targetLocationLabel}</div>
+          <div className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words text-muted-foreground font-medium text-[11px]" dir={contentDirection}>
+            <MathText source={targetLocationLabel}>{targetLocationLabel}</MathText>
+          </div>
         </div>
       </div>
 
@@ -507,6 +521,8 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                 disabled={!canAddItem}
                 tooltip={t('addContent.itemTooltip')}
               />
+              <CategoryCard icon={GripHorizontal} label={t('addContent.free')} description={t('addContent.freeHelp')}
+                colorClass="text-slate-600 dark:text-slate-400" onClick={() => handleSelectType('free')} />
               <CategoryCard
                 icon={GripHorizontal}
                 label={t('addContent.separator')}

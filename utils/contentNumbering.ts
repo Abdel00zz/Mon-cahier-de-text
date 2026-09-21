@@ -32,7 +32,7 @@ const typeKey = (value: unknown): string => String(value ?? '')
     .replace(/[\s-]+/g, '_');
 
 const isNumberableRow = (row: LessonRow): boolean =>
-    !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
+    rowType(row) !== 'free' && !STRUCTURAL_TYPES.has(row.elementType) && !EVALUATION_TYPES.test(typeKey(rowType(row)));
 
 const rowType = (row: LessonRow): string => String((row.data as { type?: unknown }).type ?? '');
 

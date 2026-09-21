@@ -114,6 +114,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
         ) : (
           <>
             <section className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_.45fr_.45fr]">
+              {formData.type !== 'free' && <>
               <div className="col-span-2 sm:col-span-1">
                 <label className={labelClass}>{t('addContent.contentType')}</label>
                 <Select value={String(formData.type ?? '')} onValueChange={value => update('type', value)}>
@@ -129,6 +130,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 <label className={labelClass}>{t('editor.page')}</label>
                 <Input value={String(formData.page ?? '')} onChange={event => update('page', event.target.value)} className={fieldClass} placeholder="42" />
               </div>
+              </>}
               <div className="col-span-2 sm:col-span-3">
                 <label className={labelClass}>{t('editor.title')}</label>
                 <Input ref={titleRef} value={editedTitle} onChange={event => update('title', event.target.value)} className={`${fieldClass} font-semibold`} />

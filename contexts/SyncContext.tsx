@@ -26,6 +26,7 @@ import { translateLocaleMessage } from '../i18n/LocaleProvider';
 import { isContentDirection } from '../utils/contentDirection';
 import { readWorkspaceScope, workspaceIsCurrent } from '../utils/accountWorkspace';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings';
+import { assignClassColors } from '../utils/classColors';
 
 export type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'offline' | 'error';
 
@@ -43,7 +44,7 @@ const MAX_PUSH_BYTES = 700_000;
 
 const readLocalClasses = (): ClassInfo[] => {
     try {
-        return JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[];
+        return assignClassColors(JSON.parse(localStorage.getItem('classManager_v1') || '[]') as ClassInfo[]);
     } catch {
         return [];
     }
@@ -742,8 +743,13 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     } catch { /* stockage plein */ }
                 }
 
+                const coloredClasses = assignClassColors(mergedClasses);
+                if (coloredClasses.some((item, index) => item.color !== mergedClasses[index].color)) {
+                    localChanged = true;
+                    markClassesListDirty();
+                }
                 if (localChanged) {
-                    localStorage.setItem('classManager_v1', JSON.stringify(mergedClasses));
+                    localStorage.setItem('classManager_v1', JSON.stringify(coloredClasses));
                     writeSyncMeta(syncMeta);
                     notifyPullApplied();
                 }

@@ -15,9 +15,9 @@ export {
 
 import type { ComponentType } from 'react';
 import { Book, TestTube, Home, FileSignature, CheckCheck, CheckSquare } from '../components/ui/icons';
-import type { TopLevelItem } from '../types';
+import type { TopLevelType } from '../types';
 
-export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelItem['type'], {
+export const TOP_LEVEL_TYPE_CONFIG: Record<TopLevelType, {
   name: string;
   icon: ComponentType<{ className?: string }>;
   color: string;

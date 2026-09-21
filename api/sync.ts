@@ -6,6 +6,7 @@ import { requireUser } from './_lib/auth.js';
 import { assertWorkspaceOwner } from './_lib/workspaceOwner.js';
 import type { ClassInfo, ClassSchedule, ContentDirection, LessonsData, TeacherSnapshot, TimetableClockAssignment, TimetableClockPolicy, TimetableEntry } from '../types.js';
 import { withCurriculumSettings } from '../utils/classCurriculumSettings.js';
+import { assignClassColors } from '../utils/classColors.js';
 import { mergeAdminAssessmentDates } from '../utils/syncSettings.js';
 import { DEFAULT_TIMETABLE_CLOCK, resolveTimetableClock } from '../utils/timetable.js';
 
@@ -140,7 +141,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
     // ou d'éditer une classe. On conserve donc toutes les classes serveur non
     // supprimées, puis l'override administratif garde ses champs prioritaires.
     const classIds = new Set([...existingById.keys(), ...requestedById.keys()]);
-    const classes = Array.from(classIds)
+    const classes = assignClassColors(Array.from(classIds)
         .filter(classId => !deletedClassIds.has(classId))
         .map(classId => {
             const teacherClass = requestedById.get(classId) ?? existingById.get(classId);
@@ -148,7 +149,7 @@ const handlePush = async (req: ApiRequest, res: ApiResponse, phone: string) => {
             // The direction owns class identity, not the teacher's course start or links.
             return adminClass ? withCurriculumSettings(adminClass, teacherClass ?? adminClass) : teacherClass!;
         })
-        .filter(Boolean);
+        .filter(Boolean));
 
     const classMeta: Record<string, { updatedAt: string }> = { ...existing.classMeta };
     const validClassIds = new Set(classes.map(c => c.id));

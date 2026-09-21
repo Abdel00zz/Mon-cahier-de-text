@@ -207,8 +207,9 @@ export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): str
  * SVT) hors arabe, initiales à points de l'intitulé officiel en arabe. Un nom
  * libre (« Ma classe ») garde sa forme compactée d'origine.
  */
-export const scheduleClassLabel = (identity: ClassIdentity, locale: AppLocale = 'fr'): string => {
-    const tier = identity.tierKey ? formatCompactTierLabel(identity.tierKey, locale) : '';
+export const scheduleClassLabel = (identity: ClassIdentity, locale: AppLocale = 'fr', compact = false): string => {
+    const shortTiers: Record<string, string> = { college1: '1AC', college2: '2AC', college3: '3AC', common: 'TC', firstBac: '1B', secondBac: '2B', prepa: 'CPGE', prepa1: '1CPGE', prepa2: '2CPGE' };
+    const tier = identity.tierKey ? (compact && locale !== 'ar' ? shortTiers[identity.tierKey] : formatCompactTierLabel(identity.tierKey, locale)) : '';
     let stream = identity.streamCode
         ? formatStreamSigla(identity.streamCode, locale)
         : (identity.stream ?? '');
@@ -218,5 +219,5 @@ export const scheduleClassLabel = (identity: ClassIdentity, locale: AppLocale = 
     }
     const segments = [tier, stream, identity.group ?? ''].filter(Boolean);
     if (segments.length === 0) return abbreviateClassName(identity.full, locale);
-    return segments.join(' ');
+    return segments.join(compact && locale !== 'ar' ? '·' : ' ');
 };

@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 import { markClassDirty, markClassDeleted, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '../utils/syncBus';
 import { captureWorkspaceLease } from '../utils/accountWorkspace';
 import { CLASS_STORAGE_KEY, DEFAULT_STARTER_CLASSES, readStoredClasses } from '../utils/localClassStorage';
+import { assignClassColors } from '../utils/classColors';
 
 const DATA_PREFIX = 'classData_v1_';
 
@@ -47,8 +48,9 @@ export const useClassManager = () => {
     const persistClassesNow = useCallback((next: ClassInfo[], markDirty = true) => {
         if (!workspaceIsActive()) return false;
         try {
-            localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(next));
-            setClasses(next);
+            const colored = assignClassColors(next);
+            localStorage.setItem(CLASS_STORAGE_KEY, JSON.stringify(colored));
+            setClasses(colored);
             if (markDirty) markClassesListDirty();
             notifyClassesChanged();
             return true;
@@ -79,7 +81,7 @@ export const useClassManager = () => {
             ...details, cycle: details.cycle ?? 'college', id: crypto.randomUUID(),
             createdAt: new Date().toISOString(), color: '',
         };
-        const next = [...readStoredClasses(), newClass];
+        const next = assignClassColors([...readStoredClasses(), newClass]);
         // Initialiser le cahier avant d'exposer sa carte et de réveiller le cloud.
         localStorage.setItem(DATA_PREFIX + newClass.id, '[]');
         if (!persistClassesNow(next)) {
@@ -88,7 +90,7 @@ export const useClassManager = () => {
         }
         touchClassSyncMeta(newClass.id);
         markClassDirty(newClass.id);
-        return newClass;
+        return next.find(item => item.id === newClass.id)!;
     }, [persistClassesNow, workspaceIsActive]);
 
     const deleteClass = useCallback((classId: string) => {

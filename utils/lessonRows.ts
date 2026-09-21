@@ -36,7 +36,7 @@ export function buildLessonRows(data: LessonsData): LessonRow[] {
       rows.push({ data: node.separatorAfter, indices: separatorIndices, elementType: 'separator', key: indicesKey(separatorIndices), position: rows.length, ancestorKeys: ancestors });
     }
   };
-  data.forEach((node, chapterIndex) => visit(node, { chapterIndex }, node.type, []));
+  data.forEach((node, chapterIndex) => visit(node, { chapterIndex }, node.type === 'free' ? 'item' : node.type, []));
   return rows;
 }
 

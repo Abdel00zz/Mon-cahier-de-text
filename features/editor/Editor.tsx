@@ -40,6 +40,7 @@ import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
+import { insertFreeContent } from '@/utils/freeContent';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
@@ -670,7 +671,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
            anchor.subsectionIndex !== undefined ||
            anchor.subsubsectionIndex !== undefined);
 
-      if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchorCanReceiveEmbeddedBlock) {
+      if (type === 'free') {
+          setState(draft => insertFreeContent(draft, anchor, data, newId), 'add-free-content');
+          notificationMessage = t('editorNotice.itemAdded');
+          addNewItemHighlight(newId);
+      } else if (TOP_LEVEL_TYPE_CONFIG.hasOwnProperty(type) && type !== 'chapter' && anchorCanReceiveEmbeddedBlock) {
           let parentLevelIndices: Indices = { chapterIndex: anchor.chapterIndex };
           if (anchor.sectionIndex !== undefined) parentLevelIndices.sectionIndex = anchor.sectionIndex;
           if (anchor.subsectionIndex !== undefined) parentLevelIndices.subsectionIndex = anchor.subsectionIndex;
