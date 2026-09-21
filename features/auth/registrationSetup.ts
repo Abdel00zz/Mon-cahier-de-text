@@ -139,7 +139,7 @@ export function applyRegistrationSetup(
       showAllCycles: false,
       showAllSubjects: false,
       ...(setup.preparationCompleted
-        ? { hasCompletedWelcome: true }
+        ? { hasCompletedWelcome: true, showGettingStarted: true }
         : {}),
     }),
     classManager_v1: JSON.stringify([classInfo]),

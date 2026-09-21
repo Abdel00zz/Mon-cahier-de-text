@@ -14,7 +14,7 @@ import {
 } from "../features/auth/registrationSetup";
 import { CLASS_LEVELS_BY_CYCLE, classLevelGroupsForCycle } from "../constants";
 import { switchAccountWorkspace } from "../utils/accountWorkspace";
-import { claimCurrentSessionAutoOpen } from "../utils/currentSessionNavigation";
+import { claimCurrentSessionAutoOpen, markCurrentSessionHandled } from "../utils/currentSessionNavigation";
 
 test("dernière ouverture : une ancienne synchronisation ne fait pas reculer la date", () => {
   assert.equal(
@@ -53,6 +53,21 @@ test("séance en cours : ouverture automatique unique pour préserver le retour 
   assert.equal(claimCurrentSessionAutoOpen("teacher-test", "2026-09-08:c1-480-540", storage), false);
   assert.equal(claimCurrentSessionAutoOpen("teacher-test", "2026-09-08:c1-540-600", storage), true);
   assert.equal(claimCurrentSessionAutoOpen("teacher-test", "", storage), false);
+});
+
+test("séance en cours : ouvrir la classe à la main ne bloque plus le retour navigateur", () => {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, value); },
+  };
+  const slot = "2026-09-21:c7-480-540";
+  // L'enseignant ouvre la classe lui-même pendant la séance…
+  markCurrentSessionHandled("teacher-manual", slot, storage);
+  // …puis revient au tableau de bord : l'ouverture automatique ne le renvoie pas dedans.
+  assert.equal(claimCurrentSessionAutoOpen("teacher-manual", slot, storage), false);
+  // La séance suivante reste, elle, éligible à l'ouverture automatique.
+  assert.equal(claimCurrentSessionAutoOpen("teacher-manual", "2026-09-21:c7-540-600", storage), true);
 });
 
 test("nouveau visiteur : entrée principale et inscription après préparation", () => {
@@ -230,7 +245,7 @@ test("date réelle, état jamais ouvert et invalides sans date inventée", () =>
     classOpeningLabel("2026-08-31T09:30:00.000Z", "fr"),
     /Dernière ouverture/,
   );
-  assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /آخر فتح/);
+  assert.match(classOpeningLabel("2026-08-31T09:30:00.000Z", "ar"), /فتح اخر مرة/);
 });
 test("préparation terminée : cahier et checklist, pas de deuxième onboarding", () => {
   const values = new Map<string, string>();

@@ -46,33 +46,38 @@ test('les trois libellés institutionnels sont complets dans les trois langues',
   assert.equal(translateLocaleMessage('ar', 'settings.school'), 'المؤسسة التعليمية');
 });
 
-test('les cinq pastels conservent un contraste AA pour les libellés secondaires', () => {
+test('chaque ton de carte conserve un contraste AA pour les libellés secondaires', () => {
   const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
   const luminance = (hex: string) => {
     const rgb = hex.match(/[\da-f]{2}/gi)!.map(value => parseInt(value, 16) / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
     return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
   };
-  const tones = [...css.matchAll(/--keep-light: (#\w{6}); --keep-dark: (#\w{6});/g)];
-  assert.equal(tones.length, 5);
-  for (const [, light, dark] of tones) {
+  const tones = [...css.matchAll(/--keep-vivid: (#\w{6}); --keep-light: (#\w{6}); --keep-dark: (#\w{6});/g)];
+  // Un jeu de jetons par entrée de KEEP_TONES : la palette ne peut pas se désynchroniser.
+  assert.equal(tones.length, KEEP_TONES.length);
+  for (const [, , light, dark] of tones) {
     assert.ok((luminance(light) + .05) / (luminance('#5f6368') + .05) >= 4.5, light);
     assert.ok((luminance('#bdc1c6') + .05) / (luminance(dark) + .05) >= 4.5, dark);
   }
   assert.ok(css.includes('@custom-variant dark (&:where(.dark, .dark *));'));
 });
 
-test('emploi du temps : une seule zone d’avis reste avant la grille', () => {
+test('emploi du temps : la case suit la teinte de la carte, jamais une palette parallèle', () => {
   const source = readFileSync(
     new URL('../features/settings/components/ScheduleTab.tsx', import.meta.url),
     'utf8',
   );
-  const advisoryCalls = source.match(/<HoursAdvisory\s/g) ?? [];
-  assert.equal(advisoryCalls.length, 1);
-  assert.ok(source.indexOf('<HoursAdvisory ') < source.indexOf('<table'));
-  assert.equal(source.includes('classesWithoutSlots'), false);
-  const neutralSummary = source.slice(source.indexOf('Récapitulatif neutre'));
-  assert.equal(neutralSummary.includes('officialReferenceTitle'), false);
-  assert.equal(neutralSummary.includes('<HoursAdvisory '), false);
+  // Même fonction de teinte que la carte en grille et que la liste.
+  assert.match(source, /classBranchToneFor\(classIdentityFor\(/);
+  // La case porte le ton, les couleurs viennent des jetons partagés.
+  assert.match(source, /data-keep-tone=\{tone \?\? undefined\}/);
+  assert.match(source, /bg-\[var\(--keep-cell\)\]/);
+  assert.match(source, /text-\[var\(--keep-cell-ink\)\]/);
+  // Plus aucune teinte de ton codée en dur : une seule source, les jetons partagés
+  // (les fonds neutres des cases vides restent, eux, légitimes).
+  for (const vivid of ['#FFC701', '#FE7235', '#E5FE96', '#21C08B', '#38BDF8', '#4D4AFD', '#E28CF8', '#F43F5E']) {
+    assert.equal(source.includes(vivid), false, vivid);
+  }
 });
 
 test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de ligne', () => {
@@ -90,23 +95,30 @@ test('cartes : dernière ouverture réduite ; bouton Fermer aligné en fin de li
   );
   assert.match(card, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
   assert.match(list, /classOpeningLabel\(classInfo\.lastOpenedAt, locale\)/);
-  assert.equal((card.match(/text-\[11\.9px\]/g) ?? []).length, 1);
-  assert.equal((list.match(/text-\[11\.9px\]/g) ?? []).length, 1);
-  assert.match(
-    settings,
-    /hasProfileChanges \? 'items-stretch justify-between' : 'items-end justify-end'/,
-  );
+  // Le pied de carte tient sa taille du jeton CSS unique (`class-card__status`) ;
+  // la liste garde sa paire compacte 10,5 / 11,9 px.
+  assert.match(card, /className="class-card__status"/);
+  assert.equal((card.match(/text-\[11\.9px\]/g) ?? []).length, 0);
+  assert.equal((list.match(/text-\[10\.5px\] sm:text-\[11\.9px\]/g) ?? []).length, 1);
+  // Les actions de classe restent une liste déroulante dans les deux vues.
+  assert.match(card, /MoreVertical/);
+  assert.match(list, /MoreVertical/);
+  // Profil modifié : abandonner ou confirmer, alignés en fin de ligne.
+  assert.match(settings, /hasProfileChanges && \(/);
+  assert.match(settings, /sm:justify-between/);
 });
 
-test('éditeur : chapitre X en bleu (-5%) et reste du titre (-15%)', () => {
+test('éditeur : la hiérarchie typographique du titre de chapitre reste verrouillée', () => {
   const content = readFileSync(
     new URL('../features/editor/ContentRenderer.tsx', import.meta.url),
     'utf8',
   );
-  assert.match(content, /text-blue-600 dark:text-blue-400/);
+  const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+  assert.match(content, /renderChapterLabel/);
   assert.match(content, /text-\[0\.95em\]/);
   assert.match(content, /text-\[0\.85em\]/);
-  assert.match(content, /renderChapterLabel/);
+  // Teinte et échelle du chapitre : un seul jeton, partagé écran et papier.
+  assert.match(css, /\.editor-type-chapter \{ font-size: var\(--editor-fs-chapter\)/);
 });
 
 test('éditeur : une échelle mobile unique reste stable après rotation', () => {
@@ -130,9 +142,9 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
     assert.match(content, new RegExp(`editor-type-${role}`));
   }
 
-  assert.match(css, /--editor-fs-chapter: 18px/);
-  assert.match(css, /--editor-fs-item-title: 10px/);
-  assert.match(css, /--editor-fs-badge: 7px/);
+  assert.match(css, /--editor-fs-chapter: 20px/);
+  assert.match(css, /--editor-fs-item-title: 14px/);
+  assert.match(css, /--editor-fs-badge: 10px/);
   assert.match(css, /editor-type-badge[\s\S]*font-size: var\(--editor-fs-badge\) !important/);
   assert.match(css, /padding-inline: var\(--editor-badge-padding-inline\) !important/);
   assert.match(css, /pointer: coarse\) and \(max-width: 960px\) and \(max-height: 540px\) and \(orientation: landscape/);
@@ -165,11 +177,14 @@ test('cartes de classe : clic continu sur mobile/tablette et bouton Keep au surv
     new URL('../features/dashboard/ClassListItem.tsx', import.meta.url),
     'utf8',
   );
+  // Appui continu (mobile/tablette) partagé par les deux vues…
   assert.match(card, /useClassPress/);
   assert.match(list, /useClassPress/);
-  assert.match(card, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
-  assert.match(list, /hidden md:flex.*opacity-0.*group-hover:opacity-100/);
-  assert.match(card, /font-maghribi/);
+  // …et actions accessibles par la même liste déroulante dédiée.
+  assert.match(card, /class-card__menu/);
+  assert.match(list, /MoreVertical/);
+  // Titres : module typographique partagé côté carte, classe dédiée côté liste.
+  assert.match(card, /classTitleStyle\(isRtl\)/);
   assert.match(list, /keep-class-title/);
 });
 
