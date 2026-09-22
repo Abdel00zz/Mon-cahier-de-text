@@ -301,9 +301,11 @@ export function ModalBottomSheet({
                 'h-10 w-10 sm:h-11 sm:w-11',
                 // Positionnement respectant les arrondis du modal
                 'end-[max(0.75rem,env(safe-area-inset-right))] sm:end-5',
-                'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-4',
+                // Position verticale optimisée pour ne pas toucher la ligne de séparation
+                // Mobile: position plus haute pour respecter l'espace
+                'top-[max(1rem,env(safe-area-inset-top))] sm:top-5',
                 // Prise en compte du drag handle sur mobile
-                isCompactSheet && dragHandle && 'top-[max(3rem,calc(0.75rem+env(safe-area-inset-top)))]'
+                isCompactSheet && dragHandle && 'top-[max(3.25rem,calc(1rem+env(safe-area-inset-top)))]'
               )}
             >
               <X className="h-[18px] w-[18px] sm:h-5 sm:w-5 stroke-[2.2]" />

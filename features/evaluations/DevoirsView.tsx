@@ -713,14 +713,15 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
                   type="button"
                   onClick={() => onToggle(event.id)}
                   className={cn(
-                    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border transition-all cursor-pointer',
+                    'mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border transition-all cursor-pointer touch-manipulation',
+                    'active:scale-95 motion-reduce:active:scale-100',
                     done
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
-                      : 'border-border/80 bg-background hover:border-primary/40 hover:bg-primary/5 text-muted-foreground'
+                      ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 shadow-[inset_0_1px_3px_rgba(0,0,0,0.08)] dark:border-emerald-500/30 dark:bg-emerald-500/20'
+                      : 'border-border/70 bg-background/80 hover:border-primary/50 hover:bg-primary/8 hover:shadow-sm text-muted-foreground hover:text-primary backdrop-blur-sm'
                   )}
                   aria-label={t(done ? 'evaluations.reopenEventAria' : 'evaluations.completeEventAria', { title: event.title })}
                 >
-                  {done ? <CircleCheck className="h-4 w-4" /> : <CalendarCheck className="h-4 w-4" />}
+                  {done ? <CircleCheck className="h-5 w-5 stroke-[2.2]" /> : <CalendarCheck className="h-5 w-5 stroke-[2]" />}
                 </button>
 
                 <div className="min-w-0">
@@ -748,10 +749,10 @@ const PedagogicalEventsSection: React.FC<PedagogicalEventsSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onDelete(event.id)}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-muted-foreground hover:text-destructive hover:bg-destructive/12 active:bg-destructive/20 transition-all cursor-pointer touch-manipulation border border-transparent hover:border-destructive/30 active:scale-95 motion-reduce:active:scale-100"
                 aria-label={t('evaluations.deleteEventAria', { title: event.title })}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-4 w-4 stroke-[2]" />
               </button>
             </div>
           );
