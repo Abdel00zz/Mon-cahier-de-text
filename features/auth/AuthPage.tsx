@@ -183,7 +183,7 @@ const PasswordInput = ({
           aria-label={visible ? copy.hidePassword : copy.showPassword}
           aria-pressed={visible}
           aria-controls={id}
-          className="absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-[8px] text-stone-500 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-stone-400 dark:hover:text-white"
+          className="auth-choice absolute inset-y-0 end-0 flex w-12 items-center justify-center rounded-[8px] text-stone-500 hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-stone-400 dark:hover:text-white"
         >
           {visible ? (
             <EyeOff className="h-4.5 w-4.5" aria-hidden="true" />
@@ -386,7 +386,7 @@ export const AuthPage: React.FC<{
               }
             }}
             disabled={isSubmitting}
-            className="group flex min-h-11 min-w-0 items-center gap-2 sm:gap-2.5 rounded-lg text-start transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer"
+            className="auth-choice group flex min-h-11 min-w-0 items-center gap-2 rounded-lg text-start transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer sm:gap-2.5"
             title={copy.backToHome}
             aria-label={copy.backToHome}
           >
@@ -425,9 +425,11 @@ export const AuthPage: React.FC<{
               }}
               aria-pressed={displayLocale === value}
               className={
-                "flex min-h-11 items-center justify-center gap-1.5 rounded-[6px] px-2.5 text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 " +
+                "auth-language-option flex min-h-11 items-center justify-center gap-1.5 rounded-[8px] px-2.5 text-xs font-semibold transition-[background-color,color,box-shadow,transform] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 " +
                 (displayLocale === value
-                  ? "bg-muted text-foreground"
+                  ? value === "ar"
+                    ? "auth-language-option--ar"
+                    : "auth-language-option--fr"
                   : "text-muted-foreground hover:bg-muted/80")
               }
             >
@@ -507,7 +509,7 @@ export const AuthPage: React.FC<{
                     aria-pressed={mode === value}
                     aria-controls={id + "-form"}
                     onClick={() => switchMode(value)}
-                    className="relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
+                    className="auth-choice relative min-h-11 rounded-[8px] px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
                   >
                     {mode === value && (
                       <motion.span
@@ -707,7 +709,7 @@ export const AuthPage: React.FC<{
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-stone-700 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white"
+                    className="auth-action flex min-h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition-[background-color,transform,box-shadow] hover:bg-stone-700 hover:shadow-md active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white"
                   >
                     {isSubmitting && (
                       <Loader2

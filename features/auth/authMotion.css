@@ -86,8 +86,34 @@
 .auth-page-shell .auth-choice {
   transition: transform 160ms var(--auth-ease-out),
     background-color 160ms ease-out, border-color 160ms ease-out,
-    color 160ms ease-out, opacity 160ms ease-out;
+    color 160ms ease-out, opacity 160ms ease-out, box-shadow 160ms ease-out;
 }
+
+/* Language control: one clear active state per locale, with the flag kept visible. */
+.auth-page-shell .auth-language-option {
+  min-width: 3.25rem;
+}
+.auth-page-shell .auth-language-option--ar {
+  background: linear-gradient(135deg, #187a52, #0f6041);
+  color: #fff;
+  box-shadow: 0 5px 12px -8px rgb(15 96 65 / 0.9);
+}
+.auth-page-shell .auth-language-option--fr {
+  background: linear-gradient(135deg, #3478d1, #2458a8);
+  color: #fff;
+  box-shadow: 0 5px 12px -8px rgb(36 88 168 / 0.9);
+}
+.auth-page-shell .auth-language-option--ar:hover,
+.auth-page-shell .auth-language-option--fr:hover {
+  filter: brightness(1.08);
+}
+.auth-page-shell .auth-language-option:active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (max-width: 380px) {
+  .auth-page-shell .auth-language-option { padding-inline: 0.55rem; }
+}
+
 
 .auth-page-shell .auth-action:active:not(:disabled),
 .auth-page-shell .auth-choice:active:not(:disabled) {
