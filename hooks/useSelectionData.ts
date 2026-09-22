@@ -7,16 +7,16 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
         return selectedIndices.map(idx => {
             try {
                 const { item } = findItem(lessonsData as any, idx);
-                const isRealRow = !!item && !idx.isSeparator;
+                const isRealRow = !!item;
                 return {
                     indices: idx,
                     item,
-                    title: (item as any)?.title ?? (item as any)?.name ?? (item as any)?.content ?? '',
+                    title: (item as any)?.title ?? (item as any)?.name ?? '',
                     date: (item as any)?.date ?? '',
                     description: (item as any)?.description ?? '',
                     canDate: !!item,
                     canEditContent: isRealRow,
-                    canAddAfter: !!item && !idx.isSeparator,
+                    canAddAfter: !!item,
                 };
             } catch {
                 return {

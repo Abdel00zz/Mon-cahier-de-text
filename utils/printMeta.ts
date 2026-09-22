@@ -96,8 +96,6 @@ export const collectSessionDates = (lessonsData: LessonsData): string[] => {
     for (const entry of flattenLessons(lessonsData)) {
         const date = (entry.data as any)?.date;
         if (typeof date === 'string' && date.trim()) dates.add(date.trim());
-        const sepDate = (entry.data as any)?.separatorAfter?.date;
-        if (typeof sepDate === 'string' && sepDate.trim()) dates.add(sepDate.trim());
     }
     return Array.from(dates).sort();
 };
@@ -112,8 +110,6 @@ const nodeHasKeptContent = (node: any, keep: Set<string>): boolean => {
     if (typeof node !== 'object' || node === null) return false;
     const date = typeof node.date === 'string' ? node.date.trim() : '';
     if (date && keep.has(date)) return true;
-    const separatorDate = typeof node.separatorAfter?.date === 'string' ? node.separatorAfter.date.trim() : '';
-    if (separatorDate && keep.has(separatorDate)) return true;
     for (const childKey of ['sections', 'subsections', 'subsubsections', 'items'] as const) {
         const children = node[childKey];
         if (Array.isArray(children) && children.some((child: any) => nodeHasKeptContent(child, keep))) {
@@ -137,10 +133,8 @@ const pruneNode = <T extends Record<string, any>>(node: T, keep: Set<string>): T
                 .map((child: any) => pruneNode(child, keep));
         }
     }
-    // séparateur : conservé seulement si sa date fait partie de la sélection
     if (clone.separatorAfter) {
-        const sepDate = typeof clone.separatorAfter.date === 'string' ? clone.separatorAfter.date.trim() : '';
-        if (!sepDate || !keep.has(sepDate)) delete clone.separatorAfter;
+        delete clone.separatorAfter;
     }
     return clone as T;
 };

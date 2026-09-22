@@ -229,20 +229,16 @@ const lessons: LessonsData = [
     title: 'Chapitre 1',
     items: [
       { type: 'lesson', title: 'A', date: '2026-01-05' },
-      { type: 'lesson', title: 'B', date: '2026-01-05' },
+      { type: 'lesson', title: 'B', date: '2026-01-12' },
       {
         type: 'lesson',
         title: 'C',
-        separatorAfter: {
-          content: '',
-          date: '2026-01-12',
-        },
       },
     ],
   },
 ];
 
-test('séances : dates de contenus et séparateurs comptent une fois chacune', () => {
+test('séances : les dates de contenus distinctes comptent une fois chacune', () => {
   const stats = computeProgressionStats(lessons);
 
   assert.equal(stats.totalItems, 3);

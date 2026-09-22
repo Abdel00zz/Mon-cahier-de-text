@@ -17,7 +17,7 @@ import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteSeparator, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
@@ -36,7 +36,7 @@ import {
 } from '@/utils/notificationSignals';
 import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
 import { printDocument, preparePrintContent } from '@/utils/printUtils';
-import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator, ContentDirection } from '@/types';
+import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
@@ -719,19 +719,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           setState(draft => addItem(draft, parentLevelIndices, newItem, insertAfterIndex), 'add-item');
           notificationMessage = t('editorNotice.itemAdded');
           addNewItemHighlight(newId);
-      } else if (type === 'separator' && anchor) {
-          const { item } = findItem(lessonsData, anchor);
-          if (item?.separatorAfter) {
-              showNotification(t('editorNotice.separatorExists'), 'info');
-          } else if (item) {
-              const separator: Separator = { content: data.content || '---', date: data.date || item.date || '', manual: true, _tempId: newId };
-              setState(draft => {
-                  const { item: target } = findItem(draft, anchor);
-                  if (target) target.separatorAfter = separator;
-              }, 'add-separator');
-              notificationMessage = t('editorNotice.separatorAdded');
-              addNewItemHighlight(newId);
-          }
       }
 
       if (notificationMessage) {
@@ -1023,11 +1010,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       });
       setState(draft => {
           sorted.forEach(idx => {
-              if (idx.isSeparator) { deleteSeparator(draft, idx); return; }
               // Titre structurel : on retire le titre et on remonte son contenu
               // au niveau supérieur (aucune donnée imbriquée n'est perdue).
               if (deleteStructuralNodePromotingChildren(draft, idx)) return;
-              // Élément feuille, chapitre ou séparateur : suppression simple.
+              // Élément feuille ou chapitre : suppression simple.
               const { parent, targetIndex } = findItem(draft, idx);
               if (parent && typeof targetIndex === 'number' && Array.isArray(parent)) {
                   parent.splice(targetIndex, 1);
@@ -1116,12 +1102,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection]);
 
-  const handleDeleteSeparator = useCallback((indices: Indices) => {
-    setState(draft => deleteSeparator(draft, indices), 'delete-separator');
-    showNotification(t('editorNotice.separatorDeleted'), "success");
-    setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [setState, showNotification, setEditorState, t]);
-
   const { rows: visibleRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
 
   const editingItem = useMemo(() => {
@@ -1150,7 +1130,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
   const canEditSelection = selectedCount === 1 && !!singleSelection?.canEditContent;
 
-  const reorderTarget = selectedCount === 1 && !selectedIndices[0]?.isSeparator ? selectedIndices[0] : null;
+  const reorderTarget = selectedCount === 1 ? selectedIndices[0] : null;
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
   const canMoveDown = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'down');
 
@@ -1213,7 +1193,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               contentDirection={contentDirection}
 
               onCellUpdate={handleCellUpdate}
-              onDeleteSeparator={handleDeleteSeparator}
               onOpenAddContentModal={handleOpenAddContentModal}
               showDescriptions={config.screenDescriptionMode === 'all' ? true : config.screenDescriptionMode === 'none' ? false : undefined}
               descriptionTypes={config.screenDescriptionTypes}

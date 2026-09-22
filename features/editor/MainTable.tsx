@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { LessonsData, Indices, Separator, ContentDirection } from '@/types';
+import { LessonsData, Indices, ContentDirection } from '@/types';
 import { type LessonRow } from '@/utils/lessonRows';
 import type { ContentDateOrder } from '@/utils/dateOrder';
 import { DateCard, MultiDateCard, TableRow } from './TableRow';
-import { SeparatorRow } from './SeparatorRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen } from '@/components/ui/icons';
@@ -26,7 +25,6 @@ interface MainTableProps {
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
   onCellUpdate: (indices: Indices, field: string, value: any) => void;
-  onDeleteSeparator: (indices: Indices) => void;
   onOpenAddContentModal: (indices?: Indices) => void;
   showDescriptions?: boolean;
   descriptionTypes?: string[];
@@ -344,7 +342,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   onToggleSelect,
   newlyAddedIds,
   onCellUpdate,
-  onDeleteSeparator,
   onOpenContentEditor,
   onOpenDateModal,
   getDateWarnings,
@@ -487,23 +484,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                   }
 
                   const { item } = row;
-
-                  if (item.elementType === 'separator') {
-                      const originalItemIndices = item.indices;
-                      const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));
-                      return (
-                          <VirtualListRow key={item.key} index={absoluteIndex} measurementKey={itemKeys[absoluteIndex]} start={virtualItem?.start} measureElement={measureElement} dataFocusKey={item.key === focusKey ? focusKey : undefined} className={item.key === focusKey ? 'action-source-highlight' : undefined}>
-                          <SeparatorRow
-                              data={item.data as Separator}
-                              indices={originalItemIndices}
-                              onCellUpdate={onCellUpdate}
-                              onDelete={onDeleteSeparator}
-                              onOpenDateModal={onOpenDateModal}
-                              isNew={isNew}
-                          />
-                          </VirtualListRow>
-                      );
-                  }
 
                   const isSelected = selectedKeys.has(item.key);
                   const isNew = !!((item.data as any)._tempId && newlyAddedIds.includes((item.data as any)._tempId));

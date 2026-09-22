@@ -81,6 +81,7 @@ import {
   List as LucideList,
   ListOrdered as LucideListOrdered,
   Underline as LucideUnderline,
+  Highlighter as LucideHighlighter,
   Sparkles as LucideSparkles,
   Copy as LucideCopy,
 } from 'lucide-react';
@@ -193,5 +194,6 @@ export const Italic = createIcon(LucideItalic);
 export const List = createIcon(LucideList);
 export const ListOrdered = createIcon(LucideListOrdered);
 export const Underline = createIcon(LucideUnderline);
+export const Highlighter = createIcon(LucideHighlighter);
 export const Sparkles = createIcon(LucideSparkles);
 export const Copy = createIcon(LucideCopy);

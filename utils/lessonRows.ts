@@ -1,8 +1,8 @@
-import type { ElementType, Indices, LessonsData, LessonItem, Section, Separator, SubSection, SubSubSection, TopLevelItem } from '../types';
+import type { ElementType, Indices, LessonsData, LessonItem, Section, SubSection, SubSubSection, TopLevelItem } from '../types';
 
 type LessonNode = TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
 export interface LessonRow {
-  data: LessonNode | Separator;
+  data: LessonNode;
   indices: Indices;
   elementType: ElementType;
   key: string;
@@ -12,7 +12,7 @@ export interface LessonRow {
 }
 
 export const indicesKey = (idx: Indices): string =>
-  `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}|${idx.isSeparator ? 1 : 0}`;
+  `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}`;
 
 const blockTypes = new Set<string>(['chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu']);
 
@@ -31,10 +31,6 @@ export function buildLessonRows(data: LessonsData): LessonRow[] {
       visit(section, { ...indices, subsectionIndex }, 'subsection', ancestors));
     if ('subsubsections' in node) node.subsubsections?.forEach((section, subsubsectionIndex) =>
       visit(section, { ...indices, subsubsectionIndex }, 'subsubsection', ancestors));
-    if (node.separatorAfter) {
-      const separatorIndices = { ...indices, isSeparator: true };
-      rows.push({ data: node.separatorAfter, indices: separatorIndices, elementType: 'separator', key: indicesKey(separatorIndices), position: rows.length, ancestorKeys: ancestors });
-    }
   };
   data.forEach((node, chapterIndex) => visit(node, { chapterIndex }, node.type === 'free' ? 'item' : node.type, []));
   return rows;

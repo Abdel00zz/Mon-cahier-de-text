@@ -70,7 +70,7 @@ function Preview() {
       {(screen === 'editor' || screen === 'add') && <>
         <h1 className="mb-6 text-xl font-semibold">{isAr ? 'دفتر النصوص — الرياضيات' : 'Cahier de textes — Mathématiques'}</h1>
         <MainTable lessonsData={lessons} visibleRows={buildLessonRows(lessons)} contentDirection="ltr"
-          onClearSearch={noop} onCellUpdate={noop} onDeleteSeparator={noop} onOpenAddContentModal={() => setAdd(true)}
+          onClearSearch={noop} onCellUpdate={noop} onOpenAddContentModal={() => setAdd(true)}
           showDescriptions selectedKeys={new Set()} onToggleSelect={noop} onOpenContentEditor={noop} newlyAddedIds={[]} />
         <SelectionBar count={2} hasDate canAdd canAssignDate canEdit canMoveUp canMoveDown onMoveUp={noop} onMoveDown={noop}
           onAdd={() => setAdd(true)} onAssignDate={noop} onAssignToday={noop} onClearDate={noop} onEdit={noop} onDelete={noop} onClear={noop} />

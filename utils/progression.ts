@@ -42,17 +42,9 @@ export const computeProgressionStats = (lessonsData: LessonsData): ProgressionSt
     const plannedCount = plannedItems.length;
 
     /*
-     * Séances = dates distinctes des éléments datés + dates des SÉPARATEURS
-     * (démarcations de fin de séance : le geste cahier-de-textes par
-     * excellence). Sans elles, un prof qui clôture ses séances au séparateur
-     * était compté « en retard » par le moteur. Les séparateurs n'entrent en
-     * revanche jamais dans la complétion (ce ne sont pas des contenus).
+     * Séances = dates distinctes des éléments datés.
      */
     const uniqueDates = new Set(plannedItems.map(entry => entry.data.date as string).filter(Boolean));
-    for (const entry of allEntries) {
-        const separatorDate = entry.data?.separatorAfter?.date;
-        if (typeof separatorDate === 'string' && separatorDate.trim()) uniqueDates.add(separatorDate.trim());
-    }
     const sessionsCount = uniqueDates.size;
 
     const completionRate = totalItems === 0 ? 0 : Math.round((plannedCount / totalItems) * 100);

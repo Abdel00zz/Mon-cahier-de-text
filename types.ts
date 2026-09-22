@@ -325,8 +325,7 @@ export type ElementType =
     | 'section' 
     | 'subsection' 
     | 'subsubsection' 
-    | 'item'
-    | 'separator';
+    | 'item';
 
 export interface Indices {
     chapterIndex: number;
@@ -334,15 +333,6 @@ export interface Indices {
     subsectionIndex?: number;
     subsubsectionIndex?: number;
     itemIndex?: number;
-    isSeparator?: boolean;
-}
-
-export interface Separator {
-    content: string;
-    date: string;
-    manual?: boolean;
-    remark?: string;
-    _tempId?: string;
 }
 
 export interface LessonItem {
@@ -353,7 +343,6 @@ export interface LessonItem {
     page?: string | number;
     date?: string;
     remark?: string;
-    separatorAfter?: Separator;
     _tempId?: string;
 }
 
@@ -361,7 +350,6 @@ interface BaseTopLevelItem {
     title: string;
     date?: string;
     remark?: string;
-    separatorAfter?: Separator;
     _tempId?: string;
 }
 
@@ -375,7 +363,6 @@ export interface SubSubSection {
     items?: (LessonItem | EmbeddableTopLevelItem)[];
     date?: string;
     remark?: string;
-    separatorAfter?: Separator;
     _tempId?: string;
 }
 
@@ -385,7 +372,6 @@ export interface SubSection {
     items?: (LessonItem | EmbeddableTopLevelItem)[];
     date?: string;
     remark?: string;
-    separatorAfter?: Separator;
     _tempId?: string;
 }
 
@@ -395,7 +381,6 @@ export interface Section {
     items?: (LessonItem | EmbeddableTopLevelItem)[];
     date?: string;
     remark?: string;
-    separatorAfter?: Separator;
     _tempId?: string;
 }
 

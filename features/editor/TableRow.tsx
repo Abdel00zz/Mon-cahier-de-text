@@ -457,8 +457,7 @@ export const TableRow = memo(TableRowComponent, (prev, next) => {
     pIdx.sectionIndex !== nIdx.sectionIndex ||
     pIdx.subsectionIndex !== nIdx.subsectionIndex ||
     pIdx.subsubsectionIndex !== nIdx.subsubsectionIndex ||
-    pIdx.itemIndex !== nIdx.itemIndex ||
-    pIdx.isSeparator !== nIdx.isSeparator
+    pIdx.itemIndex !== nIdx.itemIndex
   ) {
     return false;
   }

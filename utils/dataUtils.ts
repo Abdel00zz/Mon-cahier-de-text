@@ -72,11 +72,6 @@ export const findItem = (data: LessonsData | any, indices: Indices): { item: Dat
         targetIndex = indices.itemIndex;
         item = parent[targetIndex];
     }
-
-    if (indices.isSeparator) {
-      const container = item;
-      return { item: container?.separatorAfter ?? null, parent: container, targetIndex: 'separatorAfter' };
-    }
     
     return { item, parent, targetIndex };
 };
@@ -149,7 +144,7 @@ export const addItem = (draft: Draft<LessonsData>, parentIndices: Indices, newIt
     const { item: container } = findItem(draft, parentIndices);
     // Un conteneur peut recevoir des items : chapitre (type 'chapter'), section,
     // sous-section ou sous-sous-section. Les items sont initialisés à la volée.
-    const isItemsContainer = !!container && parentIndices.itemIndex === undefined && !parentIndices.isSeparator && (
+    const isItemsContainer = !!container && parentIndices.itemIndex === undefined && (
         'name' in container || (container as any).type === 'chapter' || 'sections' in container
     );
     if (!isItemsContainer || !container) return;
@@ -174,14 +169,13 @@ const deepestIndexKey = (indices: Indices): keyof Indices => {
 /**
  * Déplace un élément d'un cran vers le haut ou le bas PARMI SES FRÈRES
  * (même parent). Renvoie les nouveaux indices pour préserver la sélection,
- * ou null si le déplacement est impossible (bord, séparateur, introuvable).
+ * ou null si le déplacement est impossible (bord, introuvable).
  */
 export const moveWithinParent = (
     draft: Draft<LessonsData>,
     indices: Indices,
     direction: 'up' | 'down'
 ): Indices | null => {
-    if (indices.isSeparator) return null;
     const { parent, targetIndex } = findItem(draft, indices);
     if (!Array.isArray(parent) || typeof targetIndex !== 'number') return null;
 
@@ -200,17 +194,9 @@ export const canMoveWithinParent = (
     indices: Indices,
     direction: 'up' | 'down'
 ): boolean => {
-    if (indices.isSeparator) return false;
     const { parent, targetIndex } = findItem(data, indices);
     if (!Array.isArray(parent) || typeof targetIndex !== 'number') return false;
     return direction === 'up' ? targetIndex > 0 : targetIndex < parent.length - 1;
-};
-
-export const deleteSeparator = (draft: Draft<LessonsData>, itemIndices: Indices): void => {
-    const { item } = findItem(draft, itemIndices);
-    if (item && 'separatorAfter' in item) {
-        delete item.separatorAfter;
-    }
 };
 
 /**
@@ -218,13 +204,13 @@ export const deleteSeparator = (draft: Draft<LessonsData>, itemIndices: Indices)
  * remontant son contenu au niveau supérieur : ses éléments sont rattachés au
  * parent et ses sous-titres montent d'un cran, sans perdre aucune donnée.
  * Renvoie `true` quand la suppression a été réalisée par remontée ; `false`
- * pour une feuille (item), un séparateur ou un chapitre (suppression complète).
+ * pour une feuille (item) ou un chapitre (suppression complète).
  */
 export const deleteStructuralNodePromotingChildren = (
     draft: Draft<LessonsData>,
     indices: Indices,
 ): boolean => {
-    if (indices.isSeparator || indices.itemIndex !== undefined) return false;
+    if (indices.itemIndex !== undefined) return false;
 
     // Sous-sous-section : ses items remontent dans la sous-section parente.
     if (indices.subsubsectionIndex !== undefined) {
@@ -335,7 +321,6 @@ export const migrateLessonsData = (data: any): LessonsData => {
 };
 
 export const flattenLessons = (data: LessonsData) => buildLessonRows(data)
-    .filter(row => row.elementType !== 'separator')
     .map(({ data, indices, elementType }) => ({
         data: data as DataItem, indices,
         // Progression historically treats embedded assessments as lesson items.

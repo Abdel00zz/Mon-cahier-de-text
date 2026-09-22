@@ -6,7 +6,7 @@ import { addItem, addTopLevelItem, findItem } from './dataUtils';
 export function insertFreeContent(draft: Draft<LessonsData>, anchor: Indices | undefined, content: { title?: string; description?: string }, id: string) {
   const row = { type: 'free' as const, title: content.title ?? '', description: content.description ?? '', _tempId: id };
   if (anchor) {
-    const { itemIndex, isSeparator: _separator, ...parent } = anchor;
+    const { itemIndex, ...parent } = anchor;
     const { item } = findItem(draft, parent);
     if (item && ('name' in item || 'items' in item || 'sections' in item || ('type' in item && item.type === 'chapter'))) {
       addItem(draft, parent, row, itemIndex);

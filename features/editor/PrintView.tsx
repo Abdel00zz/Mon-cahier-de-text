@@ -17,7 +17,6 @@ import {
     LessonItem,
     Indices,
     ElementType,
-    Separator,
     AppConfig,
     ContentDirection
 } from '@/types';
@@ -53,13 +52,12 @@ const getSchoolYearLabel = (schoolYearStart: string | undefined, fallbackDate: s
 };
 
 interface FlatDataItem {
-    data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem | Separator;
+    data: TopLevelItem | Section | SubSection | SubSubSection | LessonItem;
     indices: Indices;
     elementType: ElementType;
 }
 
 type PrintRow =
-    | { kind: 'separator'; item: FlatDataItem }
     | { kind: 'single'; item: FlatDataItem }
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
@@ -84,12 +82,6 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         };
 
         flatData.forEach((item) => {
-            if (item.elementType === 'separator') {
-                flushSession();
-                rows.push({ kind: 'separator', item });
-                return;
-            }
-
             const itemDate = item.data.date;
             if (!itemDate) {
                 flushSession();
@@ -128,11 +120,6 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         ? `${formatDateDDMMYYYY(firstPrintDate)} – ${formatDateDDMMYYYY(lastPrintDate)}`
         : (isRtlPrint ? 'لا توجد حصص مؤرخة' : 'Aucune séance datée');
     const schoolYearLabel = getSchoolYearLabel(config.schoolYearStart, firstPrintDate);
-
-    const formatSeparatorDate = (dateString: string): string => {
-        const ddmmyyyy = formatDateDDMMYYYY(dateString);
-        return ddmmyyyy || '';
-    };
 
     const isNewItem = (item: FlatDataItem): boolean =>
         !!(item.data._tempId && newlyAddedIds.includes(item.data._tempId));
@@ -318,20 +305,6 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                 <tbody>
                     {printRows.length > 0 ? (
                         printRows.map((row, index) => {
-                            if (row.kind === 'separator') {
-                                const separatorData = row.item.data as Separator;
-                                const formattedDate = formatSeparatorDate(separatorData.date);
-                                const rowClassName = ['print-separator-row', isNewItem(row.item) ? 'new-item-print-highlight' : ''].filter(Boolean).join(' ');
-
-                                return (
-                                    <tr key={`separator-${index}`} className={rowClassName}>
-                                        <td className="print-col-date"><span className="print-date-text">{formattedDate}</span></td>
-                                        <td className="print-col-content"><div className="print-item-title"><MathText source={separatorData.content}>{separatorData.content || '—'}</MathText></div></td>
-                                        <td className="print-col-remark" />
-                                    </tr>
-                                );
-                            }
-
                             if (row.kind === 'session') {
                                 const remarks = collectSessionRemarks(row.items, row.date);
                                 const rowClassName = [

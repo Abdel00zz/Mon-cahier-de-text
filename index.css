@@ -757,8 +757,6 @@ html[lang="ar"] .modal-header h2,
     --editor-fs-table-side: 11px;
     --editor-fs-table-main: 12px;
     --editor-fs-remark: 12px;
-    --editor-fs-separator-date: 11px;
-    --editor-fs-separator-label: 10px;
     --editor-badge-min-width: 34px;
     --editor-badge-padding-inline: 5px;
     --editor-lesson-gap: 6px;
@@ -784,8 +782,6 @@ html[lang="ar"] .modal-header h2,
   .editor-type-table-side { font-size: var(--editor-fs-table-side); line-height: 1.2; }
   .editor-type-table-main { font-size: var(--editor-fs-table-main); line-height: 1.2; }
   .editor-type-remark { font-size: var(--editor-fs-remark); line-height: 1.35; }
-  .editor-type-separator-date { font-size: var(--editor-fs-separator-date); line-height: 1.2; }
-  .editor-type-separator-label { font-size: var(--editor-fs-separator-label); line-height: 1.2; }
 
   .editor-kind-badge {
     min-width: var(--editor-badge-min-width) !important;
@@ -822,8 +818,6 @@ html[lang="ar"] .modal-header h2,
     --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
     --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
     --editor-fs-remark: calc(var(--editor-scale) * 0.88);
-    --editor-fs-separator-date: calc(var(--editor-scale) * 0.81);
-    --editor-fs-separator-label: calc(var(--editor-scale) * 0.75);
     --editor-badge-min-width: calc(var(--editor-scale) * 2.1);
     --editor-badge-padding-inline: 6px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
@@ -869,17 +863,6 @@ html[lang="ar"] .modal-header h2,
     [data-editor-table] {
       /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
       --editor-scale: calc(clamp(0.8125rem, calc(0.6875rem + 0.52vmin), 1rem) * var(--app-text-scale, 1));
-    }
-  }
-
-  @media (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
-         (pointer: coarse) and (max-width: 960px) and (max-height: 540px) and (orientation: landscape) {
-
-    /* Empêche le zoom automatique d’iOS pendant l’édition, sans agrandir
-       l’affichage passif du tableau. */
-    .editor-type-separator-date:focus,
-    .editor-type-separator-label:focus {
-      font-size: 16px;
     }
   }
 }

@@ -36,7 +36,7 @@ function readEvidence(lessons: LessonsData): NotebookEvidence {
     const type = 'type' in row.data ? row.data.type : '';
     if (type === 'evaluation_diagnostic' || row.ancestorKeys.some(key => diagnostics.has(key))) {
       diagnostics.add(row.key);
-      if (row.elementType !== 'separator' && validChapterDate(row.data.date)) diagnosticDates.push(row.data.date);
+      if (validChapterDate(row.data.date)) diagnosticDates.push(row.data.date);
     }
     if (isNonCourseActivity(type) || row.ancestorKeys.some(key => excluded.has(key))) {
       excluded.add(row.key); continue;

@@ -174,9 +174,8 @@ const normalizeItem = (
     if (nextDate.changed) report.normalizedDates += 1;
   }
 
-  if (isRecord(item.separatorAfter)) {
-    const separator = normalizeItem(item.separatorAfter, report, budget, depth + 1);
-    if (separator) item.separatorAfter = separator;
+  if (Object.prototype.hasOwnProperty.call(item, 'separatorAfter')) {
+    delete item.separatorAfter;
   }
 
   const nestedKeys = ['sections', 'subsections', 'subsubsections', 'items'] as const;
@@ -242,9 +241,6 @@ export const summarizeImportedLessons = (lessonsData: LessonsData): ImportedProg
         plannedCount += 1;
         sessionDates.add(node.date);
       }
-    }
-    if (isRecord(node.separatorAfter) && typeof node.separatorAfter.date === 'string' && node.separatorAfter.date) {
-      sessionDates.add(node.separatorAfter.date);
     }
     for (const [key, type] of [
       ['sections', 'section'],

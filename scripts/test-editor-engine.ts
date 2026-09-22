@@ -189,7 +189,7 @@ const fixture: LessonsData = [
     { name: 'A', items: [{ type: 'exercice', title: 'Ignoré' }] },
     { name: 'B', subsections: [{ name: 'Sous-section', items: [
       { type: 'exercice', title: 'Ignoré aussi' },
-      { type: 'exercice', title: 'Cible', page: 42, separatorAfter: { content: 'Fin cible', date: '' } },
+      { type: 'exercice', title: 'Cible', page: 42 },
     ] }] },
   ] },
 ];
@@ -247,7 +247,7 @@ test('évaluations identiques : un titre commun et toutes les dates reliées par
   const noop = () => {};
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
-      contentDirection: 'ltr', onCellUpdate: noop, onDeleteSeparator: noop, onOpenAddContentModal: noop,
+      contentDirection: 'ltr', onCellUpdate: noop, onOpenAddContentModal: noop,
       selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
     }),
   }));
@@ -292,7 +292,7 @@ test('séance fusionnée : les séparateurs de contenu et remarque partagent les
   const noop = () => {};
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
-      contentDirection: 'ltr', onCellUpdate: noop, onDeleteSeparator: noop, onOpenAddContentModal: noop,
+      contentDirection: 'ltr', onCellUpdate: noop, onOpenAddContentModal: noop,
       selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
       showDescriptions: true,
     }),
@@ -326,12 +326,10 @@ test('recherche : modifier, dater et insérer après le résultat conserve le ch
   assert.equal(fixture[1].sections![1].subsections![0].items![1].title, 'Cible');
 });
 
-test('recherche : ancêtres, champs numériques et séparateurs gardent leur identité', () => {
+test('recherche : ancêtres et champs numériques gardent leur identité', () => {
   const rows = buildLessonRows(fixture);
   const result = filterLessonRows(rows, '42');
   assert.deepEqual(result.map(row => row.elementType), ['chapter', 'section', 'subsection', 'item']);
-  const separator = filterLessonRows(rows, 'Fin cible').at(-1)!;
-  assert.equal(findItem(fixture, separator.indices).item, separator.data);
   assert.equal(filterLessonRows(rows, 'absent').length, 0);
   assert.equal(filterLessonRows(rows, '  '), rows);
 });

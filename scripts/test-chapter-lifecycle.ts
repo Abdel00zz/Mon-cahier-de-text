@@ -38,8 +38,8 @@ test('the whole assessment subtree is excluded, including ordinary definitions i
   assert.equal(result.itemsCount, 2); assert.equal(result.state, 'completed');
 });
 
-test('separators and structural dates neither start nor complete a chapter', () => {
-  const result = detect([chapter({ date: undefined, items: [], separatorAfter: { content: '', date: '2026-09-21' }, sections: [{ name: 'Section', date: '2026-09-14' }] })]);
+test('structural dates neither start nor complete a chapter', () => {
+  const result = detect([chapter({ date: undefined, items: [], sections: [{ name: 'Section', date: '2026-09-14' }] })]);
   assert.equal(result.startDate, undefined); assert.equal(result.endDate, undefined); assert.equal(result.state, 'not_started');
 });
 

@@ -23,7 +23,6 @@ export type RenderRow =
 
 
 export const getMergeableDate = (item: FlatDataItem): string | null => {
-    if (item.elementType === 'separator') return null;
     const date = (item.data as any).date;
     return typeof date === 'string' && date.trim() ? date.trim() : null;
 };
@@ -37,11 +36,11 @@ export const getMergeableRemark = (item: FlatDataItem): string => {
  * Identité pédagogique normalisée pour la fusion intelligente :
  * Type, numéro, titre, description et page. La casse du titre est conservée
  * pour ne pas confondre deux variables mathématiques.
- * Un séparateur, un chapitre, une section ou un contenu différent brise
+ * Un chapitre, une section ou un contenu différent brise
  * immédiatement la continuité.
  */
 const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
-    if (item.elementType !== 'item' && ['chapter', 'section', 'subsection', 'subsubsection', 'separator'].includes(item.elementType)) return null;
+    if (item.elementType !== 'item' && ['chapter', 'section', 'subsection', 'subsubsection'].includes(item.elementType)) return null;
     const data = item.data as any;
     const normType = (data.type || '').toString().trim().toLowerCase();
     // Deux lignes libres identiques restent deux espaces de saisie distincts.
@@ -67,7 +66,7 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
         const identityStart = getPedagogicalIdentity(itemStart);
         const isDatedSequenceStart = Boolean(dateStart && (start === 0 || !getMergeableDate(items[start - 1])));
 
-        if ((!dateStart && !identityStart) || itemStart.elementType === 'separator') {
+        if (!dateStart && !identityStart) {
             const isDatedSequenceEnd = start === items.length - 1 || !getMergeableDate(items[start + 1]);
             itemStart.dateMerge = {
                 isMerged: false,
@@ -89,7 +88,7 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
         while (sameDateEnd < items.length && sameDateEnd < start + 24) {
             const nextItem = items[sameDateEnd];
             const nextDate = getMergeableDate(nextItem);
-            if (nextItem.position !== items[sameDateEnd - 1].position + 1 || nextItem.elementType === 'separator' || !nextDate || nextDate !== dateStart) {
+            if (nextItem.position !== items[sameDateEnd - 1].position + 1 || !nextDate || nextDate !== dateStart) {
                 break;
             }
             // Laisser au prochain contenu répété sa propre cellule multi-date.
@@ -107,7 +106,7 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
                 const nextItem = items[sameContentEnd];
                 const nextIdentity = getPedagogicalIdentity(nextItem);
 
-                if (nextItem.position !== items[sameContentEnd - 1].position + 1 || nextItem.elementType === 'separator' || !nextIdentity || nextIdentity !== identityStart || Boolean(getMergeableDate(nextItem)) !== Boolean(dateStart)) {
+                if (nextItem.position !== items[sameContentEnd - 1].position + 1 || !nextIdentity || nextIdentity !== identityStart || Boolean(getMergeableDate(nextItem)) !== Boolean(dateStart)) {
                     break;
                 }
                 sameContentEnd += 1;

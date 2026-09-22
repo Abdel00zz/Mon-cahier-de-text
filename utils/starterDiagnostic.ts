@@ -31,7 +31,6 @@ export const hasOnlyPristineStarterDiagnostic = (lessons: LessonsData): boolean 
         && isGenericDiagnosticTitle(item.title ?? '')
         && !item.date
         && !item.remark
-        && !item.separatorAfter
         && (!item.sections || item.sections.length === 0)
         && (!item.items || item.items.length === 0);
 };

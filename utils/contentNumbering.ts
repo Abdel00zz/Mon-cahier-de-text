@@ -20,7 +20,7 @@ import { buildLessonRows, type LessonRow } from './lessonRows.js';
 
 
 /** Structures : elles organisent le plan, elles ne reçoivent pas de numéro. */
-const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection', 'separator']);
+const STRUCTURAL_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
 
 /** Évaluations : leur numéro est déjà porté par le titre (« Contrôle continu 2 »). */
 const EVALUATION_TYPES = /^(?:evaluation|devoir|controle|correction|examen|diagnostic|assessment|homework|test|exam|dm|ds|cc)(?:_|$)/;

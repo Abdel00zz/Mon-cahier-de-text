@@ -8,7 +8,7 @@ export const hasMathSyntax = (value: unknown): boolean => {
 };
 
 const MATH_CONTENT_FIELDS = ['title', 'name', 'description', 'content', 'remark'] as const;
-const MATH_CHILD_FIELDS = ['lessonsData', 'items', 'sections', 'subsections', 'subsubsections', 'separatorAfter'] as const;
+const MATH_CHILD_FIELDS = ['lessonsData', 'items', 'sections', 'subsections', 'subsubsections'] as const;
 
 /** Détecte tôt une formule dans un cahier sans sérialiser tout son contenu. */
 export const hasMathContent = (value: unknown): boolean => {

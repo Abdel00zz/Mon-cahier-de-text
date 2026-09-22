@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ContextualDescriptionEditor } from '@/features/editor/modals/ContextualDescriptionEditor';
 import { MathText } from '@/components/ui/math-text';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
 import { ContentDirection, Indices, LessonsData, TopLevelType } from '@/types';
@@ -145,7 +146,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       const { item } = findItem(lessonsData, selectedIndices);
       if (!item) return t('addContent.atEnd');
       const itemAny = item as any;
-      const displayTitle = itemAny.title || itemAny.name || itemAny.content || (itemAny.type ? tc(`contentType.${itemAny.type}`) : t('addContent.item'));
+      const displayTitle = itemAny.title || itemAny.name || (itemAny.type ? tc(`contentType.${itemAny.type}`) : t('addContent.item'));
       return t('addContent.afterItem', { title: displayTitle });
     } catch {
       return t('addContent.atEnd');
@@ -167,8 +168,6 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       modalTitle = t('addContent.addType', { type: t('addContent.item') });
     } else if (selectedType === 'free') {
       modalTitle = t('addContent.free');
-    } else if (selectedType === 'separator') {
-      modalTitle = t('addContent.addType', { type: t('addContent.separator') });
     }
   }
 
@@ -189,10 +188,6 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       // Contexte : si l'on ajoute après un élément, on hérite de son type pour aller plus vite.
       const anchorType = selectedElementType === 'item' && selectedItem && (selectedItem as any).type;
       initialData.type = anchorType || 'exercice';
-    } else if (type === 'separator') {
-      // Le séparateur hérite de la date de l'élément ancre (démarcation de séance).
-      const anchorDate = selectedItem && (selectedItem as any).date;
-      if (anchorDate) initialData.date = anchorDate;
     }
 
     setFormData(initialData);
@@ -214,7 +209,7 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   // Math detected on currently edited form
   const hasMath = useMemo(() => {
-    return [formData.title, formData.name, formData.content, formData.description].some(hasMathSyntax);
+    return [formData.title, formData.name, formData.description].some(hasMathSyntax);
   }, [formData]);
 
   const renderForm = () => {
@@ -326,14 +321,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
             </div>
             <div className="space-y-1.5">
               <label htmlFor="itemDescription" className={labelClasses}>{t('addContent.descriptionLabel')}</label>
-              <Textarea
+              <ContextualDescriptionEditor
                 id="itemDescription"
                 rows={4}
                 value={formData.description || ''}
                 dir="auto"
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(desc) => setFormData({ ...formData, description: desc })}
                 placeholder={t('addContent.descriptionPlaceholder')}
-                className="rounded-xl border-border"
+                className="min-h-[110px]"
               />
             </div>
           </div>
@@ -342,38 +337,16 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
         return (
           <div className="space-y-2 py-1">
             <label htmlFor="freeContent" className={labelClasses}>{t('addContent.free')}</label>
-            <Textarea id="freeContent" rows={4} value={formData.description ?? ''} dir={contentDirection}
-              onChange={event => setFormData({ ...formData, description: event.target.value })}
-              placeholder={t('addContent.freeHint')} />
+            <ContextualDescriptionEditor
+              id="freeContent"
+              rows={4}
+              value={formData.description ?? ''}
+              dir={contentDirection}
+              onChange={desc => setFormData({ ...formData, description: desc })}
+              placeholder={t('addContent.freeHint')}
+              className="min-h-[110px]"
+            />
             <p className="text-xs text-muted-foreground">{t('addContent.freeHelp')}</p>
-          </div>
-        );
-      case 'separator':
-        return (
-          <div className="space-y-4 py-1">
-            <div className="space-y-1.5">
-              <label htmlFor="separatorContent" className={labelClasses}>{t('addContent.separatorText')}</label>
-              <Input
-                ref={initialFocusRef}
-                type="text"
-                id="separatorContent"
-                value={formData.content || ''}
-                dir="auto"
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder={t('addContent.separatorPlaceholder')}
-                className="h-10 rounded-lg border-border"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="separatorDate" className={labelClasses}>{t('addContent.separatorDate')}</label>
-              <Input
-                type="date"
-                id="separatorDate"
-                value={formData.date || ''}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="h-10 rounded-lg border-border"
-              />
-            </div>
           </div>
         );
       default:
@@ -402,8 +375,6 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
     // Un chapitre peut aussi recevoir des items directement, sans section.
     return selectedElementType === 'chapter';
   }, [selectedItem, selectedElementType]);
-
-  const canAddSeparator = !!selectedIndices;
 
   const titleNode = (
     <div className="flex items-center gap-2.5">
@@ -523,15 +494,6 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
               />
               <CategoryCard icon={GripHorizontal} label={t('addContent.free')} description={t('addContent.freeHelp')}
                 colorClass="text-slate-600 dark:text-slate-400" onClick={() => handleSelectType('free')} />
-              <CategoryCard
-                icon={GripHorizontal}
-                label={t('addContent.separator')}
-
-                colorClass="text-slate-600 dark:text-slate-400"
-                onClick={() => handleSelectType('separator')}
-                disabled={!canAddSeparator}
-                tooltip={t('addContent.separatorTooltip')}
-              />
             </div>
           </div>
 

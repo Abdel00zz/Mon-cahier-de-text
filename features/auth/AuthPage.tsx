@@ -374,7 +374,9 @@ export const AuthPage: React.FC<{
       ref={pageRef}
       dir={displayLocale === "ar" ? "rtl" : "ltr"}
       lang={displayLocale}
-      className="auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100"
+      className={`auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100 ${
+        view === "landing" ? "auth-page-shell-landing" : ""
+      }`}
     >
       <header className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
