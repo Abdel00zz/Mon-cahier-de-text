@@ -11,10 +11,10 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
                 return {
                     indices: idx,
                     item,
-                    title: (item as any)?.title ?? (item as any)?.name ?? '',
+                    title: (item as any)?.title ?? (item as any)?.name ?? (item as any)?.content ?? '',
                     date: (item as any)?.date ?? '',
                     description: (item as any)?.description ?? '',
-                    canDate: isRealRow,
+                    canDate: !!item,
                     canEditContent: isRealRow,
                     canAddAfter: !!item && !idx.isSeparator,
                 };

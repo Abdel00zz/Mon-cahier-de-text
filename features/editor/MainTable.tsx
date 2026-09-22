@@ -498,6 +498,7 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
                               indices={originalItemIndices}
                               onCellUpdate={onCellUpdate}
                               onDelete={onDeleteSeparator}
+                              onOpenDateModal={onOpenDateModal}
                               isNew={isNew}
                           />
                           </VirtualListRow>

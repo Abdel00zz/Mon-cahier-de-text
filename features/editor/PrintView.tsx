@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import './print.css';
 import { printLayoutStyle } from '@/utils/printLayout';
+import { collectSessionDates } from '@/utils/printMeta';
 import { MathText } from '@/components/ui/math-text';
 import { buildLessonRows } from '@/utils/lessonRows';
 import { ContentRenderer } from './ContentRenderer';
@@ -108,11 +109,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
         return rows;
     }, [flatData]);
 
-    const printDates = useMemo(() => printRows
-        .filter((row): row is Extract<PrintRow, { kind: 'session' }> => row.kind === 'session')
-        .map(row => row.date)
-        .filter(Boolean)
-        .sort(), [printRows]);
+    const printDates = useMemo(() => collectSessionDates(lessonsData), [lessonsData]);
     const firstPrintDate = printDates[0];
     const lastPrintDate = printDates[printDates.length - 1];
     const isRtlPrint = contentDirection === 'rtl' || isArabicClassName;
@@ -328,16 +325,9 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
 
                                 return (
                                     <tr key={`separator-${index}`} className={rowClassName}>
-                                        <td colSpan={3} className="print-separator-cell">
-                                            <div className="separator-content">
-                                                <span className="separator-line"></span>
-                                                <span className="separator-text">
-                                                    <MathText source={separatorData.content}>{separatorData.content || '—'}</MathText>
-                                                    {formattedDate && ` | ${formattedDate}`}
-                                                </span>
-                                                <span className="separator-line"></span>
-                                            </div>
-                                        </td>
+                                        <td className="print-col-date"><span className="print-date-text">{formattedDate}</span></td>
+                                        <td className="print-col-content"><div className="print-item-title"><MathText source={separatorData.content}>{separatorData.content || '—'}</MathText></div></td>
+                                        <td className="print-col-remark" />
                                     </tr>
                                 );
                             }

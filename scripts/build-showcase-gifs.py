@@ -16,6 +16,9 @@ for layout, viewport in [("landscape", (1280, 880)), ("portrait", (560, 850))]:
         scenes = [Image.open(args.captures / f"{layout}-{locale}-{scene}.png").convert("RGB").crop((0, 0, *size))
                   for scene in ["classes", "editor", "schedule"]]
         scenes[0].save(output / f"{layout}-{locale}.webp", quality=86, method=6)
+        if layout == "portrait":
+            for name, scene in zip(["editor", "schedule"], scenes[1:]):
+                scene.save(output / f"portrait-{locale}-{name}.webp", quality=86, method=6)
         # One shared palette prevents colour flicker during the short dissolves.
         atlas = Image.new("RGB", (size[0], size[1] * len(scenes)))
         for index, scene in enumerate(scenes):

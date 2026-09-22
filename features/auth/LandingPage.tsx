@@ -1,116 +1,64 @@
-import { Sparkles, Calendar, Bell, ArrowRight, ArrowLeft, LogIn } from "lucide-react";
-import { AppShowcaseMedia } from "@/components/ui/AppShowcaseMedia";
-import type { AppLocale } from "@/types";
+import { Sparkles, Calendar, Bell, ArrowRight, ArrowLeft, LogIn } from 'lucide-react';
+import { AppShowcaseMedia } from '@/components/ui/AppShowcaseMedia';
+import type { AppLocale } from '@/types';
+import './landing.css';
 
 const COPY = {
   fr: {
-    title: "Gagnez du temps.\nEnseignez mieux.",
-    subtitle:
-      "Préparez votre première classe, puis finalisez votre inscription pour retrouver votre cahier.",
-    login: "Se connecter",
-    register: "Créer un compte",
-    badges: [
-      { text: "Saisie rapide et intelligente", tone: "sand", icon: Sparkles },
-      { text: "Calendrier scolaire officiel", tone: "mint", icon: Calendar },
-      { text: "Notifications importantes", tone: "sky", icon: Bell },
-    ],
+    eyebrow: 'Votre quotidien enseignant, allégé.',
+    title: 'Gagnez du temps.', emphasis: 'Enseignez mieux.',
+    subtitle: 'Vos classes, vos séances et votre progression, réunies dans un cahier clair.',
+    start: 'Préparez votre première classe, puis finalisez votre inscription pour retrouver votre cahier.',
+    login: 'Se connecter', register: 'Créer un compte',
+    badges: ['Saisie rapide et intelligente', 'Calendrier scolaire officiel', 'Notifications importantes'],
+    preview: 'Votre cahier, partout avec vous.',
   },
   ar: {
-    title: "وقت أقل للتعبئة.\nوقت أكثر للتدريس.",
-    subtitle: "أعدّ قسمك الأول، ثم أكمل التسجيل لحفظ دفتر نصوصك والعودة إليه.",
-    login: "تسجيل الدخول",
-    register: "إنشاء حساب جديد",
-    badges: [
-      { text: "تعبئة سريعة وذكية", tone: "sand", icon: Sparkles },
-      { text: "التقويم المدرسي الرسمي", tone: "mint", icon: Calendar },
-      { text: "إشعارات مهمة", tone: "sky", icon: Bell },
-    ],
+    eyebrow: 'مساحة ليوم دراسي أكثر هدوءاً.',
+    title: 'وقت أقل للتعبئة.', emphasis: 'وقت أكثر للتدريس.',
+    subtitle: 'أقسامك وحصصك وتدرجك الدراسي، في دفتر واحد واضح ومنظم.',
+    start: 'أعدّ قسمك الأول، ثم أكمل التسجيل لحفظ دفتر نصوصك والعودة إليه.',
+    login: 'تسجيل الدخول', register: 'إنشاء حساب جديد',
+    badges: ['تعبئة سريعة وذكية', 'التقويم المدرسي الرسمي', 'إشعارات مهمة'],
+    preview: 'دفترك، أينما كنت.',
   },
 } as const;
+const FEATURE_ICONS = [Sparkles, Calendar, Bell];
 
-const BADGE_STYLES = {
-  sand: "bg-amber-500/10 text-amber-900 dark:text-amber-200 border-amber-500/30 hover:bg-amber-500/15",
-  mint: "bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 border-emerald-500/30 hover:bg-emerald-500/15",
-  sky: "bg-sky-500/10 text-sky-900 dark:text-sky-200 border-sky-500/30 hover:bg-sky-500/15",
-} as const;
-
-export function LandingPage({
-  locale,
-  onLogin,
-  onRegister,
-}: {
-  locale: AppLocale;
-  onLogin: () => void;
-  onRegister: () => void;
+export function LandingPage({ locale, onLogin, onRegister }: {
+  locale: AppLocale; onLogin: () => void; onRegister: () => void;
 }) {
-  const ar = locale === "ar";
-  const copy = COPY[ar ? "ar" : "fr"];
-
-  return (
-    <div
-      dir={ar ? "rtl" : "ltr"}
-      className="flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
-    >
-      <div className="auth-view-enter w-full max-w-4xl flex flex-col items-center text-center gap-4 sm:gap-6">
-        {/* Title and Subtitle with breathable, balanced spacing */}
-        <div className="space-y-2.5 sm:space-y-3.5 max-w-2xl mx-auto pt-1">
-          <h1
-            tabIndex={-1}
-            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
-          >
-            {copy.title}
-          </h1>
-
-          <p className="text-xs sm:text-base md:text-lg text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl mx-auto font-normal">
-            {copy.subtitle}
-          </p>
+  const ar = locale === 'ar';
+  const language = ar ? 'ar' : 'fr';
+  const copy = COPY[language];
+  const Arrow = ar ? ArrowLeft : ArrowRight;
+  return <main className="landing-editorial" dir={ar ? 'rtl' : 'ltr'}>
+    <div className="landing-composition auth-view-enter">
+      <section className="landing-copy">
+        <p className="landing-eyebrow">{copy.eyebrow}</p>
+        <h1 tabIndex={-1}>{copy.title}<br /><span>{copy.emphasis}</span></h1>
+        <p className="landing-description">{copy.subtitle}</p>
+        <div className="landing-actions">
+          <button type="button" onClick={onRegister} className="landing-primary"><span>{copy.register}</span><Arrow className="h-4 w-4" aria-hidden="true" /></button>
+          <button type="button" onClick={onLogin} className="landing-secondary"><LogIn className="h-4 w-4" aria-hidden="true" /><span>{copy.login}</span></button>
         </div>
-
-        {/* CTA Actions - Touch target >= 44px, ergonomic buttons with icons */}
-        <div className="flex flex-col items-center gap-2 w-full max-w-sm sm:max-w-md mx-auto">
-          <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full">
-            <button
-              type="button"
-              onClick={onRegister}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-4 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
-            >
-              <span>{copy.register}</span>
-              {ar ? (
-                <ArrowLeft className="w-4 h-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
-              ) : (
-                <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onLogin}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-stone-100/90 dark:bg-stone-900/90 border border-stone-300/80 dark:border-stone-700/80 text-stone-900 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 px-4 sm:px-6 text-xs sm:text-base font-semibold shadow-xs hover:border-stone-400 dark:hover:border-stone-600 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
-            >
-              <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-stone-500 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors" />
-              <span>{copy.login}</span>
-            </button>
-          </div>
+        <p className="landing-start">{copy.start}</p>
+        <ul className="landing-features">{copy.badges.map((text, index) => {
+          const Icon = FEATURE_ICONS[index];
+          return <li key={text}><Icon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{text}</span></li>;
+        })}</ul>
+      </section>
+      <section className="landing-gallery" aria-label={copy.preview}>
+        <div className="landing-gallery-halo" aria-hidden="true" />
+        <div className="landing-device landing-device-back landing-device-left" aria-hidden="true">
+          <img src={`/showcase/portrait-${language}-editor.webp`} width={448} height={680} alt="" decoding="async" />
         </div>
-
-        <AppShowcaseMedia locale={locale} loading="eager" className="my-1 w-full max-w-[340px] sm:my-3 sm:max-w-3xl" />
-
-        {/* Feature Badges with contextual icons and harmonious tones */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1 pb-4">
-          {copy.badges.map((badge) => {
-            const Icon = badge.icon;
-            return (
-              <span
-                key={badge.text}
-                className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs md:text-sm font-semibold border shadow-2xs transition-all ${BADGE_STYLES[badge.tone]}`}
-              >
-                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 opacity-80" />
-                <span>{badge.text}</span>
-              </span>
-            );
-          })}
+        <div className="landing-device landing-device-back landing-device-right" aria-hidden="true">
+          <img src={`/showcase/portrait-${language}-schedule.webp`} width={448} height={680} alt="" decoding="async" />
         </div>
-      </div>
+        <AppShowcaseMedia locale={locale} portrait loading="eager" className="landing-device landing-device-front" />
+        <p className="landing-gallery-caption">{copy.preview}</p>
+      </section>
     </div>
-  );
+  </main>;
 }
-

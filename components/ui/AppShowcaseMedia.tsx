@@ -5,9 +5,10 @@ import { cn } from '@/lib/utils';
 import type { AppLocale } from '@/types';
 
 /** Actual app captures; the static cover is also the reduced-motion/error fallback. */
-export function AppShowcaseMedia({ locale, landscape = false, desktopOnly = false, className, loading = 'lazy' }: {
+export function AppShowcaseMedia({ locale, landscape = false, portrait = false, desktopOnly = false, className, loading = 'lazy' }: {
   locale: AppLocale;
   landscape?: boolean;
+  portrait?: boolean;
   desktopOnly?: boolean;
   className?: string;
   loading?: 'eager' | 'lazy';
@@ -24,15 +25,15 @@ export function AppShowcaseMedia({ locale, landscape = false, desktopOnly = fals
     <picture className="block">
       {/* A hidden desktop panel must not download or decode the GIF on phones. */}
       {desktopOnly && <source media="(max-width: 1023px)" srcSet={asset('landscape', false)} />}
-      {playOverride === null && !landscape && <source media="(prefers-reduced-motion: reduce) and (min-width: 640px)" srcSet={asset('landscape', false)} width={1024} height={704} />}
+      {playOverride === null && !landscape && !portrait && <source media="(prefers-reduced-motion: reduce) and (min-width: 640px)" srcSet={asset('landscape', false)} width={1024} height={704} />}
       {playOverride === null && <source media="(prefers-reduced-motion: reduce)" srcSet={asset(landscape ? 'landscape' : 'portrait', false)} />}
-      {!landscape && <source media="(min-width: 640px)" srcSet={asset('landscape', playing)} width={1024} height={704} />}
+      {!landscape && !portrait && <source media="(min-width: 640px)" srcSet={asset('landscape', playing)} width={1024} height={704} />}
       <img
         src={asset(landscape ? 'landscape' : 'portrait', playing)}
         width={landscape ? 1024 : 448} height={landscape ? 704 : 680}
         alt={ar ? 'معاينة أقسام التطبيق ودفتر النصوص واستعمال الزمن ببيانات توضيحية' : 'Les classes, le cahier de textes et l’emploi du temps de l’application, avec des données de démonstration'}
         loading={loading} decoding="async"
-        className={cn('block h-auto w-full object-contain', landscape ? 'aspect-[16/11]' : 'aspect-[56/85] sm:aspect-[16/11]')}
+        className={cn('block h-auto w-full object-contain', landscape ? 'aspect-[16/11]' : portrait ? 'aspect-[56/85]' : 'aspect-[56/85] sm:aspect-[16/11]')}
         onError={() => setFailed(true)}
       />
     </picture>

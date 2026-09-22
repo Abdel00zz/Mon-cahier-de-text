@@ -1,5 +1,7 @@
 import { LessonsData } from '../types.js';
 import { flattenLessons } from './dataUtils.js';
+import { buildContentNumbers } from './contentNumbering.js';
+import { buildLessonRows } from './lessonRows.js';
 
 /**
  * Mémoire d'impression par classe : quelles dates de séances ont déjà été
@@ -153,4 +155,24 @@ export const filterLessonsByDates = (lessonsData: LessonsData, dates: string[]):
     return lessonsData
         .filter(chapter => nodeHasKeptContent(chapter, keep))
         .map(chapter => pruneNode(chapter, keep));
+};
+
+/** Freeze displayed numbers before filtering/reindexing, without modifying the notebook. */
+export const createPrintSelection = (lessons: LessonsData, dates: string[], numberingEnabled = true): LessonsData => {
+    const numbers = buildContentNumbers(lessons, numberingEnabled);
+    const byNode = new Map<object, string>();
+    for (const row of buildLessonRows(lessons)) {
+        const number = numbers.get(row.key);
+        if (number) byNode.set(row.data, number);
+    }
+    const clone = (node: any): any => {
+        const next = { ...node };
+        const number = byNode.get(node);
+        if (number) next.number = number;
+        for (const key of ['sections', 'subsections', 'subsubsections', 'items']) {
+            if (Array.isArray(node[key])) next[key] = node[key].map(clone);
+        }
+        return next;
+    };
+    return filterLessonsByDates(lessons.map(clone), dates);
 };

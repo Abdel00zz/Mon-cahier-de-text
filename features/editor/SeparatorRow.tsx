@@ -1,102 +1,63 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Indices, Separator } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from '@/components/ui/icons';
+import { CalendarDays, Trash2 } from '@/components/ui/icons';
+import { MathText } from '@/components/ui/math-text';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { DateCard } from './TableRow';
 
 interface SeparatorRowProps {
     data: Separator;
     indices: Indices;
     onCellUpdate: (indices: Indices, field: string, value: any) => void;
     onDelete: (indices: Indices) => void;
+    onOpenDateModal?: (indices: Indices, currentDate?: string) => void;
     isNew?: boolean;
 }
-
-/* Separateur aligne sur les traits neutres du tableau. */
 const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
 
-const SeparatorRowComponent: React.FC<SeparatorRowProps> = ({ data, indices, onCellUpdate, onDelete }) => {
+/** A separator is a normal editable row; its date stays in the shared date column. */
+export const SeparatorRow = React.memo(function SeparatorRow({ data, indices, onCellUpdate, onDelete, onOpenDateModal }: SeparatorRowProps) {
     const { t } = useLocale();
+    const [editing, setEditing] = useState(false);
+    const cancelEdit = useRef(false);
     const separatorIndices: Indices = { ...indices, isSeparator: true };
-
-    const contentRef = useRef<HTMLDivElement>(null);
-    const isChanged = useRef(false);
-
-    const handleContentSave = () => {
-        if (contentRef.current && isChanged.current) {
-            onCellUpdate(separatorIndices, 'content', contentRef.current.textContent || '');
-            isChanged.current = false;
-        }
-    };
-
-    const handleContentKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        isChanged.current = true;
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            e.currentTarget.blur();
-        }
-    };
-
-    const rowClasses = [
-        `group relative my-1 grid w-full ${TABLE_GRID_CLASS} transition-colors duration-150`,
-    ].filter(Boolean).join(' ');
-
-    return (
-        <div className={rowClasses}>
-            {/* Colonne Date */}
-            <div className="flex min-w-0 flex-col items-center justify-center self-stretch border-e border-border px-1 py-1.5 select-none">
-                <input
-                    type="date"
-                    value={data.date || ''}
-                    onChange={e => onCellUpdate(separatorIndices, 'date', e.target.value)}
-                    className="editor-type-separator-date bg-transparent text-muted-foreground font-semibold rounded-md border border-dashed border-[hsl(var(--border))] dark:border-[hsl(var(--border))]/60 px-1.5 py-1 transition-all focus:outline-none focus:ring-1 focus:ring-primary/40 hover:border-primary/50 cursor-pointer text-center w-full max-w-[100px] font-mono"
-                    title={t('separator.editDate')}
-                />
-            </div>
-
-            {/* Colonne Contenu, le "signature moment" : un jalon net entre deux périodes */}
-            <div className="relative flex min-w-0 items-center justify-center gap-3 self-stretch border-e border-border px-4 py-2.5">
-                <div className="flex-grow border-t border-dashed border-border" />
-
-                <div
-                    ref={contentRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={handleContentSave}
-                    onKeyDown={handleContentKeyDown}
-                    className="editor-type-separator-label relative text-center font-bold tracking-wider uppercase px-4 py-1 rounded-full bg-muted border border-border text-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-primary/40 min-w-[120px] max-w-[80%] shadow-xs font-sans"
-                    dangerouslySetInnerHTML={{ __html: data.content || '' }}
-                />
-
-                <div className="flex-grow border-t border-dashed border-border" />
-            </div>
-
-            {/* Colonne Action */}
-            <div className="absolute end-1 top-1/2 flex -translate-y-1/2 items-center justify-center p-1 md:static md:translate-y-0 md:self-stretch" onClick={event => event.stopPropagation()}>
-                {/* visible en permanence en tactile (< lg) ; hover-reveal sur desktop seulement */}
-                <div className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    <Button
-                        variant="ghost" size="icon"
-                        
-                        onClick={() => onDelete(separatorIndices)}
-                        data-tippy-content={t('separator.delete')}
-                        aria-label={t('separator.delete')}
-                        className="h-9 w-9 text-xs max-sm:portrait:text-[9.6px] text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors lg:h-7 lg:w-7"
-                    >
-                        <Trash2 className="h-3.5 w-3.5 stroke-[2.2]" />
-                    </Button>
-                </div>
-            </div>
+    const stop = (event: React.SyntheticEvent) => event.stopPropagation();
+    return <div className={`group relative grid w-full min-w-0 border-b border-border/70 bg-card ${TABLE_GRID_CLASS}`} onClick={stop}>
+        <div className="relative flex min-w-0 items-center justify-center border-e border-border bg-muted/40 px-1">
+            {onOpenDateModal ? <button type="button" className="min-h-12 w-full rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" aria-label={t('separator.editDate')}
+                onClick={() => onOpenDateModal(separatorIndices, data.date)}>
+                {data.date ? <DateCard dateStr={data.date} /> : <CalendarDays className="mx-auto h-4 w-4 text-muted-foreground" />}
+            </button> : <label className="relative flex min-h-12 w-full items-center justify-center">
+                <DateCard dateStr={data.date} />
+                {!data.date && <CalendarDays className="h-4 w-4 text-muted-foreground" />}
+                <input type="date" value={data.date || ''} aria-label={t('separator.editDate')}
+                    onChange={event => onCellUpdate(separatorIndices, 'date', event.target.value)}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+            </label>}
         </div>
-    );
-};
-
-export const SeparatorRow = React.memo(SeparatorRowComponent, (prev, next) => (
-    prev.data === next.data &&
-    prev.indices === next.indices &&
-    prev.onCellUpdate === next.onCellUpdate &&
-    prev.onDelete === next.onDelete &&
-    prev.isNew === next.isNew
-));
-
-SeparatorRow.displayName = 'SeparatorRow';
+        <div className="flex min-w-0 items-center self-stretch border-e border-border px-2 py-1.5 sm:px-3">
+            {editing ? <textarea autoFocus defaultValue={data.content || ''} aria-label={t('addContent.separatorText')}
+                rows={2} className="editor-type-item-title min-h-11 w-full resize-y rounded-md border border-border bg-background px-2 py-1 font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                onBlur={event => {
+                    if (!cancelEdit.current && event.currentTarget.value !== data.content) onCellUpdate(separatorIndices, 'content', event.currentTarget.value);
+                    setEditing(false);
+                }}
+                onKeyDown={event => {
+                    if (event.nativeEvent.isComposing) return;
+                    if (event.key === 'Escape') { cancelEdit.current = true; event.currentTarget.blur(); }
+                    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.blur(); }
+                }} /> : <button type="button" className="editor-type-item-title min-h-11 min-w-0 w-full whitespace-pre-wrap break-words rounded-sm text-start font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                aria-label={`${t('addContent.separatorText')} : ${data.content || ''}`}
+                onClick={() => { cancelEdit.current = false; setEditing(true); }}>
+                <MathText source={data.content}>{data.content || '—'}</MathText>
+            </button>}
+        </div>
+        <div className="flex min-w-0 items-center justify-center p-1">
+            <Button variant="ghost" size="icon" onClick={() => onDelete(separatorIndices)} aria-label={t('separator.delete')}
+                className="h-11 w-11 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100">
+                <Trash2 className="h-4 w-4" />
+            </Button>
+        </div>
+    </div>;
+});

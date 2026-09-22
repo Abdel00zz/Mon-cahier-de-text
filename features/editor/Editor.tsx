@@ -21,7 +21,7 @@ import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection,
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
-import { collectSessionDates, filterLessonsByDates, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
+import { collectSessionDates, createPrintSelection, getNewDates, readPrintMeta, recordPrint, savePrintPrefs } from '@/utils/printMeta';
 import { DateWarning, toDisplayWarnings, validateSessionDate } from '@/utils/dateValidation';
 import { appendJournal } from '@/utils/journal';
 import { PredefinedEntry, findPredefinedFor, loadPredefinedContent } from '@/utils/predefinedContent';
@@ -95,8 +95,8 @@ const createSelectionState = (indices?: Indices): SelectionState => {
   return { keys, items };
 };
 
-const isDateableContentTarget = (indices: Indices, item: unknown): boolean => {
-  return !!item && !indices.isSeparator;
+const isDateableContentTarget = (_indices: Indices, item: unknown): boolean => {
+  return !!item;
 };
 
 export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onOpenSettings, onBack }) => {
@@ -132,6 +132,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [initialMathTypesetComplete, setInitialMathTypesetComplete] = useState(false);
   const isPrintingRef = useRef(false);
   const [printSnapshot, setPrintSnapshot] = useState<React.ComponentProps<typeof PrintView> | null>(null);
+  useEffect(() => { setPrintSnapshot(null); }, [initialClassInfo.id]);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
   /*
    * Ordre chronologique : chaque contenu daté connaît son plus proche
@@ -822,7 +823,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               showNotification(t('editorNotice.noNewSession'), 'info');
               return;
           }
-          selection = filterLessonsByDates(lessonsData, newDates);
+          selection = createPrintSelection(lessonsData, newDates, config.contentNumbering?.enabled !== false);
           datesToRecord = newDates;
       } else if (mode === 'custom') {
           if (!selectedDates || selectedDates.length === 0) {
@@ -837,7 +838,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               showNotification(t('editorNotice.selectionUnavailable'), 'info');
               return;
           }
-          selection = filterLessonsByDates(lessonsData, validSelectedDates);
+          selection = createPrintSelection(lessonsData, validSelectedDates, config.contentNumbering?.enabled !== false);
           datesToRecord = validSelectedDates;
       }
 
@@ -994,7 +995,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setState(draft => {
           selectedIndices.forEach(idx => {
               const { item } = findItem(draft, idx);
-              if (item && !idx.isSeparator && typeof (item as any).date === 'string') {
+              if (item && typeof (item as any).date === 'string') {
                   (item as any).date = '';
               }
           });
@@ -1022,6 +1023,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       });
       setState(draft => {
           sorted.forEach(idx => {
+              if (idx.isSeparator) { deleteSeparator(draft, idx); return; }
               // Titre structurel : on retire le titre et on remonte son contenu
               // au niveau supérieur (aucune donnée imbriquée n'est perdue).
               if (deleteStructuralNodePromotingChildren(draft, idx)) return;
