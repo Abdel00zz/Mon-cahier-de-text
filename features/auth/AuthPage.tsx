@@ -411,7 +411,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="flex shrink-0 gap-1 rounded-xl border border-stone-200/90 bg-stone-50/80 p-1 shadow-inner shadow-stone-900/5 dark:border-stone-700 dark:bg-stone-950/70"
+          className="inline-flex shrink-0 items-center gap-0.5 rounded-[14px] border border-stone-200/90 bg-stone-50/80 p-0.5 shadow-inner shadow-stone-900/5 dark:border-stone-700 dark:bg-stone-950/70"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
@@ -425,7 +425,7 @@ export const AuthPage: React.FC<{
               }}
               aria-pressed={displayLocale === value}
               className={
-                "auth-language-option flex min-h-11 items-center justify-center gap-1.5 rounded-[8px] px-2.5 text-xs font-semibold transition-[background-color,color,box-shadow,transform] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 " +
+                "auth-language-option flex min-h-10 items-center justify-center gap-1.5 rounded-[10px] px-2.5 text-xs font-semibold transition-[background-color,color,box-shadow,transform] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 " +
                 (displayLocale === value
                   ? value === "ar"
                     ? "auth-language-option--ar"
