@@ -376,7 +376,7 @@ export const AuthPage: React.FC<{
       lang={displayLocale}
       className="auth-page-shell flex min-h-dvh flex-col text-stone-900 dark:text-stone-100"
     >
-      <header className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
+      <header className="mx-2 mt-2 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-stone-200/80 bg-[#fffdf8]/90 px-3 py-2 shadow-[0_8px_24px_-18px_rgba(38,54,83,0.55)] backdrop-blur-sm dark:border-stone-800 dark:bg-stone-900/90 sm:mx-4 sm:mt-4 sm:px-5 lg:mx-6 lg:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
           <button
             type="button"
@@ -386,7 +386,7 @@ export const AuthPage: React.FC<{
               }
             }}
             disabled={isSubmitting}
-            className="auth-choice group flex min-h-11 min-w-0 items-center gap-2 rounded-lg text-start transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 cursor-pointer sm:gap-2.5"
+            className="auth-choice group flex min-h-11 min-w-0 items-center gap-2 rounded-xl px-1.5 text-start transition-[background-color,opacity,transform] hover:bg-stone-100/80 hover:opacity-100 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#df2d38]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf8] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none sm:gap-2.5 dark:hover:bg-stone-800/80 dark:focus-visible:ring-offset-stone-900"
             title={copy.backToHome}
             aria-label={copy.backToHome}
           >
@@ -411,7 +411,7 @@ export const AuthPage: React.FC<{
           dir="ltr"
           role="group"
           aria-label={copy.languageLabel}
-          className="flex shrink-0 gap-1 rounded-xl border border-border p-0.5"
+          className="flex shrink-0 gap-1 rounded-xl border border-stone-200/90 bg-stone-50/80 p-1 shadow-inner shadow-stone-900/5 dark:border-stone-700 dark:bg-stone-950/70"
         >
           {(["ar", "fr"] as const).map((value) => (
             <button
