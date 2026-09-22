@@ -49,47 +49,48 @@ export function LandingPage({
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
-      className="flex flex-1 flex-col items-center px-3.5 py-4 sm:px-6 sm:py-7 w-full min-h-[calc(100dvh-56px)] overflow-y-auto bg-background"
+      className="landing-artisan-shell flex flex-1 flex-col items-center overflow-y-auto bg-[#f7f5ef] px-4 py-5 text-stone-900 dark:bg-stone-950 dark:text-stone-50 sm:px-6 sm:py-8"
     >
-      <div className="auth-view-enter w-full max-w-4xl flex flex-col items-center text-center gap-4 sm:gap-6">
-        {/* Title and Subtitle with breathable, balanced spacing */}
-        <div className="space-y-2.5 sm:space-y-3.5 max-w-2xl mx-auto pt-1">
+      <div className="auth-view-enter flex w-full max-w-5xl flex-col items-center gap-5 text-center sm:gap-7">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[#a4772e] sm:text-base">
+          <span aria-hidden="true" className="h-px w-8 bg-[#caa35a]/60 sm:w-12" />
+          <span>{ar ? "دفترك، ببساطة" : "Votre cahier, simplement"}</span>
+          <span aria-hidden="true" className="h-px w-8 bg-[#caa35a]/60 sm:w-12" />
+        </div>
+
+        <div className="max-w-3xl space-y-4 sm:space-y-5">
           <h1
             tabIndex={-1}
-            className="whitespace-pre-line text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900 dark:text-stone-50 leading-[1.2] sm:leading-[1.15]"
+            className="whitespace-pre-line font-[var(--font-serif)] text-[clamp(2rem,7vw,4.5rem)] font-black leading-[1.12] tracking-[-0.04em] text-[#202333] outline-none dark:text-stone-100"
           >
             {copy.title}
           </h1>
-
-          <p className="text-xs sm:text-base md:text-lg text-stone-600 dark:text-stone-300 leading-relaxed max-w-xl mx-auto font-normal">
+          <p className="mx-auto max-w-2xl text-sm leading-8 text-[#33405b] dark:text-stone-300 sm:text-lg sm:leading-9">
             {copy.subtitle}
           </p>
         </div>
 
-        {/* CTA Actions - Touch target >= 44px with balanced text-only controls */}
-        <div className="flex flex-col items-center gap-2 w-full max-w-sm sm:max-w-md mx-auto">
-          <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-3.5 w-full">
-            <button
-              type="button"
-              onClick={onRegister}
-              className="group auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 px-4 sm:px-6 text-xs sm:text-base font-bold text-white shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
-            >
-              <span>{copy.register}</span>
-            </button>
-            <button
-              type="button"
-              onClick={onLogin}
-              className="auth-action flex-1 inline-flex min-h-[46px] sm:min-h-[48px] items-center justify-center rounded-xl sm:rounded-2xl bg-stone-100/90 dark:bg-stone-900/90 border border-stone-300/80 dark:border-stone-700/80 text-stone-900 dark:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-800 px-4 sm:px-6 text-xs sm:text-base font-semibold shadow-xs hover:border-stone-400 dark:hover:border-stone-600 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
-            >
-              <span>{copy.login}</span>
-            </button>
-          </div>
+        <div className="flex w-full max-w-xl flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4">
+          <button
+            type="button"
+            onClick={onRegister}
+            className="auth-action inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#df2d38] px-7 text-sm font-bold text-white shadow-[0_10px_22px_-13px_rgba(185,35,45,0.8)] hover:bg-[#c92530] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#df2d38] focus-visible:ring-offset-2 sm:w-auto sm:min-w-48 sm:text-base"
+          >
+            {copy.register}
+          </button>
+          <button
+            type="button"
+            onClick={onLogin}
+            className="auth-action inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#263653]/20 bg-[#fffdf8]/90 px-7 text-sm font-semibold text-[#263653] shadow-[0_8px_20px_-18px_rgba(38,54,83,0.8)] hover:border-[#263653]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#263653]/40 focus-visible:ring-offset-2 sm:w-auto sm:min-w-48 sm:text-base dark:border-stone-600 dark:bg-stone-900/80 dark:text-stone-100 dark:hover:bg-stone-800"
+          >
+            {copy.login}
+          </button>
         </div>
 
-        <AppShowcaseMedia locale={locale} loading="eager" className="my-1 w-full max-w-[340px] sm:my-3 sm:max-w-3xl" />
+        <AppShowcaseMedia locale={locale} loading="eager" className="w-full max-w-[340px] rounded-[1.5rem] border-[#cfcac0]/70 sm:mt-2 sm:max-w-4xl" />
 
         {/* Feature Badges with contextual icons and harmonious tones */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1 pb-4">
+        <div className="flex flex-wrap items-center justify-center gap-2 pb-4 sm:gap-3">
           {copy.badges.map((badge) => {
             const Icon = badge.icon;
             return (
