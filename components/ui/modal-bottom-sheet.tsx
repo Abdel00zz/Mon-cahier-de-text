@@ -161,23 +161,31 @@ export function ModalBottomSheet({
           )}
         />
 
-        {/* Modal Window Container (Sketch.com inspired) */}
+        {/* Modal Window Container - Optimisé arrondis et animations mobile/tablette */}
         <DialogPrimitive.Content
           ref={contentRef}
           dir={effectiveDir}
           {...(!description ? { 'aria-describedby': undefined } : {})}
           className={cn(
             effectiveIsRtl ? 'rtl-flow' : 'ltr-flow',
-            'modal-pro-surface modal-motion-surface fixed inset-x-0 bottom-0 top-auto z-[110] flex h-fit min-h-0 flex-col gap-0 overflow-hidden overscroll-contain border border-border bg-card text-foreground outline-none',
-            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[22px] sm:border sm:border-border sm:shadow-2xl',
-            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-[22px]',
+            'modal-pro-surface modal-motion-surface fixed z-[110] flex h-fit min-h-0 flex-col gap-0 overflow-hidden overscroll-contain',
+            // Mobile portrait : bottom sheet avec arrondis supérieurs prononcés
+            'inset-x-0 bottom-0 top-auto rounded-t-[28px] border-t border-x border-border bg-card text-foreground shadow-2xl',
+            // Desktop : modal centrée avec arrondis complets
+            'sm:inset-0 sm:m-auto sm:max-h-[min(90dvh,calc(100dvh-2.5rem))] sm:w-[calc(100vw-2.5rem)] sm:rounded-[24px] sm:border sm:border-border sm:shadow-2xl',
+            // Landscape mobile : modal centrée petite
+            'landscape:max-h-[min(94dvh,calc(var(--app-viewport-height,100dvh)-1rem))] landscape:inset-0 landscape:m-auto landscape:w-[min(92vw,44rem)] sm:landscape:w-[calc(100vw-2.5rem)] landscape:rounded-[24px]',
+            // Safe area insets
             !footer && 'pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] sm:pb-0 landscape:pb-0',
             'pl-[max(0px,env(safe-area-inset-left))] pr-[max(0px,env(safe-area-inset-right))]',
+            // Max width
             mwClass,
-            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-1.5rem)] rounded-[22px] pb-0',
+            // Dialog presentation (alertes/confirmations courtes)
+            mobilePresentation === 'dialog' && 'inset-0 m-auto w-[calc(100vw-2rem)] max-w-md rounded-[24px] pb-0 border',
+            // Focus outline
+            'outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-0',
             className,
-            // La position appartient au socle modal. Une classe décorative
-            // passée par un écran ne doit jamais pouvoir la remplacer.
+            // Position fixe non-remplaçable
             '!fixed'
           )}
           style={{
@@ -222,7 +230,7 @@ export function ModalBottomSheet({
           onClickCapture={swipe.onClickCapture}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Sketch Drag Handle */}
+          {/* Sketch Drag Handle - Optimisé pour le toucher */}
           {dragHandle && isCompactSheet && (
             <button
               type="button"
@@ -234,68 +242,101 @@ export function ModalBottomSheet({
                 if (canExpand) expandSheet();
                 else if (canCollapse) collapseSheet();
               }}
-              className="modal-drag-handle absolute left-1/2 top-0 z-20 flex h-11 w-24 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing sm:hidden"
+              className={cn(
+                'modal-drag-handle absolute left-1/2 top-0 z-20 flex items-center justify-center',
+                'h-12 w-28 -translate-x-1/2',
+                'cursor-grab active:cursor-grabbing touch-manipulation',
+                'transition-opacity duration-200',
+                'sm:hidden'
+              )}
             >
               {typeof dragHandle === 'boolean'
-                ? <span className="modal-drag-indicator" />
+                ? <span className="modal-drag-indicator h-1 w-12 rounded-full bg-muted-foreground/30 transition-all duration-200 active:w-14 active:bg-muted-foreground/50" />
                 : dragHandle}
             </button>
           )}
 
-          {/* Header */}
+          {/* Header - Optimisé hiérarchie visuelle mobile */}
           {(title || description) && (
             <div
               className={cn(
-                'modal-header modal-pro-header relative z-10 shrink-0 min-h-13 sm:min-h-14 bg-transparent px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6 text-foreground flex flex-col justify-center text-start',
-                !hideClose ? 'pe-14 sm:pe-14 ps-5 sm:ps-7' : 'px-5 sm:px-7',
+                'modal-header modal-pro-header relative z-10 shrink-0 bg-transparent text-foreground flex flex-col justify-center text-start',
+                // Spacing optimisé mobile/desktop
+                'min-h-[3.25rem] sm:min-h-[3.75rem]',
+                'px-5 sm:px-7 py-4 sm:py-5 landscape:py-3.5 landscape:px-6',
+                // Espacement pour le bouton X (padding-end augmenté)
+                !hideClose ? 'pe-[3.75rem] sm:pe-[4.25rem] ps-5 sm:ps-7' : 'px-5 sm:px-7',
+                // Spacing drag handle sur mobile
+                isCompactSheet && dragHandle && 'pt-[3.25rem]',
                 headerClassName
               )}
             >
               {title && (
-                <DialogPrimitive.Title data-ui-title className="text-[16px] sm:text-[18px] font-semibold leading-snug tracking-[-0.015em] text-foreground">
+                <DialogPrimitive.Title data-ui-title className="text-[17px] sm:text-[19px] font-bold leading-[1.35] tracking-[-0.02em] text-foreground">
                   {title}
                 </DialogPrimitive.Title>
               )}
               {description && (
-                <DialogPrimitive.Description data-description className="mt-1 text-xs sm:text-[13px] leading-relaxed text-muted-foreground tracking-normal">
+                <DialogPrimitive.Description data-description className="mt-1.5 text-[13px] sm:text-[13.5px] leading-[1.5] text-muted-foreground tracking-[-0.005em]">
                   {description}
                 </DialogPrimitive.Description>
               )}
             </div>
           )}
 
-          {/* Close button (Sketch.com circular pill) */}
+          {/* Close button - Optimisé mobile/tablette avec physique de ressort */}
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
-                'dialog-close absolute z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer end-3 sm:end-4',
-                'top-3 sm:top-3.5'
+                'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
+                'bg-muted/60 hover:bg-muted/90 backdrop-blur-sm',
+                'text-muted-foreground hover:text-foreground',
+                'shadow-sm hover:shadow-md',
+                'transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]',
+                'active:scale-[0.92] hover:scale-[1.04]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'cursor-pointer touch-manipulation',
+                // Taille tactile optimisée (minimum 44px)
+                'h-10 w-10 sm:h-11 sm:w-11',
+                // Positionnement respectant les arrondis du modal
+                'end-[max(0.75rem,env(safe-area-inset-right))] sm:end-5',
+                'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-4',
+                // Prise en compte du drag handle sur mobile
+                isCompactSheet && dragHandle && 'top-[max(3rem,calc(0.75rem+env(safe-area-inset-top)))]'
               )}
             >
-              <X className="h-4 w-4 stroke-[2]" />
+              <X className="h-[18px] w-[18px] sm:h-5 sm:w-5 stroke-[2.2]" />
               <span className="sr-only">{closeLabel}</span>
             </DialogPrimitive.Close>
           )}
 
-          {/* Scrollable Body */}
+          {/* Scrollable Body - Optimisé scroll mobile */}
           <div
             data-swipe-scroll-region
             className={cn(
-              'modal-body modern-scrollbar min-h-0 min-w-0 flex-auto overflow-y-auto overscroll-contain px-5 py-4 sm:px-7 sm:py-5.5 landscape:py-3 landscape:px-6 [overflow-anchor:none] [-webkit-overflow-scrolling:touch]',
-              !(title || description) && 'pt-8 sm:pt-6 landscape:pt-4',
-              !footer && 'pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
+              'modal-body modern-scrollbar min-h-0 min-w-0 flex-auto overflow-y-auto overscroll-contain',
+              'px-5 py-4 sm:px-7 sm:py-6 landscape:py-4 landscape:px-6',
+              '[overflow-anchor:none] [-webkit-overflow-scrolling:touch]',
+              // Padding-top si pas de header
+              !(title || description) && 'pt-[3.5rem] sm:pt-7 landscape:pt-5',
+              // Padding-bottom si pas de footer (respect du safe area)
+              !footer && 'pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6',
               bodyClassName
             )}
           >
             {children}
           </div>
 
-          {/* Footer */}
+          {/* Footer - Optimisé zone d'action mobile */}
           {footer && (
             <div
               className={cn(
-                'modal-footer modal-pro-footer relative z-10 flex shrink-0 flex-col-reverse gap-2 bg-muted/20 dark:bg-muted/10 px-5 py-3.5 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))] sm:flex-row sm:items-center sm:justify-end sm:gap-2.5 sm:px-7 sm:py-4 landscape:py-3 landscape:px-6 text-foreground',
+                'modal-footer modal-pro-footer relative z-10 flex shrink-0 flex-col-reverse gap-2.5 bg-muted/20 dark:bg-muted/10',
+                'px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]',
+                'sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-7 sm:py-4.5',
+                'landscape:py-3.5 landscape:px-6',
+                'text-foreground',
                 footerClassName
               )}
             >

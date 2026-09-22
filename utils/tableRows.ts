@@ -38,15 +38,23 @@ export const getMergeableRemark = (item: FlatDataItem): string => {
  * pour ne pas confondre deux variables mathématiques.
  * Un chapitre, une section ou un contenu différent brise
  * immédiatement la continuité.
+ * 
+ * Lignes libres : si deux lignes libres ont exactement le même texte
+ * (description identique), elles sont fusionnées.
  */
 const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
     if (item.elementType !== 'item' && ['chapter', 'section', 'subsection', 'subsubsection'].includes(item.elementType)) return null;
     const data = item.data as any;
     const normType = (data.type || '').toString().trim().toLowerCase();
-    // Deux lignes libres identiques restent deux espaces de saisie distincts.
-    if (normType === 'free') return null;
     const normNumber = (data.number ?? '').toString().trim();
     const normTitle = (data.title || '').toString().normalize('NFC').trim().replace(/\s+/g, ' ');
+    const normDescription = (data.description || '').toString().normalize('NFC').trim();
+    
+    // Ligne libre : fusion basée uniquement sur le texte exact de la description
+    if (normType === 'free') {
+        return normDescription ? JSON.stringify(['free', normDescription]) : null;
+    }
+    
     if (!normType && !normTitle) return null;
     return JSON.stringify([normType, normNumber, normTitle, data.description ?? '', data.page ?? '']);
 };
