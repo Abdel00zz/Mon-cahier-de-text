@@ -49,9 +49,9 @@ export function LandingPage({
   return (
     <div
       dir={ar ? "rtl" : "ltr"}
-      className="landing-artisan-shell flex flex-1 flex-col items-center overflow-y-auto bg-[#f7f5ef] px-4 py-5 text-stone-900 dark:bg-stone-950 dark:text-stone-50 sm:px-6 sm:py-8"
+      className="landing-artisan-shell flex flex-1 flex-col items-center overflow-y-auto bg-[#f7f5ef] px-4 py-4 text-stone-900 dark:bg-stone-950 dark:text-stone-50 sm:px-6 sm:py-6"
     >
-      <div className="auth-view-enter flex w-full max-w-5xl flex-col items-center gap-5 text-center sm:gap-7">
+      <div className="auth-view-enter flex w-full max-w-5xl flex-col items-center gap-5 text-center sm:gap-6">
         <div className="flex items-center gap-2 text-sm font-semibold text-[#a4772e] sm:text-base">
           <span aria-hidden="true" className="h-px w-8 bg-[#caa35a]/60 sm:w-12" />
           <span>{ar ? "دفترك، ببساطة" : "Votre cahier, simplement"}</span>
