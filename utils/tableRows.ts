@@ -50,9 +50,10 @@ const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
     const normTitle = (data.title || '').toString().normalize('NFC').trim().replace(/\s+/g, ' ');
     const normDescription = (data.description || '').toString().normalize('NFC').trim();
     
-    // Ligne libre : fusion basée uniquement sur le texte exact de la description
+    // Ligne libre : fusion basée sur le titre (la description varie souvent)
+    // Les lignes libres vides (sans titre) sont aussi fusionnées entre elles
     if (normType === 'free') {
-        return normDescription ? JSON.stringify(['free', normDescription]) : null;
+        return JSON.stringify(['free', normTitle]);
     }
     
     if (!normType && !normTitle) return null;
