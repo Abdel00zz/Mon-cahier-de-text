@@ -85,7 +85,7 @@ function applyTextLayout(segment: string, keyBase: number): React.ReactNode[] {
 
 const INLINE_MARKERS = ['***', '**', '++', '==', '*'] as const;
 
-export function getColorClass(color: string): string {
+function getColorClass(color: string): string {
   const c = color.toLowerCase();
   switch (c) {
     case 'red':

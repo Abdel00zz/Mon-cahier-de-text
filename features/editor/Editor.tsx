@@ -607,18 +607,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     return () => unsubscribers.forEach(unsubscribe => unsubscribe());
   }, [initialClassInfo.id, setEditorState, workspaceIsActive]);
 
-  const handleCellUpdate = useCallback((indices: Indices, field: string, value: any) => {
-    const commit = () => {
-      setState(draft => {
-          const { item } = findItem(draft, indices);
-          if (item) (item as any)[field] = value;
-      }, 'cell-edit');
-      setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-    };
-    if (field === 'date' && typeof value === 'string') requestDateCommit(value, commit, getDateOrder(indices));
-    else commit();
-  }, [setState, setEditorState, requestDateCommit, getDateOrder]);
-
   const handleUndo = useCallback(() => {
     if (!canUndo) return;
     undo();
@@ -1191,8 +1179,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               visibleRows={visibleRows}
               onClearSearch={handleClearSearch}
               contentDirection={contentDirection}
-
-              onCellUpdate={handleCellUpdate}
               onOpenAddContentModal={handleOpenAddContentModal}
               showDescriptions={config.screenDescriptionMode === 'all' ? true : config.screenDescriptionMode === 'none' ? false : undefined}
               descriptionTypes={config.screenDescriptionTypes}

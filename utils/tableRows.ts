@@ -32,52 +32,90 @@ export const getMergeableRemark = (item: FlatDataItem): string => {
     return typeof remark === 'string' ? remark.trim() : '';
 };
 
+/** Normalisation partagée par toutes les comparaisons de fusion : Unicode NFC
+ *  (arabe et accents), espaces parasites retirés, espaces internes réduits —
+ *  « Exo  1 » et « Exo 1 » désignent donc le même contenu. */
+const normalizeIdentityText = (value: unknown): string =>
+    typeof value === 'string' || typeof value === 'number'
+        ? String(value).normalize('NFC').trim().replace(/\s+/g, ' ')
+        : '';
+
+/** Types structurels : ils n'ont pas d'identité de contenu et coupent toujours
+ *  la continuité (un chapitre ou une section sépare deux groupes). */
+const STRUCTURAL_ELEMENT_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
+
+/** Préfixe des lignes libres. Impossible à confondre avec l'identité JSON d'un
+ *  contenu pédagogique, qui commence par « [ ». */
+const FREE_IDENTITY_PREFIX = 'free:';
+
 /**
  * Identité pédagogique normalisée pour la fusion intelligente :
- * Type, numéro, titre, description et page. La casse du titre est conservée
- * pour ne pas confondre deux variables mathématiques.
- * Un chapitre, une section ou un contenu différent brise
- * immédiatement la continuité.
- * 
- * Lignes libres : si deux lignes libres ont exactement le même texte
- * (description identique), elles sont fusionnées.
+ * type, numéro, titre, description et page, tous normalisés. La casse du titre
+ * est conservée pour ne pas confondre deux variables mathématiques.
+ * Un chapitre, une section ou un contenu différent brise la continuité.
+ *
+ * Ligne libre : son identité est le texte réellement affiché (titre +
+ * description). Une ligne libre vide n'a aucune identité — sans texte il n'y a
+ * rien à comparer, donc rien à fusionner.
  */
 const getPedagogicalIdentity = (item: FlatDataItem): string | null => {
-    if (item.elementType !== 'item' && ['chapter', 'section', 'subsection', 'subsubsection'].includes(item.elementType)) return null;
+    if (STRUCTURAL_ELEMENT_TYPES.has(item.elementType)) return null;
     const data = item.data as any;
-    const normType = (data.type || '').toString().trim().toLowerCase();
-    const normNumber = (data.number ?? '').toString().trim();
-    const normTitle = (data.title || '').toString().normalize('NFC').trim().replace(/\s+/g, ' ');
-    const normDescription = (data.description || '').toString().normalize('NFC').trim();
-    
-    // Ligne libre : fusion basée sur le titre (la description varie souvent)
-    // Les lignes libres vides (sans titre) sont aussi fusionnées entre elles
-    if (normType === 'free') {
-        return JSON.stringify(['free', normTitle]);
+    const type = normalizeIdentityText(data.type).toLowerCase();
+    const title = normalizeIdentityText(data.title);
+
+    if (type === 'free') {
+        const text = `${title}\n${normalizeIdentityText(data.description)}`.trim();
+        return text ? FREE_IDENTITY_PREFIX + text : null;
     }
-    
-    if (!normType && !normTitle) return null;
-    return JSON.stringify([normType, normNumber, normTitle, data.description ?? '', data.page ?? '']);
+
+    if (!type && !title) return null;
+    return JSON.stringify([
+        type,
+        normalizeIdentityText(data.number),
+        title,
+        normalizeIdentityText(data.description),
+        normalizeIdentityText(data.page),
+    ]);
 };
 
 /**
  * Fusion intelligente des séances et contenus :
- * 1. Même date : toutes les lignes consécutives ayant la même date de séance
- *    sont fusionnées dans une cellule de date commune.
- * 2. Même contenu multi-dates : les lignes consécutives de même identité pédagogique
- *    (type, numéro, titre, description, page) sur leurs différentes dates sont regroupées avec MultiDateCard.
+ * 1. MÊME DATE — les lignes consécutives d'une même séance partagent une seule
+ *    cellule de date ; chaque ligne garde son propre contenu.
+ * 2. MÊME CONTENU SUR DES DATES DISTINCTES — le même contenu donné sur
+ *    plusieurs séances est affiché une fois, ses dates réunies (MultiDateCard).
+ *    La fusion n'a lieu que si chaque ligne porte une date différente de la
+ *    précédente : une répétition le même jour, ou sans date, reste donc
+ *    toujours visible — jamais absorbée ni masquée.
+ *
+ * Les deux axes s'excluent (dates distinctes d'un côté, date unique de
+ * l'autre) : aucune priorité arbitraire entre eux n'est nécessaire. Le plafond
+ * de 24 lignes borne le coût de rendu d'une très grande journée.
  */
 const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
+    // Une seule passe de normalisation : les balayages imbriqués ci-dessous
+    // comparent des valeurs déjà calculées. Chaque appel de getPedagogicalIdentity
+    // normalise cinq chaînes ; les recalculer à chaque comparaison rendait le
+    // regroupement inutilement coûteux (et O(n²) sur une grande séance).
+    const dates = items.map(getMergeableDate);
+    const identities = items.map(getPedagogicalIdentity);
+
+    /** Deux lignes ne fusionnent que si elles se suivent réellement dans le
+     *  cahier : une recherche peut afficher deux lignes voisines qu'un contenu
+     *  masqué sépare dans la source. */
+    const follows = (index: number): boolean =>
+        items[index].position === items[index - 1].position + 1;
+
     let start = 0;
     while (start < items.length) {
-        const itemStart = items[start];
-        const dateStart = getMergeableDate(itemStart);
-        const identityStart = getPedagogicalIdentity(itemStart);
-        const isDatedSequenceStart = Boolean(dateStart && (start === 0 || !getMergeableDate(items[start - 1])));
+        const dateStart = dates[start];
+        const identityStart = identities[start];
+        const isDatedSequenceStart = Boolean(dateStart && (start === 0 || !dates[start - 1]));
 
         if (!dateStart && !identityStart) {
-            const isDatedSequenceEnd = start === items.length - 1 || !getMergeableDate(items[start + 1]);
-            itemStart.dateMerge = {
+            const isDatedSequenceEnd = start === items.length - 1 || !dates[start + 1];
+            items[start].dateMerge = {
                 isMerged: false,
                 mergeType: 'date',
                 isStart: true,
@@ -92,64 +130,55 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
             continue;
         }
 
-        // 1. Détection des lignes consécutives de MÊME DATE
+        // 1. Lignes consécutives de MÊME DATE (séance commune).
         let sameDateEnd = start + 1;
-        while (sameDateEnd < items.length && sameDateEnd < start + 24) {
-            const nextItem = items[sameDateEnd];
-            const nextDate = getMergeableDate(nextItem);
-            if (nextItem.position !== items[sameDateEnd - 1].position + 1 || !nextDate || nextDate !== dateStart) {
-                break;
-            }
-            // Laisser au prochain contenu répété sa propre cellule multi-date.
-            const following = items[sameDateEnd + 1];
-            const nextIdentity = getPedagogicalIdentity(nextItem);
-            if (following && following.position === nextItem.position + 1 && nextIdentity
-                && nextIdentity === getPedagogicalIdentity(following) && getMergeableDate(following)) break;
+        while (sameDateEnd < items.length && sameDateEnd < start + 24 && follows(sameDateEnd)) {
+            const nextDate = dates[sameDateEnd];
+            if (!nextDate || nextDate !== dateStart) break;
+            // Laisser au contenu répété qui commence ici sa propre cellule
+            // multi-date : sans cela la première ligne d'une fusion multi-date
+            // serait absorbée par la séance précédente et le regroupement perdu.
+            const followingIndex = sameDateEnd + 1;
+            if (followingIndex < items.length
+                && follows(followingIndex)
+                && identities[followingIndex] !== null
+                && identities[followingIndex] === identities[sameDateEnd]
+                && dates[followingIndex] !== null
+                && dates[followingIndex] !== nextDate) break;
             sameDateEnd += 1;
         }
 
-        // 2. Détection des lignes consécutives de MÊME CONTENU sur dates distinctes (Multi-date)
+        // 2. MÊME CONTENU sur des DATES DISTINCTES (fusion multi-date).
         let sameContentEnd = start + 1;
-        if (identityStart) {
-            while (sameContentEnd < items.length && sameContentEnd < start + 24) {
-                const nextItem = items[sameContentEnd];
-                const nextIdentity = getPedagogicalIdentity(nextItem);
-
-                if (nextItem.position !== items[sameContentEnd - 1].position + 1 || !nextIdentity || nextIdentity !== identityStart || Boolean(getMergeableDate(nextItem)) !== Boolean(dateStart)) {
-                    break;
-                }
+        if (identityStart && dateStart) {
+            let previousDate = dateStart;
+            while (sameContentEnd < items.length && sameContentEnd < start + 24 && follows(sameContentEnd)) {
+                if (identities[sameContentEnd] !== identityStart) break;
+                const nextDate = dates[sameContentEnd];
+                // Sans date, ou date déjà rencontrée : c'est un doublon de la
+                // même séance, il doit rester visible.
+                if (!nextDate || nextDate === previousDate) break;
+                previousDate = nextDate;
                 sameContentEnd += 1;
             }
         }
 
         const sameDateCount = sameDateEnd - start;
         const sameContentCount = sameContentEnd - start;
-
-        let end = start + 1;
-        let mergeType: 'date' | 'content' = 'date';
-
-        if (sameContentCount > 1) {
-            end = sameContentEnd;
-            mergeType = 'content';
-        } else if (sameDateCount > 1) {
-            end = sameDateEnd;
-            mergeType = 'date';
-        } else {
-            end = start + 1;
-            mergeType = 'date';
-        }
+        const mergeContent = sameContentCount > 1;
+        const end = mergeContent ? sameContentEnd : (sameDateCount > 1 ? sameDateEnd : start + 1);
 
         const count = end - start;
         const isMerged = count > 1;
         const group = items.slice(start, end);
         const firstRemark = getMergeableRemark(group[0]);
         const shouldMergeRemark = isMerged && group.every(item => getMergeableRemark(item) === firstRemark);
-        const isDatedSequenceEnd = end === items.length || !getMergeableDate(items[end]);
+        const isDatedSequenceEnd = end === items.length || !dates[end];
 
         for (let index = start; index < end; index += 1) {
             items[index].dateMerge = {
                 isMerged,
-                mergeType,
+                mergeType: mergeContent ? 'content' : 'date',
                 isStart: index === start,
                 isContinuation: index !== start,
                 isEnd: index === end - 1,

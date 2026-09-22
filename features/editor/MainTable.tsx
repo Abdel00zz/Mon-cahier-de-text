@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen } from '@/components/ui/icons';
 import { getMergeableDate, getMergeableRemark, groupLessonRows, type FlatDataItem, type RenderRow } from '@/utils/tableRows';
+import { textDirectionAttribute } from '@/utils/textDirection';
 import { logger } from '@/utils/logger';
 import { useWindowVirtualizer, VirtualListRow, type VirtualItem } from '@/components/ui/virtual-list';
 import { useLocale } from '@/i18n/LocaleProvider';
@@ -24,7 +25,6 @@ interface MainTableProps {
   onClearSearch: () => void;
   /** Sens de lecture du cahier importé, indépendant de l'interface générale. */
   contentDirection: ContentDirection;
-  onCellUpdate: (indices: Indices, field: string, value: any) => void;
   onOpenAddContentModal: (indices?: Indices) => void;
   showDescriptions?: boolean;
   descriptionTypes?: string[];
@@ -238,7 +238,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     onClick={event => event.stopPropagation()}
                 >
                     <div className="flex min-h-full w-full flex-col justify-center">
-                        <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
+                        <div dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
                     </div>
                 </div>
             ) : items.map((item, index) => (
@@ -250,7 +250,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = ({
                     style={{ gridColumn: 3, gridRow: index + 1 }}
                     onClick={event => event.stopPropagation()}
                 >
-                    <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
+                    <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
                 </div>
             ))}
         </div>
@@ -341,7 +341,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
   selectedKeys,
   onToggleSelect,
   newlyAddedIds,
-  onCellUpdate,
   onOpenContentEditor,
   onOpenDateModal,
   getDateWarnings,

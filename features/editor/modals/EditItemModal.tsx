@@ -3,7 +3,6 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { ContextualDescriptionEditor } from '@/features/editor/modals/ContextualDescriptionEditor';
 import { MathText } from '@/components/ui/math-text';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
@@ -267,7 +266,10 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
       case 'item':
         return (
           <div className="space-y-4 py-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Même grille que la modale d'édition : les trois champs qui
+                portent l'identité du contenu (type, numéro, page) tiennent
+                sur une seule ligne, l'aide passe dessous en pleine largeur. */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1.3fr_.45fr_.45fr]">
               <div className="space-y-1.5">
                 <label htmlFor="itemType" className={labelClasses}>{t('addContent.contentType')} *</label>
                 <Select
@@ -305,8 +307,19 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
                   aria-describedby="itemNumberHint"
                 />
               </div>
-              <p id="itemNumberHint" className="text-[11px] font-medium leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
+              <div className="space-y-1.5">
+                <label htmlFor="itemPage" className={labelClasses}>{t('editor.page')}</label>
+                <Input
+                  type="text"
+                  id="itemPage"
+                  value={formData.page || ''}
+                  onChange={(e) => setFormData({ ...formData, page: e.target.value })}
+                  placeholder={t('editor.pagePlaceholder')}
+                  className="h-10 rounded-lg border-border"
+                />
+              </div>
             </div>
+            <p id="itemNumberHint" className="text-[11px] font-medium leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
             <div className="space-y-1.5">
               <label htmlFor="itemTitle" className={labelClasses}>{t('addContent.itemTitle')}</label>
               <Input

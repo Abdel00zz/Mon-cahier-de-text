@@ -24,6 +24,7 @@ import { formatDateDDMMYYYY } from '@/utils/dataUtils';
 import { schoolYearLabelFromDate } from '@/utils/calendar';
 import { getAcademyById } from '@/utils/moroccoEducation';
 import { isArabicText } from '@/utils/textFormat';
+import { textDirectionAttribute } from '@/utils/textDirection';
 import type { PrintHeaderMode } from './modals/PrintModal';
 
 // Props interfaces
@@ -338,7 +339,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                             {remarks.length > 0 && (
                                                 <div className="print-session-remarks">
                                                     {remarks.map((remark, remarkIndex) => (
-                                                        <div key={`remark-${remarkIndex}`} className="print-session-remark"><MathText source={remark}>{remark}</MathText></div>
+                                                        <div key={`remark-${remarkIndex}`} dir={textDirectionAttribute(remark)} className="print-session-remark"><MathText source={remark}>{remark}</MathText></div>
                                                     ))}
                                                 </div>
                                             )}
@@ -374,7 +375,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                     <td className="print-col-content">
                                         {renderPrintContent(item)}
                                     </td>
-                                    <td className="print-col-remark">
+                                    <td className="print-col-remark" dir={textDirectionAttribute(displayRemark)}>
                                         <MathText source={displayRemark}>{displayRemark}</MathText>
                                     </td>
                                 </tr>

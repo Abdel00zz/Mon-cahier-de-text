@@ -6,6 +6,7 @@ import { ContentRenderer } from './ContentRenderer';
 import { TOP_LEVEL_TYPE_CONFIG } from '@/constants';
 import { useLocale, type AppLocale } from '@/i18n/LocaleProvider';
 import { numberFormat } from '@/utils/formatters';
+import { textDirectionAttribute } from '@/utils/textDirection';
 
 interface TableRowProps {
   data: any;
@@ -172,7 +173,7 @@ const RemarkCell: FC<{
 
   return (
     <div className={`flex min-w-0 p-1 md:p-1.5 ${borderClass} ${lineClass} ${bgClass}`} onClick={event => event.stopPropagation()}>
-      <div className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
+      <div dir={textDirectionAttribute(value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
     </div>
   );
 });

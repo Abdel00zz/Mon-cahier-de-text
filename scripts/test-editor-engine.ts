@@ -23,6 +23,7 @@ import { findItem, addItem, addSection } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { renderDescriptionWithBold } from '../utils/textFormat';
 import { hasMathContent, hasMathSyntax, splitMathText } from '../utils/math';
+import { detectTextDirection } from '../utils/textDirection';
 import { listViewport, visibleRange } from '../utils/virtualGeometry';
 import { MainTable } from '../features/editor/MainTable';
 import { LocaleProvider } from '../i18n/LocaleProvider';
@@ -91,6 +92,66 @@ test('ligne libre : repère écran seulement, contenu imprimé même si les desc
   assert.doesNotMatch(render('', true), /à remplir|editor-kind-badge/);
   assert.match(render('Texte libre $x^2$', true), /Texte libre \$x\^2\$/);
   assert.match(render('', true), /editor-free-content/);
+});
+
+test('direction : c’est la langue du texte qui décide, bloc par bloc', () => {
+  const tagWithClass = (html: string, className: string): string => {
+    const match = html.match(new RegExp(`<[a-z]+[^>]*\\b${className}\\b[^>]*>`));
+    assert.ok(match, `Balise ${className} absente du rendu`);
+    return match[0];
+  };
+  const render = (data: Record<string, unknown>, elementType: 'item' | 'chapter' | 'section' = 'item') => renderToStaticMarkup(
+    React.createElement(LocaleProvider, { locale: 'fr', children:
+      React.createElement(ContentRenderer, { data, indices: { chapterIndex: 0 }, elementType, showDescriptions: true }),
+    }),
+  );
+
+  // Arabe dès la première lettre : le titre et la description passent en RTL,
+  // même dans un cahier latin.
+  const arabic = render({ type: 'exercice', title: 'الاشتقاق والتقابل', description: 'نشتق الدالة على مجال' });
+  assert.ok(tagWithClass(arabic, 'editor-type-item-title').includes('dir="rtl"'));
+  assert.ok(tagWithClass(arabic, 'editor-type-description').includes('dir="rtl"'));
+
+  // Latin : LTR, explicitement (le bloc ne dépend plus du parent).
+  const latin = render({ type: 'exercice', title: 'Dérivation', description: 'Étudier la fonction' });
+  assert.ok(tagWithClass(latin, 'editor-type-item-title').includes('dir="ltr"'));
+
+  // Titre latin + description arabe : les deux blocs divergent.
+  const mixed = render({ type: 'exercice', title: 'Dérivation', description: 'نشتق الدالة' });
+  assert.ok(tagWithClass(mixed, 'editor-type-item-title').includes('dir="ltr"'));
+  assert.ok(tagWithClass(mixed, 'editor-type-description').includes('dir="rtl"'));
+
+  // Formule en tête : les lettres latines du LaTeX ne doivent pas imposer LTR.
+  const mathFirst = render({ type: 'définition', title: '$f(x)=x^2$ الدالة المربعة' });
+  assert.ok(tagWithClass(mathFirst, 'editor-type-item-title').includes('dir="rtl"'));
+
+  // Chiffres et ponctuation seuls : aucune décision, la direction reste héritée.
+  const numeric = render({ type: 'exercice', title: '12 + 3,5 = ?' });
+  assert.equal(tagWithClass(numeric, 'editor-type-item-title').includes('dir='), false);
+
+  // Titres de structure et ligne libre suivent la même règle.
+  assert.ok(render({ type: 'chapter', title: 'الوحدة الأولى' }, 'chapter').includes('dir="rtl"'));
+  assert.match(render({ type: 'section', name: 'الدوال العددية' }, 'section'), /dir="rtl"/);
+  assert.ok(render({ type: 'free', title: '', description: 'ملاحظة الأستاذ' }).includes('dir="rtl"'));
+});
+
+test('direction : formules, chiffres arabes et texte vide ne tranchent jamais', () => {
+  // Rien de décisif : l'appelant conserve la direction du cahier.
+  for (const nothing of [undefined, null, '', '   ', '12 + 3,5 = ?', '١٢٣، ؟', '... (42) —', '$\\frac{1}{2}$', '$$\\lim_{x\\to a} f(x)$$', '\\(a+b\\)']) {
+    assert.equal(detectTextDirection(nothing), null, `Aucune direction attendue pour ${JSON.stringify(nothing)}`);
+  }
+  // La première lettre décide, les chiffres qui la précèdent sont neutres.
+  assert.equal(detectTextDirection('132 ملاحظة'), 'rtl');
+  assert.equal(detectTextDirection('ملاحظة'), 'rtl');
+  assert.equal(detectTextDirection('  Remarque'), 'ltr');
+  assert.equal(detectTextDirection('12 exercices'), 'ltr');
+  // Une formule en tête ne bascule pas la phrase en LTR.
+  assert.equal(detectTextDirection('$x^2$ ملاحظة'), 'rtl');
+  assert.equal(detectTextDirection('$$\\lim f$$ ملاحظة'), 'rtl');
+  assert.equal(detectTextDirection('\\(a+b\\) ملاحظة'), 'rtl');
+  assert.equal(detectTextDirection('مثال $x^2$'), 'rtl');
+  // Multiligne : seule la première ligne porte du texte.
+  assert.equal(detectTextDirection('\n\n الاشتقاق'), 'rtl');
 });
 
 test('emploi du temps : abréviations compactes sans niveau dupliqué ni confusion de filière', () => {
@@ -247,7 +308,7 @@ test('évaluations identiques : un titre commun et toutes les dates reliées par
   const noop = () => {};
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
-      contentDirection: 'ltr', onCellUpdate: noop, onOpenAddContentModal: noop,
+      contentDirection: 'ltr', onOpenAddContentModal: noop,
       selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
     }),
   }));
@@ -262,13 +323,25 @@ test('évaluations identiques : un titre commun et toutes les dates reliées par
   assert.equal(data.length, 3);
 });
 
-test('fusion : même date, dates inversées, absence de date et contenus distincts', () => {
+test('fusion : dates distinctes oui, doublon de la même séance non', () => {
   const entry = { type: 'evaluation_diagnostic' as const, title: 'Évaluation diagnostique 1' };
-  for (const dates of [['2026-09-16', '2026-09-14'], ['2026-09-14', '2026-09-14'], ['', '']]) {
+  // Même contenu sur des séances distinctes (même dans le désordre) : une seule
+  // rangée, une seule cellule qui réunit les deux dates.
+  for (const dates of [['2026-09-16', '2026-09-14'], ['2026-09-14', '2026-09-16']]) {
     const rows = groupLessonRows(buildLessonRows(dates.map(date => ({ ...entry, date }))));
     assert.equal(rows.renderRows.length, 1);
     assert.equal(rows.flatData[0].dateMerge?.mergeType, 'content');
   }
+  // Même contenu le même jour : la séance reste unique, mais les deux lignes
+  // restent affichées — un doublon ne disparaît jamais de l'écran.
+  const sameDay = groupLessonRows(buildLessonRows(['2026-09-14', '2026-09-14'].map(date => ({ ...entry, date }))));
+  assert.equal(sameDay.renderRows.length, 1);
+  assert.equal(sameDay.flatData[0].dateMerge?.mergeType, 'date');
+  assert.equal(sameDay.flatData[0].dateMerge?.count, 2);
+  // Sans date, il n'y a aucune séance à réunir : deux rangées distinctes.
+  const undated = groupLessonRows(buildLessonRows([{ ...entry, date: '' }, { ...entry, date: '' }]));
+  assert.equal(undated.renderRows.length, 2);
+  assert.ok(undated.renderRows.every(row => row.kind === 'single'));
   for (const second of [{ title: 'Évaluation diagnostique 2' }, { description: 'Autre contenu' }, { date: '' }]) {
     const data = [{ ...entry, date: '2026-09-14' }, { ...entry, date: '2026-09-16', ...second }];
     assert.equal(groupLessonRows(buildLessonRows(data)).renderRows.length, 2);
@@ -283,6 +356,39 @@ test('fusion : même date, dates inversées, absence de date et contenus distinc
   assert.equal(grouped.flatData[1].dateMerge?.mergeType, 'content');
 });
 
+test('fusion : des lignes libres de textes différents restent toutes visibles', () => {
+  // Régression : l'identité d'une ligne libre était calculée sur son titre
+  // (toujours vide ici), donc toutes les lignes libres consécutives fusionnaient
+  // en une seule et seules la première restait affichée dans le tableau.
+  const different: LessonsData = [
+    { type: 'free', title: '', description: 'Rappel : devoir à rendre', date: '2026-09-15' },
+    { type: 'free', title: '', description: 'Révision générale', date: '2026-09-15' },
+    { type: 'free', title: '', description: 'Séance annulée', date: '2026-09-15' },
+  ];
+  const distinct = groupLessonRows(buildLessonRows(different));
+  assert.equal(distinct.renderRows.length, 1);
+  assert.equal(distinct.flatData[0].dateMerge?.mergeType, 'date');
+  assert.equal(distinct.flatData[0].dateMerge?.count, 3);
+
+  // Le même rappel répété sur deux séances distinctes : une seule ligne, deux dates.
+  const repeated: LessonsData = [
+    { type: 'free', title: '', description: 'Rappel : devoir à rendre', date: '2026-09-15' },
+    { type: 'free', title: '', description: 'Rappel : devoir à rendre', date: '2026-09-18' },
+  ];
+  const repeatedRows = groupLessonRows(buildLessonRows(repeated));
+  assert.equal(repeatedRows.renderRows.length, 1);
+  assert.equal(repeatedRows.flatData[0].dateMerge?.mergeType, 'content');
+
+  // Deux lignes libres vides n'ont aucun texte à comparer : elles restent distinctes.
+  const empty: LessonsData = [
+    { type: 'free', title: '', description: '', date: '2026-09-15' },
+    { type: 'free', title: '', description: '', date: '2026-09-15' },
+  ];
+  const emptyRows = groupLessonRows(buildLessonRows(empty));
+  assert.equal(emptyRows.flatData[0].dateMerge?.count, 2);
+  assert.equal(emptyRows.flatData[0].dateMerge?.mergeType, 'date');
+});
+
 test('séance fusionnée : les séparateurs de contenu et remarque partagent les mêmes rangées', () => {
   const data: LessonsData = [{ type: 'chapter', title: 'Cours', items: [
     { type: 'exercice', title: 'Première ligne', description: 'Description longue\nsur deux lignes', date: '2026-09-14', remark: 'Remarque A' },
@@ -292,7 +398,7 @@ test('séance fusionnée : les séparateurs de contenu et remarque partagent les
   const noop = () => {};
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
-      contentDirection: 'ltr', onCellUpdate: noop, onOpenAddContentModal: noop,
+      contentDirection: 'ltr', onOpenAddContentModal: noop,
       selectedKeys: new Set<string>(), onToggleSelect: noop, onOpenContentEditor: noop, newlyAddedIds: [],
       showDescriptions: true,
     }),

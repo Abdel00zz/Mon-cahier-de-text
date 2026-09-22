@@ -6,6 +6,7 @@ import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BAD
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/utils/logger';
 import { renderDescriptionWithBold } from '@/utils/textFormat';
+import { textDirectionAttribute } from '@/utils/textDirection';
 import { TriangleAlert } from '@/components/ui/icons';
 import { useLocale } from '@/i18n/LocaleProvider';
 
@@ -124,7 +125,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const title = (item.title || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
       return (
         <MathText source={title}>
-          <div className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
+          <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
             {title}
           </div>
         </MathText>
@@ -155,7 +156,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
-            <span className="max-w-[min(100%,44rem)] break-words text-balance">
+            <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight || hasMathSyntax(chapterTitle) ? (
                 <HighlightedText text={chapterTitle} query={highlight} />
               ) : (
@@ -172,7 +173,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
       <MaybeMathJax key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
-            <HighlightedText text={item.title} query={highlight} />
+            <span dir={textDirectionAttribute(item.title)}>
+              <HighlightedText text={item.title} query={highlight} />
+            </span>
         </div>
       </MaybeMathJax>
     );
@@ -185,7 +188,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-section editor-indent-1 editor-indent-rail font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
-                <HighlightedText text={data.name} query={highlight} />
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
             </div>
         </MaybeMathJax>
       );
@@ -194,7 +199,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsection editor-indent-2 editor-indent-rail font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
-                <HighlightedText text={data.name} query={highlight} />
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
             </div>
         </MaybeMathJax>
       );
@@ -204,7 +211,9 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsubsection editor-indent-3 editor-indent-rail italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
-                <HighlightedText text={data.name} query={highlight} />
+                <span dir={textDirectionAttribute(data.name)}>
+                  <HighlightedText text={data.name} query={highlight} />
+                </span>
             </div>
         </MaybeMathJax>
       );
@@ -226,8 +235,8 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         return (
           <MaybeMathJax mathSource={source} cacheKey={`free-${source}`}>
             <div className={`editor-free-content min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
-              {item.title && <div><HighlightedText text={item.title} query={highlight} /></div>}
-              {item.description && <div>{renderDescriptionWithBold(item.description)}</div>}
+              {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
+              {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
               {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
               {empty && isPrint && <span aria-hidden="true">{'\u00a0'}</span>}
             </div>
@@ -247,10 +256,10 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div className={`print-lesson-item ${lessonIndentClass}`}>
               <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
-              <span className="print-item-title">{item.title || ''}</span>
+              <span dir={textDirectionAttribute(item.title)} className="print-item-title">{item.title || ''}</span>
               {item.page && <span className="print-item-page"> p. {item.page}</span>}
               {allowDescription && (
-                <div className="print-item-description">
+                <div dir={textDirectionAttribute(item.description)} className="print-item-description">
                   {renderDescriptionWithBold(item.description)}
                 </div>
               )}
@@ -278,6 +287,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           {/* Titre : wrap multilingue / saut de ligne supporté */}
           <div
             title={item.title || t('editor.titlePlaceholder')}
+            dir={textDirectionAttribute(item.title)}
             className="editor-type-item-title min-w-0 break-words p-0 font-semibold text-foreground"
           >
             {item.title ? <HighlightedText text={item.title} query={highlight} /> : <span className="italic text-muted-foreground/55">{t('editor.titlePlaceholder')}</span>}
@@ -285,7 +295,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
           {/* Description : encadré sobre sous le titre façon Google Keep */}
           {allowDescription && (
-            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words">
+            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

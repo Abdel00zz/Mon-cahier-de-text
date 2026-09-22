@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContentDirection, LessonItem, TopLevelItem, Section, SubSection, SubSubSection } from '@/types';
-import { TYPE_MAP, getContentTypesForSubject } from '@/constants';
+import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, getContentTypesForSubject } from '@/constants';
 import { translateLocaleMessage, useLocale } from '@/i18n/LocaleProvider';
 import { ContextualDescriptionEditor } from './ContextualDescriptionEditor';
 
@@ -119,7 +119,17 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 <label className={labelClass}>{t('addContent.contentType')}</label>
                 <Select value={String(formData.type ?? '')} onValueChange={value => update('type', value)}>
                   <SelectTrigger className={fieldClass}><SelectValue /></SelectTrigger>
-                  <SelectContent>{typeOptions.map(type => <SelectItem key={type} value={type}>{tc(`contentType.${type}`)}</SelectItem>)}</SelectContent>
+                  {/* Même liste que la modale d'ajout : pastille courte + nom complet. */}
+                  <SelectContent>
+                    {typeOptions.map(type => (
+                      <SelectItem key={type} value={type}>
+                        <div className="flex items-center gap-2">
+                          <span className={contentBadgeClass(type)}>{BADGE_TEXT_MAP[type] || type}</span>
+                          <span>{tc(`contentType.${type}`)}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
               <div>
@@ -136,6 +146,11 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({
                 <Input ref={titleRef} value={editedTitle} onChange={event => update('title', event.target.value)} className={`${fieldClass} font-semibold`} />
               </div>
             </section>
+
+            {/* Même aide que la modale d'ajout : le numéro reste facultatif. */}
+            {formData.type !== 'free' && (
+              <p className="text-[11px] font-medium leading-relaxed text-muted-foreground">{t('addContent.numberAutoHint')}</p>
+            )}
 
             <div className="grid grid-cols-1 gap-4">
               <section className="min-w-0">
