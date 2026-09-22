@@ -1,4 +1,7 @@
 import React, { useMemo } from 'react';
+import './print.css';
+import { printLayoutStyle } from '@/utils/printLayout';
+import { MathText } from '@/components/ui/math-text';
 import { buildLessonRows } from '@/utils/lessonRows';
 import { ContentRenderer } from './ContentRenderer';
 import { buildContentNumbers } from '@/utils/contentNumbering';
@@ -31,8 +34,10 @@ interface PrintViewProps {
     /** Même direction que le tableau d'édition, pour une impression fidèle. */
     contentDirection: ContentDirection;
     newlyAddedIds: string[];
-    /** numéroter les pages en bas (Chrome : nécessite « En-têtes et pieds de page » dans le dialogue d'impression) */
+    /** numéroter les pages en bas (moteurs compatibles avec les boîtes de marge CSS) */
     pageNumbers?: boolean;
+    /** Development/preview surface using the exact same print composition. */
+    preview?: boolean;
     /** en-tête administratif : première page (défaut), toutes les pages ou masqué */
     headerMode?: PrintHeaderMode;
     /** taille du texte imprimé (modale d'impression) */
@@ -40,19 +45,6 @@ interface PrintViewProps {
     /** aération des lignes (modale d'impression) */
     lineSpacing?: 'compact' | 'normal' | 'aere';
 }
-
-/** Réglages typographiques du document imprimé, pilotés par la modale. */
-const TEXT_SIZES: Record<'s' | 'm' | 'l', { body: string; cell: string; description: string; chapter: string }> = {
-    s: { body: '9pt', cell: '7.8pt', description: '7.3pt', chapter: '9.8pt' },
-    m: { body: '10pt', cell: '8.5pt', description: '8pt', chapter: '11pt' },
-    l: { body: '11pt', cell: '9.6pt', description: '9pt', chapter: '12.3pt' },
-};
-
-const LINE_SPACINGS: Record<'compact' | 'normal' | 'aere', { line: number; cellPad: string; itemGap: string }> = {
-    compact: { line: 1.12, cellPad: '1px 5px', itemGap: '1px' },
-    normal: { line: 1.22, cellPad: '2px 5px', itemGap: '2px' },
-    aere: { line: 1.45, cellPad: '5px 6px', itemGap: '5px' },
-};
 
 const getSchoolYearLabel = (schoolYearStart: string | undefined, fallbackDate: string | undefined): string => {
     const source = schoolYearStart ?? fallbackDate ?? new Date().toISOString().slice(0, 10);
@@ -71,11 +63,9 @@ type PrintRow =
     | { kind: 'session'; date: string; items: FlatDataItem[] };
 
 // Main component
-export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal' }) => {
+export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, classInfo, config, contentDirection, newlyAddedIds, pageNumbers = true, headerMode = 'first', textSize = 'm', lineSpacing = 'normal', preview = false }) => {
     const containsArabic = (text: string): boolean => /[\u0600-\u06FF]/.test(text || '');
     const isArabicClassName = containsArabic(classInfo.name);
-    const sizes = TEXT_SIZES[textSize];
-    const spacing = LINE_SPACINGS[lineSpacing];
 
     const flatData = useMemo(() => buildLessonRows(lessonsData), [lessonsData]);
 
@@ -304,427 +294,11 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
 
 
     return (
-        <div className="print-only" style={{ display: 'none' }}>
-            <style>{`
-                /* Accent signature partagé avec l'écran : or mat sur base graphite/champagne */
-                :root {
-                    --print-gold: #B8935A;
-                    --print-ink: #1F2430;
-                    --print-rule: #D8CFBE;
-                }
-
-                @media print {
-                    @page {
-                        size: A4;
-                        margin: 0.72cm 0.9cm 1.05cm;
-                        ${pageNumbers ? `@bottom-center {
-                            content: "Page " counter(page) " / " counter(pages);
-                            font-size: 8pt;
-                            color: #6b7280;
-                        }` : ''}
-                    }
-
-                    /* Le plan se lit aussi sur le papier : un cran de marge
-                       par niveau, et un filet pour matérialiser la profondeur. */
-                    :root {
-                        --editor-indent-1: 4mm;
-                        --editor-indent-2: 8mm;
-                        --editor-indent-3: 12mm;
-                        --editor-indent-rail: #D8CFBE;
-                    }
-                    /* Le retrait hiérarchique survit aux remises à zéro du
-                       papier (raccourcis « margin: 0 0 2px 0 »). */
-                    .editor-indent-1 { margin-inline-start: var(--editor-indent-1) !important; }
-                    .editor-indent-2 { margin-inline-start: var(--editor-indent-2) !important; }
-                    .editor-indent-3 { margin-inline-start: var(--editor-indent-3) !important; }
-                    .editor-indent-rail { border-inline-start: 0.75pt solid var(--editor-indent-rail); }
-
-
-                    .print-hidden { display: none !important; }
-                    .print-only { display: block !important; }
-                    /* aucune notification (toast) ne doit apparaître sur le papier */
-                    [data-sonner-toaster] { display: none !important; }
-                    body {
-                        font-size: ${sizes.body};
-                        margin: 0;
-                        padding: 0;
-                        background: white !important;
-                        line-height: ${spacing.line};
-                    }
-                    .print-only,
-                    .print-only * {
-                        box-sizing: border-box;
-                    }
-                    .print-only div,
-                    .print-only p,
-                    .print-only h1,
-                    .print-only h2,
-                    .print-only h3,
-                    .print-only h4,
-                    .print-only h5,
-                    .print-only h6 {
-                        margin-bottom: 0 !important;
-                        padding-bottom: 0 !important;
-                    }
-                    p {
-                        orphans: 3;
-                        widows: 3;
-                    }
-                    .print-table tr {
-                        break-inside: auto;
-                        page-break-inside: auto;
-                    }
-                    .print-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        table-layout: fixed;
-                        margin: 0;
-                        padding: 0;
-                        border: 1pt solid #161616;
-                    }
-                    .print-table thead {
-                        display: table-header-group;
-                    }
-                    /* En-tête administratif répété uniquement lorsque l'utilisateur
-                       choisit « Toutes » dans la modale d'impression. */
-                    .print-admin-header-row {
-                        break-inside: avoid;
-                        page-break-inside: avoid;
-                    }
-                    .print-admin-header-cell {
-                        padding: 0 !important;
-                        border: none !important;
-                        background: white !important;
-                        text-align: left !important;
-                    }
-                    .print-admin-header-cell .print-header {
-                        margin-bottom: 10px;
-                    }
-                    .print-table th,
-                    .print-table td {
-                        border: none !important;
-                        padding: ${spacing.cellPad};
-                        vertical-align: top;
-                        text-align: start;
-                        font-size: ${sizes.cell};
-                        line-height: ${spacing.line};
-                        border-inline-end: 1px solid hsl(var(--border)) !important;
-                    }
-                    .print-table th:last-child,
-                    .print-table td:last-child {
-                        border-inline-end: none !important;
-                    }
-
-                    .print-table th {
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-weight: 700;
-                        font-size: 8.5pt;
-                        text-transform: uppercase;
-                        letter-spacing: 0.08em;
-                        color: #161616;
-                        background: #f4f4f4 !important;
-                        border-bottom: 1.2pt solid #161616 !important;
-                        text-align: center !important;
-                        /* garantit l'impression du fond gris de l'en-tête */
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-                    .print-col-date {
-                        width: 15%;
-                        text-align: center !important;
-                        vertical-align: top;
-                        color: #4b5563;
-                        white-space: nowrap;
-                        font-variant-numeric: tabular-nums;
-                    }
-                    .print-col-content { width: 65%; }
-                    .print-col-remark {
-                        width: 20%;
-                        font-size: 7.8pt;
-                        color: #4b5563;
-                        overflow-wrap: anywhere;
-                    }
-
-                    /* Style for rows that start a new date (use cell borders with border-collapse) */
-                    .print-table .new-date-row > td {
-                        border-top: 1pt solid #8d8d8d !important;
-                        padding-top: 5px !important;
-                    }
-
-                    /* une séance ne se coupe jamais entre deux pages */
-                    .print-session-row {
-                        break-inside: avoid;
-                        page-break-inside: avoid;
-                    }
-                    .print-session-row .print-col-date {
-                        text-align: center !important;
-                        vertical-align: middle !important;
-                        font-weight: 700;
-                        color: var(--print-ink);
-                        padding: 4px 5px !important;
-                    }
-                    .print-session-row > td {
-                        padding-bottom: 5px !important;
-                        /* Un seul cadre par séance datée : haut au début,
-                           bas à la fin, sans tracer chaque élément interne. */
-                        border-bottom: 1pt solid #8d8d8d !important;
-                    }
-                    .print-date-text {
-                        display: inline-flex;
-                        min-height: 100%;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: center;
-                        text-align: center;
-                        line-height: 1.15;
-                    }
-                    .print-session-content {
-                        display: block;
-                    }
-                    .print-session-item {
-                        padding: 1px 0;
-                    }
-                    .print-session-item + .print-session-item {
-                        margin-top: ${spacing.itemGap};
-                    }
-                    .print-session-chapter-item {
-                        padding-top: 4px;
-                        text-align: center;
-                    }
-                    .print-session-chapter-item .font-bold,
-                    .print-session-chapter-item .font-extrabold {
-                        font-size: ${sizes.chapter} !important;
-                        font-weight: bold !important;
-                        color: var(--print-ink) !important;
-                    }
-                    .print-session-remarks {
-                        display: grid;
-                        gap: 2px;
-                    }
-                    .print-session-remark {
-                        white-space: pre-wrap;
-                    }
-
-                    /* Modern, fluid style for manual separators, même signature que l'écran */
-                    .print-separator-row {
-                        break-inside: avoid;
-                        page-break-inside: avoid;
-                    }
-                    .print-separator-cell {
-                        padding: 8px 0 !important;
-                    }
-                    .separator-content {
-                        display: flex;
-                        align-items: center;
-                        width: 100%;
-                        color: var(--print-gold);
-                    }
-                    .separator-line {
-                        flex-grow: 1;
-                        height: 1px;
-                        background-color: var(--print-rule);
-                    }
-                    .separator-text {
-                        flex-shrink: 0;
-                        padding: 0 1.5em;
-                        font-size: 8pt;
-                        font-weight: bold;
-                        text-transform: uppercase;
-                        letter-spacing: 0.08em;
-                        border: 1px solid var(--print-rule);
-                        border-radius: 999px;
-                        padding: 3px 12px;
-                    }
-
-                    /* New Chapter styling */
-                    .print-chapter-row {
-                        page-break-before: auto;
-                        page-break-after: avoid;
-                        page-break-inside: avoid !important;
-                        break-inside: avoid;
-                    }
-                    .print-chapter-row > td {
-                        padding: 5px 5px 2px 5px !important;
-                        border-bottom: none !important;
-                        border-top: none !important;
-                        text-align: center !important;
-                    }
-                    .print-chapter-row .print-col-content {
-                        text-align: center !important;
-                    }
-                    .print-chapter-row .font-bold,
-                    .print-chapter-row .font-extrabold {
-                        font-size: ${sizes.chapter} !important;
-                        font-weight: bold !important;
-                        color: var(--print-ink) !important;
-                        letter-spacing: 0.01em;
-                    }
-
-                    /* En-tête administratif fidèle au document marocain :
-                       institution → académie → direction → cahier → infos. */
-                    .print-header {
-                        display: block;
-                        margin: 0 0 15px;
-                        padding: 0 0 9px;
-                        border-top: 0;
-                        border-bottom: 1.25pt solid #162033;
-                        text-align: center;
-                    }
-                    .print-government {
-                        color: #526a8c;
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-size: 8.2pt;
-                        font-weight: 800;
-                        letter-spacing: 0.07em;
-                        text-transform: uppercase;
-                    }
-                    .print-academy {
-                        margin-top: 2px;
-                        color: #162033;
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-size: 10.2pt;
-                        font-weight: 800;
-                    }
-                    .print-province {
-                        margin-top: 1px;
-                        color: #405579;
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-size: 8.8pt;
-                        font-weight: 700;
-                    }
-                    .print-header .print-header-title {
-                        margin-top: 5px;
-                        color: #101b32;
-                        font-family: var(--font-display), Georgia, serif;
-                        font-size: 18pt;
-                        font-weight: 800;
-                        line-height: 1.12;
-                    }
-                    .print-institution-grid {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 0 1.05cm;
-                        margin-top: 8px;
-                        text-align: left;
-                    }
-                    .print-institution-field {
-                        display: grid;
-                        grid-template-columns: auto minmax(0, 1fr);
-                        align-items: baseline;
-                        gap: 6px;
-                        min-width: 0;
-                        padding: 3px 0;
-                        border-bottom: 0.6pt dotted #b8c2d0;
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-size: 8.5pt;
-                    }
-                    .print-institution-field .print-field-label {
-                        color: #607795;
-                        font-weight: 700;
-                    }
-                    .print-institution-field .print-field-value {
-                        min-width: 0;
-                        overflow-wrap: anywhere;
-                        color: #101b32;
-                        font-weight: 800;
-                        text-align: right;
-                    }
-                    /* Le nom imprime suit la langue du NOM, jamais celle de l'interface. */
-                    .print-institution-field .print-field-value-la {
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                    }
-                    .print-institution-field .print-field-value-ar {
-                        font-family: var(--content-font-arabic), serif;
-                    }
-                    /* Un document arabe imprime en arabe, un document latin en latin. */
-                    .print-table[dir="rtl"] th,
-                    .print-table[dir="rtl"] td {
-                        font-family: var(--content-font-arabic), serif;
-                    }
-                    .print-table[dir="ltr"] th,
-                    .print-table[dir="ltr"] td {
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                    }
-                    /* Tighten content spacing inside content column */
-                    .print-col-content p { margin: 0 0 2px 0; line-height: 1.18; }
-                    .print-col-content h1,
-                    .print-col-content h2,
-                    .print-col-content h3 { margin: 4px 0 2px 0; line-height: 1.18; }
-                    .print-col-content ul,
-                    .print-col-content ol { margin: 0 0 3px 1.05em; padding-left: 1.05em; }
-                    .print-col-content li { margin: 0 0 1px 0; line-height: 1.18; }
-
-                    .print-lesson-item {
-                        display: block;
-                        padding: 0;
-                        color: var(--print-ink);
-                    }
-                    .print-item-kind {
-                        display: inline-block;
-                        min-width: 4.5em;
-                        margin-inline-end: 0.6em;
-                        padding: 0.15em 0.4em;
-                        border: 0.5pt solid #c4bdb1;
-                        border-radius: 3pt;
-                        color: #514b42;
-                        background-color: #f7f5f0;
-                        font-size: 7pt;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.05em;
-                        text-align: center;
-                        vertical-align: middle;
-                    }
-                    .print-item-title {
-                        font-weight: 600;
-                    }
-                    .print-item-page {
-                        color: #6b7280;
-                        font-style: italic;
-                    }
-                    .print-item-description {
-                        margin-top: 3px !important;
-                        margin-bottom: 2px !important;
-                        margin-left: 2em;
-                        padding-left: 2.35em;
-                        border-left: 1pt solid #d1d5db; /* Structural line connecting description */
-                        color: #374151;
-                        font-size: ${sizes.description};
-                        line-height: 1.25;
-                        white-space: pre-wrap;
-                    }
-
-                    /* Éléments nouvellement ajoutés : discret liseré or plutôt qu'un aplat criard */
-                    .new-item-print-highlight > td:first-child {
-                        box-shadow: inset 3px 0 0 var(--print-gold);
-                    }
-
-                    /* Zone de signatures, finition de document administratif */
-                    .print-signatures {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 24px;
-                        margin-top: 18px;
-                        break-inside: avoid;
-                        page-break-inside: avoid;
-                    }
-                    .print-signature-box {
-                        padding-top: 4px;
-                    }
-                    .print-signature-label {
-                        font-family: var(--content-font-latin), Arial, sans-serif;
-                        font-size: 7.2pt;
-                        font-weight: 700;
-                        letter-spacing: 0.08em;
-                        text-transform: uppercase;
-                        color: #6f6f6f;
-                    }
-                    .print-signature-line {
-                        margin-top: 34px;
-                        border-bottom: 1px solid var(--print-rule);
-                    }
-                }
-            `}</style>
+        <div className={`print-document ${preview ? 'print-preview' : 'print-only'}`} dir={isRtlPrint ? 'rtl' : 'ltr'} aria-hidden={preview ? undefined : true} style={printLayoutStyle(textSize, lineSpacing)}>
+            <style>{`@media print { @page cahier { @bottom-center {
+                content: ${pageNumbers ? (isRtlPrint ? '\"الصفحة \" counter(page) \" / \" counter(pages)' : '\"Page \" counter(page) \" / \" counter(pages)') : 'none'};
+                font-family: Arial, sans-serif; font-size: 8pt; color: #515a63;
+            } } }`}</style>
 
             {/* En-tête administratif : les champs choisis dans Paramètres sont
                 repris sans écraser le nom réel de la classe ou de la matière. */}
@@ -758,7 +332,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                             <div className="separator-content">
                                                 <span className="separator-line"></span>
                                                 <span className="separator-text">
-                                                    {separatorData.content || '---'}
+                                                    <MathText source={separatorData.content}>{separatorData.content || '—'}</MathText>
                                                     {formattedDate && ` | ${formattedDate}`}
                                                 </span>
                                                 <span className="separator-line"></span>
@@ -801,9 +375,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                             {remarks.length > 0 && (
                                                 <div className="print-session-remarks">
                                                     {remarks.map((remark, remarkIndex) => (
-                                                        <div key={`remark-${remarkIndex}`} className="print-session-remark">
-                                                            {remark}
-                                                        </div>
+                                                        <div key={`remark-${remarkIndex}`} className="print-session-remark"><MathText source={remark}>{remark}</MathText></div>
                                                     ))}
                                                 </div>
                                             )}
@@ -829,7 +401,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                 const sep = isRtlPrint ? '، ' : ', ';
                                 const absenceStr = `${prefix}${itemAbsences.join(sep)}`;
                                 if (!displayRemark.includes('الغياب') && !displayRemark.toLowerCase().includes('absent')) {
-                                    displayRemark = displayRemark ? `${displayRemark}\n${absenceStr}` : absenceStr;
+                                    displayRemark = displayRemark ? `$<MathText source={displayRemark}>{displayRemark}</MathText>\n${absenceStr}` : absenceStr;
                                 }
                             }
 
@@ -840,7 +412,7 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                         {renderPrintContent(item)}
                                     </td>
                                     <td className="print-col-remark">
-                                        {displayRemark}
+                                        <MathText source={displayRemark}>{displayRemark}</MathText>
                                     </td>
                                 </tr>
                             );

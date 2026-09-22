@@ -1114,57 +1114,20 @@ html[data-keyboard='open'] .mobile-tab-bar {
   transform: translate3d(0, calc(100% + 2rem), 0);
 }
 
-/* ── Système de mouvement unifié (modales / sheets) ───────────────────────
-   Entrée : animation CSS (fill `backwards` pour ne jamais écraser le
-   transform du swipe pendant le drag). Sortie : transition déclenchée par
-   data-[state=closed], qui continue depuis la position courante du geste. */
+/* ── Mouvement des modales : voir `components/ui/modal-motion.css` ───────
+   Le socle modal possède son entrée/sortie (`modal-scrim-in`, `modal-sheet-in`,
+   `modal-dialog-in`) et le glissement n'écrit que `--sheet-drag-y`. Seul
+   `--animate-fade-in` reste ici, parce qu'il est encore utilisé. */
 
 @theme {
-  --ease-modal-out: cubic-bezier(0.4, 0, 1, 1);
-  --ease-modal-in: cubic-bezier(0.32, 0.72, 0, 1);
-
-  --animate-overlay-in: overlay-in 200ms ease-out backwards;
-  --animate-overlay-out: overlay-out 180ms var(--ease-modal-out) forwards;
+  /* Les jetons `--ease-modal-*`, `--animate-overlay-*`, `--animate-sheet-in-*`,
+     `--animate-pop-in` et `--animate-class-step-*` ont été retirés avec leurs
+     @keyframes : plus aucun écran ne les référençait depuis la refonte du socle
+     modal (voir `components/ui/modal-motion.css`). */
   --animate-fade-in: fade-in 200ms ease-out backwards;
-  --animate-sheet-in-bottom: sheet-in-bottom 340ms var(--ease-modal-in) backwards;
-  --animate-sheet-in-top: sheet-in-top 300ms var(--ease-modal-in) backwards;
-  --animate-sheet-in-left: sheet-in-left 300ms var(--ease-modal-in) backwards;
-  --animate-sheet-in-right: sheet-in-right 300ms var(--ease-modal-in) backwards;
-  --animate-pop-in: pop-in 260ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  --animate-class-step-forward: class-step-forward 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  --animate-class-step-back: class-step-back 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
-  @keyframes overlay-in {
-    from { opacity: 0; }
-  }
-  @keyframes overlay-out {
-    to { opacity: 0; }
-  }
   @keyframes fade-in {
     from { opacity: 0; }
-  }
-  @keyframes sheet-in-bottom {
-    from { transform: translateY(100%); opacity: 0.45; }
-  }
-  @keyframes sheet-in-top {
-    from { transform: translateY(-100%); opacity: 0.45; }
-  }
-  @keyframes sheet-in-left {
-    from { transform: translateX(-100%); opacity: 0.45; }
-  }
-  @keyframes sheet-in-right {
-    from { transform: translateX(100%); opacity: 0.45; }
-  }
-  @keyframes pop-in {
-    from { transform: translateY(14px) scale(0.97); opacity: 0; }
-  }
-  @keyframes class-step-forward {
-    from { transform: translateX(28px) scale(0.985); opacity: 0; filter: blur(2px); }
-    to { transform: translateX(0) scale(1); opacity: 1; filter: blur(0); }
-  }
-  @keyframes class-step-back {
-    from { transform: translateX(-28px) scale(0.985); opacity: 0; filter: blur(2px); }
-    to { transform: translateX(0) scale(1); opacity: 1; filter: blur(0); }
   }
 
   @keyframes advanced-blink {

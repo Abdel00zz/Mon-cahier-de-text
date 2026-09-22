@@ -9,7 +9,7 @@ import { Modal } from '../../components/ui/modal';
 import { ConfirmDialog } from '../../components/ui/confirm-dialog';
 import type { AdminMessage, AppConfig, ClassInfo, ClassSnapshot, ContentDirection, Cycle, LessonsData, TeacherSnapshot } from '../../types';
 import { PrintView } from '../../features/editor/PrintView';
-import { printDocument, typesetBeforePrint } from '../../utils/printUtils';
+import { preparePrintContent, printDocument } from '../../utils/printUtils';
 import { ClassJsonImportModal } from './ClassJsonImportModal';
 
 const calendar = getBundledCalendar();
@@ -533,7 +533,11 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
         let cancelled = false;
         const timer = window.setTimeout(async () => {
             try {
-                await typesetBeforePrint();
+                // Même circuit que l'éditeur : la vue d'impression est montée, puis
+                // composée (polices, formules, images) avant d'ouvrir le dialogue.
+                const root = document.querySelector<HTMLElement>('.print-document.print-only');
+                if (!root) throw new Error('Print document missing');
+                await preparePrintContent(root);
             } catch { /* le texte source reste imprimable */ }
             await printDocument('cahier-de-textes');
             if (!cancelled) setPrintRequest(null);

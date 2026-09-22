@@ -1,0 +1,415 @@
+/* Shared A4 composition for preparation, preview and native printing. */
+/* Le plan se lit aussi sur le papier : un cran de marge
+   par niveau, et un filet pour matérialiser la profondeur. */
+.print-document {
+    --editor-indent-1: 4mm;
+    --editor-indent-2: 8mm;
+    --editor-indent-3: 12mm;
+    --editor-indent-rail: #D8CFBE;
+}
+/* Le retrait hiérarchique survit aux remises à zéro du
+   papier (raccourcis « margin: 0 0 2px 0 »). */
+.print-document .editor-indent-1 { margin-inline-start: var(--editor-indent-1) !important; }
+.print-document .editor-indent-2 { margin-inline-start: var(--editor-indent-2) !important; }
+.print-document .editor-indent-3 { margin-inline-start: var(--editor-indent-3) !important; }
+.print-document .editor-indent-rail { border-inline-start: 0.75pt solid var(--editor-indent-rail); }
+
+
+
+
+/* aucune notification (toast) ne doit apparaître sur le papier */
+
+.print-document {
+    font-size: var(--print-size-body);
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    line-height: var(--print-spacing-line);
+}
+.print-document,
+.print-document * {
+    box-sizing: border-box;
+}
+.print-document p {
+    orphans: 3;
+    widows: 3;
+}
+.print-table tr {
+    break-inside: auto;
+    page-break-inside: auto;
+}
+.print-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0;
+    padding: 0;
+    border: 0.8pt solid var(--print-rule-strong);
+}
+.print-table thead {
+    display: table-header-group;
+}
+/* En-tête administratif répété uniquement lorsque l'utilisateur
+   choisit « Toutes » dans la modale d'impression. */
+.print-admin-header-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-admin-header-cell {
+    padding: 0 !important;
+    border: none !important;
+    background: white !important;
+    text-align: left !important;
+}
+.print-admin-header-cell .print-header {
+    margin-bottom: 10px;
+}
+.print-table th,
+.print-table td {
+    border: none !important;
+    padding: var(--print-spacing-cellPad);
+    vertical-align: top;
+    text-align: start;
+    font-size: var(--print-size-cell);
+    line-height: var(--print-spacing-line);
+    border-inline-end: 0.55pt solid var(--print-rule) !important;
+}
+.print-table th:last-child,
+.print-table td:last-child {
+    border-inline-end: none !important;
+}
+
+.print-table th {
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-weight: 700;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #161616;
+    background: #f4f4f4 !important;
+    border-bottom: 0.8pt solid var(--print-rule-strong) !important;
+    text-align: center !important;
+    /* garantit l'impression du fond gris de l'en-tête */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.print-col-date {
+    width: 15%;
+    text-align: center !important;
+    vertical-align: top;
+    color: #4b5563;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.print-col-content { width: 65%; }
+.print-col-remark {
+    width: 20%;
+    font-size: var(--print-size-description);
+    color: #4b5563;
+    overflow-wrap: anywhere;
+}
+
+/* Style for rows that start a new date (use cell borders with border-collapse) */
+.print-table .new-date-row > td {
+    border-top: 0.65pt solid var(--print-rule-strong) !important;
+    padding-top: 5px !important;
+}
+
+/* Keep ordinary sessions together; oversized sessions are allowed to fragment. */
+.print-session-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-session-row .print-col-date {
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-weight: 700;
+    color: var(--print-ink);
+    padding: 4px 5px !important;
+}
+.print-session-row > td {
+    padding-bottom: 5px !important;
+    /* Un seul cadre par séance datée : haut au début,
+       bas à la fin, sans tracer chaque élément interne. */
+    border-bottom: 0.65pt solid var(--print-rule-strong) !important;
+}
+.print-date-text {
+    display: inline-flex;
+    min-height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.15;
+}
+.print-session-content {
+    display: block;
+}
+.print-session-item {
+    padding: 1px 0;
+}
+.print-session-item + .print-session-item {
+    margin-top: var(--print-spacing-itemGap);
+}
+.print-session-chapter-item {
+    padding-top: 4px;
+    text-align: center;
+}
+.print-session-chapter-item .font-bold,
+.print-session-chapter-item .font-extrabold {
+    font-size: var(--print-size-chapter) !important;
+    font-weight: bold !important;
+    color: var(--print-ink) !important;
+}
+.print-session-remarks {
+    display: grid;
+    gap: 2px;
+}
+.print-session-remark {
+    white-space: pre-wrap;
+}
+
+/* Modern, fluid style for manual separators, même signature que l'écran */
+.print-separator-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-separator-cell {
+    padding: 8px 0 !important;
+}
+.print-document .separator-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: var(--print-gold);
+}
+.print-document .separator-line {
+    flex-grow: 1;
+    height: 0;
+    border-top: 0.55pt solid var(--print-rule);
+}
+.print-document .separator-text {
+    min-width: 0;
+    max-width: 90%;
+    overflow-wrap: anywhere;
+    text-align: center;
+    font-size: 8pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 0.55pt solid var(--print-rule);
+    border-radius: 999px;
+    padding: 3px 12px;
+}
+
+/* New Chapter styling */
+.print-chapter-row {
+    page-break-before: auto;
+    page-break-after: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid;
+}
+.print-chapter-row > td {
+    padding: 5px 5px 2px 5px !important;
+    border-bottom: none !important;
+    border-top: none !important;
+    text-align: center !important;
+}
+.print-chapter-row .print-col-content {
+    text-align: center !important;
+}
+.print-chapter-row .font-bold,
+.print-chapter-row .font-extrabold {
+    font-size: var(--print-size-chapter) !important;
+    font-weight: bold !important;
+    color: var(--print-ink) !important;
+    letter-spacing: 0.01em;
+}
+
+/* En-tête administratif fidèle au document marocain :
+   institution → académie → direction → cahier → infos. */
+.print-header {
+    display: block;
+    margin: 0 0 15px;
+    padding: 0 0 9px;
+    border-top: 0;
+    border-bottom: 0.8pt solid var(--print-rule-strong);
+    text-align: center;
+}
+.print-government {
+    color: #526a8c;
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 8.2pt;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+.print-academy {
+    margin-top: 2px;
+    color: #162033;
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 10.2pt;
+    font-weight: 600;
+}
+.print-province {
+    margin-top: 1px;
+    color: #405579;
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 8.8pt;
+    font-weight: 700;
+}
+.print-header .print-header-title {
+    margin-top: 5px;
+    color: #101b32;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 18pt;
+    font-weight: 600;
+    line-height: 1.12;
+}
+.print-institution-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1.05cm;
+    margin-top: 8px;
+    text-align: left;
+}
+.print-institution-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+    padding: 3px 0;
+    border-bottom: 0.6pt dotted #b8c2d0;
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 8.5pt;
+}
+.print-institution-field .print-field-label {
+    color: #607795;
+    font-weight: 700;
+}
+.print-institution-field .print-field-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: #101b32;
+    font-weight: 600;
+    text-align: right;
+}
+/* Le nom imprime suit la langue du NOM, jamais celle de l'interface. */
+.print-institution-field .print-field-value-la {
+    font-family: var(--content-font-latin), Arial, sans-serif;
+}
+.print-institution-field .print-field-value-ar {
+    font-family: var(--content-font-arabic), serif;
+}
+/* Un document arabe imprime en arabe, un document latin en latin. */
+.print-table[dir="rtl"] th,
+.print-table[dir="rtl"] td {
+    font-family: var(--content-font-arabic), serif;
+}
+.print-table[dir="ltr"] th,
+.print-table[dir="ltr"] td {
+    font-family: var(--content-font-latin), Arial, sans-serif;
+}
+/* Tighten content spacing inside content column */
+.print-col-content p { margin: 0 0 2px 0; line-height: var(--print-spacing-line); }
+.print-col-content h1,
+.print-col-content h2,
+.print-col-content h3 { margin: 4px 0 2px 0; line-height: var(--print-spacing-line); }
+.print-col-content ul,
+.print-col-content ol { margin: 0 0 3px 1.05em; padding-left: 1.05em; }
+.print-col-content li { margin: 0 0 1px 0; line-height: var(--print-spacing-line); }
+
+.print-lesson-item {
+    display: block;
+    padding: 0;
+    color: var(--print-ink);
+}
+.print-item-kind {
+    display: inline-block;
+    min-width: 4.5em;
+    margin-inline-end: 0.6em;
+    padding: 0.15em 0.4em;
+    border: 0.5pt solid #c4bdb1;
+    border-radius: 3pt;
+    color: #514b42;
+    background-color: #f7f5f0;
+    font-size: 7pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    vertical-align: middle;
+}
+.print-item-title {
+    font-weight: 600;
+}
+.print-item-page {
+    color: #6b7280;
+    font-style: italic;
+}
+.print-item-description {
+    margin-top: 3px !important;
+    margin-bottom: 2px !important;
+    margin-inline-start: 1.5em;
+    padding-inline-start: 0.7em;
+    border-inline-start: 0.55pt solid var(--print-rule); /* Structural line connecting description */
+    color: #374151;
+    font-size: var(--print-size-description);
+    line-height: var(--print-spacing-line);
+    white-space: pre-wrap;
+}
+
+/* Éléments nouvellement ajoutés : discret liseré or plutôt qu'un aplat criard */
+.new-item-print-highlight > td:first-child {
+    box-shadow: inset 3px 0 0 var(--print-gold);
+}
+
+/* Zone de signatures, finition de document administratif */
+.print-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 18px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.print-signature-box {
+    padding-top: 4px;
+}
+.print-signature-label {
+    font-family: var(--content-font-latin), Arial, sans-serif;
+    font-size: 7.2pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6f6f6f;
+}
+.print-signature-line {
+    margin-top: 34px;
+    border-bottom: 0.55pt solid var(--print-rule);
+}
+.print-session-item { break-inside: avoid; }
+.print-session-row[data-print-oversized="true"] { break-inside: auto; page-break-inside: auto; }
+.print-document { --print-gold: #746043; --print-ink: #20262b; --print-rule: #899198; --print-rule-strong: #515a63; color: var(--print-ink); --foreground: 210 15% 15%; --muted-foreground: 210 10% 28%; font-family: var(--content-font-latin), Arial, sans-serif; font-kerning: normal; text-rendering: optimizeLegibility; }
+.print-document[dir="rtl"], .print-document[dir="rtl"] .print-header *, .print-document[dir="rtl"] .print-signature-label { font-family: var(--content-font-arabic), serif; letter-spacing: normal; }
+.print-document[dir="rtl"] .print-field-value-la { font-family: var(--content-font-latin), Arial, sans-serif; }
+.print-document .direction-rtl .print-institution-grid { direction: rtl; text-align: right; }
+.print-document .direction-rtl .print-field-value { text-align: left; }
+.print-document .print-col-content ul, .print-document .print-col-content ol { margin-inline-start: 1em; padding-inline-start: 1em; margin-inline-end: 0; padding-inline-end: 0; }
+.print-document .math-text, .print-document mjx-container { max-width: 100%; overflow: visible !important; }
+.print-document mjx-container { direction: ltr; unicode-bidi: isolate; text-indent: 0; }
+.print-document .print-session-remark, .print-document .print-item-title { overflow-wrap: anywhere; }
+.print-document * { text-shadow: none !important; box-shadow: none !important; animation: none !important; transition: none !important; }
+@media screen {
+  /* Measurable at A4 width before typesetting; absent from the visual/a11y UI. */
+  .print-document.print-only { display: block !important; position: fixed; inset: 0 auto auto -10000px; width: 190mm; pointer-events: none; }
+  .print-document.print-preview { position: relative; width: 190mm; padding: 0; background: white; }
+}
+@media print {
+  @page cahier { size: A4; margin: 10mm 10mm 12mm; }
+  .print-document { page: cahier; display: block !important; width: auto; position: static; }
+  .print-hidden, [data-sonner-toaster], [role="dialog"], .modal-motion-overlay { display: none !important; }
+  html, body, #root, [data-editor-root], [data-editor-root] > div { min-height: 0 !important; height: auto !important; overflow: visible !important; background: white !important; margin: 0 !important; padding: 0 !important; transform: none !important; filter: none !important; }
+  .print-document, .print-document * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

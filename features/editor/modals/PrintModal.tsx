@@ -25,6 +25,7 @@ export interface PrintOptions {
 }
 
 interface PrintModalProps {
+  classId: string;
   isOpen: boolean;
   onClose: () => void;
   /** nombre total de séances datées du cahier */
@@ -50,6 +51,7 @@ interface PrintModalProps {
  * CE qui est nouveau, et recommande le mode le plus économique.
  */
 export const PrintModal: React.FC<PrintModalProps> = ({
+  classId,
   isOpen,
   onClose,
   totalDates,
@@ -66,7 +68,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   const { t, locale } = useLocale();
   const number = React.useMemo(() => new Intl.NumberFormat(locale === 'ar' ? 'ar-MA' : locale === 'en' ? 'en-GB' : 'fr-MA'), [locale]);
   const sessionCountLabel = (count: number) => t(count === 1 ? 'print.sessionOne' : 'print.sessionMany', { count: number.format(count) });
-  const printedCount = totalDates - newDates.length;
+  const printedCount = Math.max(0, totalDates - newDates.length);
   const hasHistory = lastPrintedAt !== null;
   const recommendNew = hasHistory && newDates.length > 0;
   const [mode, setMode] = useState<PrintMode>(recommendNew ? 'new' : 'all');
@@ -79,6 +81,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
     () => new Set(newDates.length > 0 ? newDates : allDates)
   );
   const printedSet = React.useMemo(() => new Set(printedDates), [printedDates]);
+  const openedClass = React.useRef<string | null>(null);
   const toggleDate = (date: string) =>
     setSelectedDates(prev => {
       const next = new Set(prev);
@@ -90,7 +93,9 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   // à chaque ouverture : resynchronise le mode recommandé, la sélection de
   // séances et les préférences de mise en page mémorisées pour cette classe.
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) { openedClass.current = null; return; }
+    if (openedClass.current === classId) return;
+    openedClass.current = classId;
     setMode(recommendNew ? 'new' : 'all');
     setSelectedDates(new Set(newDates.length > 0 ? newDates : allDates));
     if (savedPrefs) {
@@ -106,7 +111,17 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       setTextSize('m');
       setLineSpacing('normal');
     }
-  }, [allDates, isOpen, newDates, recommendNew, savedPrefs]);
+  }, [classId, allDates, isOpen, newDates, recommendNew, savedPrefs]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const available = new Set(allDates);
+    setSelectedDates(previous => {
+      const valid = new Set([...previous].filter(date => available.has(date)));
+      return valid.size === previous.size ? previous : valid;
+    });
+    if (newDates.length === 0) setMode(previous => previous === 'new' ? 'all' : previous);
+  }, [allDates, isOpen, newDates.length]);
 
   const printModes: Array<{
     value: PrintMode;
@@ -149,6 +164,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
+      blockDismiss={isPrinting}
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
@@ -163,18 +179,18 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       maxWidth="2xl"
       className="sm:max-w-3xl sm:rounded-2xl"
       headerClassName="border-b-0 bg-background"
-      bodyClassName="px-5 py-4 sm:px-7 sm:py-5"
+      bodyClassName="px-5 py-4 sm:px-7 sm:py-5 [&_button]:min-h-11"
       footerClassName="border-t-0 bg-background"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
-          <Button type="button" variant="secondary" onClick={onClose} className="rounded-xl h-10 px-4 text-xs font-semibold sm:text-sm">
+          <Button type="button" variant="secondary" disabled={isPrinting} onClick={onClose} className="rounded-xl min-h-11 px-4 text-xs font-semibold sm:text-sm">
             {t('common.cancel')}
           </Button>
           <Button
             type="button"
-            disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0)}
+            disabled={isPrinting || (mode === 'custom' && selectedDates.size === 0) || (mode === 'new' && newDates.length === 0)}
             onClick={() => onPrint(mode, { pageNumbers, headerMode, textSize, lineSpacing }, mode === 'custom' ? Array.from(selectedDates) : undefined)}
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 h-10 text-xs sm:text-sm shadow-sm"
+            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-5 min-h-11 text-xs sm:text-sm shadow-sm"
           >
             {isPrinting ? t('print.preparing') : <>{t('print.print')} · {mode === 'new'
               ? sessionCountLabel(newDates.length)
@@ -186,6 +202,10 @@ export const PrintModal: React.FC<PrintModalProps> = ({
       }
     >
       <div className="space-y-4">
+        <div className="rounded-xl border border-border/70 bg-muted/25 px-4 py-3">
+          <p className="text-sm font-medium">{t('print.vectorQuality')}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('print.outputHint')}</p>
+        </div>
         {/* État de l'impression */}
         <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-xs">
           <div className="grid grid-cols-3 divide-x divide-border/70 text-center">
@@ -207,6 +227,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
               {t('print.lastPrint')} · {formatDateDDMMYYYY(lastPrintedAt.slice(0, 10))}
             </p>
           )}
+          <p className="border-t border-border/70 px-4 py-2 text-[11px] leading-relaxed text-muted-foreground">{t('print.historyHint')}</p>
         </div>
 
         {/* Choix du mode */}
@@ -315,6 +336,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <span className="text-xs font-bold text-foreground">{t('print.textSize')}</span>
             <Segmented<PrintTextSize>
               value={textSize}
+              ariaLabel={t('print.textSize')}
               onChange={setTextSize}
               options={[
                 { value: 's', label: t('print.small') },
@@ -327,6 +349,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <span className="text-xs font-bold text-foreground">{t('print.lineSpacing')}</span>
             <Segmented<PrintLineSpacing>
               value={lineSpacing}
+              ariaLabel={t('print.lineSpacing')}
               onChange={setLineSpacing}
               options={[
                 { value: 'compact', label: t('print.compact') },
@@ -359,6 +382,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             </div>
             <Switch
               checked={pageNumbers}
+              aria-label={t('print.pageNumbers')}
               onCheckedChange={setPageNumbers}
               className="data-[state=checked]:bg-primary shrink-0"
             />
@@ -368,6 +392,7 @@ export const PrintModal: React.FC<PrintModalProps> = ({
             <span className="block text-xs font-bold text-foreground">{t('print.header')}</span>
             <Segmented<PrintHeaderMode>
               value={headerMode}
+              ariaLabel={t('print.header')}
               onChange={setHeaderMode}
               options={[
                 { value: 'first', label: t('print.firstPage') },

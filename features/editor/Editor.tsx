@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, useTransition } from 'react';
+import { flushSync } from 'react-dom';
 import { useImmer } from 'use-immer';
 import { toast } from 'sonner';
 import { Header } from './Header';
@@ -33,8 +34,8 @@ import {
   readIgnoredActionIds,
   writeIgnoredActionIds,
 } from '@/utils/notificationSignals';
-import { PrintModal, PrintMode, PrintOptions, PrintHeaderMode } from './modals/PrintModal';
-import { printDocument, typesetBeforePrint } from '@/utils/printUtils';
+import { PrintModal, PrintMode, PrintOptions } from './modals/PrintModal';
+import { printDocument, preparePrintContent } from '@/utils/printUtils';
 import { LessonsData, Indices, TopLevelItem, LessonItem, Section, SubSection, SubSubSection, ClassInfo, EmbeddableTopLevelType, EmbeddableTopLevelItem, Separator, ContentDirection } from '@/types';
 import { PrintView } from './PrintView';
 import { EditorModals } from './EditorModals';
@@ -117,11 +118,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     // enseignant peut conserver l'UI française avec un cahier arabe, ou inversement.
     contentDirection: defaultContentDirection(locale) as ContentDirection,
     newlyAddedIds: [] as string[],
-    printSelection: null as LessonsData | null, // sous-ensemble à imprimer (nouveautés seulement)
-    printPageNumbers: true, // numérotation des pages à l'impression
-    printHeaderMode: 'first' as PrintHeaderMode, // en-tête administratif : première page par défaut
-    printTextSize: 'm' as 's' | 'm' | 'l', // taille du texte imprimé
-    printLineSpacing: 'normal' as 'compact' | 'normal' | 'aere', // aération des lignes
   });
 
   const [selectionState, setSelectionState] = useState<SelectionState>(() => createSelectionState());
@@ -135,7 +131,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const [isPrinting, setIsPrinting] = useState(false);
   const [initialMathTypesetComplete, setInitialMathTypesetComplete] = useState(false);
   const isPrintingRef = useRef(false);
-  const printLaunchTimerRef = useRef<number | null>(null);
+  const [printSnapshot, setPrintSnapshot] = useState<React.ComponentProps<typeof PrintView> | null>(null);
   const lessonsDataRef = useRef<LessonsData>(lessonsData);
   /*
    * Ordre chronologique : chaque contenu daté connaît son plus proche
@@ -161,10 +157,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const saveStatusRef = useRef<'saved' | 'saving' | 'unsaved'>(editorState.saveStatus);
 
   useEffect(() => () => {
-    if (printLaunchTimerRef.current !== null) {
-      window.clearTimeout(printLaunchTimerRef.current);
-      printLaunchTimerRef.current = null;
-    }
     isPrintingRef.current = false;
   }, []);
 
@@ -177,11 +169,6 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     searchQuery,
     contentDirection,
     newlyAddedIds,
-    printSelection,
-    printPageNumbers,
-    printHeaderMode,
-    printTextSize,
-    printLineSpacing,
   } = editorState;
   // Les événements pagehide/démontage doivent toujours voir le dernier rendu,
   // sans dépendre du délai d'autosauvegarde de 1,5 seconde.
@@ -865,26 +852,23 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       headerMode: options.headerMode,
       });
 
-      setEditorState(draft => {
-          draft.activeModal = null;
-          draft.printSelection = selection;
-      draft.printPageNumbers = options.pageNumbers;
-      draft.printHeaderMode = options.headerMode;
-      draft.printTextSize = options.textSize;
-          draft.printLineSpacing = options.lineSpacing;
+      // Commit the frozen document before preparing fonts and formula layout.
+      flushSync(() => {
+          setPrintSnapshot({ lessonsData: selection ?? lessonsData, classInfo, config, contentDirection, newlyAddedIds: [], ...options });
+          setEditorState(draft => { draft.activeModal = null; });
       });
 
       const launchPrint = async () => {
           try {
-              // Garantir que les formules sont compilées avant le dialogue.
-              // En cas de timeout, le texte source reste imprimable.
-              const typeset = await typesetBeforePrint();
+              const root = document.querySelector<HTMLElement>('.print-document.print-only');
+              if (!root) throw new Error('Print document missing');
+              await preparePrintContent(root);
               if (!workspaceIsActive()) return;
-              if (!typeset) logger.warn('MathJax indisponible ou trop lent : impression avec le contenu source.');
 
               const started = await printDocument('cahier-de-textes');
               if (!workspaceIsActive()) return;
               if (!started) {
+                  setPrintSnapshot(null);
                   showNotification(t('editorNotice.printUnavailable'), 'error');
                   return;
               }
@@ -897,6 +881,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
                   showNotification(t('editorNotice.printHistoryError'), 'warning');
               }
           } catch (error) {
+              setPrintSnapshot(null);
               if (!workspaceIsActive()) return;
               logger.error('Échec inattendu du circuit d’impression.', error);
               showNotification(t('editorNotice.printPrepareError'), 'error');
@@ -906,19 +891,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
               // Rafraîchit aussi les préférences sauvegardées en cas d'échec,
               // et l'historique après une impression lancée.
               setPrintMetaVersion(version => version + 1);
-              // Garantit le retour au cahier complet même si une étape lève
-              // une exception inattendue.
-              setEditorState(draft => { draft.printSelection = null; });
+              // Keep the frozen surface: Android may resolve before its print adapter reads it.
           }
       };
 
-      // Laisser React monter le PrintView à la demande avant MathJax et le
-      // service natif. Un seul chemin réduit les divergences entre les modes.
-      printLaunchTimerRef.current = window.setTimeout(() => {
-          printLaunchTimerRef.current = null;
-          void launchPrint();
-      }, selection ? 120 : 60);
-  }, [classInfo.id, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
+      void launchPrint();
+  }, [classInfo, config, contentDirection, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
       if (selectedIndices.length !== 1) return;
@@ -1253,9 +1231,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           </main>
         </div>
 
-        {isPrinting && (
-          <PrintView lessonsData={printSelection ?? lessonsData} classInfo={classInfo} config={config} contentDirection={contentDirection} newlyAddedIds={newlyAddedIds} pageNumbers={printPageNumbers} headerMode={printHeaderMode} textSize={printTextSize} lineSpacing={printLineSpacing} />
-        )}
+        {printSnapshot && <PrintView {...printSnapshot} />}
       </div>
 
 
@@ -1285,6 +1261,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       )}
 
       <PrintModal
+        classId={classInfo.id}
         isOpen={activeModal === 'print'}
         onClose={handleModalClose}
         totalDates={printStats.totalDates}

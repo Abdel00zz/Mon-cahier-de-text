@@ -23,6 +23,7 @@ import { prioritizeActiveClasses, resolveDashboardClassOrder } from '@/utils/cla
 import { DASHBOARD_CANVAS_STYLE } from './dashboardCanvas';
 import './dashboardCanvas.css';
 import { ClassroomWelcomeIllustration } from '@/components/ui/DynamicIllustration';
+import { AppShowcaseMedia } from '@/components/ui/AppShowcaseMedia';
 
 interface DashboardProps {
     onSelectClass: (classInfo: ClassInfo) => void;
@@ -368,15 +369,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <section className="w-full" aria-labelledby="classes-heading">
                                 {classes.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card px-4 py-10 text-center shadow-xs sm:px-8 sm:py-14 md:py-16">
-                                        <div className="mb-5 flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/40 p-2 sm:mb-6 sm:p-2.5">
-                                            <img
-                                                src="/dashboard.png"
-                                                alt="Illustration tableau de bord"
-                                                className="w-60 sm:w-72 md:w-[360px] lg:w-[420px] max-w-full h-auto object-contain rounded-lg select-none pointer-events-none"
-                                                referrerPolicy="no-referrer"
-                                                loading="eager"
-                                            />
-                                        </div>
+                                        <AppShowcaseMedia locale={locale} landscape className="mb-5 w-full max-w-[420px] sm:mb-6" />
 
                                         <div className="max-w-md space-y-1.5 px-2">
                                             <h3 className="font-serif font-bold text-xl sm:text-2xl text-foreground text-balance">

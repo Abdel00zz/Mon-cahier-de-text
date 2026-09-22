@@ -22,13 +22,7 @@
   border-radius: 1.25rem;
   box-shadow: 0 22px 50px -35px rgb(40 31 22 / 0.7);
 }
-.auth-artisan-showcase .keep-surface {
-  border-radius: 0.85rem;
-  border-color: rgb(39 96 73 / 0.12);
-}
-@media (prefers-color-scheme: dark) {
-  .auth-artisan-showcase { background: linear-gradient(145deg, #19332a, #302d23 52%, #1d3040); }
-}
+.dark .auth-artisan-showcase { background: linear-gradient(145deg, #19332a, #302d23 52%, #1d3040); }
 
 /* Accueil : hiérarchie premium, couleurs cohérentes et lecture immédiate. */
 .landing-artisan-shell .auth-action { border-radius: 0.9rem; }

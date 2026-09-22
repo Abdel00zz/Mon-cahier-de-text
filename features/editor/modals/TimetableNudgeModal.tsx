@@ -70,7 +70,10 @@ export const TimetableNudgeModal: React.FC<TimetableNudgeModalProps> = ({
       hideClose
       blockDismiss
       swipeToDismiss={false}
-      className="sm:max-w-md sm:rounded-2xl [&_[data-swipe-dismiss-handle]]:hidden"
+      // Aucune poignée : la masquer par un utilitaire laissait la réserve de
+      // 44 px au-dessus de l'en-tête (data-has-handle restait vrai).
+      dragHandle={false}
+      className="sm:max-w-md sm:rounded-2xl"
       headerClassName={`border-b-0 bg-background text-start ${isAr ? 'font-ar' : ''}`}
       bodyClassName="min-h-0 px-5 py-5 sm:px-7 sm:py-6"
       title={

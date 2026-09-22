@@ -89,20 +89,24 @@ export function ModalBottomSheet({
 
   const effectiveOpen = Boolean(isOpen);
   const detentSignature = mobileDetents.join(',');
-  const detents = useMemo(() => normalizeSheetDetents(mobileDetents), [detentSignature]);
+  // Depend on values rather than a fresh array supplied by the parent on each render.
+  const detents = useMemo(() => normalizeSheetDetents(detentSignature ? detentSignature.split(',').map(Number) : []), [detentSignature]);
   const [activeDetentIndex, setActiveDetentIndex] = useState(0);
   const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches);
-  const isCompactSheet = isCompact && mobilePresentation === 'sheet';
+  const [isPortrait, setIsPortrait] = useState(() => typeof window !== 'undefined' && window.matchMedia('(orientation: portrait)').matches);
+  const isCompactSheet = isCompact && isPortrait && mobilePresentation === 'sheet';
   const contentRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!effectiveOpen) return;
     const media = window.matchMedia('(max-width: 639px)');
-    const sync = () => setIsCompact(media.matches);
+    const orientation = window.matchMedia('(orientation: portrait)');
+    const sync = () => { setIsCompact(media.matches); setIsPortrait(orientation.matches); };
     sync();
     media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
+    orientation.addEventListener('change', sync);
+    return () => { media.removeEventListener('change', sync); orientation.removeEventListener('change', sync); };
   }, [effectiveOpen]);
 
   useEffect(() => {
@@ -112,7 +116,7 @@ export function ModalBottomSheet({
       Math.abs(value - requested) < Math.abs(detents[best] - requested) ? index : best
     ), 0);
     setActiveDetentIndex(closestIndex);
-  }, [detentSignature, effectiveOpen, initialMobileDetent]);
+  }, [detents, effectiveOpen, initialMobileDetent]);
 
   const activeDetent = detents[Math.min(activeDetentIndex, detents.length - 1)] ?? detents[0];
   const canExpand = isCompactSheet && activeDetentIndex < detents.length - 1;
@@ -180,13 +184,13 @@ export function ModalBottomSheet({
             '--sheet-detent': activeDetent,
           } as React.CSSProperties}
           data-mobile-presentation={mobilePresentation}
-          data-has-handle={Boolean(dragHandle && mobilePresentation === 'sheet')}
+          data-has-handle={Boolean(dragHandle && isCompactSheet)}
           data-swipe-enabled={isCompactSheet && swipeToDismiss && !blockDismiss ? 'true' : undefined}
           onOpenAutoFocus={(event) => {
             const previous = document.activeElement;
             if (previous instanceof HTMLElement && !contentRef.current?.contains(previous)) returnFocusRef.current = previous;
             // Do not summon the keyboard just by opening a phone form.
-            if (isCompact) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
+            if (window.matchMedia('(max-width: 639px)').matches) { event.preventDefault(); contentRef.current?.focus({ preventScroll: true }); }
           }}
           onCloseAutoFocus={(event) => {
             if (returnFocusRef.current?.isConnected) {
@@ -219,7 +223,7 @@ export function ModalBottomSheet({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Sketch Drag Handle */}
-          {dragHandle && mobilePresentation === 'sheet' && (
+          {dragHandle && isCompactSheet && (
             <button
               type="button"
               data-swipe-dismiss-handle
@@ -266,7 +270,7 @@ export function ModalBottomSheet({
               aria-label={closeLabel}
               className={cn(
                 'dialog-close absolute z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer end-3 sm:end-4',
-                (title || description) ? 'top-3 sm:top-3.5' : 'top-3 sm:top-3.5'
+                'top-3 sm:top-3.5'
               )}
             >
               <X className="h-4 w-4 stroke-[2]" />

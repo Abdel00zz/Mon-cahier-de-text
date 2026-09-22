@@ -466,9 +466,9 @@ export const AuthPage: React.FC<{
         </Suspense>
       )}
       {view === "auth" && (
-        <div className="auth-view-enter grid flex-1 lg:grid-cols-2">
+        <div dir="ltr" className="auth-view-enter grid flex-1 lg:grid-cols-2">
           <AuthShowcase locale={displayLocale} />
-          <main className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
+          <main dir={displayLocale === 'ar' ? 'rtl' : 'ltr'} className="flex min-w-0 flex-col justify-center px-5 py-8 sm:px-10 lg:py-10">
             <div className="mx-auto w-full max-w-[400px]">
               <h1
                 tabIndex={-1}

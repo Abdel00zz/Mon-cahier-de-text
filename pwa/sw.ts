@@ -106,7 +106,7 @@ registerRoute(
 registerRoute(
     ({ url, request }) => url.origin === self.location.origin
         && (request.destination === 'image' || /\.(?:png|gif|webp|jpg|jpeg)$/.test(url.pathname))
-        && /^\/(?:icone\.png|dashboard\.png|(?:portrait|landscape)\.gif|guide\/)/.test(url.pathname),
+        && /^\/(?:icone\.png|guide\/|showcase\/)/.test(url.pathname),
     new StaleWhileRevalidate({
         cacheName: 'app-illustrations-v1',
         plugins: [
