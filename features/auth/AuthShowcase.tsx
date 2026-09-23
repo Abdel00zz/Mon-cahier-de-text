@@ -19,7 +19,7 @@ const COPY = {
 } as const;
 const FEATURE_ICONS = [PenLine, CalendarDays, Cloud];
 
-/** Bilingual walkthrough captured from the actual app, with a static accessible cover. */
+/** Shared editorial artwork with bilingual, accessible lesson content. */
 export const AuthShowcase = memo(({ locale }: { locale: 'fr' | 'ar' }) => {
   const copy = COPY[locale];
   return (

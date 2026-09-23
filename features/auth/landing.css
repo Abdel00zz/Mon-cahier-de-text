@@ -29,6 +29,7 @@ body.dark:has(.landing-editorial) {
 [dir="rtl"] > .landing-composition .landing-copy { direction: rtl; }
 .landing-eyebrow { color: #827048; font-size: 14px; margin-bottom: 24px; }
 .landing-copy h1 { font-size: clamp(36px, 4.1vw, 64px); line-height: 1.22; letter-spacing: -0.045em; font-weight: 600; margin: 0; }
+.landing-copy h1:focus { outline: none; }
 .landing-copy h1 span { background: linear-gradient(transparent 65%, #e9dcb4 65%, #e9dcb4 92%, transparent 92%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 [dir="rtl"] > .landing-composition h1 { letter-spacing: 0; line-height: 1.5; font-size: clamp(38px, 4.6vw, 72px); }
 .landing-description { font-size: clamp(16px, 1.5vw, 20px); line-height: 1.85; color: #4f535e; max-width: 31em; margin-top: 28px; }
@@ -62,14 +63,6 @@ body.dark:has(.landing-editorial) {
 .landing-badge-notifications svg { color: #975a16; }
 
 .landing-gallery { grid-area: gallery; position: relative; isolation: isolate; display: grid; place-items: center; min-width: 0; padding: 35px 0 55px; direction: ltr; }
-.landing-gallery-halo { position: absolute; z-index: -1; inset: 10% -6% 2%; border-radius: 50%; background: radial-gradient(ellipse, #d8dfce88, #e9dfc644 45%, transparent 70%); }
-.landing-device { border-radius: 26px; background: #edf1ec; border: 1px solid #bec6be; overflow: hidden; box-shadow: 0 24px 40px -26px #253c3666; }
-.landing-device img { display: block; width: 100%; height: auto; }
-.landing-device-front { position: relative; z-index: 2; width: 57%; max-width: 310px; box-shadow: 0 26px 50px -24px #263c3655, 0 0 0 5px #fafbf580; }
-.landing-device-front figcaption { flex-wrap: wrap; justify-content: center; gap: 0 8px; padding: 2px 6px; font-size: 9px; }
-.landing-device-back { position: absolute; top: 13%; width: 48%; opacity: .86; }
-.landing-device-left { left: 0; transform: rotate(-9deg) translateY(3%); }
-.landing-device-right { right: 0; transform: rotate(9deg) translateY(3%); }
 .landing-gallery-caption { position: absolute; bottom: 12px; color: #7a7e74; font-size: 12px; letter-spacing: .01em; }
 .dark .landing-editorial { background: #1d2324; color: #f0efe8; }
 .dark .landing-eyebrow { color: #cdbd93; }
@@ -125,6 +118,12 @@ body.dark:has(.landing-editorial) {
 
 .dark .landing-secondary { color: #e4e8e1; border-color: #677169; }
 .dark .landing-secondary:hover { background: #303a33; }
+/* Version PC : le bloc de texte (titre, boutons, phrase, badges) remonte en
+   haut du héros ; seule l'illustration reste centrée sur la hauteur. */
+@media (min-width: 960px) {
+  .landing-copy { align-self: start; }
+}
+
 @media (max-width: 959px) {
   .landing-composition { grid-template-areas: "copy" "gallery" "features"; grid-template-columns: minmax(0,1fr); gap: 10px; max-width: 760px; padding: 26px 24px 32px; }
   .landing-copy { text-align: center; padding: 0; }
@@ -152,10 +151,6 @@ body.dark:has(.landing-editorial) {
 @media (max-width: 420px) {
   .landing-composition { padding-inline: 16px; }
   .landing-actions button { flex: 1; padding-inline: 12px; font-size: 12px; }
-  .landing-device { border-radius: 18px; }
-  .landing-device-front { width: 64%; }
-  .landing-device-front figcaption > span { max-width: 100%; text-align: center; }
-  .landing-device-back { top: 18%; }
   .landing-features-mobile { gap: 8px; }
   .landing-badge { font-size: 11.5px; padding: 5px 12px; gap: 6px; }
 }

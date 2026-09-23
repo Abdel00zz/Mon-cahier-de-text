@@ -60,14 +60,7 @@ export function LandingPage({ locale, onLogin, onRegister }: {
         {renderBadges('landing-features-desktop')}
       </section>
       <section className="landing-gallery" aria-label={copy.preview}>
-        <div className="landing-gallery-halo" aria-hidden="true" />
-        <div className="landing-device landing-device-back landing-device-left" aria-hidden="true">
-          <img src={`/showcase/portrait-${language}-editor.webp`} width={448} height={680} alt="" decoding="async" />
-        </div>
-        <div className="landing-device landing-device-back landing-device-right" aria-hidden="true">
-          <img src={`/showcase/portrait-${language}-schedule.webp`} width={448} height={680} alt="" decoding="async" />
-        </div>
-        <AppShowcaseMedia locale={locale} portrait loading="eager" className="landing-device landing-device-front" />
+        <AppShowcaseMedia locale={locale} loading="eager" showPreview={false} />
         <p className="landing-gallery-caption">{copy.preview}</p>
       </section>
       {renderBadges('landing-features-mobile')}

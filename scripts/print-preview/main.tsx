@@ -14,9 +14,26 @@ import '../../index.css';
 const ar = new URLSearchParams(location.search).has('ar');
 const long = new URLSearchParams(location.search).has('long');
 const classInfo = { id: 'print-review', name: ar ? 'الثانية بكالوريا علوم فيزيائية 1' : '2ème Bac Sciences Physiques 1', subject: ar ? 'الرياضيات' : 'Mathématiques', teacherName: ar ? 'أستاذ تجريبي' : 'Enseignant de démonstration' } as ClassInfo;
+const listDescription = ar ? String.raw`دراسة الاستمرارية باستعمال النهايات.
+\begin{enumerate}
+\item شرط أول مع صيغة طويلة $f(x)=\frac{x^5+3x^4+2x^3+4x^2+6x+1}{x^4+7x^3+5x^2+8x+9}+\frac{x^3+2x^2+5x+7}{x^2+4x+3}$ ثم تكملة السطر.
+تتمة شرح البند الأول في سطر جديد.
+\item شرط ثانٍ مع صيغة مستقلة $$\sum_{k=1}^{n}\frac{(k+1)^2}{k^2+1}+\sum_{k=1}^{n}\frac{(k+2)^2}{k^2+2}+\sum_{k=1}^{n}\frac{(k+3)^2}{k^2+3}$$
+\item $$\int_0^1\frac{x^2+1}{x+1}\,dx$$
+\end{enumerate}
+1. بند مكتوب يدويًا مع الصيغة $a+b+c+d+e+f+g+h+i+j+k+l+m+n$
+2. البند الثاني للمقارنة.` : String.raw`Étude de la continuité à partir des limites.
+\begin{enumerate}
+\item Première condition et formule longue $f(x)=\frac{x^5+3x^4+2x^3+4x^2+6x+1}{x^4+7x^3+5x^2+8x+9}+\frac{x^3+2x^2+5x+7}{x^2+4x+3}$ puis la suite du texte.
+Continuation de la première condition sur une autre ligne.
+\item Seconde condition avec une formule isolée $$\sum_{k=1}^{n}\frac{(k+1)^2}{k^2+1}+\sum_{k=1}^{n}\frac{(k+2)^2}{k^2+2}+\sum_{k=1}^{n}\frac{(k+3)^2}{k^2+3}$$
+\item $$\int_0^1\frac{x^2+1}{x+1}\,dx$$
+\end{enumerate}
+1. Item saisi au clavier avec la formule $a+b+c+d+e+f+g+h+i+j+k+l+m+n$
+2. Deuxième item pour comparer.`;
 const source: LessonsData = [{ type: 'chapter', title: ar ? 'الدوال العددية — الاستمرارية' : 'Fonctions numériques — Continuité', items: [
  { type: 'définition', title: ar ? 'الاستمرارية' : 'Continuité en un point', description: '$\\displaystyle \\lim_{x\\to a} f(x)=f(a)$', date: '2026-09-21' },
- { type: 'définition', title: ar ? 'الدوال المتصلة' : 'Fonctions continues', description: ar ? 'دراسة الاستمرارية باستعمال النهايات.' : 'Étude de la continuité à partir des limites.', date: '2026-09-22' },
+ { type: 'définition', title: ar ? 'الدوال المتصلة' : 'Fonctions continues', description: listDescription, date: '2026-09-22' },
  { type: 'free', title: ar ? 'ملاحظة الأستاذ' : 'Note du professeur', description: '$\\int_0^1 x^2\\,dx=\\frac{1}{3}$', date: '2026-09-23', remark: ar ? 'عمل مكتمل' : 'Travail terminé' },
  ...Array.from({length:long?24:2},(_,i)=>({type:'exercice' as const,title:(ar?'تطبيق ':'Application ')+(i+1),description:'$f(x)=x^2+2x+1=(x+1)^2$',date:'2026-09-23'})),
 ]}];
@@ -42,4 +59,8 @@ function Preview() {
   <PrintModal classId={classInfo.id} isOpen={open} onClose={()=>setOpen(false)} totalDates={allDates.length} allDates={allDates} newDates={newDates} printedDates={['2026-09-21']} lastPrintedAt="2026-09-21T10:00:00Z" savedPrefs={options} config={config} onConfigChange={patch=>setConfig(c=>({...c,...patch}))} onPrint={(mode,opts,dates)=>void prepare(mode,opts,dates)}/>
  </MathProvider></LocaleProvider>;
 }
-if(import.meta.env.DEV)createRoot(document.getElementById('root')!).render(<Preview/>);
+if (import.meta.env.DEV) {
+ const root = createRoot(document.getElementById('root')!);
+ root.render(<Preview />);
+ import.meta.hot?.dispose(() => root.unmount());
+}

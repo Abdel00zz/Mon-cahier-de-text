@@ -151,7 +151,7 @@ test('éditeur : une échelle mobile unique reste stable après rotation', () =>
   assert.match(css, /editor-type-badge[\s\S]*font-size: var\(--editor-fs-badge\) !important/);
   assert.match(css, /padding-inline: var\(--editor-badge-padding-inline\) !important/);
   assert.match(css, /pointer: coarse\) and \(max-width: 960px\) and \(max-height: 540px\) and \(orientation: landscape/);
-  assert.match(css, /editor-type-separator-date:focus[\s\S]*font-size: 16px/);
+  assert.match(css, /input:focus, select:focus, textarea:focus \{ font-size: max\(16px, 1em\) !important/);
 });
 
 test('modales & sidebar arabe : augmentation de taille (+15%)', () => {

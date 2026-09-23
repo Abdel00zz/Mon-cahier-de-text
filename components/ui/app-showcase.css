@@ -1,0 +1,76 @@
+.showcase-art {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 1 / 1.08;
+  margin: 0;
+  container-type: inline-size;
+}
+.showcase-art__sculpture {
+  position: absolute;
+  inset: -3% 0 auto -5%;
+  width: 103%;
+  animation: showcase-paper-float 7s ease-in-out infinite;
+}
+.showcase-art__sculpture img { display: block; width: 100%; height: auto; }
+.showcase-art__sheet {
+  position: absolute;
+  right: 0;
+  bottom: 3%;
+  width: 64%;
+  padding: 5%;
+  color: #34443c;
+  background: #fffefa;
+  border: 1px solid #dfdfd5;
+  border-radius: 5px 18px 18px 18px;
+  box-shadow: 0 22px 45px -28px #263b3559, 0 3px 8px -4px #263b351a;
+  transform: rotate(-3deg);
+  animation: showcase-sheet-float 7s ease-in-out infinite;
+}
+.showcase-art__sheet::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  inset-inline-start: 24px;
+  width: 34px;
+  height: 5px;
+  border-radius: 4px;
+  background: #b9c6ae;
+}
+.showcase-art__sheet-heading { display: flex; align-items: center; gap: 10px; }
+.showcase-art__book { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 10px; background: #edf0e7; color: #536a56; }
+.showcase-art__eyebrow { display: block; font-size: clamp(9px, 2.1cqi, 13px); font-weight: 600; letter-spacing: .01em; }
+.showcase-art__sheet-heading p { margin: 3px 0 0; font-size: clamp(8px, 1.8cqi, 11px); color: #71776f; }
+.showcase-art__lessons { list-style: none; margin: 14px 0 0; padding: 0; }
+.showcase-art__lessons li { display: flex; align-items: center; gap: 10px; min-height: 34px; border-top: 1px solid #eceee7; font-size: clamp(9px, 2.15cqi, 13px); line-height: 1.5; }
+.showcase-art__index { color: #858a80; font-size: .8em; font-variant-numeric: tabular-nums; }
+.showcase-art__lesson-dot { width: 7px; height: 7px; flex-shrink: 0; margin-inline-start: auto; border-radius: 50%; background: #b7c6a8; }
+.showcase-art__lessons li:nth-child(2) .showcase-art__lesson-dot { background: #c8bed9; }
+.showcase-art__lessons li:nth-child(3) .showcase-art__lesson-dot { background: #e7c49f; }
+.showcase-art__sheet-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 9px; color: #757e70; font-size: clamp(8px, 1.65cqi, 10px); }
+.showcase-art__sheet-footer > :last-child { font-size: 17px; color: #87997b; }
+.showcase-art__motion { position: absolute; bottom: 1%; left: 2%; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #c8cdc366; border-radius: 50%; color: #57645a; background: #f9faf480; cursor: pointer; transition: background 180ms, transform 180ms; }
+.showcase-art__motion:hover { background: #e9ede2; }
+.showcase-art__motion:active { transform: scale(.95); }
+.showcase-art__motion:focus-visible { outline: 2px solid #65795d; outline-offset: 4px; }
+.showcase-art[data-playing='false'] .showcase-art__sculpture,
+.showcase-art[data-playing='false'] .showcase-art__sheet { animation-play-state: paused; }
+.showcase-art--wide { max-width: 510px; margin-inline: auto; aspect-ratio: 1.24; }
+.showcase-art--wide .showcase-art__sculpture { width: 84%; left: 0; top: -11%; }
+.showcase-art--wide .showcase-art__sheet { width: 60%; bottom: 0; }
+.dark .showcase-art__motion { color: #c3cdbd; border-color: #87997b55; background: #25352d80; }
+@keyframes showcase-paper-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(0); } }
+@keyframes showcase-sheet-float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(5px) rotate(-1deg); } }
+@media (max-width: 1023px) { .showcase-art--desktop { display: none; } }
+@media (max-width: 420px) {
+  .showcase-art__sheet { width: 69%; padding: 4%; }
+  .showcase-art__book { flex-basis: 28px; width: 28px; height: 28px; border-radius: 8px; }
+  .showcase-art__sheet-heading { gap: 7px; }
+  .showcase-art__lessons { margin-top: 9px; }
+  .showcase-art__lessons li { min-height: 29px; gap: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-art:not([data-motion-override='true']) .showcase-art__sculpture,
+  .showcase-art:not([data-motion-override='true']) .showcase-art__sheet { animation: none; }
+  .showcase-art__motion { transition: none; }
+}

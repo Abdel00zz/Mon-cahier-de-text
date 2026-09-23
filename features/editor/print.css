@@ -364,7 +364,7 @@
 .print-document .direction-rtl .print-institution-grid { direction: rtl; text-align: right; }
 .print-document .direction-rtl .print-field-value { text-align: left; }
 .print-document .print-col-content ul, .print-document .print-col-content ol { margin-inline-start: 1em; padding-inline-start: 1em; margin-inline-end: 0; padding-inline-end: 0; }
-.print-document .math-text, .print-document mjx-container { max-width: 100%; overflow: visible !important; }
+.print-document .math-text, .print-document mjx-container { max-width: 100%; }
 .print-document mjx-container { direction: ltr; unicode-bidi: isolate; text-indent: 0; }
 .print-document .print-session-remark, .print-document .print-item-title { overflow-wrap: anywhere; }
 .print-document * { text-shadow: none !important; box-shadow: none !important; animation: none !important; transition: none !important; }

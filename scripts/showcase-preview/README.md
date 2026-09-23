@@ -14,6 +14,9 @@ compte n’est utilisée. Elle ne fait pas partie des entrées du build de produ
    Les exports du navigateur intégré de cette session ont une surface visible à
    80 % : ils utilisent `--capture-scale 0.8` pour retirer la marge d’export.
 
-Les GIF conservent chaque scène 2,8 secondes et utilisent une palette commune.
-Les WebP servent d’affiches statiques pour la pause et la réduction des animations.
+Le générateur retire le fond neutre contigu sans effacer les surfaces blanches de
+l’interface. Les GIF transparents conservent chaque scène 2,8 secondes et
+utilisent une palette commune. Le cadrage ordinateur est resserré à 1024 × 672 ;
+les portraits restent à 448 × 680. Les WebP transparents servent d’affiches
+statiques pour la pause et la réduction des animations.
 Vérifier les quatre GIF avant de remplacer les fichiers de `public/showcase`.

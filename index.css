@@ -131,7 +131,7 @@
 /* ── 1. Dynamic Fluid Typography Utility Classes ───────────────────────── */
 @media screen and (max-width: 639px),
        screen and (pointer: coarse) and (max-width: 767px) and (orientation: portrait),
-       screen and (pointer: coarse) and (max-width: 960px) and (max-height: 540px) {
+       screen and (pointer: coarse) and (max-width: 960px) and (max-height: 540px) and (orientation: landscape) {
   :root { --app-text-scale-base: 0.92; }
 }
 
@@ -693,9 +693,16 @@ html[lang="ar"] .modal-header h2,
   .editor-list {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
-    align-items: start;
+    align-items: baseline;
     column-gap: 0.375rem;
     padding-inline-start: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .editor-item-body {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   /* Marqueur aligné vers le texte, dans le sens d'écriture courant. */
@@ -1920,3 +1927,9 @@ html[data-keyboard='open'] .mobile-tab-bar {
   margin-top: 0;
   padding-top: 0;
 }
+
+/* Les équations display remplissent leur ligne ; leur contenu doit partir du
+   même bord que le texte de l'item, dans les deux sens d'écriture. MathJax
+   conserve le sens LTR à l'intérieur de la formule pour l'ordre des symboles. */
+.editor-item-body mjx-container[display="true"] { text-align: left; }
+[dir="rtl"] .editor-item-body mjx-container[display="true"] { text-align: right; }
