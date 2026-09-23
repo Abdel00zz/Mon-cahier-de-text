@@ -184,6 +184,54 @@ function parseBlocks(state: ParseCursor, terminator?: string): DescriptionBlock[
   return blocks;
 }
 
+/** Marqueur d'un item : puce ou numérotation selon la profondeur de la liste. */
+type MarkerStyle = 'bullet' | 'arabic' | 'alpha' | 'roman';
+
+/**
+ * Marqueur d'une liste selon sa PROFONDEUR : puce au premier niveau, puis
+ * lettres (a., b.), puis chiffres romains (i., ii.), puis de nouveau des
+ * chiffres. La hiérarchie des sous-questions se lit d'un coup d'œil, comme
+ * dans un énoncé (« 1. … a. … i. … ») et quel que soit l'environnement :
+ * `itemize` imbriqué donne donc a., b., c. et non des puces.
+ */
+function markerStyleFor(type: ListKind, depth: number): MarkerStyle {
+  if (depth <= 1) return type === 'ordered' ? 'arabic' : 'bullet';
+  const cycle: MarkerStyle[] = ['alpha', 'roman', 'arabic'];
+  return cycle[(depth - 2) % cycle.length];
+}
+
+/** 1 → a, 26 → z, 27 → aa (numérotation bijective, comme LaTeX). */
+function alphaMarker(position: number): string {
+  let value = position;
+  let out = '';
+  do {
+    out = String.fromCharCode(97 + (value % 26)) + out;
+    value = Math.floor(value / 26) - 1;
+  } while (value >= 0);
+  return out;
+}
+
+/** 1 → i, 4 → iv, 9 → ix : minuscules, comme les sous-questions d'un énoncé. */
+function romanMarker(position: number): string {
+  const steps: ReadonlyArray<readonly [number, string]> = [[10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']];
+  let value = position + 1;
+  let out = '';
+  for (const [amount, symbol] of steps) {
+    while (value >= amount) {
+      out += symbol;
+      value -= amount;
+    }
+  }
+  return out;
+}
+
+function markerFor(style: MarkerStyle, position: number): string {
+  if (style === 'bullet') return '•';
+  if (style === 'alpha') return `${alphaMarker(position)}.`;
+  if (style === 'roman') return `${romanMarker(position)}.`;
+  return `${position + 1}.`;
+}
+
 /** Marqueur et contenu d'un item : deux CELLULES d'une même grille
  *  `.editor-list`. La colonne des marqueurs prend la largeur du plus large de la
  *  liste — puces et numéros laissent donc leur texte démarrer sur la même
@@ -212,15 +260,19 @@ function renderItemCells(
   ];
 }
 
-function renderItem(type: ListKind, item: DescriptionItem, position: number, key: string): React.ReactNode[] {
+function renderItem(type: ListKind, item: DescriptionItem, position: number, key: string, depth: number): React.ReactNode[] {
+  const style = markerStyleFor(type, depth);
   const marker = item.label
     ? (type === 'described' ? React.createElement('strong', { key: `${key}-label` }, item.label) : item.label)
-    : type === 'ordered' ? `${position + 1}.` : '•';
-  const content = renderBlocks(item.blocks, `${key}-c`);
-  return renderItemCells(marker, content.length ? content : [''], key, !item.label && type !== 'ordered');
+    : markerFor(style, position);
+  // Une puce est décorative (l'item est déjà annoncé comme tel) ; un numéro ou
+  // une lettre porte une information : il reste lu par les lecteurs d'écran.
+  const decorative = !item.label && style === 'bullet';
+  const content = renderBlocks(item.blocks, `${key}-c`, depth + 1);
+  return renderItemCells(marker, content.length ? content : [''], key, decorative);
 }
 
-function renderBlocks(blocks: DescriptionBlock[], keyBase: string): React.ReactNode[] {
+function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): React.ReactNode[] {
   const out: React.ReactNode[] = [];
   blocks.forEach((block, blockIndex) => {
     const key = `${keyBase}-b${blockIndex}`;
@@ -230,7 +282,7 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string): React.ReactN
       // numéros et libellés de longueurs différentes compris.
       const cells: React.ReactNode[] = [];
       block.items.forEach((item, position) => {
-        cells.push(...renderItem(block.type, item, position, `${key}-i${position}`));
+        cells.push(...renderItem(block.type, item, position, `${key}-i${position}`, depth));
       });
       out.push(React.createElement('span', { key, className: 'editor-list whitespace-normal' }, ...cells));
       return;
@@ -299,9 +351,9 @@ function expandLatexTextCommands(source: string): string {
   return out;
 }
 
-/** Une formule display occupe sa propre ligne : `$…$` ou `\[…\]`. */
+/** Une formule display occupe sa propre ligne : `$$…$$` ou `\[…\]`. */
 function isDisplayMath(formula: string): boolean {
-  return formula.startsWith('$') || formula.startsWith('\\[');
+  return formula.startsWith('$$') || formula.startsWith('\\[');
 }
 
 /** Marque portée par un jeton de formule : en ligne ou display. */

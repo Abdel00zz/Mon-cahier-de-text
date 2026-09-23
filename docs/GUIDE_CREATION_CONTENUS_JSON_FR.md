@@ -560,6 +560,11 @@ imbriquée reste dans son item parent. Les puces tapées à la main (`- ` ou
 `1. `) absorbent de la même façon les lignes suivantes, jusqu'à la puce
 suivante ou une ligne vide.
 
+Les marqueurs suivent la profondeur : **puce** au premier niveau, **a., b.,
+c.** pour les sous-questions, puis **i., ii.** au troisième niveau — quel que
+soit l'environnement utilisé (`itemize` imbriqué compris). Puces, numéros et
+lettres laissent tous leur texte démarrer exactement sur la même verticale.
+
 Un fragment LaTeX mal formé reste toléré : une fermeture d'environnement
 orpheline est ignorée (elle ne fait disparaître aucun texte) et une liste
 imbriquée sans `\item` porteur conserve son contenu.

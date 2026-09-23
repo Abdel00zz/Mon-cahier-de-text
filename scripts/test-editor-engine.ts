@@ -622,8 +622,9 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   assert.ok(nested.includes('Détail 1') && nested.includes('Détail 2'), 'Les sous-items manquent');
   assert.ok(nested.includes('Point B'), 'Le second item parent manque');
   assert.equal(contentSpans(nested).length, 4, 'Deux items parents + deux sous-items');
-  assert.match(nested, /1\.[\s\S]*?Détail 1/);
-  assert.match(nested, /2\.[\s\S]*?Détail 2/);
+  // Le niveau imbriqué est LETTRÉ : des sous-questions se lisent a., b., c.
+  assert.match(nested, /a\.[\s\S]*?Détail 1/);
+  assert.match(nested, /b\.[\s\S]*?Détail 2/);
 
   // 4. Aucune ligne vide n'est nécessaire entre deux \item.
   const tight = render(String.raw`\begin{enumerate}\item Un\item Deux\item Trois\end{enumerate}`);
@@ -662,6 +663,23 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   // 9. Une formule display n'ajoute pas de ligne vide dans l'item : le numéro
   //    reste collé à la première ligne au lieu de flotter au-dessus.
   assert.ok(!firstSpan(display).includes('\n'), 'Aucune ligne vide autour de la formule display');
+
+  // 10. Sous-questions : un niveau imbriqué est LETTRÉ (a., b.), le suivant
+  //     numéroté en chiffres romains (i., ii.) — puce au premier niveau.
+  const subQuestions = render(String.raw`\begin{itemize}\item Question\begin{itemize}\item Sous-question\item Autre sous-question\end{itemize}\end{itemize}`);
+  assert.match(subQuestions, /a\.[\s\S]*?Sous-question/, 'Le niveau 2 doit être lettré');
+  assert.match(subQuestions, /b\.[\s\S]*?Autre sous-question/);
+  assert.equal((subQuestions.match(/>•<\/span>/g) ?? []).length, 1, 'Une seule puce : au premier niveau');
+  const thirdLevel = render(String.raw`\begin{enumerate}\item A\begin{enumerate}\item B\begin{enumerate}\item C\item D\end{enumerate}\end{enumerate}\end{enumerate}`);
+  assert.match(thirdLevel, /a\.[\s\S]*?i\.[\s\S]*?C/, 'Niveau 3 : chiffres romains');
+  assert.match(thirdLevel, /ii\.[\s\S]*?D/);
+  const manyItems = render(String.raw`\begin{enumerate}\item Racine\begin{enumerate}` + Array.from({ length: 28 }, (_, index) => '\\item Suite ' + (index + 1)).join('') + String.raw`\end{enumerate}\end{enumerate}`);
+  assert.match(manyItems, /aa\.[\s\S]*?Suite 27/, 'Au-delà de z : aa, comme LaTeX');
+
+  // 11. Une formule EN LIGNE ne supprime pas le retour à la ligne du texte :
+  //     seule une formule display occupe sa propre ligne.
+  const inlineKeepsBreak = render('Voir $x$ ici\nPuis la suite.');
+  assert.ok(inlineKeepsBreak.includes('Voir $x$ ici\nPuis la suite.'), 'Le saut de ligne du texte doit rester');
 });
 
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {
