@@ -552,6 +552,18 @@ Respiration : \smallskip   \medskip   \bigskip   \vspace{2mm}
 Ces commandes s'écrivent **hors des `$…$`** : ce sont des commandes de
 document, que MathJax ne connaît pas dans une formule.
 
+Un `\item` se termine au `\item` suivant, à `\end{…}` ou à une ligne vide :
+**aucune ligne vide n'est nécessaire** pour que la liste tienne debout. Un item
+peut s'étaler sur plusieurs lignes — retour à la ligne `\\`, grande formule
+`$$…$$` — : sa suite reste alignée dans sa colonne de contenu, et une liste
+imbriquée reste dans son item parent. Les puces tapées à la main (`- ` ou
+`1. `) absorbent de la même façon les lignes suivantes, jusqu'à la puce
+suivante ou une ligne vide.
+
+Un fragment LaTeX mal formé reste toléré : une fermeture d'environnement
+orpheline est ignorée (elle ne fait disparaître aucun texte) et une liste
+imbriquée sans `\item` porteur conserve son contenu.
+
 ### LaTeX
 
 Entourer les formules avec `$` :

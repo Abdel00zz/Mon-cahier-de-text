@@ -503,7 +503,7 @@ test('chargement MathJax : seuls les cahiers contenant réellement une formule a
 test('math et listes : formule et texte restent ensemble dans la puce', () => {
   const source = '- Calculer $x^2$ puis **conclure**.\n1. Vérifier \\(a*b*c\\).';
   const html = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(source)));
-  assert.match(html, /flex-1">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
+  assert.match(html, /flex-1[^"]*">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
   assert.ok(html.includes('\\(a*b*c\\)'));
   assert.ok(!html.includes('<em>'));
 });
@@ -582,6 +582,57 @@ test('mise en page : les commandes LaTeX de document ne partent plus à MathJax'
   for (const macro of ['sout', 'itshape', 'itsize', 'itesize', 'ang', 'unit', 'abs', 'norme', 'vect']) {
     assert.match(mathConfig, new RegExp(`\\b${macro}:`), `Macro ${macro} absente`);
   }
+});
+
+test('listes : items multi-lignes, imbrication et grandes formules', () => {
+  const render = (text: string) => renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(text)));
+  const contentSpans = (html: string) => html.match(/<span class="min-w-0 flex-1[^"]*">([\s\S]*?)<\/span>/g) ?? [];
+  const firstSpan = (html: string): string => contentSpans(html)[0] ?? '';
+
+  // 1. Un item s'étale sur plusieurs lignes SANS sortir de sa colonne de
+  //    contenu : la suite reste alignée sous le texte, pas sous le numéro.
+  const continued = render(String.raw`\begin{enumerate}\item Première ligne \\ Deuxième ligne.\item Second.\end{enumerate}`);
+  const firstItem = firstSpan(continued);
+  assert.ok(firstItem.includes('Première ligne'), 'Le début de l\'item manque');
+  assert.ok(firstItem.includes('Deuxième ligne.'), 'La continuation est sortie de l\'item');
+  assert.ok(firstItem.includes('overflow-x-auto'), 'La colonne de contenu doit accepter le débordement');
+
+  // 2. Une formule display au milieu d'un item garde SA ligne, dans l'item.
+  const display = render(String.raw`\begin{enumerate}\item Soit :` + '\n' + String.raw`$$\int_0^1 x^2\,dx=\frac{1}{3}$$` + '\n' + String.raw`Puis conclure.\item Second.\end{enumerate}`);
+  const displayItem = firstSpan(display);
+  assert.match(displayItem, /Soit :[\s\S]*?\$\$[\s\S]*?\$\$[\s\S]*?Puis conclure\./);
+  assert.ok(displayItem.includes('$$\\int_0^1'), 'La formule display doit rester dans l\'item');
+
+  // 3. Imbrication : la sous-liste reste DANS son item parent (avant, le texte
+  //    du premier sous-item était collé au parent et la liste était aplatie).
+  const nested = render(String.raw`\begin{itemize}\item Point A\begin{enumerate}\item Détail 1\item Détail 2\end{enumerate}\item Point B\end{itemize}`);
+  assert.ok(!nested.includes('Point A1.'), 'Le sous-item ne doit plus être collé au parent');
+  assert.ok(nested.includes('Point A'), 'Le parent manque');
+  assert.ok(nested.includes('Détail 1') && nested.includes('Détail 2'), 'Les sous-items manquent');
+  assert.ok(nested.includes('Point B'), 'Le second item parent manque');
+  assert.equal(contentSpans(nested).length, 4, 'Deux items parents + deux sous-items');
+  assert.match(nested, /1\.[\s\S]*?Détail 1/);
+  assert.match(nested, /2\.[\s\S]*?Détail 2/);
+
+  // 4. Aucune ligne vide n'est nécessaire entre deux \item.
+  const tight = render(String.raw`\begin{enumerate}\item Un\item Deux\item Trois\end{enumerate}`);
+  assert.match(tight, /1\.[\s\S]*?Un[\s\S]*?2\.[\s\S]*?Deux[\s\S]*?3\.[\s\S]*?Trois/);
+
+  // 5. Les puces tapées à la main absorbent aussi leurs suites (Markdown/LaTeX).
+  const plain = render('- point un\nSuite du point\n- point deux');
+  const plainItems = contentSpans(plain);
+  assert.equal(plainItems.length, 2);
+  assert.ok(plainItems[0].includes('Suite du point'), 'La continuation manuelle doit rester dans la puce');
+
+  // 6. Tolérance : une fermeture orpheline ne coupe plus la lecture du texte.
+  const orphan = render(String.raw`Avant\end{quote}Après`);
+  assert.ok(orphan.includes('Après'), 'La fermeture orpheline ne doit rien faire disparaître');
+
+  // 7. Liste imbriquée sans « \item » porteur (LaTeX invalide) : l'item
+  //    manquant est créé, le contenu n'est jamais perdu.
+  const headless = render(String.raw`\begin{itemize}\begin{enumerate}\item Orphelin\end{enumerate}\end{itemize}`);
+  assert.ok(headless.includes('Orphelin'), 'Le contenu d\'une liste sans porteur doit être conservé');
+  assert.equal(contentSpans(headless).length, 2, 'Item porteur créé + sous-item');
 });
 
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {
