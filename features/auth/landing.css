@@ -1,4 +1,8 @@
-/* Extend landing background across the entire page, top header, and html/body */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Landing Page — Organisation Professionnelle (Bento Grid + Hiérarchie Claire)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Arrière-plan étendu sur toute la page */
 .auth-page-shell-landing,
 .auth-page-shell:has(.landing-editorial) {
   background-color: #f6f4ee !important;
@@ -23,117 +27,449 @@ body.dark:has(.landing-editorial) {
   background-image: none !important;
 }
 
-.landing-editorial { flex: 1; width: 100%; overflow: clip; background: #f6f4ee; color: #242733; }
-.landing-composition { display: grid; grid-template-areas: "gallery copy"; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); align-items: center; direction: ltr; gap: clamp(24px, 4vw, 72px); min-height: calc(100svh - 70px); max-width: 1440px; margin-inline: auto; padding: 48px clamp(24px, 4.5vw, 72px); }
-.landing-copy { grid-area: copy; min-width: 0; direction: ltr; padding-block: 16px; }
-[dir="rtl"] > .landing-composition .landing-copy { direction: rtl; }
-.landing-eyebrow { color: #827048; font-size: 14px; margin-bottom: 24px; }
-.landing-copy h1 { font-size: clamp(36px, 4.1vw, 64px); line-height: 1.22; letter-spacing: -0.045em; font-weight: 600; margin: 0; }
-.landing-copy h1:focus { outline: none; }
-.landing-copy h1 span { background: linear-gradient(transparent 65%, #e9dcb4 65%, #e9dcb4 92%, transparent 92%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-[dir="rtl"] > .landing-composition h1 { letter-spacing: 0; line-height: 1.5; font-size: clamp(38px, 4.6vw, 72px); }
-.landing-description { font-size: clamp(16px, 1.5vw, 20px); line-height: 1.85; color: #4f535e; max-width: 31em; margin-top: 28px; }
-.landing-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-.landing-actions button { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 12px 24px; border-radius: 12px; font-size: 15px; font-weight: 600; transition: background 180ms, transform 180ms, box-shadow 180ms; cursor: pointer; }
-.landing-actions button:active { transform: scale(.98); }
-.landing-actions button:focus-visible { outline: 2px solid #736544; outline-offset: 4px; }
-.landing-primary { background: #293b34; color: #faf9f4; box-shadow: 0 8px 18px -12px #293b3490; }
-.landing-primary:hover { background: #355045; }
-.landing-secondary { color: #363c3a; border: 1px solid #c9ccc3; background: transparent; }
-.landing-secondary:hover { background: #eaece4; }
-.landing-start { color: #71746e; font-size: 12px; line-height: 1.8; max-width: 34em; margin-top: 18px; }
-.landing-features { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; padding: 0; border: none; list-style: none; }
-.landing-features-mobile { display: none !important; }
-.landing-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px; border-radius: 9999px; font-size: 12.5px; font-weight: 500; line-height: 1.4; white-space: nowrap; box-shadow: 0 1px 2px rgba(41, 59, 52, 0.04); transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease; cursor: default; }
-.landing-badge:hover { transform: translateY(-1px); }
+/* ─────────────────────────────────────────────────────────────────────────
+   Structure Principale (CSS Grid Bento Layout)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-editorial {
+  flex: 1;
+  width: 100%;
+  overflow: clip;
+  background: #f6f4ee;
+  color: #242733;
+}
+
+.landing-composition {
+  display: grid;
+  grid-template-areas: "gallery copy";
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  direction: ltr;
+  gap: clamp(32px, 5vw, 80px);
+  min-height: calc(100svh - 70px);
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: clamp(40px, 5vh, 64px) clamp(24px, 4.5vw, 72px);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Zone de Texte (Copy Block) — Hiérarchie Typographique Claire
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-copy {
+  grid-area: copy;
+  min-width: 0;
+  direction: ltr;
+  padding-block: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+[dir="rtl"] > .landing-composition .landing-copy {
+  direction: rtl;
+}
+
+/* Titre principal avec emphase visuelle */
+.landing-copy h1 {
+  font-size: clamp(38px, 4.2vw, 68px);
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  font-weight: 650;
+  margin: 0;
+  color: #1f2937;
+}
+
+.landing-copy h1:focus {
+  outline: none;
+}
+
+.landing-copy h1 span {
+  background: linear-gradient(transparent 62%, #e9dcb4 62%, #e9dcb4 90%, transparent 90%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 2px;
+}
+
+/* Typographie arabe optimisée */
+[dir="rtl"] > .landing-composition h1 {
+  letter-spacing: 0;
+  line-height: 1.45;
+  font-size: clamp(40px, 4.8vw, 76px);
+  font-weight: 700;
+}
+
+/* Description (supprimée car non utilisée) */
+.landing-description {
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.85;
+  color: #4f535e;
+  max-width: 31em;
+  margin-top: 28px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Boutons d'Action (CTA) — Fitts Law + Spring Physics
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.landing-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 14px 28px;
+  border-radius: 13px;
+  font-size: 15.5px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.landing-actions button:active {
+  transform: scale(0.97);
+}
+
+.landing-actions button:focus-visible {
+  outline: 2px solid #736544;
+  outline-offset: 4px;
+}
+
+/* Bouton primaire (Créer un compte) */
+.landing-primary {
+  background: #293b34;
+  color: #faf9f4;
+  box-shadow: 0 4px 12px -4px rgba(41, 59, 52, 0.35),
+              0 8px 24px -8px rgba(41, 59, 52, 0.2);
+}
+
+.landing-primary:hover {
+  background: #355045;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -4px rgba(41, 59, 52, 0.4),
+              0 12px 32px -8px rgba(41, 59, 52, 0.25);
+}
+
+/* Bouton secondaire (Se connecter) */
+.landing-secondary {
+  color: #363c3a;
+  border: 1.5px solid #c9ccc3;
+  background: transparent;
+}
+
+.landing-secondary:hover {
+  background: #eaece4;
+  border-color: #b5b8af;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Phrase d'Amorçage (Start Hint)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-start {
+  color: #71746e;
+  font-size: 12.5px;
+  line-height: 1.7;
+  max-width: 36em;
+  margin-top: 20px;
+  letter-spacing: 0.002em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Badges de Fonctionnalités — Sémantique Chromatique
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-features {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 11px;
+  margin-top: 28px;
+  padding: 0;
+  border: none;
+  list-style: none;
+}
+
+.landing-features-mobile {
+  display: none !important;
+}
+
+.landing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 540;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(41, 59, 52, 0.08),
+              0 1px 2px rgba(41, 59, 52, 0.06);
+  transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: default;
+}
+
+.landing-badge:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 3px 8px rgba(41, 59, 52, 0.12),
+              0 1px 3px rgba(41, 59, 52, 0.08);
+}
 
 /* Badge 1: Saisie rapide et intelligente (Smart / Emerald) */
-.landing-badge-smart { background: #ebf5f0; border: 1px solid #c2e2d3; color: #1b4d3e; }
-.landing-badge-smart:hover { background: #e0f0e8; border-color: #aed7c4; color: #12372c; }
-.landing-badge-smart svg { color: #2d7a5f; }
+.landing-badge-smart {
+  background: #ecf6f1;
+  border: 1.5px solid #c2e2d3;
+  color: #164d3c;
+}
+
+.landing-badge-smart:hover {
+  background: #e0f1e8;
+  border-color: #aed7c4;
+  color: #0f3628;
+}
+
+.landing-badge-smart svg {
+  color: #2d7a5f;
+  stroke-width: 2.2;
+}
 
 /* Badge 2: Calendrier scolaire officiel (Calendar / Slate-Sky) */
-.landing-badge-calendar { background: #edf4fa; border: 1px solid #c5dcf0; color: #163b5c; }
-.landing-badge-calendar:hover { background: #e0ecf7; border-color: #b2d0ea; color: #0f2b44; }
-.landing-badge-calendar svg { color: #255d8f; }
+.landing-badge-calendar {
+  background: #eef5fb;
+  border: 1.5px solid #c5dcf0;
+  color: #14395a;
+}
+
+.landing-badge-calendar:hover {
+  background: #e2edf7;
+  border-color: #b2d0ea;
+  color: #0d2840;
+}
+
+.landing-badge-calendar svg {
+  color: #255d8f;
+  stroke-width: 2.2;
+}
 
 /* Badge 3: Notifications importantes (Alerts / Honey-Amber) */
-.landing-badge-notifications { background: #fdf5eb; border: 1px solid #f2dbbe; color: #633b11; }
-.landing-badge-notifications:hover { background: #f9ebda; border-color: #e8cdab; color: #4a2c0c; }
-.landing-badge-notifications svg { color: #975a16; }
+.landing-badge-notifications {
+  background: #fef6ec;
+  border: 1.5px solid #f2dbbe;
+  color: #5f3710;
+}
 
-.landing-gallery { grid-area: gallery; position: relative; isolation: isolate; display: grid; place-items: center; min-width: 0; padding: 35px 0 55px; direction: ltr; }
-.landing-gallery-caption { position: absolute; bottom: 12px; color: #7a7e74; font-size: 12px; letter-spacing: .01em; }
-.dark .landing-editorial { background: #1d2324; color: #f0efe8; }
-.dark .landing-eyebrow { color: #cdbd93; }
-.dark .landing-copy h1 span { background-image: linear-gradient(transparent 65%, #655839 65%, #655839 92%, transparent 92%); }
-.dark .landing-description { color: #c4c8c4; }
-.dark .landing-start, .dark .landing-gallery-caption { color: #aeb7af; }
+.landing-badge-notifications:hover {
+  background: #faecda;
+  border-color: #e8cdab;
+  color: #472909;
+}
+
+.landing-badge-notifications svg {
+  color: #975a16;
+  stroke-width: 2.2;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Galerie (Illustration Showcase)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.landing-gallery {
+  grid-area: gallery;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 40px 0 60px;
+  direction: ltr;
+}
+
+.landing-gallery-caption {
+  position: absolute;
+  bottom: 16px;
+  color: #7a7e74;
+  font-size: 12.5px;
+  letter-spacing: 0.015em;
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Mode Sombre (Dark Mode)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.dark .landing-editorial {
+  background: #1d2324;
+  color: #f0efe8;
+}
+
+.dark .landing-copy h1 {
+  color: #f0efe8;
+}
+
+.dark .landing-copy h1 span {
+  background-image: linear-gradient(transparent 62%, #655839 62%, #655839 90%, transparent 90%);
+}
+
+.dark .landing-description {
+  color: #c4c8c4;
+}
+
+.dark .landing-start,
+.dark .landing-gallery-caption {
+  color: #aeb7af;
+}
+
+/* Boutons en mode sombre */
+.dark .landing-primary {
+  background: #355045;
+  color: #faf9f4;
+  box-shadow: 0 4px 14px -4px rgba(53, 80, 69, 0.45),
+              0 8px 28px -8px rgba(53, 80, 69, 0.3);
+}
+
+.dark .landing-primary:hover {
+  background: #3f5f52;
+}
+
+.dark .landing-secondary {
+  color: #e4e8e1;
+  border-color: #677169;
+}
+
+.dark .landing-secondary:hover {
+  background: #303a33;
+  border-color: #7a8682;
+}
 
 /* Dark mode badges */
 .dark .landing-badge-smart {
-  background: rgba(23, 48, 39, 0.7);
-  border: 1px solid rgba(52, 211, 153, 0.28);
+  background: rgba(23, 48, 39, 0.75);
+  border: 1.5px solid rgba(52, 211, 153, 0.3);
   color: #a7f3d0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3),
+              0 1px 2px rgba(0, 0, 0, 0.2);
 }
+
 .dark .landing-badge-smart:hover {
   background: rgba(23, 48, 39, 0.95);
-  border-color: rgba(52, 211, 153, 0.42);
+  border-color: rgba(52, 211, 153, 0.45);
   color: #d1fae5;
 }
+
 .dark .landing-badge-smart svg {
   color: #6ee7b7;
 }
 
 .dark .landing-badge-calendar {
-  background: rgba(21, 39, 57, 0.7);
-  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(21, 39, 57, 0.75);
+  border: 1.5px solid rgba(96, 165, 250, 0.3);
   color: #bae6fd;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3),
+              0 1px 2px rgba(0, 0, 0, 0.2);
 }
+
 .dark .landing-badge-calendar:hover {
   background: rgba(21, 39, 57, 0.95);
-  border-color: rgba(96, 165, 250, 0.42);
+  border-color: rgba(96, 165, 250, 0.45);
   color: #e0f2fe;
 }
+
 .dark .landing-badge-calendar svg {
   color: #7dd3fc;
 }
 
 .dark .landing-badge-notifications {
-  background: rgba(49, 34, 18, 0.7);
-  border: 1px solid rgba(251, 191, 36, 0.28);
+  background: rgba(49, 34, 18, 0.75);
+  border: 1.5px solid rgba(251, 191, 36, 0.3);
   color: #fde68a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3),
+              0 1px 2px rgba(0, 0, 0, 0.2);
 }
+
 .dark .landing-badge-notifications:hover {
   background: rgba(49, 34, 18, 0.95);
-  border-color: rgba(251, 191, 36, 0.42);
+  border-color: rgba(251, 191, 36, 0.45);
   color: #fef3c7;
 }
+
 .dark .landing-badge-notifications svg {
   color: #fbbf24;
 }
 
-.dark .landing-secondary { color: #e4e8e1; border-color: #677169; }
-.dark .landing-secondary:hover { background: #303a33; }
-/* Version PC : le bloc de texte (titre, boutons, phrase, badges) remonte en
-   haut du héros ; seule l'illustration reste centrée sur la hauteur. */
+/* ─────────────────────────────────────────────────────────────────────────
+   Responsive Desktop (> 960px) — Bloc texte aligné en haut
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media (min-width: 960px) {
-  .landing-copy { align-self: start; }
+  .landing-copy {
+    align-self: start;
+    padding-top: 32px;
+  }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Responsive Mobile/Tablette (< 960px) — Layout Vertical Optimisé
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media (max-width: 959px) {
-  .landing-composition { grid-template-areas: "copy" "gallery" "features"; grid-template-columns: minmax(0,1fr); gap: 10px; max-width: 760px; padding: 26px 24px 32px; }
-  .landing-copy { text-align: center; padding: 0; }
-  .landing-copy h1 { font-size: clamp(34px, 7vw, 54px); }
-  [dir="rtl"] > .landing-composition h1 { font-size: clamp(35px, 7vw, 56px); }
-  .landing-eyebrow { margin-bottom: 14px; font-size: 12px; }
-  .landing-description { margin: 18px auto 0; font-size: 16px; }
-  .landing-actions { justify-content: center; margin-top: 20px; gap: 10px; }
-  .landing-start { margin: 14px auto 0; }
-  .landing-features-desktop { display: none !important; }
+  .landing-composition {
+    grid-template-areas: "copy" "gallery" "features";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    max-width: 760px;
+    padding: 32px 24px 40px;
+  }
+
+  .landing-copy {
+    text-align: center;
+    padding: 0;
+    gap: 0;
+  }
+
+  .landing-copy h1 {
+    font-size: clamp(36px, 7.5vw, 58px);
+  }
+
+  [dir="rtl"] > .landing-composition h1 {
+    font-size: clamp(38px, 7.8vw, 62px);
+  }
+
+  .landing-description {
+    margin: 20px auto 0;
+    font-size: 16px;
+  }
+
+  .landing-actions {
+    justify-content: center;
+    margin-top: 28px;
+    gap: 12px;
+  }
+
+  .landing-actions button {
+    min-height: 50px;
+    padding: 13px 24px;
+    font-size: 14.5px;
+  }
+
+  .landing-start {
+    margin: 18px auto 0;
+    font-size: 12px;
+  }
+
+  /* Masquer badges desktop, afficher badges mobile */
+  .landing-features-desktop {
+    display: none !important;
+  }
+
   .landing-features-mobile {
     grid-area: features;
     display: flex !important;
@@ -141,17 +477,87 @@ body.dark:has(.landing-editorial) {
     align-items: center;
     justify-content: center;
     width: 100%;
-    margin-top: 6px;
+    margin-top: 12px;
     margin-bottom: 8px;
     padding: 0;
-    gap: 9px 12px;
+    gap: 10px 12px;
   }
-  .landing-gallery { width: 100%; max-width: 490px; margin-inline: auto; padding: 22px 0 46px; }
+
+  .landing-gallery {
+    width: 100%;
+    max-width: 500px;
+    margin-inline: auto;
+    padding: 28px 0 50px;
+  }
+
+  .landing-badge {
+    font-size: 12px;
+    padding: 6px 14px;
+    gap: 7px;
+  }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Responsive Très Petit Mobile (< 420px)
+   ───────────────────────────────────────────────────────────────────────── */
+
 @media (max-width: 420px) {
-  .landing-composition { padding-inline: 16px; }
-  .landing-actions button { flex: 1; padding-inline: 12px; font-size: 12px; }
-  .landing-features-mobile { gap: 8px; }
-  .landing-badge { font-size: 11.5px; padding: 5px 12px; gap: 6px; }
+  .landing-composition {
+    padding-inline: 18px;
+  }
+
+  .landing-copy h1 {
+    font-size: clamp(32px, 8vw, 48px);
+  }
+
+  [dir="rtl"] > .landing-composition h1 {
+    font-size: clamp(34px, 8.5vw, 52px);
+  }
+
+  .landing-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .landing-actions button {
+    width: 100%;
+    min-height: 48px;
+    padding-inline: 20px;
+    font-size: 14px;
+  }
+
+  .landing-features-mobile {
+    gap: 8px 10px;
+  }
+
+  .landing-badge {
+    font-size: 11px;
+    padding: 5px 12px;
+    gap: 6px;
+  }
+
+  .landing-badge svg {
+    width: 13px;
+    height: 13px;
+  }
 }
-@media (prefers-reduced-motion: reduce) { .landing-actions button { transition: none; } }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Reduced Motion (Accessibilité)
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-actions button,
+  .landing-badge {
+    transition: none;
+  }
+
+  .landing-actions button:active {
+    transform: none;
+  }
+
+  .landing-badge:hover {
+    transform: none;
+  }
+}
