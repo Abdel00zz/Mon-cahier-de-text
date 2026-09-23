@@ -1,18 +1,16 @@
 /* Shared A4 composition for preparation, preview and native printing. */
-/* Le plan se lit aussi sur le papier : un cran de marge
-   par niveau, et un filet pour matérialiser la profondeur. */
+/* Le plan se lit aussi sur le papier : un cran de marge par niveau.
+   Aucun filet vertical : le retrait suffit à marquer la profondeur. */
 .print-document {
     --editor-indent-1: 4mm;
     --editor-indent-2: 8mm;
     --editor-indent-3: 12mm;
-    --editor-indent-rail: #D8CFBE;
 }
 /* Le retrait hiérarchique survit aux remises à zéro du
    papier (raccourcis « margin: 0 0 2px 0 »). */
 .print-document .editor-indent-1 { margin-inline-start: var(--editor-indent-1) !important; }
 .print-document .editor-indent-2 { margin-inline-start: var(--editor-indent-2) !important; }
 .print-document .editor-indent-3 { margin-inline-start: var(--editor-indent-3) !important; }
-.print-document .editor-indent-rail { border-inline-start: 0.75pt solid var(--editor-indent-rail); }
 
 
 
@@ -323,7 +321,6 @@
     margin-bottom: 2px !important;
     margin-inline-start: 1.5em;
     padding-inline-start: 0.7em;
-    border-inline-start: 0.55pt solid var(--print-rule); /* Structural line connecting description */
     color: #374151;
     font-size: var(--print-size-description);
     line-height: var(--print-spacing-line);

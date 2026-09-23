@@ -32,6 +32,18 @@ export const hasMathContent = (value: unknown): boolean => {
   return false;
 };
 
+/**
+ * Environnements LaTeX de *document* : listes, centrage, citations, tableaux de
+ * mise en page. Ce ne sont pas des formules — MathJax ne les connaît pas et
+ * répondait « Unknown environment », en laissant le texte brut à l'écran comme
+ * sur le papier. Ils restent donc du texte, mis en page par utils/textFormat.
+ */
+const DOCUMENT_ENVIRONMENTS = new Set([
+  'enumerate', 'itemize', 'description', 'list', 'trivlist',
+  'center', 'flushleft', 'flushright', 'quote', 'quotation', 'verse',
+  'verbatim', 'document', 'figure', 'table', 'tabular',
+]);
+
 /** One tokenizer for detection, formatting and search highlighting. */
 export function splitMathText(text: string): { text: string; math: boolean }[] {
   const pattern = /(?<!\\)(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$\\\n])*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\\begin\{([^}]+)\}[\s\S]*?\\end\{\2\})/g;
@@ -39,8 +51,20 @@ export function splitMathText(text: string): { text: string; math: boolean }[] {
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
     const start = match.index!;
+    const environment = match[2]?.trim().toLowerCase();
     if (start > cursor) parts.push({ text: text.slice(cursor, start), math: false });
-    parts.push({ text: match[0], math: true });
+    if (environment !== undefined && DOCUMENT_ENVIRONMENTS.has(environment)) {
+      // Environnement de document : l'enveloppe n'est pas une formule, mais son
+      // corps peut en contenir une ($…$). On le réanalyse au lieu de l'avaler,
+      // sinon une liste serait plus jamais typographiée.
+      const opening = match[0].slice(0, match[0].indexOf('}') + 1);
+      const closing = match[0].slice(match[0].length - environment.length - 6);
+      parts.push({ text: opening, math: false });
+      parts.push(...splitMathText(match[0].slice(opening.length, match[0].length - closing.length)));
+      parts.push({ text: closing, math: false });
+    } else {
+      parts.push({ text: match[0], math: true });
+    }
     cursor = start + match[0].length;
   }
   if (cursor < text.length) parts.push({ text: text.slice(cursor), math: false });

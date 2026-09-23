@@ -531,9 +531,26 @@ Dans `description`, `content` et `remark` :
 ```text
 **texte en gras**
 *texte en italique*
+++texte souligné++
 - élément de liste
 1. élément numéroté
 ```
+
+Le LaTeX de **mise en page** est accepté dans ce même texte (hors formules) et
+converti automatiquement :
+
+```text
+\textbf{gras}   \textit{italique}   \emph{italique}   \underline{souligné}
+\begin{enumerate} \item premier \item second \end{enumerate}
+\begin{itemize} \item puce \end{itemize}
+\begin{description} \item[Terme] définition \end{description}
+Fin de ligne : \\   ou   \newline        Paragraphe : \par
+Respiration : \smallskip   \medskip   \bigskip   \vspace{2mm}
+\noindent et \hspace{1cm} sont ignorés ; ~ est une espace insécable.
+```
+
+Ces commandes s'écrivent **hors des `$…$`** : ce sont des commandes de
+document, que MathJax ne connaît pas dans une formule.
 
 ### LaTeX
 
@@ -549,6 +566,24 @@ Entourer les formules avec `$` :
 
 Dans un fichier JSON, les antislashs LaTeX doivent être doublés : `\\pi`,
 `\\frac`, `\\times`.
+
+Macros de confort fournies par l'application, en plus de toutes les commandes
+MathJax standard :
+
+| Écriture | Rendu |
+| --- | --- |
+| `$\R$`, `$\N$`, `$\Z$`, `$\Q$`, `$\C$` | ensembles usuels |
+| `$\abs{x}$`, `$\norme{u}$`, `$\vect{AB}$` | valeur absolue, norme, vecteur |
+| `$\e$`, `$\dif x$` | e et d droits (notation française) |
+| `$\sout{AB}$` | terme barré (`\cancel` n'est pas fourni par MathJax) |
+| `$\itshape{ABC}$` (aussi `\itsize`, `\itesize`) | italique dans une formule |
+| `$\ang{30}$`, `$\unit{3}{m}$` | 30°, 3 m |
+
+N'utiliser dans une formule que des commandes **mathématiques**. Les
+environnements de liste (`\begin{enumerate}`, `\begin{itemize}`,
+`\begin{description}`) et les commandes de paragraphe (`\par`, `\bigskip`,
+`\vspace`, `\noindent`) sont des commandes de *document* : elles s'écrivent
+hors des `$…$` et sont converties par l'application (voir « Texte enrichi »).
 
 ## 10. Limites techniques et règles de sécurité
 

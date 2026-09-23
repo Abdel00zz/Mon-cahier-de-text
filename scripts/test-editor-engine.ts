@@ -508,6 +508,82 @@ test('math et listes : formule et texte restent ensemble dans la puce', () => {
   assert.ok(!html.includes('<em>'));
 });
 
+test('environnements : les listes LaTeX ne partent plus vers MathJax', () => {
+  const source = String.raw`Consigne :
+\begin{enumerate}
+\item Identifier $n$ et $p$ puis reconnaître $X\sim\mathcal B(n,p)$.
+\item Calculer les probabilités binomiales demandées.
+\end{enumerate}`;
+
+  // Une liste n'est pas une formule : MathJax répondait « Unknown environment ».
+  assert.equal(hasMathSyntax(String.raw`\begin{enumerate}\item texte\end{enumerate}`), false);
+  // Les formules à l'intérieur restent détectées (sinon plus rien ne serait typographié).
+  assert.equal(hasMathSyntax(source), true);
+  const parts = splitMathText(source);
+  assert.equal(parts.filter(part => part.math).length, 3);
+  assert.ok(parts.some(part => !part.math && part.text.includes('\\begin{enumerate}')));
+  assert.ok(parts.some(part => !part.math && part.text.includes('Identifier')));
+
+  // Et la liste est mise en page : chapeau, numéros, formules, aucun reste de LaTeX.
+  const html = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(source)));
+  assert.match(html, /Consigne :/);
+  assert.match(html, /1\./);
+  assert.match(html, /2\./);
+  assert.ok(html.includes(String.raw`X\sim\mathcal B(n,p)`));
+  assert.ok(!html.includes('\\item'));
+  assert.ok(!html.includes('\\begin{enumerate}'));
+
+  // itemize → puces, description → terme en gras.
+  const bullet = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(String.raw`\begin{itemize}\item Un\item Deux\end{itemize}`)));
+  assert.match(bullet, /•/);
+  assert.ok(!bullet.includes('\\begin{itemize}'));
+  const described = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(String.raw`\begin{description}\item[Définition] Une fonction continue.\end{description}`)));
+  assert.match(described, /<strong[^>]*>Définition<\/strong>/);
+
+  // Un environnement mathématique garde son statut.
+  assert.equal(hasMathSyntax(String.raw`\begin{aligned}x&=1\\y&=2\end{aligned}`), true);
+  assert.equal(hasMathSyntax(String.raw`\begin{cases}x=1\\y=2\end{cases}`), true);
+});
+
+test('mise en page : les commandes LaTeX de document ne partent plus à MathJax', () => {
+  const render = (text: string) => renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(text)));
+
+  // Emphases : les marqueurs natifs du moteur.
+  assert.match(render(String.raw`\textbf{Gras}`), /<strong[^>]*>Gras<\/strong>/);
+  assert.match(render(String.raw`\textit{Italique}`), /<em[^>]*>Italique<\/em>/);
+  assert.match(render(String.raw`\emph{Aussi}`), /<em[^>]*>Aussi<\/em>/);
+  assert.match(render(String.raw`\underline{Souligné}`), /<u[^>]*>Souligné<\/u>/);
+  assert.match(render(String.raw`\textbf{\emph{Les deux}}`), /<strong[^>]*>.*<em[^>]*>Les deux<\/em>/);
+
+  // Liste sans environnement : « \item » orphelin reste une puce.
+  assert.match(render(String.raw`\item Un\item Deux`), /•/);
+
+  // Fins de ligne, paragraphes, espacements : plus aucun antislash imprimé.
+  for (const source of [String.raw`a\\b`, String.raw`a\newline b`, String.raw`a\par b`, String.raw`a\bigskip b`, String.raw`a\vspace{2mm}b`]) {
+    assert.ok(!render(source).includes('\\'), `Antislash résiduel pour ${source}`);
+  }
+  assert.equal(render(String.raw`\noindent Texte`).replace(/<[^>]+>/g, '').trim(), 'Texte');
+  const centered = render(String.raw`\begin{center}Centré\end{center}`);
+  assert.ok(centered.includes('Centré') && !centered.includes('\\begin'));
+
+  // Échappements et symboles usuels d'un texte français.
+  assert.ok(render(String.raw`50\% des élèves`).includes('50% des élèves'));
+  assert.ok(render(String.raw`A \& B`).includes('A &amp; B')); // React échappe &
+  assert.ok(render(String.raw`Suite\ldots{} fin`).includes('…'));
+
+  // Dans une formule, RIEN n'est traduit : MathJax s'en charge lui-même.
+  assert.ok(render(String.raw`$\textbf{v}$`).includes(String.raw`\textbf`));
+  assert.ok(render(String.raw`$a\\b$`).includes(String.raw`a\\b`));
+  assert.ok(render(String.raw`$\itshape{ABC}$`).includes(String.raw`\itshape`));
+
+  // Macros de confort : déclarées côté MathJax (les tailles et emphases
+  // \itshape, \itsize, \itesize n'existent pas dans MathJax — sonde du 23/09).
+  const mathConfig = readFileSync('config/mathJax.ts', 'utf8');
+  for (const macro of ['sout', 'itshape', 'itsize', 'itesize', 'ang', 'unit', 'abs', 'norme', 'vect']) {
+    assert.match(mathConfig, new RegExp(`\\b${macro}:`), `Macro ${macro} absente`);
+  }
+});
+
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {
   const lessons: LessonsData = [{
     type: 'chapter',
@@ -647,17 +723,21 @@ test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', (
   for (const level of ['1', '2', '3']) {
     assert.match(css, new RegExp('\\.editor-indent-' + level + ' \\{ margin-inline-start: var\\(--editor-indent-' + level + '\\)'));
   }
-  assert.match(css, /editor-indent-rail \{ border-inline-start: 1px solid var\(--editor-indent-rail\)/);
+  // Aucun filet vertical : le plan ne tient qu'aux crans de marge.
+  assert.doesNotMatch(css, /editor-indent-rail/);
   // Le portrait reste sobre, le paysage tactile creuse davantage.
   assert.match(css, /--editor-indent-3: 14px/);
   const landscape = css.slice(css.indexOf('(pointer: coarse) and (orientation: landscape)'));
   assert.match(landscape, /--editor-indent-1: 22px/);
   assert.match(landscape, /--editor-indent-3: 62px/);
   assert.match(landscape, /--editor-lesson-indent: 16px/);
-  // Chaque niveau du plan porte son propre cran.
-  assert.match(renderer, /editor-type-section editor-indent-1 editor-indent-rail/);
-  assert.match(renderer, /editor-type-subsection editor-indent-2 editor-indent-rail/);
-  assert.match(renderer, /editor-type-subsubsection editor-indent-3 editor-indent-rail/);
+  // Chaque niveau du plan porte son propre cran, rien d'autre.
+  assert.match(renderer, /editor-type-section editor-indent-1 font-semibold/);
+  assert.match(renderer, /editor-type-subsection editor-indent-2 font-semibold/);
+  assert.match(renderer, /editor-type-subsubsection editor-indent-3 italic/);
+  assert.doesNotMatch(renderer, /editor-indent-rail/);
+  // La description redevient un bloc adouci, sans barre verticale.
+  assert.doesNotMatch(renderer, /border-s-\[2px\]/);
   // Les lignes de contenu s'alignent sur le même plan, sans filet.
   assert.match(renderer, /const lessonIndentClass = indices\.subsubsectionIndex !== undefined/);
   assert.match(renderer, /\$\{lessonIndentClass\}/);
@@ -665,9 +745,17 @@ test('retrait hierarchique : un cran par niveau, renforce en paysage tactile', (
   const print = readFileSync('features/editor/print.css', 'utf8');
   assert.match(print, /--editor-indent-1: 4mm/);
   assert.match(print, /--editor-indent-3: 12mm/);
-  assert.match(print, /--editor-indent-rail: #D8CFBE/);
+  // Sur le papier non plus : ni rail, ni barre de description.
+  assert.doesNotMatch(print, /border-inline-start/);
   assert.match(renderer, /print-lesson-item \$\{lessonIndentClass\}/);
   assert.match(renderer, /\$\{lessonIndentClass\}/);
+  // Vérification sur le balisage réellement produit, pas seulement la source.
+  const description = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
+    React.createElement(ContentRenderer, { data: { type: 'exercice', title: 'Titre', description: 'Une description.' }, indices: { chapterIndex: 0 }, elementType: 'item', showDescriptions: true }),
+  }));
+  assert.ok(description.includes('editor-type-description'));
+  assert.ok(!description.includes('border-s-'), 'La description ne doit plus porter de barre verticale');
+  assert.ok(!description.includes('editor-indent-rail'));
 });
 
 test('numerotation des contenus : un compteur par type, remis a zero par chapitre', () => {

@@ -139,16 +139,16 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     // Ne pas appliquer d'indentation pour les chapitres et évaluations de premier niveau
     if (indices.itemIndex !== undefined) {
         // Un cran de marge par niveau : c'est le plan du cahier.
-        if (indices.subsubsectionIndex !== undefined) indentClass = 'editor-indent-3 editor-indent-rail';
-        else if (indices.subsectionIndex !== undefined) indentClass = 'editor-indent-2 editor-indent-rail';
-        else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1 editor-indent-rail';
+        if (indices.subsubsectionIndex !== undefined) indentClass = 'editor-indent-3';
+        else if (indices.subsectionIndex !== undefined) indentClass = 'editor-indent-2';
+        else if (indices.sectionIndex !== undefined) indentClass = 'editor-indent-1';
     }
 
     const isTopLevel = item.type === 'chapter' || isEvaluation;
     const justificationClass = isTopLevel ? 'justify-center' : '';
     
     if (isCorrection) {
-      indentClass = 'editor-indent-1 editor-indent-rail';
+      indentClass = 'editor-indent-1';
     }
 
     if (item.type === 'chapter') {
@@ -186,7 +186,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-section editor-indent-1 editor-indent-rail font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -197,7 +197,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'subsection':
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsection editor-indent-2 editor-indent-rail font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -209,7 +209,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
-            <div className="editor-type-subsubsection editor-indent-3 editor-indent-rail italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
+            <div className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
@@ -295,7 +295,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
 
           {/* Description : encadré sobre sous le titre façon Google Keep */}
           {allowDescription && (
-            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-e-md border-s-[2px] border-primary/40 bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
+            <div className="col-start-2 editor-item-description editor-type-description mt-1.5 rounded-md bg-muted/40 px-2 py-1 text-muted-foreground whitespace-pre-wrap break-words" dir={textDirectionAttribute(item.description)}>
               {renderDescriptionWithBold(item.description)}
             </div>
           )}

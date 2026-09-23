@@ -824,17 +824,15 @@ html[lang="ar"] .modal-header h2,
     --editor-lesson-indent: clamp(0px, calc(2vw - 8px), 12px);
     /* Retrait hiérarchique : le chapitre tient la marge, chaque niveau
        imbriqué s'enfonce d'un cran régulier (section, sous-section,
-       sous-sous-section). Le filet matérialise le niveau, comme le
-       trait d'un plan de livre. */
+       sous-sous-section). Le cran de marge suffit : aucun filet vertical,
+       à l'écran comme sur le papier. */
     --editor-indent-1: 4px;
     --editor-indent-2: 8px;
     --editor-indent-3: 14px;
-    --editor-indent-rail: color-mix(in srgb, currentColor 14%, transparent);
   /* Esprit éditeur de livre : la marge raconte la profondeur. */
   .editor-indent-1 { margin-inline-start: var(--editor-indent-1); }
   .editor-indent-2 { margin-inline-start: var(--editor-indent-2); }
   .editor-indent-3 { margin-inline-start: var(--editor-indent-3); }
-  .editor-indent-rail { border-inline-start: 1px solid var(--editor-indent-rail); }
 
   @media (min-width: 640px) {
     [data-editor-table] {
@@ -852,7 +850,6 @@ html[lang="ar"] .modal-header h2,
       --editor-indent-1: 22px;
       --editor-indent-2: 42px;
       --editor-indent-3: 62px;
-      --editor-indent-rail: color-mix(in srgb, currentColor 20%, transparent);
       --editor-lesson-indent: 16px;
     }
   }

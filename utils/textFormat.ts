@@ -9,17 +9,127 @@ import { splitMathText } from './math';
  *   « - texte » en début de ligne  → puce (équivalent \itemize)
  *   « 1. texte » en début de ligne → liste numérotée (équivalent \enumerate)
  * Les segments $...$ / $$...$$ sont transmis intacts à MathJax (qui gère
- * \frac, \array, \begin{cases}, matrices, etc., voir README).
+ * \frac, \array, \begin{cases}, matrices, etc. ; macros de l'application
+ * dans config/mathJax.ts).
+ * Le LaTeX *de document* est traduit ici — jamais envoyé à MathJax, qui ne le
+ * connaît pas : environnements de liste (\begin{enumerate}, \begin{itemize},
+ * \begin{description}), emphases (\textbf, \textit, \emph, \underline),
+ * sauts de ligne (\\, \newline, \par), espacements (\smallskip, \bigskip,
+ * \vspace, \hspace) et \item orphelins.
  */
+
+/**
+ * Convertit les listes LaTeX en lignes que applyTextLayout sait déjà composer.
+ * On traite de l'intérieur vers l'extérieur : la première occurrence trouvée est
+ * la plus profonde (son corps ne contient plus ni \begin ni \end), donc une
+ * liste imbriquée est résolue avant sa liste parente.
+ */
+function expandLatexLists(source: string): string {
+  if (!source.includes('\\begin{enumerate}')
+    && !source.includes('\\begin{itemize}')
+    && !source.includes('\\begin{description}')) {
+    return source;
+  }
+  const innermost = /\\begin\{(enumerate|itemize|description)\}((?:(?!\\(?:begin|end)\{)[\s\S])*?)\\end\{\1\}/;
+  let out = source;
+  let previous = '';
+  for (let guard = 0; out !== previous && guard < 8; guard += 1) {
+    previous = out;
+    out = out.replace(innermost, (_match, environment: string, body: string) => {
+      // Le chapeau éventuel est le texte qui précède le premier \item : on le
+      // repère à sa position, sinon le premier item passerait pour un chapeau.
+      const firstItem = body.search(/\\item\b/);
+      const lead = firstItem > 0 ? body.slice(0, firstItem).trim() : '';
+      const items = (firstItem < 0 ? body : body.slice(firstItem))
+        .split(/\\item\b\s*/)
+        .map(part => part.trim())
+        .filter(Boolean);
+      if (items.length === 0) return lead;
+      const lines = items.map((item, index) => {
+        if (environment === 'itemize') return `- ${item}`;
+        if (environment === 'description') {
+          const labelled = item.match(/^\[([^\]]*)\]\s*([\s\S]*)$/);
+          return labelled ? `- **${labelled[1]}** : ${labelled[2]}` : `- ${item}`;
+        }
+        return `${index + 1}. ${item}`;
+      });
+      // Un éventuel chapeau avant le premier \item reste au-dessus de la liste.
+      return (lead ? [lead, ...lines] : lines).join('\n');
+    });
+  }
+  return out.trimStart();
+}
+
+/**
+ * Commandes de mise en page LaTeX d'un texte courant : la sortie est aux
+ * marqueurs natifs du moteur, donc MathJax n'en voit jamais un seul. Les
+ * variantes \text… sont listées AVANT le \text{…} générique pour ne pas être
+ * avalées par lui.
+ */
+const LATEX_TEXT_COMMANDS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/\\textbf\{([^{}]*)\}/g, '**$1**'],
+  [/\\textit\{([^{}]*)\}/g, '*$1*'],
+  [/\\textsl\{([^{}]*)\}/g, '*$1*'],
+  [/\\emph\{([^{}]*)\}/g, '*$1*'],
+  [/\\underline\{([^{}]*)\}/g, '++$1++'],
+  [/\\textsc\{([^{}]*)\}/g, '$1'],
+  // Générique : les suffixes déjà traités ci-dessus (it, bf) en sont EXCLUS,
+  // sinon il avale leurs marqueurs à la passe suivante — cas mesuré :
+  // \textbf{\emph{X}} perdait le gras et ne gardait que l'italique.
+  [/\\text(?:rm|sf|tt|up|md|normal)?\{([^{}]*)\}/g, '$1'],
+  [/\\mbox\{([^{}]*)\}/g, '$1'],
+];
+
+function expandLatexTextCommands(source: string): string {
+  let out = source;
+  // Trois passes couvrent les imbrications usuelles (\textbf{\emph{…}}).
+  for (let pass = 0; pass < 3; pass += 1) {
+    for (const [pattern, replacement] of LATEX_TEXT_COMMANDS) {
+      out = out.replace(pattern, replacement);
+    }
+  }
+  out = out
+    // Fins de ligne (\\ ou \\[2mm]) et paragraphes.
+    .replace(/\\\\(?:\s*\[[^\]]*\])?/g, '\n')
+    .replace(/\\(?:newline|linebreak)\b/g, '\n')
+    .replace(/\\(?:par|bigskip|medskip)\b/g, '\n\n')
+    .replace(/\\smallskip\b/g, '\n')
+    // Espacements : une respiration verticale ou une espace insécable.
+    .replace(/\\vspace\*?\{[^{}]*\}/g, '\n')
+    .replace(/\\hspace\*?\{[^{}]*\}/g, '\u00A0')
+    .replace(/~/g, '\u00A0')
+    // Commandes sans équivalent en texte courant : retirées, pas imprimées.
+    .replace(/\\(?:noindent|centering|raggedright|raggedleft|newpage|clearpage|pagebreak|nopagebreak|vfill|hfill)\b/g, '')
+    // Liste sans environnement : « \item » orphelin rendu en puce.
+    .replace(/\\item\s*\[([^\]]*)\]\s*/g, '\n- **$1** : ')
+    .replace(/\\item\b\s*/g, '\n- ')
+    // Environnement resté ouvert : on garde le texte, pas l'enveloppe.
+    .replace(/\\(?:begin|end)\{[^{}]*\}/g, '')
+    // Échappements LaTeX, espaces fines et accolades vides ({ } de garde).
+    .replace(/\\([%&_#{}])/g, '$1')
+    .replace(/\\[,;:!]/g, ' ')
+    .replace(/\{\}/g, '')
+    // Symboles fréquents.
+    .replace(/\\(?:ldots|dots|textellipsis)\b/g, '…')
+    .replace(/\\textendash\b/g, '–')
+    .replace(/\\textemdash\b/g, '—')
+    .replace(/\\guillemotleft\b/g, '«')
+    .replace(/\\guillemotright\b/g, '»')
+    .replace(/\\textbullet\b/g, '•');
+  return out.replace(/^\n+/, '').replace(/\n{3,}/g, '\n\n');
+}
 
 // Protect formulas before line layout, so math remains inside its list item.
 export function renderDescriptionWithBold(text: string | undefined): React.ReactNode[] {
   if (!text) return [];
+  const expanded = expandLatexLists(text);
   let prefix = '\uE000';
-  while (text.includes(prefix)) prefix += '\uE000';
+  while (expanded.includes(prefix)) prefix += '\uE000';
   const formulas: string[] = [];
-  const protectedText = splitMathText(text).map(part => {
-    if (!part.math) return part.text;
+  const protectedText = splitMathText(expanded).map(part => {
+    // Seul le TEXTE reçoit les commandes de mise en page : dans une formule,
+    // c'est MathJax qui les interprète (\textbf, \text, \underline…).
+    if (!part.math) return expandLatexTextCommands(part.text);
     const index = formulas.push(part.text) - 1;
     return prefix + index + '\uE001';
   }).join('');
