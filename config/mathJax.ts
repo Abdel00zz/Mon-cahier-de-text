@@ -45,8 +45,19 @@ export const mathJaxConfig: MathJax3Config = {
       vspace: ["", 1],
     },
   },
-  // NB : pas d'option `chtml.displayOverflow`, bien que MathJax 4 (chargé
-  // ci-dessus) la supporte, le débordement des longues formules sur mobile
-  // est géré en CSS (conteneurs overflow-x:auto) ; l'activer changerait la
-  // mise en page existante des formules hors-gabarit.
+  // Formules trop larges pour leur colonne : MathJax insère lui-même les
+  // coupures aux endroits que TeX autorise, au lieu d'une barre de défilement
+  // ou d'un débordement. C'est ce qui remplace les anciens conteneurs
+  // `overflow-x: auto` (règle CSS et colonne d'item), retirés le 23/09/2026.
+  // `inline: true` laisse aussi une formule en ligne se replier dans la
+  // colonne ; `width: '100%'` mesure la largeur du conteneur (la zone de
+  // description, souple par construction).
+  output: {
+    displayOverflow: 'linebreak',
+    linebreaks: {
+      inline: true,
+      width: '100%',
+      lineleading: 0.2,
+    },
+  },
 };

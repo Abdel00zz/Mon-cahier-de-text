@@ -503,7 +503,7 @@ test('chargement MathJax : seuls les cahiers contenant réellement une formule a
 test('math et listes : formule et texte restent ensemble dans la puce', () => {
   const source = '- Calculer $x^2$ puis **conclure**.\n1. Vérifier \\(a*b*c\\).';
   const html = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(source)));
-  assert.match(html, /flex-1[^"]*">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
+  assert.match(html, /editor-item-body[^"]*">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
   assert.ok(html.includes('\\(a*b*c\\)'));
   assert.ok(!html.includes('<em>'));
 });
@@ -582,11 +582,20 @@ test('mise en page : les commandes LaTeX de document ne partent plus à MathJax'
   for (const macro of ['sout', 'itshape', 'itsize', 'itesize', 'ang', 'unit', 'abs', 'norme', 'vect']) {
     assert.match(mathConfig, new RegExp(`\\b${macro}:`), `Macro ${macro} absente`);
   }
+
+  // Formules plus larges que leur colonne : c'est MathJax qui les coupe aux
+  // endroits que TeX autorise (displayOverflow), plus aucune zone ne défile.
+  assert.match(mathConfig, /displayOverflow:\s*'linebreak'/);
+  const css = readFileSync('index.css', 'utf8');
+  assert.ok(
+    !/\.math-text mjx-container\[display="true"\][^}]*overflow-x/.test(css),
+    'Aucun défilement horizontal sur les formules display'
+  );
 });
 
 test('listes : items multi-lignes, imbrication et grandes formules', () => {
   const render = (text: string) => renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(text)));
-  const contentSpans = (html: string) => html.match(/<span class="min-w-0 flex-1[^"]*">([\s\S]*?)<\/span>/g) ?? [];
+  const contentSpans = (html: string) => html.match(/<span class="editor-item-body[^"]*">([\s\S]*?)<\/span>/g) ?? [];
   const firstSpan = (html: string): string => contentSpans(html)[0] ?? '';
 
   // 1. Un item s'étale sur plusieurs lignes SANS sortir de sa colonne de
@@ -595,7 +604,9 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   const firstItem = firstSpan(continued);
   assert.ok(firstItem.includes('Première ligne'), 'Le début de l\'item manque');
   assert.ok(firstItem.includes('Deuxième ligne.'), 'La continuation est sortie de l\'item');
-  assert.ok(firstItem.includes('overflow-x-auto'), 'La colonne de contenu doit accepter le débordement');
+  // La zone de description ne défile JAMAIS : les formules trop larges sont
+  // coupées par MathJax (displayOverflow: 'linebreak', vérifié plus bas).
+  assert.ok(!continued.includes('overflow-x-auto'), 'Aucune barre de défilement dans la description');
 
   // 2. Une formule display au milieu d'un item garde SA ligne, dans l'item.
   const display = render(String.raw`\begin{enumerate}\item Soit :` + '\n' + String.raw`$$\int_0^1 x^2\,dx=\frac{1}{3}$$` + '\n' + String.raw`Puis conclure.\item Second.\end{enumerate}`);
@@ -633,6 +644,24 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   const headless = render(String.raw`\begin{itemize}\begin{enumerate}\item Orphelin\end{enumerate}\end{itemize}`);
   assert.ok(headless.includes('Orphelin'), 'Le contenu d\'une liste sans porteur doit être conservé');
   assert.equal(contentSpans(headless).length, 2, 'Item porteur créé + sous-item');
+
+  // 8. Alignement : UNE grille par liste — la colonne des marqueurs se règle
+  //    sur le plus large d'entre eux, donc tous les textes démarrent sur la
+  //    même verticale (« 10. » ne décale pas son texte par rapport à « 1. »).
+  const listGrids = (html: string) => html.match(/class="editor-list[^"]*"/g) ?? [];
+  assert.equal(listGrids(continued).length, 1, 'Une seule grille pour toute la liste');
+  assert.match(continued, /class="editor-item-marker"/);
+  const nestedGrids = listGrids(nested);
+  assert.equal(nestedGrids.length, 2, 'La sous-liste a sa propre grille');
+  const described = render(String.raw`\begin{description}\item[Co] A\item[Beaucoup plus longue] B\end{description}`);
+  assert.equal(listGrids(described).length, 1, 'Les libellés partagent la même grille');
+  assert.match(described, /<strong[^>]*>Beaucoup plus longue<\/strong>/);
+  // Les items tapés à la main sont groupés de la même façon.
+  assert.equal(listGrids(plain).length, 1, 'Puces manuelles : une seule grille');
+
+  // 9. Une formule display n'ajoute pas de ligne vide dans l'item : le numéro
+  //    reste collé à la première ligne au lieu de flotter au-dessus.
+  assert.ok(!firstSpan(display).includes('\n'), 'Aucune ligne vide autour de la formule display');
 });
 
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {

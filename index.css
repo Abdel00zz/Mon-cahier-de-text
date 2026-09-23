@@ -684,9 +684,26 @@ html[lang="ar"] .modal-header h2,
   .math-text mjx-container { color: inherit; }
   .math-text mjx-container[display="true"] {
     max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-block: 0.25em;
+  }
+
+  /* Une seule grille par liste : la colonne des marqueurs se règle sur le
+     plus large d'entre eux, donc puces, numéros et libellés de longueurs
+     différentes laissent leur texte démarrer exactement sur la même
+     verticale (aucune largeur devinée). */
+  .editor-list {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.375rem;
+    padding-inline-start: 0.25rem;
+  }
+
+  /* Marqueur aligné vers le texte, dans le sens d'écriture courant. */
+  .editor-item-marker {
+    text-align: end;
+    user-select: none;
+    font-weight: 600;
+    color: hsl(var(--primary));
   }
 
 
@@ -1891,4 +1908,15 @@ html[data-keyboard='open'] .mobile-tab-bar {
   font-style: normal;
   font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
+}
+
+/* HORS de tout @layer, volontairement : MathJax déclare ses propres règles sans
+   couche (mjx-container[display] { margin: .7em 0; padding: .3em 2px }) et
+   l'ordre des couches l'emporte sur la spécificité — la même règle écrite dans
+   @layer base perdait, mesures à l'appui. Ici : le marqueur d'une liste s'aligne
+   sur le HAUT de la première ligne de son contenu, même quand cette première
+   ligne est une formule display. */
+.editor-item-body > mjx-container[display="true"]:first-child {
+  margin-top: 0;
+  padding-top: 0;
 }

@@ -184,35 +184,40 @@ function parseBlocks(state: ParseCursor, terminator?: string): DescriptionBlock[
   return blocks;
 }
 
-/** Une ligne de liste : puce décorative ou numéro porté par l'auteur. */
-function renderListRow(marker: React.ReactNode, content: React.ReactNode[], key: string, decorative: boolean): React.ReactNode {
-  return React.createElement(
-    'span',
-    { key, className: 'flex items-start gap-1.5 pl-1 whitespace-normal' },
+/** Marqueur et contenu d'un item : deux CELLULES d'une même grille
+ *  `.editor-list`. La colonne des marqueurs prend la largeur du plus large de la
+ *  liste — puces et numéros laissent donc leur texte démarrer sur la même
+ *  verticale, comme dans un traitement de texte. */
+function renderItemCells(
+  marker: React.ReactNode,
+  content: React.ReactNode[],
+  key: string,
+  decorative: boolean
+): React.ReactNode[] {
+  return [
     React.createElement(
       'span',
-      { className: 'shrink-0 select-none font-semibold text-primary', 'aria-hidden': decorative ? true : undefined },
+      { key: `${key}-marker`, className: 'editor-item-marker', 'aria-hidden': decorative ? true : undefined },
       marker
     ),
     // `whitespace-pre-wrap` garde les retours à la ligne de l'auteur DANS
-    // l'item, et `overflow-x-auto` laisse une grande formule défiler sur sa
-    // propre ligne au lieu de pousser la mise en page du cahier. Le conteneur
-    // est monté même sans formule : sans débordement aucun ascenseur
-    // n'apparaît, et le texte continue de se replier normalement.
+    // l'item. Aucun conteneur de défilement : une formule trop large est
+    // coupée par MathJax lui-même (displayOverflow: 'linebreak'), la zone
+    // reste donc souple et ne montre jamais de barre de défilement.
     React.createElement(
       'span',
-      { className: 'min-w-0 flex-1 whitespace-pre-wrap break-words overflow-x-auto' },
+      { key: `${key}-body`, className: 'editor-item-body whitespace-pre-wrap break-words' },
       ...content
-    )
-  );
+    ),
+  ];
 }
 
-function renderItem(type: ListKind, item: DescriptionItem, position: number, key: string): React.ReactNode {
+function renderItem(type: ListKind, item: DescriptionItem, position: number, key: string): React.ReactNode[] {
   const marker = item.label
     ? (type === 'described' ? React.createElement('strong', { key: `${key}-label` }, item.label) : item.label)
     : type === 'ordered' ? `${position + 1}.` : '•';
   const content = renderBlocks(item.blocks, `${key}-c`);
-  return renderListRow(marker, content.length ? content : [''], key, !item.label && type !== 'ordered');
+  return renderItemCells(marker, content.length ? content : [''], key, !item.label && type !== 'ordered');
 }
 
 function renderBlocks(blocks: DescriptionBlock[], keyBase: string): React.ReactNode[] {
@@ -220,9 +225,14 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string): React.ReactN
   blocks.forEach((block, blockIndex) => {
     const key = `${keyBase}-b${blockIndex}`;
     if (block.kind === 'list') {
+      // UNE grille par liste : la colonne des marqueurs se règle sur le plus
+      // large d'entre eux, donc tous les textes démarrent au même x — puces,
+      // numéros et libellés de longueurs différentes compris.
+      const cells: React.ReactNode[] = [];
       block.items.forEach((item, position) => {
-        out.push(renderItem(block.type, item, position, `${key}-i${position}`));
+        cells.push(...renderItem(block.type, item, position, `${key}-i${position}`));
       });
+      out.push(React.createElement('span', { key, className: 'editor-list whitespace-normal' }, ...cells));
       return;
     }
     out.push(...renderTextLines(block.lines, key));
@@ -289,6 +299,24 @@ function expandLatexTextCommands(source: string): string {
   return out;
 }
 
+/** Une formule display occupe sa propre ligne : `$…$` ou `\[…\]`. */
+function isDisplayMath(formula: string): boolean {
+  return formula.startsWith('$') || formula.startsWith('\\[');
+}
+
+/** Marque portée par un jeton de formule : en ligne ou display. */
+const INLINE_MARK = '\uE001';
+const DISPLAY_MARK = '\uE002';
+
+/**
+ * Vrai si la ligne porte une formule display : elle crée déjà sa propre ligne,
+ * un saut de ligne de plus ne ferait qu'ajouter une ligne vide (et décalerait
+ * le marqueur de l'item au-dessus de la formule).
+ */
+function hasDisplayMath(line: string | undefined): boolean {
+  return line !== undefined && line.includes(DISPLAY_MARK);
+}
+
 /**
  * Point d'entrée : formules protégées par des jetons indivisibles, commandes de
  * document traduites, puis analyse structurelle (listes, items imbriqués) et
@@ -305,9 +333,9 @@ export function renderDescriptionWithBold(text: string | undefined): React.React
     // c'est MathJax qui les interprète (\textbf, \text, \underline…).
     if (!part.math) return expandLatexTextCommands(part.text);
     const index = formulas.push(part.text) - 1;
-    return prefix + index + '\uE001';
+    return prefix + index + (isDisplayMath(part.text) ? DISPLAY_MARK : INLINE_MARK);
   }).join('').replace(/\n{3,}/g, '\n\n');
-  const token = new RegExp(prefix + '(\\d+)\uE001', 'g');
+  const token = new RegExp(prefix + '(\\d+)[\uE001\uE002]', 'g');
   const restore = (node: React.ReactNode): React.ReactNode => {
     if (typeof node === 'string') return node.replace(token, (_, index) => formulas[Number(index)]);
     if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
@@ -331,6 +359,19 @@ export function renderDescriptionWithBold(text: string | undefined): React.React
  */
 function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
   const out: React.ReactNode[] = [];
+  // Les items tapés à la main forment UNE grille, comme les listes LaTeX : la
+  // colonne des marqueurs prend la largeur du plus large, donc les textes
+  // démarrent tous sur la même verticale.
+  let itemCells: React.ReactNode[] = [];
+  const flushItems = () => {
+    if (itemCells.length === 0) return;
+    out.push(React.createElement(
+      'span',
+      { key: `hand-list-${keyBase}-${out.length}`, className: 'editor-list whitespace-normal' },
+      ...itemCells
+    ));
+    itemCells = [];
+  };
   // Un seul passage de détection : chaque ligne est testée une fois, et la
   // continuation sait immédiatement où s'arrêter (aucun test répété).
   const markers = lines.map((line) => {
@@ -342,10 +383,13 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
     const marker = markers[index];
 
     if (!marker) {
+      flushItems();
       out.push(...applyInlineFormatting(lines[index], `text-${keyBase}-${index}`));
       // '\n' uniquement entre deux lignes de TEXTE : jamais avant/après un
-      // item de liste (le bloc flex crée déjà sa propre ligne).
-      if (markers[index + 1] === null) out.push('\n');
+      // item de liste (bloc flex) ni une formule display (elle occupe déjà sa
+      // propre ligne — le saut créerait une ligne vide et décalerait le
+      // marqueur de l'item).
+      if (markers[index + 1] === null && !hasDisplayMath(lines[index]) && !hasDisplayMath(lines[index + 1])) out.push('\n');
       continue;
     }
 
@@ -359,10 +403,10 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
     }
     const children: React.ReactNode[] = [];
     contentLines.forEach((contentLine, contentIndex) => {
-      if (contentIndex > 0) children.push('\n');
+      if (contentIndex > 0 && !hasDisplayMath(contentLines[contentIndex - 1]) && !hasDisplayMath(contentLine)) children.push('\n');
       children.push(...applyInlineFormatting(contentLine, `li-${keyBase}-${index}-${contentIndex}`));
     });
-    out.push(renderListRow(
+    itemCells.push(...renderItemCells(
       marker.number ? `${marker.number}.` : '•',
       children,
       `row-${keyBase}-${index}`,
@@ -370,6 +414,8 @@ function renderTextLines(lines: string[], keyBase: string): React.ReactNode[] {
     ));
     index = cursor - 1;
   }
+
+  flushItems();
 
   return out;
 }

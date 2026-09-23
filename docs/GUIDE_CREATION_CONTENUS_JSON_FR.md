@@ -564,6 +564,12 @@ Un fragment LaTeX mal formé reste toléré : une fermeture d'environnement
 orpheline est ignorée (elle ne fait disparaître aucun texte) et une liste
 imbriquée sans `\item` porteur conserve son contenu.
 
+Les formules s'adaptent à la largeur de la colonne : une formule display trop
+large est coupée par MathJax aux endroits que TeX autorise (aucun défilement,
+zone jamais figée), et une formule en ligne se replie dans la colonne. Une
+formule display occupe sa propre ligne — inutile d'ajouter des lignes vides
+autour d'elle, et le numéro de l'item reste aligné sur sa première ligne.
+
 ### LaTeX
 
 Entourer les formules avec `$` :
