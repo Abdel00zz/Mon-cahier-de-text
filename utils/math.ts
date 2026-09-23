@@ -1,11 +1,13 @@
+import { toDisplayText } from './textValue';
+
 /**
  * Détection de syntaxe mathématique (LaTeX) dans une saisie : $…$, $$…$$,
  * \(…\), \[…\] et environnements \begin{…}.
  */
-export const hasMathSyntax = (value: unknown): boolean => {
-  if (!value || typeof value !== 'string') return false;
-  return splitMathText(value).some(part => part.math);
-};
+
+/** Vrai dès qu'un segment mathématique est présent (voir splitMathText). */
+export const hasMathSyntax = (value: unknown): boolean =>
+  splitMathText(value).some(part => part.math);
 
 const MATH_CONTENT_FIELDS = ['title', 'name', 'description', 'content', 'remark'] as const;
 const MATH_CHILD_FIELDS = ['lessonsData', 'items', 'sections', 'subsections', 'subsubsections'] as const;
@@ -45,7 +47,10 @@ const DOCUMENT_ENVIRONMENTS = new Set([
 ]);
 
 /** One tokenizer for detection, formatting and search highlighting. */
-export function splitMathText(text: string): { text: string; math: boolean }[] {
+export function splitMathText(input: unknown): { text: string; math: boolean }[] {
+  // Une donnée abîmée (JSON importé, synchro) devient un texte affichable :
+  // plus jamais de `matchAll` sur `undefined`.
+  const text = toDisplayText(input);
   const pattern = /(?<!\\)(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$\\\n])*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\\begin\{([^}]+)\}[\s\S]*?\\end\{\2\})/g;
   const parts: { text: string; math: boolean }[] = [];
   let cursor = 0;

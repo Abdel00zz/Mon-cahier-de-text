@@ -1,4 +1,5 @@
 import type { LessonRow } from './lessonRows';
+import { toDisplayText } from './textValue';
 
 export interface DateMergeMeta {
   isMerged: boolean;
@@ -36,9 +37,7 @@ export const getMergeableRemark = (item: FlatDataItem): string => {
  *  (arabe et accents), espaces parasites retirés, espaces internes réduits —
  *  « Exo  1 » et « Exo 1 » désignent donc le même contenu. */
 const normalizeIdentityText = (value: unknown): string =>
-    typeof value === 'string' || typeof value === 'number'
-        ? String(value).normalize('NFC').trim().replace(/\s+/g, ' ')
-        : '';
+    toDisplayText(value).normalize('NFC').trim().replace(/\s+/g, ' ');
 
 /** Types structurels : ils n'ont pas d'identité de contenu et coupent toujours
  *  la continuité (un chapitre ou une section sépare deux groupes). */

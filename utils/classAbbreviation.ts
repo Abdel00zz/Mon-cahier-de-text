@@ -1,6 +1,7 @@
 import type { AppLocale } from '../types.js';
 import type { ClassIdentity } from './classIdentity';
 import { formatCompactTierLabel, formatStreamSigla } from '../constants/class-levels';
+import { toDisplayText } from './textValue';
 
 /**
  * Abréviation LISIBLE du nom d'une classe dans une cellule d'emploi du temps.
@@ -54,7 +55,7 @@ const STREAM_SHORTHANDS: ReadonlyArray<readonly [RegExp, string]> = [
 /** Mots qui ne portent jamais d'information de filière ou de groupe. */
 const LEVEL_WORDS = /^(?:1er|1ere|2eme|1e|2e|eme|ere|annee|an|bac|baccalaureat|tronc|commun|commune|general|generale)$/;
 
-const normalize = (name: string): string => name
+const normalize = (input: unknown): string => toDisplayText(input)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[()\[\]]/g, ' ')
@@ -136,7 +137,7 @@ const isArabic = (name: string): boolean => /[\u0600-\u06FF]/.test(name);
 
 /** Même compaction que l'existant pour l'arabe : le niveau reste explicite. */
 const abbreviateArabic = (name: string): string => {
-    const cleaned = name.replace(/^قسم\s+/, '').trim();
+    const cleaned = toDisplayText(name).replace(/^قسم\s+/, '').trim();
     const group = cleaned.match(/\d+\s*$/)?.[0].trim();
     const levels: ReadonlyArray<readonly [RegExp, string]> = [
         [/الجذع المشترك العلمي/, 'ج.م.ع'],
@@ -172,7 +173,7 @@ export interface ParsedClassName {
 }
 
 export const parseClassName = (name: string): ParsedClassName => {
-    const source = (name || '').trim();
+    const source = toDisplayText(name).trim();
     if (!source) return { level: '', stream: '', group: '' };
     const { code: level, rest } = matchLevel(normalize(source));
     const { stream, group } = splitStreamAndGroup(rest);
@@ -184,7 +185,7 @@ export const parseClassName = (name: string): ParsedClassName => {
  * l'info-bulle et le libellé du créneau, jamais perdu.
  */
 export const abbreviateClassName = (name: string, locale: AppLocale = 'fr'): string => {
-    const source = (name || '').trim();
+    const source = toDisplayText(name).trim();
     if (!source) return '';
     if (locale === 'ar' || isArabic(source)) return abbreviateArabic(source);
     const { level, stream, group } = parseClassName(source);

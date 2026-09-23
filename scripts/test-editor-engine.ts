@@ -8,7 +8,7 @@ import type { AppConfig, ClassInfo, LessonsData } from '../types';
 import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
-import { teachesSeveralSubjects, collectTeacherSubjects } from '../utils/subjectScope';
+import { teachesSeveralSubjects, collectTeacherSubjects, subjectKey } from '../utils/subjectScope';
 import { classCardLabelFor, classIdentityFor } from '../utils/classIdentity';
 import { CLASS_LEVELS_BY_CYCLE } from '../constants/class-levels';
 import { ClassCard } from '../features/dashboard/ClassCard';
@@ -23,7 +23,8 @@ import { findItem, addItem, addSection } from '../utils/dataUtils';
 import { prepareImportedLessons } from '../utils/importPipeline';
 import { renderDescriptionWithBold } from '../utils/textFormat';
 import { hasMathContent, hasMathSyntax, splitMathText } from '../utils/math';
-import { detectTextDirection } from '../utils/textDirection';
+import { detectTextDirection, textDirectionAttribute } from '../utils/textDirection';
+import { titleDirection } from '../utils/contentDirection';
 import { listViewport, visibleRange } from '../utils/virtualGeometry';
 import { MainTable } from '../features/editor/MainTable';
 import { LocaleProvider } from '../i18n/LocaleProvider';
@@ -1069,5 +1070,79 @@ test('titres accessibles : un seul nom par titre, sans perdre le groupe', () => 
     const label = classCardLabelFor(classIdentityFor(name, 'fr'), 'fr');
     assert.ok(html.includes(`aria-label="Ouvrir ${label.fullName}"`), name);
     assert.ok(!label.title.endsWith(` ${label.group}`), name);
+  }
+});
+
+test('robustesse : un JSON importé abîmé ne casse aucun rendu', () => {
+  // Cas mesuré : une leçon importée sans titre faisait
+  // `item.title || config.name` → `undefined` → `splitMathText(undefined)` →
+  // « Cannot read properties of undefined (reading 'matchAll') ».
+  const render = (value: unknown) => renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(value)));
+  const abimes: unknown[] = [undefined, null, 42, 0, true, false, {}, [], ['texte'], () => 'x'];
+
+  for (const value of abimes) {
+    const etiquette = String(value);
+    assert.doesNotThrow(() => renderDescriptionWithBold(value), `description abîmée : ${etiquette}`);
+    assert.doesNotThrow(() => splitMathText(value), `découpage abîmé : ${etiquette}`);
+    assert.doesNotThrow(() => render(value), `rendu abîmé : ${etiquette}`);
+    assert.ok(!render(value).includes('[object Object]'), `objet affiché : ${etiquette}`);
+    assert.equal(hasMathSyntax(value), false, `formule fantôme : ${etiquette}`);
+    assert.equal(detectTextDirection(value), null, `direction fantôme : ${etiquette}`);
+    assert.equal(textDirectionAttribute(value), undefined, `attribut fantôme : ${etiquette}`);
+    assert.equal(titleDirection(value, 'ltr'), 'ltr', `langue fantôme : ${etiquette}`);
+  }
+
+  // Un nombre reste affichable (page, numéro, année saisis en JSON).
+  assert.ok(render(2026).includes('2026'));
+  // Les vraies valeurs sont toujours détectées.
+  assert.equal(detectTextDirection('الدوال العددية'), 'rtl');
+  assert.equal(detectTextDirection('Fonctions numériques'), 'ltr');
+  assert.equal(textDirectionAttribute('Continuité en un point'), 'ltr');
+  assert.equal(titleDirection('١. الدرس : الدوال', 'ltr'), 'rtl');
+
+  // Import : ni exception, ni objet dans les données, ni entrée fantôme.
+  const importe = prepareImportedLessons([
+    { type: 'chapter', items: 'pas un tableau', sections: [{ name: 42, title: {}, items: [null, 7, { title: undefined }] }] },
+    { name: 'Chapitre sans titre', description: { objet: true } },
+    'texte brut',
+    null,
+    17,
+  ]);
+  assert.ok(Array.isArray(importe.lessonsData));
+  assert.ok(importe.lessonsData.length > 0, 'Le chapitre valide doit survivre');
+  assert.ok(importe.lessonsData.every(chapitre => chapitre && typeof chapitre === 'object'));
+  assert.ok(!JSON.stringify(importe.lessonsData).includes('"undefined"'));
+  assert.ok(!JSON.stringify(importe.lessonsData).includes('[object Object]'));
+  for (const chapitre of importe.lessonsData) {
+    assert.doesNotThrow(() => render(chapitre.title));
+  }
+
+  // Le plantage exact signalé : un chapitre importé SANS titre ni nom. L'écran
+  // faisait `item.title || config.name` → `undefined` → `splitMathText(undefined)`
+  // → « Cannot read properties of undefined (reading 'matchAll') ».
+  const bloc = (data: Record<string, unknown>, elementType: 'item' | 'chapter' | 'section', isPrint = false) => renderToStaticMarkup(
+    React.createElement(LocaleProvider, { locale: 'fr', children:
+      React.createElement(ContentRenderer, { data, indices: { chapterIndex: 0 }, elementType, isPrint, showDescriptions: true }),
+    }),
+  );
+  for (const elementType of ['chapter', 'section', 'item'] as const) {
+    const abime = { type: elementType, title: {}, name: [], description: 42, page: {}, number: {}, date: {}, remark: [] };
+    assert.doesNotThrow(() => bloc({ type: elementType }, elementType), `bloc ${elementType} sans titre`);
+    assert.doesNotThrow(() => bloc(abime, elementType), `bloc ${elementType} abîmé`);
+    assert.ok(!bloc(abime, elementType).includes('[object Object]'), `objet affiché (${elementType})`);
+    assert.doesNotThrow(() => bloc(abime, elementType, true), `impression ${elementType} abîmée`);
+  }
+  assert.doesNotThrow(() => bloc({ type: {} }, 'chapter'), 'type non textuel');
+
+  // Noms de classe, de filière et de matière : mêmes valeurs abîmées (ils
+  // arrivent du même JSON importé), aucun plantage et aucun objet affiché.
+  for (const value of abimes) {
+    const etiquette = String(value);
+    assert.doesNotThrow(() => subjectKey(value), `clé de matière : ${etiquette}`);
+    assert.doesNotThrow(() => abbreviateClassName(value as never, 'fr'), `abréviation : ${etiquette}`);
+    assert.doesNotThrow(() => classCardLabelFor(classIdentityFor(value as never, 'fr'), 'fr'), `libellé : ${etiquette}`);
+    assert.doesNotThrow(() => teachesSeveralSubjects([{ subject: value, teacherName: value }] as never), `matières : ${etiquette}`);
+    assert.doesNotThrow(() => collectTeacherSubjects([{ subject: value, teacherName: value }] as never, value as never), `périmètre : ${etiquette}`);
+    assert.ok(!abbreviateClassName(value as never, 'fr').includes('[object Object]'), `objet affiché : ${etiquette}`);
   }
 });

@@ -1,6 +1,7 @@
 /* ── Niveaux de classes (système marocain) ────────────────────────────────── */
 
 import type { Cycle, AppLocale } from '../types';
+import { toDisplayText } from '../utils/textValue';
 
 export const CLASS_LEVELS_BY_CYCLE: Record<Cycle, string[]> = {
   college: ['1AC', '2AC', '3AC'],
@@ -214,7 +215,7 @@ const DISPLAY_LEVEL_KEYS = Object.keys(CLASS_LEVEL_DISPLAY_NAMES)
   .sort((left, right) => right.length - left.length);
 
 export const formatClassDisplayName = (name: string): string => {
-  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
+  const normalized = normalizeOfficialClassName(toDisplayText(name)).trim().replace(/\s+/g, ' ');
   const level = DISPLAY_LEVEL_KEYS.find(key =>
     normalized === key || normalized.startsWith(`${key} `)
   );
@@ -237,7 +238,7 @@ export const formatLocalizedClassDisplayName = (
 ): string => {
   if (locale !== 'ar') return formatClassDisplayName(name);
 
-  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
+  const normalized = normalizeOfficialClassName(toDisplayText(name)).trim().replace(/\s+/g, ' ');
   const level = DISPLAY_LEVEL_KEYS.find(key => normalized === key || normalized.startsWith(`${key} `));
   if (!level) return normalized;
 
@@ -277,7 +278,7 @@ const CLASS_LEVEL_RENAMES: Array<[RegExp, string]> = [
 ];
 
 export const normalizeOfficialClassName = (name: string): string => {
-  const trimmed = (name || '').trim().replace(/\s+/g, ' ');
+  const trimmed = toDisplayText(name).trim().replace(/\s+/g, ' ');
   for (const [pattern, replacement] of CLASS_LEVEL_RENAMES) {
     const match = trimmed.match(pattern);
     if (!match) continue;
@@ -648,7 +649,7 @@ const LEVEL_IDENTITY_KEYS = Object.keys(CLASS_LEVEL_IDENTITY)
 export const lookupClassLevelIdentity = (
   name: string,
 ): { identity: ClassLevelIdentity; suffix: string } | null => {
-  const normalized = normalizeOfficialClassName(name || '').trim().replace(/\s+/g, ' ');
+  const normalized = normalizeOfficialClassName(toDisplayText(name)).trim().replace(/\s+/g, ' ');
   const key = LEVEL_IDENTITY_KEYS.find(candidate =>
     normalized === candidate || normalized.startsWith(`${candidate} `)
   );

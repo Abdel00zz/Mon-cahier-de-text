@@ -1,5 +1,6 @@
 import React from 'react';
 import { splitMathText } from './math';
+import { toDisplayText } from './textValue';
 
 /*
  * Moteur de mise en page des descriptions, hors segments mathématiques :
@@ -375,7 +376,8 @@ function hasDisplayMath(line: string | undefined): boolean {
  * mise en page. Les formules étant déjà des jetons, ni leurs \item ni leurs
  * accolades ne peuvent perturber l'analyse.
  */
-export function renderDescriptionWithBold(text: string | undefined): React.ReactNode[] {
+export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
+  const text = toDisplayText(input);
   if (!text) return [];
   let prefix = '\uE000';
   while (text.includes(prefix)) prefix += '\uE000';

@@ -36,6 +36,6 @@ function Formula({ source }: { source: string }) {
   return <span ref={host} className="math-text inline-block" dir="ltr">{source}</span>;
 }
 
-export function MathTitle({ text }: { text: string }) {
+export function MathTitle({ text }: { text?: unknown }) {
   return <bdi dir={titleDirection(text)}>{splitMathText(text).map((part, index) => part.math ? <Formula key={`${index}:${part.text}`} source={part.text} /> : part.text)}</bdi>;
 }

@@ -9,6 +9,7 @@ import {
     type ClassTierKey,
 } from '../constants/class-levels';
 import { parseClassName } from './classAbbreviation';
+import { toDisplayText } from './textValue';
 
 /**
  * Identité lisible d'une classe : le palier (badge) et la filière (branche).
@@ -69,8 +70,8 @@ const GROUP_WORD = /(?:^|\s)(?:groupe|grp|group|section|classe|فوج|الفوج
  * « … groupe A ». Ce qui n'est pas un groupe est conservé dans la filière, pour
  * qu'aucune information saisie ne disparaisse de la carte.
  */
-const splitGroup = (mention: string): { group: string | null; rest: string } => {
-    const trimmed = mention.trim();
+const splitGroup = (input: unknown): { group: string | null; rest: string } => {
+    const trimmed = toDisplayText(input).trim();
     if (!trimmed) return { group: null, rest: '' };
 
     const last = trimmed.match(LAST_NUMBER);
@@ -178,7 +179,7 @@ const arabicIdentity = (source: string, locale: AppLocale): Omit<ClassIdentity, 
  * alors son intitulé d'origine.
  */
 export const classIdentityFor = (name: string, locale: AppLocale = 'fr'): ClassIdentity => {
-    const full = (name || '').trim().replace(/\s+/g, ' ');
+    const full = toDisplayText(name).trim().replace(/\s+/g, ' ');
     if (!full) return { ...EMPTY_IDENTITY, full };
 
     const canonical = lookupClassLevelIdentity(full);

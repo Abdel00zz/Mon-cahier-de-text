@@ -22,7 +22,7 @@ const ANY_LETTER = /\p{L}/u;
  * Renvoie `null` si aucun caractère fort n'existe : l'appelant conserve alors
  * la direction du cahier, ce qui évite de casser les lignes de chiffres.
  */
-export function detectTextDirection(text?: string | null): TextDirection | null {
+export function detectTextDirection(text?: unknown): TextDirection | null {
   if (!text) return null;
   const plain = splitMathText(text)
     .filter(part => !part.math)
@@ -39,5 +39,5 @@ export function detectTextDirection(text?: string | null): TextDirection | null 
  * Attribut `dir` prêt à étaler sur un bloc de texte, `undefined` pour hériter
  * de la direction du cahier.
  */
-export const textDirectionAttribute = (text?: string | null): TextDirection | undefined =>
+export const textDirectionAttribute = (text?: unknown): TextDirection | undefined =>
   detectTextDirection(text) ?? undefined;

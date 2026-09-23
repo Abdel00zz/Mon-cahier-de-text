@@ -1,18 +1,20 @@
+import { toDisplayText } from './textValue';
+
 /** Vue minimale d'une classe : de quoi lire sa matière et son enseignant. */
 interface SubjectScopeClass {
-    subject?: string | null;
-    teacherName?: string | null;
+    subject?: unknown;
+    teacherName?: unknown;
 }
 
 /** Clé de comparaison d'une matière : accents, casse et espaces neutralisés. */
-export const subjectKey = (value: string): string => value
+export const subjectKey = (input: unknown): string => toDisplayText(input)
     .trim()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('fr');
 
 /** Clé d'un nom d'enseignant : espaces multiples et casse neutralisés. */
-const teacherKey = (value: string): string => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('fr');
+const teacherKey = (input: unknown): string => toDisplayText(input).trim().replace(/\s+/g, ' ').toLocaleLowerCase('fr');
 
 /**
  * Matières réellement portées par les classes, dans l'ordre alphabétique.
@@ -30,7 +32,7 @@ export const collectTeacherSubjects = (
     classes: ReadonlyArray<SubjectScopeClass>,
     teacherName?: string | null,
 ): string[] => {
-    const currentTeacher = teacherName?.trim() ? teacherKey(teacherName) : '';
+    const currentTeacher = toDisplayText(teacherName).trim() ? teacherKey(teacherName) : '';
     const matching = currentTeacher
         ? classes.filter(classInfo => teacherKey(classInfo.teacherName ?? '') === currentTeacher)
         : [];
@@ -40,7 +42,7 @@ export const collectTeacherSubjects = (
     for (const classInfo of scoped) {
         // Première écriture retenue : la casse d'un libellé ne doit pas changer
         // selon l'ordre des classes ni la saisie d'un cahier plus récent.
-        const subject = classInfo.subject?.trim();
+        const subject = toDisplayText(classInfo.subject).trim();
         if (subject && !active.has(subjectKey(subject))) active.set(subjectKey(subject), subject);
     }
 

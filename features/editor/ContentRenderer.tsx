@@ -1,6 +1,7 @@
 import React from 'react';
 import { hasMathSyntax, splitMathText } from '@/utils/math';
 import { MathText } from '@/components/ui/math-text';
+import { toDisplayText } from '@/utils/textValue';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
 import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,24 @@ interface ContentRendererProps {
   /** numéro affiché : saisi à la main, sinon calculé par chapitre */
   contentNumber?: string;
 }
+
+/** Champs qu'un JSON importé peut remplir n'importe comment. */
+type DisplayTextFields = { title?: unknown; description?: unknown; page?: unknown; number?: unknown };
+
+/**
+ * Ramène UNE fois pour toutes les champs texte d'un contenu à du texte
+ * affichable : un titre d'objet ne doit pas finir en « [object Object] » dans
+ * le cahier, ni un numéro non textuel faire planter React. Les valeurs vides
+ * restent vides (falsy), donc les replis existants (placeholder, page absente)
+ * continuent de fonctionner à l'identique.
+ */
+const withDisplayText = <T extends DisplayTextFields>(item: T): T & Record<keyof DisplayTextFields, string> => ({
+  ...item,
+  title: toDisplayText(item.title),
+  description: toDisplayText(item.description),
+  page: toDisplayText(item.page),
+  number: toDisplayText(item.number),
+});
 
 const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
   <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
@@ -45,11 +64,12 @@ const HighlightedPlainText: React.FC<{ text: string; query?: string }> = ({ text
   return <>{parts}</>;
 };
 
-const HighlightedText: React.FC<{ text: string; query?: string }> = ({ text, query }) => (
+const HighlightedText: React.FC<{ text?: unknown; query?: string }> = ({ text, query }) => (
   <>{splitMathText(text).map((part, index) => part.math ? part.text : <HighlightedPlainText key={index} text={part.text} query={query} />)}</>
 );
 
-const renderChapterLabel = (label: string) => {
+const renderChapterLabel = (input: unknown) => {
+  const label = toDisplayText(input);
   const parts = label.split(/([0-9\u0660-\u0669]+(?:er|ere|eme|ère|ème|st|nd|rd|th)?)/gi);
   return parts.map((part, idx) => {
     if (!part) return null;
@@ -105,7 +125,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
   const { t } = useLocale();
   
   if (elementType in TOP_LEVEL_TYPE_CONFIG) {
-    const item = data as TopLevelItem;
+    const item = withDisplayText(data as TopLevelItem);
     const config = TOP_LEVEL_TYPE_CONFIG[item.type as TopLevelType];
 
     if (!config) {
@@ -118,11 +138,11 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         );
     }
     
-    const isCorrection = item.type.startsWith('correction_');
+    const isCorrection = toDisplayText(item.type).startsWith('correction_');
 
     if (isPrint) {
-      const prefix = item.type.toUpperCase();
-      const title = (item.title || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
+      const prefix = toDisplayText(item.type).toUpperCase();
+      const title = (toDisplayText(item.title) || config.name).replace(new RegExp('^' + prefix), '').trim() || config.name;
       return (
         <MathText source={title}>
           <div dir={textDirectionAttribute(title)} className={`flex w-full items-center justify-center text-center text-base font-bold ${item.type === 'chapter' ? 'text-red-700' : config.color}`}>
@@ -152,7 +172,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     }
 
     if (item.type === 'chapter') {
-      const chapterTitle = item.title || config.name;
+      const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
         <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
@@ -218,7 +238,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         </MaybeMathJax>
       );
     case 'item':
-      const item = data as LessonItem;
+      const item = withDisplayText(data as LessonItem);
       // Un cran de marge par niveau parent : chapitre à la marge, puis
       // section, sous-section, sous-sous-section.
       const lessonIndentClass = indices.subsubsectionIndex !== undefined
@@ -228,7 +248,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
           : indices.sectionIndex !== undefined
             ? 'editor-indent-1'
             : '';
-      const normalizedType = TYPE_MAP[(item.type || '').toLowerCase()] || item.type;
+      const normalizedType = TYPE_MAP[toDisplayText(item.type).toLowerCase()] || toDisplayText(item.type);
       if (normalizedType === 'free') {
         const source = `${item.title ?? ''}\n${item.description ?? ''}`;
         const empty = !source.trim();
@@ -248,7 +268,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const badgeText = BADGE_TEXT_MAP[normalizedType] || normalizedType;
       const badgeClass = contentBadgeClass(normalizedType);
       // Numéro saisi à la main prioritaire, sinon compteur du chapitre.
-      const displayNumber = contentNumber ?? item.number;
+      const displayNumber = toDisplayText(contentNumber ?? item.number);
 
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;

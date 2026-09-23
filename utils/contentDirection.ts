@@ -1,4 +1,5 @@
 import type { AppLocale, ContentDirection } from '../types.js';
+import { toDisplayText } from './textValue.js';
 
 export interface ContentDirectionDetection {
   direction: ContentDirection;
@@ -12,7 +13,8 @@ const ARABIC_CHARACTER = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\
 const LATIN_CHARACTER = /[A-Za-zÀ-ÖØ-öø-ÿ]/u;
 
 /** Direction d’un intitulé : ignorer nombres et formules, puis lire la première lettre. */
-export const titleDirection = (text: string, fallback: ContentDirection = 'ltr'): ContentDirection => {
+export const titleDirection = (input: unknown, fallback: ContentDirection = 'ltr'): ContentDirection => {
+  const text = toDisplayText(input);
   const prose = text.replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g, '');
   for (const character of prose) {
     if (!/\p{Letter}/u.test(character)) continue;

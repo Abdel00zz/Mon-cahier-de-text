@@ -47,8 +47,13 @@ test('zero, completion and exceeded bounds are safe; missing target is not fabri
   assert.match(render(40), /motion-reduce:transition-none/);
 });
 
-test('analysis modal keeps calendar warnings out of the progression workflow', () => {
+test('analysis modal surfaces calendar warnings alongside the progression workflow', () => {
   const source = readFileSync(new URL('../features/editor/modals/AnalysisModal.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /calendarWarnings|warningItems|TriangleAlert/);
+  // Les avertissements de calendrier sont désormais MONTRÉS dans l'analyse
+  // (compteur traduit, liste, icône d'alerte) : l'ancien test verrouillait
+  // exactement l'inverse et n'était plus d'actualité.
   assert.match(source, /getDateWarnings\?:/);
+  assert.match(source, /getWarningItems/);
+  assert.match(source, /analysis\.calendarWarnings/);
+  assert.match(source, /TriangleAlert/);
 });

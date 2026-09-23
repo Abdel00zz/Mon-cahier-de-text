@@ -4,14 +4,17 @@ import { logger } from './logger.js';
 import { detectContentDirection, isContentDirection } from './contentDirection.js';
 import type { ContentDirectionDetection } from './contentDirection.js';
 import { normalizeContentType } from '../constants/type-keys.js';
+import { toDisplayText } from './textValue.js';
 
-interface ImportReport {
+export interface ImportReport {
   topLevelCount: number;
   nestedCount: number;
   itemCount: number;
   normalizedDates: number;
   trimmedStrings: number;
   repairedContainers: number;
+  /** Champs texte remplacés par autre chose qu'un texte (objet, tableau…). */
+  repairedTexts: number;
 }
 
 interface ImportPreparationResult {
@@ -39,6 +42,7 @@ const EMPTY_REPORT: ImportReport = {
   normalizedDates: 0,
   trimmedStrings: 0,
   repairedContainers: 0,
+  repairedTexts: 0,
 };
 
 const cloneReport = (): ImportReport => ({ ...EMPTY_REPORT });
@@ -134,7 +138,15 @@ const normalizeDate = (value: unknown): { value: string; changed: boolean } => {
 const normalizeStringField = (record: JsonRecord, key: string, report: ImportReport) => {
   const value = record[key];
   if (value === undefined || value === null) return;
-  const next = String(value).trim();
+  // Objet, tableau, booléen… à la place d'un texte : le champ est RETIRÉ
+  // plutôt que de devenir « [object Object] » dans le cahier. Une chaîne vide
+  // reste une chaîne vide : l'auteur a le droit de vider un champ.
+  if (typeof value !== 'string' && toDisplayText(value) === '') {
+    delete record[key];
+    report.repairedTexts += 1;
+    return;
+  }
+  const next = toDisplayText(value).trim();
   const maxLength = key === 'description' || key === 'remark' || key === 'content' ? 20_000 : 500;
   if (next.length > maxLength) throw new Error(`Champ « ${key} » trop long (maximum ${maxLength} caractères).`);
   if (next !== value) report.trimmedStrings += 1;
@@ -202,7 +214,8 @@ const normalizeItem = (
 
 const ensureTopLevelShape = (item: TopLevelItem): TopLevelItem => {
   if (!item.type) item.type = 'chapter';
-  if (!item.title && (item as any).name) item.title = String((item as any).name);
+  const nom = toDisplayText((item as { name?: unknown }).name);
+  if (!item.title && nom) item.title = nom;
   if (item.type === 'chapter' && !Array.isArray(item.sections)) item.sections = [];
   return item;
 };
