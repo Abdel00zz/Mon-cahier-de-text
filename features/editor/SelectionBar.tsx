@@ -79,12 +79,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   const selectedLabel = t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount });
   const secondary: Action[] = [];
   if (canAdd) secondary.push({ id: 'add', icon: Plus, onClick: onAdd, title: t('selection.addAfter') });
-  if ((canMoveUp || canMoveDown) && onMoveUp && onMoveDown) {
-    secondary.push(
-      { id: 'up', icon: ArrowUp, onClick: onMoveUp, title: t('selection.moveUp'), disabled: !canMoveUp },
-      { id: 'down', icon: ArrowDown, onClick: onMoveDown, title: t('selection.moveDown'), disabled: !canMoveDown },
-    );
-  }
   if (hasDate) secondary.push({ id: 'clear-date', icon: CalendarX, onClick: onClearDate, title: t('selection.unassignDate') });
 
   const navigateActions = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -144,6 +138,12 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           title={t('selection.chooseDate')} disabled={isPending} />}
         {canEdit && onEdit && <ActionButton icon={Pencil} onClick={onEdit}
           title={t('selection.edit')} disabled={isPending} />}
+        {onMoveUp && onMoveDown && <div className="flex shrink-0 items-center gap-1">
+          <ActionButton icon={ArrowUp} onClick={onMoveUp}
+            title={t('selection.moveUp')} disabled={isPending || !canMoveUp} />
+          <ActionButton icon={ArrowDown} onClick={onMoveDown}
+            title={t('selection.moveDown')} disabled={isPending || !canMoveDown} />
+        </div>}
         <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <motion.button
