@@ -1,13 +1,13 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { AppConfig, ClassInfo, LessonsData, Indices, ContentDirection, LessonItem, TopLevelItem, Section, SubSection, SubSubSection } from '@/types';
 import { useLocale } from '@/i18n/LocaleProvider';
+import type { ContentDraft } from '@/utils/contentDraft';
 
 const DataTransferModal = lazy(() => import('./modals/DataTransferModal').then(module => ({ default: module.DataTransferModal })));
 const ManageLessonsModal = lazy(() => import('./modals/ManageLessonsModal').then(module => ({ default: module.ManageLessonsModal })));
 const GuideModal = lazy(() => import('@/features/guide/GuideModal').then(module => ({ default: module.GuideModal })));
 const AssignDateModal = lazy(() => import('./modals/AssignDateModal').then(module => ({ default: module.AssignDateModal })));
-const AddContentModal = lazy(() => import('./modals/EditItemModal').then(module => ({ default: module.AddContentModal })));
-const EditContentModal = lazy(() => import('./modals/EditContentModal').then(module => ({ default: module.EditContentModal })));
+const ContentModal = lazy(() => import('./modals/ContentModal').then(module => ({ default: module.ContentModal })));
 const AnalysisModal = lazy(() => import('./modals/AnalysisModal').then(module => ({ default: module.AnalysisModal })));
 const ClassEvaluationsSheet = lazy(() => import('@/features/evaluations/ClassEvaluationsSheet').then(module => ({ default: module.ClassEvaluationsSheet })));
 
@@ -23,7 +23,7 @@ interface EditorModalsProps {
   handleAssignDates: (date: string) => void;
   selectedCount: number;
   selectedItemsData: any[];
-  handleConfirmAddContent: (newItem: any, targetIndices: Indices | null) => void;
+  handleConfirmAddContent: (type: string, data: ContentDraft) => void;
   selectedIndices: Indices[];
   /** validation intelligente : renvoie les alertes pour une date donnée */
   getDateWarnings?: (date: string) => { type: string; message: string }[];
@@ -112,7 +112,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
         );
       case 'addContent':
         return (
-          <AddContentModal
+          <ContentModal key="create"
             isOpen={isOpen}
             onClose={handleModalClose}
             onConfirm={handleConfirmAddContent}
@@ -124,7 +124,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
         );
       case 'editContent':
         return (
-          <EditContentModal
+          <ContentModal key="edit" mode="edit"
             isOpen={isOpen}
             onClose={handleModalClose}
             item={editingItem}

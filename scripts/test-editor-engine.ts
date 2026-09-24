@@ -38,6 +38,61 @@ import { assignClassColors, classColorAttributes, isClassColor } from '../utils/
 import { insertFreeContent } from '../utils/freeContent';
 import { assertValidClasses, assertValidLessonsPayload } from '../api/_lib/validate';
 import { filterLessonsByDates } from '../utils/printMeta';
+import { MultiDateCard } from '../features/editor/TableRow';
+import { ContentFields } from '../features/editor/modals/ContentFields';
+import { createContentDraft, contentDraftChanged } from '../utils/contentDraft';
+
+test('dates arabes : chaque conjonction reste attachée à sa date avec une direction explicite', () => {
+  for (const count of [1, 2, 3, 5, 24]) {
+    const dates = Array.from({ length: count }, (_, i) => `2026-09-${String(i + 1).padStart(2, '0')}`);
+    for (const locale of ['ar', 'fr'] as const) {
+      const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale, children:
+        React.createElement(MultiDateCard, { dates: [...dates, dates[0], 'invalid'] }),
+      }));
+      assert.match(html, new RegExp(`^<div dir="${locale === 'ar' ? 'rtl' : 'ltr'}"`));
+      assert.equal((html.match(/data-date-token/g) ?? []).length, count);
+      assert.equal((html.match(/<bdi dir="ltr"/g) ?? []).length, count);
+      const conjunction = locale === 'ar' ? 'و' : 'et';
+      assert.equal((html.match(new RegExp(`>${conjunction}</span><bdi`, 'g')) ?? []).length, count - 1);
+      assert.equal((html.match(/shrink-0 items-baseline gap-0.5 whitespace-nowrap/g) ?? []).length, count);
+    }
+  }
+});
+
+test('formulaire commun : une ligne libre expose titre et contenu facultatifs en arabe et français', () => {
+  for (const locale of ['ar', 'fr'] as const) {
+    const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale, children:
+      React.createElement(ContentFields, { value: { type: 'free', title: '', description: '' }, onChange: () => {}, contentDirection: locale === 'ar' ? 'rtl' : 'ltr' }),
+    }));
+    assert.equal((html.match(/<input /g) ?? []).length, 1);
+    assert.equal((html.match(/<textarea/g) ?? []).length, 1);
+    assert.doesNotMatch(html, /required=""|role="combobox"/);
+    assert.match(html, /<label for="[^"]+-title"/);
+    assert.match(html, /<label for="[^"]+-description"/);
+  }
+});
+
+test('édition commune : le patch préserve dates, remarques et contenu imbriqué ; réinitialisation exacte', () => {
+  const free = { type: 'free', title: 'Titre', description: '$x^2$', date: '2026-09-21', remark: 'Conserver', _tempId: 'stable' };
+  const draft = createContentDraft(free);
+  assert.deepEqual(Object.keys(draft), ['type', 'title', 'description']);
+  assert.equal(contentDraftChanged(draft, draft), false);
+  const modified = { ...draft, title: 'عنوان', description: '$x+1$' };
+  assert.equal(contentDraftChanged(modified, draft), true);
+  const saved = { ...free, ...modified };
+  assert.equal(saved.date, free.date);
+  assert.equal(saved.remark, free.remark);
+  assert.equal(saved._tempId, free._tempId);
+  assert.equal(createContentDraft(saved).title, 'عنوان');
+  const blank = { ...draft, title: '', description: '' };
+  assert.equal(contentDraftChanged(blank, draft), true);
+  const section = { name: 'Section', items: [free] };
+  const nameDraft = createContentDraft(section, true, 'name');
+  assert.deepEqual(nameDraft, { name: 'Section' });
+  assert.equal(contentDraftChanged({ name: 'Nouveau titre' }, nameDraft), true);
+  assert.equal(contentDraftChanged(createContentDraft(section, true, 'name'), nameDraft), false);
+  assert.deepEqual({ ...section, ...nameDraft }.items, [free]);
+});
 
 test('couleurs : 120 classes distinctes, stables après tri, renommage et aller-retour serveur', () => {
   const source = Array.from({ length: 120 }, (_, i) => ({ ...dateClass, id: `class-${i}`, color: i < 3 ? 'sky' : '' }));
@@ -72,15 +127,17 @@ test('ligne libre : création vide, insertion imbriquée et aucune fusion ou num
 
 test('ligne libre : texte, LaTeX et retour au vide survivent à la synchronisation, import et filtre impression', () => {
   for (const description of ['', 'Texte du professeur\n\\(x^2 + \\frac{1}{2}\\)\nنص حر']) {
-    const data: LessonsData = [{ type: 'free', title: '', description, date: '2026-09-21' }, { type: 'free', title: '', description: '' }];
+    const data: LessonsData = [{ type: 'free', title: 'عنوان $x^2$', description, date: '2026-09-21' }, { type: 'free', title: '', description: '' }];
     const before = JSON.stringify(data);
     const payload = assertValidLessonsPayload(JSON.parse(JSON.stringify([{ classId: 'test', lessonsData: data, contentDirection: 'rtl' }])), new Set(['test']));
     assert.deepEqual(payload[0].lessonsData, data);
     const imported = prepareImportedLessons(payload[0].lessonsData).lessonsData.filter(item => item.type === 'free');
     assert.equal(imported.length, 2);
     assert.equal(imported[0].description, description);
+    assert.equal(imported[0].title, 'عنوان $x^2$');
     assert.equal(imported[1].title, '');
     assert.equal(filterLessonsByDates(data, ['2026-09-21'])[0].description, description);
+    assert.equal(filterLessonsByDates(data, ['2026-09-21'])[0].title, 'عنوان $x^2$');
     assert.equal(JSON.stringify(data), before);
   }
 });

@@ -92,12 +92,12 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
   if (parsedDates.length === 0) return null;
   const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div className={`min-w-0 max-w-full py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
       {parsedDates.map((date, index) => (
-        <React.Fragment key={date.source}>
-          {index > 0 ? <>{' '}<span className="font-normal text-foreground">{conjunction}</span>{' '}</> : null}
+        <span key={date.source} data-date-token className="inline-flex shrink-0 items-baseline gap-0.5 whitespace-nowrap">
+          {index > 0 ? <span className="font-normal text-foreground">{conjunction}</span> : null}
           <bdi dir="ltr" className="whitespace-nowrap">{date.day}/{date.numericMonth}</bdi>
-        </React.Fragment>
+        </span>
       ))}
     </div>
   );
