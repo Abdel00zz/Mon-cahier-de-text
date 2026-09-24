@@ -25,6 +25,7 @@ export interface EditContentModalProps {
   contentDirection?: ContentDirection;
   titleOnly?: boolean;
   titleField?: 'title' | 'name';
+  affectedCount?: number;
 }
 const EMPTY_LESSONS: LessonsData = [];
 
@@ -265,7 +266,9 @@ export const ContentModal: React.FC<ContentModalProps> = (props) => {
       isOpen={isOpen}
       onClose={onClose}
       title={edit ? t(titleOnly ? 'editContent.titleOnlyTitle' : 'editContent.title') : titleNode}
-      description={edit ? undefined : t('addContent.subtitle')}
+      description={edit
+        ? (edit.affectedCount && edit.affectedCount > 1 ? t('editContent.sharedDescription', { count: edit.affectedCount }) : undefined)
+        : t('addContent.subtitle')}
       maxWidth={stage === 'select' ? "3xl" : "2xl"}
       className={stage === 'select' ? "sm:max-w-4xl sm:rounded-2xl" : "sm:max-w-3xl sm:rounded-2xl"}
       headerClassName="border-b-0 bg-background/85 backdrop-blur-md"

@@ -15,6 +15,8 @@ import { indicesKey, resolveAddAfterTarget } from '@/utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
 import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
+import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
+import type { ContentDraft } from '@/utils/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
 import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
@@ -295,6 +297,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, []);
 
   const selectedIndices = useMemo(() => Array.from(selectionState.items.values()), [selectionState]);
+  const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
+  const contentEditTargets = useMemo(() => buildContentEditTargets(allRows), [allRows]);
 
   const getStorageKey = useCallback(() => `classData_v1_${classInfo.id}`, [classInfo.id]);
 
@@ -521,7 +525,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         && (!incomingDirection || incomingDirection === contentDirectionRef.current)) return;
       loadData();
       setSelectionState(createSelectionState());
-      setEditorState(draft => { draft.editingIndices = null; });
+      setEditorState(draft => {
+        draft.editingIndices = null;
+        if (draft.activeModal === 'editContent') draft.activeModal = null;
+      });
     } catch (error) { logger.error('Failed to refresh the cloud notebook', error); }
   }), [getStorageKey, loadData, setEditorState, workspaceIsActive]);
 
@@ -886,12 +893,14 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [selectedIndices, lessonsData, setState, setEditorState]);
 
   const handleOpenContentEditor = useCallback((indices: Indices) => {
+    const targets = contentEditTargets.get(indicesKey(indices));
+    if (!targets?.length) return;
     setSelectionState(current => current.keys.size === 0 ? current : createSelectionState());
     setEditorState(draft => {
-      draft.editingIndices = indices;
+      draft.editingIndices = targets[0];
       draft.activeModal = 'editContent';
     });
-  }, [setEditorState]);
+  }, [setEditorState, contentEditTargets]);
 
   const handleToggleSelectRow = useCallback((indices: Indices) => {
       startSelectionTransition(() => {
@@ -1015,28 +1024,25 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       showNotification(t('editorNotice.itemsDeleted', { count: selectedIndices.length }), 'success');
   }, [selectedIndices, setState, setEditorState, showNotification, t]);
 
-  const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: Partial<LessonItem> & { name?: string }) => {
+  const handleConfirmContentEdit = useCallback((indices: Indices, updatedData: ContentDraft) => {
+      const targets = contentEditTargets.get(indicesKey(indices));
+      if (!targets?.length) return;
       const normalizedType = updatedData.type ? (TYPE_MAP[updatedData.type.toLowerCase()] || updatedData.type) : undefined;
       const finalItem = { ...updatedData };
       if (normalizedType) {
           finalItem.type = normalizedType;
       }
 
-      const commit = () => {
-        setState(draft => {
-            const { item } = findItem(draft, indices);
-            if (item) Object.assign(item, finalItem);
-        }, 'edit-content-item');
-        showNotification(t('editorNotice.contentUpdated'), "success");
-        setEditorState(draft => {
-          draft.saveStatus = 'unsaved';
-          draft.editingIndices = null;
-          draft.activeModal = null;
-        });
-      };
-      if (typeof finalItem.date === 'string') requestDateCommit(finalItem.date, commit, getDateOrder(indices));
-      else commit();
-  }, [setState, showNotification, setEditorState, requestDateCommit, getDateOrder, t]);
+      setState(draft => {
+          applyContentEdit(draft, targets, finalItem);
+      }, targets.length > 1 ? 'edit-merged-content' : 'edit-content-item');
+      showNotification(t('editorNotice.contentUpdated'), "success");
+      setEditorState(draft => {
+        draft.saveStatus = 'unsaved';
+        draft.editingIndices = null;
+        draft.activeModal = null;
+      });
+  }, [setState, showNotification, setEditorState, contentEditTargets, t]);
 
   const handleImport = useCallback(async (data: unknown, mode: 'replace' | 'append'): Promise<boolean> => {
       try {
@@ -1090,10 +1096,9 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection]);
 
-  const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
   const addAfterTarget = useMemo(
-    () => resolveAddAfterTarget(allRows, selectionState.keys),
-    [allRows, selectionState.keys],
+    () => resolveAddAfterTarget(allRows, expandContentSelection(contentEditTargets, selectionState.keys)),
+    [allRows, contentEditTargets, selectionState.keys],
   );
 
   const editingItem = useMemo(() => {
@@ -1117,10 +1122,13 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const selectedDates = selectedItemsData.map(item => item.date).filter(Boolean);
   const hasSelectedDate = selectedDates.length > 0;
   const selectedCount = selectedIndices.length;
-  const singleSelection = selectedItemsData[0];
   const canAddAfterSelection = addAfterTarget !== null;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
-  const canEditSelection = selectedCount === 1 && !!singleSelection?.canEditContent;
+  const editSelectionTargets = useMemo(
+    () => resolveContentEditSelection(contentEditTargets, selectionState.keys),
+    [contentEditTargets, selectionState.keys],
+  );
+  const canEditSelection = editSelectionTargets !== null;
 
   const reorderTarget = selectedCount === 1 ? selectedIndices[0] : null;
   const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
@@ -1219,7 +1227,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           }}
           onAssignToday={handleAssignToday}
           onClearDate={handleClearSelectedDates}
-          onEdit={() => canEditSelection && handleOpenContentEditor(selectedIndices[0])}
+          onEdit={() => { if (editSelectionTargets?.length) handleOpenContentEditor(editSelectionTargets[0]); }}
           onDelete={handleBulkDelete}
           onClear={handleDeselectAll}
           canEdit={canEditSelection}
@@ -1268,6 +1276,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
         editingItem={editingItem}
         editingTitleOnly={editingTitleOnly}
         editingTitleField={editingTitleField}
+        editingCount={editingIndices ? contentEditTargets.get(indicesKey(editingIndices))?.length ?? 1 : 1}
         handleConfirmContentEdit={value => {
           if (editingIndices) handleConfirmContentEdit(editingIndices, value);
         }}

@@ -35,6 +35,7 @@ interface EditorModalsProps {
   editingItem: LessonItem | TopLevelItem | Section | SubSection | SubSubSection | null;
   editingTitleOnly: boolean;
   editingTitleField: 'title' | 'name';
+  editingCount: number;
   handleConfirmContentEdit: (value: Partial<LessonItem> & { name?: string }) => void;
 }
 
@@ -71,6 +72,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
   editingItem,
   editingTitleOnly,
   editingTitleField,
+  editingCount,
   handleConfirmContentEdit,
 }) => {
   // Garde la dernière modale montée (isOpen=false) le temps de l'animation de
@@ -133,6 +135,7 @@ export const EditorModals: React.FC<EditorModalsProps> = ({
             contentDirection={contentDirection}
             titleOnly={editingTitleOnly}
             titleField={editingTitleField}
+            affectedCount={editingCount}
           />
         );
       case 'analyse':

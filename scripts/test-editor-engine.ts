@@ -41,6 +41,80 @@ import { filterLessonsByDates } from '../utils/printMeta';
 import { MultiDateCard } from '../features/editor/TableRow';
 import { ContentFields } from '../features/editor/modals/ContentFields';
 import { createContentDraft, contentDraftChanged } from '../utils/contentDraft';
+import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '../utils/contentEditing';
+
+test('édition fusionnée : titre et contenu changent ensemble, dates et remarques restent individuelles', () => {
+  for (const type of ['exercice', 'free']) {
+    const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
+      ...[14, 15, 16].map(day => ({ type, title: 'Titre commun', description: '$x^2$', date: `2026-09-${day}`, remark: `Note ${day}`, _tempId: `id-${day}` })),
+      { type, title: 'Autre contenu', description: 'À conserver' },
+    ] }];
+    const rows = buildLessonRows(data);
+    const lookup = buildContentEditTargets(rows);
+    const keys = new Set(rows.slice(1, 4).reverse().map(row => row.key));
+    const targets = resolveContentEditSelection(lookup, keys);
+    assert.equal(targets?.length, 3);
+    // Même résultat via double-clic ou après une recherche ne montrant qu'une date.
+    assert.equal(lookup.get(rows[2].key), targets);
+    assert.equal(resolveContentEditSelection(lookup, new Set([rows[2].key])), targets);
+    const filtered = filterLessonRows(rows, '2026-09-15');
+    assert.equal(filtered.length, 2);
+    assert.equal(resolveContentEditSelection(lookup, new Set([filtered[1].key])), targets);
+    assert.deepEqual(resolveAddAfterTarget(rows, expandContentSelection(lookup, new Set([filtered[1].key]))), targets![2]);
+    const changed = produce(data, draft => {
+      assert.equal(applyContentEdit(draft, targets!, { title: 'عنوان جديد', description: '$x+1$' }), true);
+    });
+    const items = changed[0].items!;
+    for (let index = 0; index < 3; index++) {
+      assert.equal(items[index].title, 'عنوان جديد');
+      assert.equal(items[index].date, data[0].items![index].date);
+      assert.equal(items[index].remark, data[0].items![index].remark);
+      assert.equal(items[index]._tempId, data[0].items![index]._tempId);
+    }
+    assert.deepEqual(items[3], data[0].items![3]);
+    assert.equal(groupLessonRows(buildLessonRows(changed)).renderRows.filter(row => row.kind === 'session').length, 1);
+    assert.equal(data[0].items![0].title, 'Titre commun');
+    assert.equal(filterLessonsByDates(changed, ['2026-09-15'])[0].items![0].title, 'عنوان جديد');
+  }
+});
+
+test('édition fusionnée : titres des évaluations et chapitres, refus des sélections hétérogènes', () => {
+  const data: LessonsData = [
+    ...['2026-09-14', '2026-09-15'].map(date => ({ type: 'controle_continu' as const, title: 'Contrôle 1', date, sections: [] })),
+    { type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'A', date: '2026-09-20' }, { type: 'exercice', title: 'B', date: '2026-09-20' }] }] },
+  ];
+  const rows = buildLessonRows(data);
+  const lookup = buildContentEditTargets(rows);
+  const targets = resolveContentEditSelection(lookup, new Set(rows.slice(0, 2).map(row => row.key)))!;
+  assert.equal(targets.length, 2);
+  const changed = produce(data, draft => { applyContentEdit(draft, targets, { title: 'Contrôle bilan' }); });
+  assert.deepEqual(changed.slice(0, 2).map(row => row.title), ['Contrôle bilan', 'Contrôle bilan']);
+  assert.equal(resolveContentEditSelection(lookup, new Set(rows.slice(-2).map(row => row.key))), null);
+  assert.equal(resolveContentEditSelection(lookup, new Set([rows[0].key, rows[2].key])), null);
+  assert.equal(resolveContentEditSelection(lookup, new Set(['99||||'])), null);
+  assert.equal(resolveContentEditSelection(lookup, new Set()), null);
+  const renamed = produce(data, draft => {
+    applyContentEdit(draft, [{ chapterIndex: 2 }], { title: 'Nouveau chapitre' });
+    applyContentEdit(draft, [{ chapterIndex: 2, sectionIndex: 0 }], { name: 'Nouveau nom' });
+  });
+  assert.equal(renamed[2].title, 'Nouveau chapitre');
+  assert.equal(renamed[2].sections![0].name, 'Nouveau nom');
+  assert.deepEqual(renamed[2].sections![0].items, data[2].sections![0].items);
+});
+
+test('édition commune : coordonnées invalides sans écriture partielle et métadonnées exclues du patch', () => {
+  const data: LessonsData = [{ type: 'free', title: 'Titre', date: '2026-09-14', remark: 'Note' }];
+  const rejected = produce(data, draft => {
+    assert.equal(applyContentEdit(draft, [{ chapterIndex: 0 }, { chapterIndex: 99 }], { title: 'Incorrect' }), false);
+  });
+  assert.equal(rejected, data);
+  const changed = produce(data, draft => {
+    applyContentEdit(draft, [{ chapterIndex: 0 }], { title: 'Correct', date: '2000-01-01', remark: 'Incorrect' } as any);
+  });
+  assert.equal(changed[0].title, 'Correct');
+  assert.equal(changed[0].date, data[0].date);
+  assert.equal(changed[0].remark, data[0].remark);
+});
 
 test('dates arabes : chaque conjonction reste attachée à sa date avec une direction explicite', () => {
   for (const count of [1, 2, 3, 5, 24]) {

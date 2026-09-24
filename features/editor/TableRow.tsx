@@ -201,7 +201,7 @@ const TableRowComponent: FC<TableRowProps> = ({
   const { locale } = useLocale();
 
   const handleContentDoubleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    if (elementType !== 'item' || !onDoubleClickEdit) return;
+    if (!onDoubleClickEdit) return;
 
     const target = event.target as HTMLElement | null;
     if (!target?.closest('[data-row-content="true"]')) return;
@@ -210,7 +210,7 @@ const TableRowComponent: FC<TableRowProps> = ({
     event.preventDefault();
     event.stopPropagation();
     onDoubleClickEdit(indices);
-  }, [indices, elementType, onDoubleClickEdit]);
+  }, [indices, onDoubleClickEdit]);
 
   const hasAssignedDate = typeof data.date === 'string' && data.date.trim().length > 0;
   const dateWarnings = (hasAssignedDate && getDateWarnings) ? getDateWarnings(data.date) : [];
