@@ -16,7 +16,6 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
                     description: (item as any)?.description ?? '',
                     canDate: !!item,
                     canEditContent: isRealRow,
-                    canAddAfter: !!item,
                 };
             } catch {
                 return {
@@ -27,7 +26,6 @@ export const useSelectionData = (selectedIndices: Indices[], lessonsData: Lesson
                     description: '',
                     canDate: false,
                     canEditContent: false,
-                    canAddAfter: false,
                 };
             }
         });

@@ -5,7 +5,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { produce } from 'immer';
 import type { AppConfig, ClassInfo, LessonsData } from '../types';
-import { buildLessonRows, filterLessonRows, indicesKey } from '../utils/lessonRows';
+import { buildLessonRows, filterLessonRows, indicesKey, resolveAddAfterTarget } from '../utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings } from '../utils/dateOrder';
 import { abbreviateClassName, scheduleClassLabel } from '../utils/classAbbreviation';
 import { teachesSeveralSubjects, collectTeacherSubjects, subjectKey } from '../utils/subjectScope';
@@ -355,6 +355,72 @@ test('fusion : dates distinctes oui, doublon de la même séance non', () => {
   const grouped = groupLessonRows(buildLessonRows(preceded));
   assert.equal(grouped.renderRows.length, 2);
   assert.equal(grouped.flatData[1].dateMerge?.mergeType, 'content');
+});
+
+test('ajouter après : deux ou trois contenus fusionnés restent intacts avant le nouvel élément', () => {
+  for (const count of [2, 3]) {
+    const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [
+      ...Array.from({ length: count }, (_, i) => ({ type: 'exercice', title: 'Limites', description: '$x^2$', date: `2026-09-${14 + i}` })),
+      { type: 'exercice', title: 'Suite', description: '' },
+    ] }] }];
+    const rows = buildLessonRows(data);
+    const group = groupLessonRows(rows).renderRows.find(row => row.kind === 'session');
+    assert.ok(group?.kind === 'session');
+    assert.equal(group.items.length, count);
+    const selection = new Set([...group.items].reverse().map(row => row.key));
+    const anchor = resolveAddAfterTarget(rows, selection);
+    assert.deepEqual(anchor, { chapterIndex: 0, sectionIndex: 0, itemIndex: count - 1 });
+    const withExercise = produce(data, draft => addItem(draft,
+      { chapterIndex: anchor!.chapterIndex, sectionIndex: anchor!.sectionIndex },
+      { type: 'exercice', title: 'Nouvel exercice', description: '$x+1$' }, anchor!.itemIndex));
+    assert.equal(withExercise[0].sections![0].items![count].title, 'Nouvel exercice');
+    assert.equal(withExercise[0].sections![0].items![count + 1].title, 'Suite');
+    const next = produce(data, draft => insertFreeContent(draft, anchor!, { description: 'Nouveau contenu' }, 'new'));
+    const items = next[0].sections![0].items!;
+    assert.deepEqual(items.slice(0, count), data[0].sections![0].items!.slice(0, count));
+    const inserted = items[count];
+    assert.ok('description' in inserted);
+    assert.equal(inserted.description, 'Nouveau contenu');
+    assert.equal(items[count + 1].title, 'Suite');
+    const nextGroup = groupLessonRows(buildLessonRows(next)).renderRows.find(row => row.kind === 'session');
+    assert.ok(nextGroup?.kind === 'session');
+    assert.equal(nextGroup.items.length, count);
+    assert.deepEqual(JSON.parse(JSON.stringify(next)), next);
+    assert.equal(data[0].sections![0].items!.length, count + 1);
+  }
+});
+
+test('ajouter après : ordre source numérique, recherche, sélection périmée et parents différents', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', items:
+    Array.from({ length: 12 }, (_, i) => ({ type: 'exercice', title: i === 10 ? 'Cible' : `Exercice ${i}`, description: '' })),
+    sections: [{ name: 'Section', items: [{ type: 'exercice', title: 'Autre cible', description: '' }] }],
+  }];
+  const rows = buildLessonRows(data);
+  const tenth = { chapterIndex: 0, itemIndex: 10 };
+  const second = { chapterIndex: 0, itemIndex: 2 };
+  const selection = new Set([indicesKey(tenth), indicesKey(second)]);
+  assert.deepEqual(resolveAddAfterTarget(rows, selection), tenth);
+  const filtered = filterLessonRows(rows, 'cible');
+  assert.ok(!filtered.some(row => row.key === indicesKey(second)));
+  // L'ancre utilise la projection complète même pendant une recherche.
+  assert.deepEqual(resolveAddAfterTarget(rows, selection), tenth);
+  const nested = { chapterIndex: 0, sectionIndex: 0, itemIndex: 0 };
+  assert.deepEqual(resolveAddAfterTarget(rows, new Set([indicesKey(nested), ...selection])), nested);
+  assert.deepEqual(resolveAddAfterTarget(rows, new Set([indicesKey(second)])), second);
+  assert.equal(resolveAddAfterTarget(rows, new Set()), null);
+  assert.equal(resolveAddAfterTarget(rows, new Set([...selection, '99||||'])), null);
+});
+
+test('ajouter après : séance à date commune et groupe fusionné au premier niveau', () => {
+  for (const dates of [['2026-09-14', '2026-09-14'], ['2026-09-14', '2026-09-15']]) {
+    const data: LessonsData = dates.map(date => ({ type: 'free', title: '', description: 'Contenu partagé', date }));
+    const rows = buildLessonRows(data);
+    assert.equal(groupLessonRows(rows).renderRows.length, 1);
+    const anchor = resolveAddAfterTarget(rows, new Set([...rows].reverse().map(row => row.key)));
+    const next = produce(data, draft => insertFreeContent(draft, anchor!, {}, 'after'));
+    assert.deepEqual(next.slice(0, 2), data);
+    assert.equal(next[2]._tempId, 'after');
+  }
 });
 
 test('fusion : des lignes libres de textes différents restent toutes visibles', () => {

@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TimetableNudgeModal } from './modals/TimetableNudgeModal';
 import { useHistoryState } from '@/hooks/useHistoryState';
 import { useConfigManager } from '@/hooks/useConfigManager';
-import { indicesKey } from '@/utils/lessonRows';
+import { indicesKey, resolveAddAfterTarget } from '@/utils/lessonRows';
 import { buildContentDateOrder, dateOrderWarnings, type ContentDateOrder } from '@/utils/dateOrder';
 import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
@@ -1090,7 +1090,11 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [setState, showNotification, handleModalClose, setEditorState, t, contentDirection]);
 
-  const { rows: visibleRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
+  const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
+  const addAfterTarget = useMemo(
+    () => resolveAddAfterTarget(allRows, selectionState.keys),
+    [allRows, selectionState.keys],
+  );
 
   const editingItem = useMemo(() => {
     if (!editingIndices) return null;
@@ -1114,7 +1118,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const hasSelectedDate = selectedDates.length > 0;
   const selectedCount = selectedIndices.length;
   const singleSelection = selectedItemsData[0];
-  const canAddAfterSelection = selectedCount === 1 && !!singleSelection?.canAddAfter;
+  const canAddAfterSelection = addAfterTarget !== null;
   const canAssignDateSelection = selectedCount > 0 && selectedItemsData.every(item => item.canDate);
   const canEditSelection = selectedCount === 1 && !!singleSelection?.canEditContent;
 
@@ -1208,7 +1212,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
           hasDate={hasSelectedDate}
           canAdd={canAddAfterSelection}
           canAssignDate={canAssignDateSelection}
-          onAdd={() => handleOpenAddContentModal(selectedIndices[selectedIndices.length - 1])}
+          onAdd={() => { if (addAfterTarget) handleOpenAddContentModal(addAfterTarget); }}
           onAssignDate={() => {
             setAssignDateInitialDate(undefined);
             setEditorState(draft => { draft.activeModal = 'assignDate'; });

@@ -14,6 +14,22 @@ export interface LessonRow {
 export const indicesKey = (idx: Indices): string =>
   `${idx.chapterIndex}|${idx.sectionIndex ?? ''}|${idx.subsectionIndex ?? ''}|${idx.subsubsectionIndex ?? ''}|${idx.itemIndex ?? ''}`;
 
+/** Point d'insertion après la sélection dans l'ordre source, jamais l'ordre
+ * des clics ou celui d'une recherche. Réutilise la projection mémoïsée du
+ * cahier ; une sélection périmée ne doit pas viser une autre ligne par défaut. */
+export function resolveAddAfterTarget(rows: readonly LessonRow[], selectedKeys: ReadonlySet<string>): Indices | null {
+  if (selectedKeys.size === 0) return null;
+  let matched = 0;
+  let target: Indices | null = null;
+  for (const row of rows) {
+    if (!selectedKeys.has(row.key)) continue;
+    matched += 1;
+    target = row.indices;
+    if (matched === selectedKeys.size) return target;
+  }
+  return null;
+}
+
 const blockTypes = new Set<string>(['chapter', 'evaluation_diagnostic', 'devoir_maison', 'controle_continu', 'correction_devoir_maison', 'correction_controle_continu']);
 
 /** Shared screen/print traversal. Coordinates always address the source tree. */

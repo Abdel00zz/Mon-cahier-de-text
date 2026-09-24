@@ -72,7 +72,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           ? 'bg-muted/40 border-border/40 opacity-45 cursor-not-allowed'
           : 'bg-background hover:bg-muted/50 border-border/80 hover:border-primary/40 active:scale-[0.97] cursor-pointer shadow-2xs hover:shadow-xs'
       }`}
-      title={tooltip}
+      title={disabled ? tooltip : undefined}
     >
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2 transition-transform duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-105 ${disabled ? 'bg-muted text-muted-foreground' : `${colorClass} bg-muted/80 shadow-2xs`}`}>
         <Icon className="h-5 w-5 stroke-[2.2]" />
@@ -383,11 +383,14 @@ const EditItemModal: React.FC<AddContentModalProps> = ({
 
   const canAddItem = useMemo(() => {
     if (!selectedItem) return false;
+    // Après une feuille, l'insertion cible sa liste parente, pas la feuille.
+    // Vaut aussi pour la dernière occurrence d'un contenu fusionné.
+    if (selectedIndices?.itemIndex !== undefined) return true;
     // Section / sous-section / sous-sous-section possèdent déjà `items`.
     if ('items' in selectedItem || 'name' in selectedItem) return true;
     // Un chapitre peut aussi recevoir des items directement, sans section.
     return selectedElementType === 'chapter';
-  }, [selectedItem, selectedElementType]);
+  }, [selectedItem, selectedElementType, selectedIndices]);
 
   const titleNode = (
     <div className="flex items-center gap-2.5">
