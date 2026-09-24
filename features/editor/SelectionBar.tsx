@@ -78,6 +78,24 @@ export const SelectionBar: FC<SelectionBarProps> = ({
   const formattedCount = numberFormat(locale).format(count);
   const selectedLabel = t(count === 1 ? 'selection.selectedOne' : 'selection.selectedMany', { count: formattedCount });
   const secondary: Action[] = [];
+  if (onMoveUp) {
+    secondary.push({
+      id: 'move-up',
+      icon: ArrowUp,
+      onClick: onMoveUp,
+      title: t('selection.moveUp'),
+      disabled: !canMoveUp,
+    });
+  }
+  if (onMoveDown) {
+    secondary.push({
+      id: 'move-down',
+      icon: ArrowDown,
+      onClick: onMoveDown,
+      title: t('selection.moveDown'),
+      disabled: !canMoveDown,
+    });
+  }
   if (canAdd) secondary.push({ id: 'add', icon: Plus, onClick: onAdd, title: t('selection.addAfter') });
   if (hasDate) secondary.push({ id: 'clear-date', icon: CalendarX, onClick: onClearDate, title: t('selection.unassignDate') });
 
@@ -138,12 +156,6 @@ export const SelectionBar: FC<SelectionBarProps> = ({
           title={t('selection.chooseDate')} disabled={isPending} />}
         {canEdit && onEdit && <ActionButton icon={Pencil} onClick={onEdit}
           title={t('selection.edit')} disabled={isPending} />}
-        {onMoveUp && onMoveDown && <div className="flex shrink-0 items-center gap-1">
-          <ActionButton icon={ArrowUp} onClick={onMoveUp}
-            title={t('selection.moveUp')} disabled={isPending || !canMoveUp} />
-          <ActionButton icon={ArrowDown} onClick={onMoveDown}
-            title={t('selection.moveDown')} disabled={isPending || !canMoveDown} />
-        </div>}
         <DropdownMenu dir={locale === 'ar' ? 'rtl' : 'ltr'}>
           <DropdownMenuTrigger asChild>
             <motion.button

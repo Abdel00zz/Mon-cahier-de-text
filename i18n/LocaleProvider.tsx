@@ -497,7 +497,7 @@ const messages: Record<AppLocale, TranslationTable> = {
     'dateReview.check': 'Vérifiez avant de confirmer',
     'dateReview.hint': 'Une exception peut justifier cette date. Confirmez après vérification.',
     'dateReview.ignore': 'Ne plus signaler cette date',
-    'selection.moveUp': 'Monter', 'selection.moveDown': 'Descendre',
+    'selection.moveUp': 'Déplacer vers le haut', 'selection.moveDown': 'Déplacer vers le bas',
     'selection.addAfter': 'Ajouter après', 'selection.edit': 'Modifier',
     'selection.dateToday': 'Dater aujourd’hui', 'selection.today': 'Aujourd’hui',
     'selection.chooseDate': 'Choisir une date…', 'selection.unassignDate': 'Dissocier la date',
