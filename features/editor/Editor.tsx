@@ -17,9 +17,10 @@ import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
 import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
 import type { ContentDraft } from '@/utils/contentDraft';
+import { applyContentMove, planContentMove } from '@/utils/contentReorder';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
-import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteStructuralNodePromotingChildren, migrateLessonsData, moveWithinParent, canMoveWithinParent } from '@/utils/dataUtils';
+import { findItem, addTopLevelItem, addSection, addSubSection, addSubSubSection, addItem, deleteStructuralNodePromotingChildren, migrateLessonsData } from '@/utils/dataUtils';
 import { prepareImportedLessons } from '@/utils/importPipeline';
 import { contentLocaleFromDirection, defaultContentDirection, detectContentDirection, readStoredContentDirection } from '@/utils/contentDirection';
 import { markClassDirty, markClassesListDirty, notifyClassesChanged, subscribe, touchClassSyncMeta } from '@/utils/syncBus';
@@ -86,13 +87,13 @@ interface PendingDateCommit {
   commit: () => void;
 }
 
-const createSelectionState = (indices?: Indices): SelectionState => {
+const createSelectionState = (indices?: Indices | Indices[]): SelectionState => {
   const keys = new Set<string>();
   const items = new Map<string, Indices>();
-  if (indices) {
-    const key = indicesKey(indices);
+  for (const index of (indices ? (Array.isArray(indices) ? indices : [indices]) : [])) {
+    const key = indicesKey(index);
     keys.add(key);
-    items.set(key, indices);
+    items.set(key, index);
   }
   return { keys, items };
 };
@@ -299,6 +300,10 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   const selectedIndices = useMemo(() => Array.from(selectionState.items.values()), [selectionState]);
   const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
   const contentEditTargets = useMemo(() => buildContentEditTargets(allRows), [allRows]);
+  const moveOptions = useMemo(() => ({
+    up: planContentMove(lessonsData, contentEditTargets, selectionState.keys, 'up'),
+    down: planContentMove(lessonsData, contentEditTargets, selectionState.keys, 'down'),
+  }), [lessonsData, contentEditTargets, selectionState.keys]);
 
   const getStorageKey = useCallback(() => `classData_v1_${classInfo.id}`, [classInfo.id]);
 
@@ -882,15 +887,12 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, [classInfo, config, contentDirection, lessonsData, isNotebookAwaitingContent, setEditorState, showNotification, t, workspaceIsActive]);
 
   const handleMoveSelected = useCallback((direction: 'up' | 'down') => {
-      if (selectedIndices.length !== 1) return;
-      const target = selectedIndices[0];
-      if (!canMoveWithinParent(lessonsData, target, direction)) return;
-      const key = (['itemIndex', 'subsubsectionIndex', 'subsectionIndex', 'sectionIndex', 'chapterIndex'] as const).find(key => target[key] !== undefined)!;
-      const movedTo = { ...target, [key]: target[key]! + (direction === 'up' ? -1 : 1) };
-      setState(draft => { moveWithinParent(draft, target, direction); }, 'reorder');
-      setSelectionState(createSelectionState(movedTo));
+      const plan = moveOptions[direction];
+      if (!plan) return;
+      setState(draft => { applyContentMove(draft, plan); }, 'reorder');
+      setSelectionState(createSelectionState(plan.selection));
       setEditorState(draft => { draft.saveStatus = 'unsaved'; });
-  }, [selectedIndices, lessonsData, setState, setEditorState]);
+  }, [moveOptions, setState, setEditorState]);
 
   const handleOpenContentEditor = useCallback((indices: Indices) => {
     const targets = contentEditTargets.get(indicesKey(indices));
@@ -1130,9 +1132,8 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   );
   const canEditSelection = editSelectionTargets !== null;
 
-  const reorderTarget = selectedCount === 1 ? selectedIndices[0] : null;
-  const canMoveUp = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'up');
-  const canMoveDown = !!reorderTarget && canMoveWithinParent(lessonsData, reorderTarget, 'down');
+  const canMoveUp = moveOptions.up !== null;
+  const canMoveDown = moveOptions.down !== null;
 
   // « Dater aujourd'hui » : un tap, réutilise le circuit handleAssignDates
   // (donc aussi la garde intelligente sur la date du jour).

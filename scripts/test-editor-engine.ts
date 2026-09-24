@@ -42,6 +42,82 @@ import { MultiDateCard } from '../features/editor/TableRow';
 import { ContentFields } from '../features/editor/modals/ContentFields';
 import { createContentDraft, contentDraftChanged } from '../utils/contentDraft';
 import { applyContentEdit, buildContentEditTargets, expandContentSelection, resolveContentEditSelection } from '../utils/contentEditing';
+import { applyContentMove, planContentMove } from '../utils/contentReorder';
+
+const moveFixture = (): LessonsData => [{ type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [
+  { type: 'free', title: 'Avant', description: '' },
+  ...[14, 15, 16].map(day => ({ type: 'exercice', title: 'A', description: '$x^2$', date: `2026-09-${day}`, remark: `Note ${day}` })),
+  ...[17, 18].map(day => ({ type: 'exercice', title: 'B', description: 'Autre', date: `2026-09-${day}`, remark: `Note ${day}` })),
+  { type: 'free', title: 'Après', description: '' },
+] }] }];
+const moveKeys = (...items: number[]) => new Set(items.map(itemIndex => indicesKey({ chapterIndex: 0, sectionIndex: 0, itemIndex })));
+
+test('déplacement : deux groupes fusionnés échangent leur place sans perdre dates, remarques ou ordre interne', () => {
+  const data = moveFixture();
+  const lookup = buildContentEditTargets(buildLessonRows(data));
+  const plan = planContentMove(data, lookup, moveKeys(3, 1, 2), 'down');
+  assert.ok(plan);
+  const next = produce(data, draft => { assert.equal(applyContentMove(draft, plan), true); });
+  const items = next[0].sections![0].items!;
+  assert.deepEqual(items.map(item => item.title), ['Avant', 'B', 'B', 'A', 'A', 'A', 'Après']);
+  assert.deepEqual(items.slice(3, 6), data[0].sections![0].items!.slice(1, 4));
+  assert.deepEqual(items.slice(1, 3), data[0].sections![0].items!.slice(4, 6));
+  assert.deepEqual(plan.selection.map(index => index.itemIndex), [3, 4, 5]);
+  const back = planContentMove(next, buildContentEditTargets(buildLessonRows(next)), new Set(plan.selection.map(indicesKey)), 'up');
+  assert.ok(back);
+  const restored = produce(next, draft => { applyContentMove(draft, back); });
+  assert.deepEqual(restored, data);
+});
+
+test('déplacement : sélection filtrée, élément simple et sélection contiguë utilisent des blocs complets', () => {
+  const data = moveFixture();
+  const rows = buildLessonRows(data);
+  const lookup = buildContentEditTargets(rows);
+  const visible = filterLessonRows(rows, '2026-09-15');
+  const filteredPlan = planContentMove(data, lookup, new Set([visible.at(-1)!.key]), 'up');
+  assert.ok(filteredPlan);
+  assert.equal(filteredPlan.count, 3);
+  const up = produce(data, draft => { applyContentMove(draft, filteredPlan); });
+  assert.deepEqual(up[0].sections![0].items!.map(item => item.title), ['A', 'A', 'A', 'Avant', 'B', 'B', 'Après']);
+  assert.equal(planContentMove(up, buildContentEditTargets(buildLessonRows(up)), new Set(filteredPlan.selection.map(indicesKey)), 'up'), null);
+  const single = planContentMove(data, lookup, moveKeys(0), 'down');
+  assert.ok(single);
+  assert.equal(single.destination, 3);
+  assert.deepEqual(produce(data, draft => { applyContentMove(draft, single); }), up);
+  const multiple = planContentMove(data, lookup, moveKeys(1, 5), 'down');
+  assert.ok(multiple);
+  assert.equal(multiple.count, 5);
+  const moved = produce(data, draft => { applyContentMove(draft, multiple); });
+  assert.deepEqual(moved[0].sections![0].items!.map(item => item.title), ['Avant', 'Après', 'A', 'A', 'A', 'B', 'B']);
+});
+
+test('déplacement : bornes, parents différents, trous et plans périmés ne modifient aucune donnée', () => {
+  const data = moveFixture();
+  const lookup = buildContentEditTargets(buildLessonRows(data));
+  assert.equal(planContentMove(data, lookup, moveKeys(0), 'up'), null);
+  assert.equal(planContentMove(data, lookup, moveKeys(6), 'down'), null);
+  assert.equal(planContentMove(data, lookup, moveKeys(0, 6), 'down'), null);
+  assert.equal(planContentMove(data, lookup, new Set(), 'down'), null);
+  assert.equal(planContentMove(data, lookup, new Set(['99||||']), 'up'), null);
+  assert.equal(planContentMove(data, lookup, new Set([...moveKeys(1), indicesKey({chapterIndex: 0})]), 'down'), null);
+  const plan = planContentMove(data, lookup, moveKeys(1), 'down')!;
+  const changed = produce(data, draft => { draft[0].sections![0].items!.unshift({ type: 'free', title: 'Nouveau' }); });
+  const rejected = produce(changed, draft => { assert.equal(applyContentMove(draft, plan), false); });
+  assert.equal(rejected, changed);
+});
+
+test('déplacement : évaluations fusionnées et chapitres conservent leurs sous-arbres', () => {
+  const data: LessonsData = [
+    { type: 'chapter', title: 'Chapitre', sections: [{ name: 'Section', items: [{ type: 'free', title: 'Enfant' }] }] },
+    ...['2026-09-14', '2026-09-15'].map(date => ({ type: 'controle_continu' as const, title: 'Contrôle', date })),
+  ];
+  const lookup = buildContentEditTargets(buildLessonRows(data));
+  const plan = planContentMove(data, lookup, new Set([indicesKey({chapterIndex: 2}), indicesKey({chapterIndex: 1})]), 'up');
+  assert.ok(plan);
+  const changed = produce(data, draft => { applyContentMove(draft, plan); });
+  assert.deepEqual(changed.map(item => item.title), ['Contrôle', 'Contrôle', 'Chapitre']);
+  assert.deepEqual(changed[2], data[0]);
+});
 
 test('édition fusionnée : titre et contenu changent ensemble, dates et remarques restent individuelles', () => {
   for (const type of ['exercice', 'free']) {
