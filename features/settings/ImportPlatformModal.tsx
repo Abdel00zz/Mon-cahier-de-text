@@ -4,6 +4,7 @@ import { TriangleAlert, FileUp } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { MAX_JSON_FILE_BYTES } from '@/utils/jsonInput';
 
 interface ImportPlatformModalProps {
   isOpen: boolean;
@@ -17,21 +18,47 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   const [fileName, setFileName] = useState('');
   const [isConfirmed, setIsConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const readRequestRef = useRef(0);
+  const readerRef = useRef<FileReader | null>(null);
+  const [isReading, setIsReading] = useState(false);
+  const [readError, setReadError] = useState('');
 
   useEffect(() => {
+    readRequestRef.current += 1;
+    readerRef.current?.abort();
+    setIsReading(false);
     if (!isOpen) return;
     setFileContent(null);
     setFileName('');
     setIsConfirmed(false);
+    setReadError('');
     if (fileInputRef.current) fileInputRef.current.value = '';
+    return () => { readRequestRef.current += 1; readerRef.current?.abort(); };
   }, [isOpen]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      const requestId = ++readRequestRef.current;
+      readerRef.current?.abort();
+      setFileContent(null);
+      setIsConfirmed(false);
+      setFileName(file.name);
+      setReadError('');
+      setIsReading(false);
+      if (file.size > MAX_JSON_FILE_BYTES) { setReadError(t('transfer.fileTooLarge')); return; }
       const reader = new FileReader();
+      readerRef.current = reader;
+      setIsReading(true);
       reader.onload = (e) => {
-        setFileContent(e.target?.result as string);
+        if (requestId !== readRequestRef.current) return;
+        setFileContent(typeof e.target?.result === 'string' ? e.target.result : null);
+        setIsReading(false);
+      };
+      reader.onerror = () => {
+        if (requestId !== readRequestRef.current) return;
+        setIsReading(false);
+        setReadError(t('transfer.readError'));
       };
       reader.readAsText(file);
       setFileName(file.name);
@@ -39,7 +66,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
   };
 
   const handleImport = () => {
-    if (fileContent) {
+    if (fileContent && isConfirmed && !isReading) {
       onImport(fileContent);
     }
   };
@@ -72,7 +99,8 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
             type="button"
             onClick={handleImport}
             variant="destructive"
-            disabled={!fileContent || !isConfirmed}
+            disabled={!fileContent || !isConfirmed || isReading}
+            aria-busy={isReading}
             className="rounded-xl font-bold px-5 h-10 text-xs sm:text-sm shadow-sm"
           >
             {t('settings.importModal.importAction')}
@@ -81,6 +109,7 @@ export const ImportPlatformModal: React.FC<ImportPlatformModalProps> = ({ isOpen
       }
     >
       <div className="space-y-4">
+        {readError && <p role="alert" className="text-sm text-destructive">{readError}</p>}
         <div className="p-4 bg-destructive/[0.08] dark:bg-destructive/15 text-destructive rounded-xl border border-destructive/30 shadow-xs">
           <div className="flex gap-3">
             <TriangleAlert className="h-5 w-5 shrink-0 text-destructive mt-0.5" />

@@ -1,5 +1,7 @@
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP } from '../constants';
-import { prepareImportedLessons, type ImportReport } from './importPipeline';
+import { prepareImportedLessons, resolveImportPayload, type ImportReport } from './importPipeline';
+import { IMPORT_LIMITS } from './importLimits';
+import { normalizeContentType } from '../constants/type-keys';
 import { toDisplayText } from './textValue';
 import type { LessonsData } from '../types';
 
@@ -46,11 +48,11 @@ export interface ContentAnalysis {
 }
 
 /** Budget de synchronisation du dépôt : au-delà, la donnée ne circule plus. */
-export const MAX_CONTENT_BYTES = 700_000;
+export const MAX_CONTENT_BYTES = IMPORT_LIMITS.bytes;
 /** Mêmes seuils que le pipeline d'import, pour prévenir AVANT qu'il ne jette. */
-export const MAX_TEXT_CHARS = 20_000;
-const MAX_DEPTH = 12;
-const MAX_NODES = 12_000;
+export const MAX_TEXT_CHARS = IMPORT_LIMITS.text;
+const MAX_DEPTH = IMPORT_LIMITS.depth;
+const MAX_NODES = IMPORT_LIMITS.nodes;
 /** Texte long : signalé sans bloquer (lisibilité, poids, impression). */
 export const LONG_TEXT_CHARS = 5_000;
 
@@ -64,7 +66,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const typeIsKnown = (type: string): boolean =>
-  STRUCTURAL_TYPES.has(type) || TYPE_MAP[type] !== undefined || type in TOP_LEVEL_TYPE_CONFIG || type.startsWith('correction_');
+  STRUCTURAL_TYPES.has(type) || Object.hasOwn(TYPE_MAP, type) || Object.hasOwn(TOP_LEVEL_TYPE_CONFIG, type) || type.startsWith('correction_');
 
 /** Ligne, colonne et extrait d'une erreur de `JSON.parse` (messages V8 variés). */
 export function locateJsonError(message: string, source: string): { line: number; column: number; excerpt: string } | null {
@@ -87,7 +89,7 @@ export function locateJsonError(message: string, source: string): { line: number
 export function analyzeContentJson(raw: unknown): ContentAnalysis {
   const source = toDisplayText(raw);
   const issues: ContentDiagnostic[] = [];
-  const stats: ContentStats = { bytes: source.length, chapters: 0, contents: 0, nodes: 0, depth: 0, longestText: null };
+  const stats: ContentStats = { bytes: new TextEncoder().encode(source).length, chapters: 0, contents: 0, nodes: 0, depth: 0, longestText: null };
   const result = (ok: boolean, report: ImportReport | null, lessonsData: LessonsData | null): ContentAnalysis =>
     ({ ok: ok && !issues.some(issue => issue.severity === 'error'), issues, stats, report, lessonsData });
 
@@ -96,7 +98,6 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
     return result(false, null, null);
   }
 
-  if (source.length > MAX_CONTENT_BYTES / 4) stats.bytes = new TextEncoder().encode(source).length;
   if (stats.bytes > MAX_CONTENT_BYTES) {
     issues.push({ severity: 'error', code: 'tooLarge', params: { bytes: stats.bytes, maxBytes: MAX_CONTENT_BYTES }, path: '' });
     return result(false, null, null);
@@ -104,7 +105,7 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
 
   let value: unknown;
   try {
-    value = JSON.parse(source);
+    value = JSON.parse(source.replace(/^\uFEFF/, ''));
   } catch (error) {
     const detail = (error instanceof Error ? error.message : String(error)).replace(/^JSON\.parse: /, '');
     const located = locateJsonError(detail, source);
@@ -123,6 +124,13 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
     return result(false, null, null);
   }
 
+  let lessons: unknown[];
+  try { lessons = resolveImportPayload(value).lessons; }
+  catch (error) {
+    issues.push({ severity: 'error', code: 'preparation', params: { reason: error instanceof Error ? error.message : String(error) }, path: '' });
+    return result(false, null, null);
+  }
+
   const identities = new Map<string, string>();
   let stopped = false;
 
@@ -135,8 +143,9 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
       return;
     }
     const fieldPath = path ? `${path} › ${field}` : field;
-    if (text.length > MAX_TEXT_CHARS) {
-      issues.push({ severity: 'error', code: 'textTooLong', params: { field, chars: text.length, max: MAX_TEXT_CHARS, owner }, path: fieldPath });
+    const max = ['description', 'remark', 'content'].includes(field) ? MAX_TEXT_CHARS : IMPORT_LIMITS.label;
+    if (text.trim().length > max) {
+      issues.push({ severity: 'error', code: 'textTooLong', params: { field, chars: text.trim().length, max, owner }, path: fieldPath });
       return;
     }
     if (text.length > LONG_TEXT_CHARS) {
@@ -154,7 +163,7 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
     }
   };
 
-  const walk = (node: unknown, path: string, depth: number): void => {
+  const walk = (node: unknown, path: string, depth: number, parent: string): void => {
     if (stopped) return;
     stats.nodes += 1;
     if (stats.nodes > MAX_NODES) {
@@ -169,25 +178,22 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
     }
     stats.depth = Math.max(stats.depth, depth);
 
-    if (Array.isArray(node)) {
-      node.forEach((child, index) => walk(child, `${path}[${index}]`, depth + 1));
-      return;
-    }
     if (!isRecord(node)) return;
 
     const owner = toDisplayText(node.title) || toDisplayText(node.name) || path;
     for (const field of TEXT_FIELDS) inspectText(node, field, path, owner);
 
     if (node.type !== undefined) {
-      const type = toDisplayText(node.type);
+      const type = normalizeContentType(toDisplayText(node.type));
       if (type && !typeIsKnown(type)) {
         issues.push({ severity: 'warning', code: 'unknownType', params: { type, owner }, path: `${path} › type` });
       }
     }
 
     // Doublons stricts : même type, même titre, même date dans le même parent.
-    const key = KEY_FOR_IDENTITY.map(field => toDisplayText(node[field]).trim().toLowerCase()).join('|');
-    if (key.replace(/\|/g, '')) {
+    const identity = KEY_FOR_IDENTITY.map(field => toDisplayText(node[field]).trim().toLowerCase());
+    const key = JSON.stringify([parent, ...identity]);
+    if (identity.some(Boolean)) {
       const previous = identities.get(key);
       if (previous && previous !== path) {
         issues.push({ severity: 'warning', code: 'duplicate', params: { owner }, path });
@@ -204,11 +210,15 @@ export function analyzeContentJson(raw: unknown): ContentAnalysis {
         issues.push({ severity: 'repair', code: 'containerRepaired', params: { field, owner }, path: childPath });
         continue;
       }
-      walk(children, childPath, depth + 1);
+      for (let index = 0; index < children.length && !stopped; index++) {
+        walk(children[index], `${childPath}[${index}]`, depth + 1, childPath);
+      }
     }
   };
 
-  walk(value, '', 1);
+  for (let index = 0; index < lessons.length && !stopped; index++) {
+    walk(lessons[index], `lessons[${index}]`, 0, 'lessons');
+  }
 
   let report: ImportReport | null = null;
   let lessonsData: LessonsData | null = null;

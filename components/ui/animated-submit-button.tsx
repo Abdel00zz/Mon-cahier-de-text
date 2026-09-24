@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -32,6 +32,7 @@ export const AnimatedSubmitButton: React.FC<AnimatedSubmitButtonProps> = ({
   ...props
 }) => {
   const { impact, notification } = useHapticFeedback();
+  const reducedMotion = useReducedMotion();
   const [internalSuccess, setInternalSuccess] = useState(false);
   const [internalLoading, setInternalLoading] = useState(false);
 
@@ -71,14 +72,15 @@ export const AnimatedSubmitButton: React.FC<AnimatedSubmitButtonProps> = ({
 
   return (
     <motion.button
+      data-variant="default"
       type={type}
       form={form}
       disabled={disabled || isLoading}
       onClick={handleClick}
-      whileTap={{ scale: 0.95 }}
+      whileTap={reducedMotion ? undefined : { scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 500, damping: 25 }}
       className={cn(
-        'relative inline-flex h-10 min-h-[40px] items-center justify-center gap-2 overflow-hidden rounded-[10px] px-5 text-xs sm:text-sm font-semibold transition-colors duration-300 select-none cursor-pointer',
+        'paper-button relative inline-flex h-11 min-h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-5 text-xs sm:text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none select-none cursor-pointer',
         isSuccess
           ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
           : 'bg-primary text-primary-foreground shadow-xs shadow-primary/20 hover:brightness-105 active:brightness-95',

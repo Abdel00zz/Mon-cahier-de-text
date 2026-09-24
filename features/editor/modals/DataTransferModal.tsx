@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Segmented } from '@/components/ui/segmented';
 import { useLocale } from '@/i18n/LocaleProvider';
+import { MAX_JSON_FILE_BYTES, parseBoundedJson } from '@/utils/jsonInput';
 
 interface DataTransferModalProps {
   isOpen: boolean;
@@ -48,14 +49,16 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+    const requestId = ++readRequestRef.current;
+    setIsReading(false);
+    setJsonText('');
+    setFileName(file.name);
     setMessage(null);
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_JSON_FILE_BYTES) {
       setMessage(t('transfer.fileTooLarge'));
       return;
     }
 
-    const requestId = ++readRequestRef.current;
     setIsReading(true);
     setJsonText('');
     setFileName(file.name);
@@ -79,7 +82,7 @@ export const DataTransferModal: React.FC<DataTransferModalProps> = ({ isOpen, on
     setMessage(null);
     setIsImporting(true);
     try {
-      const parsed = JSON.parse(jsonText);
+      const parsed = parseBoundedJson(jsonText);
       const imported = await onImport(parsed, importMode);
       if (!imported) return;
     } catch (error) {

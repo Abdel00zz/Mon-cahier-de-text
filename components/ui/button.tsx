@@ -4,13 +4,13 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex cursor-pointer select-none touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md,8px)] text-sm font-medium tracking-[-0.01em] ring-offset-background transition-[transform,box-shadow,background-color,border-color,opacity] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)] will-change-transform active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
+  "paper-button inline-flex cursor-pointer select-none touch-manipulation items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium tracking-[-0.01em] ring-offset-background transition-[transform,box-shadow,background-color,border-color,opacity] duration-200 [transition-timing-function:cubic-bezier(0.2,0,0,1)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-[18px]",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground font-semibold shadow-xs hover:brightness-105 active:brightness-95",
+        default: "bg-primary text-primary-foreground font-semibold hover:brightness-105 active:brightness-95",
         charcoal: "bg-[#212123] text-white hover:bg-[#2e2e33] dark:bg-[#2A2A2E] dark:hover:bg-[#34343A] active:scale-[0.97]",
-        accent: "bg-primary text-primary-foreground font-semibold shadow-xs hover:brightness-105 active:brightness-95",
+        accent: "bg-primary text-primary-foreground font-semibold hover:brightness-105 active:brightness-95",
         destructive: "bg-destructive text-destructive-foreground shadow-xs hover:brightness-105 active:brightness-95",
         outline: "border border-border/80 bg-card text-foreground hover:bg-muted/60 active:brightness-95 shadow-2xs",
         secondary: "bg-secondary text-secondary-foreground hover:bg-muted active:brightness-95 shadow-2xs",

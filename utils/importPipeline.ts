@@ -5,6 +5,7 @@ import { detectContentDirection, isContentDirection } from './contentDirection.j
 import type { ContentDirectionDetection } from './contentDirection.js';
 import { normalizeContentType } from '../constants/type-keys.js';
 import { toDisplayText } from './textValue.js';
+import { IMPORT_LIMITS } from './importLimits.js';
 
 export interface ImportReport {
   topLevelCount: number;
@@ -28,8 +29,8 @@ type JsonRecord = Record<string, unknown>;
 // L'import accepte les anciens formats, mais reste borné pour ne jamais
 // bloquer l'interface ou une fonction cloud sur un JSON volontairement
 // récursif / anormalement fragmenté.
-const MAX_IMPORT_DEPTH = 12;
-const MAX_IMPORT_NODES = 12_000;
+const MAX_IMPORT_DEPTH = IMPORT_LIMITS.depth;
+const MAX_IMPORT_NODES = IMPORT_LIMITS.nodes;
 
 interface ImportBudget {
   nodes: number;
@@ -80,10 +81,18 @@ const selectImportPayload = (payload: unknown): unknown => {
 
 const extractLessonsPayload = (payload: unknown): unknown => {
   if (Array.isArray(payload)) return payload;
-  if (!isRecord(payload)) return [];
+  if (!isRecord(payload)) return undefined;
 
   const candidates = [payload.lessonsData, payload.data, payload.lessons, payload.items];
-  return candidates.find(Array.isArray) ?? [];
+  return candidates.find(Array.isArray);
+};
+
+/** One envelope resolver for diagnostics and imports: no silent empty fallback. */
+export const resolveImportPayload = (payload: unknown): { lessons: unknown[]; savedDirection: ContentDirection } => {
+  const selected = selectImportPayload(payload);
+  const lessons = extractLessonsPayload(selected);
+  if (!Array.isArray(lessons)) throw new Error('Le JSON ne contient pas de tableau de cours reconnu.');
+  return { lessons, savedDirection: isRecord(selected) && isContentDirection(selected.contentDirection) ? selected.contentDirection : 'ltr' };
 };
 
 const normalizeDate = (value: unknown): { value: string; changed: boolean } => {
@@ -147,7 +156,7 @@ const normalizeStringField = (record: JsonRecord, key: string, report: ImportRep
     return;
   }
   const next = toDisplayText(value).trim();
-  const maxLength = key === 'description' || key === 'remark' || key === 'content' ? 20_000 : 500;
+  const maxLength = key === 'description' || key === 'remark' || key === 'content' ? IMPORT_LIMITS.text : IMPORT_LIMITS.label;
   if (next.length > maxLength) throw new Error(`Champ « ${key} » trop long (maximum ${maxLength} caractères).`);
   if (next !== value) report.trimmedStrings += 1;
   record[key] = next;
@@ -159,7 +168,6 @@ const normalizeItem = (
   budget: ImportBudget,
   depth = 0,
 ): JsonRecord | null => {
-  if (!isRecord(value)) return null;
   if (depth > MAX_IMPORT_DEPTH) {
     throw new Error(`Structure JSON trop profonde (maximum ${MAX_IMPORT_DEPTH} niveaux).`);
   }
@@ -167,6 +175,7 @@ const normalizeItem = (
   if (budget.nodes > MAX_IMPORT_NODES) {
     throw new Error(`Structure JSON trop volumineuse (maximum ${MAX_IMPORT_NODES} éléments).`);
   }
+  if (!isRecord(value)) return null;
 
   const item: JsonRecord = { ...value };
   ['title', 'name', 'type', 'number', 'page', 'description', 'remark', 'content'].forEach(key => {
@@ -281,20 +290,7 @@ export const summarizeImportedLessons = (lessonsData: LessonsData): ImportedProg
 export const prepareImportedLessons = (payload: unknown): ImportPreparationResult => {
   const report = cloneReport();
   const budget: ImportBudget = { nodes: 0 };
-  const selectedPayload = selectImportPayload(payload);
-  const rawLessons = extractLessonsPayload(selectedPayload);
-  const savedDirection = isRecord(selectedPayload) && isContentDirection(selectedPayload.contentDirection)
-    ? selectedPayload.contentDirection
-    : 'ltr';
-
-  if (!Array.isArray(rawLessons)) {
-    logger.warn('Import ignored: payload does not contain an array of lessons.', payload);
-    return {
-      lessonsData: [],
-      report,
-      direction: detectContentDirection([], savedDirection),
-    };
-  }
+  const { lessons: rawLessons, savedDirection } = resolveImportPayload(payload);
 
   const normalized = rawLessons
     .map(item => normalizeItem(item, report, budget))

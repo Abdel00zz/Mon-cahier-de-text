@@ -1,4 +1,5 @@
-import { Sparkles, Calendar, Bell } from 'lucide-react';
+import { Sparkles, Calendar, Bell, ArrowUpRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AppShowcaseMedia } from '@/components/ui/AppShowcaseMedia';
 import type { AppLocale } from '@/types';
 import './landing.css';
@@ -53,8 +54,8 @@ export function LandingPage({ locale, onLogin, onRegister }: {
       <section className="landing-copy">
         <h1 tabIndex={-1}>{copy.title}<br /><span>{copy.emphasis}</span></h1>
         <div className="landing-actions">
-          <button type="button" onClick={onRegister} className="landing-primary"><span>{copy.register}</span></button>
-          <button type="button" onClick={onLogin} className="landing-secondary"><span>{copy.login}</span></button>
+          <Button type="button" onClick={onRegister} className="landing-primary"><span>{copy.register}</span><ArrowUpRight aria-hidden="true" className="rtl:-scale-x-100" /></Button>
+          <Button type="button" variant="outline" onClick={onLogin} className="landing-secondary"><span>{copy.login}</span></Button>
         </div>
         <p className="landing-start">{copy.start}</p>
         {renderBadges('landing-features-desktop')}

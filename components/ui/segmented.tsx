@@ -25,9 +25,9 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
       const diff = (activeRect.left + activeRect.width / 2) - (containerRect.left + containerRect.width / 2);
       if (Math.abs(diff) > 2) {
         try {
-          container.scrollBy({ left: diff, behavior: 'smooth' });
+          container.scrollBy({ left: diff, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
         } catch {
-          activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          activeEl.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
         }
       }
     }
@@ -38,7 +38,7 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
       ref={containerRef}
       role="tablist"
       aria-label={ariaLabel}
-      className={cn('inline-flex max-w-full items-center overflow-x-auto no-scrollbar rounded-xl border border-border/70 bg-muted/60 p-1', className)}
+      className={cn('paper-segments inline-flex max-w-full items-center overflow-x-auto no-scrollbar rounded-xl border border-border/70 bg-muted/60 p-1', className)}
     >
       {options.map(option => {
         const active = value === option.value;
@@ -52,7 +52,7 @@ export function Segmented<T extends string>({ value, onChange, options, classNam
             disabled={option.disabled}
             onClick={() => onChange(option.value as T)}
             className={cn(
-              'flex min-h-10 shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-all duration-150 active:scale-[0.98] cursor-pointer',
+              'flex min-h-11 shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors duration-200 motion-reduce:transition-none active:scale-[0.98] cursor-pointer',
               active
                 ? 'border border-border/80 bg-card text-foreground shadow-xs font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./components/ui/modal-motion.css";
+@import "./components/ui/paper-controls.css";
 @import "./features/dashboard/classCards.css";
 @import "./features/dashboard/dashboardCanvas.css";
 
@@ -318,23 +319,23 @@ html[lang="ar"] .keep-class-title {
        mobiles de recolorer automatiquement les champs et les textes. */
     color-scheme: only light;
     /* Palette calme et contemporaine : ivoire chaud, graphite doux, vert sauge. */
-    --background: 150 18% 97%;
+    --background: 45 24% 96%;
     --foreground: 160 16% 16%;
-    --card: 0 0% 100%;
+    --card: 45 33% 99%;
     --card-foreground: 160 16% 16%;
-    --popover: 0 0% 100%;
+    --popover: 45 33% 99%;
     --popover-foreground: 160 16% 16%;
-    --primary: 155 45% 32%;
+    --primary: 145 19% 29%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 150 14% 94%;
+    --secondary: 85 14% 93%;
     --secondary-foreground: 160 16% 20%;
-    --muted: 150 12% 94%;
+    --muted: 75 12% 94%;
     --muted-foreground: 160 8% 43%;
-    --accent: 148 35% 91%;
+    --accent: 95 20% 91%;
     --accent-foreground: 155 45% 24%;
-    --border: 155 13% 87%;
-    --input: 150 12% 95%;
-    --ring: 155 45% 32%;
+    --border: 80 10% 85%;
+    --input: 60 16% 96%;
+    --ring: 145 19% 29%;
     --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge doux) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 76.2% 36.3%;
@@ -375,7 +376,7 @@ html[lang="ar"] .keep-class-title {
     --card-foreground: 150 18% 94%;
     --popover: 160 12% 14%;
     --popover-foreground: 150 18% 94%;
-    --primary: 155 42% 58%;
+    --primary: 120 18% 72%;
     --primary-foreground: 160 16% 12%;
     --secondary: 160 10% 19%;
     --secondary-foreground: 150 18% 94%;
@@ -385,7 +386,7 @@ html[lang="ar"] .keep-class-title {
     --accent-foreground: 155 42% 78%;
     --border: 160 10% 23%;
     --input: 160 10% 18%;
-    --ring: 155 42% 58%;
+    --ring: 120 18% 72%;
     --destructive: 0 84.2% 60.2%; /* #EF4444 (Danger: Rouge vif) */
     --destructive-foreground: 0 0% 98%;
     --success: 142.1 70.6% 45.3%;
@@ -617,7 +618,7 @@ html[lang="ar"] .modal-header h2,
   }
 
   .auth-page-shell {
-    background-color: #fff;
+    background-color: hsl(var(--card));
     font-family: var(--font-sans);
   }
 

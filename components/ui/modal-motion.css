@@ -8,9 +8,9 @@
 
 /* Overlay avec blur intensifié et gradient subtil */
 .modal-motion-overlay {
-  background: linear-gradient(180deg, rgb(23 30 37 / .26), rgb(23 30 37 / .48));
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-  backdrop-filter: blur(10px) saturate(130%);
+  background: linear-gradient(180deg, rgb(38 47 39 / .2), rgb(38 47 39 / .4));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .dark .modal-motion-overlay { 
   background: linear-gradient(180deg, rgb(8 13 20 / .58), rgb(8 13 20 / .72)); 
@@ -27,9 +27,8 @@
   background: hsl(var(--card));
   box-shadow: 
     inset 0 1px 0 rgb(255 255 255 / .65),
-    0 8px 16px -6px rgb(15 25 38 / .12),
-    0 20px 48px -12px rgb(15 25 38 / .22),
-    0 32px 80px -24px rgb(15 25 38 / .28);
+    0 8px 16px -8px rgb(38 47 39 / .1),
+    0 24px 64px -20px rgb(38 47 39 / .22);
   transform: translate3d(0, var(--sheet-drag-y, 0px), 0);
 }
 .dark .modal-motion-surface { 
@@ -42,7 +41,7 @@
 
 /* Animations entrée/sortie avec spring physics */
 .modal-motion-surface[data-state="open"] { 
-  animation: modal-dialog-in 320ms cubic-bezier(0.16, 1, 0.3, 1) backwards; 
+  animation: modal-dialog-in 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 .modal-motion-surface[data-state="closed"] { 
   animation: modal-dialog-out 220ms cubic-bezier(0.4, 0, 1, 1) both; 
@@ -50,11 +49,23 @@
 }
 
 /* Header avec bordure discrète */
-.modal-motion-surface .modal-pro-header { 
-  border-bottom: 1px solid hsl(var(--border) / .5); 
+.modal-motion-surface .modal-pro-header {
+  border-bottom: 1px solid hsl(var(--border) / .55);
+  background: linear-gradient(115deg, hsl(var(--accent) / .4), transparent 70%), hsl(var(--card));
 }
-.modal-motion-surface .modal-pro-header [data-ui-title] { 
-  font-weight: 700; 
+.modal-motion-surface .modal-pro-header::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 28px;
+  bottom: -2px;
+  width: 64px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #aebfa2 0 46%, transparent 46% 51%, #c8bed9 51% 76%, transparent 76% 81%, #e7c49f 81%);
+  pointer-events: none;
+}
+.modal-motion-surface .modal-pro-header [data-ui-title] {
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -66,16 +77,19 @@
 }
 
 /* Footer avec ombre remontante subtile */
-.modal-motion-surface .modal-pro-footer { 
-  background: hsl(var(--card)); 
+.modal-motion-surface .modal-pro-footer {
+  background: color-mix(in srgb, hsl(var(--muted)) 32%, hsl(var(--card)));
   border-top: 1px solid hsl(var(--border) / .6); 
   box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .18); 
 }
 
 /* Bouton X avec effets hover premium */
-.modal-motion-surface .dialog-close { 
+.modal-motion-surface .dialog-close {
   width: 44px; 
-  height: 44px; 
+  height: 44px;
+  border: 1px solid hsl(var(--border) / .65);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 hsl(var(--card) / .7);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -139,14 +153,14 @@
       calc(var(--modal-visible-height) - max(16px, env(safe-area-inset-top, 0px)))
     );
     /* Arrondis supérieurs prononcés (28px) */
-    border-radius: 28px 28px 0 0;
+    border-radius: 20px 20px 0 0;
     padding: 0;
   }
   
   /* Animations sheet mobile avec spring */
   .modal-motion-surface[data-mobile-presentation="sheet"][data-state="open"] { 
     animation-name: modal-sheet-in; 
-    animation-duration: 320ms;
+    animation-duration: 280ms;
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
   .modal-motion-surface[data-mobile-presentation="sheet"][data-state="closed"] { 
@@ -166,13 +180,13 @@
     bottom: calc(var(--modal-keyboard-inset) + max(16px, env(safe-area-inset-bottom, 0px)));
     margin-block: auto;
     max-height: calc(var(--modal-visible-height) - max(32px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
-    border-radius: 24px;
+    border-radius: 20px;
   }
   
   /* Modal des paramètres (arrondis complets) */
   .modal-motion-surface.settings-modal-sheet { 
     bottom: calc(var(--modal-keyboard-inset) + 10px); 
-    border-radius: 28px; 
+    border-radius: 20px;
   }
   
   /* Header mobile optimisé */

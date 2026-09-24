@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/modal';
 import { Textarea } from '../../components/ui/textarea';
 import type { ClassInfo } from '../../types';
 import { prepareImportedLessons } from '../../utils/importPipeline';
+import { parseBoundedJson } from '../../utils/jsonInput';
 import { FileInput, FileUp } from '../../components/ui/icons';
 import {
     fetchClassLessons,
@@ -87,12 +88,12 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
     const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+        const requestId = ++fileRequestRef.current;
         if (file.size > MAX_IMPORT_BYTES) {
             resetPreview('', file.name);
             setMessage(`Fichier trop volumineux (${formatBytes(file.size)}). Limite : ${formatBytes(MAX_IMPORT_BYTES)}.`);
             return;
         }
-        const requestId = ++fileRequestRef.current;
         const reader = new FileReader();
         reader.onload = () => {
             if (requestId !== fileRequestRef.current) return;
@@ -112,7 +113,7 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
             if (sourceBytes > MAX_IMPORT_BYTES) {
                 throw new Error(`JSON trop volumineux (${formatBytes(sourceBytes)}). Limite : ${formatBytes(MAX_IMPORT_BYTES)}.`);
             }
-            const prepared = prepareImportedLessons(JSON.parse(jsonText));
+            const prepared = prepareImportedLessons(parseBoundedJson(jsonText, MAX_IMPORT_BYTES));
             if (prepared.lessonsData.length === 0) {
                 throw new Error('Aucun bloc de cours exploitable dans ce JSON.');
             }
@@ -286,4 +287,3 @@ export const ClassJsonImportModal: React.FC<ClassJsonImportModalProps> = ({
         </Modal>
     );
 };
-

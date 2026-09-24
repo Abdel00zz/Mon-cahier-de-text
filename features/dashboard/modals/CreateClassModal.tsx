@@ -321,7 +321,7 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
               >
                 {/* Barre de couleur vive (bleu) qui se remplit à mesure que l'utilisateur avance */}
                 <div
-                  className="absolute inset-y-0 start-0 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.35)] transition-all duration-500 ease-out motion-reduce:transition-none"
+                  className="absolute inset-y-0 start-0 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.14)] transition-[width] duration-250 ease-out motion-reduce:transition-none"
                   style={{
                     width: `${progressPercent}%`,
                   }}
@@ -335,8 +335,8 @@ const ClassFormSession: React.FC<CreateClassModalProps> = ({
                   return <li key={item} className="relative flex min-w-0 flex-col items-center text-center" aria-current={isActive ? 'step' : undefined}>
                     <span className={cn(
                       'relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 motion-reduce:transition-none',
-                      isComplete && 'border-2 border-primary bg-primary text-primary-foreground shadow-[0_2px_8px_rgba(59,130,246,0.28)] ring-2 ring-primary/20',
-                      isActive && 'border-2 border-primary bg-background text-primary text-sm font-extrabold shadow-[0_2px_12px_rgba(59,130,246,0.22)] ring-4 ring-primary/20 dark:ring-primary/30 before:absolute before:inset-0 before:rounded-full before:bg-primary/[0.08]',
+                      isComplete && 'border-2 border-primary bg-primary text-primary-foreground shadow-[0_2px_8px_hsl(var(--primary)/0.12)] ring-2 ring-primary/20',
+                      isActive && 'border-2 border-primary bg-background text-primary text-sm font-extrabold shadow-[0_2px_12px_hsl(var(--primary)/0.1)] ring-4 ring-primary/20 dark:ring-primary/30 before:absolute before:inset-0 before:rounded-full before:bg-primary/[0.08]',
                       !isComplete && !isActive && 'border border-border/90 bg-background text-muted-foreground/75 font-semibold',
                     )}>
                       {isComplete ? <Check className="h-4.5 w-4.5 stroke-[2.8]" /> : <span className="relative z-10">{index + 1}</span>}

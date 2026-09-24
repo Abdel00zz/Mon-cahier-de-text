@@ -10,6 +10,7 @@ import React, {
 import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   CircleCheck,
   Eye,
@@ -132,7 +133,7 @@ const AUTH_COPY = {
   },
 } as const;
 const FIELD_CLASS =
-  "h-12 rounded-lg border border-border bg-background px-3 text-base font-normal text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary";
+  "h-12 rounded-xl border border-border bg-background/60 px-4 text-base font-normal text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary";
 const LABEL_CLASS = "mb-2 block text-sm font-medium";
 
 const PasswordInput = ({
@@ -501,7 +502,7 @@ export const AuthPage: React.FC<{
               <div
                 role="group"
                 aria-label={copy.modeLabel}
-                className="my-6 grid grid-cols-2 gap-1 rounded-[12px] bg-stone-100 p-1 dark:bg-[#303134]"
+                className="paper-segments my-6 grid grid-cols-2 gap-1 rounded-[14px] border border-border/60 p-1"
               >
                 {(["login", "register"] as const).map((value) => (
                   <button
@@ -708,10 +709,10 @@ export const AuthPage: React.FC<{
                       {error}
                     </p>
                   )}
-                  <button
+                  <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition-[background-color,transform] hover:bg-stone-700 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-wait disabled:opacity-60 dark:bg-stone-100 dark:text-stone-950 dark:hover:bg-white"
+                    className="min-h-12 w-full px-5 py-3 text-sm font-semibold disabled:cursor-wait"
                   >
                     {isSubmitting && (
                       <Loader2
@@ -724,7 +725,7 @@ export const AuthPage: React.FC<{
                       : isRegister
                         ? copy.createMyAccount
                         : copy.login}
-                  </button>
+                  </Button>
                 </fieldset>
               </form>
               <p className="mt-6 flex items-center justify-center gap-2 text-xs text-stone-500 dark:text-stone-400">

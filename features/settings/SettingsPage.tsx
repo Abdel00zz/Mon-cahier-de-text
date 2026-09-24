@@ -1,6 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState, lazy } from 'react';
 import { ConfigModal } from './ConfigModal';
 import { downloadBackup, restoreBackup } from '@/utils/backup';
+import { parseBoundedJson } from '@/utils/jsonInput';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
 import type { AppConfig, ClassDraft, ClassInfo, Cycle } from '@/types';
@@ -46,8 +47,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     const handleImport = (fileContent: string) => {
         try {
-            const count = restoreBackup(JSON.parse(fileContent));
+            const count = restoreBackup(parseBoundedJson(fileContent));
             toast.success(t('settings.toast.importSuccess', { count }));
+            setImportOpen(false);
             setTimeout(() => window.location.reload(), 900);
         } catch (error) {
             logger.error('Import failed', error);
@@ -55,7 +57,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 reason: error instanceof Error ? error.message : t('settings.toast.unknownError'),
             }));
         }
-        setImportOpen(false);
     };
 
     return (

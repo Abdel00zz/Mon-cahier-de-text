@@ -59,6 +59,7 @@
 .auth-page-shell {
   --auth-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
+.auth-page-shell h1[tabindex='-1']:focus { outline: none; }
 
 .auth-page-shell .auth-view-enter {
   animation: auth-view-enter 280ms var(--auth-ease-out) backwards;

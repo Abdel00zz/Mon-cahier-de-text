@@ -6,7 +6,7 @@ import type { AppLocale } from '@/types';
 import './app-showcase.css';
 
 /** Original transparent artwork; real text stays crisp and localizable at every size. */
-export function AppShowcaseMedia({ locale, landscape = false, desktopOnly = false, showPreview = true, className, loading = 'lazy' }: {
+export function AppShowcaseMedia({ locale, landscape = false, desktopOnly = false, showPreview = false, className, loading = 'lazy' }: {
   locale: AppLocale;
   landscape?: boolean;
   desktopOnly?: boolean;
