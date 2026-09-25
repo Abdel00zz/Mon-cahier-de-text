@@ -830,19 +830,20 @@ html[lang="ar"] .modal-header h2,
 
   /* Une échelle continue, bornée pour préserver la lisibilité et le zoom. */
   [data-editor-table] {
-    --editor-scale: calc(clamp(0.8125rem, calc(0.6875rem + 0.52vw), 1rem) * var(--app-text-scale, 1));
+    --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vw), 1rem) * var(--app-text-scale, 1)));
+    --cdt-table-cols: minmax(4.75rem, 18%) minmax(0, 1fr) minmax(3.5rem, 20%);
     --editor-fs-chapter: calc(var(--editor-scale) * 1.5);
     --editor-fs-top: var(--editor-scale);
     --editor-fs-section: var(--editor-scale);
     --editor-fs-subsection: calc(var(--editor-scale) * 0.94);
     --editor-fs-subsubsection: calc(var(--editor-scale) * 0.88);
     --editor-fs-item-title: var(--editor-scale);
-    --editor-fs-description: calc(var(--editor-scale) * 0.94);
+    --editor-fs-description: max(0.875rem, calc(var(--editor-scale) * 0.94));
     --editor-fs-page: calc(var(--editor-scale) * 0.75);
     --editor-fs-badge: calc(var(--editor-scale) * 0.75);
-    --editor-fs-table-side: calc(var(--editor-scale) * 0.75);
-    --editor-fs-table-main: calc(var(--editor-scale) * 0.81);
-    --editor-fs-remark: calc(var(--editor-scale) * 0.88);
+    --editor-fs-table-side: max(0.6875rem, calc(var(--editor-scale) * 0.75));
+    --editor-fs-table-main: max(0.75rem, calc(var(--editor-scale) * 0.81));
+    --editor-fs-remark: max(0.75rem, calc(var(--editor-scale) * 0.88));
     --editor-badge-min-width: calc(var(--editor-scale) * 2.1);
     --editor-badge-padding-inline: 6px;
     --editor-lesson-gap: clamp(5px, 1vw, 10px);
@@ -854,6 +855,22 @@ html[lang="ar"] .modal-header h2,
     --editor-indent-1: 4px;
     --editor-indent-2: 8px;
     --editor-indent-3: 14px;
+  }
+
+  /* Une grille partagée par l'en-tête, les lignes et les cellules fusionnées.
+     Le contenu peut rétrécir sans repousser la colonne des remarques. */
+  .editor-table-grid { grid-template-columns: var(--cdt-table-cols); }
+  [data-editor-table] [data-row-content],
+  [data-editor-table] .editor-type-remark,
+  [data-editor-table] .editor-type-table-side {
+    overflow-wrap: anywhere;
+  }
+
+  @media (min-width: 768px) {
+    [data-editor-table] {
+      --cdt-table-cols: minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%);
+    }
+  }
   /* Esprit éditeur de livre : la marge raconte la profondeur. */
   .editor-indent-1 { margin-inline-start: var(--editor-indent-1); }
   .editor-indent-2 { margin-inline-start: var(--editor-indent-2); }
@@ -879,12 +896,10 @@ html[lang="ar"] .modal-header h2,
     }
   }
 
-  }
-
   @media (pointer: coarse) {
     [data-editor-table] {
       /* vmin garde l’échelle stable lors d’une rotation du téléphone. */
-      --editor-scale: calc(clamp(0.8125rem, calc(0.6875rem + 0.52vmin), 1rem) * var(--app-text-scale, 1));
+      --editor-scale: max(0.875rem, calc(clamp(0.9375rem, calc(0.875rem + 0.2vmin), 1rem) * var(--app-text-scale, 1)));
     }
   }
 }
@@ -1387,15 +1402,15 @@ html[data-keyboard='open'] .mobile-tab-bar {
   .modal-pro-header [data-description] { max-width: 42rem; }
   .modal-pro-footer { gap: 0.75rem; background: hsl(var(--muted) / 0.22); }
   .modal-pro-footer > * { min-height: 2.75rem; }
-  .dialog-close { width: 2.5rem; height: 2.5rem; background: hsl(var(--muted) / 0.55); }
-  .dialog-close:hover { background: hsl(155 45% 32% / 0.12); color: hsl(155 45% 25%); }
+  .dialog-close { width: 2.25rem; height: 2.25rem; border-radius: 9999px; }
+  .dialog-close:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
   .modal-pro-surface input:not([type="radio"]):not([type="checkbox"]), .modal-pro-surface textarea, .modal-pro-surface select { min-height: 2.75rem; border-radius: 0.75rem; }
   .modal-pro-surface input:focus-visible, .modal-pro-surface textarea:focus-visible, .modal-pro-surface select:focus-visible { border-color: hsl(155 45% 32% / 0.58); box-shadow: 0 0 0 3px hsl(155 45% 32% / 0.12); outline: none; }
   .modal-pro-surface [role="radio"], .modal-pro-surface input[type="radio"] { accent-color: hsl(155 45% 32%); }
   .modal-pro-surface label:has(input[type="radio"]), .modal-pro-surface label:has([role="radio"]) { min-height: 2.75rem; }
   @media (max-width: 639px) {
     .modal-pro-surface { width: calc(100vw - 1rem); max-height: calc(100dvh - 0.5rem); margin-inline: 0.5rem; border-radius: 1.25rem 1.25rem 0 0; }
-    .modal-pro-header { padding-inline: 1rem; padding-block: 1rem 0.75rem; }
+    .modal-pro-header { min-height: 3.75rem; padding-inline: 1rem 3.75rem; padding-block: 1rem 0.875rem; }
     .modal-pro-header [data-ui-title] { font-size: 1rem; }
     .modal-body { padding-inline: 1rem; padding-block: 1rem; }
     .modal-pro-footer { padding-inline: 1rem; }

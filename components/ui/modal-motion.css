@@ -83,15 +83,20 @@
   box-shadow: 0 -12px 28px -20px rgb(28 42 56 / .18); 
 }
 
-/* Bouton X avec effets hover premium */
+/* Bouton X avec position haute et dégagement garanti de la ligne séparatrice */
 .modal-motion-surface .dialog-close {
-  width: 44px; 
-  height: 44px;
+  width: 36px; 
+  height: 36px;
   border: 1px solid hsl(var(--border) / .65);
-  border-radius: 12px;
-  box-shadow: inset 0 1px 0 hsl(var(--card) / .7);
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 0 hsl(var(--card) / .7), 0 1px 2px 0 rgb(0 0 0 / .05);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+.modal-motion-surface .dialog-close::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }
 
 /* Drag handle avec touch feedback amélioré */
@@ -189,26 +194,29 @@
     border-radius: 20px;
   }
   
-  /* Header mobile optimisé */
+  /* Header mobile optimisé avec hauteur assurant un dégagement franc */
   .modal-motion-surface .modal-pro-header { 
-    padding: 20px 20px 18px; 
-    padding-inline-end: 68px; 
-    gap: 6px; 
+    min-height: 3.75rem;
+    padding: 16px 18px 14px; 
+    padding-inline-end: 60px; 
+    gap: 4px; 
   }
   .modal-motion-surface[data-has-handle="true"] .modal-pro-header { 
-    padding-top: 52px; 
+    padding-top: 50px; 
   }
   
-  /* Bouton X mobile : position respectant les arrondis */
+  /* Bouton X mobile : toujours situé en haut dans le coin, ne touche jamais la ligne séparatrice */
   .modal-motion-surface .dialog-close { 
     top: 12px; 
-    inset-inline-end: 12px; 
-    background: hsl(var(--muted) / .65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    inset-inline-end: 14px; 
+    width: 36px;
+    height: 36px;
+    background: hsl(var(--muted) / .7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .modal-motion-surface[data-has-handle="true"] .dialog-close { 
-    top: 44px; 
+    top: 12px; 
   }
   
   /* Body mobile avec padding généreux */

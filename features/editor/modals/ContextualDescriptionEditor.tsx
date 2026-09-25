@@ -159,7 +159,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
         <div
           role="toolbar"
           aria-label={t('editContent.formatSelection')}
-          className="absolute end-2 top-2 z-20 flex items-center gap-0.5 rounded-xl border border-white/10 bg-slate-950/95 p-1 text-white shadow-xl shadow-slate-950/20 backdrop-blur-md animate-fade-in"
+          className="absolute end-2 top-2 z-20 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
         >
           {ACTIONS.map(({ action, icon: Icon, labelKey }) => (
             <button
@@ -169,7 +169,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 event.preventDefault();
                 applyFormat(action);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
               aria-label={t(labelKey)}
               title={t(labelKey)}
             >
@@ -178,7 +178,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
           ))}
 
           {/* Séparateur élégant */}
-          <span className="mx-0.5 h-4 w-px bg-white/20 select-none" aria-hidden="true" />
+          <span className="mx-0.5 h-4 w-px bg-border select-none" aria-hidden="true" />
 
           {/* Bouton couleur du même style */}
           <div className="relative">
@@ -189,8 +189,8 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                 setShowColorMenu(prev => !prev);
               }}
               className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
-                showColorMenu ? 'bg-white/25 text-white' : 'text-white/75 hover:bg-white/15 hover:text-white',
+                'flex h-7 w-7 items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95',
+                showColorMenu ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
               aria-label={t('editContent.formatColor')}
               title={t('editContent.formatColor')}
@@ -205,7 +205,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
               <div
                 role="menu"
                 aria-label={t('editContent.formatColor')}
-                className="absolute end-0 top-[calc(100%+6px)] z-30 flex items-center gap-0.5 rounded-xl border border-white/10 bg-slate-950/95 p-1 text-white shadow-xl shadow-slate-950/30 backdrop-blur-md animate-fade-in"
+                className="absolute end-0 top-[calc(100%+6px)] z-30 flex items-center gap-0.5 rounded-xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-card/95 p-1 text-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-fade-in"
               >
                 {COLOR_OPTIONS.map(({ id, nameKey, dotColor }) => (
                   <button
@@ -217,15 +217,15 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                       applyColor(id);
                       setShowColorMenu(false);
                     }}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                     aria-label={t(nameKey)}
                     title={t(nameKey)}
                   >
-                    <span className={cn('h-3.5 w-3.5 rounded-full ring-1 ring-white/30', dotColor)} />
+                    <span className={cn('h-3.5 w-3.5 rounded-full ring-1 ring-black/10 dark:ring-white/30', dotColor)} />
                   </button>
                 ))}
 
-                <span className="mx-0.5 h-4 w-px bg-white/20 select-none" aria-hidden="true" />
+                <span className="mx-0.5 h-4 w-px bg-border select-none" aria-hidden="true" />
 
                 <button
                   type="button"
@@ -235,11 +235,11 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                     applyColor('highlight');
                     setShowColorMenu(false);
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                   aria-label={t('editContent.formatHighlight')}
                   title={t('editContent.formatHighlight')}
                 >
-                  <Highlighter className="h-3.5 w-3.5 stroke-[2.2] text-amber-300" />
+                  <Highlighter className="h-3.5 w-3.5 stroke-[2.2] text-amber-500 dark:text-amber-400" />
                 </button>
 
                 <button
@@ -250,7 +250,7 @@ export const ContextualDescriptionEditor: React.FC<ContextualDescriptionEditorPr
                     applyColor('clear');
                     setShowColorMenu(false);
                   }}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/60 transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 active:scale-95"
                   aria-label={t('editContent.colorClear')}
                   title={t('editContent.colorClear')}
                 >

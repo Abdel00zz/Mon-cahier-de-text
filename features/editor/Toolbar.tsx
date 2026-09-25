@@ -201,8 +201,8 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
               <MoreVertical className="h-3.5 w-3.5 stroke-[2.2]" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-56 rounded-xl border border-border bg-card p-1.5 shadow-lg">
-            <DropdownMenuLabel className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <DropdownMenuContent data-editor-actions align="end" side="bottom" sideOffset={6} collisionPadding={8} className="z-[70] w-56">
+            <DropdownMenuLabel>
               {t('toolbar.actions')}
             </DropdownMenuLabel>
 
@@ -211,51 +211,51 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
 
             {/* On mobile screens, show undo/redo/save inside the menu */}
             <div className="sm:hidden">
-              <DropdownMenuItem onClick={onUndo} disabled={!canUndo} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-                <Undo2 className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-                <span className="font-semibold">{t('toolbar.undo')}</span>
+              <DropdownMenuItem onClick={onUndo} disabled={!canUndo}>
+                <Undo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+                <span>{t('toolbar.undo')}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onRedo} disabled={!canRedo} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-                <Redo2 className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-                <span className="font-semibold">{t('toolbar.redo')}</span>
+              <DropdownMenuItem onClick={onRedo} disabled={!canRedo}>
+                <Redo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+                <span>{t('toolbar.redo')}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-                <Save className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-                <span className="font-semibold">{t('toolbar.save')}</span>
+              <DropdownMenuItem onClick={onSave} disabled={saveStatus === 'saving'}>
+                <Save className="h-3.5 w-3.5 stroke-[2.2]" />
+                <span>{t('toolbar.save')}</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-1 border-t border-border/40" />
+              <DropdownMenuSeparator />
             </div>
 
-            <DropdownMenuItem onClick={onOpenEvaluations} className="flex cursor-pointer items-center gap-2 rounded-lg bg-primary/5 px-2.5 py-1.5 text-xs text-primary font-bold transition-colors duration-150 hover:bg-primary/10 focus:bg-primary/10">
-              <CalendarCheck className="h-4 w-4 stroke-[2.2] text-primary shrink-0" />
+            <DropdownMenuItem onClick={onOpenEvaluations} className="bg-primary/10 text-primary font-bold hover:bg-primary/15 focus:bg-primary/15">
+              <CalendarCheck className="h-4 w-4 stroke-[2.2] text-primary" />
               <span>{t('toolbar.evaluations')}</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-1 border-t border-border/40" />
+            <DropdownMenuSeparator />
             
-            <DropdownMenuItem onClick={onOpenDataTransfer} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-              <Database className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-              <span className="font-semibold">{t('toolbar.data')}</span>
+            <DropdownMenuItem onClick={onOpenDataTransfer}>
+              <Database className="h-3.5 w-3.5 stroke-[2.2]" />
+              <span>{t('toolbar.data')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenManageLessons} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-              <ListChecks className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-              <span className="font-semibold">{t('toolbar.contents')}</span>
+            <DropdownMenuItem onClick={onOpenManageLessons}>
+              <ListChecks className="h-3.5 w-3.5 stroke-[2.2]" />
+              <span>{t('toolbar.contents')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenAnalyse} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-              <PieChart className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-              <span className="font-semibold">{t('toolbar.progress')}</span>
+            <DropdownMenuItem onClick={onOpenAnalyse}>
+              <PieChart className="h-3.5 w-3.5 stroke-[2.2]" />
+              <span>{t('toolbar.progress')}</span>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="my-1 border-t border-border/40" />
-            <DropdownMenuLabel className="px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>
               {t('toolbar.document')}
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={onPrint} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-              <Printer className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-              <span className="font-semibold">{t('toolbar.print')}</span>
+            <DropdownMenuItem onClick={onPrint}>
+              <Printer className="h-3.5 w-3.5 stroke-[2.2]" />
+              <span>{t('toolbar.print')}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenGuide} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/60 focus:bg-muted/60">
-              <CircleHelp className="h-3.5 w-3.5 stroke-[2.2] text-muted-foreground shrink-0" />
-              <span className="font-semibold">{t('toolbar.help')}</span>
+            <DropdownMenuItem onClick={onOpenGuide}>
+              <CircleHelp className="h-3.5 w-3.5 stroke-[2.2]" />
+              <span>{t('toolbar.help')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -261,9 +261,9 @@ export function ModalBottomSheet({
             <div
               className={cn(
                 'modal-header modal-pro-header relative z-10 shrink-0 bg-transparent text-foreground flex flex-col justify-center text-start',
-                // Spacing optimisé mobile/desktop
-                'min-h-[3.25rem] sm:min-h-[3.75rem]',
-                'px-5 sm:px-7 py-4 sm:py-5 landscape:py-3.5 landscape:px-6',
+                // Spacing optimisé mobile/desktop garantissant un dégagement confortable
+                'min-h-[3.75rem] sm:min-h-[4.25rem]',
+                'px-5 sm:px-7 py-3.5 sm:py-4.5 landscape:py-3 landscape:px-6',
                 // Espacement pour le bouton X (padding-end augmenté)
                 !hideClose ? 'pe-[3.75rem] sm:pe-[4.25rem] ps-5 sm:ps-7' : 'px-5 sm:px-7',
                 // Spacing drag handle sur mobile
@@ -277,38 +277,34 @@ export function ModalBottomSheet({
                 </DialogPrimitive.Title>
               )}
               {description && (
-                <DialogPrimitive.Description data-description className="mt-1.5 text-[13px] sm:text-[13.5px] leading-[1.5] text-muted-foreground tracking-[-0.005em]">
+                <DialogPrimitive.Description data-description className="mt-1 text-[13px] sm:text-[13.5px] leading-[1.45] text-muted-foreground tracking-[-0.005em]">
                   {description}
                 </DialogPrimitive.Description>
               )}
             </div>
           )}
 
-          {/* Close button - Optimisé mobile/tablette avec physique de ressort */}
+          {/* Close button - Positionné en haut avec dégagement garanti de la ligne séparatrice */}
           {!hideClose && (
             <DialogPrimitive.Close
               aria-label={closeLabel}
               className={cn(
                 'dialog-close absolute z-30 inline-flex items-center justify-center rounded-full',
-                'bg-muted/60 hover:bg-muted/90 backdrop-blur-sm',
+                'bg-muted/65 hover:bg-muted/95 backdrop-blur-md',
                 'text-muted-foreground hover:text-foreground',
-                'shadow-sm hover:shadow-md',
+                'border border-border/60 hover:border-border shadow-2xs hover:shadow-xs',
                 'transition-all duration-200 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]',
-                'active:scale-[0.92] hover:scale-[1.04]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'active:scale-[0.92] hover:scale-[1.06]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 'cursor-pointer touch-manipulation',
-                // Taille tactile optimisée (minimum 44px)
-                'h-10 w-10 sm:h-11 sm:w-11',
-                // Positionnement respectant les arrondis du modal
-                'end-[max(0.75rem,env(safe-area-inset-right))] sm:end-5',
-                // Position verticale optimisée pour ne pas toucher la ligne de séparation
-                // Mobile: position plus haute pour respecter l'espace
-                'top-[max(1rem,env(safe-area-inset-top))] sm:top-5',
-                // Prise en compte du drag handle sur mobile
-                isCompactSheet && dragHandle && 'top-[max(3.25rem,calc(1rem+env(safe-area-inset-top)))]'
+                // Dimensions équilibrées avec zone tactile étendue
+                'h-9 w-9 sm:h-9 sm:w-9',
+                // Positionnement respectant les arrondis et assurant un dégagement de la ligne séparatrice
+                'end-[max(0.875rem,env(safe-area-inset-right))] sm:end-5',
+                'top-[max(0.75rem,env(safe-area-inset-top))] sm:top-3.5'
               )}
             >
-              <X className="h-[18px] w-[18px] sm:h-5 sm:w-5 stroke-[2.2]" />
+              <X className="h-4 w-4 stroke-[2.2]" />
               <span className="sr-only">{closeLabel}</span>
             </DialogPrimitive.Close>
           )}

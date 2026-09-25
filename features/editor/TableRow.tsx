@@ -92,7 +92,7 @@ export const MultiDateCard: FC<{ dates: string[]; hasWarning?: boolean }> = memo
   if (parsedDates.length === 0) return null;
   const conjunction = locale === 'ar' ? 'و' : locale === 'en' ? 'and' : 'et';
   return (
-    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-base font-semibold leading-snug tabular-nums sm:text-lg ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className={`flex min-w-0 max-w-full flex-wrap items-baseline justify-center gap-x-1 gap-y-0.5 py-1 text-center text-[0.9rem] font-semibold leading-snug tabular-nums sm:text-[1.0125rem] ${hasWarning ? 'text-alert-strong' : 'text-primary'}`}>
       {parsedDates.map((date, index) => (
         <span key={date.source} data-date-token className="inline-flex shrink-0 items-baseline gap-0.5 whitespace-nowrap">
           {index > 0 ? <span className="font-normal text-foreground">{conjunction}</span> : null}
@@ -135,7 +135,7 @@ const DateCell: FC<{ dateStr?: string; merge?: DateMergeMeta; hasWarning?: boole
 
 DateCell.displayName = 'DateCell';
 
-const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
+const TABLE_GRID_CLASS = 'editor-table-grid';
 
 const RemarkCell: FC<{
   value?: string;

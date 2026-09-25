@@ -16,8 +16,7 @@ import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
 import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
 import { motion } from 'framer-motion';
 
-const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
-const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
+const TABLE_GRID_CLASS = 'editor-table-grid';
 
 interface MainTableProps {
   lessonsData: LessonsData;
@@ -449,7 +448,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-content-direction={contentDirection}
       dir={contentDirection}
       className="rtl-table mx-0 overflow-hidden rounded-xl border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
-      style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />
       <CardContent className="!p-0">

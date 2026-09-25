@@ -318,15 +318,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                             onClick={() => setDisplayMenuOpen(open => !open)}
                                             aria-haspopup="menu"
                                             aria-expanded={isDisplayMenuOpen}
-                                            className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-md border border-stone-200/90 dark:border-white/10 bg-white dark:bg-[#1a1b22] px-2.5 sm:px-3 text-xs font-medium text-stone-700 dark:text-stone-200 shadow-2xs hover:bg-stone-50/90 dark:hover:bg-white/5 cursor-pointer transition-all active:scale-[0.98]"
+                                            className="flex h-8 sm:h-8.5 items-center gap-1.5 rounded-xl border border-border/80 bg-card hover:bg-muted/70 px-2.5 sm:px-3 text-xs font-semibold text-foreground shadow-2xs cursor-pointer transition-all active:scale-[0.98]"
                                         >
                                             <span>{displayCopy(currentDisplay).label}</span>
-                                            <ChevronDown className={`h-3 w-3 text-stone-400 transition-transform ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                            <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isDisplayMenuOpen && (
                                             <div
                                                 role="menu"
-                                                className="absolute top-[calc(100%+0.25rem)] end-0 z-30 w-38 overflow-hidden rounded-md border border-stone-200/80 dark:border-white/10 bg-white dark:bg-[#1a1b22] p-1 shadow-lg"
+                                                className="paper-menu absolute top-[calc(100%+0.35rem)] end-0 z-30 w-44 overflow-hidden rounded-2xl border border-border/80 dark:border-white/10 bg-popover/95 dark:bg-popover/90 p-1.5 shadow-xl ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-150"
                                             >
                                                 {CLASS_DISPLAY_OPTIONS.map(option => {
                                                     const isActive = option === currentDisplay;
@@ -340,7 +340,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                                 setClassDisplayMode(option);
                                                                 setDisplayMenuOpen(false);
                                                             }}
-                                                            className={`flex w-full items-center justify-between rounded px-2.5 py-1.5 text-start text-xs font-sans cursor-pointer transition-colors ${isActive ? 'bg-stone-100 dark:bg-white/10 text-stone-900 dark:text-white font-bold' : 'text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-white/5'}`}
+                                                            className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-start text-xs font-sans cursor-pointer transition-all duration-150 active:scale-[0.98] ${isActive ? 'bg-primary/10 text-primary font-bold' : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground font-medium'}`}
                                                         >
                                                             <span>{displayCopy(option).label}</span>
                                                         </button>

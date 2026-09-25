@@ -207,10 +207,10 @@ export const TabBar = React.memo<TabBarProps>(({
                   {copy.brand}
                 </span>
                 <span className={cn(
-                  "inline-flex items-center gap-1.5 truncate text-[10px] font-bold tracking-wider text-[#FF6B35] dark:text-[#FF8252] uppercase mt-1 font-sans bg-[#FF6B35]/10 dark:bg-[#FF6B35]/15 px-2 py-0.5 rounded-md",
+                  "inline-flex items-center gap-1.5 truncate text-[10px] font-bold tracking-wider text-primary uppercase mt-1 font-sans bg-primary/10 dark:bg-primary/15 border border-primary/20 px-2 py-0.5 rounded-md",
                   locale === 'ar' && "text-[12px]"
                 )}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B35] animate-pulse" aria-hidden="true" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
                   {userName || copy.teacherSpace}
                 </span>
               </motion.div>
@@ -236,7 +236,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 onClick={() => goTo(tab.id)}
                 title={copy[tab.id]}
                 className={cn(
-                  'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+                  'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
                   isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
                   isActive
                     ? 'font-bold'
@@ -249,7 +249,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 {isActive && (
                   <motion.div
                     layoutId="desktop-sidebar-active-pill"
-                    className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                    className="absolute inset-0 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 dark:border-primary/30 shadow-xs"
                     transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
                   />
                 )}
@@ -259,7 +259,7 @@ export const TabBar = React.memo<TabBarProps>(({
                     className={cn(
                       'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                       isActive
-                        ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
+                        ? 'text-primary stroke-[2.2] scale-105'
                         : 'text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                     )}
                   />
@@ -267,7 +267,7 @@ export const TabBar = React.memo<TabBarProps>(({
                     <motion.span
                       initial={{ scale: 0.7, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-rose-600 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-[#16171d] shadow-[0_2px_8px_rgba(239,68,68,0.35)] tabular-nums"
+                      className="absolute -top-1.5 -end-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground ring-2 ring-card shadow-xs tabular-nums"
                     >
                       {countLabel(count)}
                     </motion.span>
@@ -284,7 +284,7 @@ export const TabBar = React.memo<TabBarProps>(({
                       className={cn(
                         'relative z-10 min-w-0 flex-1 truncate text-start text-[13px] leading-normal ms-3',
                         locale === 'ar' && 'text-[15px]',
-                        isActive ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                        isActive ? 'font-bold text-primary' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
                       )}
                     >
                       {copy[tab.id]}
@@ -311,7 +311,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onFocus={preloadSettingsPage}
             title={copy.settings}
             className={cn(
-              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'settings'
                 ? 'font-bold'
@@ -323,7 +323,7 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'settings' && (
               <motion.div
                 layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                className="absolute inset-0 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 dark:border-primary/30 shadow-xs"
                 transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}
@@ -333,7 +333,7 @@ export const TabBar = React.memo<TabBarProps>(({
                 className={cn(
                   'h-5 w-5 shrink-0 transition-transform duration-200 ease-out',
                   activeTab === 'settings'
-                    ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2] scale-105'
+                    ? 'text-primary stroke-[2.2] scale-105'
                     : 'text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200 stroke-[1.75] scale-100'
                 )}
               />
@@ -348,7 +348,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   className={cn(
                     'relative z-10 flex-1 truncate text-start text-[13px] leading-normal ms-3',
                     locale === 'ar' && 'text-[15px]',
-                    activeTab === 'settings' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                    activeTab === 'settings' ? 'font-bold text-primary' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
                   )}
                 >
                   {copy.settings}
@@ -363,7 +363,7 @@ export const TabBar = React.memo<TabBarProps>(({
             onClick={() => goTo('help')}
             title={copy.help}
             className={cn(
-              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-stone-100/60 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B35]/40',
+              'group relative flex h-11 w-full cursor-pointer items-center rounded-xl transition-colors duration-150 hover:bg-stone-100/60 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40',
               isExpanded ? 'justify-start px-3.5' : 'justify-center px-1.5',
               activeTab === 'help'
                 ? 'font-bold'
@@ -374,7 +374,7 @@ export const TabBar = React.memo<TabBarProps>(({
             {activeTab === 'help' && (
               <motion.div
                 layoutId="desktop-sidebar-active-pill"
-                className="absolute inset-0 rounded-xl bg-[#FF6B35]/12 dark:bg-[#FF6B35]/20 border border-[#FF6B35]/25 dark:border-[#FF6B35]/30 shadow-xs"
+                className="absolute inset-0 rounded-xl bg-primary/12 dark:bg-primary/20 border border-primary/25 dark:border-primary/30 shadow-xs"
                 transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.6 }}
               />
             )}
@@ -383,7 +383,7 @@ export const TabBar = React.memo<TabBarProps>(({
               <CircleHelp className={cn(
                 'h-5 w-5 shrink-0 transition-all',
                 activeTab === 'help'
-                  ? 'text-[#DE5B38] dark:text-[#F87171] stroke-[2.2]'
+                  ? 'text-primary stroke-[2.2]'
                   : 'stroke-[1.75] text-stone-500 group-hover:text-stone-700 dark:text-stone-400 dark:group-hover:text-stone-200'
               )} />
             </div>
@@ -397,7 +397,7 @@ export const TabBar = React.memo<TabBarProps>(({
                   className={cn(
                     'relative z-10 flex-1 truncate text-start text-[13px] leading-normal font-medium ms-3',
                     locale === 'ar' && 'text-[15px]',
-                    activeTab === 'help' ? 'font-bold text-[#DE5B38] dark:text-[#F87171]' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
+                    activeTab === 'help' ? 'font-bold text-primary' : 'text-stone-500 group-hover:text-stone-800 dark:text-stone-400 dark:group-hover:text-stone-200'
                   )}
                 >
                   {copy.help}

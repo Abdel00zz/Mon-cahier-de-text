@@ -922,15 +922,25 @@ const chapters = [
   chapter('devices', ['notifications', 'backup', 'troubleshooting'], {
     title: 'Installer l’application et synchroniser',
     summary: 'Saisie autonome en classe sans connexion Internet et synchronisation sécurisée avec votre espace en ligne.',
-    keywords: 'PWA application installer Android iPhone iPad hors ligne sans connexion synchronisation compte cloud',
+    keywords: 'PWA application installer Android iPhone iPad Chrome Samsung écran accueil navigateur hors ligne sans connexion synchronisation compte cloud',
     sections: [
       {
         title: 'Installer l’application sur vos appareils d’enseignement',
         steps: [
           'Accédez à l’application depuis votre navigateur habituel et connectez-vous à votre compte enseignant.',
-          'Installez l’application (PWA) : sous Android / Chrome via l’invite « Installer », ou sous iOS / Safari via le menu Partage → « Sur l’écran d’accueil ».',
+          'Installez le cahier depuis le navigateur où vos données sont disponibles : sous Android, menu du navigateur → « Installer » ou « Ajouter à l’écran d’accueil » ; sur iPhone / Safari, Partage → « Sur l’écran d’accueil ». Les intitulés varient selon le navigateur.',
           'Ouvrez préalablement vos cahiers de textes en ligne avant de vous rendre en classe : les données et moteurs de calcul scientifique (LaTeX) se mettent en mémoire cache pour fonctionner sans Internet.',
           'Lors d’un changement de matériel, reconnectez-vous simplement à votre compte pour retrouver instantanément l’ensemble de vos classes.',
+        ],
+      },
+      {
+        title: 'L’icône demande d’installer Chrome alors qu’il est présent',
+        body: 'Sur Android, la PWA utilise un navigateur pour démarrer. Si ce message apparaît avant le cahier, le lanceur peut ne plus retrouver un navigateur utilisable ; le site ne peut ni détecter toutes les applications installées ni réparer ce lien système.',
+        steps: [
+          'Ouvrez Chrome directement, puis le site du cahier. Vérifiez que vos classes et vos dernières saisies sont présentes.',
+          'Dans les paramètres Android → Applications → Chrome, vérifiez qu’il est activé. Utilisez le même profil Android que l’icône du cahier (personnel, professionnel ou dossier sécurisé).',
+          'Installez les mises à jour proposées pour Chrome, puis redémarrez le téléphone. Si Android reste en version 8 ou 9, Chrome est limité à la version 138 : une mise à jour plus récente peut ne pas être disponible.',
+          'Si seule l’icône reste bloquée, utilisez le site directement dans Chrome. Avant de recréer une installation depuis ce navigateur, confirmez la synchronisation et exportez une sauvegarde JSON. Ne supprimez pas les données du navigateur pour ce dépannage.',
         ],
       },
       {
@@ -949,15 +959,25 @@ const chapters = [
   }, {
     title: 'تثبيت التطبيق ومزامنة البيانات',
     summary: 'مسك دفتر النصوص داخل حجرة الدرس دون اتصال بالشبكة، والمزامنة التلقائية الآمنة فور توفر الإنترنت.',
-    keywords: 'تثبيت PWA بدون إنترنت دون اتصال هاتف ذكي لوحة إلكترونية مزامنة سحابية تخزين محلي أمان البيانات',
+    keywords: 'تثبيت PWA Chrome كروم سامسونج متصفح الشاشة الرئيسية بدون إنترنت دون اتصال هاتف ذكي لوحة إلكترونية مزامنة سحابية تخزين محلي أمان البيانات',
     sections: [
       {
         title: 'تثبيت دفتر النصوص كبرنامج على أجهزتك',
         steps: [
           'افتح التطبيق عبر المتصفح وسجّل الدخول إلى حسابك الشخصي.',
-          'ثبّت التطبيق (PWA): على أجهزة أندرويد عبر رسالة «تثبيت التطبيق»، وعلى أجهزة آيفون وآيباد بالضغط على زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».',
+          'ثبّت الدفتر من المتصفح الذي تظهر فيه بياناتك: على أندرويد افتح قائمة المتصفح ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»، وعلى آيفون من Safari اضغط المشاركة ثم «إضافة إلى الشاشة الرئيسية». قد تختلف التسميات حسب المتصفح.',
           'افتح دفاتر أقسامك مرة واحدة أثناء توفر الاتصال قبل الذهاب إلى المؤسسة؛ لتخزين المنهاج ومحرك الرموز العلمية (LaTeX) محلياً والعمل دون إنترنت.',
           'عند استخدام جهاز جديد، يكفي تسجيل الدخول بالحساب نفسه لاسترجاع كافة الأقسام والحصص والبيانات المزامنة.',
+        ],
+      },
+      {
+        title: 'الأيقونة تطلب تثبيت Chrome رغم وجوده',
+        body: 'يعتمد تشغيل التطبيق المثبّت على أندرويد على متصفح. إذا ظهرت هذه الرسالة قبل فتح الدفتر، فقد يتعذر على مشغّل التطبيق العثور على متصفح صالح. لا يستطيع الموقع فحص جميع التطبيقات المثبّتة أو إصلاح هذا الربط في النظام.',
+        steps: [
+          'افتح Chrome مباشرة ثم موقع الدفتر، وتحقق من ظهور أقسامك وآخر تعديلاتك.',
+          'في إعدادات أندرويد ← التطبيقات ← Chrome، تحقق من أنه مفعّل. يجب أن يكون المتصفح وأيقونة الدفتر في ملف أندرويد نفسه: الشخصي أو المهني أو المجلد الآمن.',
+          'ثبّت تحديثات Chrome المتاحة ثم أعد تشغيل الهاتف. إذا كان أندرويد بالإصدار 8 أو 9، فإن آخر إصدار مدعوم من Chrome هو 138 وقد لا يتوفر تحديث أحدث.',
+          'إذا بقيت الأيقونة وحدها معطّلة، استخدم الموقع مباشرة في Chrome. قبل إعادة إنشاء التثبيت من هذا المتصفح، تحقق من نجاح المزامنة وصدّر نسخة احتياطية JSON. لا تمسح بيانات المتصفح لمعالجة هذه المشكلة.',
         ],
       },
       {
