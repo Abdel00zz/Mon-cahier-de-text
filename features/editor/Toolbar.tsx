@@ -107,20 +107,20 @@ export const Toolbar: React.FC<ToolbarProps> = React.memo(({
   }, [searchQuery]);
   
   return (
-    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-none border-b border-border/40 bg-background/95 backdrop-blur-sm px-1 py-1.5 print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-2">
+    <div data-editor-toolbar className="rtl-flow rtl-toolbar sticky top-0 z-[50] mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border-2 border-border/70 bg-background/95 backdrop-blur-sm px-3 py-2 shadow-sm print:hidden sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-4 sm:py-2.5">
       <div className="flex min-w-0 items-center justify-start gap-1.5">
         <SyncStatusBadge />
       </div>
       
-      <div className="hidden items-center justify-center gap-0.5 sm:flex">
-        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
-          <Undo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+      <div className="hidden items-center justify-center gap-1 rounded-xl border border-border/50 bg-muted/30 p-1 shadow-inner sm:flex">
+        <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} data-tippy-content={t('toolbar.undoShortcut')} aria-label={t('toolbar.undoAria')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
+          <Undo2 className="h-4 w-4 stroke-[2.4]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
-          <Redo2 className="h-3.5 w-3.5 stroke-[2.2]" />
+        <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} data-tippy-content={t('toolbar.redoShortcut')} aria-label={t('toolbar.redoAria')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
+          <Redo2 className="h-4 w-4 stroke-[2.4]" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground active:scale-95 disabled:opacity-30">
-          <Save className="h-3.5 w-3.5 stroke-[2.2]" />
+        <Button variant="ghost" size="icon" onClick={onSave} disabled={saveStatus === 'saving'} data-tippy-content={t('toolbar.manualSave')} aria-label={t('toolbar.saveNow')} className="h-8 w-8 rounded-lg border border-transparent text-muted-foreground transition-all hover:border-border/60 hover:bg-background hover:text-foreground hover:shadow-sm active:scale-95 disabled:opacity-30">
+          <Save className="h-4 w-4 stroke-[2.4]" />
         </Button>
       </div>
 
