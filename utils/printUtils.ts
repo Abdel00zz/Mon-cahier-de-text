@@ -42,24 +42,24 @@ export const preparePrintContent = async (root: HTMLElement, timeoutMs = 12000):
   let timer: number | undefined;
   try {
     const runtime = window as unknown as {
-      MathJax?: { startup?: { promise?: Promise<void> }; typesetPromise?: (elements: Element[]) => Promise<void> };
+      KaTeX?: { startup?: { promise?: Promise<void> }; typesetPromise?: (elements: Element[]) => Promise<void> };
     };
     const prepare = (async () => {
       if (!root.isConnected || root.getBoundingClientRect().width === 0) throw new Error('Print surface is not measurable');
       // This also loads ordinary text fonts when the document contains no formula.
       await document.fonts?.ready;
-      if (hasMathSyntax(root.textContent ?? '') || root.querySelector('mjx-container, .math-text')) {
+      if (hasMathSyntax(root.textContent ?? '') || root.querySelector('.katex-display, .math-text')) {
         // The provider can still be downloading when the teacher opens Print.
         const deadline = Date.now() + timeoutMs;
-        while (!runtime.MathJax?.typesetPromise && Date.now() < deadline) {
+        while (!runtime.KaTeX?.typesetPromise && Date.now() < deadline) {
           if (!root.isConnected) throw new Error('Print surface detached');
           await new Promise(resolve => window.setTimeout(resolve, 50));
         }
-        const math = runtime.MathJax;
-        if (!math?.typesetPromise) throw new Error('MathJax unavailable');
+        const math = runtime.KaTeX;
+        if (!math?.typesetPromise) throw new Error('KaTeX unavailable');
         await math.startup?.promise;
         await math.typesetPromise([root]);
-        if (root.querySelector('mjx-merror, [data-mjx-error]')) throw new Error('Invalid print formula');
+        if (root.querySelector('.katex-error, .katex-mathml .katex-error')) throw new Error('Invalid print formula');
       }
       await document.fonts?.ready;
       await Promise.all(Array.from(root.querySelectorAll('img')).map(img => img.decode()));

@@ -1,5 +1,6 @@
 import React from 'react';
 import { splitMathText } from './math';
+import { renderKatexHtml } from '../config/katex';
 import { toDisplayText } from './textValue';
 
 /*
@@ -9,10 +10,10 @@ import { toDisplayText } from './textValue';
  *   ++souligné++                   → <u>
  *   « - texte » en début de ligne  → puce (équivalent \itemize)
  *   « 1. texte » en début de ligne → liste numérotée (équivalent \enumerate)
- * Les segments $...$ / $$...$$ sont transmis intacts à MathJax (qui gère
+ * Les segments $...$ / $$...$$ sont transmis intacts à KaTeX (qui gère
  * \frac, \array, \begin{cases}, matrices, etc. ; macros de l'application
- * dans config/mathJax.ts).
- * Le LaTeX *de document* est analysé ici — jamais envoyé à MathJax, qui ne le
+ * dans config/katex.ts).
+ * Le LaTeX *de document* est analysé ici — jamais envoyé à KaTeX, qui ne le
  * connaît pas : listes (\begin{enumerate}, \begin{itemize}, \begin{description})
  * avec leurs \item et leurs imbrications, emphases (\textbf, \textit, \emph,
  * \underline), sauts de ligne (\\, \newline, \par), espacements (\smallskip,
@@ -251,7 +252,7 @@ function renderItemCells(
     ),
     // `whitespace-pre-wrap` garde les retours à la ligne de l'auteur DANS
     // l'item. Aucun conteneur de défilement : une formule trop large est
-    // coupée par MathJax lui-même (displayOverflow: 'linebreak'), la zone
+    // coupée par KaTeX lui-même (displayOverflow: 'linebreak'), la zone
     // reste donc souple et ne montre jamais de barre de défilement.
     React.createElement(
       'span',
@@ -295,7 +296,7 @@ function renderBlocks(blocks: DescriptionBlock[], keyBase: string, depth = 1): R
 
 /**
  * Commandes de mise en page LaTeX d'un texte courant : la sortie est aux
- * marqueurs natifs du moteur, donc MathJax n'en voit jamais un seul. Les
+ * marqueurs natifs du moteur, donc KaTeX n'en voit jamais un seul. Les
  * variantes \text… sont listées AVANT le \text{…} générique pour ne pas être
  * avalées par lui.
  */
@@ -384,14 +385,36 @@ export function renderDescriptionWithBold(input: unknown): React.ReactNode[] {
   const formulas: string[] = [];
   const protectedSource = splitMathText(text).map(part => {
     // Seul le TEXTE reçoit les commandes de mise en page : dans une formule,
-    // c'est MathJax qui les interprète (\textbf, \text, \underline…).
+    // c'est KaTeX qui les interprète (\textbf, \text, \underline…).
     if (!part.math) return expandLatexTextCommands(part.text);
     const index = formulas.push(part.text) - 1;
     return prefix + index + (isDisplayMath(part.text) ? DISPLAY_MARK : INLINE_MARK);
   }).join('').replace(/\n{3,}/g, '\n\n');
   const token = new RegExp(prefix + '(\\d+)[\uE001\uE002]', 'g');
+  // Les formules ne sont plus recopiées en TeX dans le DOM puis composées
+  // après coup : elles arrivent ici déjà rendues par KaTeX, au milieu du texte
+  // riche (gras, listes, surlignage), sans mutation ultérieure.
+  const restoreMath = (value: string): React.ReactNode => {
+    if (!value.includes('\uE001') && !value.includes('\uE002')) return value;
+    const out: React.ReactNode[] = [];
+    let last = 0;
+    for (const match of value.matchAll(token)) {
+      const start = match.index ?? 0;
+      if (start > last) out.push(value.slice(last, start));
+      const formula = formulas[Number(match[1])] ?? '';
+      out.push(React.createElement('span', {
+        key: `katex-${match[1]}-${start}`,
+        className: 'math-text',
+        dangerouslySetInnerHTML: { __html: renderKatexHtml(formula, isDisplayMath(formula)) },
+      }));
+      last = start + match[0].length;
+    }
+    if (last < value.length) out.push(value.slice(last));
+    return out.length === 1 ? out[0] : React.createElement(React.Fragment, null, ...out);
+  };
+
   const restore = (node: React.ReactNode): React.ReactNode => {
-    if (typeof node === 'string') return node.replace(token, (_, index) => formulas[Number(index)]);
+    if (typeof node === 'string') return restoreMath(node);
     if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
       return React.cloneElement(node, {}, React.Children.map(node.props.children, restore));
     }

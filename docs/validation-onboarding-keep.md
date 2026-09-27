@@ -22,7 +22,7 @@ Date : 31 août 2026.
 ## Mécanismes et performance
 
 - Aucun délai de valorisation artificiel, aucune nouvelle dépendance applicative. Pas de flou d’arrière-plan ni d’animation permanente ajoutés à l’onboarding.
-- Étape d’horaires chargée à la demande. Le chargement MathJax ne produit plus de surface d’attente dans l’onboarding, qui ne compose aucune formule.
+- Étape d’horaires chargée à la demande. Le chargement KaTeX ne produit plus de surface d’attente dans l’onboarding, qui ne compose aucune formule.
 - Suppression du second formulaire de création propre à l’ancien onboarding : réutilisation de `CreateClassModal`, de sa validation des groupes et de ses règles de cycles.
 - La fermeture enregistre le choix local immédiatement ; l’appel réel de fin d’accueil se poursuit sans immobiliser l’interface. Les garde-fous du propriétaire restent actifs.
 - Le brouillon anonyme reste uniquement en mémoire. Son effacement au rechargement est annoncé. Il n’est jamais appliqué par le chemin de connexion à un compte existant.

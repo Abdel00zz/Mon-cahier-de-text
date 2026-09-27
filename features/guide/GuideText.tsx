@@ -5,7 +5,7 @@ const terms = [
   'Paramètres → Données', 'Paramètres → Archives', 'Paramètres → Assistance',
   'centre de pilotage', 'emploi du temps', 'notifications système', 'synchronisation',
   'sauvegarde globale', 'remplacement', 'Ne plus avertir pour cette date',
-  'Évaluations', 'Cyber Tech & Clean', 'JSON', 'LaTeX', 'MathJax', 'PDF',
+  'Évaluations', 'Cyber Tech & Clean', 'JSON', 'LaTeX', 'KaTeX', 'PDF',
   'حفظ الملف الشخصي', 'التقويم التشخيصي 1', 'مركز القيادة', 'استعمال الزمن',
   'إشعارات النظام', 'المزامنة', 'النسخة الشاملة', 'الاستبدال',
   'عدم التنبيه إلى هذا التاريخ مجدداً', 'الإعدادات', 'الملف الشخصي',

@@ -92,7 +92,7 @@ Un seul lien discret « Relier mes chapitres au programme » est placé en bas �
 
 Les cahiers enregistrent des jours, pas l’heure de chaque saisie : une date ne prouve pas deux séances distinctes du même jour. Les comparaisons historiques de cahiers restent des indicateurs de saisie, pas des mesures certifiées de progression du programme. La vibration dépend du support matériel/navigateur et d’une interaction préalable. Le JavaScript d’une application suspendue n’assure pas un réveil à la minute ; le push quotidien est un circuit distinct. La déduplication multi-onglets est sérialisée par Web Locks si disponible, sinon best effort avec localStorage.
 
-Sources techniques consultées : [MDN Vibration](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate), [Motion — reduced motion](https://motion.dev/docs/react-use-reduced-motion), [MathJax — conversion asynchrone](https://docs.mathjax.org/en/stable/web/convert.html). Le rendu des titres dans les listes convertit hors DOM et vérifie le montage avant insertion, évitant une erreur lors de la fermeture rapide d’un portail.
+Sources techniques consultées : [MDN Vibration](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate), [Motion — reduced motion](https://motion.dev/docs/react-use-reduced-motion), [KaTeX — conversion asynchrone](https://docs.mathjax.org/en/stable/web/convert.html). Le rendu des titres dans les listes convertit hors DOM et vérifie le montage avant insertion, évitant une erreur lors de la fermeture rapide d’un portail.
 
 ## Vérification
 

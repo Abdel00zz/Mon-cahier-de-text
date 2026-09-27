@@ -5,8 +5,8 @@ import { AdminApp } from './AdminApp';
 import { MathProvider } from '../components/ui/math-provider';
 import '../index.css';
 
-// Même contexte MathJax que l'application : l'impression d'un cahier depuis
-// l'admin réutilise PrintView, qui compose les formules via `better-react-mathjax`.
+// Même contexte KaTeX que l'application : l'impression d'un cahier depuis
+// l'admin réutilise PrintView, qui compose les formules via KaTeX (embarqué).
 
 const rootElement = document.getElementById('admin-root');
 if (!rootElement) {

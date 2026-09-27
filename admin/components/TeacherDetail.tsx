@@ -527,7 +527,7 @@ export const TeacherDetail: React.FC<{ phone: string; onBack: () => void; onMana
     };
 
     // Monte la vue d'impression (PrintView) puis déclenche le dialogue, en
-    // réutilisant le circuit de l'éditeur : composition MathJax → window.print.
+    // réutilisant le circuit de l'éditeur : composition KaTeX → window.print.
     useEffect(() => {
         if (!printRequest) return;
         let cancelled = false;

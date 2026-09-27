@@ -229,7 +229,7 @@ Circuit unique : **toutes** les entrées de date convergent vers `validateSessio
 | Cellule fusionnée | Sélectionne toutes ses entrées, dont les données restent distinctes ; des descriptions différentes empêchent la fusion |
 | Groupes | Bornés à **24 entrées** |
 | Virtualisation | Intersection réelle avec la fenêtre, mesures indexées par identité, positions arrondies au pixel ; les corrections de hauteur au-dessus de la fenêtre préservent la position de lecture |
-| LaTeX | `splitMathText` protège les délimiteurs **avant** listes/surlignage ; MathJax ne scanne pas globalement le DOM : chaque `MathText` possède son rendu |
+| LaTeX | `splitMathText` protège les délimiteurs **avant** listes/surlignage ; KaTeX ne scanne pas globalement le DOM : chaque `MathText` possède son rendu |
 | Performance | Les modales lourdes sont chargées à la demande depuis `EditorModals.tsx` |
 
 ### 3.12 Thème, i18n et RTL

@@ -36,7 +36,7 @@ export const hasMathContent = (value: unknown): boolean => {
 
 /**
  * Environnements LaTeX de *document* : listes, centrage, citations, tableaux de
- * mise en page. Ce ne sont pas des formules — MathJax ne les connaît pas et
+ * mise en page. Ce ne sont pas des formules — KaTeX ne les connaît pas et
  * répondait « Unknown environment », en laissant le texte brut à l'écran comme
  * sur le papier. Ils restent donc du texte, mis en page par utils/textFormat.
  */

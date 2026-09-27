@@ -12,7 +12,7 @@ notifications système ni utiliser un compte enseignant pour réaliser les captu
 3. Les écrans disponibles sont `classes`, `schedule`, `editor`, `add`,
    `notifications`, `pilotage`, `dates`, `appearance`, `guide`. Langues : `fr`, `ar`.
 4. Tester les formats ordinateur 1120 × 800 et téléphone 390 × 844.
-5. Attendre le rendu MathJax avant les captures d’éditeur. La capture des cartes
+5. Attendre le rendu KaTeX avant les captures d’éditeur. La capture des cartes
    est recadrée sur les 260 premiers pixels. Le cours français reste en LTR même
    avec l’interface arabe : ne jamais appliquer la langue de l’interface aux formules.
    Le choix de date est recadré à (208, 177), 704 × 446 ; l’apparence à (20, 20),

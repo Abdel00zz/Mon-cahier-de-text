@@ -7,7 +7,7 @@ compte n’est utilisée. Elle ne fait pas partie des entrées du build de produ
 1. Lancer `npm run dev` et ouvrir `/scripts/showcase-preview/index.html`.
 2. Capturer chaque combinaison `?lang=fr|ar&screen=classes|editor|schedule`.
    Utiliser un viewport de 1280 × 880 pour le PC, 560 × 850 et `&portrait` pour le
-   mobile. Attendre le chargement des polices et la visibilité des `mjx-container`.
+   mobile. Attendre le chargement des polices et la visibilité des `.katex`.
 3. Enregistrer les PNG dans `tmp/showcase-captures`, sous les noms
    `{landscape|portrait}-{fr|ar}-{classes|editor|schedule}.png`.
 4. Exécuter `python scripts/build-showcase-gifs.py --capture-scale 1` (Pillow).

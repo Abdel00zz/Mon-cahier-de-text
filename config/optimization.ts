@@ -28,7 +28,7 @@ const vendorGroups: Array<{ chunk: string; test: RegExp }> = [
   // `scheduler` fait partie du runtime : le séparer de react-dom recrée un
   // cycle de chunks que Rollup résout en dupliquant du code.
   { chunk: 'react', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
-  { chunk: 'math', test: /[\\/]node_modules[\\/]better-react-mathjax[\\/]/ },
+  { chunk: 'math', test: /[\\/]node_modules[\\/]katex[\\/]/ },
   { chunk: 'ui', test: /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils|lucide-react)[\\/]/ },
 ];
 

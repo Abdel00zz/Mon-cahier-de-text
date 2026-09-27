@@ -91,7 +91,7 @@ changements locaux, conflit de rebase (abandon propre, aucun marqueur, aucun sta
 
 ## Technologies
 
-React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, MathJax, Vercel Functions, Upstash Redis, Workbox et Capacitor.
+React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, KaTeX, Vercel Functions, Upstash Redis, Workbox et Capacitor.
 
 ## Sécurité et robustesse
 
@@ -100,7 +100,7 @@ React 19, TypeScript, Vite, Tailwind CSS, Radix UI, Lucide, Immer, MathJax, Verc
 - Synchronisation par classe et travail hors ligne.
 - Notifications web push avec validation centralisée des types.
 - Contrôle des motifs de conflit non résolus et des fichiers sensibles par le script de publication (`auto_commitv2.ps1`).
-- Budget de 320 kB par chunk non compressé (`config/optimization.ts`) ; les écrans lourds, les modales et MathJax sont chargés à la demande.
+- Budget de 320 kB par chunk non compressé (`config/optimization.ts`) ; les écrans lourds, les modales et KaTeX sont chargés à la demande.
 - `npm run analyze` publie la taille réelle de chaque chunk et **échoue** au-delà du budget : c'est le garde-fou budgétaire du projet.
 - Aucun script analytics tiers n'est embarqué : le premier affichage ne dépend d'aucune mesure réseau externe.
 

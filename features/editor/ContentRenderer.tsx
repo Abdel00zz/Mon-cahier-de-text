@@ -1,6 +1,7 @@
 import React from 'react';
 import { hasMathSyntax, splitMathText } from '@/utils/math';
 import { MathText } from '@/components/ui/math-text';
+import { renderKatexHtml } from '@/config/katex';
 import { toDisplayText } from '@/utils/textValue';
 import { Indices, LessonItem, TopLevelItem, ElementType, TopLevelType } from '@/types';
 import { TYPE_MAP, BADGE_TEXT_MAP, contentBadgeClass, TOP_LEVEL_TYPE_CONFIG, BADGE_TOOLTIP_MAP } from '@/constants';
@@ -42,7 +43,7 @@ const withDisplayText = <T extends DisplayTextFields>(item: T): T & Record<keyof
   number: toDisplayText(item.number),
 });
 
-const MaybeMathJax: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
+const MaybeKaTeX: React.FC<{ children: React.ReactNode; mathSource: unknown; cacheKey: string }> = ({ children, mathSource, cacheKey }) => (
   <MathText source={mathSource} cacheKey={cacheKey}>{children}</MathText>
 );
 
@@ -64,8 +65,24 @@ const HighlightedPlainText: React.FC<{ text: string; query?: string }> = ({ text
   return <>{parts}</>;
 };
 
+/**
+ * Surlignage de recherche SANS perdre les formules : un segment mathématique
+ * est composé par KaTeX, le reste passe par le surlignage habituel. Avant,
+ * le segment était recopié en texte brut — d'où les `$…$` visibles dans les
+ * titres de chapitres, de blocs et d'items.
+ */
 const HighlightedText: React.FC<{ text?: unknown; query?: string }> = ({ text, query }) => (
-  <>{splitMathText(text).map((part, index) => part.math ? part.text : <HighlightedPlainText key={index} text={part.text} query={query} />)}</>
+  <>
+    {splitMathText(text).map((part, index) => (part.math ? (
+      <span
+        key={index}
+        className="math-text"
+        dangerouslySetInnerHTML={{ __html: renderKatexHtml(part.text) }}
+      />
+    ) : (
+      <HighlightedPlainText key={index} text={part.text} query={query} />
+    )))}
+  </>
 );
 
 const renderChapterLabel = (input: unknown) => {
@@ -174,7 +191,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     if (item.type === 'chapter') {
       const chapterTitle = toDisplayText(item.title) || toDisplayText(config.name);
       return (
-        <MaybeMathJax key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
+        <MaybeKaTeX key={highlight ?? ""} mathSource={chapterTitle} cacheKey={`chapter-${chapterTitle}`}>
           <div className="editor-type-chapter my-3 flex w-full items-center justify-center text-center font-sans font-semibold tracking-tight select-none">
             <span dir={textDirectionAttribute(chapterTitle)} className="max-w-[min(100%,44rem)] break-words text-balance">
               {highlight || hasMathSyntax(chapterTitle) ? (
@@ -184,20 +201,20 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
               )}
             </span>
           </div>
-        </MaybeMathJax>
+        </MaybeKaTeX>
       );
     }
 
     return (
-      // MaybeMathJax : les titres de chapitres/blocs acceptent aussi le LaTeX
+      // MaybeKaTeX : les titres de chapitres/blocs acceptent aussi le LaTeX
       // (ex. « Chapitre 3 : Étude de $f(x)=\frac{1}{x}$ »), comme les sections.
-      <MaybeMathJax key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
+      <MaybeKaTeX key={highlight ?? ""} mathSource={item.title} cacheKey={`top-${item.type}-${item.title}`}>
         <div className={`editor-type-top font-bold tracking-tight py-1 flex items-center ${config.color} ${indentClass} ${isCenteredInApp ? 'justify-center' : justificationClass}`}>
             <span dir={textDirectionAttribute(item.title)}>
               <HighlightedText text={item.title} query={highlight} />
             </span>
         </div>
-      </MaybeMathJax>
+      </MaybeKaTeX>
     );
   }
 
@@ -205,37 +222,37 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
     case 'section':
       const sectionLetter = String.fromCharCode(65 + (indices.sectionIndex ?? 0));
       return (
-        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-section editor-indent-1 font-semibold tracking-tight text-foreground py-1 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{sectionLetter}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
             </div>
-        </MaybeMathJax>
+        </MaybeKaTeX>
       );
     case 'subsection':
       return (
-        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsection editor-indent-2 font-semibold font-sans text-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{indices.subsectionIndex! + 1}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
             </div>
-        </MaybeMathJax>
+        </MaybeKaTeX>
       );
     case 'subsubsection':
       const roman = ['i', 'ii', 'iii', 'iv', 'v'];
       return (
-        <MaybeMathJax key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
+        <MaybeKaTeX key={highlight ?? ""} mathSource={data.name} cacheKey={data.name}>
             <div className="editor-type-subsubsection editor-indent-3 italic font-sans text-muted-foreground py-0.5 flex items-baseline gap-1.5 sm:gap-2">
                 <span>{roman[indices.subsubsectionIndex!] || (indices.subsubsectionIndex! + 1)}.</span>
                 <span dir={textDirectionAttribute(data.name)}>
                   <HighlightedText text={data.name} query={highlight} />
                 </span>
             </div>
-        </MaybeMathJax>
+        </MaybeKaTeX>
       );
     case 'item':
       const item = withDisplayText(data as LessonItem);
@@ -253,14 +270,14 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
         const source = `${item.title ?? ''}\n${item.description ?? ''}`;
         const empty = !source.trim();
         return (
-          <MaybeMathJax mathSource={source} cacheKey={`free-${source}`}>
+          <MaybeKaTeX mathSource={source} cacheKey={`free-${source}`}>
             <div className={`editor-free-content min-h-6 whitespace-pre-wrap break-words py-1 text-foreground ${lessonIndentClass}`}>
               {item.title && <div dir={textDirectionAttribute(item.title)}><HighlightedText text={item.title} query={highlight} /></div>}
               {item.description && <div dir={textDirectionAttribute(item.description)}>{renderDescriptionWithBold(item.description)}</div>}
               {empty && !isPrint && <span className="text-muted-foreground text-xs italic">{t('addContent.freeHint')}</span>}
               {empty && isPrint && <span aria-hidden="true">{'\u00a0'}</span>}
             </div>
-          </MaybeMathJax>
+          </MaybeKaTeX>
         );
       }
       const hasDescription = typeof item.description === 'string' && item.description.trim().length > 0;
@@ -273,7 +290,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       if (isPrint) {
         const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
         return (
-          <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
+          <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={`print-${normalizedType}-${item.number || ''}-${item.title || ''}-${item.description || ''}`}>
             <div className={`print-lesson-item ${lessonIndentClass}`}>
               <span className="print-item-kind">{badgeText}{displayNumber ? ` ${displayNumber}` : ''}</span>
               <span dir={textDirectionAttribute(item.title)} className="print-item-title">{item.title || ''}</span>
@@ -284,7 +301,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
                 </div>
               )}
             </div>
-          </MaybeMathJax>
+          </MaybeKaTeX>
         );
       }
 
@@ -336,7 +353,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = React.memo(({ dat
       const mathSource = `${item.title || ''}\n${allowDescription ? item.description || '' : ''}\n${item.page || ''}`;
 
 
-      return <MaybeMathJax key={highlight ?? ""} mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeMathJax>;
+      return <MaybeKaTeX key={highlight ?? ""} mathSource={mathSource} cacheKey={contentKey}>{content}</MaybeKaTeX>;
 
     default:
       return null;

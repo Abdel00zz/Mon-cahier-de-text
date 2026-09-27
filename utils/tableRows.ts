@@ -38,6 +38,14 @@ const normalizeIdentityText = (value: unknown): string =>
   toDisplayText(value).normalize('NFC').trim().replace(/\s+/g, ' ');
 
 const STRUCTURAL_ELEMENT_TYPES = new Set(['chapter', 'section', 'subsection', 'subsubsection']);
+
+/**
+ * Garde-fou de PERFORMANCE, pas limite pédagogique : sur un cahier
+ * pathologique (des milliers de lignes), une fusion n'absorbe pas une suite
+ * sans fin. 24 était trop bas : une journée de 25 contenus voyait sa
+ * dernière ligne détachée avec sa propre date et sa propre remarque.
+ */
+const MAX_MERGE_RUN = 120;
 const FREE_IDENTITY_PREFIX = FREE_TYPE + ':';
 
 /**
@@ -99,11 +107,16 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
     let sameDateEnd = start + 1;
     let sameContentEnd = start + 1;
 
-    // 1. MÊME DATE
-    while (sameDateEnd < items.length && sameDateEnd < start + 24 && follows(sameDateEnd)) {
+    // 1. MÊME DATE — toute la suite de contenus consécutifs qui partagent la
+    //    même date forme UNE séance. La seule borne est le garde-fou de
+    //    performance (MAX_MERGE_RUN) : une journée bien remplie ne doit pas
+    //    voir sa dernière ligne détachée avec sa propre date et sa remarque.
+    while (sameDateEnd < items.length && sameDateEnd < start + MAX_MERGE_RUN && follows(sameDateEnd)) {
       const nextDate = dates[sameDateEnd];
       if (!nextDate || nextDate !== dateStart) break;
-      
+
+      // Une séquence de contenu répété (même intitulé, autres dates) commence
+      // ici : elle aura sa propre fusion, la séance s'arrête avant elle.
       const followingIndex = sameDateEnd + 1;
       if (followingIndex < items.length
           && follows(followingIndex)
@@ -111,14 +124,13 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
           && identities[followingIndex] === identities[sameDateEnd]
           && dates[followingIndex] !== null
           && dates[followingIndex] !== nextDate) break;
-          
+
       sameDateEnd += 1;
     }
-
     // 2. MÊME CONTENU
     if (identityStart && dateStart) {
       let previousDate = dateStart;
-      while (sameContentEnd < items.length && sameContentEnd < start + 24 && follows(sameContentEnd)) {
+      while (sameContentEnd < items.length && sameContentEnd < start + MAX_MERGE_RUN && follows(sameContentEnd)) {
         if (identities[sameContentEnd] !== identityStart) break;
         const nextDate = dates[sameContentEnd];
         if (!nextDate || nextDate === previousDate) break;

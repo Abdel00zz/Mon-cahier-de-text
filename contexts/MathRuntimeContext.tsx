@@ -1,24 +1,24 @@
-import { createContext, useContext } from 'react';
+import React from 'react';
 
+/**
+ * KaTeX rend les formules de façon synchrone : il n'existe plus d'état de
+ * chargement, ni de typeset en attente. Ce module ne conserve que l'API
+ * attendue par les écrans qui affichaient un indicateur pendant le rendu
+ * mathématique — désormais toujours « prêt ».
+ */
 export type MathRuntimeStatus = 'loading' | 'ready' | 'degraded';
 
-export interface MathRuntimeState {
+interface MathRuntimeState {
   status: MathRuntimeStatus;
   ready: boolean;
 }
 
-const NOOP_FINISH = () => {};
+const READY_STATE: MathRuntimeState = Object.freeze({ status: 'ready', ready: true });
 
-/** Hors fournisseur, le texte LaTeX reste lisible et ne bloque jamais l'interface. */
-export const MathRuntimeContext = createContext<MathRuntimeState>({
-  status: 'degraded',
-  ready: false,
-});
+export const MathRuntimeContext = React.createContext<MathRuntimeState>(READY_STATE);
+export const MathTypesetPendingContext = React.createContext(0);
+export const MathTypesetRegistrationContext = React.createContext<() => () => void>(() => () => {});
 
-/** Contextes séparés : le compteur ne provoque pas le rerender de chaque formule. */
-export const MathTypesetRegistrationContext = createContext<() => () => void>(() => NOOP_FINISH);
-export const MathTypesetPendingContext = createContext(0);
-
-export const useMathRuntime = (): MathRuntimeState => useContext(MathRuntimeContext);
-export const useMathTypesetRegistration = () => useContext(MathTypesetRegistrationContext);
-export const usePendingMathTypesets = () => useContext(MathTypesetPendingContext);
+export const useMathRuntime = (): MathRuntimeState => READY_STATE;
+export const usePendingMathTypesets = (): number => 0;
+export const useMathTypesetRegistration = (): (() => () => void) => () => () => {};

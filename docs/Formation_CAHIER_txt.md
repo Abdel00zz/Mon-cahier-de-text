@@ -61,7 +61,7 @@ Scénario suggéré: « 3e – Mathématiques »
 - Le journal des modifications n’est pas dans l’Éditeur: il est centralisé dans le centre de notifications, ce qui évite les doublons.
 - Zone principale (tableau): colonnes Date, Contenu, Remarque.
 
-Note: Le rendu des formules mathématiques est supporté (MathJax) – utile en sciences.
+Note: Le rendu des formules mathématiques est supporté (KaTeX) – utile en sciences.
 
 
 ### 5) Ajouter du contenu (5–6 min)

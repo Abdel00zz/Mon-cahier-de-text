@@ -550,7 +550,7 @@ Respiration : \smallskip   \medskip   \bigskip   \vspace{2mm}
 ```
 
 Ces commandes s'écrivent **hors des `$…$`** : ce sont des commandes de
-document, que MathJax ne connaît pas dans une formule.
+document, que KaTeX ne connaît pas dans une formule.
 
 Un `\item` se termine au `\item` suivant, à `\end{…}` ou à une ligne vide :
 **aucune ligne vide n'est nécessaire** pour que la liste tienne debout. Un item
@@ -570,7 +570,7 @@ orpheline est ignorée (elle ne fait disparaître aucun texte) et une liste
 imbriquée sans `\item` porteur conserve son contenu.
 
 Les formules s'adaptent à la largeur de la colonne : une formule display trop
-large est coupée par MathJax aux endroits que TeX autorise (aucun défilement,
+large est coupée par KaTeX aux endroits que TeX autorise (aucun défilement,
 zone jamais figée), et une formule en ligne se replie dans la colonne. Une
 formule display occupe sa propre ligne — inutile d'ajouter des lignes vides
 autour d'elle, et le numéro de l'item reste aligné sur sa première ligne.
@@ -591,14 +591,14 @@ Dans un fichier JSON, les antislashs LaTeX doivent être doublés : `\\pi`,
 `\\frac`, `\\times`.
 
 Macros de confort fournies par l'application, en plus de toutes les commandes
-MathJax standard :
+KaTeX standard :
 
 | Écriture | Rendu |
 | --- | --- |
 | `$\R$`, `$\N$`, `$\Z$`, `$\Q$`, `$\C$` | ensembles usuels |
 | `$\abs{x}$`, `$\norme{u}$`, `$\vect{AB}$` | valeur absolue, norme, vecteur |
 | `$\e$`, `$\dif x$` | e et d droits (notation française) |
-| `$\sout{AB}$` | terme barré (`\cancel` n'est pas fourni par MathJax) |
+| `$\sout{AB}$` | terme barré (`\cancel` n'est pas fourni par KaTeX) |
 | `$\itshape{ABC}$` (aussi `\itsize`, `\itesize`) | italique dans une formule |
 | `$\ang{30}$`, `$\unit{3}{m}$` | 30°, 3 m |
 

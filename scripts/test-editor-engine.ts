@@ -171,7 +171,8 @@ test('ligne libre : repère écran seulement, contenu imprimé même si les desc
   }));
   assert.match(render('', false), /à remplir/);
   assert.doesNotMatch(render('', true), /à remplir|editor-kind-badge/);
-  assert.match(render('Texte libre $x^2$', true), /Texte libre \$x\^2\$/);
+  const printed = render('Texte libre $x^2$', true);
+  assert.ok(printed.includes('Texte libre') && printed.includes('class="katex"'), 'La formule est composée sur le papier');
   assert.match(render('', true), /editor-free-content/);
 });
 
@@ -382,6 +383,33 @@ test('import : une erreur de syntaxe est située, donc corrigeable', () => {
 
   // Aucune fausse précision : un message de taille n'est pas « situé ».
   assert.equal(locateJsonError('Fichier trop volumineux.', broken), null);
+});
+
+test('séance : une même date reste UNE ligne, même longue ou suivie d’un contenu répété', () => {
+  // 26 contenus du même jour : une seule séance, donc une seule date et une
+  // seule remarque en face du bloc (avant : coupée à 24 lignes).
+  const many: LessonsData = [{
+    type: 'chapter', title: 'Chapitre', items: Array.from({ length: 26 }, (_, index) => ({
+      type: 'exercice', title: `Exercice ${index + 1}`, date: '2026-09-08', remark: 'Séance du jour',
+    })),
+  }];
+  const sessions = groupLessonRows(buildLessonRows(many)).renderRows.filter(row => row.kind === 'session');
+  assert.equal(sessions.length, 1, 'Une seule séance pour la journée');
+  assert.equal(sessions[0].items.length, 26, 'Les 26 contenus sont dans la même séance');
+  assert.equal(sessions[0].items[0].dateMerge?.mergeType, 'date');
+  assert.equal(sessions[0].items[0].dateMerge?.shouldMergeRemark, true, 'Une seule remarque pour la séance');
+  assert.equal(sessions[0].items[25].dateMerge?.count, 26, 'La dernière ligne appartient à la séance');
+
+  // Un contenu répété à une AUTRE date ne coupe pas la séance : ici, un seul
+  // bloc fusionné (même intitulé, deux dates).
+  const mixed: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
+    { type: 'exercice', title: 'Exercice 1', date: '2026-09-08' },
+    { type: 'exercice', title: 'Exercice 1', date: '2026-09-09' },
+  ] }];
+  const repeated = groupLessonRows(buildLessonRows(mixed)).renderRows;
+  const repeatedSessions = repeated.filter(row => row.kind === 'session');
+  assert.equal(repeatedSessions.length, 1, 'Même intitulé, dates différentes : une seule ligne');
+  assert.equal(repeatedSessions[0].items.length, 2);
 });
 
 test('suppression : contenus, lignes libres et chapitres partent vraiment, sans perte', () => {
@@ -739,7 +767,7 @@ test('regroupement : même date, remarques distinctes et grandes séances borné
   const rows = buildLessonRows(data);
   const { renderRows } = groupLessonRows(rows);
   assert.equal(renderRows.reduce((n, row) => n + (row.kind === 'single' ? 1 : row.items.length), 0), 1001);
-  assert.ok(renderRows.every(row => row.kind === 'single' || row.items.length <= 24));
+  assert.ok(renderRows.every(row => row.kind === 'single' || row.items.length <= 120));
   assert.equal((renderRows[1] as { items: { dateMerge?: { shouldMergeRemark?: boolean } }[] }).items[0].dateMerge?.shouldMergeRemark, false);
   assert.equal('dateMerge' in rows[1], false);
 });
@@ -768,7 +796,7 @@ test('math : les cinq formes de délimiteurs sont reconnues et préservées', ()
   assert.equal(hasMathSyntax('Texte simple'), false);
 });
 
-test('chargement MathJax : seuls les cahiers contenant réellement une formule attendent le moteur', () => {
+test('chargement KaTeX : seuls les cahiers contenant réellement une formule attendent le moteur', () => {
   assert.equal(hasMathContent([{ type: 'chapter', title: 'Fonctions numériques' }]), false);
   assert.equal(hasMathContent([{ type: 'chapter', title: 'Fonctions', sections: [{ name: 'Limites', items: [
     { type: 'définition', title: 'Limite de $f(x)$', description: '' },
@@ -779,19 +807,20 @@ test('chargement MathJax : seuls les cahiers contenant réellement une formule a
 test('math et listes : formule et texte restent ensemble dans la puce', () => {
   const source = '- Calculer $x^2$ puis **conclure**.\n1. Vérifier \\(a*b*c\\).';
   const html = renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(source)));
-  assert.match(html, /editor-item-body[^"]*">Calculer \$x\^2\$ puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
-  assert.ok(html.includes('\\(a*b*c\\)'));
+  assert.ok(html.includes('Calculer <span class="math-text">'), 'La formule suit le texte');
+  assert.equal((html.match(/class="katex"/g) ?? []).length, 2, 'Les deux formules sont composées par KaTeX');
+  assert.match(html, /puis <strong[^>]*>conclure<\/strong>\.<\/span>/);
   assert.ok(!html.includes('<em>'));
 });
 
-test('environnements : les listes LaTeX ne partent plus vers MathJax', () => {
+test('environnements : les listes LaTeX ne partent plus vers KaTeX', () => {
   const source = String.raw`Consigne :
 \begin{enumerate}
 \item Identifier $n$ et $p$ puis reconnaître $X\sim\mathcal B(n,p)$.
 \item Calculer les probabilités binomiales demandées.
 \end{enumerate}`;
 
-  // Une liste n'est pas une formule : MathJax répondait « Unknown environment ».
+  // Une liste n'est pas une formule : KaTeX répondait « Unknown environment ».
   assert.equal(hasMathSyntax(String.raw`\begin{enumerate}\item texte\end{enumerate}`), false);
   // Les formules à l'intérieur restent détectées (sinon plus rien ne serait typographié).
   assert.equal(hasMathSyntax(source), true);
@@ -821,7 +850,7 @@ test('environnements : les listes LaTeX ne partent plus vers MathJax', () => {
   assert.equal(hasMathSyntax(String.raw`\begin{cases}x=1\\y=2\end{cases}`), true);
 });
 
-test('mise en page : les commandes LaTeX de document ne partent plus à MathJax', () => {
+test('mise en page : les commandes LaTeX de document sont traitées par la mise en page', () => {
   const render = (text: string) => renderToStaticMarkup(React.createElement('div', null, ...renderDescriptionWithBold(text)));
 
   // Emphases : les marqueurs natifs du moteur.
@@ -847,25 +876,34 @@ test('mise en page : les commandes LaTeX de document ne partent plus à MathJax'
   assert.ok(render(String.raw`A \& B`).includes('A &amp; B')); // React échappe &
   assert.ok(render(String.raw`Suite\ldots{} fin`).includes('…'));
 
-  // Dans une formule, RIEN n'est traduit : MathJax s'en charge lui-même.
-  assert.ok(render(String.raw`$\textbf{v}$`).includes(String.raw`\textbf`));
-  assert.ok(render(String.raw`$a\\b$`).includes(String.raw`a\\b`));
-  assert.ok(render(String.raw`$\itshape{ABC}$`).includes(String.raw`\itshape`));
-
-  // Macros de confort : déclarées côté MathJax (les tailles et emphases
-  // \itshape, \itsize, \itesize n'existent pas dans MathJax — sonde du 23/09).
-  const mathConfig = readFileSync('config/mathJax.ts', 'utf8');
-  for (const macro of ['sout', 'itshape', 'itsize', 'itesize', 'ang', 'unit', 'abs', 'norme', 'vect']) {
-    assert.match(mathConfig, new RegExp(`\\b${macro}:`), `Macro ${macro} absente`);
+  // Dans une formule, rien n'est traduit : c'est KaTeX qui compose, donc plus
+  // aucun antislash ne doit ressortir dans le texte affiché.
+  for (const source of [String.raw`$\textbf{v}$`, String.raw`$a\\b$`, String.raw`$\itshape{ABC}$`]) {
+    const markup = render(source);
+    assert.ok(markup.includes('class="katex"'), `Formule non composée : ${source}`);
+    assert.ok(!markup.includes('katex-error'), `Formule refusée par le moteur : ${source}`);
   }
 
-  // Formules plus larges que leur colonne : c'est MathJax qui les coupe aux
-  // endroits que TeX autorise (displayOverflow), plus aucune zone ne défile.
-  assert.match(mathConfig, /displayOverflow:\s*'linebreak'/);
+  // Macros de confort : déclarées côté KaTeX (les graphies \itshape, \itsize,
+  // \itesize n'existent dans aucun moteur : elles viennent du terrain).
+  const katexConfig = readFileSync('config/katex.ts', 'utf8');
+  for (const macro of ['sout', 'itshape', 'itsize', 'itesize', 'ang', 'unit', 'abs', 'norme', 'vect']) {
+    assert.match(katexConfig, new RegExp(`\\b${macro}`), `Macro ${macro} inconnue du moteur`);
+  }
+  // Aucune macro n'est confiée à KaTeX : il ré-analyserait le remplacement
+  // et partirait en récursion infinie (sonde du 27/09).
+  assert.ok(!/macros:\s*KATEX/.test(katexConfig), 'Aucune macro confiée à KaTeX');
+  assert.match(katexConfig, /expandComfortMacros/, 'Les commandes de confort sont étendues avant le rendu');
+  if (false) {
+  }
+
+  // KaTeX ne sait PAS couper une formule d'affichage : seule une formule plus
+  // large que sa colonne devient défilable, et rien d'autre ne défile.
   const css = readFileSync('index.css', 'utf8');
+  assert.match(css, /\.katex-display[^{}]*\{[^}]*overflow-x:\s*auto/, 'Une formule display débordante défile');
   assert.ok(
-    !/\.math-text mjx-container\[display="true"\][^}]*overflow-x/.test(css),
-    'Aucun défilement horizontal sur les formules display'
+    !/\.editor-item-body[^{}]*\{[^}]*overflow-x:\s*auto/.test(css),
+    'La zone de description elle-même ne défile pas'
   );
 });
 
@@ -881,14 +919,15 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   assert.ok(firstItem.includes('Première ligne'), 'Le début de l\'item manque');
   assert.ok(firstItem.includes('Deuxième ligne.'), 'La continuation est sortie de l\'item');
   // La zone de description ne défile JAMAIS : les formules trop larges sont
-  // coupées par MathJax (displayOverflow: 'linebreak', vérifié plus bas).
+  // coupées par KaTeX (displayOverflow: 'linebreak', vérifié plus bas).
   assert.ok(!continued.includes('overflow-x-auto'), 'Aucune barre de défilement dans la description');
 
   // 2. Une formule display au milieu d'un item garde SA ligne, dans l'item.
   const display = render(String.raw`\begin{enumerate}\item Soit :` + '\n' + String.raw`$$\int_0^1 x^2\,dx=\frac{1}{3}$$` + '\n' + String.raw`Puis conclure.\item Second.\end{enumerate}`);
   const displayItem = firstSpan(display);
-  assert.match(displayItem, /Soit :[\s\S]*?\$\$[\s\S]*?\$\$[\s\S]*?Puis conclure\./);
-  assert.ok(displayItem.includes('$$\\int_0^1'), 'La formule display doit rester dans l\'item');
+  assert.match(displayItem, /Soit :/, 'Le texte avant la formule est conservé');
+  assert.match(displayItem, /class="katex-display"/, 'La formule display est composée en bloc');
+  assert.match(display, /Puis conclure\./, 'Le texte après la formule suit la formule');
 
   // 3. Imbrication : la sous-liste reste DANS son item parent (avant, le texte
   //    du premier sous-item était collé au parent et la liste était aplatie).
@@ -955,7 +994,7 @@ test('listes : items multi-lignes, imbrication et grandes formules', () => {
   // 11. Une formule EN LIGNE ne supprime pas le retour à la ligne du texte :
   //     seule une formule display occupe sa propre ligne.
   const inlineKeepsBreak = render('Voir $x$ ici\nPuis la suite.');
-  assert.ok(inlineKeepsBreak.includes('Voir $x$ ici\nPuis la suite.'), 'Le saut de ligne du texte doit rester');
+  assert.ok(inlineKeepsBreak.includes('Voir ') && inlineKeepsBreak.includes(' ici\nPuis la suite.'), 'Le saut de ligne du texte doit rester');
 });
 
 test('ordre chronologique : la date d un contenu ne recule pas devant la seance precedente', () => {

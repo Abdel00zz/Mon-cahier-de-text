@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 @import "./components/ui/modal-motion.css";
 @import "./components/ui/paper-controls.css";
 @import "./features/dashboard/classCards.css";
@@ -680,12 +681,10 @@ html[lang="ar"] .modal-header h2,
     color: #e8eaed;
   }
 
-  /* Preserve MathJax's own font metrics: no forced serif or global italic. */
+  /* Métriques propres au moteur (KaTeX) : aucune police imposée, aucun italique global. */
   .math-text { min-width: 0; }
-  .math-text mjx-container { color: inherit; }
-  .math-text mjx-container[display="true"] {
-    max-width: 100%;
-  }
+  
+  
 
   /* Une seule grille par liste : la colonne des marqueurs se règle sur le
      plus large d'entre eux, donc puces, numéros et libellés de longueurs
@@ -724,13 +723,7 @@ html[lang="ar"] .modal-header h2,
     background-color: #202124;
   }
 
-  /* Rendu net des formules MathJax & KaTeX en mode sombre */
-  .dark .katex,
-  .dark .katex-display,
-  .dark .MathJax,
-  .dark mjx-container {
-    color: hsl(var(--foreground)) !important;
-  }
+  
 
   .dark .katex .mord,
   .dark .katex .mbin,
@@ -792,7 +785,7 @@ html[lang="ar"] .modal-header h2,
 
   .editor-type-chapter { font-size: var(--editor-fs-chapter); line-height: 1.25; color: #2b6d73; }
   .dark .editor-type-chapter { color: #91cec8; }
-  .dark .editor-type-chapter mjx-container { color: inherit !important; }
+  
   .editor-type-top { font-size: var(--editor-fs-top); line-height: 1.3; }
   .editor-type-section { font-size: var(--editor-fs-section); line-height: 1.3; }
   .editor-type-subsection { font-size: var(--editor-fs-subsection); line-height: 1.35; }
@@ -1926,22 +1919,10 @@ html[data-keyboard='open'] .mobile-tab-bar {
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+061F, U+0660-0669, U+06D4;
 }
 
-/* HORS de tout @layer, volontairement : MathJax déclare ses propres règles sans
-   couche (mjx-container[display] { margin: .7em 0; padding: .3em 2px }) et
-   l'ordre des couches l'emporte sur la spécificité — la même règle écrite dans
-   @layer base perdait, mesures à l'appui. Ici : le marqueur d'une liste s'aligne
-   sur le HAUT de la première ligne de son contenu, même quand cette première
-   ligne est une formule display. */
-.editor-item-body > mjx-container[display="true"]:first-child {
-  margin-top: 0;
-  padding-top: 0;
-}
 
-/* Les équations display remplissent leur ligne ; leur contenu doit partir du
-   même bord que le texte de l'item, dans les deux sens d'écriture. MathJax
-   conserve le sens LTR à l'intérieur de la formule pour l'ordre des symboles. */
-.editor-item-body mjx-container[display="true"] { text-align: left; }
-[dir="rtl"] .editor-item-body mjx-container[display="true"] { text-align: right; }
+
+
+
 
 /* Une ligne libre n'appartient PAS à la structure du cours : encadré en
    pointillés, fond très légèrement teinté, sans couleur d'accent ni filet
@@ -1962,3 +1943,29 @@ html[data-keyboard='open'] .mobile-tab-bar {
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer::after { animation: none; opacity: 0.45; }
 }
+
+/* ---------------------------------------------------------------------------
+   Formules (KaTeX, embarqué : aucune requête réseau, donc hors ligne inclus).
+   Option retenue : une formule d'affichage plus large que sa colonne devient
+   défilable horizontalement — et seulement dans ce cas — car KaTeX ne sait pas
+   couper une ligne de formule automatiquement. Rien d'autre ne défile.
+   --------------------------------------------------------------------------- */
+.math-text .katex { font-size: 1.06em; }
+
+.editor-item-description .katex-display,
+.editor-free-content .katex-display,
+.print-document .katex-display {
+  margin: 0.35em 0;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Le premier bloc d'affichage d'une cellule ne pousse pas la ligne vers le bas. */
+.editor-item-body > .math-text > .katex-display:first-child,
+.editor-free-content > .math-text > .katex-display:first-child {
+  margin-top: 0;
+}
+
+/* Une commande non reconnue s'affiche en rouge, sans casser la formule. */
+.math-text .katex-error { color: #b91c1c; }

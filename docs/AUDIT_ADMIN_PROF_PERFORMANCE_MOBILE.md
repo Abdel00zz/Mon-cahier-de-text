@@ -204,12 +204,12 @@ flowchart LR
 - **Source unique du budget** : `CHUNK_WARN_LIMIT_KB = 320` dans `config/optimization.ts`, réutilisée par `vite.config.ts` (`chunkSizeWarningLimit`) et par le plugin d'alerte → les deux seuils ne peuvent plus diverger. ✅
 - **`manualChunks` sous forme fonction**, en 3 groupes seulement :
   - `react` → `react|react-dom|scheduler` (le scheduler reste avec react-dom pour éviter un cycle de chunks dupliqué) ;
-  - `math` → `better-react-mathjax` ;
+  - `math` → `katex` (embarqué, aucune requête réseau) ;
   - `ui` → `framer-motion|motion-dom|motion-utils|lucide-react` ;
   - plus `i18n` isolé (`i18n/LocaleProvider`), partagé entre les deux entrées.
 - **Commentaire de conception remarquable** : l'auteur documente qu'un regroupement manuel trop large de `radix` + `editor-vendor` avait **ajouté +75 kB au chemin critique**, car Rollup les répartissait correctement seul. C'est une optimisation fondée sur une mesure, pas sur une intuition.
 - **PWA** : `strategies: 'injectManifest'`, `registerType: 'autoUpdate'`, `injectRegister: null` (enregistrement manuel), `globPatterns: ['**/*.{js,css,html,woff2}']`, `globIgnores: ['**/admin*']`.
-- **Service worker** : `precacheAndRoute` + `cleanupOutdatedCaches` + `skipWaiting`/`clientsClaim` ; `NavigationRoute` avec denylist `/admin` et `/api/` ; Google Fonts CSS en `StaleWhileRevalidate`, fichiers en `CacheFirst` (24 entrées, 1 an) ; MathJax CDN en `CacheFirst` (160 entrées, 1 an). ✅
+- **Service worker** : `precacheAndRoute` + `cleanupOutdatedCaches` + `skipWaiting`/`clientsClaim` ; `NavigationRoute` avec denylist `/admin` et `/api/` ; Google Fonts CSS en `StaleWhileRevalidate`, fichiers en `CacheFirst` (24 entrées, 1 an) ; KaTeX CDN en `CacheFirst` (160 entrées, 1 an). ✅
 
 ### 3.2 Chargement différé et préchargement
 
@@ -217,7 +217,7 @@ flowchart LR
 |---|---|
 | `React.lazy` | **8** surfaces : `Dashboard`, `Editor`, `SettingsPage`, `NotificationsPage`, `AuthPage`, `GuideModal`, `AdminMessageModal`, `DevoirsView` (`App.tsx:23-30`) ✅ |
 | Préchargement *idle* | `requestIdleCallback` (fallback **1200 ms**) → `preloadSettingsPage()` + import de l'`Editor` (ou du `Dashboard` si on est déjà dans l'éditeur) ✅ |
-| MathJax | Version **4.1.3** (jsDelivr), `MATH_RUNTIME_TIMEOUT_MS = 8_000` puis statut `degraded` : le LaTeX reste lisible au lieu de bloquer ✅ |
+| KaTeX | Version **4.1.3** (jsDelivr), `MATH_RUNTIME_TIMEOUT_MS = 8_000` puis statut `degraded` : le LaTeX reste lisible au lieu de bloquer ✅ |
 | Contexte math scindé | `MathRuntimeContext` / `MathTypesetRegistrationContext` / `MathTypesetPendingContext` pour éviter les re-rendus globaux ; publication du compteur bornée par `requestAnimationFrame` 🔎 |
 | Modales lourdes | Chargées à la demande depuis `EditorModals.tsx` |
 | Deux entrées | `index.html` et `admin.html` séparés : l'admin n'alourdit pas l'app enseignant |
@@ -270,7 +270,7 @@ flowchart LR
 2. **F-16 — `npm run analyze` sans analyseur** ✅ : `--mode analyze` n'est géré nulle part dans `vite.config.ts`, et `rollup-plugin-visualizer` n'est pas déclaré. Aucune mesure de bundle n'est donc possible avec le script fourni.
 3. **F-12 — Allocation dans le rendu** ✅ : `descriptionTypes = []` par défaut dans `MainTable` (`MainTable.tsx:293`) crée un nouveau tableau à chaque rendu, propagé dans les dépendances de `itemKeys`/`estimateSizes`. Protégé par `React.memo`, mais tout re-rendu du parent recalcule ces `useMemo`.
 4. **Coût O(n) par changement de lignes visibles** 🔎 : `groupLessonRows(visibleRows)` et la reconstruction d'`itemKeys` sont recalculées à chaque variation de `visibleRows`. Acceptable grâce à la mémoïsation, mais sensible à toute identité instable.
-5. **Dépendances lourdes** 🔎 : `framer-motion`, `lucide-react`, `better-react-mathjax`, `immer`, `sonner` — regroupées autant que possible, mais `framer-motion` reste dans le chemin critique dès qu'un module *eager* le référence.
+5. **Dépendances lourdes** 🔎 : `framer-motion`, `lucide-react`, `katex`, `immer`, `sonner` — regroupées autant que possible, mais `framer-motion` reste dans le chemin critique dès qu'un module *eager* le référence.
 6. **Aucune mesure réelle dans cet audit** ⚠️ : impossible de confirmer qu'aucun chunk ne dépasse réellement 320 kB sans exécuter le build.
 
 ---
@@ -321,7 +321,7 @@ flowchart LR
 ### 4.5 PWA installable et hors ligne
 
 - Manifest **localisé fr/ar/en** : `display: standalone`, `display_override: ['standalone','minimal-ui']`, `orientation: 'any'`, `start_url: '/'`, 3 raccourcis (Classes, Pilotage, Paramètres), icônes 192/512 + `maskable`, `launch_handler: 'navigate-existing'`, `theme_color: '#1a56db'`. ✅
-- Hors ligne : précache des assets buildés + `NavigationRoute` SPA + caches Google Fonts et MathJax.
+- Hors ligne : précache des assets buildés + `NavigationRoute` SPA + caches Google Fonts et KaTeX.
 
 ### 4.6 Forces
 
@@ -452,7 +452,7 @@ Le snapshot n'est donc jamais perdu : il est renvoyé tel quel à la tentative s
 **Performance**
 - [ ] Build réel + relevé des chunks > 320 kB.
 - [ ] Cahier de 1 000+ lignes : mesurer le temps de défilement et de recherche.
-- [ ] MathJax indisponible : vérifier le basculement en statut `degraded` et la lisibilité du LaTeX.
+- [ ] KaTeX indisponible : vérifier le basculement en statut `degraded` et la lisibilité du LaTeX.
 - [ ] Mode avion : rechargement complet, vérifier l'accès au planning et aux règles d'évaluation (F-01).
 
 **Mobile & tactile**

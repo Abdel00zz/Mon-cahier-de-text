@@ -412,7 +412,7 @@ const chapters = [
   chapter('math', ['types', 'appearance', 'troubleshooting'], {
     title: 'Écrire des formules et rechercher',
     summary: 'Saisissez vos formules en LaTeX, vérifiez leur rendu et retrouvez rapidement un contenu.',
-    keywords: 'LaTeX MathJax mathématiques formules scientifiques équations fractions bilingue RTL LTR recherche',
+    keywords: 'LaTeX KaTeX mathématiques formules scientifiques équations fractions bilingue RTL LTR recherche',
     sections: [
       {
         title: 'Saisie rigoureuse des expressions mathématiques',
@@ -432,11 +432,11 @@ const chapters = [
         body: 'Le champ de recherche intégré au cahier filtre instantanément les cours pour retrouver un chapitre, une formule ou un intitulé spécifique. Pensez à vider le filtre de recherche avant d’exécuter une action globale sur le cahier.',
       },
     ],
-    tip: 'En cas de formule non interprétée, vérifiez l’absence d’accolade manquante et attendez le chargement complet du moteur de rendu MathJax.',
+    tip: 'En cas de formule non interprétée, vérifiez l’absence d’accolade manquante et attendez le chargement complet du moteur de rendu KaTeX.',
   }, {
     title: 'كتابة الصيغ الرياضية والبحث',
     summary: 'كتابة المعادلات والرموز العلمية بدقة، التوافق بين اللغات والاتجاهات (RTL/LTR)، والبحث السريع.',
-    keywords: 'رياضيات ترميز علمي معادلات صيغ LaTeX MathJax لاتكس ماثجاكس كسور نهايات متجهات بحث',
+    keywords: 'رياضيات ترميز علمي معادلات صيغ LaTeX KaTeX لاتكس ماثجاكس كسور نهايات متجهات بحث',
     sections: [
       {
         title: 'كتابة الصيغ والرموز الرياضية',
@@ -1056,7 +1056,7 @@ const chapters = [
           { term: 'Une classe n’apparaît pas', detail: 'Vérifiez le compte connecté, les filtres de cycle ou de niveau actifs, et lancez une synchronisation manuelle.' },
           { term: 'La séance en cours ne correspond pas', detail: 'Contrôlez la date et l’heure système de votre appareil, ainsi que la conformité de votre grille d’emploi du temps.' },
           { term: 'Les rappels ou notifications ne sonnent pas', detail: 'Contrôlez les autorisations du navigateur, les restrictions de batterie et envoyez un test depuis les paramètres de notification.' },
-          { term: 'Formule mathématique ou texte invisible', detail: 'Assurez-vous que la recherche est vide, vérifiez la syntaxe LaTeX et patientez le temps du chargement de MathJax.' },
+          { term: 'Formule mathématique ou texte invisible', detail: 'Assurez-vous que la recherche est vide, vérifiez la syntaxe LaTeX et patientez le temps du chargement de KaTeX.' },
           { term: 'Le profil ne change pas', detail: 'Cliquez sur « Enregistrer le profil » avant de fermer l’écran des paramètres.' },
           { term: 'Les données diffèrent entre deux appareils', detail: 'Vérifiez que la synchronisation est achevée sur le premier appareil avant d’ouvrir le cahier sur le second.' },
         ],

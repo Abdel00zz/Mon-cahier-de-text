@@ -168,7 +168,7 @@ Le système sépare rigoureusement deux mécanismes aux garanties distinctes :
 
 - Les pages principales sont chargées avec `React.lazy`.
 - Les modales lourdes de l’éditeur sont chargées à la demande.
-- MathProvider partage la promesse de démarrage MathJax entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
+- MathProvider partage la promesse de démarrage KaTeX entre les surfaces et les remontages React. Le contenu reste accessible pendant son chargement ; MathText compile seulement les blocs contenant du LaTeX.
 - Aucun script de mesure tierce (analytics) n’est chargé : le premier affichage ne dépend d’aucun réseau externe.
 - Administration et application enseignant sont deux entrées séparées.
 - Workbox précache uniquement les ressources nécessaires.
@@ -201,7 +201,7 @@ Le contrôle `check:unused` connaît explicitement les entrées serverless et ad
 
 Le virtualiseur utilise l’intersection réelle avec la fenêtre, des mesures indexées par identité et des positions arrondies au pixel. Les groupes sont bornés à 24 entrées. Les corrections de hauteur au-dessus de la fenêtre préservent la position de lecture.
 
-`splitMathText` protège les délimiteurs avant la mise en forme des listes ou le surlignage. MathJax ne scanne pas globalement le DOM React : chaque MathText possède son rendu. Les badges occupent une colonne de grille centrée sur la ligne du titre ; les descriptions occupent les lignes suivantes.
+`splitMathText` protège les délimiteurs avant la mise en forme des listes ou le surlignage. KaTeX ne scanne pas globalement le DOM React : chaque MathText possède son rendu. Les badges occupent une colonne de grille centrée sur la ligne du titre ; les descriptions occupent les lignes suivantes.
 
 Les écarts horaires et les classes sans créneau passent par le flux de notifications vers les repères du Centre de pilotage. Le panneau d’avertissements redondant des paramètres a été retiré.
 
