@@ -6,7 +6,7 @@ import React from 'react';
  * attendue par les écrans qui affichaient un indicateur pendant le rendu
  * mathématique — désormais toujours « prêt ».
  */
-export type MathRuntimeStatus = 'loading' | 'ready' | 'degraded';
+type MathRuntimeStatus = 'loading' | 'ready' | 'degraded';
 
 interface MathRuntimeState {
   status: MathRuntimeStatus;
@@ -21,4 +21,3 @@ export const MathTypesetRegistrationContext = React.createContext<() => () => vo
 
 export const useMathRuntime = (): MathRuntimeState => READY_STATE;
 export const usePendingMathTypesets = (): number => 0;
-export const useMathTypesetRegistration = (): (() => () => void) => () => () => {};

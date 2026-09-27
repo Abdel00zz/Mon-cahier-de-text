@@ -696,9 +696,9 @@ test('fusion : des lignes libres de textes différents restent toutes visibles',
 test('séance fusionnée : les séparateurs de contenu et remarque partagent les mêmes rangées', () => {
   const data: LessonsData = [{ type: 'chapter', title: 'Cours', items: [
     { type: 'exercice', title: 'Première ligne', description: 'Description longue\nsur deux lignes', date: '2026-09-14', remark: 'Remarque A' },
-    { type: 'exercice', title: 'Deuxième ligne', date: '2026-09-14', remark: 'Remarque B' },
+    { type: 'exercice', title: 'Deuxième ligne', date: '2026-09-14' },
   ] }];
-  const rows = buildLessonRows(data);
+  const { flatData: rows } = groupLessonRows(buildLessonRows(data));
   const noop = () => {};
   const html = renderToStaticMarkup(React.createElement(LocaleProvider, { locale: 'fr', children:
     React.createElement(MainTable, { lessonsData: data, visibleRows: rows, onClearSearch: noop,
@@ -711,9 +711,12 @@ test('séance fusionnée : les séparateurs de contenu et remarque partagent les
   assert.equal(occurrences('data-session-group="true"'), 1);
   assert.equal(occurrences('data-session-cell="date"'), 1);
   assert.equal(occurrences('data-session-cell="content"'), 2);
-  assert.equal(occurrences('data-session-cell="remark"'), 2);
-  // Un trait sous chaque cellule de la première rangée, jamais dans la date fusionnée.
-  assert.equal(occurrences('data-session-row-divider="true"'), 2);
+  // Un seul contenu est annoté : la séance partage SA remarque, donc UNE
+  // cellule (avant : une par ligne, la remarque semblait collée au contenu).
+  assert.equal(occurrences('data-session-cell="remark"'), 1);
+  // Le trait de séparation vit sous les cellules de contenu, jamais dans la
+  // date fusionnée : une seule ligne de contenu ici.
+  assert.equal(occurrences('data-session-row-divider="true"'), 1);
   assert.match(html, /grid-row:1 \/ span 2/);
   assert.equal(html.includes('border-y'), false);
 });
@@ -768,8 +771,38 @@ test('regroupement : même date, remarques distinctes et grandes séances borné
   const { renderRows } = groupLessonRows(rows);
   assert.equal(renderRows.reduce((n, row) => n + (row.kind === 'single' ? 1 : row.items.length), 0), 1001);
   assert.ok(renderRows.every(row => row.kind === 'single' || row.items.length <= 120));
-  assert.equal((renderRows[1] as { items: { dateMerge?: { shouldMergeRemark?: boolean } }[] }).items[0].dateMerge?.shouldMergeRemark, false);
+  // Un SEUL contenu annoté dans la séance : la cellule de remarque reste
+  // unique et affiche cette remarque (avant, la colonne éclatait en une
+  // cellule par ligne et la remarque semblait collée à un contenu).
+  const sessionItems = (renderRows[1] as { items: { dateMerge?: { shouldMergeRemark?: boolean; sharedRemark?: string } }[] }).items;
+  assert.equal(sessionItems[0].dateMerge?.shouldMergeRemark, true);
+  assert.equal(sessionItems[0].dateMerge?.sharedRemark, 'Différente');
   assert.equal('dateMerge' in rows[1], false);
+});
+
+test('tableau : les colonnes viennent des jetons, pas de pourcentages codés en dur', () => {
+  const css = readFileSync('index.css', 'utf8');
+  const table = readFileSync('features/editor/MainTable.tsx', 'utf8');
+  // Le jeton existe pour le téléphone (bornes minimales) et pour le desktop.
+  assert.equal((css.match(/--cdt-table-cols:/g) ?? []).length >= 2, true, 'Les deux jeux de colonnes existent');
+  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*4\.75rem/);
+  assert.match(css, /--cdt-table-cols:\s*minmax\(\s*8\.5rem/);
+  // La grille du tableau consomme le jeton, jamais des pourcentages bruts :
+  // sinon le téléphone perd ses largeurs minimales (date tronquée, rails tassés).
+  assert.match(table, /TABLE_GRID_CLASS = 'editor-table-grid'/);
+  assert.ok(!/grid-cols-\[18%/.test(table), 'Aucune colonne en pourcentage codé en dur');
+});
+
+test('séance : deux remarques DIFFÉRENTES restent séparées', () => {
+  const data: LessonsData = [{ type: 'chapter', title: 'Chapitre', items: [
+    { type: 'exercice', title: 'Ex 1', date: '2026-09-05', remark: 'Absents : Ali' },
+    { type: 'exercice', title: 'Ex 2', date: '2026-09-05', remark: 'Devoir rendu' },
+  ] }];
+  const session = groupLessonRows(buildLessonRows(data)).renderRows.find(row => row.kind === 'session')!;
+  // On ne peut pas afficher une remarque à la place de l'autre : chacune
+  // garde sa ligne.
+  assert.equal(session.items[0].dateMerge?.shouldMergeRemark, false);
+  assert.equal(session.items[0].dateMerge?.sharedRemark, undefined);
 });
 
 test('virtualisation : la fenêtre reste bornée après 600 000 pixels de défilement', () => {

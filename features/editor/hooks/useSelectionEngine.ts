@@ -28,12 +28,16 @@ export const createSelectionState = (indices?: Indices | Indices[]): SelectionSt
 export function useSelectionEngine({
   lessonsData,
   moveTargets,
+  freeKeys,
   setState,
   setEditorState,
 }: {
   lessonsData: LessonsData;
   /** cibles du déplacement : la séance fusionnée bouge d'un seul lot */
   moveTargets: ContentEditTargets;
+  /** clés des lignes libres : seule une sélection qui en contient une peut
+   *  prétendre à la relocalisation (sinon on évite un parcours complet). */
+  freeKeys: ReadonlySet<string>;
   setState: (recipe: (draft: Draft<LessonsData>) => void, action: string) => void;
   setEditorState: (recipe: (draft: SelectionEditorState) => void) => void;
 }) {
@@ -48,14 +52,17 @@ export function useSelectionEngine({
       // 1. Ligne libre : elle glisse le long de la structure, y compris sous un
       //    titre — donc dans un autre parent — pour se poser sous un paragraphe,
       //    une proposition ou n'importe quel type de contenu.
-      const relocation = planContentRelocation(lessonsData, moveTargets, selectionState.keys, direction);
+      const mayRelocate = Array.from(selectionState.keys).some(key => freeKeys.has(key));
+      const relocation = mayRelocate
+        ? planContentRelocation(lessonsData, moveTargets, selectionState.keys, direction)
+        : null;
       if (relocation) return { kind: 'relocation' as const, relocation };
       // 2. Contenu typé ou séance fusionnée : permutation stricte entre frères.
       const swap = planContentMove(lessonsData, moveTargets, selectionState.keys, direction);
       return swap ? { kind: 'swap' as const, swap } : null;
     };
     return { up: build('up'), down: build('down') };
-  }, [lessonsData, moveTargets, selectionState.keys]);
+  }, [lessonsData, moveTargets, freeKeys, selectionState.keys]);
 
   const canMoveUp = moveOptions.up !== null;
   const canMoveDown = moveOptions.down !== null;

@@ -16,8 +16,12 @@ import { SupportWhatsAppBlock } from '@/components/SupportWhatsAppBlock';
 import { NotebookOpeningIllustration } from '@/components/ui/DynamicIllustration';
 import { motion } from 'framer-motion';
 
-const TABLE_GRID_COLUMNS = 'minmax(8.5rem, 13%) minmax(0, 1fr) minmax(9.5rem, 16%)';
-const TABLE_GRID_CLASS = 'grid-cols-[18%_1fr_20%] md:grid-cols-[var(--cdt-table-cols)]';
+// Une seule source de largeurs pour toute l'application : `.editor-table-grid`
+// résout `--cdt-table-cols`, redéfini par `index.css` pour le téléphone
+// (largeurs MINIMALES comprises) puis pour le desktop. Des pourcentages
+// codés en dur ici écrasaient ces bornes sur téléphone et tassaient les
+// colonnes — donc les rails et la lisibilité.
+const TABLE_GRID_CLASS = 'editor-table-grid';
 
 interface MainTableProps {
   lessonsData: LessonsData;
@@ -132,9 +136,13 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
     const uniqueDates = Array.from(new Set(allDates));
     const warnings = allDates.flatMap(d => (getDateWarnings ? getDateWarnings(d) : []));
     const hasWarning = warnings.length > 0;
-    const sameRemark = items.every(item => getMergeableRemark(item) === getMergeableRemark(items[0]));
+    // Une seule source de vérité : le moteur décide si la séance partage sa
+    // remarque (voir `sharedRemark`) — plus de comparaison locale, qui
+    // éclatait la colonne en une cellule par ligne dès qu'un seul contenu
+    // était annoté.
+    const sameRemark = !!items[0].dateMerge?.shouldMergeRemark;
+    const sharedRemark = items[0].dateMerge?.sharedRemark ?? '';
     const groupIsSelected = items.some(item => selectedKeys.has(item.key));
-    const sharedRemark = getMergeableRemark(items[0]);
     // Une grille commune garde les traits de contenu et de remarque sur le
     // même axe, même si une remarque ou une description occupe plusieurs lignes.
     const visualRowCount = mergeContent && sameRemark ? 1 : items.length;
@@ -259,9 +267,9 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         title={t('remark.editTitle')}
                         aria-label={t('remark.editTitle')}
                         data-remark-cell="true"
-                        className="flex min-h-full w-full cursor-pointer flex-col justify-center rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="flex min-h-11 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-center transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
-                        <div dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{sharedRemark}</div>
+                        <span dir={textDirectionAttribute(sharedRemark)} className="editor-type-remark w-full whitespace-pre-wrap break-words font-semibold leading-snug text-foreground/80">{sharedRemark || '—'}</span>
                     </button>
                 </div>
             ) : items.map((item, index) => (
@@ -279,7 +287,7 @@ const SessionGroupRow: React.FC<SessionGroupRowProps> = React.memo(({
                         title={t('remark.editTitle')}
                         aria-label={t('remark.editTitle')}
                         data-remark-cell="true"
-                        className="h-full w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="min-h-11 w-full cursor-pointer rounded-lg text-start transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     >
                         <div dir={textDirectionAttribute(getMergeableRemark(item))} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground sm:p-1">{getMergeableRemark(item)}</div>
                     </button>
@@ -493,7 +501,6 @@ export const MainTable: React.FC<MainTableProps> = React.memo(({
       data-content-direction={contentDirection}
       dir={contentDirection}
       className="rtl-table mx-0 overflow-hidden rounded-xl border-2 border-border/80 dark:border-border/90 bg-card shadow-xs transition-shadow duration-200 print:border-none"
-      style={{ '--cdt-table-cols': TABLE_GRID_COLUMNS } as React.CSSProperties}
     >
       <TableHeader />
       <CardContent className="!p-0">

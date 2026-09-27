@@ -54,7 +54,7 @@ const ActionButton: FC<Omit<Action, 'id'> & { label?: string; accent?: boolean }
     transition={{ type: 'spring', stiffness: 500, damping: 28 }}
     className={cn(
       'selection-action shrink-0 inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer touch-manipulation',
-      label ? 'h-9 px-2.5 sm:px-3 gap-1.5 sm:gap-2' : 'h-9 w-9 p-0',
+      label ? 'h-11 px-2.5 sm:px-3 gap-1.5 sm:gap-2' : 'h-11 w-11 p-0',
       accent
         ? 'bg-primary/15 text-primary hover:bg-primary/25 font-semibold'
         : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
@@ -146,7 +146,7 @@ export const SelectionBar: FC<SelectionBarProps> = ({
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.88 }}
               transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-              className="selection-action inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation disabled:opacity-50"
+              className="selection-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-colors cursor-pointer touch-manipulation disabled:opacity-50"
               title={t('selection.moreActions')}
               aria-label={t('selection.moreActions')}
             >

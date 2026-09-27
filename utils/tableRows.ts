@@ -11,6 +11,8 @@ export interface DateMergeMeta {
   count: number;
   indexInGroup: number;
   shouldMergeRemark?: boolean;
+  /** Remarque unique de la séance (vide si aucune). */
+  sharedRemark?: string;
   isDatedSequenceStart?: boolean;
   isDatedSequenceEnd?: boolean;
 }
@@ -145,8 +147,13 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
     const count = end - start;
     const isMerged = count > 1;
     const group = items.slice(start, end);
-    const firstRemark = getMergeableRemark(group[0]);
-    const shouldMergeRemark = isMerged && group.every(item => getMergeableRemark(item) === firstRemark);
+    // La séance porte UNE remarque, comme elle porte une date : soit le même
+    // texte partout, soit un seul contenu annoté et les autres vides (cas le
+    // plus fréquent : « absents » pour la séance). Deux remarques DIFFÉRENTES
+    // restent séparées : on ne peut pas en afficher une à la place de l'autre.
+    const presentRemarks = Array.from(new Set(group.map(getMergeableRemark).filter(Boolean)));
+    const shouldMergeRemark = isMerged && presentRemarks.length <= 1;
+    const sharedRemark = presentRemarks[0] ?? '';
     const isDatedSequenceEnd = end === items.length || !dates[end];
 
     for (let index = start; index < end; index += 1) {
@@ -159,6 +166,7 @@ const applyDateMerges = (items: FlatDataItem[]): FlatDataItem[] => {
         count,
         indexInGroup: index - start,
         shouldMergeRemark,
+        sharedRemark: shouldMergeRemark ? sharedRemark : undefined,
         isDatedSequenceStart: !!isDatedSequenceStart && index === start,
         isDatedSequenceEnd: !!isDatedSequenceEnd && index === end - 1,
       };

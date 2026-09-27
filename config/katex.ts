@@ -16,7 +16,7 @@ import katex from 'katex';
  *  - les ensembles usuels et l'italique, sans argument ;
  *  - les commandes à argument, lues avec leurs accolades équilibrées.
  */
-export const KATEX_SETS: Record<string, string> = {
+const KATEX_SETS: Record<string, string> = {
   R: '\\mathbb{R}',
   N: '\\mathbb{N}',
   Z: '\\mathbb{Z}',
@@ -27,7 +27,7 @@ export const KATEX_SETS: Record<string, string> = {
 };
 
 /** \itshape existe nativement dans KaTeX : rien à étendre, on le documente ici. */
-export const KATEX_NATIVE = ['itshape'] as const;
+const KATEX_NATIVE = ['itshape'] as const;
 
 /** Commandes de *document* écrites par erreur dans une formule : absorbées. */
 const DROPPED = ['par', 'noindent', 'smallskip', 'medskip', 'bigskip'];
@@ -56,7 +56,7 @@ const readGroup = (tex: string, start: number): { content: string; end: number }
 };
 
 /** Étend les commandes de confort d'une formule, sans jamais ré-étendre. */
-export const expandComfortMacros = (tex: string): string => {
+const expandComfortMacros = (tex: string): string => {
   let out = '';
   for (let index = 0; index < tex.length; index += 1) {
     if (tex[index] !== '\\') {
@@ -130,7 +130,7 @@ const BASE_OPTIONS = {
  * une commande et refuse la formule. On retire donc le délimiteur ici, une fois
  * pour toutes, plutôt que chez chaque appelant.
  */
-export const stripMathDelimiters = (tex: string): string => {
+const stripMathDelimiters = (tex: string): string => {
   const value = tex.trim();
   const pairs: [string, string][] = [['$$', '$$'], ['\\[', '\\]'], ['\\(', '\\)'], ['$', '$']];
   for (const [open, close] of pairs) {

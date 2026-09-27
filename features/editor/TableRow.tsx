@@ -150,10 +150,10 @@ const RemarkCell: FC<{
       title={cellTitle}
       aria-label={cellTitle}
       data-remark-cell="true"
-      className={`h-full w-full text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
+      className={`flex min-h-[44px] w-full items-center text-start ${editable ? 'cursor-pointer rounded-lg transition-colors hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40' : ''}`}
     >
       {(!isMergedCell || merge!.indexInGroup === Math.floor(merge!.count / 2)) && (
-        <div dir={textDirectionAttribute(value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 font-semibold text-muted-foreground">{value}</div>
+        <div dir={textDirectionAttribute(merge?.sharedRemark ?? value)} className="editor-type-remark h-full w-full whitespace-pre-wrap break-words p-0.5 text-center font-semibold leading-snug text-foreground/80">{merge?.sharedRemark ?? value}</div>
       )}
     </button>
   );

@@ -18,7 +18,7 @@ import { indicesKey, resolveAddAfterTarget } from '@/utils/lessonRows';
 import { buildContentDateOrder } from '@/utils/dateOrder';
 import { buildContentNumbers } from '@/utils/contentNumbering';
 import { useLessonSearch } from '@/hooks/useLessonSearch';
-import { applyContentEdit, buildContentEditTargets, buildSessionTargets, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
+import { applyContentEdit, applyRemarkEdit, buildContentEditTargetsGrouped, buildSessionTargetsGrouped, expandContentSelection, resolveContentEditSelection } from '@/utils/contentEditing';
 import type { ContentDraft } from '@/utils/contentDraft';
 import { useMoroccoToday } from '@/hooks/useMoroccoToday';
 import { useSelectionData } from '@/hooks/useSelectionData';
@@ -47,6 +47,8 @@ import { EditorModals } from './EditorModals';
 import { DateReviewModal } from './modals/DateReviewModal';
 import { TOP_LEVEL_TYPE_CONFIG, TYPE_MAP, normalizeOfficialClassName } from '@/constants';
 import { insertFreeContent } from '@/utils/freeContent';
+import { isFreeContent } from '@/utils/freeLineType';
+import { groupLessonRows } from '@/utils/tableRows';
 import { logger } from '@/utils/logger';
 import { todayInMorocco } from '@/utils/calendar';
 import { hasOnlyPristineStarterDiagnostic, withStarterDiagnostic } from '@/utils/starterDiagnostic';
@@ -271,10 +273,15 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   }, []);
 
   const { rows: visibleRows, allRows, query: displayedQuery } = useLessonSearch(lessonsData, searchQuery);
-  const contentEditTargets = useMemo(() => buildContentEditTargets(allRows), [allRows]);
+  // UN SEUL groupement pour tout l'écran : les cibles d'édition et les cibles
+  // de séance en dérivent, au lieu de refaire le parcours de fusion deux fois.
+  const groupedRows = useMemo(() => groupLessonRows(allRows).renderRows, [allRows]);
+  const contentEditTargets = useMemo(() => buildContentEditTargetsGrouped(groupedRows), [groupedRows]);
   /** Même moteur de fusion, autre intention : une séance fusionnée est UNE
    *  ligne pour la remarque et pour le déplacement. */
-  const sessionTargets = useMemo(() => buildSessionTargets(allRows), [allRows]);
+  const sessionTargets = useMemo(() => buildSessionTargetsGrouped(groupedRows), [groupedRows]);
+  /** Lignes libres : la relocalisation ne les concerne qu'elles. */
+  const freeKeys = useMemo(() => new Set(allRows.filter(row => isFreeContent(row.data)).map(row => row.key)), [allRows]);
   const {
     selectionState,
     selectedIndices,
@@ -290,6 +297,7 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
   } = useSelectionEngine({
     lessonsData,
     moveTargets: sessionTargets,
+    freeKeys,
     setState,
     setEditorState
   });
@@ -635,6 +643,30 @@ export const Editor: React.FC<EditorProps> = ({ classInfo: initialClassInfo, onO
     setSelectionState(createSelectionState());
     setEditorState(draft => { draft.saveStatus = 'unsaved'; });
   }, [canRedo, redo, setEditorState]);
+
+  // Raccourcis d'historique : Ctrl/Cmd+Z annule, Ctrl/Cmd+Maj+Z (ou Ctrl+Y)
+  // rétablit. Ils sont ignorés pendant une saisie, pour ne pas voler
+  // l'annulation native d'un champ ni l'édition en cours.
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) return;
+      const key = event.key.toLowerCase();
+      const wantsRedo = key === 'y' || (key === 'z' && event.shiftKey);
+      if (wantsRedo) {
+        if (!canRedo) return;
+        event.preventDefault();
+        handleRedo();
+        return;
+      }
+      if (key !== 'z' || !canUndo) return;
+      event.preventDefault();
+      handleUndo();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [canUndo, canRedo, handleRedo, handleUndo]);
 
   const handleOpenAddContentModal = useCallback((indices?: Indices) => {
       setSelectionState(createSelectionState(indices));

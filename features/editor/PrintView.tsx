@@ -365,7 +365,8 @@ export const PrintView: React.FC<PrintViewProps> = React.memo(({ lessonsData, cl
                                 const sep = isRtlPrint ? '، ' : ', ';
                                 const absenceStr = `${prefix}${itemAbsences.join(sep)}`;
                                 if (!displayRemark.includes('الغياب') && !displayRemark.toLowerCase().includes('absent')) {
-                                    displayRemark = displayRemark ? `$<MathText source={displayRemark}>{displayRemark}</MathText>\n${absenceStr}` : absenceStr;
+                                    // Texte pur : la composition se fait par le <MathText> du rendu.
+                                    displayRemark = displayRemark ? `${displayRemark}\n${absenceStr}` : absenceStr;
                                 }
                             }
 

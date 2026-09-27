@@ -2,7 +2,7 @@ import type { Draft } from 'immer';
 import type { Indices, LessonsData } from '../types';
 import { findItem } from './dataUtils';
 import { indicesKey, type LessonRow } from './lessonRows';
-import { groupLessonRows } from './tableRows';
+import { groupLessonRows, type RenderRow } from './tableRows';
 import { contentFields, type ContentDraft } from './contentDraft';
 import { TOP_LEVEL_TYPE_CONFIG } from '../constants';
 
@@ -10,9 +10,12 @@ export type ContentEditTargets = ReadonlyMap<string, readonly Indices[]>;
 
 /** Même moteur que le tableau. Une cellule de contenu fusionnée constitue
  * une seule cible d'édition ; une date partagée ne fusionne pas les contenus. */
-export function buildContentEditTargets(rows: LessonRow[]): ContentEditTargets {
+
+/** Variante acceptant les `RenderRow[]` déjà calculés — permet de factoriser
+ *  un seul appel à `groupLessonRows` entre cibles de contenu et de séance. */
+export function buildContentEditTargetsGrouped(renderRows: readonly RenderRow[]): ContentEditTargets {
   const targets = new Map<string, readonly Indices[]>();
-  for (const row of groupLessonRows(rows).renderRows) {
+  for (const row of renderRows) {
     if (row.kind === 'session' && row.items[0].dateMerge?.mergeType === 'content') {
       const group = row.items.map(item => item.indices);
       for (const item of row.items) targets.set(item.key, group);
@@ -79,15 +82,21 @@ export function applyContentEdit(draft: Draft<LessonsData>, targets: readonly In
  * sa propre cible (`buildContentEditTargets`) : une date partagée ne doit
  * jamais écraser des contenus distincts.
  */
-export function buildSessionTargets(rows: LessonRow[]): ContentEditTargets {
+/** Même carte de cibles, à partir d'un groupement DÉJÀ calculé : l'éditeur
+ *  ne refait pas `groupLessonRows` une seconde fois pour rien. */
+export function buildSessionTargetsGrouped(renderRows: readonly RenderRow[]): ContentEditTargets {
   const targets = new Map<string, readonly Indices[]>();
-  for (const row of groupLessonRows(rows).renderRows) {
+  for (const row of renderRows) {
     const items = row.kind === 'session' ? row.items : [row.item];
     const group = items.map(item => item.indices);
     for (const item of items) targets.set(item.key, group);
   }
   return targets;
 }
+
+/** Entrée publique : un groupement est calculé à la demande. */
+export const buildSessionTargets = (rows: LessonRow[]): ContentEditTargets =>
+  buildSessionTargetsGrouped(groupLessonRows(rows).renderRows);
 
 /**
  * Écrit la remarque de la cible en UNE seule mutation Immer (donc une seule
